@@ -78,13 +78,14 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
 	    MAKE 	:= 	$(TOOLS_ROOT_DIR)\make4.1\bin\make
     endif
 	
-
+	SHELL_GO_TO_COMMON_GIT_DIR :=cd $(WORKSPACE_ROOT_DIR)\common &
 	RM		:=rmdir /S /Q
 	CP		:=copy /Y
 	DATE	:=date /T
 	TIME	:=time /T	
 else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX) 
 
+	SHELL_GO_TO_COMMON_GIT_DIR :=cd $(WORKSPACE_ROOT_DIR)/common ;
 	MAKE 	:= 	make
 	RM		:=rm -rf
 	CP		:=cp -f
@@ -108,11 +109,15 @@ $(info scan for uconfig.mk done )
 
 include config.mk
 
+SHELL_OUTPUT := $(shell $(SHELL_GO_TO_COMMON_GIT_DIR) git rev-parse --abbrev-ref HEAD)
+ifneq ($(findstring $(PROJECT_NAME),$(SHELL_OUTPUT)),$(PROJECT_NAME)) 	 
+    DUMMY = $(shell $(SHELL_GO_TO_COMMON_GIT_DIR) git checkout $(PROJECT_NAME))
+endif
+
 SHELL_OUTPUT := $(shell git rev-parse --abbrev-ref HEAD)
 ifneq ($(findstring $(PROJECT_NAME),$(SHELL_OUTPUT)),$(PROJECT_NAME)) 	 
     DUMMY = $(shell git checkout $(PROJECT_NAME))
 endif
-
 
 OUTPUT_APP_NAME := out
 ifdef CONFIG_OUTPUT_NAME
