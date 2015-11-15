@@ -1,0 +1,5 @@
+
+#ifndef _uart_stm32f10x_static_dev_macros_h_
+#define _uart_stm32f10x_static_dev_macros_h_
+
+#endif

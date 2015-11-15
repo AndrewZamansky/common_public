@@ -1,0 +1,63 @@
+##  use double ## for comments because this file is processed by 
+##  preprocessor , so single hash will be treated as define
+
+## Segment configuration
+
+
+## Segment Code,Constants:
++seg .const -b 0x8000 -n .vecttable -k
+zOBJ/STM8/stm8_interrupt_vector.o
+
++seg .text -a .vecttable -n .text
++seg .const -a .text -n .const -it
+
+
+## Segment Eeprom:
++seg .eeprom -b 0x4000 -m 0x280 -n .eeprom
+## Segment Zero Page (this deliberately avoids 0x0 to avoid
+## NULL pointers to real data):
+##+seg .bsct -b 0x2 -m 0xfe -n .bsct
++seg .bsct -b 0x2 -m 0x1e -n .bsct
++seg .ubsct -a .bsct -n .ubsct
++seg .bit -a .ubsct -n .bit -id
++seg .share -a .bit -n .share -is
+## Segment Ram (allow up to RAMTOP-64 to be used for data
+## sections, leaving 64 bytes for the startup stack):
+
+##+seg .data -b 0x100 -m 0x250 -n .data
+##+seg .data -b 0x100 -m 0x240 -n .data
++seg .ram -b 0x20 -m 0x340 -n .ram
+
++seg .bss -a .ram -n .stacks_bss
+OBJ_DIR/AtomThreads/atomthreads_stacks.o
+
++seg .data -a .stacks_bss -n .data
++seg .bss -a .data -n .bss
+
+
+
+## Startup file
+crtsi0.sm8
+
+
+## Object files list  
+FILES_LIST
+
+## Caller passes in test application object name as param1
+## @1
+
+
+## Library list
+libis0.sm8
+libm0.sm8
+
+
+
+
+
+## Defines
++def __endzp=@.ubsct			## end of uninitialized zpage
++def __memory=@.bss				## end of bss segment
++def __startmem=@.bss
++def __endmem=0x3bf
++def __stack=0x3ff
