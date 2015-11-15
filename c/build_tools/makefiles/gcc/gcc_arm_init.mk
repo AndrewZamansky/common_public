@@ -2,7 +2,14 @@
 ### the following section we need to run just one time per build
 ifndef COMMON_INIT_SECTION_THAT_SHOULD_RUN_ONCE
  
-GCC_ROOT_DIR := $(ARM_GCC_ROOT_DIR)
+
+
+ifdef REDEFINE_ARM_GCC_ROOT_DIR
+    $(info  gcc dir  redefined to $(REDEFINE_ARM_GCC_ROOT_DIR) )
+    GCC_ROOT_DIR 	:= 	$(REDEFINE_ARM_GCC_ROOT_DIR)
+else
+    GCC_ROOT_DIR 	:= 	$(TOOLS_ROOT_DIR)\gcc$(CONFIG_GCC_COMPILER_VERSION)
+endif
 
 
 ifndef CONFIG_OPTIMIZE_LEVEL

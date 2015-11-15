@@ -1,10 +1,7 @@
 
-##################################################################
-#### the following section we need to run just one time per build
-#ifndef SKIP_SECTION_THAT_SHOULD_RUN_ONCE_AFTER_AUTO_FILE_GENERATIONS
-#
 
 
+GLOBAL_LIBS := $(GLOBAL_LIBS) $(CONFIG_INCLUDE_STD_LIBRARIES)
 
 LIBS := $(patsubst lib%,-l%,$(GLOBAL_LIBS))
 LIBS := $(patsubst %.a,%,$(LIBS))
@@ -71,9 +68,6 @@ LDS_PREPROCESSOR_DEFINES_FRMT := $(LDS_PREPROCESSOR_DEFINES_FRMT) -DFILES_TO_FOR
 
 ##########################################################
 
-include $(MAKEFILE_DEFS_ROOT_DIR)/gcc/gcc_common_init.mk
-
-GLOBAL_LIBS := $(GLOBAL_LIBS) $(CONFIG_INCLUDE_STD_LIBRARIES)
 
 ifeq ($(findstring cortex-m,$(CONFIG_CPU_TYPE)),cortex-m) 	 
 #	GLOBAL_LIBS_PATH := $(GLOBAL_LIBS_PATH) $(GCC_LIB_ROOT_DIR)/fpu
@@ -83,34 +77,34 @@ else
 endif
 
 
-#endif
-#### end of section that run just one time per build
-######################################################
-
-
-
-define CALCULATE_LINKER_FILE_SETUP_CMD_LINE
-	LINKER_FILE_SETUP = $(CC) -E -P -x c $(LDS_PREPROCESSOR_DEFINES_FRMT)  $(BUILD_TOOLS_ROOT_DIR)/scatter_files/gcc/scatter_file_pattern.lds -o $(OUT_DIR)/$(OUTPUT_APP_NAME).lds
-endef
+OUTPUT_HISTORY_BIN :=  $(OUT_DIR_HISTORY)/$(OUTPUT_APP_NAME).v$(DATE_STR).bin
 
 
 rwildcard=$(wildcard $1$2) $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2))
 
 #some time on windows .O.asm and .o.asm will appear as same files . so $(sort) will eliminate duplication
-ALL_OBJ_FILES = $$(sort $$(call rwildcard,$(OBJ_DIR)/,*.o) $$(call rwildcard,$(OBJ_DIR)/,*.o.asm) $$(call rwildcard,$(OBJ_DIR)/,*.O.asm))
-define CALCULATE_LINKER_CMD_LINE
-	LINKER_CMD_LINE = $(LD) $(LDFLAGS) -T $(OUT_DIR)/$(OUTPUT_APP_NAME).lds  $(LIBRARIES_DIRS) $(ALL_OBJ_FILES) $(LIBS) -o $(LINKER_OUTPUT)
-endef
 
-define CALCULATE_DISASSEMBLER_CMD_LINE
-	DISASSEMBLER_CMD_LINE = $(DISASSEMBLER) $(LINKER_OUTPUT) > $(OUT_DIR)/$(OUTPUT_APP_NAME).asm
-endef
 
-define CALCULATE_BIN_GENERATION_CMD_LINE
-	BIN_GENERATION_CMD_LINE = $(ELF_TO_BIN) $(LINKER_OUTPUT) $(OUTPUT_BIN)
-endef
+ALL_OBJ_FILES := $(sort $(call rwildcard,$(OBJ_DIR)/,*.o) $(call rwildcard,$(OBJ_DIR)/,*.o.asm) $(call rwildcard,$(OBJ_DIR)/,*.O.asm))
 
-define CALCULATE_HEX_GENERATION_CMD_LINE
-	HEX_GENERATION_CMD_LINE = $(ELF_TO_HEX) $(LINKER_OUTPUT) $(OUTPUT_HEX)
-endef
+ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS) 	
+	OUTPUT_BIN := $(subst /,\,$(OUTPUT_BIN))
+	OUTPUT_HISTORY_BIN := $(subst /,\,$(OUTPUT_HISTORY_BIN))
+	OUTPUT_CRC32 := $(subst /,\,$(OUTPUT_CRC32))
+endif
+
+build_outputs : 
+	$(CC) -E -P -x c $(LDS_PREPROCESSOR_DEFINES_FRMT)  $(BUILD_TOOLS_ROOT_DIR)/scatter_files/gcc/scatter_file_pattern.lds -o $(OUT_DIR)/$(OUTPUT_APP_NAME).lds
+	$(LD) $(LDFLAGS) -T $(OUT_DIR)/$(OUTPUT_APP_NAME).lds  $(LIBRARIES_DIRS) $(ALL_OBJ_FILES) $(LIBS) -o $(LINKER_OUTPUT)
+	$(DISASSEMBLER) $(LINKER_OUTPUT) > $(OUT_DIR)/$(OUTPUT_APP_NAME).asm
+	$(ELF_TO_BIN) $(LINKER_OUTPUT) $(OUTPUT_BIN)
+	 $(ELF_TO_HEX) $(LINKER_OUTPUT) $(OUTPUT_HEX)
+	$(CP)  $(OUTPUT_BIN) $(OUTPUT_HISTORY_BIN) 
+ifeq ($(findstring YES,$(CONFIG_CALCULATE_CRC32)),YES) 	 
+	$(CRC32CALC) $(OUTPUT_BIN) > $(OUTPUT_CRC32) 
+endif	
+ifeq ($(findstring YES,$(CONFIG_USED_FOR_SEMIHOSTING_UPLOADING)),YES) 	 
+	$(CP)  $(OUTPUT_BIN) $(BOOTER_SHARE_DIR)
+	$(CP) $(OUTPUT_CRC32) $(BOOTER_SHARE_DIR)
+endif	
 

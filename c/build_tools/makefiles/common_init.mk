@@ -79,12 +79,15 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
     endif
 	
 
+	SHELL_GO_TO_COMMON_GIT_DIR :=cd $(WORKSPACE_ROOT_DIR)\common &
 	RM		:=rmdir /S /Q
 	CP		:=copy /Y
 	DATE	:=date /T
 	TIME	:=time /T	
 else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX) 
 
+
+	SHELL_GO_TO_COMMON_GIT_DIR :=cd $(WORKSPACE_ROOT_DIR)/common ;
 	MAKE 	:= 	make
 	RM		:=rm -rf
 	CP		:=cp -f
@@ -108,10 +111,21 @@ $(info scan for uconfig.mk done )
 
 include config.mk
 
-SHELL_OUTPUT := $(shell git rev-parse --abbrev-ref HEAD)
-ifneq ($(findstring $(PROJECT_NAME),$(SHELL_OUTPUT)),$(PROJECT_NAME)) 	 
-    DUMMY = $(shell git checkout $(PROJECT_NAME))
+
+CURR_GIT_BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
+ifeq ($(findstring master,$(CURR_GIT_BRANCH)),master) 	 
+    $(error  branch names must be of type $(PROJECT_NAME) or $(PROJECT_NAME)_<branch_name>)
 endif
+
+SHELL_OUTPUT := $(shell $(SHELL_GO_TO_COMMON_GIT_DIR) git rev-parse --abbrev-ref HEAD)
+ifneq ($(sort $(filter $(CURR_GIT_BRANCH),$(SHELL_OUTPUT))),$(CURR_GIT_BRANCH)) 	 
+    SHELL_OUTPUT := $(shell $(SHELL_GO_TO_COMMON_GIT_DIR) git checkout $(CURR_GIT_BRANCH) 2>&1)
+    ERROR_MESSAGE :=did not match any file
+    ifeq ($(findstring $(ERROR_MESSAGE),$(SHELL_OUTPUT)),$(ERROR_MESSAGE)) 	 
+        $(error  branch $(CURR_GIT_BRANCH) not found in common git . create it)
+    endif
+endif
+
 
 
 OUTPUT_APP_NAME := out
