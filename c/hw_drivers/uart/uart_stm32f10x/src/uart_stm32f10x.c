@@ -137,8 +137,9 @@ inline uint8_t UART_STM32F10x_Init(UART_STM32F103x_Instance_t *apHandle)
 	USART_ClockInitTypeDef USART_ClockInitStructure;
 	GPIO_InitTypeDef GPIO_InitStructureRX;
 	GPIO_InitTypeDef GPIO_InitStructureTX;
-	NVIC_InitTypeDef NVIC_InitStructure;
 	GPIO_TypeDef * GPIOx;
+	IRQn_Type int_num ;
+	NVIC_Isr_t pIsr;
 
 	if((apHandle->uart_num < 1) || (apHandle->uart_num > 3))
 	{
@@ -150,9 +151,9 @@ inline uint8_t UART_STM32F10x_Init(UART_STM32F103x_Instance_t *apHandle)
 	{
 		case 1:
 			USARTx=USART1;
-			NVIC_InitStructure.NVIC_IRQChannel = USART1_IRQn;
+			pIsr= UART1_Isr;
+			int_num = USART1_IRQn;
 			RCC_APB2PeriphClockCmd(	RCC_APB2Periph_USART1 | RCC_APB2Periph_GPIOA, ENABLE );
-			NVIC_API_RegisterInt(NVIC_API_Int_USART1_RX , UART1_Isr);
 
 			GPIO_InitStructureTX.GPIO_Pin = GPIO_Pin_9;
 			GPIO_InitStructureRX.GPIO_Pin = GPIO_Pin_10;
@@ -160,9 +161,9 @@ inline uint8_t UART_STM32F10x_Init(UART_STM32F103x_Instance_t *apHandle)
 			break;
 		case 2:
 			USARTx=USART2;
-			NVIC_InitStructure.NVIC_IRQChannel = USART2_IRQn;
+			pIsr = UART2_Isr;
+			int_num = USART2_IRQn;
 			RCC_APB1PeriphClockCmd(	RCC_APB1Periph_USART2 , ENABLE );
-			NVIC_API_RegisterInt(NVIC_API_Int_USART2_RX , UART2_Isr);
 
 			GPIO_InitStructureTX.GPIO_Pin = GPIO_Pin_2;
 			GPIO_InitStructureRX.GPIO_Pin = GPIO_Pin_3;
@@ -170,9 +171,9 @@ inline uint8_t UART_STM32F10x_Init(UART_STM32F103x_Instance_t *apHandle)
 			break;
 		case 3:
 			USARTx=USART3;
-			NVIC_InitStructure.NVIC_IRQChannel = USART3_IRQn;
+			pIsr = UART3_Isr;
+			int_num = USART3_IRQn;
 			RCC_APB1PeriphClockCmd(	RCC_APB1Periph_USART3 , ENABLE );
-			NVIC_API_RegisterInt(NVIC_API_Int_USART3_RX , UART3_Isr);
 
 			GPIO_InitStructureTX.GPIO_Pin = GPIO_Pin_10;
 			GPIO_InitStructureRX.GPIO_Pin = GPIO_Pin_11;
@@ -213,10 +214,14 @@ inline uint8_t UART_STM32F10x_Init(UART_STM32F103x_Instance_t *apHandle)
 
 	USART_ClockInit(USARTx, &USART_ClockInitStructure);
 
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = INTERRUPT_LOWEST_PRIORITY -2;
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
-	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-	NVIC_Init(&NVIC_InitStructure);
+	NVIC_API_RegisterInt(int_num , pIsr);
+	NVIC_API_SetPriority(int_num , INTERRUPT_LOWEST_PRIORITY - 2 );
+	NVIC_API_EnableInt(int_num);
+
+//	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = INTERRUPT_LOWEST_PRIORITY -2;
+//	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+//	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+//	NVIC_Init(&NVIC_InitStructure);
 
 
 	USART_ITConfig( USARTx, USART_IT_RXNE, ENABLE );

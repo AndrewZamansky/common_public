@@ -46,6 +46,8 @@ else
 	VPATH += src/Cortex_A9
 endif
 
-SPEED_CRITICAL_FILES += SWI.s #low_level_calls.c
+ifeq ($(findstring YES,$(CONFIG_CPU_SPECIFIC_FILES_ARE_SPEAD_CRITICAL)),YES) 
+    SPEED_CRITICAL_FILES += SWI.s #low_level_calls.c
+endif
 
 include $(COMMON_CC)

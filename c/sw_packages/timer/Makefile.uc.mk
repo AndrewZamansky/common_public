@@ -1,10 +1,9 @@
 
-ifeq ($(findstring YES,$(CONFIG_INCLUDE_HTTP)),YES) 	 
-	DYNAMIC_COMPONENT := YES
+ifeq ($(findstring YES,$(CONFIG_INCLUDE_TIMER)),YES) 	 
+	#DYNAMIC_COMPONENT := YES
 	INCLUDE_THIS_COMPONENT := YES   # must be here !!
 endif  
 
-INCLUDE_DIR = $(EXTERNAL_SOURCE_ROOT_DIR)/Fatfs/src
 
 #INCLUDE_DIR = 
 
@@ -16,8 +15,11 @@ INCLUDE_DIR = $(EXTERNAL_SOURCE_ROOT_DIR)/Fatfs/src
 
 
 
-SRC = HTTP.c 
+SRC = timer.c
+
 
 VPATH = src
+
+SPEED_CRITICAL_FILES += 
 
 include $(COMMON_CC)

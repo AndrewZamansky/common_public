@@ -15,6 +15,8 @@ endif
 
 #ASMFLAGS =  
 
+INCLUDE_DIR =  $(SW_PACKAGES_ROOT_DIR)/u_boot_shell/include
+INCLUDE_DIR += $(EXTERNAL_SOURCE_ROOT_DIR)/u-boot/include
 
 
 SRC = serial_number_stm32f10x.c 

@@ -1,5 +1,5 @@
 ifeq ($(findstring stm32f10x,$(CONFIG_SOC_TYPE)),stm32f10x)
-    ifeq ($(findstring YES,$(CONFIG_INCLUDE_INTERNAL_CRC)),YES) 	 
+    ifeq ($(findstring YES,$(CONFIG_INCLUDE_INTERNAL_HW_CRC)),YES) 	 
 	    INCLUDE_THIS_COMPONENT := YES   # must be here !!
     endif  
 endif

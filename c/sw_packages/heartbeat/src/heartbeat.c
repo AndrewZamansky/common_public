@@ -19,7 +19,7 @@
 
 #include "heartbeat.h"
 
-#include "timer_api.h"
+#include "hw_timer_api.h"
 
 
 /********  defines *********************/

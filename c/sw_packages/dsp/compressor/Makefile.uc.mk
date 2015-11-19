@@ -14,10 +14,14 @@ endif
 #ASMFLAGS =  
 
 
-SPEED_CRITICAL_FILES += compressor.c
 
 
 SRC = compressor.c
+
+ifeq ($(findstring AS_SPEED_CRITICAL,$(CONFIG_INCLUDE_COMPRESSOR)),AS_SPEED_CRITICAL) 
+    SPEED_CRITICAL_FILES += compressor.c
+    _COMMON_DSP_IS_SPEED_CRITICAL := YES
+endif
 
 VPATH = src
 

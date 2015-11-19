@@ -36,8 +36,7 @@ ifeq ($(findstring YES,$(CONFIG_USE_NANO_STD_LIBS)),YES)
     LDFLAGS += -specs=nano.specs 
 endif
 
-ifeq ($(findstring cortex-m3,$(CONFIG_CPU_TYPE)),cortex-m3) 	
-else
+ifeq ($(findstring cortex-m4,$(CONFIG_CPU_TYPE)),cortex-m4) 	
     LDFLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16 
 endif
 
@@ -46,11 +45,14 @@ LDFLAGS += -g -g3 -ggdb3 #-gstabs3  #-O0
 
 LDFLAGS := $(GLOBAL_LDFLAGS) $(LDFLAGS)
 
+
 FILES_TO_FORCE_IN_RAM := $(SPEED_CRITICAL_FILES) $(CONFIG_CRITICAL_SPEED_STD_LIBRARIES)
+FILES_TO_FORCE_IN_RAM := $(sort $(FILES_TO_FORCE_IN_RAM)) 
 FILES_TO_FORCE_IN_RAM := $(patsubst %.c,%.o,$(FILES_TO_FORCE_IN_RAM))
 FILES_TO_FORCE_IN_RAM := $(patsubst %.s,%.o.asm,$(FILES_TO_FORCE_IN_RAM))
 FILES_TO_FORCE_IN_RAM := $(patsubst %.S,%.O.asm,$(FILES_TO_FORCE_IN_RAM))
-FILES_TO_FORCE_IN_RAM := "$(patsubst %,*%,$(FILES_TO_FORCE_IN_RAM))"# add * to deal with libraries pathes
+FILES_TO_FORCE_IN_RAM := $(patsubst %,*%,$(FILES_TO_FORCE_IN_RAM))# add * to deal with libraries pathes
+FILES_TO_FORCE_IN_RAM := $(FILES_TO_FORCE_IN_RAM) 123_DUMMY.X # add dummy file to create non-empy field in lds file for correct syntax
 ############   PREPROCESSOR FLAGS FOR LINKER SCRIPT #############
 LDS_PREPROCESSOR_DEFINES := 
 LDS_PREPROCESSOR_DEFINES += CONFIG_RAM_START_ADDR=$(CONFIG_RAM_START_ADDR) CONFIG_RAM_SIZE=$(CONFIG_RAM_SIZE)
@@ -63,7 +65,7 @@ ifeq ($(findstring cortex-m,$(CONFIG_CPU_TYPE)),cortex-m)
 	LDS_PREPROCESSOR_DEFINES += CORTEX_M
 endif
 LDS_PREPROCESSOR_DEFINES_FRMT 	:= $(patsubst %,-D%,$(LDS_PREPROCESSOR_DEFINES))
-LDS_PREPROCESSOR_DEFINES_FRMT := $(LDS_PREPROCESSOR_DEFINES_FRMT) -DFILES_TO_FORCE_IN_RAM=$(FILES_TO_FORCE_IN_RAM)
+LDS_PREPROCESSOR_DEFINES_FRMT := $(LDS_PREPROCESSOR_DEFINES_FRMT) -DFILES_TO_FORCE_IN_RAM="$(FILES_TO_FORCE_IN_RAM)"
 
 
 ##########################################################

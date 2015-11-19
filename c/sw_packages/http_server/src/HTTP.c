@@ -11,7 +11,7 @@
 
 #include "http_server_api.h"
 #include "HTTP.h"
-#include "SystemTick_api.h"
+#include "timer_api.h"
 #include "serial_number_stm32f10x_api.h"
 #include "ff.h"
 #include "ESP8266_api.h"
@@ -69,6 +69,7 @@ static const dev_param_t HTTP_Dev_Params[]=
 		{IOCTL_HTTP_SET_SERVER_DEVICE , IOCTL_VOID , (uint8_t*)HTTP_API_SERVER_DEVICE_STR, NOT_FOR_SAVE},
 };
 
+TIMER_API_CREATE_STATIC_DEV(http_timer_inst,"httpt" ,systick_dev_inst );
 
 
 static uint32_t initDone=0;
@@ -84,13 +85,16 @@ static uint8_t ManagmentPortRedandency[PORT_STR_LEN+1];
 
 static pdev_descriptor  server_device;
 
+static pdev_descriptor_const  timer_device = &http_timer_inst;
+//static pdev_descriptor_const semihosting_dev = &sh_dev_inst;
+
 #define HTTP_BUFFER_LEN  256
 static uint8_t http_buffer[HTTP_BUFFER_LEN];
 
 
 static pdev_descriptor HTTP_menagmentSocketDesc;
 static uint16_t unused_bytes_left;
-static SystemTick_API_Timer_Handle_t  pollingTimer;
+
 static BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 static uint32_t comm_reply_state;
 static HTTP_State_t currentState ;
@@ -232,13 +236,15 @@ static void HTTP_Task( void *pvParameters )
 	uint8_t *fileName;
 	uint32_t silenceCount=0;
 	ioctl_socket_open_t socketOpenInfo;
-	uint32_t pollPeriod;
+	uint64_t pollPeriod;
+	uint8_t is_timer_elapsed;
 //	const HTTP_socket_info_t *pSocketInfo;
 
 	socketOpenInfo.new_socket_descriptor = &HTTP_menagmentSocketDesc;
 	HTTP_menagmentSocketDesc = NULL;
 
-	SystemTick_API_StartTimeoutTimer(pollingTimer,POLLING_PERIOD);
+	pollPeriod = POLLING_PERIOD;
+	DEV_IOCTL(timer_device,TIMER_API_SET_COUNTDOWN_VALUE_AND_REST, &pollPeriod);
 	currentState = HTTP_State_Connecting_To_Main_Manager;
 
 	for( ;; )
@@ -250,12 +256,14 @@ static void HTTP_Task( void *pvParameters )
 			pData = xRxedMessage.pData;
 			dataLen = xRxedMessage.len;
 
+			pollPeriod = POLLING_PERIOD;
+
 //					PRINTF_DBG( (uint8_t*)"---http FILE_REQUEST\r\n");
 			currLowLevelSocket = xRxedMessage.low_level_socket;
 
 			if(currLowLevelSocket == HTTP_menagmentSocketDesc)
 			{
-				SystemTick_API_StartTimeoutTimer(pollingTimer,POLLING_PERIOD);
+				DEV_IOCTL(timer_device,TIMER_API_SET_COUNTDOWN_VALUE_AND_REST, &pollPeriod);
 				silenceCount=0;
 			}
 
@@ -332,7 +340,7 @@ static void HTTP_Task( void *pvParameters )
 
 					/* if we receiving file then it's likely that we are in first
 					 * stages of browser connection , then postpone polling (open socket take a lot of time)   */
-					SystemTick_API_StartTimeoutTimer(pollingTimer,POLLING_PERIOD);
+					DEV_IOCTL(timer_device,TIMER_API_SET_COUNTDOWN_VALUE_AND_REST, &pollPeriod);
 
 				}
 
@@ -347,7 +355,8 @@ static void HTTP_Task( void *pvParameters )
 	        free(pData);
 		}
 
-		if(SystemTick_API_IsTimeoutTimerExpired(pollingTimer))
+		DEV_IOCTL(timer_device, TIMER_API_CHECK_IF_COUNTDOWN_ELAPSED ,  &is_timer_elapsed );
+		if(is_timer_elapsed)
 		{
 			pollPeriod=POLLING_PERIOD;
 			switch(currentState)
@@ -407,7 +416,7 @@ static void HTTP_Task( void *pvParameters )
 					break;
 			}
 			PRINTF_DBG( (uint8_t*)"---http currentState = %d \r\n" , currentState);
-			SystemTick_API_StartTimeoutTimer(pollingTimer,pollPeriod);
+			DEV_IOCTL(timer_device,TIMER_API_SET_COUNTDOWN_VALUE_AND_REST, &pollPeriod);
 		}
 
 
@@ -487,11 +496,8 @@ uint32_t  HTTP_Start( )
 
 	xQueue = xQueueCreate( HTTP_MAX_QUEUE_LEN , sizeof( xMessage_t ) );
 
-	SystemTick_API_CreateTimeoutTimer( &pollingTimer );
-
 	xTaskCreate( HTTP_Task, "HTTP_Task", HTTP_TASK_STACK_SIZE,(void*) NULL,
 			HTTP_TASK_PRIORITY , NULL );
-
 
 	initDone=1;
 
@@ -539,6 +545,14 @@ uint8_t HTTP_ioctl( void *const aHandle ,const uint8_t aIoctl_num
 				DEV_IOCTL(server_device,IOCTL_SET_ISR_CALLBACK_DEV, this_dev);
 			}
 			break;
+
+//		case IOCTL_HTTP_SET_TIMER_DEVICE :
+//			timer_device = DEV_OPEN((uint8_t*)aIoctl_param1);
+//			if(NULL != timer_device)
+//			{
+//				DEV_IOCTL(timer_device,IOCTL_SET_ISR_CALLBACK_DEV, this_dev);
+//			}
+//			break;
 
 		case IOCTL_HTTP_SET_MNG_SERVER_IP :
 			param_len = strnlen((char*)aIoctl_param1,IP_STR_LEN+1) + 1; // +1 for '\0' termination

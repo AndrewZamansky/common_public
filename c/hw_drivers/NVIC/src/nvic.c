@@ -16,9 +16,9 @@
 
 #include "NVIC_api.h"
 
-#if CONFIG_CPU_TYPE == cortex-m4
+#if CORTEX_M_TYPE == 4
  #include "core_cm4.h"
-#elif CONFIG_CPU_TYPE == cortex-m3
+#elif CORTEX_M_TYPE == 3
  #include "core_cm3.h"
 #else
  #error unknown cortex-m type

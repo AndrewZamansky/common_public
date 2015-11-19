@@ -31,7 +31,6 @@
 #include "usb_prop.h"
 #include "usb_pwr.h"
 #include "usb_istr.h"
-#include "SystemTick_api.h"
 #include "USB_api.h"
 #include "../USB.h"
 
@@ -70,7 +69,6 @@ void (*pEpInt_OUT[7])(void) =
 
 #ifndef STM32F10X_CL
 //extern int a0,a1,a2,a3,a4,a5,a6,a7;
-//extern SystemTick_API_Timer_Handle_t  usb_stabilize_timer;
 extern USB_Instance_t USB_InstanceParams;
 
 /*******************************************************************************
@@ -160,8 +158,7 @@ void USB_Istr(void)
 #if (IMR_MSK & ISTR_SUSP)
   if (wIstr & ISTR_SUSP & wInterrupt_Mask)
   {
-//	  if(1 == SystemTick_API_IsTimeoutTimerExpired(USB_InstanceParams.usb_stabilize_timer))
-//	  {
+
 	  if(0 == USB_InstanceParams.do_resume)
 	  {
 			 // a6++;

@@ -5,7 +5,8 @@ ifeq ($(findstring YES,$(CONFIG_INCLUDE_SPI_FLASH_PARTITION_MANAGER)),YES)
 endif  
 
 
-#INCLUDE_DIR = 
+INCLUDE_DIR =  $(SW_PACKAGES_ROOT_DIR)/u_boot_shell/include
+INCLUDE_DIR += $(EXTERNAL_SOURCE_ROOT_DIR)/u-boot/include
 
 #DEFINES = 
 

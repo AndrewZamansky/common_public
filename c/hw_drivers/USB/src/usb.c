@@ -12,7 +12,7 @@
 
 /********  includes *********************/
 #include "global_typedefs.h"
-#include "SystemTick_api.h"
+#include "timer_api.h"
 #include "USB_api.h"
 #include "USB.h"
 //#include "USB_Virtual_COM_API.h"
