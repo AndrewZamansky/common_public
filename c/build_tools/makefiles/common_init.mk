@@ -70,7 +70,6 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
 	OUT_DIR_HISTORY := $(subst /,\,$(OUT_DIR_HISTORY))
 	TOOLS_ROOT_DIR := $(subst /,\,$(TOOLS_ROOT_DIR))
 	TOOLS_ROOT_DIR := $(TOOLS_ROOT_DIR)\windows
-	CONFIG_SEMIHOSTING_UPLOADING_DIR := $(subst /,\,$(CONFIG_SEMIHOSTING_UPLOADING_DIR))
 	
 	CRC32CALC	=	$(TOOLS_ROOT_DIR)\crc32\crc32.exe
     ifdef REDEFINE_MAKE_PROGRAM_DIR
@@ -98,17 +97,6 @@ else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX)
 endif
 
 MKDIR=mkdir	
-
-
-
-COMPONENTS_MK := $(AUTO_GENERATED_FILES_DIR)/include_components.mk
-rwildcard=$(wildcard $1$2) $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2))
-
-
-ALL_CONFIG_FILES := $(call rwildcard,$(APP_ROOT_DIR)/,Makefile.uc.mk)
-ALL_CONFIG_FILES := $(ALL_CONFIG_FILES) $(call rwildcard,$(SW_PACKAGES_ROOT_DIR)/,Makefile.uc.mk)
-ALL_CONFIG_FILES := $(ALL_CONFIG_FILES) $(call rwildcard,$(DRIVERS_ROOT_DIR)/,Makefile.uc.mk)
-$(info scan for uconfig.mk done )
 
 
 include config.mk
@@ -141,7 +129,7 @@ ifneq ($(sort $(filter $(CURR_GIT_BRANCH),$(SHELL_OUTPUT))),$(CURR_GIT_BRANCH))
     SHELL_OUTPUT := $(shell $(SHELL_GO_TO_COMMON_GIT_DIR) git status --porcelain 2>&1)
     ERROR_MESSAGE := M 
     ifeq ($(findstring $(ERROR_MESSAGE),$(SHELL_OUTPUT)),$(ERROR_MESSAGE)) 	 
-        $(info  git error : commit all changes to common git)
+        $(info  git error : commit all changes to common git before changing branch or project)
         $(error  )
     endif
     ERROR_MESSAGE := D 
@@ -160,6 +148,15 @@ ifneq ($(sort $(filter $(CURR_GIT_BRANCH),$(SHELL_OUTPUT))),$(CURR_GIT_BRANCH))
 endif
 
 ####################   end of  configuring git  ######################
+
+COMPONENTS_MK := $(AUTO_GENERATED_FILES_DIR)/include_components.mk
+rwildcard=$(wildcard $1$2) $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2))
+
+
+ALL_CONFIG_FILES := $(call rwildcard,$(APP_ROOT_DIR)/,Makefile.uc.mk)
+ALL_CONFIG_FILES := $(ALL_CONFIG_FILES) $(call rwildcard,$(SW_PACKAGES_ROOT_DIR)/,Makefile.uc.mk)
+ALL_CONFIG_FILES := $(ALL_CONFIG_FILES) $(call rwildcard,$(DRIVERS_ROOT_DIR)/,Makefile.uc.mk)
+$(info scan for uconfig.mk done )
 
 
 OUTPUT_APP_NAME := out

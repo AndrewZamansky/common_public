@@ -36,7 +36,6 @@ endif
 
 ifdef MAKEFILE_WAS_GENERATED
 	ifndef SKIP_SECTION_THAT_SHOULD_RUN_ONCE_AFTER_AUTO_FILE_GENERATIONS
-	$(info ----------------  test ))
         _NO_OS_FOUND := YES
         include $(COMPONENTS_MK)
         # clean following variables befor exporting to sub-makes
