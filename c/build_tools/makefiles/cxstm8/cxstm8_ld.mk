@@ -64,7 +64,3 @@ build_outputs :
 ifeq ($(findstring YES,$(CONFIG_CALCULATE_CRC32)),YES) 	 
 	$(CRC32CALC) $(OUTPUT_BIN) > $(OUTPUT_CRC32) 
 endif	
-ifeq ($(findstring YES,$(CONFIG_USED_FOR_SEMIHOSTING_UPLOADING)),YES) 	 
-	$(CP)  $(OUTPUT_BIN) $(BOOTER_SHARE_DIR)
-	$(CP) $(OUTPUT_CRC32) $(BOOTER_SHARE_DIR)
-endif	

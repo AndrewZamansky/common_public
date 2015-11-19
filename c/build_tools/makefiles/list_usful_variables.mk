@@ -10,6 +10,7 @@ $(info DATE_STR := $(DATE_STR))
 $(info TIME_STR := $(TIME_STR))
 $(info  )
 
+$(info APP_ROOT_DIR := $(APP_ROOT_DIR))
 $(info OUTPUT_APP_NAME := $(OUTPUT_APP_NAME))
 $(info PROJECT_NAME := $(PROJECT_NAME))
 $(info WORKSPACE_ROOT_DIR := $(WORKSPACE_ROOT_DIR))

@@ -70,6 +70,8 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
 	OUT_DIR_HISTORY := $(subst /,\,$(OUT_DIR_HISTORY))
 	TOOLS_ROOT_DIR := $(subst /,\,$(TOOLS_ROOT_DIR))
 	TOOLS_ROOT_DIR := $(TOOLS_ROOT_DIR)\windows
+	CONFIG_SEMIHOSTING_UPLOADING_DIR := $(subst /,\,$(CONFIG_SEMIHOSTING_UPLOADING_DIR))
+	
 	CRC32CALC	=	$(TOOLS_ROOT_DIR)\crc32\crc32.exe
     ifdef REDEFINE_MAKE_PROGRAM_DIR
         $(info  make  redefined to $(MAKE_PROGRAM_DIR)\make)
@@ -111,6 +113,7 @@ $(info scan for uconfig.mk done )
 
 include config.mk
 
+####################     configuring git  ######################
 
 GIT_DIR := $(firstword $(wildcard ./.git))
 ifeq ($(findstring ./.git,$(GIT_DIR)),) 	 # if not found ./.git in $(GIT_DIR)
@@ -156,6 +159,7 @@ ifneq ($(sort $(filter $(CURR_GIT_BRANCH),$(SHELL_OUTPUT))),$(CURR_GIT_BRANCH))
     endif
 endif
 
+####################   end of  configuring git  ######################
 
 
 OUTPUT_APP_NAME := out
