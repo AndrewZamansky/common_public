@@ -57,7 +57,6 @@ extern unsigned int do_startup ;
 /********  defines *********************/
 
 
-#define NVIC_INTERRUPT_MAX_NUM  239
 
 #define NVIC_VECTOR_TABLE_OFFSET      	0xE000ED08
 
@@ -91,7 +90,7 @@ int NVIC_API_RegisterInt(IRQn_Type int_num , NVIC_Isr_t pIsr)
 {
 
 	// +16 offset becouse IRQn_Type starts from -16
-    NVIC_hal_writeRegU32( CONFIG_RAM_START_ADDR + (((int)int_num + 16) << 2),(unsigned int)pIsr);// ( int_num  ) * 4
+    NVIC_hal_writeRegU32( NVIC_CONFIG_START_OF_RAM + (((int)int_num + 16) << 2),(unsigned int)pIsr);// ( int_num  ) * 4
     return 0;
 }
 
@@ -146,27 +145,33 @@ void IRQ_ATTR NMI_Isr(void)
 	while(1);
 }
 
+
+
 void  NVIC_API_Init(void)
 {
-	int  i;
+	int8_t  i;
 
 
-	__asm__ __volatile__("cpsid i\n");
 
+	// get number of external interrupts
+	i= SCnSCB->ICTR ;
     /*
      * Disable all interrupts.
      */
-    for (i = NonMaskableInt_IRQn ; i < NVIC_INTERRUPT_MAX_NUM; i++)
+    while ( i >= 0 )
 	{
-    	NVIC_DisableIRQ(i);
-        NVIC_ClearPendingIRQ(i);
+    	NVIC->ICER[i] = 0xffffffff;
+    	NVIC->ICPR[i] = 0xffffffff;
+
+        i--;
     }
 
-    NVIC_hal_writeRegU32(NVIC_VECTOR_TABLE_OFFSET , CONFIG_RAM_START_ADDR);// set base to RAM
-    NVIC_hal_writeRegU32( CONFIG_RAM_START_ADDR ,(uint32_t )&Top_Of_Stacks);
-    NVIC_hal_writeRegU32( CONFIG_RAM_START_ADDR + 0x4 ,(uint32_t )&do_startup);
-    NVIC_hal_writeRegU32( CONFIG_RAM_START_ADDR + 0x8 ,(uint32_t )NMI_Isr);
-    NVIC_hal_writeRegU32( CONFIG_RAM_START_ADDR + 0xc ,(uint32_t )HardFault_Isr);
+    SCB->VTOR = SCB_VTOR_TBLBASE_Msk;// set base to start of RAM
+   // NVIC_hal_writeRegU32(NVIC_VECTOR_TABLE_OFFSET , CONFIG_RAM_START_ADDR);// set base to RAM
+    NVIC_hal_writeRegU32( NVIC_CONFIG_START_OF_RAM ,(uint32_t )&Top_Of_Stacks);
+    NVIC_hal_writeRegU32( NVIC_CONFIG_START_OF_RAM + 0x4 ,(uint32_t )&do_startup);
+    NVIC_hal_writeRegU32( NVIC_CONFIG_START_OF_RAM + 0x8 ,(uint32_t )NMI_Isr);
+    NVIC_hal_writeRegU32( NVIC_CONFIG_START_OF_RAM + 0xc ,(uint32_t )HardFault_Isr);
 
     NVIC_SetPriorityGrouping(NVIC_PriorityGroup_4);
 

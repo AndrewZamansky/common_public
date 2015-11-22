@@ -131,7 +131,7 @@ uint8_t cortexM_systick_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 			                   SysTick_CTRL_ENABLE_Msk;                    /* Enable SysTick IRQ and SysTick Timer */
 
 			NVIC_API_RegisterInt(SysTick_IRQn , SysTick_IRQHandler);
-			NVIC_API_EnableInt(SysTick_IRQn);
+			//	NVIC_API_EnableInt(SysTick_IRQn);// no need to enable systick interrupt
 
 			break;
 
