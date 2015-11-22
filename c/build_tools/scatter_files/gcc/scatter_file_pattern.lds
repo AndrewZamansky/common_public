@@ -1,5 +1,5 @@
 
-ENTRY(_inner_vector_table)
+ENTRY(_secondary_rom_vector_table_startup_entry)
 
 MEMORY {
 	flash	:   ORIGIN = CONFIG_FLASH_START_ADDR, 	LENGTH = CONFIG_FLASH_SIZE    
@@ -11,7 +11,6 @@ MEMORY {
 
 #ifdef CORTEX_M
 	STACK_SIZE = 1024;
-	EXCEPTION_VECTOR_AREA_SIZE  = 0x130;
 #else /*cortex-a*/
 	SYS_STACK_SIZE = 128;
 	IRQ_STACK_SIZE = 1024; 
@@ -19,28 +18,48 @@ MEMORY {
 	SVC_STACK_SIZE = 1024; 
 	ABT_STACK_SIZE = 128; 
 	UND_STACK_SIZE = 128; 
-	EXCEPTION_VECTOR_AREA_SIZE  = 0x100;
 #endif
+	EXCEPTION_VECTOR_AREA_SIZE  	= 0x100;
+	SECONDARY_RAM_VECTOR_AREA_SIZE  = 0x10;
 
 SECTIONS
 {
 	__RAM_START__ = ORIGIN(ram);
 	__FLASH_START__ = ORIGIN(flash);
 	
+
 #ifdef RUN_FROM_FLASH
 	#define CODE_LOCATION flash
-	#define CODE_START_ADDR  __FLASH_START__
+	__tables_relocation_section_start_on_ROM__ =  __FLASH_START__ ;
 #else
 	#define CODE_LOCATION ram
-	#define CODE_START_ADDR  __RAM_START__
+	__tables_relocation_section_start_on_ROM__ = __RAM_START__ ;
 #endif	
+	__tables_relocation_section_start_on_RAM__ = __RAM_START__;
 
-	. = CODE_START_ADDR;
-	.vectors : { KEEP(*(._arm_vector_table))  }  > CODE_LOCATION /*vectors are prpgrammable in RAM */
-	. = CODE_START_ADDR + EXCEPTION_VECTOR_AREA_SIZE ;
-	__APP_START_ADDR__ = . ;
-	.startup . : { KEEP(*(._inner_vector_table)) } > CODE_LOCATION
+	.vector_table __tables_relocation_section_start_on_RAM__ : AT ( __tables_relocation_section_start_on_ROM__ ) 
+	{ 
+		KEEP(*(._arm_vector_table)) 
+	} > ram 
+
+	__secondary_RAM_vector_table_start_on_ROM__ = __tables_relocation_section_start_on_ROM__ + EXCEPTION_VECTOR_AREA_SIZE ;
+	__secondary_RAM_vector_table_start_on_RAM__ = __tables_relocation_section_start_on_RAM__ + EXCEPTION_VECTOR_AREA_SIZE ;
+	.secondary_ram_vector_table __secondary_RAM_vector_table_start_on_RAM__ : AT ( __secondary_RAM_vector_table_start_on_ROM__ ) 
+	{ 
+	    KEEP(*(._secondary_ram_vector_table)) 
+	} > ram
+
+	__secondary_ROM_vector_table_start_on_ROM__ = __secondary_RAM_vector_table_start_on_ROM__ + SECONDARY_RAM_VECTOR_AREA_SIZE ;
+	__secondary_ROM_vector_table_start_on_RAM__ = __secondary_RAM_vector_table_start_on_RAM__ + SECONDARY_RAM_VECTOR_AREA_SIZE ;
+	.secondary_rom_vector_table __secondary_ROM_vector_table_start_on_RAM__ : AT ( __secondary_ROM_vector_table_start_on_ROM__ ) 
+	{ 
+	    KEEP(*(._secondary_rom_vector_table)) 
+		. = ALIGN(4);
+	} > ram
+	__tables_relocation_section_end_on_ROM__ = __secondary_ROM_vector_table_start_on_ROM__ + SIZEOF(.secondary_ram_vector_table) ;
+	__tables_relocation_section_end_on_RAM__ = __secondary_ROM_vector_table_start_on_RAM__ + SIZEOF(.secondary_rom_vector_table) ;
 	
+	. = __tables_relocation_section_end_on_RAM__ ;
 	.text . : 
 	{ 
 	   *(EXCLUDE_FILE ( FILES_TO_FORCE_IN_RAM ) .text )
@@ -66,35 +85,34 @@ SECTIONS
 
  	. = ALIGN(4);
 	__end_of_text__ = .;
-
+	
+	__relocation_section_start_on_ROM__ = __end_of_text__;
+	__critical_text_section_start_on_ROM__ = __relocation_section_start_on_ROM__;
+	
 #ifdef RUN_FROM_FLASH
-	. = __RAM_START__ + EXCEPTION_VECTOR_AREA_SIZE ;
+	__relocation_section_start_on_RAM__ = __tables_relocation_section_end_on_RAM__ ;
+#else
+	__relocation_section_start_on_RAM__ = __end_of_text__ ;
 #endif
-
-	__critical_text_section_start_on_rom__ = __end_of_text__;
- 	.critical_text . : AT ( __critical_text_section_start_on_rom__ ) 
+	. = __relocation_section_start_on_RAM__ ;
+ 	.critical_text . : AT ( __critical_text_section_start_on_ROM__ ) 
  	{ 
-	 	. = ALIGN(4);
-		__critical_text_section_start__ = .;
  		*(.critical_text);
 		* (.text .text*);
 		* (.rodata .rodata*);
 		. = ALIGN(4);
-		__critical_text_section_end__ = .;	
  	}  > ram
 	
- 	__data_section_start_on_rom__ = __end_of_text__ + SIZEOF(.critical_text);
- 	.data . : AT ( __data_section_start_on_rom__ ) 
+ 	__data_section_start_on_ROM__ = __critical_text_section_start_on_ROM__ + SIZEOF(.critical_text);
+ 	.data . : AT ( __data_section_start_on_ROM__ ) 
  	{ 
-	 	. = ALIGN(4);
-		__data_section_start__ = .;
-
  		*(.data) ;
  		*(.data.*) ;
 		. = ALIGN(4);
-		__data_section_end__ = .;
  	}  > ram
  	
+	__relocation_section_end_on_RAM__ = .;
+
 
 	
 	.bss . :	
@@ -109,6 +127,7 @@ SECTIONS
 	.stack . : { 
 		. = ALIGN (8); 
 		Buttom_Of_Stacks = . ; 
+		
 		
 #ifdef CORTEX_M
 		. += STACK_SIZE; 
