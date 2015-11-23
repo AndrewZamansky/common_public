@@ -49,17 +49,17 @@ SECTIONS
 	    KEEP(*(._secondary_ram_vector_table)) 
 	} > ram
 
-	__secondary_ROM_vector_table_start_on_ROM__ = __secondary_RAM_vector_table_start_on_ROM__ + SECONDARY_RAM_VECTOR_AREA_SIZE ;
-	__secondary_ROM_vector_table_start_on_RAM__ = __secondary_RAM_vector_table_start_on_RAM__ + SECONDARY_RAM_VECTOR_AREA_SIZE ;
-	.secondary_rom_vector_table __secondary_ROM_vector_table_start_on_RAM__ : AT ( __secondary_ROM_vector_table_start_on_ROM__ ) 
+	__tables_relocation_section_end_on_ROM__ = __secondary_RAM_vector_table_start_on_ROM__ + SIZEOF(.secondary_ram_vector_table) ;
+	__tables_relocation_section_end_on_RAM__ = __secondary_RAM_vector_table_start_on_RAM__ + SIZEOF(.secondary_ram_vector_table) ;
+
+	. = __tables_relocation_section_end_on_ROM__ ;
+
+	.secondary_rom_vector_table . :  
 	{ 
 	    KEEP(*(._secondary_rom_vector_table)) 
 		. = ALIGN(4);
 	} > ram
-	__tables_relocation_section_end_on_ROM__ = __secondary_ROM_vector_table_start_on_ROM__ + SIZEOF(.secondary_ram_vector_table) ;
-	__tables_relocation_section_end_on_RAM__ = __secondary_ROM_vector_table_start_on_RAM__ + SIZEOF(.secondary_rom_vector_table) ;
 	
-	. = __tables_relocation_section_end_on_RAM__ ;
 	.text . : 
 	{ 
 	   *(EXCLUDE_FILE ( FILES_TO_FORCE_IN_RAM ) .text )
