@@ -74,10 +74,16 @@ do_startup_common:
 	cpsid i /*disable interrupts*/
 	ldr   r0,=Top_Of_Stacks
 	mov   sp, r0
+//	mov   r0,#0x0
+//	msr   control,r0
+//	isb
+//	push {r0}
 	push {lr}
+//	STMDB sp!,{lr}
  	ldr r0,=low_level_init
  	/*orr r0 ,r0, #0x01*/  /*remain in thumb*/
  	blx r0
+ //	LDMIA sp!,{pc}
  	pop {pc}
 
 
