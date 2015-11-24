@@ -93,7 +93,6 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
 	OUTPUT_BIN := $(subst /,\,$(OUTPUT_BIN))
 	OUTPUT_HISTORY_BIN := $(subst /,\,$(OUTPUT_HISTORY_BIN))
 	OUTPUT_CRC32 := $(subst /,\,$(OUTPUT_CRC32))
-	CONFIG_SEMIHOSTING_UPLOADING_DIR := $(subst /,\,$(CONFIG_SEMIHOSTING_UPLOADING_DIR))
 endif
 
 build_outputs : 

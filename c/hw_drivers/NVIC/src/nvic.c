@@ -48,10 +48,6 @@
 #define NVIC_hal_writeRegU32(addr,val)		( (*(volatile uint32_t *)(addr)) = (val) )
 #define NVIC_hal_readRegU32(addr)			( *(volatile uint32_t *)(addr) )
 
-extern unsigned int Top_Of_Stacks ;
-extern unsigned int do_startup ;
-//#define NVIC_hal_Stack_Top			(&Top_Of_Stacks) // defined in linker file
-//#define NVIC_hal_APP_Start			(&__APP_START_ADDR__) // defined in linker file
 
 
 /********  defines *********************/
@@ -135,15 +131,7 @@ void NVIC_API_DisableAllInt(void)
 }
 
 
-void IRQ_ATTR HardFault_Isr(void)
-{
-	while(1);
-}
 
-void IRQ_ATTR NMI_Isr(void)
-{
-	while(1);
-}
 
 
 
@@ -167,11 +155,7 @@ void  NVIC_API_Init(void)
     }
 
     SCB->VTOR = SCB_VTOR_TBLBASE_Msk;// set base to start of RAM
-   // NVIC_hal_writeRegU32(NVIC_VECTOR_TABLE_OFFSET , CONFIG_RAM_START_ADDR);// set base to RAM
-    NVIC_hal_writeRegU32( NVIC_CONFIG_START_OF_RAM ,(uint32_t )&Top_Of_Stacks);
-    NVIC_hal_writeRegU32( NVIC_CONFIG_START_OF_RAM + 0x4 ,(uint32_t )&do_startup);
-    NVIC_hal_writeRegU32( NVIC_CONFIG_START_OF_RAM + 0x8 ,(uint32_t )NMI_Isr);
-    NVIC_hal_writeRegU32( NVIC_CONFIG_START_OF_RAM + 0xc ,(uint32_t )HardFault_Isr);
+
 
     NVIC_SetPriorityGrouping(NVIC_PriorityGroup_4);
 

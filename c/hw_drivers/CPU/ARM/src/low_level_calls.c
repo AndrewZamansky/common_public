@@ -29,12 +29,12 @@ extern uint32_t Buttom_Of_Stacks;
 extern uint32_t Top_Of_Stacks;
 extern uint32_t __bss_start__;
 extern uint32_t __bss_end__;
-extern uint32_t __data_section_start__;
-extern uint32_t __data_section_end__;
-extern uint32_t __data_section_start_on_rom__;
-extern uint32_t __critical_text_section_start__;
-extern uint32_t __critical_text_section_end__;
-extern uint32_t __critical_text_section_start_on_rom__;
+extern uint32_t __tables_relocation_section_start_on_RAM__;
+extern uint32_t __tables_relocation_section_end_on_RAM__;
+extern uint32_t __tables_relocation_section_start_on_ROM__;
+extern uint32_t __relocation_section_start_on_RAM__;
+extern uint32_t __relocation_section_end_on_RAM__;
+extern uint32_t __relocation_section_start_on_ROM__;
 
 extern void do_startup(void);
 extern void do_software_interrupt_asm(void);
@@ -216,23 +216,23 @@ void low_level_init()
 	*((volatile uint32_t *)(VECTOR_TABLE_BA + 0x1c))=0xE59FF018;
 	*((volatile uint32_t *)(VECTOR_TABLE_BA + 0x3c))=(uint32_t )do_fiq;
 #endif
-	/* ROM has data at end of text; copy it. */
-	src=&__critical_text_section_start_on_rom__;
-	dst=&__critical_text_section_start__;
+	/* ROM has tables that needs to be copied to RAM. */
+	src=&__tables_relocation_section_start_on_ROM__;
+	dst=&__tables_relocation_section_start_on_RAM__;
 	if(src!=dst)
 	{
-		while (dst < &__critical_text_section_end__)
+		while (dst < &__tables_relocation_section_end_on_RAM__)
 		{
 		  *dst++ = *src++; /* 4 bytes copy*/
 		}
 	}
 
-	/* ROM has data at end of text; copy it. */
-	src=&__data_section_start_on_rom__;
-	dst=&__data_section_start__;
+	/* ROM has code and data that needs to be copied to RAM. */
+	src=&__relocation_section_start_on_ROM__;
+	dst=&__relocation_section_start_on_RAM__;
 	if(src!=dst)
 	{
-		while (dst < &__data_section_end__)
+		while (dst < &__relocation_section_end_on_RAM__)
 		{
 		  *dst++ = *src++; /* 4 bytes copy*/
 		}
