@@ -125,7 +125,7 @@ SECTIONS
 	}  > ram
 	
 	.stack . : { 
-		. = ALIGN (8); 
+		. = ALIGN (8); /*cortex requirement*/
 		Buttom_Of_Stacks = . ; 
 		
 		
@@ -133,35 +133,35 @@ SECTIONS
 		. += STACK_SIZE; 
 #else /*cortex-a*/
 		. += IRQ_STACK_SIZE; 
-		. = ALIGN (4); 
+		. = ALIGN (8); 
 		__irq_stack_top__ = . ; 
 
 		. += FIQ_STACK_SIZE; 
-		. = ALIGN (4); 
+		. = ALIGN (8); 
 		__fiq_stack_top__ = . ; 
 
 		. += SVC_STACK_SIZE; 
-		. = ALIGN (4); 
+		. = ALIGN (8); 
 		__svc_stack_top__ = . ; 
 
 		. += ABT_STACK_SIZE; 
-		. = ALIGN (4);
+		. = ALIGN (8);
 		__abt_stack_top__ = . ; 
 
 		. += UND_STACK_SIZE; 
-		. = ALIGN (4); 
+		. = ALIGN (8); 
 		__und_stack_top__ = . ; 
 
 		. += SYS_STACK_SIZE; 
-		. = ALIGN (4); 
+		. = ALIGN (8); 
 		__sys_stack_top__ = . ; 
 #endif
 
+		. = ALIGN (8); /*cortex requirement*/
 		Top_Of_Stacks = .; 
 		Size_Of_Stack = Top_Of_Stacks - Buttom_Of_Stacks;
 	} >ram 
 
-	_end =. + 4;
 
 	/* debug sections */
 	INCLUDE DEBUG_SECTIONS_INCLUDE_FILE
@@ -178,11 +178,9 @@ SECTIONS
     /* The following section is for checking illegal sections */
  	 .dummy  : {  * (*) } > dummy_area
  	
-	__APP_START_ON_FLASH_ADDR__ = __FLASH_START__ ;
-	__APP_ENTRY_ADDR__ = __FLASH_START__ + EXCEPTION_VECTOR_AREA_SIZE;
 	
 }
 
-PROVIDE(__HEAP_START = _end );
+PROVIDE(__HEAP_START = Top_Of_Stacks );
 PROVIDE(__END_OF_RAM =  ORIGIN(ram) + LENGTH(ram));
 PROVIDE(__HEAP_END =   ORIGIN(ram) + LENGTH(ram));

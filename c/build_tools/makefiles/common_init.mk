@@ -60,6 +60,10 @@ OBJ_DIR	:= $(APP_ROOT_DIR)/zOBJ
 OUT_DIR	:=	$(APP_ROOT_DIR)/zOUT
 OUT_DIR_HISTORY	:=	$(APP_ROOT_DIR)/zOUT_history
 
+MKDIR=mkdir	
+
+COMMON_DIR = $(WORKSPACE_ROOT_DIR)/common
+
 ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS) 	 
 
 	#replace backslash for slash
@@ -70,6 +74,7 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
 	OUT_DIR_HISTORY := $(subst /,\,$(OUT_DIR_HISTORY))
 	TOOLS_ROOT_DIR := $(subst /,\,$(TOOLS_ROOT_DIR))
 	TOOLS_ROOT_DIR := $(TOOLS_ROOT_DIR)\windows
+	COMMON_DIR := $(subst /,\,$(COMMON_DIR))
 	
 	CRC32CALC	=	$(TOOLS_ROOT_DIR)\crc32\crc32.exe
     ifdef REDEFINE_MAKE_PROGRAM_DIR
@@ -79,16 +84,21 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
 	    MAKE 	:= 	$(TOOLS_ROOT_DIR)\make4.1\bin\make
     endif
 	
-
-	SHELL_GO_TO_COMMON_GIT_DIR :=cd $(WORKSPACE_ROOT_DIR)\common &
+	CONFIG_SEMIHOSTING_UPLOADING_DIR :=c:\Temp
+    ifeq ($(wildcard $(CONFIG_SEMIHOSTING_UPLOADING_DIR)),) 		#if $(CONFIG_SEMIHOSTING_UPLOADING_DIR) dont exists then $(wildcard $(CONFIG_SEMIHOSTING_UPLOADING_DIR)) will produce empty string 
+       DUMMY:=$(shell $(MKDIR)  $(CONFIG_SEMIHOSTING_UPLOADING_DIR)) # create   $(CONFIG_SEMIHOSTING_UPLOADING_DIR)
+    endif
+    
+	SHELL_GO_TO_COMMON_GIT_DIR :=cd $(COMMON_DIR) &
 	RM		:=rmdir /S /Q
 	CP		:=copy /Y
 	DATE	:=date /T
 	TIME	:=time /T	
 else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX) 
 
+	CONFIG_SEMIHOSTING_UPLOADING_DIR :=/tmp
 
-	SHELL_GO_TO_COMMON_GIT_DIR :=cd $(WORKSPACE_ROOT_DIR)/common ;
+	SHELL_GO_TO_COMMON_GIT_DIR :=cd $(COMMON_DIR) ;
 	MAKE 	:= 	make
 	RM		:=rm -rf
 	CP		:=cp -f
@@ -96,7 +106,6 @@ else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX)
 	
 endif
 
-MKDIR=mkdir	
 
 
 include config.mk
@@ -129,7 +138,7 @@ ifneq ($(sort $(filter $(CURR_GIT_BRANCH),$(SHELL_OUTPUT))),$(CURR_GIT_BRANCH))
     SHELL_OUTPUT := $(shell $(SHELL_GO_TO_COMMON_GIT_DIR) git status --porcelain 2>&1)
     ERROR_MESSAGE := M 
     ifeq ($(findstring $(ERROR_MESSAGE),$(SHELL_OUTPUT)),$(ERROR_MESSAGE)) 	 
-        $(info  git error : commit all changes to common git before changing branch or project)
+        $(info  git error : commit all changes to common git($(COMMON_DIR)) before changing branch or project)
         $(error  )
     endif
     ERROR_MESSAGE := D 
