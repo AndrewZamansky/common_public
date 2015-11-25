@@ -148,7 +148,7 @@ void IRQ_ATTR NMI_Isr(void)
 
 void  NVIC_API_Init(void)
 {
-	int  i;
+	uint16_t  i;
 
 
 	__asm__ __volatile__("cpsid i\n");
@@ -156,7 +156,7 @@ void  NVIC_API_Init(void)
     /*
      * Disable all interrupts.
      */
-    for (i = NonMaskableInt_IRQn ; i < NVIC_INTERRUPT_MAX_NUM; i++)
+    for (i = 0 ; i < NVIC_INTERRUPT_MAX_NUM; i++)
 	{
     	NVIC_DisableIRQ(i);
         NVIC_ClearPendingIRQ(i);

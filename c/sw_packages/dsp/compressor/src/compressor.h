@@ -25,7 +25,7 @@ typedef struct {
 	uint8_t dummy;
 	float threshold;
 	float reverse_ratio;
-
+	float prev_ratio;
 } COMPRESSOR_Instance_t;
 
 
