@@ -51,7 +51,10 @@ else ifeq ($(findstring ARMCC,$(CONFIG_USE_COMPILER)),ARMCC)
     endif     
 endif
 
-SPEED_CRITICAL_FILES +=os_wrapper_FreeRTOS.c tasks.c  croutine.c event_groups.c list.c queue.c timers.c heap_3.c port.c
+ifeq ($(findstring AS_SPEED_CRITICAL,$(CONFIG_INCLUDE_OS)),AS_SPEED_CRITICAL) 
+    SPEED_CRITICAL_FILES +=os_wrapper_FreeRTOS.c tasks.c  croutine.c event_groups.c list.c queue.c timers.c heap_3.c port.c
+endif
+
 
 # cortex-M3 porting
 

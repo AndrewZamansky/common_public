@@ -28,12 +28,11 @@
 
 /* Includes ------------------------------------------------------------------*/
 
-//#include "hw_config.h"
 #include "usb_lib.h"
 #include "usb_conf.h"
 #include "usb_pwr.h"
 #include "NVIC_api.h"
-#include "SystemTick_api.h"
+//#include "timer_api.h"
 #include "USB_api.h"
 #include "../USB.h"
 
@@ -55,6 +54,7 @@ struct
 /* Extern variables ----------------------------------------------------------*/
 
 extern USB_Instance_t USB_InstanceParams;
+
 
 /* Private function prototypes -----------------------------------------------*/
 /* Extern function prototypes ------------------------------------------------*/
@@ -250,13 +250,14 @@ void My_USB_Resume( )
 #ifndef STM32F10X_CL
   uint16_t wCNTR;
 #endif /* STM32F10X_CL */
-  NVIC_API_DisableInt(NVIC_API_Int_USB_RX );
+	NVIC_API_DisableInt(USB_LP_CAN1_RX0_IRQn);
 
   wCNTR = _GetCNTR();
   wCNTR |= CNTR_RESUME;
   _SetCNTR(wCNTR);
 
-  SystemTick_API_BusyWait(5); // should be between 1 to 15 ms
+  busy_delay(5);//should be between 5ms and 15ms
+
 
   wCNTR = _GetCNTR();
   wCNTR &= (~CNTR_RESUME);
@@ -266,8 +267,8 @@ void My_USB_Resume( )
 
  // SystemTick_API_StartTimeoutTimer(USB_InstanceParams.usb_stabilize_timer);
 
+	NVIC_API_EnableInt(USB_LP_CAN1_RX0_IRQn);
 
-  NVIC_API_EnableInt(NVIC_API_Int_USB_RX );
  // USB_InstanceParams.do_resume = 2;
 
 }

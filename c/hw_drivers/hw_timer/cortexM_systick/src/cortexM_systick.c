@@ -11,15 +11,15 @@
 #include "dev_managment_api.h" // for device manager defines and typedefs
 #include "src/_cortexM_systick_prerequirements_check.h" // should be after {cortexM_systick_config.h,dev_managment_api.h}
 
-#include "timer_api.h"
+#include "hw_timer_api.h"
 #include "cortexM_systick_api.h"
 #include "cortexM_systick.h"
 #include "NVIC_api.h"
 
 
-#if CONFIG_CPU_TYPE == cortex-m4
+#if CORTEX_M_TYPE == 4
  #include "core_cm4.h"
-#elif CONFIG_CPU_TYPE == cortex-m3
+#elif CORTEX_M_TYPE == 3
  #include "core_cm3.h"
 #else
  #error unknown cortex-m type
@@ -58,7 +58,7 @@ static const dev_param_t CORTEXM_SYSTICK_Dev_Params[]=
 
 static CORTEXM_SYSTICK_Instance_t *pCORTEXM_SYSTICK_InstanceParams;
 
-static volatile size_t currentTick=0;
+static volatile uint64_t currentTick=0;
 
 /*---------------------------------------------------------------------------------------------------------*/
 /* ISR to handle systick                                                        */
@@ -131,12 +131,17 @@ uint8_t cortexM_systick_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 			                   SysTick_CTRL_ENABLE_Msk;                    /* Enable SysTick IRQ and SysTick Timer */
 
 			NVIC_API_RegisterInt(SysTick_IRQn , SysTick_IRQHandler);
-		//	NVIC_API_EnableInt(SysTick_IRQn);// no need to enable systick interrupt
+			//	NVIC_API_EnableInt(SysTick_IRQn);// no need to enable systick interrupt
 
 			break;
+
 		case IOCTL_TIMER_STOP :
 			  SysTick->CTRL  = SysTick_CTRL_CLKSOURCE_Msk;
 
+			break;
+
+		case IOCTL_GET_CURRENT_TIMER_VALUE :
+			*(uint64_t *)aIoctl_param1 = currentTick ;
 			break;
 
 		default :

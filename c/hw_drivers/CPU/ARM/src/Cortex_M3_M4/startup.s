@@ -5,40 +5,43 @@
 */
 .syntax unified
 
-.section ._inner_vector_table,"ax"
-.global _inner_vector_table
-.global _inner_vector_table_startup_entry
-.global _inner_vector_table_semihosting_entry
+.section ._secondary_rom_vector_table,"ax"
+.global _secondary_rom_vector_table
+.global _secondary_rom_vector_table_startup_entry
 
-.extern smihosting_is_active
-.extern return_from_semihosting
-
-_inner_vector_table:
 
 .thumb
 .thumb_func
-_inner_vector_table_startup_entry:
+_secondary_rom_vector_table_startup_entry:
 	ldr r0, =do_startup
  	blx r0
  	nop /* alignment for 8 bytes */
  	nop
 .thumb_func
-_inner_vector_table_startup_with_debugger_entry:
+_secondary_rom_vector_table_startup_with_debugger_entry:
 	ldr r0, =do_startup_with_debugger
  	blx r0
  	nop /* alignment for 8 bytes */
  	nop
+/*end of _secondary_rom_vector_table */
+
+.section ._secondary_ram_vector_table,"ax"
+.global _secondary_ram_vector_table_semihosting_entry
+
+.extern return_from_semihosting
+
+.thumb
 .thumb_func
-_inner_vector_table_semihosting_entry:
+_secondary_ram_vector_table_semihosting_entry:
 	ldr r0, =return_from_semihosting
  	blx r0
  	nop  /* alignment for 8 bytes */
  	nop
-/*end of _inner_vector_table */
-
-
-
+/*end of _secondary_ram_vector_table */
 .section .text.startup , "ax"
+
+.extern smihosting_is_active
+
 .global do_startup
 
 .thumb_func
@@ -66,6 +69,7 @@ do_startup_with_debugger:
  	blx r0
 	b 	.
 
+
 .thumb_func
 do_startup_common:
 	cpsid i /*disable interrupts*/
@@ -76,7 +80,6 @@ do_startup_common:
  	/*orr r0 ,r0, #0x01*/  /*remain in thumb*/
  	blx r0
  	pop {pc}
-
 
 
 .global __SETPRIMASK

@@ -11,10 +11,16 @@
 
 
 /********  includes *********************/
-#include "global_typedefs.h"
+#include "_project_typedefs.h"
+#include "_project_defines.h"
+#include "_project_func_declarations.h"
+
+#include "dev_managment_api.h" // for device manager defines and typedefs
+#include "PRINTF_api.h"
+
 #include "ESP8266_api.h"
 #include "ESP8266.h"
-#include "SystemTick_api.h"
+#include "timer_api.h"
 
 /********  defines *********************/
 
@@ -153,6 +159,9 @@ static const dev_param_t ESP8266_Dev_Params[]=
 		{IOCTL_ESP8266_SET_SERVER_DEVICE , IOCTL_VOID , (uint8_t*)ESP8266_API_SERVER_DEVICE_STR, NOT_FOR_SAVE},
 };
 
+TIMER_API_CREATE_STATIC_DEV(esp8266_timer_inst,"esp8266t" ,systick_dev_inst );
+static pdev_descriptor_const  timer_device = &esp8266_timer_inst;
+
 static dev_descriptor_t  sockets[4];
 
 static uint8_t ssid_name[MAX_SSID_NAME_LEN+1];
@@ -174,7 +183,6 @@ static SemaphoreHandle_t sendDataMutex;
 static ESP8266_State_t returnFromDataReceiveState,currentState ;
 static uint8_t lRequest_done=1;
 static size_t leftDataToReceive;
-static SystemTick_API_Timer_Handle_t  timeoutTimer;
 static xMessage_t pendingMessage;
 //static void *currSocket;
 static uint8_t isMessagePending=0;
@@ -343,7 +351,7 @@ static  uint8_t parse_incoming_data(/*const uint8_t *str_to_seek,uint16_t str_to
 	ioctl_get_data_buffer_t data_buffer_info;
 	uint8_t *pStartOfHttpRequest;
 	callback_new_data_from_socket_t  newDataFromSocketInfo;
-	uint32_t timeout ;
+	uint64_t timeout ;
 	size_t lastTestedBytePos=0;
 
 
@@ -396,6 +404,8 @@ static  uint8_t parse_incoming_data(/*const uint8_t *str_to_seek,uint16_t str_to
 		{
 			if(ESP8266_State_Setting_Mode < currentState)
 			{
+				timeout = ESP8266_TIMEOUT;
+
 				if( (ESP8266_State_Setting_Timeout < currentState) && (0==memcmp("+IPD",(uint8_t*)pBufferStart,4)))
 				{
 					leftDataToReceive = atoi((char*)&pBufferStart[7]);
@@ -417,7 +427,7 @@ static  uint8_t parse_incoming_data(/*const uint8_t *str_to_seek,uint16_t str_to
 						}
 						returnFromDataReceiveState = currentState;
 						currentState = ESP8266_State_Receiving_Data;
-						SystemTick_API_StartTimeoutTimer(timeoutTimer,ESP8266_TIMEOUT);
+						DEV_IOCTL(timer_device,TIMER_API_SET_COUNTDOWN_VALUE_AND_REST, &timeout);
 					}
 					DEV_IOCTL(server_device, IOCTL_SET_BYTES_CONSUMED_IN_DATA_BUFFER , (void*)((size_t)pStartOfHttpRequest - (size_t)pBufferStart));
 					return 1;
@@ -429,7 +439,6 @@ static  uint8_t parse_incoming_data(/*const uint8_t *str_to_seek,uint16_t str_to
 	//				*length_of_found_str = curr_buff_pos ;
 
 	//				PRINTF_DBG("s=%d\r\n",currentState);
-					timeout = ESP8266_TIMEOUT;
 
 					switch(currentState)
 					{
@@ -556,7 +565,7 @@ static  uint8_t parse_incoming_data(/*const uint8_t *str_to_seek,uint16_t str_to
 							break;
 					}
 
-					SystemTick_API_StartTimeoutTimer(timeoutTimer , timeout);
+					DEV_IOCTL(timer_device,TIMER_API_SET_COUNTDOWN_VALUE_AND_REST, &timeout);
 					DEV_IOCTL(server_device, IOCTL_SET_BYTES_CONSUMED_IN_DATA_BUFFER ,  (void*)curr_buff_pos);
 					return 1;
 
@@ -587,7 +596,8 @@ static  uint8_t parse_incoming_data(/*const uint8_t *str_to_seek,uint16_t str_to
 					send_to_chip( pendingMessage.msg_data.Msg_send_data_to_socket.data ,
 							pendingMessage.msg_data.Msg_send_data_to_socket.data_length);
 					currentState = ESP8266_State_Wait_Send_Complete;
-					SystemTick_API_StartTimeoutTimer(timeoutTimer,ESP8266_TIMEOUT);
+					timeout=ESP8266_TIMEOUT;
+					DEV_IOCTL(timer_device,TIMER_API_SET_COUNTDOWN_VALUE_AND_REST, &timeout);
 					DEV_IOCTL(server_device, IOCTL_SET_BYTES_CONSUMED_IN_DATA_BUFFER , (void*)1);
 					return 1;
 				}
@@ -620,6 +630,7 @@ static  uint8_t receiving_data(void)
 	size_t total_length;
 //	uint8_t *pBufferStart;
 	//size_t newStartPos;
+	uint64_t timeout ;
 
 	ioctl_get_data_buffer_t data_buffer_info;
 
@@ -634,7 +645,8 @@ static  uint8_t receiving_data(void)
 //		PRINT_DATA_DBG(data_buffer_info.pBufferStart , total_length );
 		leftDataToReceive -= total_length;
 		DEV_IOCTL(server_device, IOCTL_SET_BYTES_CONSUMED_IN_DATA_BUFFER ,  &total_length);
-		SystemTick_API_StartTimeoutTimer(timeoutTimer,ESP8266_TIMEOUT);
+		timeout=ESP8266_TIMEOUT;
+		DEV_IOCTL(timer_device,TIMER_API_SET_COUNTDOWN_VALUE_AND_REST, &timeout);
 		return 0;
 	}
 	else
@@ -664,7 +676,7 @@ static  uint8_t receiving_data(void)
 static void process_message( )
 {
 	size_t socket_num ;
-	uint32_t timeout;
+	uint64_t timeout;
 
 	lCurrError=0;
 	PRINTF_DBG("---ESP process_message=%d \r\n" ,pendingMessage.type);
@@ -712,7 +724,8 @@ static void process_message( )
 			break;
 	}
 
-	SystemTick_API_StartTimeoutTimer(timeoutTimer,timeout);
+	DEV_IOCTL(timer_device,TIMER_API_SET_COUNTDOWN_VALUE_AND_REST, &timeout);
+
 
 }
 
@@ -732,6 +745,8 @@ static void ESP8266_Task( void *pvParameters )
 	xMessage_t xRxedMessage;
 //	ESP8266_Instance_t *pInstance=(ESP8266_Instance_t*)pvParameters;
 	size_t data_left_in_buffer,isMessageRecieved;
+	uint64_t timeout;
+	uint8_t is_timer_elapsed;
 
 	currentState = ESP8266_State_StartReset;
 
@@ -774,7 +789,8 @@ static void ESP8266_Task( void *pvParameters )
 			{
 				if(ESP8266_State_Idle != currentState)
 				{
-					if(SystemTick_API_IsTimeoutTimerExpired(timeoutTimer))
+					DEV_IOCTL(timer_device, TIMER_API_CHECK_IF_COUNTDOWN_ELAPSED ,  &is_timer_elapsed );
+					if(is_timer_elapsed)
 					{
 						PRINTF_DBG( "--esp timeout crSt=%d\r\n",currentState);
 
@@ -787,7 +803,8 @@ static void ESP8266_Task( void *pvParameters )
 								send_to_chip((uint8_t*) ESP8266_RESET_STR , sizeof(ESP8266_RESET_STR)-1);
 								DEV_IOCTL(server_device,IOCTL_SET_ISR_CALLBACK_DEV, this_dev);
 
-								SystemTick_API_StartTimeoutTimer(timeoutTimer,10000);
+								timeout = 10000;
+								DEV_IOCTL(timer_device,TIMER_API_SET_COUNTDOWN_VALUE_AND_REST, &timeout);
 								currentState = ESP8266_State_Resetting;
 								break;
 
@@ -796,7 +813,8 @@ static void ESP8266_Task( void *pvParameters )
 								send_to_chip( (uint8_t*)ESP8266_ECHO_OFF , sizeof(ESP8266_ECHO_OFF)-1);
 								vTaskDelay( 1 );
 								send_to_chip( (uint8_t*)ESP8266_SET_MODE_STR , sizeof(ESP8266_SET_MODE_STR)-1);
-								SystemTick_API_StartTimeoutTimer(timeoutTimer,2);
+								timeout = 2;
+								DEV_IOCTL(timer_device,TIMER_API_SET_COUNTDOWN_VALUE_AND_REST, &timeout);
 								break;
 							case ESP8266_State_Setting_AP:
 								send_str_to_chip( (uint8_t*)ESP8266_CONNECT_TO_AP_STR );
@@ -805,7 +823,8 @@ static void ESP8266_Task( void *pvParameters )
 								send_str_to_chip( ssid_pswrd_redandency );
 								send_str_to_chip( (uint8_t*)"\"\r\n" );
 								currentState = ESP8266_State_Setting_Redundent_Ap ;
-								SystemTick_API_StartTimeoutTimer(timeoutTimer,AP_CONNECT_TIMEOUT);
+								timeout = AP_CONNECT_TIMEOUT;
+								DEV_IOCTL(timer_device,TIMER_API_SET_COUNTDOWN_VALUE_AND_REST, &timeout);
 								break;
 							case ESP8266_State_Setting_Mode:
 							case ESP8266_State_Setting_Redundent_Ap :
@@ -815,11 +834,13 @@ static void ESP8266_Task( void *pvParameters )
 								send_str_to_chip( ssid_pswrd );
 								send_str_to_chip( (uint8_t*)"\"\r\n" );
 								currentState = ESP8266_State_Setting_AP ;
-								SystemTick_API_StartTimeoutTimer(timeoutTimer,AP_CONNECT_TIMEOUT);
+								timeout = AP_CONNECT_TIMEOUT;
+								DEV_IOCTL(timer_device,TIMER_API_SET_COUNTDOWN_VALUE_AND_REST, &timeout);
 								break;
 							case ESP8266_State_Receiving_Data:
 								currentState = returnFromDataReceiveState ;
-								SystemTick_API_StartTimeoutTimer(timeoutTimer,ESP8266_TIMEOUT);
+								timeout = ESP8266_TIMEOUT;
+								DEV_IOCTL(timer_device,TIMER_API_SET_COUNTDOWN_VALUE_AND_REST, &timeout);
 								break;
 							case ESP8266_State_Wait_For_Send_Ready :
 							case ESP8266_State_Wait_Send_Complete :
@@ -890,7 +911,6 @@ static uint32_t  ESP8266_Start( )
 	xQueue = xQueueCreate( ESP8266_MAX_QUEUE_LEN , sizeof( xMessage_t ) );
 	sendDataMutex = xSemaphoreCreateMutex();
 
-	SystemTick_API_CreateTimeoutTimer( &timeoutTimer );
 
 	xTaskCreate( ESP8266_Task, "ESP8266_Task", ESP8266_TASK_STACK_SIZE,(void*) NULL,
 			ESP8266_TASK_PRIORITY , NULL );

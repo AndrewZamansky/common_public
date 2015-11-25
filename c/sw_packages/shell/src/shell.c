@@ -363,7 +363,7 @@ uint8_t shell_ioctl( void * const aHandle ,const uint8_t aIoctl_num , void * aIo
 				server_device = DEV_OPEN((uint8_t*)aIoctl_param1);
 				if(NULL != server_device)
 				{
-					DEV_IOCTL(server_device, IOCTL_SET_ISR_CALLBACK_DEV ,  INSTANCE(aHandle)->this_dev);
+					DEV_IOCTL(server_device, IOCTL_SET_ISR_CALLBACK_DEV ,  (void*)INSTANCE(aHandle)->this_dev);
 				}
 
 				INSTANCE(aHandle)->server_dev=server_device;
@@ -400,9 +400,9 @@ uint8_t shell_ioctl( void * const aHandle ,const uint8_t aIoctl_num , void * aIo
 /*---------------------------------------------------------------------------------------------------------*/
 uint8_t  shell_api_init_dev_descriptor(pdev_descriptor aDevDescriptor)
 {
-	shell_instance_t pShell_instance;
+	shell_instance_t *pShell_instance;
 
-	if(MAX_NUM_OF_SHELL_SERVERS <= usedShellInstances) return 1
+	if(MAX_NUM_OF_SHELL_SERVERS <= usedShellInstances) return 1;
 
 	if(NULL == aDevDescriptor) return 1;
 

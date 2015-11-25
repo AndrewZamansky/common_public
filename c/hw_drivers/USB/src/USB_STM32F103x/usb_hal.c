@@ -9,7 +9,12 @@
  */
 
 /********  includes *********************/
-#include "global_typedefs.h"
+#include "_project_typedefs.h"
+#include "_project_defines.h"
+#include "_project_func_declarations.h"
+
+#include "dev_managment_api.h" // for device manager defines and typedefs
+
 
 #include "USB_api.h"
 #include "serial_number_stm32f10x_api.h"
@@ -162,7 +167,6 @@ extern uint8_t *pSerNum;
 
 void    USB_STM32F103x_Init(void)
 {
-	NVIC_InitTypeDef NVIC_InitStructure;
 	uint32_t hashedSerialNum;
 
 
@@ -181,14 +185,11 @@ void    USB_STM32F103x_Init(void)
 	/* Enable the USB clock */
 	RCC_APB1PeriphClockCmd(RCC_APB1Periph_USB, ENABLE);
 
-	NVIC_InitStructure.NVIC_IRQChannel = USB_LP_CAN1_RX0_IRQn;
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = INTERRUPT_LOWEST_PRIORITY -1 ;
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
-	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-	NVIC_Init(&NVIC_InitStructure);
 
-	NVIC_API_RegisterInt(NVIC_API_Int_USB_RX , USB_Istr);
 
+	NVIC_API_RegisterInt(USB_LP_CAN1_RX0_IRQn , USB_Istr);
+	NVIC_API_SetPriority(USB_LP_CAN1_RX0_IRQn , INTERRUPT_LOWEST_PRIORITY - 1 );
+	NVIC_API_EnableInt(USB_LP_CAN1_RX0_IRQn);
 
 	USB_Init();
 

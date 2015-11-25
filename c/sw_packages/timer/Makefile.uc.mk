@@ -1,10 +1,11 @@
 
-ifeq ($(findstring YES,$(CONFIG_INCLUDE_INTERNAL_FLASH)),YES) 	 
+ifeq ($(findstring YES,$(CONFIG_INCLUDE_TIMER)),YES) 	 
+	#DYNAMIC_COMPONENT := YES
 	INCLUDE_THIS_COMPONENT := YES   # must be here !!
 endif  
 
 
-#INCLUDE_DIR =  
+#INCLUDE_DIR = 
 
 #DEFINES = 
 
@@ -14,9 +15,11 @@ endif
 
 
 
-SRC = flash.c 
+SRC = timer.c
+
 
 VPATH = src
 
+SPEED_CRITICAL_FILES += 
 
 include $(COMMON_CC)

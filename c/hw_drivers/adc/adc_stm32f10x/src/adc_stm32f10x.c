@@ -7,7 +7,12 @@
 
 
 /***************   includes    *******************/
-#include "global_typedefs.h"
+#include "_project_typedefs.h"
+#include "_project_defines.h"
+#include "_project_func_declarations.h"
+
+#include "dev_managment_api.h" // for device manager defines and typedefs
+
 #include "adc_api.h"
 #include "adc_stm32f10x_api.h"
 #include "adc_stm32f10x.h"

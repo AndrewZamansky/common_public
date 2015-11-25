@@ -22,6 +22,4 @@ typedef struct
 } HTTP_Socket_Instance_t;
 
 
-#else
-#pragma message( "warning : this header file had already been included" )
 #endif /* */

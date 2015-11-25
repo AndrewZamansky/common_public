@@ -3,6 +3,7 @@
 ifndef COMMON_INIT_SECTION_THAT_SHOULD_RUN_ONCE
  
 
+
 ifdef REDEFINE_ARM_GCC_ROOT_DIR
     $(info  gcc dir  redefined to $(REDEFINE_ARM_GCC_ROOT_DIR) )
     GCC_ROOT_DIR 	:= 	$(REDEFINE_ARM_GCC_ROOT_DIR)
@@ -38,7 +39,8 @@ ifeq ($(findstring YES,$(CONFIG_POSITION_INDEPENDENT)),YES)
 endif
 
 ifeq ($(findstring cortex-m3,$(CONFIG_CPU_TYPE)),cortex-m3) 	
-else
+    GLOBAL_CFLAGS += -mfloat-abi=soft
+else ifeq ($(findstring cortex-m3,$(CONFIG_CPU_TYPE)),cortex-m4) 	
     GLOBAL_CFLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16
 endif
 
@@ -58,8 +60,7 @@ ifeq ($(findstring cortex-m,$(CONFIG_CPU_TYPE)),cortex-m)
 else	
 endif
 
-ifeq ($(findstring cortex-m3,$(CONFIG_CPU_TYPE)),cortex-m3) 	
-else
+ifeq ($(findstring cortex-m4,$(CONFIG_CPU_TYPE)),cortex-m4) 	
 	GLOBAL_ASMFLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16
 endif
 

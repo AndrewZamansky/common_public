@@ -19,8 +19,9 @@ INCLUDE_DIR += $(EXTERNAL_SOURCE_ROOT_DIR)/ffmpeg/libavfilter
 
 #ASMFLAGS =  
 
-SPEED_CRITICAL_FILES += equalizer.c
-
+ifeq ($(findstring AS_SPEED_CRITICAL,$(CONFIG_INCLUDE_EQUALIZER)),AS_SPEED_CRITICAL) 
+    SPEED_CRITICAL_FILES += equalizer.c
+endif
 
 SRC = equalizer.c
 SRC += cmd_set_eq_band.c

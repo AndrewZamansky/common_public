@@ -11,8 +11,14 @@
 
 
 /********  includes *********************/
-#include "global_typedefs.h"
-#include "SystemTick_api.h"
+#include "_project_typedefs.h"
+#include "_project_defines.h"
+#include "_project_func_declarations.h"
+
+#include "dev_managment_api.h" // for device manager defines and typedefs
+#include "PRINTF_api.h"
+
+#include "timer_api.h"
 #include "USB_api.h"
 #include "USB.h"
 //#include "USB_Virtual_COM_API.h"

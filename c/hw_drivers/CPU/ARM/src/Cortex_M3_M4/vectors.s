@@ -3,7 +3,7 @@
 .section ._arm_vector_table,"ax"
 
 .word 	Top_Of_Stacks
-.word 	_inner_vector_table_startup_entry
+.word 	_secondary_rom_vector_table_startup_entry
 .word 	_NmiSR  /* non maskable interrupt from RCC */
 .word 	_FaultIRQ
 .word 	_dummy_trap     /* Populate if using MemManage (MPU)*/
@@ -23,6 +23,7 @@
 
 .space 34,0     /*  not used for now */
 
+.section .text._arm_vector_table,"ax"
 
 _NmiSR:
     b  .

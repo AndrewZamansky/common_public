@@ -60,6 +60,10 @@ OBJ_DIR	:= $(APP_ROOT_DIR)/zOBJ
 OUT_DIR	:=	$(APP_ROOT_DIR)/zOUT
 OUT_DIR_HISTORY	:=	$(APP_ROOT_DIR)/zOUT_history
 
+MKDIR=mkdir	
+
+COMMON_DIR = $(WORKSPACE_ROOT_DIR)/common
+
 ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS) 	 
 
 	#replace backslash for slash
@@ -70,6 +74,8 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
 	OUT_DIR_HISTORY := $(subst /,\,$(OUT_DIR_HISTORY))
 	TOOLS_ROOT_DIR := $(subst /,\,$(TOOLS_ROOT_DIR))
 	TOOLS_ROOT_DIR := $(TOOLS_ROOT_DIR)\windows
+	COMMON_DIR := $(subst /,\,$(COMMON_DIR))
+	
 	CRC32CALC	=	$(TOOLS_ROOT_DIR)\crc32\crc32.exe
     ifdef REDEFINE_MAKE_PROGRAM_DIR
         $(info  make  redefined to $(MAKE_PROGRAM_DIR)\make)
@@ -78,14 +84,21 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
 	    MAKE 	:= 	$(TOOLS_ROOT_DIR)\make4.1\bin\make
     endif
 	
-	SHELL_GO_TO_COMMON_GIT_DIR :=cd $(WORKSPACE_ROOT_DIR)\common &
+	CONFIG_SEMIHOSTING_UPLOADING_DIR :=c:\Temp
+    ifeq ($(wildcard $(CONFIG_SEMIHOSTING_UPLOADING_DIR)),) 		#if $(CONFIG_SEMIHOSTING_UPLOADING_DIR) dont exists then $(wildcard $(CONFIG_SEMIHOSTING_UPLOADING_DIR)) will produce empty string 
+       DUMMY:=$(shell $(MKDIR)  $(CONFIG_SEMIHOSTING_UPLOADING_DIR)) # create   $(CONFIG_SEMIHOSTING_UPLOADING_DIR)
+    endif
+    
+	SHELL_GO_TO_COMMON_GIT_DIR :=cd $(COMMON_DIR) &
 	RM		:=rmdir /S /Q
 	CP		:=copy /Y
 	DATE	:=date /T
 	TIME	:=time /T	
 else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX) 
 
-	SHELL_GO_TO_COMMON_GIT_DIR :=cd $(WORKSPACE_ROOT_DIR)/common ;
+	CONFIG_SEMIHOSTING_UPLOADING_DIR :=/tmp
+
+	SHELL_GO_TO_COMMON_GIT_DIR :=cd $(COMMON_DIR) ;
 	MAKE 	:= 	make
 	RM		:=rm -rf
 	CP		:=cp -f
@@ -93,9 +106,57 @@ else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX)
 	
 endif
 
-MKDIR=mkdir	
 
 
+include config.mk
+
+####################     configuring git  ######################
+
+GIT_DIR := $(firstword $(wildcard ./.git))
+ifeq ($(findstring ./.git,$(GIT_DIR)),) 	 # if not found ./.git in $(GIT_DIR)
+    $(error  error : create git repository of project (run "git init" in project directory) )
+endif
+
+CURR_GIT_BRANCH := $(shell git rev-parse --abbrev-ref HEAD 2>&1)
+ifneq ($(findstring ambiguous argument 'HEAD',$(CURR_GIT_BRANCH)),) 	 # if not found $(PROJECT_NAME) in $(CURR_GIT_BRANCH)
+    $(info git error  :   $(CURR_GIT_BRANCH))
+    $(info maybe branch was not created after git initialization )
+    $(info in this case create branch running following comands in project directory:)
+    $(info git add .)
+    $(info git commit -m "initial commit")
+    $(error )
+endif
+ifeq ($(findstring $(PROJECT_NAME),$(CURR_GIT_BRANCH)),) 	 # if not found $(PROJECT_NAME) in $(CURR_GIT_BRANCH)
+    $(info  error : branch names must be of type $(PROJECT_NAME) or $(PROJECT_NAME)_<branch_name>)
+    $(info  in case that this git is just created run following comand in project directory:)
+    $(info git branch -m $(PROJECT_NAME))
+    $(error )
+endif
+
+SHELL_OUTPUT := $(shell $(SHELL_GO_TO_COMMON_GIT_DIR) git rev-parse --abbrev-ref HEAD)
+ifneq ($(sort $(filter $(CURR_GIT_BRANCH),$(SHELL_OUTPUT))),$(CURR_GIT_BRANCH)) 	 
+    SHELL_OUTPUT := $(shell $(SHELL_GO_TO_COMMON_GIT_DIR) git status --porcelain 2>&1)
+    ERROR_MESSAGE := M 
+    ifeq ($(findstring $(ERROR_MESSAGE),$(SHELL_OUTPUT)),$(ERROR_MESSAGE)) 	 
+        $(info  git error : commit all changes to common git($(COMMON_DIR)) before changing branch or project)
+        $(error  )
+    endif
+    ERROR_MESSAGE := D 
+    ifeq ($(findstring $(ERROR_MESSAGE),$(SHELL_OUTPUT)),$(ERROR_MESSAGE)) 	 
+        $(info  git error : commit all changes to common git)
+        $(error  )
+    endif
+    SHELL_OUTPUT := $(shell $(SHELL_GO_TO_COMMON_GIT_DIR) git checkout $(CURR_GIT_BRANCH) 2>&1)
+    ERROR_MESSAGE :=did not match any file
+    ifeq ($(findstring $(ERROR_MESSAGE),$(SHELL_OUTPUT)),$(ERROR_MESSAGE)) 	 
+        $(info  git error : branch $(CURR_GIT_BRANCH) not found in common git . create it)
+        $(info  in case that this git is just created run following comand in common directory:)
+        $(info $(SHELL_GO_TO_COMMON_GIT_DIR) git branch $(PROJECT_NAME))
+        $(error  )
+    endif
+endif
+
+####################   end of  configuring git  ######################
 
 COMPONENTS_MK := $(AUTO_GENERATED_FILES_DIR)/include_components.mk
 rwildcard=$(wildcard $1$2) $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2))
@@ -105,24 +166,6 @@ ALL_CONFIG_FILES := $(call rwildcard,$(APP_ROOT_DIR)/,Makefile.uc.mk)
 ALL_CONFIG_FILES := $(ALL_CONFIG_FILES) $(call rwildcard,$(SW_PACKAGES_ROOT_DIR)/,Makefile.uc.mk)
 ALL_CONFIG_FILES := $(ALL_CONFIG_FILES) $(call rwildcard,$(DRIVERS_ROOT_DIR)/,Makefile.uc.mk)
 $(info scan for uconfig.mk done )
-
-
-include config.mk
-
-CURR_GIT_BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
-ifeq ($(findstring master,$(CURR_GIT_BRANCH)),master) 	 
-    $(error  branch names must be of type $(PROJECT_NAME) or $(PROJECT_NAME)_<branch_name>)
-endif
-
-SHELL_OUTPUT := $(shell $(SHELL_GO_TO_COMMON_GIT_DIR) git rev-parse --abbrev-ref HEAD)
-ifneq ($(sort $(filter $(CURR_GIT_BRANCH),$(SHELL_OUTPUT))),$(CURR_GIT_BRANCH)) 	 
-    SHELL_OUTPUT := $(shell $(SHELL_GO_TO_COMMON_GIT_DIR) git checkout $(CURR_GIT_BRANCH) 2>&1)
-    ERROR_MESSAGE :=did not match any file
-    ifeq ($(findstring $(ERROR_MESSAGE),$(SHELL_OUTPUT)),$(ERROR_MESSAGE)) 	 
-        $(error  branch $(CURR_GIT_BRANCH) not found in common git . create it)
-    endif
-endif
-
 
 
 OUTPUT_APP_NAME := out
@@ -159,7 +202,15 @@ ARCHIVE_OUTPUT := $(WORKSPACE_NAME).$(PROJECT_NAME).$(DATE_STR).7z
 GLOBAL_DEFINES += CONFIG_RAM_START_ADDR=$(CONFIG_RAM_START_ADDR)
 
 ifeq ($(findstring cortex-m,$(CONFIG_CPU_TYPE)),cortex-m)
-	GLOBAL_DEFINES := $(GLOBAL_DEFINES) CORTEX_M CONFIG_CPU_TYPE=$(CONFIG_CPU_TYPE)
+	GLOBAL_DEFINES := $(GLOBAL_DEFINES) CORTEX_M
+endif
+
+ifeq ($(findstring cortex-m3,$(CONFIG_CPU_TYPE)),cortex-m3)
+	GLOBAL_DEFINES := $(GLOBAL_DEFINES) CORTEX_M_TYPE=3
+endif
+
+ifeq ($(findstring cortex-m4,$(CONFIG_CPU_TYPE)),cortex-m4)
+	GLOBAL_DEFINES := $(GLOBAL_DEFINES) CORTEX_M_TYPE=4
 endif
 
 ifeq ($(findstring YES,$(CONFIG_TEST_TASK_STACK)),YES) 	 
