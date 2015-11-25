@@ -39,13 +39,15 @@
 /*
  *  cmd_get_serial.c
  */
-#include "global_typedefs.h"
+#include "_project_typedefs.h"
+#include "_project_defines.h"
+#include "_project_func_declarations.h"
 
 #include <command.h>
 #include "shell_api.h"
 #include "SPI_FLASH_PARTITION_MANAGER_api.h"
 
-extern pdev_descriptor spi_flash_dev;
+extern pdev_descriptor spi_flash_manager_dev;
 
 /*
  * Subroutine:  force_output
@@ -59,7 +61,7 @@ extern pdev_descriptor spi_flash_dev;
  */
 int do_spi_format (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
-	DEV_IOCTL(spi_flash_dev , IOCTL_SPI_FLASH_PARTITION_MANAGER_FORMAT , 0);
+	DEV_IOCTL(spi_flash_manager_dev , IOCTL_SPI_FLASH_PARTITION_MANAGER_FORMAT , 0);
 
 	return 0;
 }

@@ -69,21 +69,17 @@ do_startup_with_debugger:
  	blx r0
 	b 	.
 
+
 .thumb_func
 do_startup_common:
 	cpsid i /*disable interrupts*/
 	ldr   r0,=Top_Of_Stacks
 	mov   sp, r0
-//	push {lr}
-	STMDB sp!,{lr}
-//	push {r0}
-//	pop {r1}
+	push {lr}
  	ldr r0,=low_level_init
  	/*orr r0 ,r0, #0x01*/  /*remain in thumb*/
  	blx r0
- 	LDMIA sp!,{lr}
-// 	pop {pc}
-
+ 	pop {pc}
 
 
 .global __SETPRIMASK

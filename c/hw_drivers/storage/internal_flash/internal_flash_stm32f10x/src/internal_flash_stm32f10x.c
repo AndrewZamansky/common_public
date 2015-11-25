@@ -11,7 +11,7 @@
 #include "_project_defines.h"
 #include "_project_func_declarations.h"
 
-#include "FLASH_api.h"
+#include "internal_flash_stm32f10x_api.h"
 
 
 /***************   defines    *******************/
@@ -67,7 +67,7 @@ static uint32_t gCurr_program_addr;
  *   should be called before setting new clock
  *
  */
-uint32_t FLASH_API_SetCorrectLatency(uint32_t aClock_hz)
+uint32_t internal_flash_stm32f10x_api_SetCorrectLatency(uint32_t aClock_hz)
 {
 	uint32_t regVal;
 
@@ -99,7 +99,7 @@ uint32_t FLASH_API_SetCorrectLatency(uint32_t aClock_hz)
  *
  *
  */
-uint32_t FLASH_API_StartProgramming(uint32_t start_addr , uint32_t total_size_to_programm)
+uint32_t internal_flash_stm32f10x_api_StartProgramming(uint32_t start_addr , uint32_t total_size_to_programm)
 {
 	uint32_t regVal;
 	uint32_t current_addr;
@@ -136,7 +136,7 @@ uint32_t FLASH_API_StartProgramming(uint32_t start_addr , uint32_t total_size_to
 	return 0;
 }
 
-uint32_t FLASH_API_ContinueProgramming(uint8_t *buff,uint32_t size)
+uint32_t internal_flash_stm32f10x_api_ContinueProgramming(uint8_t *buff,uint32_t size)
 {
 	uint32_t regVal;
 	uint16_t newDataVal;

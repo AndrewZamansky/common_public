@@ -1,6 +1,6 @@
 /*
  *
- * file :   BuiltInFlash.c
+ * file :   ram_disk.c
  *
  *
  *
@@ -12,10 +12,10 @@
 
 /********  includes *********************/
 #include "global_typedefs.h"
-#include "BuiltInFlash_API.h"
+#include "ram_disk_API.h"
 #include <stdlib.h>
 #include <string.h>
-#include "BuiltInFlash.h"
+#include "ram_disk.h"
 
 /********  defines *********************/
 
@@ -35,17 +35,17 @@ extern const uint8_t mass_storage_memory[];
 
 
 /***********   local variables    **************/
-static BuiltInFlash_Instance_t BuiltInFlash_InstanceParams = {0} ;
+static ram_disk_Instance_t ram_disk_InstanceParams = {0} ;
 
 
 /*******************************************************************************
-* Function Name  : BuiltInFlash_API_ReadData
+* Function Name  : ram_disk_API_ReadData
 * Description    : Handle the Read operation from storage.
 * Input          : None.
 * Output         : None.
 * Return         : None.
 *******************************************************************************/
-void  BuiltInFlash_API_ReadData(const void *apHandle,uint32_t startAddr,uint8_t *apData , uint32_t length)
+void  ram_disk_API_ReadData(const void *apHandle,uint32_t startAddr,uint8_t *apData , uint32_t length)
 {
 
 	if (startAddr >= REAL_MASS_STORAGE_MEMORY_SIZE)
@@ -64,45 +64,43 @@ void  BuiltInFlash_API_ReadData(const void *apHandle,uint32_t startAddr,uint8_t 
 
 
 /*******************************************************************************
-* Function Name  : BuiltInFlash_API_WriteData
+* Function Name  : ram_disk_API_WriteData
 * Description    : Handle the Write operation from storage.
 * Input          : None.
 * Output         : None.
 * Return         : None.
 *******************************************************************************/
-void  BuiltInFlash_API_WriteData(const void *apHandle,uint32_t startAddr,const uint8_t *apData , uint32_t length)
+void  ram_disk_API_WriteData(const void *apHandle,uint32_t startAddr,const uint8_t *apData , uint32_t length)
 {
 	// do nothing
 }
 
 /*******************************************************************************
-* Function Name  : BuiltInFlash_API_ReadData
+* Function Name  : ram_disk_API_ReadData
 * Description    : Handle the Read operation from storage.
 * Input          : None.
 * Output         : None.
 * Return         : None.
 *******************************************************************************/
-uint32_t  BuiltInFlash_API_GetBlockCount(BuiltInFlash_API_Handle_t apHandle)
+uint32_t  ram_disk_GetBlockCount(ram_disk_API_Handle_t apHandle)
 {
 	return REPORTED_BLOCKS_ON_STORAGE;
 }
 
 /*******************************************************************************
-* Function Name  : BuiltInFlash_API_ReadData
+* Function Name  : ram_disk_API_ReadData
 * Description    : Handle the Read operation from storage.
 * Input          : None.
 * Output         : None.
 * Return         : None.
 *******************************************************************************/
-uint32_t  BuiltInFlash_API_GetBlockSize(BuiltInFlash_API_Handle_t apHandle)
+uint32_t  ram_disk_GetBlockSize(ram_disk_API_Handle_t apHandle)
 {
 	return MASS_STORAGE_MEMORY_BLOCK_SIZE;
 }
 
-
-
 /*---------------------------------------------------------------------------------------------------------*/
-/* Function:        BuiltInFlash_API_Init                                                                          */
+/* Function:        ram_disk_ioctl                                                                          */
 /*                                                                                                         */
 /* Parameters:                                                                                             */
 /*                                                                                         */
@@ -112,11 +110,55 @@ uint32_t  BuiltInFlash_API_GetBlockSize(BuiltInFlash_API_Handle_t apHandle)
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t  BuiltInFlash_API_Init(BuiltInFlash_API_Init_params_t *apInit_params,BuiltInFlash_API_Handle_t *apHandle)
+uint8_t ram_disk_ioctl( void * const aHandle ,const uint8_t aIoctl_num
+		, void * aIoctl_param1 , void * aIoctl_param2)
 {
-	BuiltInFlash_InstanceParams.chip = apInit_params->chip;
+	switch(aIoctl_num)
+	{
 
-	*apHandle = (BuiltInFlash_API_Handle_t)&BuiltInFlash_InstanceParams;
+		case IOCTL_GET_PARAMS_ARRAY_FUNC :
+			*(uint8_t*)aIoctl_param2 =   0; //size
+			break;
+
+		case IOCTL_DEVICE_START :
+			/* Deselect the FLASH: Chip Select high */
+			DEV_IOCTL_0_PARAMS(INSTANCE(aHandle)->gpio_select_dev , IOCTL_GPIO_PIN_SET );
+//			{ // for spi test
+//				uint32_t tmp=SPI_FLASH_ReadID(aHandle);
+//			}
+
+			break;
+
+		case IOCTL_SPI_FLASH_ERRASE_ALL :
+			SPI_FLASH_BulkErase(aHandle);
+			break;
+
+		case IOCTL_SPI_FLASH_ERRASE_SECTOR :
+			SPI_FLASH_SectorErase(aHandle,*(uint32_t*)aIoctl_param1);
+			break;
+
+		default :
+			return 1;
+	}
+	return 0;
+}
+
+/*---------------------------------------------------------------------------------------------------------*/
+/* Function:        ram_disk_API_Init                                                                          */
+/*                                                                                                         */
+/* Parameters:                                                                                             */
+/*                                                                                         */
+/*                                                                                                  */
+/* Returns:                                                                                      */
+/* Side effects:                                                                                           */
+/* Description:                                                                                            */
+/*                                                            						 */
+/*---------------------------------------------------------------------------------------------------------*/
+uint8_t  ram_disk_api_init_dev_descriptor(pdev_descriptor aDevDescriptor)
+{
+	ram_disk_InstanceParams.chip = apInit_params->chip;
+
+	*apHandle = (ram_disk_API_Handle_t)&ram_disk_InstanceParams;
 	return 0;
 
 }

@@ -5,7 +5,7 @@ ifeq ($(findstring YES,$(CONFIG_INCLUDE_FAT_FS)),YES)
 endif  
 
 
-#INCLUDE_DIR = 
+INCLUDE_DIR = $(EXTERNAL_SOURCE_ROOT_DIR)/Fatfs/src
 
 #DEFINES = 
 
@@ -18,6 +18,6 @@ endif
 SRC = ff.c 
 SRC += diskio.c 
 
-VPATH =  $(EXTERNAL_SOURCE_ROOT_DIR)/Fatfs/src
+VPATH =  src | $(EXTERNAL_SOURCE_ROOT_DIR)/Fatfs/src
 
 include $(COMMON_CC)

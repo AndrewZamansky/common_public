@@ -58,7 +58,7 @@ SECTIONS
 	{ 
 	    KEEP(*(._secondary_rom_vector_table)) 
 		. = ALIGN(4);
-	} > ram
+	} > CODE_LOCATION
 	
 	.text . : 
 	{ 

@@ -80,11 +80,13 @@ uint8_t timer_ioctl( void * const aHandle ,const uint8_t aIoctl_num , void * aIo
 					IOCTL_GET_CURRENT_TIMER_VALUE, (void*)&curr_timer_val);
 			INSTANCE(aHandle)->timer_value_on_start = curr_timer_val;
 			INSTANCE(aHandle)->countdown_value = curr_timer_val + *(uint64_t*)aIoctl_param1 ;
+			PRINTF_DBG( "timer countdown_value =%d\r\n",(uint32_t)INSTANCE(aHandle)->countdown_value);
 			break;
 
 		case TIMER_API_CHECK_IF_COUNTDOWN_ELAPSED :
 			DEV_IOCTL(INSTANCE(aHandle)->hw_timer,
 					IOCTL_GET_CURRENT_TIMER_VALUE, (void*)&curr_timer_val);
+			PRINTF_DBG( "timer = %d\r\n",(uint32_t)curr_timer_val);
 			if(curr_timer_val > INSTANCE(aHandle)->countdown_value)
 			{
 				*(uint8_t*)aIoctl_param1 = 1;

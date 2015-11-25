@@ -21,6 +21,7 @@
 
 typedef struct {
 	uint8_t port_num;
+	uint8_t pin_num;
 	uint8_t pin_num_mask;
 	uint8_t mode;
 } GPIO_STM32F10X_Instance_t;
