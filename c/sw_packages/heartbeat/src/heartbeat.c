@@ -149,7 +149,7 @@ uint8_t heartbeat_ioctl( void * const aHandle ,const uint8_t aIoctl_num , void *
 								minStackLeft = stackLeft;
 								// !!!! DONT USE PRINTF_DBG . IT CAN PUT IDLE TASK TO WAIT STATE . THIS IS WRONG !!
 								// COMMENT THIS LINE AS SOON AS POSSIBLE
-								PRINTF_DBG("%s stack left = %d\r\n" , __FUNCTION__ ,minStackLeft);
+								//PRINTF_DBG("%s stack left = %d\r\n" , __FUNCTION__ ,minStackLeft);
 							}
 						}
 #endif
