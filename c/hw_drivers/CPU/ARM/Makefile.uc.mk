@@ -23,6 +23,7 @@ GLOBAL_INCLUDE_DIR += $(EXTERNAL_SOURCE_ROOT_DIR)/ARM-CMSIS/CMSIS/Include
 
 
 SRC = semihosting.c
+_INCLUDE_UART := YES
 
 ifeq ($(findstring GCC,$(CONFIG_USE_COMPILER)),GCC) 	 
     SRC += SWI.s
