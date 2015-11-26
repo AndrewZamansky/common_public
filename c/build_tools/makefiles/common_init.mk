@@ -97,6 +97,9 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
 else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX) 
 
 	CONFIG_SEMIHOSTING_UPLOADING_DIR :=/tmp
+	TOOLS_ROOT_DIR := $(TOOLS_ROOT_DIR)/linux
+
+	CRC32CALC	=	cksum 
 
 	SHELL_GO_TO_COMMON_GIT_DIR :=cd $(COMMON_DIR) ;
 	MAKE 	:= 	make

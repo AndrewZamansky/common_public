@@ -1,5 +1,5 @@
 
-
+HASH=\#
 COMPONENT_PATH := $(call caclulate_dir,$(COMPONENT_CONFIG_FILE))
 COMPONENT_NAME := $(notdir $(COMPONENT_PATH))
 include $(COMPONENT_CONFIG_FILE)
@@ -12,7 +12,8 @@ ifeq ($(findstring YES,$(INCLUDE_THIS_COMPONENT)),YES)
         FILE_CONTENT_H := $(FILE_CONTENT_H) echo \#include "$(COMPONENT_NAME)_api.h">>$(AUTO_GENERATED_FILES_DIR)/included_modules.h &
         FILE_CONTENT_C := $(FILE_CONTENT_C) echo      {"$(COMPONENT_NAME)" , $(COMPONENT_NAME)_api_init_dev_descriptor},>>$(AUTO_GENERATED_FILES_DIR)/included_modules.c &
       else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX) 
-        $(error -----  NEEDS TO BE DONE !!!!)
+        FILE_CONTENT_H := $(FILE_CONTENT_H) echo '$(HASH)include "$(COMPONENT_NAME)_api.h"'>>$(AUTO_GENERATED_FILES_DIR)/included_modules.h ;
+        FILE_CONTENT_C := $(FILE_CONTENT_C) echo '     {"$(COMPONENT_NAME)" , $(COMPONENT_NAME)_api_init_dev_descriptor},'>>$(AUTO_GENERATED_FILES_DIR)/included_modules.c &
       endif
     endif #if DYNAMIC_COMPONENT==YES
   endif#DO_GENERATE_FILES
