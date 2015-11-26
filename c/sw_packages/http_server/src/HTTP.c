@@ -75,6 +75,7 @@ static const dev_param_t HTTP_Dev_Params[]=
 };
 
 TIMER_API_CREATE_STATIC_DEV(http_timer_inst,"httpt" ,systick_dev_inst );
+static pdev_descriptor_const  timer_device = &http_timer_inst;
 
 
 static uint32_t initDone=0;

@@ -87,10 +87,14 @@ typedef QueueHandle_t  os_queue_t;
 
 //infinite wait
 /**	function :	[os_queue_receive_with_timeout()]  **/
+#define os_queue_receive_with_timeout(queue , pData ,timeout )	\
+		xQueueReceive(queue, pData, ( TickType_t ) timeout )
+
+
+//infinite wait
+/**	function :	[os_queue_receive_infinite_wait()]  **/
 #define os_queue_receive_infinite_wait(queue , pData )	\
 		xQueueReceive(queue, pData, ( TickType_t ) portMAX_DELAY )
-
-
 
 
 

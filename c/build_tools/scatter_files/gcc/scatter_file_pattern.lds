@@ -51,8 +51,8 @@ SECTIONS
 	    KEEP(*(._secondary_ram_vector_table)) 
 	} > ram
 
-	__tables_relocation_section_end_on_ROM__ = __secondary_RAM_vector_table_start_on_ROM__ + SIZEOF(.secondary_ram_vector_table) ;
-	__tables_relocation_section_end_on_RAM__ = __secondary_RAM_vector_table_start_on_RAM__ + SIZEOF(.secondary_ram_vector_table) ;
+	__tables_relocation_section_end_on_ROM__ = __secondary_RAM_vector_table_start_on_ROM__ + SECONDARY_RAM_VECTOR_AREA_SIZE ;
+	__tables_relocation_section_end_on_RAM__ = __secondary_RAM_vector_table_start_on_RAM__ + SECONDARY_RAM_VECTOR_AREA_SIZE ;
 
 	. = __tables_relocation_section_end_on_ROM__ ;
 

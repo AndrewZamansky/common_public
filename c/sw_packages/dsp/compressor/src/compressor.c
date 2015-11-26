@@ -84,7 +84,7 @@ void compressor_dsp(const void * const aHandle ,
 
 	static int print_count=0;
 	float max_val ;
-	static float prev_ratio = 1;
+	float prev_ratio ;
 	float curr_ratio = 1;
 	static int threshold_detectd = 0;
 //	uint32_t accomulator=0;
@@ -92,6 +92,8 @@ void compressor_dsp(const void * const aHandle ,
 	uint16_t i,j,k;
 	float threshold = INSTANCE(aHandle)->threshold;
 	float reverse_ratio = INSTANCE(aHandle)->reverse_ratio;
+
+	prev_ratio = INSTANCE(aHandle)->prev_ratio ;
 
 	max_val = threshold ;
 	j = 0;
@@ -108,11 +110,14 @@ void compressor_dsp(const void * const aHandle ,
 //			accomulator =1 ;
 		}
 
-		tmp = abs(apCh2In[i]);
-		if (tmp > max_val)
+		if(2 == num_of_inputs)
 		{
-			max_val = tmp;
-//			accomulator =1 ;
+			tmp = abs(apCh2In[i]);
+			if (tmp > max_val)
+			{
+				max_val = tmp;
+	//			accomulator =1 ;
+			}
 		}
 
 		if(( (COMPRESSOR_CONFIG_CHUNK_SIZE-1) == j) /*|| ((buff_len-1) == i)*/)
@@ -154,7 +159,10 @@ void compressor_dsp(const void * const aHandle ,
 
 
 					apCh1Out[ k ] =  prev_ratio * apCh1In[k]   ;
-					apCh2Out[ k ] =  prev_ratio * apCh2In[k] 	;
+					if(2 == num_of_ouputs)
+					{
+						apCh2Out[ k ] =  prev_ratio * apCh2In[k] 	;
+					}
 				}
 			}
 
@@ -168,7 +176,7 @@ void compressor_dsp(const void * const aHandle ,
 			j++;
 		}
 	}
-
+	INSTANCE(aHandle)->prev_ratio = prev_ratio;
 
 	if(print_count > 100)
 	{
@@ -256,6 +264,7 @@ uint8_t  compressor_api_init_dsp_descriptor(pdsp_descriptor aDspDescriptor)
 	aDspDescriptor->ioctl = compressor_ioctl;
 	aDspDescriptor->dsp_func = compressor_dsp;
 	pInstance->reverse_ratio = 0;//0.5;
+	pInstance->prev_ratio = 1;
 	usedInstances++;
 
 	return 0 ;

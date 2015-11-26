@@ -40,7 +40,7 @@ endif
 
 ifeq ($(findstring cortex-m3,$(CONFIG_CPU_TYPE)),cortex-m3) 	
     GLOBAL_CFLAGS += -mfloat-abi=soft
-else ifeq ($(findstring cortex-m3,$(CONFIG_CPU_TYPE)),cortex-m4) 	
+else ifeq ($(findstring cortex-m4,$(CONFIG_CPU_TYPE)),cortex-m4) 	
     GLOBAL_CFLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16
 endif
 
