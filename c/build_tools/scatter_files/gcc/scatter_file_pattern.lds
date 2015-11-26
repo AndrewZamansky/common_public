@@ -20,7 +20,7 @@ MEMORY {
 	UND_STACK_SIZE = 128; 
 #endif
 	EXCEPTION_VECTOR_AREA_SIZE  	= 0x100;
-	SECONDARY_RAM_VECTOR_AREA_SIZE  = 0x10;
+	SECONDARY_RAM_VECTOR_AREA_SIZE  = 0x40;//with some extra for future use
 
 SECTIONS
 {
@@ -37,10 +37,12 @@ SECTIONS
 #endif	
 	__tables_relocation_section_start_on_RAM__ = __RAM_START__;
 
-	.vector_table __tables_relocation_section_start_on_RAM__ : AT ( __tables_relocation_section_start_on_ROM__ ) 
+	/* the AT process of first table is not used because it cause problem on nuc-link debugger to flash it : */
+	/*.vector_table __tables_relocation_section_start_on_RAM__ : AT ( __tables_relocation_section_start_on_ROM__ ) */
+	.vector_table __tables_relocation_section_start_on_ROM__ : 
 	{ 
 		KEEP(*(._arm_vector_table)) 
-	} > ram 
+	} > CODE_LOCATION 
 
 	__secondary_RAM_vector_table_start_on_ROM__ = __tables_relocation_section_start_on_ROM__ + EXCEPTION_VECTOR_AREA_SIZE ;
 	__secondary_RAM_vector_table_start_on_RAM__ = __tables_relocation_section_start_on_RAM__ + EXCEPTION_VECTOR_AREA_SIZE ;
@@ -49,8 +51,8 @@ SECTIONS
 	    KEEP(*(._secondary_ram_vector_table)) 
 	} > ram
 
-	__tables_relocation_section_end_on_ROM__ = __secondary_RAM_vector_table_start_on_ROM__ + SIZEOF(.secondary_ram_vector_table) ;
-	__tables_relocation_section_end_on_RAM__ = __secondary_RAM_vector_table_start_on_RAM__ + SIZEOF(.secondary_ram_vector_table) ;
+	__tables_relocation_section_end_on_ROM__ = __secondary_RAM_vector_table_start_on_ROM__ + SECONDARY_RAM_VECTOR_AREA_SIZE ;
+	__tables_relocation_section_end_on_RAM__ = __secondary_RAM_vector_table_start_on_RAM__ + SECONDARY_RAM_VECTOR_AREA_SIZE ;
 
 	. = __tables_relocation_section_end_on_ROM__ ;
 
