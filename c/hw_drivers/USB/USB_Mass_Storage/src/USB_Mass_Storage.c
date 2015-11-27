@@ -11,7 +11,12 @@
 
 
 /********  includes *********************/
-#include "global_typedefs.h"
+#include "_project_typedefs.h"
+#include "_project_defines.h"
+#include "_project_func_declarations.h"
+
+#include "dev_managment_api.h" // for device manager defines and typedefs
+
 //#include "Storage_API.h"
 #include "USB_Mass_Storage_api.h"
 #include "USB_Mass_Storage.h"

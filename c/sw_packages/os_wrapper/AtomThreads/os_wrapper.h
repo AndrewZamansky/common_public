@@ -88,7 +88,7 @@ os_queue_t os_create_queue_atomthreads(uint8_t num_of_elements ,uint8_t size_of_
 		atomQueueGet(queue , timeout ,  (uint8_t*)pData   )
 
 //infinite wait
-/**	function :	[os_queue_receive_with_timeout()]  **/
+/**	function :	[os_queue_receive_infinite_wait()]  **/
 #define os_queue_receive_infinite_wait(queue , pData )	\
 		atomQueueGet(queue, 0, (uint8_t*)pData )
 

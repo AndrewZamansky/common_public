@@ -17,6 +17,7 @@
 
 
 /* ------------------------ defines ------------------------------*/
+#define INSTANCE(hndl)	((SEMIHOSTING_Instance_t*)hndl)
 
 /* ------------------------typedefs ------------------------------*/
 
@@ -32,8 +33,8 @@
 
 static int BKPT(int op, void* p1, void* p2) ;
 int smihosting_is_active=0;
-#ifdef ARM_SEMIHOSTING_CONFIG_ENABLE_TX_DONE_CALLBACK
-	static pdev_descriptor   callback_dev;
+#if ( 1 == ARM_SEMIHOSTING_CONFIG_ENABLE_TX_DONE_CALLBACK )
+	static pdev_descriptor_const   callback_dev = NULL;
 #endif
 static int terminal_hndl;
 
@@ -47,6 +48,7 @@ static int terminal_hndl;
 #define SYS_WRITE0 		0x04
 #define SYS_FLEN 		0x0C
 #define SYS_TMPNAM 		0x0D
+#define SYS_REMOVE 		0x0E
 
 
 
@@ -86,6 +88,21 @@ int ARM_API_SH_Open(char* fileName, int mode)
 }
 
 /*
+ * function ARM_SH_Remove()
+ */
+int ARM_SH_Remove(char* fileName)
+{
+  int retVal;
+  void* block[2];
+
+  block[0] = (void*)fileName;
+  block[1] = (void*)strlen(fileName);
+  retVal = BKPT(SYS_REMOVE, (void*) block, (void*) 0);
+
+  return retVal;
+}
+
+/*
  * function ARM_API_SH_Close()
  */
 int ARM_API_SH_Close(int FileHandle)
@@ -115,6 +132,7 @@ int ARM_API_SH_Read(int FileHandle, uint8_t* pBuffer, int NumBytesToRead)
 
   return NumBytesLeft;
 }
+
 
 /*
  * function ARM_API_SH_GetFileLength()
@@ -151,6 +169,7 @@ int ARM_API_SH_Write(int FileHandle, const uint8_t* pBuffer, int NumBytesToWrite
 
   return NumBytesLeft;
 }
+
 
 
 static int BKPT(int op, void* p1, void* p2)
@@ -196,12 +215,95 @@ void arm_get_line_from_console(uint8_t* pBuffer,int maxLen)
 size_t arm_sh_pwrite(const void *aHandle ,const uint8_t *apData , size_t aLength, size_t aOffset)
 {
 	ARM_API_SH_Write(terminal_hndl,apData,aLength);
-#ifdef ARM_SEMIHOSTING_CONFIG_ENABLE_TX_DONE_CALLBACK
+#if ( 1 == ARM_SEMIHOSTING_CONFIG_ENABLE_TX_DONE_CALLBACK)
 	if(NULL != callback_dev)
 		DEV_CALLBACK_1_PARAMS(callback_dev , CALLBACK_TX_DONE,(void*)aLength); // !!! to avoid recursivity transmited length should be '>=aLength'
 #endif
 	return aLength;
 }
+
+#if ( 1 == ARM_SEMIHOSTING_CONFIG_ENABLE_RX)
+
+#define SH_RX_BUFFER	64
+static uint8_t sh_rx_buffer[SH_RX_BUFFER];
+/*---------------------------------------------------------------------------------------------------------*/
+/* Function:        poll_for_semihosting_data_task                                                                          */
+/*                                                                                                         */
+/* Parameters:                                                                                             */
+/*                                                                                         */
+/*                                                                                                  */
+/* Returns:                                                                                      */
+/* Side effects:                                                                                           */
+/* Description:                                                                                            */
+/*                                                            						 */
+/*---------------------------------------------------------------------------------------------------------*/
+static void poll_for_semihosting_data_task( void *aHandle )
+{
+
+	uint8_t cRead;
+	int read_sync_hndl;
+	size_t i;
+//	int read_size ;
+
+	PRINT_STR_DBG("if you want to enter commands over semihosting  \r\n");
+	PRINT_STR_DBG("create file /tmp/1234 or C:/Temp/1234.txt  \r\n");
+	PRINT_STR_DBG("to stop wait for commands delete created file  \r\n");
+	vTaskDelay( 5000 );
+	for( ;; )
+	{
+		vTaskDelay( 5000 );
+
+		read_sync_hndl=ARM_API_SH_Open("/tmp/1234",1);
+		if(-1 == read_sync_hndl)
+		{
+			read_sync_hndl=ARM_API_SH_Open("C:/Temp/1234.txt",1);
+		}
+
+		if (-1 != read_sync_hndl)
+		{
+			ARM_API_SH_Close(read_sync_hndl);
+			PRINT_STR_DBG("waiting for command . \r\n");
+			PRINT_STR_DBG("press 'enter' after each char and double 'enter' at the end \r\n");
+
+			cRead=_SH_ReadC();
+
+			i=0;
+			while (('\n' != cRead) && ('\r' != cRead) && (i<SH_RX_BUFFER))
+			{
+				sh_rx_buffer[i++]=cRead;
+				cRead=_SH_ReadC();
+			}
+			sh_rx_buffer[i++]='\n';
+
+			if (callback_dev )
+			{
+
+				DEV_CALLBACK_2_PARAMS(callback_dev , CALLBACK_DATA_RECEIVED,  sh_rx_buffer, (void*)i);
+			}
+
+
+		}
+
+#if ((1==INCLUDE_uxTaskGetStackHighWaterMark ) && (1==OS_FREE_RTOS))
+		{
+			static  size_t stackLeft,minStackLeft=0xffffffff;
+
+			stackLeft = uxTaskGetStackHighWaterMark( NULL );
+			if(minStackLeft > stackLeft)
+			{
+				minStackLeft = stackLeft;
+				// !!!! DONT USE PRINTF_DBG . IT CAN CAUSE RECURCIVE LOCK !!
+				// COMMENT THIS LINE AS SOON AS POSSIBLE
+				PRINTF_DBG("%s   stack left = %d  \r\n" , __FUNCTION__   ,minStackLeft);
+			}
+		}
+#endif
+	}
+
+}
+
+#endif
+
 
 /*---------------------------------------------------------------------------------------------------------*/
 /* Function:        arm_sh_ioctl                                                                          */
@@ -223,7 +325,14 @@ uint8_t arm_sh_ioctl( void * const aHandle ,const uint8_t aIoctl_num , void * aI
 			break;
 
 		case IOCTL_DEVICE_START :
-			terminal_hndl=ARM_API_SH_Open(":tt",5);//mode wb
+			callback_dev = INSTANCE(aHandle)->callback_dev ;
+			terminal_hndl=ARM_API_SH_Open(":tt",5);//mode 5=wb
+
+
+#if ( 1 == ARM_SEMIHOSTING_CONFIG_ENABLE_RX)
+			os_create_task("sw_uart_wrapper_task",poll_for_semihosting_data_task,
+					aHandle , ARM_SEMIHOSTING_CONFIG_TASK_STACK_SIZE , ARM_SEMIHOSTING_CONFIG_TASK_PRIORITY);
+#endif
 
 			break;
 #ifdef ARM_SEMIHOSTING_CONFIG_ENABLE_TX_DONE_CALLBACK

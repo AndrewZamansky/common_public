@@ -62,7 +62,7 @@ typedef const dsp_descriptor_t * pdsp_descriptor_const;
 
 
 #define DSP_FUNC_1CH_IN_1CH_OUT(dsp,ch1In,ch1Out,len)    					(dsp)->dsp_func((dsp)->handle,1,1,len,ch1In,NULL,ch1Out,NULL)
-#define DSP_FUNC_2CH_IN_2CH_OUT(dsp,ch1In,ch2In,ch1Out,ch2Out,len)    		(dsp)->dsp_func((dsp)->handle,1,1,len,ch1In,ch2In,ch1Out,ch2Out)
+#define DSP_FUNC_2CH_IN_2CH_OUT(dsp,ch1In,ch2In,ch1Out,ch2Out,len)    		(dsp)->dsp_func((dsp)->handle,2,2,len,ch1In,ch2In,ch1Out,ch2Out)
 
 
 #endif

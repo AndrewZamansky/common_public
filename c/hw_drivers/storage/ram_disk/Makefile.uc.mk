@@ -1,5 +1,5 @@
 
-ifeq ($(findstring YES,$(CONFIG_INCLUDE_BUILT_IN_FLASH)),YES) 	 
+ifeq ($(findstring YES,$(CONFIG_INCLUDE_RAM_DISK)),YES) 	 
 	INCLUDE_THIS_COMPONENT := YES
 endif  
 
@@ -14,7 +14,7 @@ endif
 
 
 
-SRC = BuiltInFlash.c 
+SRC = ram_disk.c 
 SRC += storage_data.c 
 VPATH = src
 

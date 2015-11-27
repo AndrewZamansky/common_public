@@ -54,10 +54,6 @@
 
 
 
-#define NVIC_VECTOR_TABLE_OFFSET      	0xE000ED08
-
-
-
 /********  types  *********************/
 
 
@@ -137,6 +133,7 @@ void NVIC_API_DisableAllInt(void)
 
 void  NVIC_API_Init(void)
 {
+
 	int8_t  i;
 
 
@@ -146,6 +143,7 @@ void  NVIC_API_Init(void)
     /*
      * Disable all interrupts.
      */
+
     while ( i >= 0 )
 	{
     	NVIC->ICER[i] = 0xffffffff;
@@ -154,8 +152,13 @@ void  NVIC_API_Init(void)
         i--;
     }
 
-    SCB->VTOR = SCB_VTOR_TBLBASE_Msk;// set base to start of RAM
 
+#if (CORTEX_M_TYPE == 3) && (__CM3_REV < 0x0201)  /* core<r2p1 */
+    SCB->VTOR = NVIC_CONFIG_START_OF_RAM & SCB_VTOR_TBLBASE_Msk;// set base to start of RAM
+#else
+    // make sure that in cortex-m3 with revision < r2p1 bit 29 is 1
+    SCB->VTOR = NVIC_CONFIG_START_OF_RAM;
+#endif
 
     NVIC_SetPriorityGrouping(NVIC_PriorityGroup_4);
 

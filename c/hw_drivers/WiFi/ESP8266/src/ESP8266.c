@@ -11,7 +11,13 @@
 
 
 /********  includes *********************/
-#include "global_typedefs.h"
+#include "_project_typedefs.h"
+#include "_project_defines.h"
+#include "_project_func_declarations.h"
+
+#include "dev_managment_api.h" // for device manager defines and typedefs
+#include "PRINTF_api.h"
+
 #include "ESP8266_api.h"
 #include "ESP8266.h"
 #include "timer_api.h"
@@ -382,11 +388,11 @@ static  uint8_t parse_incoming_data(/*const uint8_t *str_to_seek,uint16_t str_to
 			{
 				case '\r':			/* Enter		*/
 				case '\n':
-					//PRINT_DATA_DBG((uint8_t*)"\r\n" , 2 );
+					PRINT_DATA_DBG((uint8_t*)"\r\n" , 2 );
 					validCommadFound=1;
 					break;
 				default :
-					//PRINT_DATA_DBG(&pBufferStart[curr_buff_pos] , 1 );
+					PRINT_DATA_DBG(&pBufferStart[curr_buff_pos] , 1 );
 					break;
 			}
 			curr_buff_pos++;
@@ -750,11 +756,11 @@ static void ESP8266_Task( void *pvParameters )
 	{
 
 		isMessageRecieved = xQueueReceive( xQueue, &( xRxedMessage ), ( TickType_t )1000/* portMAX_DELAY*/ ) ;
-
 		data_left_in_buffer=1;
 		while (data_left_in_buffer)
 		{
 			data_left_in_buffer = 0;
+#if 1
 			if( isMessageRecieved )
 			{
 	//			PRINTF_DBG("---ESP msg type= %d , currState=%d\r\n" , xRxedMessage.type,currentState);
@@ -781,6 +787,7 @@ static void ESP8266_Task( void *pvParameters )
 			}
 			else
 			{
+#endif
 				if(ESP8266_State_Idle != currentState)
 				{
 					DEV_IOCTL(timer_device, TIMER_API_CHECK_IF_COUNTDOWN_ELAPSED ,  &is_timer_elapsed );
@@ -850,6 +857,7 @@ static void ESP8266_Task( void *pvParameters )
 						}
 					}
 				}
+#if 1
 			}
 
 			if(isMessagePending && (ESP8266_State_Idle == currentState))
@@ -857,8 +865,8 @@ static void ESP8266_Task( void *pvParameters )
 				process_message();
 				isMessagePending=0;
 			}
+#endif
 		}// end of while(data_left_in_buffer)
-
 #if (1==INCLUDE_uxTaskGetStackHighWaterMark )
 		{
 			static  size_t stackLeft,minStackLeft=0xffffffff;
