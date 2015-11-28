@@ -33,9 +33,7 @@
 
 static int BKPT(int op, void* p1, void* p2) ;
 int smihosting_is_active=0;
-#if ( 1 == ARM_SEMIHOSTING_CONFIG_ENABLE_TX_DONE_CALLBACK )
-	static pdev_descriptor_const   callback_dev = NULL;
-#endif
+static pdev_descriptor_const   callback_dev = NULL;
 static int terminal_hndl;
 
 
@@ -215,10 +213,8 @@ void arm_get_line_from_console(uint8_t* pBuffer,int maxLen)
 size_t arm_sh_pwrite(const void *aHandle ,const uint8_t *apData , size_t aLength, size_t aOffset)
 {
 	ARM_API_SH_Write(terminal_hndl,apData,aLength);
-#if ( 1 == ARM_SEMIHOSTING_CONFIG_ENABLE_TX_DONE_CALLBACK)
 	if(NULL != callback_dev)
 		DEV_CALLBACK_1_PARAMS(callback_dev , CALLBACK_TX_DONE,(void*)aLength); // !!! to avoid recursivity transmited length should be '>=aLength'
-#endif
 	return aLength;
 }
 
@@ -335,11 +331,9 @@ uint8_t arm_sh_ioctl( void * const aHandle ,const uint8_t aIoctl_num , void * aI
 #endif
 
 			break;
-#ifdef ARM_SEMIHOSTING_CONFIG_ENABLE_TX_DONE_CALLBACK
 		case IOCTL_SET_ISR_CALLBACK_DEV:
 			callback_dev =(pdev_descriptor) aIoctl_param1;
 			break;
-#endif
 		default :
 			return 1;
 	}

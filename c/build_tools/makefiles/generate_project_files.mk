@@ -48,8 +48,7 @@ DUMMY:=$(shell $(FILE_CONTENT))
 DO_GENERATE_FILES := 1
 FILE_CONTENT_H:=
 FILE_CONTENT_C:=
-include $(COMPONENTS_MK        $(error -----  NEEDS TO BE DONE !!!!)
-)
+include $(COMPONENTS_MK)
 DUMMY:=$(shell $(FILE_CONTENT_H))
 DUMMY:=$(shell $(FILE_CONTENT_C))
 
@@ -62,6 +61,7 @@ else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX)
  $(shell echo '    {"non-existent-dev" , NULL} '>> $(AUTO_GENERATED_FILES_DIR)/included_modules.c)
  $(shell echo '};  '>> $(AUTO_GENERATED_FILES_DIR)/included_modules.c)
 endif
+
 
 all :
 	$(info auto generated include_components.mk created)
