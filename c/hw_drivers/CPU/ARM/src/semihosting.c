@@ -220,7 +220,7 @@ size_t arm_sh_pwrite(const void *aHandle ,const uint8_t *apData , size_t aLength
 
 #if ( 1 == ARM_SEMIHOSTING_CONFIG_ENABLE_RX)
 
-#define SH_RX_BUFFER	64
+#define SH_RX_BUFFER	32
 static uint8_t sh_rx_buffer[SH_RX_BUFFER];
 /*---------------------------------------------------------------------------------------------------------*/
 /* Function:        poll_for_semihosting_data_task                                                                          */
@@ -259,8 +259,8 @@ static void poll_for_semihosting_data_task( void *aHandle )
 		{
 			ARM_API_SH_Close(read_sync_hndl);
 			PRINT_STR_DBG("waiting for command . \r\n");
+#if 0
 			PRINT_STR_DBG("press 'enter' after each char and double 'enter' at the end \r\n");
-
 			cRead=_SH_ReadC();
 
 			i=0;
@@ -270,6 +270,21 @@ static void poll_for_semihosting_data_task( void *aHandle )
 				cRead=_SH_ReadC();
 			}
 			sh_rx_buffer[i++]='\n';
+#else
+			PRINTF_DBG("enter command and press 'enter' till response \r\n",SH_RX_BUFFER);
+			ARM_API_SH_Read(terminal_hndl,sh_rx_buffer,SH_RX_BUFFER);
+			cRead = sh_rx_buffer[0];
+			i=1;
+			while (('\n' != cRead) && ('\r' != cRead) && (i<SH_RX_BUFFER))
+			{
+				cRead = sh_rx_buffer[i++];
+			}
+			if(i == (SH_RX_BUFFER + 1))
+			{
+				PRINTF_DBG("error : command should be less then %d chars \r\n",SH_RX_BUFFER);
+				sh_rx_buffer[0]='\n';
+			}
+#endif
 
 			if (callback_dev )
 			{

@@ -7,7 +7,7 @@ DOLLAR=$
 ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS) 	 
     $(shell echo # > $(COMPONENTS_MK))
     SHELL_CMD_DELIMITER = &
-    ADD_COMPONENT_UCONFIG :=echo include $(DOLLAR)(MAKEFILE_DEFS_ROOT_DIR)/add_component_uconfig.mk>>$(COMPONENTS_MK) $(SHELL_CMD_DELIMITER)
+    ADD_COMPONENT_UCONFIG :=echo include $$(MAKEFILE_DEFS_ROOT_DIR)/add_component_uconfig.mk>>$(COMPONENTS_MK) $(SHELL_CMD_DELIMITER)
 else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX) 
     $(shell echo '#' > $(COMPONENTS_MK))
     SHELL_CMD_DELIMITER = ;
