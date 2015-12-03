@@ -42,7 +42,6 @@
 #endif
 
 
-uint8_t write_data[4];
 
 
 /* Private typedef -----------------------------------------------------------*/
@@ -79,6 +78,51 @@ uint8_t write_data[4];
 /* Private functions ---------------------------------------------------------*/
 
 /*******************************************************************************
+* Function Name  : _chip_select_on
+* Description    :
+* Input          : None
+* Output         : None
+* Return         : None
+*******************************************************************************/
+static void _chip_select_on(const void *apHandle   )
+{
+	/* Select the FLASH: Chip Select low */
+	DEV_IOCTL_0_PARAMS(INSTANCE(apHandle)->gpio_select_dev , IOCTL_GPIO_PIN_CLEAR );
+}
+
+/*******************************************************************************
+* Function Name  : _chip_select_off
+* Description    :
+* Input          : None
+* Output         : None
+* Return         : None
+*******************************************************************************/
+static void _chip_select_off(const void *apHandle )
+{
+	/* Deselect the FLASH: Chip Select high */
+	DEV_IOCTL_0_PARAMS(INSTANCE(apHandle)->gpio_select_dev , IOCTL_GPIO_PIN_SET );
+}
+
+/*******************************************************************************
+* Function Name  : _write_to_flash_with_cs_toggle
+* Description    :
+* Input          : None
+* Output         : None
+* Return         : None
+*******************************************************************************/
+static void _write_to_flash_with_cs_toggle(const void *apHandle , const uint8_t* apBuffer , uint32_t length )
+{
+	/* Select the FLASH: Chip Select low */
+	_chip_select_on(apHandle);
+
+	DEV_WRITE(INSTANCE(apHandle)->spi_server_dev , apBuffer , length);
+
+	/* Deselect the FLASH: Chip Select high */
+	_chip_select_off(apHandle );
+
+}
+
+/*******************************************************************************
 * Function Name  : SPI_FLASH_WriteEnable
 * Description    : Enables the write access to the FLASH.
 * Input          : None
@@ -87,20 +131,15 @@ uint8_t write_data[4];
 *******************************************************************************/
 void SPI_FLASH_WriteEnable(const void *apHandle)
 {
-	/* Select the FLASH: Chip Select low */
-	DEV_IOCTL_0_PARAMS(INSTANCE(apHandle)->gpio_select_dev , IOCTL_GPIO_PIN_CLEAR );
-
-	/* Send "write enable  " instruction */
+	uint8_t write_data[1];
 	write_data[0]= WREN;
+	_write_to_flash_with_cs_toggle(apHandle , write_data , 1);
+}
 
-	DEV_WRITE(INSTANCE(apHandle)->spi_server_dev , write_data , 1);
-
-	/* Deselect the FLASH: Chip Select high */
-	DEV_IOCTL_0_PARAMS(INSTANCE(apHandle)->gpio_select_dev , IOCTL_GPIO_PIN_SET );}
 
 /*******************************************************************************
-* Function Name  : SPI_FLASH_WriteEnable
-* Description    : Enables the write access to the FLASH.
+* Function Name  : addr_to_bytesBuffer
+* Description    :
 * Input          : None
 * Output         : None
 * Return         : None
@@ -118,6 +157,7 @@ static void addr_to_bytesBuffer( uint8_t *addr,uint32_t StartAddr)
 }
 
 
+
 /*******************************************************************************
 * Function Name  : SPI_FLASH_WaitForWriteEnd
 * Description    : Polls the status of the Write In Progress (WIP) flag in the
@@ -129,14 +169,16 @@ static void addr_to_bytesBuffer( uint8_t *addr,uint32_t StartAddr)
 *******************************************************************************/
 void SPI_FLASH_WaitForWriteEnd(const void *apHandle)
 {
+	uint8_t write_data[1];
   uint8_t FLASH_Status = 0;
+	pdev_descriptor_const spi_server_dev = INSTANCE(apHandle)->spi_server_dev;
 
 	/* Select the FLASH: Chip Select low */
-	DEV_IOCTL_0_PARAMS(INSTANCE(apHandle)->gpio_select_dev , IOCTL_GPIO_PIN_CLEAR );
+	_chip_select_on(apHandle);
 
   /* Send "Read Status Register" instruction */
 	write_data[0]= RDSR;
-	DEV_WRITE(INSTANCE(apHandle)->spi_server_dev , write_data , 1);
+	DEV_WRITE(spi_server_dev , write_data , 1);
 
 
 
@@ -149,71 +191,36 @@ void SPI_FLASH_WaitForWriteEnd(const void *apHandle)
    /* Send a dummy byte to generate the clock needed by the FLASH
     and put the value of the status register in FLASH_Status variable */
 
-	DEV_READ(INSTANCE(apHandle)->spi_server_dev , &FLASH_Status , 1);
+	DEV_READ(spi_server_dev , &FLASH_Status , 1);
 
   } while((FLASH_Status & WIP_Flag) == 1); /* Write in progress */
 
 	/* Deselect the FLASH: Chip Select high */
-	DEV_IOCTL_0_PARAMS(INSTANCE(apHandle)->gpio_select_dev , IOCTL_GPIO_PIN_SET );
+	_chip_select_off(apHandle );
 }
 
-/*******************************************************************************
-* Function Name  : SPI_FLASH_SectorErase
-* Description    : Erases the specified FLASH sector.
-* Input          : SectorAddr: address of the sector to erase.
-* Output         : None
-* Return         : None
-*******************************************************************************/
-void SPI_FLASH_SectorErase(const void *apHandle,uint32_t SectorAddr)
-{
-  /* Send write enable instruction */
-  SPI_FLASH_WriteEnable(apHandle);
-
-  /* Sector Erase */
-	/* Select the FLASH: Chip Select low */
-	DEV_IOCTL_0_PARAMS(INSTANCE(apHandle)->gpio_select_dev , IOCTL_GPIO_PIN_CLEAR );
-
-
-	/* Send Sector Erase instruction  */
-	write_data[0]= SE;
-
-	addr_to_bytesBuffer(&write_data[1],SectorAddr);
-
-	DEV_WRITE(INSTANCE(apHandle)->spi_server_dev , write_data , 4);
-
-	/* Deselect the FLASH: Chip Select high */
-	DEV_IOCTL_0_PARAMS(INSTANCE(apHandle)->gpio_select_dev , IOCTL_GPIO_PIN_SET );
-
-  /* Wait the end of Flash writing */
-  SPI_FLASH_WaitForWriteEnd(apHandle);
-}
 
 /*******************************************************************************
-* Function Name  : SPI_FLASH_BulkErase
-* Description    : Erases the entire FLASH.
+* Function Name  : _write_to_flash_with_cs_toggle
+* Description    :
 * Input          : None
 * Output         : None
 * Return         : None
 *******************************************************************************/
-void SPI_FLASH_BulkErase(const void *apHandle)
+static void _write_to_flash_with_wen_and_wait(const void *apHandle , const uint8_t* apBuffer , uint32_t length )
 {
-  /* Send write enable instruction */
-  SPI_FLASH_WriteEnable(apHandle);
-
-  /* Bulk Erase */
 	/* Select the FLASH: Chip Select low */
-	DEV_IOCTL_0_PARAMS(INSTANCE(apHandle)->gpio_select_dev , IOCTL_GPIO_PIN_CLEAR );
+	SPI_FLASH_WriteEnable(apHandle);
 
-	/* Send Bulk Erase instruction  */
-	write_data[0]= BE;
-	DEV_WRITE(INSTANCE(apHandle)->spi_server_dev , write_data , 1);
+	_write_to_flash_with_cs_toggle(apHandle,apBuffer,length);
 
 	/* Deselect the FLASH: Chip Select high */
-	DEV_IOCTL_0_PARAMS(INSTANCE(apHandle)->gpio_select_dev , IOCTL_GPIO_PIN_SET );
+	SPI_FLASH_WaitForWriteEnd(apHandle );
 
-  /* Wait the end of Flash writing */
-  SPI_FLASH_WaitForWriteEnd(apHandle);
 }
+
+
+
 
 /*******************************************************************************
 * Function Name  : SPI_FLASH_PageWrite
@@ -230,11 +237,13 @@ void SPI_FLASH_BulkErase(const void *apHandle)
 *******************************************************************************/
 void SPI_FLASH_PageWrite(const void *apHandle,const uint8_t* pBuffer, uint32_t WriteAddr, uint32_t NumByteToWrite)
 {
+	uint8_t write_data[4];
+	pdev_descriptor_const spi_server_dev = INSTANCE(apHandle)->spi_server_dev;
   /* Enable the write access to the FLASH */
   SPI_FLASH_WriteEnable(apHandle);
 
 	/* Select the FLASH: Chip Select low */
-	DEV_IOCTL_0_PARAMS(INSTANCE(apHandle)->gpio_select_dev , IOCTL_GPIO_PIN_CLEAR );
+	_chip_select_on(apHandle);
 
   /* Send "Write to Memory " instruction */
 	write_data[0]= WRITE;
@@ -242,12 +251,12 @@ void SPI_FLASH_PageWrite(const void *apHandle,const uint8_t* pBuffer, uint32_t W
 	addr_to_bytesBuffer(&write_data[1],WriteAddr);
 
 
-	DEV_WRITE(INSTANCE(apHandle)->spi_server_dev , write_data , 4);
+	DEV_WRITE(spi_server_dev , write_data , 4);
 
-	DEV_WRITE(INSTANCE(apHandle)->spi_server_dev , pBuffer , NumByteToWrite);
+	DEV_WRITE(spi_server_dev , pBuffer , NumByteToWrite);
 
 	/* Deselect the FLASH: Chip Select high */
-	DEV_IOCTL_0_PARAMS(INSTANCE(apHandle)->gpio_select_dev , IOCTL_GPIO_PIN_SET );
+	_chip_select_off(apHandle );
 
   /* Wait the end of Flash writing */
   SPI_FLASH_WaitForWriteEnd(apHandle);
@@ -264,36 +273,28 @@ void SPI_FLASH_PageWrite(const void *apHandle,const uint8_t* pBuffer, uint32_t W
 *******************************************************************************/
 uint32_t SPI_FLASH_ReadID(const void *apHandle)
 {
-	uint32_t Temp = 0;
-	uint8_t Temp0 = 0;
+	uint8_t write_data[3];
+	uint32_t retVal = 0;
+	pdev_descriptor_const spi_server_dev = INSTANCE(apHandle)->spi_server_dev;
 
 	/* Select the FLASH: Chip Select low */
-	DEV_IOCTL_0_PARAMS(INSTANCE(apHandle)->gpio_select_dev , IOCTL_GPIO_PIN_CLEAR );
+	_chip_select_on(apHandle);
 
 	/* Send "RDID " instruction */
 	write_data[0]= 0x9F;
-	DEV_WRITE(INSTANCE(apHandle)->spi_server_dev , write_data , 1);
+	DEV_WRITE(spi_server_dev , write_data , 1);
 
-	/* Read a byte from the FLASH */
-	DEV_READ(INSTANCE(apHandle)->spi_server_dev , &Temp0 , 1);
-	Temp |= (uint32_t)Temp0<<16;
+	DEV_READ(spi_server_dev , write_data , 3);
 
-	/* Read a byte from the FLASH */
-
-
-
-DEV_READ(INSTANCE(apHandle)->spi_server_dev , &Temp0 , 1);
-	Temp |= Temp0<<8;
-
-	/* Read a byte from the FLASH */
-	DEV_READ(INSTANCE(apHandle)->spi_server_dev , &Temp0 , 1);
-	Temp |= Temp0;
+	retVal |= (uint32_t)write_data[0]<<16;
+	retVal |= (uint32_t)write_data[1]<<8;
+	retVal |= (uint32_t)write_data[2];
 
 	/* Deselect the FLASH: Chip Select high */
-	DEV_IOCTL_0_PARAMS(INSTANCE(apHandle)->gpio_select_dev , IOCTL_GPIO_PIN_SET );
+	_chip_select_off(apHandle );
 
 
-	return Temp;
+	return retVal;
 }
 
 
@@ -312,22 +313,24 @@ uint32_t  spi_flash_pread(const void *apHandle ,uint8_t *apData , uint32_t lengt
 size_t  spi_flash_pread(const void *apHandle ,uint8_t *apData , size_t length ,size_t startAddr)
 #endif
 {
+	uint8_t write_data[4];
 
+	pdev_descriptor_const spi_server_dev = INSTANCE(apHandle)->spi_server_dev;
 
 	/* Select the FLASH: Chip Select low */
-	DEV_IOCTL_0_PARAMS(INSTANCE(apHandle)->gpio_select_dev , IOCTL_GPIO_PIN_CLEAR );
+	_chip_select_on(apHandle);
 
 	/* Send "Read from Memory " instruction */
 	write_data[0]= READ;
 
 	addr_to_bytesBuffer(&write_data[1],startAddr);
 
-	DEV_WRITE(INSTANCE(apHandle)->spi_server_dev , write_data , 4);
+	DEV_WRITE(spi_server_dev , write_data , 4);
 
-	DEV_READ(INSTANCE(apHandle)->spi_server_dev , apData , length);
+	DEV_READ(spi_server_dev , apData , length);
 
 	/* Deselect the FLASH: Chip Select high */
-	DEV_IOCTL_0_PARAMS(INSTANCE(apHandle)->gpio_select_dev , IOCTL_GPIO_PIN_SET );
+	_chip_select_off(apHandle );
 
 	return length;
 
@@ -356,40 +359,32 @@ size_t  spi_flash_pwrite(const void *apHandle ,const uint8_t *apData , size_t le
 #else
   size_t retVal  ;
 #endif
-  size_t	NumOfPage,count;
+  uint16_t NumOfBytesToWrite,alignmentBytes;
   retVal=length;
 
 
-  count = startAddr & SPI_FLASH_PageSize_mask;
-  if( count != 0) /* startAddr is not aligned SPI_FLASH_PageSize   */
+
+  alignmentBytes = ((uint16_t)startAddr) & SPI_FLASH_PageSize_mask;/* in case startAddr is not aligned SPI_FLASH_PageSize   */
+  while(length)
   {
-	  count = SPI_FLASH_PageSize - count;
-	  if(length < count )
-	  {
-		  count=length;
-	  }
-	  SPI_FLASH_PageWrite(apHandle,apData, startAddr, count);
-	  apData += count;
-	  length -= count;
-	  startAddr += count;
+	NumOfBytesToWrite = SPI_FLASH_PageSize - alignmentBytes;
+
+	if(length < (uint32_t)NumOfBytesToWrite )
+	{
+	  NumOfBytesToWrite = (uint16_t)length;
+	}
+
+//	if(NumOfBytesToWrite>100)
+//	{
+//		  while(1);
+//	}
+	SPI_FLASH_PageWrite(apHandle,apData, startAddr, NumOfBytesToWrite);
+	startAddr +=  NumOfBytesToWrite;
+	apData += NumOfBytesToWrite;
+	length -=NumOfBytesToWrite;
+	alignmentBytes = 0;
   }
 
-  NumOfPage =  length >> SPI_FLASH_PageSize_in_bits;
-
-  while(NumOfPage)
-  {
-	SPI_FLASH_PageWrite(apHandle,apData, startAddr, SPI_FLASH_PageSize);
-	startAddr +=  SPI_FLASH_PageSize;
-	apData += SPI_FLASH_PageSize;
-	length -=SPI_FLASH_PageSize;
-	NumOfPage--;
-  }
-
-  //write remaining bytes
-  if(length)
-  {
-	  SPI_FLASH_PageWrite(apHandle,apData, startAddr, length);
-  }
 
 
   return retVal;
@@ -411,6 +406,8 @@ size_t  spi_flash_pwrite(const void *apHandle ,const uint8_t *apData , size_t le
 uint8_t spi_flash_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
+	uint8_t write_data[4];
+
 	switch(aIoctl_num)
 	{
 
@@ -420,7 +417,8 @@ uint8_t spi_flash_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 
 		case IOCTL_DEVICE_START :
 			/* Deselect the FLASH: Chip Select high */
-			DEV_IOCTL_0_PARAMS(INSTANCE(aHandle)->gpio_select_dev , IOCTL_GPIO_PIN_SET );
+			_chip_select_off(aHandle );
+
 //			{ // for spi test
 //				uint32_t tmp=SPI_FLASH_ReadID(aHandle);
 //			}
@@ -428,11 +426,16 @@ uint8_t spi_flash_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 			break;
 
 		case IOCTL_SPI_FLASH_ERRASE_ALL :
-			SPI_FLASH_BulkErase(aHandle);
+			write_data[0]= BE;
+			_write_to_flash_with_wen_and_wait(aHandle , write_data , 1);
+
 			break;
 
 		case IOCTL_SPI_FLASH_ERRASE_SECTOR :
-			SPI_FLASH_SectorErase(aHandle,*(uint32_t*)aIoctl_param1);
+			write_data[0]= SE;
+			addr_to_bytesBuffer(&write_data[1],*(uint32_t*)aIoctl_param1);
+			_write_to_flash_with_wen_and_wait(aHandle , write_data , 4);
+
 			break;
 
 		default :

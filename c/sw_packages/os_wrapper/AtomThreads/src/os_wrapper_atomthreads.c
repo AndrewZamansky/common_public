@@ -96,14 +96,12 @@ void *os_create_task_atomthreads( void *taskFunction,
 	static uint8_t curr_tcb=0;
 	curr_stack_storage_pointer += stackSize;
 
-	if(ATOMTHREADS_CONFIG_MAX_NUM_OF_TASKS <= curr_tcb)
+	if((ATOMTHREADS_CONFIG_MAX_NUM_OF_TASKS <= curr_tcb) ||
+			(ATOMTHREADS_CONFIG_STACK_STORAGE_SIZE < curr_stack_storage_pointer ))
 	{
-		while(1); // num of tasks is more then defined in atomthreads_config.h
-	}
-
-	if(ATOMTHREADS_CONFIG_STACK_STORAGE_SIZE < curr_stack_storage_pointer )
-	{
-		while(1); // storage of queues exceed then defined in atomthreads_config.h
+		// num of tasks is more then defined in atomthreads_config.h
+		// storage of task stack exceed then defined in atomthreads_config.h
+		while(1);
 	}
 
 
