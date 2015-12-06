@@ -83,9 +83,9 @@ void biquads_cascading_filter(void *pFilter,float *apIn,float *apOut,size_t buff
 
 
 	filter_params = (sw_biquads_params_t*)((biquads_cascading_filter_t *)pFilter)->pFilterParams;
-	pCoeffs = filter_parampCoeffs;
-	numOfStages = filter_paramnumOfStages;
-	pStates = filter_parampStates;
+	pCoeffs = filter_params->pCoeffs;
+	numOfStages = filter_params->numOfStages;
+	pStates = filter_params->pStates;
 
 	state0=0;
 	for (currStage = 0 ; currStage < numOfStages ; currStage++)
