@@ -56,13 +56,21 @@ int do_set_eq_band (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	{
 		set_band_biquads.filter_mode = BIQUADS_TRANSPARENT_MODE;
 	}
-	else if (0 == strcmp(argv[2],"low_pass"))
+	else if (0 == strcmp(argv[2],"low_pass_1_pole"))
 	{
-		set_band_biquads.filter_mode = BIQUADS_LOWPASS_MODE;
+		set_band_biquads.filter_mode = BIQUADS_LOWPASS_MODE_1_POLE;
 	}
-	else if (0 == strcmp(argv[2],"high_pass"))
+	else if (0 == strcmp(argv[2],"low_pass_2_poles"))
 	{
-		set_band_biquads.filter_mode = BIQUADS_HIGHPASS_MODE;
+		set_band_biquads.filter_mode = BIQUADS_LOWPASS_MODE_2_POLES;
+	}
+	else if (0 == strcmp(argv[2],"high_pass_1_pole"))
+	{
+		set_band_biquads.filter_mode = BIQUADS_HIGHPASS_MODE_1_POLE;
+	}
+	else if (0 == strcmp(argv[2],"high_pass_2_poles"))
+	{
+		set_band_biquads.filter_mode = BIQUADS_HIGHPASS_MODE_2_POLES;
 	}
 	else if (0 == strcmp(argv[2],"peak"))
 	{
