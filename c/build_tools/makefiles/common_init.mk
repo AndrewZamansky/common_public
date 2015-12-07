@@ -196,7 +196,7 @@ CURR_GIT_VERSION :=$(patsubst $(PROJECT_NAME)%,%,$(CURR_GIT_BRANCH))
 
 CURR_GIT_VERSION :=$(patsubst _%,%,$(CURR_GIT_VERSION))
 ifeq ($(CURR_GIT_VERSION),) # if empty then we are on main branch	 
-	CURR_GIT_VERSION :=master_version
+	CURR_GIT_VERSION :=MasterV0.0
 endif
 GLOBAL_DEFINES += VERSION_STR="$(CURR_GIT_VERSION)r$(DATE_STR).$(TIME_STR)"
 
