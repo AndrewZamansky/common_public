@@ -192,7 +192,13 @@ DATE_STR := $(subst $(SPACE),.,$(DATE_STR))#replace ' ' with '.'
 
 ### calculating version number 
 TIME_STR := $(subst :,.,$(strip $(shell $(TIME))))#replace ':' with '.'
-GLOBAL_DEFINES += VERSION_STR="$(DATE_STR).$(TIME_STR)"
+CURR_GIT_VERSION :=$(patsubst $(PROJECT_NAME)%,%,$(CURR_GIT_BRANCH))
+
+CURR_GIT_VERSION :=$(patsubst _%,%,$(CURR_GIT_VERSION))
+ifeq ($(CURR_GIT_VERSION),) # if empty then we are on main branch	 
+	CURR_GIT_VERSION :=master_version
+endif
+GLOBAL_DEFINES += VERSION_STR="$(CURR_GIT_VERSION)r$(DATE_STR).$(TIME_STR)"
 
 GLOBAL_CFLAGS := $(GLOBAL_PROJECT_SPECIFIC_CFLAGS)
 GLOBAL_ASMFLAGS := $(GLOBAL_PROJECT_SPECIFIC_ASMLAGS)
