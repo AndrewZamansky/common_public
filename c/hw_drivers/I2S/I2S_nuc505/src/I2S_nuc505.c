@@ -133,12 +133,12 @@ void __attribute__((section(".critical_text"))) I2S_IRQHandler(void)
  			CLK_SysTickDelay(100000);
  		I2S_SET_INTERNAL_CODEC(I2S, 0x0A, 0x09); // DAC output only
 // 		I2S_SET_INTERNAL_CODEC(I2S, 0x0A, 0x24); // mic output only
- 		I2S_SET_INTERNAL_CODEC(I2S, 0x0B, 0xF0);
-// 		I2S_SET_INTERNAL_CODEC(I2S, 0x0B, 0xD0); // az
+// 		I2S_SET_INTERNAL_CODEC(I2S, 0x0B, 0xF0);
+ 		I2S_SET_INTERNAL_CODEC(I2S, 0x0B, 0xD0); // az
  		I2S_SET_INTERNAL_CODEC(I2S, 0x00, 0xD0);	//ADC digital enabled
  		CLK_SysTickDelay(100000);	//Delay 100mS
 
-#if 1 // original exampe
+#if 0 // original exampe
  		I2S_SET_INTERNAL_CODEC(I2S, 0x08, 0x06);	//Un-mute Headphone and set volume
 		I2S_SET_INTERNAL_CODEC(I2S, 0x09, 0x06);	//Un-mute Headphone and set volume
 		I2S_SET_INTERNAL_CODEC(I2S, 0x10, 0x08);	//Un-Mute the ADC Left channel volume
@@ -147,8 +147,8 @@ void __attribute__((section(".critical_text"))) I2S_IRQHandler(void)
 
 		I2S_SET_INTERNAL_CODEC(I2S, 0x08, 0x00);	// Un-Mute headphone of Left channel
 		I2S_SET_INTERNAL_CODEC(I2S, 0x09, 0x00);	// Un-Mute headphone of Right channel
- 		I2S_SET_INTERNAL_CODEC(I2S, 0x10, 0x08);	//az Un-Mute the ADC Left channel volume
- 		I2S_SET_INTERNAL_CODEC(I2S, 0x11, 0x08);	//az Un-Mute the ADC Right channel volume
+ 		I2S_SET_INTERNAL_CODEC(I2S, 0x10, 0x07);	//az Un-Mute the ADC Left channel volume
+ 		I2S_SET_INTERNAL_CODEC(I2S, 0x11, 0x07);	//az Un-Mute the ADC Right channel volume
 //		I2S_SET_INTERNAL_CODEC(I2S, 0x10, 0x15);	//Un-Mute the ADC Left channel volume
 //		I2S_SET_INTERNAL_CODEC(I2S, 0x11, 0x05);	//Un-Mute the ADC Right channel volume
 #endif

@@ -61,10 +61,10 @@
 int do_get_version (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 	pdev_descriptor dev_descriptor;
-	uint8_t ret_buff[VERSION_LENGTH+1];
+	uint8_t ret_buff[MAX_RET_BUFF_SIZE+1];
 
 	dev_descriptor = DEV_OPEN((uint8_t*)"version");
-	DEV_READ(dev_descriptor,ret_buff,VERSION_LENGTH);
+	DEV_READ(dev_descriptor,ret_buff,MAX_RET_BUFF_SIZE);
 	SHELL_REPLY_STR(ret_buff);
 
 	return 0;

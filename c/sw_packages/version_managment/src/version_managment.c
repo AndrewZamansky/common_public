@@ -19,26 +19,7 @@
 
 /********  defines *********************/
 
-#if USE_GCC_BUILD_IN
-// Example of __DATE__ string: "Jul 27 2012"
-// Example of __TIME__ string: "21:06:19"
 
-const char month[12][2]=
-                     {
-                    		 "an",
-                    		 "eb",
-                    		 "ar",
-                    		 "pr",
-                    		 "ay",
-                    		 "un",
-                    		 "ul",
-                    		 "ug",
-                    		 "ep",
-                    		 "ct",
-                    		 "ov",
-                    		 "ec",
-                     };
-#endif
 /********  types  *********************/
 
 
@@ -46,7 +27,7 @@ const char month[12][2]=
 
 
 /********  local defs *********************/
-//static uint8_t version_str[]="yy.mm.dd.hh.mm";
+
 /*---------------------------------------------------------------------------------------------------------*/
 /* Function:        VersionManagment_read                                                                          */
 /*                                                                                                         */
@@ -86,26 +67,6 @@ uint8_t  version_managment_api_init_dev_descriptor(pdev_descriptor aDevDescripto
 	aDevDescriptor->handle = NULL;
 	aDevDescriptor->pread = version_managment_pread;
 
-#if USE_GCC_BUILD_IN
-	{
-		uint32_t i;
-
-		memcpy(version_str,&__DATE__[9],2);
-
-		for (i=0;i<11 ;i++)
-		{
-			if (0==memcmp(month[i],&__DATE__[1],2)) break;
-		}
-
-		version_str[START_OF_MONTH_POS]= (i>8) ? '1' : '0';
-		version_str[START_OF_MONTH_POS+1]= '1' + i;
-
-		version_str[START_OF_DAY_POS] = ((__DATE__[4] >= '0') ? (__DATE__[4]) : '0');
-		version_str[START_OF_DAY_POS+1] = __DATE__[5];
-		memcpy(&version_str[START_OF_HOUR_POS],&__TIME__[0] ,2);
-		memcpy(&version_str[START_OF_MINUTE_POS],&__TIME__[3] ,2);
-	}
-#endif
 	return 0 ;
 
 }
