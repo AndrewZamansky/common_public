@@ -160,7 +160,8 @@ ifneq ($(sort $(filter $(CURR_GIT_BRANCH),$(SHELL_OUTPUT))),$(CURR_GIT_BRANCH))#
         $(info $(SHELL_GO_TO_COMMON_GIT_DIR) git branch $(PROJECT_NAME))
         $(error  )
     else
-        $(info checkout $(CURR_GIT_BRANCH) manually in common git . create it)      
+        $(info checkout $(CURR_GIT_BRANCH) manually in common git)      
+         $(info you can run following comand in common directory:)
         $(info $(SHELL_GO_TO_COMMON_GIT_DIR) git checkout $(CURR_GIT_BRANCH))
         $(error  )
     endif
