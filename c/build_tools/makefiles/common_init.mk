@@ -89,7 +89,8 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
        DUMMY:=$(shell $(MKDIR)  $(CONFIG_SEMIHOSTING_UPLOADING_DIR)) # create   $(CONFIG_SEMIHOSTING_UPLOADING_DIR)
     endif
     
-	SHELL_GO_TO_COMMON_GIT_DIR :=cd $(COMMON_DIR) &
+    COMMON_PARTITION := $(firstword $(subst :, ,$(COMMON_DIR))):
+	SHELL_GO_TO_COMMON_GIT_DIR :=cd $(COMMON_DIR) & $(COMMON_PARTITION) & 
 	RM		:=rmdir /S /Q
 	CP		:=copy /Y
 	DATE	:=date /T
