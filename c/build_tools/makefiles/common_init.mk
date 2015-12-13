@@ -131,6 +131,7 @@ ifneq ($(findstring ambiguous argument 'HEAD',$(CURR_GIT_BRANCH)),) 	 # if not f
 endif
 ifeq ($(findstring $(PROJECT_NAME),$(CURR_GIT_BRANCH)),) 	 # if not found $(PROJECT_NAME) in $(CURR_GIT_BRANCH)
     $(info  error : branch names must be of type $(PROJECT_NAME) or $(PROJECT_NAME)_<branch_name>)
+    $(info  but current branch name is $(CURR_GIT_BRANCH))
     $(info  in case that this git is just created run following comand in project directory:)
     $(info git branch -m $(PROJECT_NAME))
     $(error )
@@ -152,9 +153,9 @@ ifneq ($(sort $(filter $(CURR_GIT_BRANCH),$(SHELL_OUTPUT))),$(CURR_GIT_BRANCH))#
    #for now we are doing manual checkout
    #SHELL_OUTPUT := $(shell $(SHELL_GO_TO_COMMON_GIT_DIR) git checkout $(CURR_GIT_BRANCH) 2>&1)
     SHELL_OUTPUT := $(shell $(SHELL_GO_TO_COMMON_GIT_DIR) git branch 2>&1)
+    CURR_GIT_BRANCH:=$(patsubst heads/%,%,$(CURR_GIT_BRANCH))
     ifneq ($(sort $(filter $(CURR_GIT_BRANCH),$(SHELL_OUTPUT))),$(CURR_GIT_BRANCH))#if  $(CURR_GIT_BRANCH) is in $(SHELL_OUTPUT)
         $(info  git error : branch $(CURR_GIT_BRANCH) not found in common git . create it)
-        $(info  but current branch name is $(CURR_GIT_BRANCH))
         $(info  in case that this git is just created run following comand in common directory:)
         $(info $(SHELL_GO_TO_COMMON_GIT_DIR) git branch $(PROJECT_NAME))
         $(error  )
