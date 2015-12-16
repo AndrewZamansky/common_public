@@ -257,6 +257,15 @@ void biquads_calculation(biquads_filter_mode_t filter_mode,
 			a2 = (1 - K/QValue + K * K) * norm	;
 			break;
 
+		case BIQUADS_BANDPASS_MODE :
+			norm = 1/(1 + K/QValue + K * K)	;
+			b0 = K/QValue *	norm;
+			b1 = 0	;
+			b2 = -b0	;
+			a1 = 2 * (K * K - 1) * norm	;
+			a2 = (1 - K/QValue + K * K) * norm	;
+			break;
+
 		case BIQUADS_PEAK_MODE :
 			if(Gain_dB >= 0)
 			{

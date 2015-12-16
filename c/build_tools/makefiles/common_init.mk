@@ -89,7 +89,8 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
        DUMMY:=$(shell $(MKDIR)  $(CONFIG_SEMIHOSTING_UPLOADING_DIR)) # create   $(CONFIG_SEMIHOSTING_UPLOADING_DIR)
     endif
     
-	SHELL_GO_TO_COMMON_GIT_DIR :=cd $(COMMON_DIR) &
+    COMMON_PARTITION := $(firstword $(subst :, ,$(COMMON_DIR))):
+	SHELL_GO_TO_COMMON_GIT_DIR :=cd $(COMMON_DIR) & $(COMMON_PARTITION) & 
 	RM		:=rmdir /S /Q
 	CP		:=copy /Y
 	DATE	:=date /T
@@ -131,30 +132,38 @@ ifneq ($(findstring ambiguous argument 'HEAD',$(CURR_GIT_BRANCH)),) 	 # if not f
 endif
 ifeq ($(findstring $(PROJECT_NAME),$(CURR_GIT_BRANCH)),) 	 # if not found $(PROJECT_NAME) in $(CURR_GIT_BRANCH)
     $(info  error : branch names must be of type $(PROJECT_NAME) or $(PROJECT_NAME)_<branch_name>)
+    $(info  but current branch name is $(CURR_GIT_BRANCH))
     $(info  in case that this git is just created run following comand in project directory:)
     $(info git branch -m $(PROJECT_NAME))
     $(error )
 endif
 
 SHELL_OUTPUT := $(shell $(SHELL_GO_TO_COMMON_GIT_DIR) git rev-parse --abbrev-ref HEAD)
-ifneq ($(sort $(filter $(CURR_GIT_BRANCH),$(SHELL_OUTPUT))),$(CURR_GIT_BRANCH)) 	 
+ifneq ($(sort $(filter $(CURR_GIT_BRANCH),$(SHELL_OUTPUT))),$(CURR_GIT_BRANCH))#if  $(CURR_GIT_BRANCH) is in $(SHELL_OUTPUT)
     SHELL_OUTPUT := $(shell $(SHELL_GO_TO_COMMON_GIT_DIR) git status --porcelain 2>&1)
     ERROR_MESSAGE := M 
     ifeq ($(findstring $(ERROR_MESSAGE),$(SHELL_OUTPUT)),$(ERROR_MESSAGE)) 	 
         $(info  git error : commit all changes to common git($(COMMON_DIR)) before changing branch or project)
         $(error  )
     endif
-    ERROR_MESSAGE := D 
+    ERROR_MESSAGE := D #??
     ifeq ($(findstring $(ERROR_MESSAGE),$(SHELL_OUTPUT)),$(ERROR_MESSAGE)) 	 
         $(info  git error : commit all changes to common git)
         $(error  )
     endif
-    SHELL_OUTPUT := $(shell $(SHELL_GO_TO_COMMON_GIT_DIR) git checkout $(CURR_GIT_BRANCH) 2>&1)
-    ERROR_MESSAGE :=did not match any file
-    ifeq ($(findstring $(ERROR_MESSAGE),$(SHELL_OUTPUT)),$(ERROR_MESSAGE)) 	 
+   #for now we are doing manual checkout
+   #SHELL_OUTPUT := $(shell $(SHELL_GO_TO_COMMON_GIT_DIR) git checkout $(CURR_GIT_BRANCH) 2>&1)
+    SHELL_OUTPUT := $(shell $(SHELL_GO_TO_COMMON_GIT_DIR) git branch 2>&1)
+    CURR_GIT_BRANCH:=$(patsubst heads/%,%,$(CURR_GIT_BRANCH))
+    ifneq ($(sort $(filter $(CURR_GIT_BRANCH),$(SHELL_OUTPUT))),$(CURR_GIT_BRANCH))#if  $(CURR_GIT_BRANCH) is in $(SHELL_OUTPUT)
         $(info  git error : branch $(CURR_GIT_BRANCH) not found in common git . create it)
         $(info  in case that this git is just created run following comand in common directory:)
         $(info $(SHELL_GO_TO_COMMON_GIT_DIR) git branch $(PROJECT_NAME))
+        $(error  )
+    else
+        $(info checkout $(CURR_GIT_BRANCH) manually in common git)      
+         $(info you can run following comand in common directory:)
+        $(info $(SHELL_GO_TO_COMMON_GIT_DIR) git checkout $(CURR_GIT_BRANCH))
         $(error  )
     endif
 endif
