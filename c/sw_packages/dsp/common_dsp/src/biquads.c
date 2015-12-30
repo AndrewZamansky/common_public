@@ -205,14 +205,16 @@ void biquads_calculation(biquads_filter_mode_t filter_mode,
 {
 	float norm,V,K	;
 	float ftem	;
-	float b0,b1,b2,a1,a2;
+	float b0,b1,b2,a1,a2,w0;
 
 	b0 = 1.0	;
 
 	ftem = FreqC/SamplingRate	;
+    w0 = 2 * 3.1415962 * ftem;
 	K = tan(3.1415962 * ftem)	;
 	ftem = (Gain_dB >= 0) ? Gain_dB : -Gain_dB	;
 	V = pow(10,ftem/20)	;
+
 
 	switch(filter_mode)
 	{
@@ -221,7 +223,15 @@ void biquads_calculation(biquads_filter_mode_t filter_mode,
 			a1 = a2 = b1 = b2 = 0	;
 			break	;
 
-		case BIQUADS_LOWPASS_MODE :
+		case BIQUADS_LOWPASS_MODE_1_POLE :
+            a1 = -exp(-w0);
+            a2 = 0;
+            b0 = 1 + a1;
+            b1 = 0;
+            b2 = 0;
+			break;
+
+		case BIQUADS_LOWPASS_MODE_2_POLES :
 			norm = 1/(1 + K/QValue + K * K)	;
 			b0 = K * K * norm	;
 			b1 = 2 * b0	;
@@ -230,11 +240,28 @@ void biquads_calculation(biquads_filter_mode_t filter_mode,
 			a2 = (1 - K/QValue + K * K) * norm	;
 			break;
 
-		case BIQUADS_HIGHPASS_MODE :
+		case BIQUADS_HIGHPASS_MODE_1_POLE :
+            a1 = -exp(-w0);
+            a2 = 0;
+            b0 = (1 - a1) / 2;
+            b1 = -b0;
+            b2 = 0;
+			break;
+
+		case BIQUADS_HIGHPASS_MODE_2_POLES :
 			norm = 1/(1 + K/QValue + K * K)	;
 			b0 = norm	;
 			b1 = -2 * b0	;
 			b2 = b0	;
+			a1 = 2 * (K * K - 1) * norm	;
+			a2 = (1 - K/QValue + K * K) * norm	;
+			break;
+
+		case BIQUADS_BANDPASS_MODE :
+			norm = 1/(1 + K/QValue + K * K)	;
+			b0 = K/QValue *	norm;
+			b1 = 0	;
+			b2 = -b0	;
 			a1 = 2 * (K * K - 1) * norm	;
 			a2 = (1 - K/QValue + K * K) * norm	;
 			break;

@@ -83,7 +83,7 @@ all: $(COMPONENTS_MK)
 
 all_after_makefile_generated : build_outputs
 	$(eval TARGET := all)
-	$(info ---- Compiling project $(APP_ROOT_DIR) done ----)
+	$(info ---- Compiling project $(APP_ROOT_DIR) done at $(TIME_STR) ----)
 
 rebuild : clean
 	$(MAKE) all

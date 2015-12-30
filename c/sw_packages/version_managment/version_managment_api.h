@@ -8,14 +8,7 @@
 
 /*****************  defines  **************/
 
-// version pattern :  "yy.mm.dd.hh.mm";
-#define START_OF_YEAR_POS  		0
-#define START_OF_MONTH_POS 		(START_OF_YEAR_POS	+3)
-#define START_OF_DAY_POS 		(START_OF_MONTH_POS	+3)
-#define START_OF_HOUR_POS 		(START_OF_DAY_POS	+3)
-#define START_OF_MINUTE_POS 	(START_OF_HOUR_POS	+3)
 
-#define VERSION_LENGTH	15
 /**********  define API  types ************/
 
 

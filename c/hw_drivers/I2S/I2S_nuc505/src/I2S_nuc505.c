@@ -39,10 +39,13 @@
 static I2S_NUC505_Instance_t *pI2SHandle;
 
 
+uint16_t num_of_words_in_buffer_per_chenel = 0;
+uint16_t num_of_uint32_in_buffer_per_chenel;
+uint8_t	num_of_bytes_in_word;
 
-int16_t PcmRxBuff[2][I2S_BUFF_LEN*2] = {{0}};
+int32_t *PcmRxBuff;//[2][I2S_BUFF_LEN*2] = {{0}};
 //int16_t test[2][I2S_BUFF_LEN*2] = {{0}};
-int16_t PcmTxBuff[2][I2S_BUFF_LEN*2] = {{0}};
+int32_t *PcmTxBuff;//[2][I2S_BUFF_LEN*2] = {{0}};
 
 
 
@@ -51,53 +54,59 @@ float volume=1;
 
 uint8_t i2s_loopback = 0;
 
-volatile static uint32_t s_flag1;
+//volatile static uint32_t s_flag1;
 
 
 void __attribute__((section(".critical_text"))) I2S_IRQHandler(void)
 {
 	uint32_t u32I2SIntFlag;
-	uint8_t currBuffOffset=0;
-	int16_t *pRxBuf;
-	int16_t *pTxBuf;
+	int32_t *pRxBuf=NULL;
+	int32_t *pTxBuf=NULL;
+	uint16_t i;
 
 	u32I2SIntFlag = I2S_GET_INT_FLAG(I2S, (I2S_STATUS_RDMATIF_Msk | I2S_STATUS_RDMAEIF_Msk));
 
 	/* Copy RX data to TX buffer */
 	if (u32I2SIntFlag & I2S_STATUS_RDMATIF_Msk)
 	{
-		currBuffOffset=0;
+		pRxBuf = PcmRxBuff;
+		pTxBuf = PcmTxBuff;
 		I2S_CLR_INT_FLAG(I2S, I2S_STATUS_RDMATIF_Msk);
 	}
 	else if (u32I2SIntFlag & I2S_STATUS_RDMAEIF_Msk)
 	{
-		currBuffOffset=1;
+		pRxBuf = PcmRxBuff +  (num_of_uint32_in_buffer_per_chenel*2);
+		pTxBuf = PcmTxBuff +  (num_of_uint32_in_buffer_per_chenel*2);
 		I2S_CLR_INT_FLAG(I2S, I2S_STATUS_RDMAEIF_Msk);
 
-		if ( s_flag1 == 0 )
+//		if ( s_flag1 == 0 )
+//		{
+//			s_flag1 = 1;
+//			I2S_ENABLE_TXDMA(I2S);
+//			I2S_ENABLE_TX(I2S);
+//		}
+	}
+
+	if(NULL != pRxBuf)
+	{
+		if(0 == i2s_loopback)
 		{
-			s_flag1 = 1;
-			I2S_ENABLE_TXDMA(I2S);
-			I2S_ENABLE_TX(I2S);
+			if(NULL !=pI2SHandle->callback_dev)
+			{
+				DEV_CALLBACK_2_PARAMS( pI2SHandle->callback_dev ,
+						CALLBACK_NEW_DATA_ARRIVED, pRxBuf ,  pTxBuf) ;
+			}
+		}
+		else
+		{
+			for(i = 0 ; i < num_of_uint32_in_buffer_per_chenel ; i++)
+			{
+				pTxBuf[2*i] =  pRxBuf[2*i ];
+				pTxBuf[2*i + 1] =  pRxBuf[2*i + 1];
+
+			}
 		}
 	}
-
-	pRxBuf = &PcmRxBuff[currBuffOffset][0];
-	pTxBuf = &PcmTxBuff[currBuffOffset][0];
-
-	if(0 == i2s_loopback)
-	{
-		if(NULL !=pI2SHandle->callback_dev)
-		{
-			DEV_CALLBACK_2_PARAMS( pI2SHandle->callback_dev ,
-					CALLBACK_NEW_DATA_ARRIVED, pRxBuf ,  pTxBuf) ;
-		}
-	}
-	else
-	{
-		memcpy(pTxBuf , pRxBuf , 2 * I2S_BUFF_LEN * sizeof(uint16_t))	;
-	}
-
 }
 
 
@@ -133,12 +142,12 @@ void __attribute__((section(".critical_text"))) I2S_IRQHandler(void)
  			CLK_SysTickDelay(100000);
  		I2S_SET_INTERNAL_CODEC(I2S, 0x0A, 0x09); // DAC output only
 // 		I2S_SET_INTERNAL_CODEC(I2S, 0x0A, 0x24); // mic output only
- 		I2S_SET_INTERNAL_CODEC(I2S, 0x0B, 0xF0);
-// 		I2S_SET_INTERNAL_CODEC(I2S, 0x0B, 0xD0); // az
+// 		I2S_SET_INTERNAL_CODEC(I2S, 0x0B, 0xF0);
+ 		I2S_SET_INTERNAL_CODEC(I2S, 0x0B, 0xD0); // az
  		I2S_SET_INTERNAL_CODEC(I2S, 0x00, 0xD0);	//ADC digital enabled
  		CLK_SysTickDelay(100000);	//Delay 100mS
 
-#if 1 // original exampe
+#if 0 // original exampe
  		I2S_SET_INTERNAL_CODEC(I2S, 0x08, 0x06);	//Un-mute Headphone and set volume
 		I2S_SET_INTERNAL_CODEC(I2S, 0x09, 0x06);	//Un-mute Headphone and set volume
 		I2S_SET_INTERNAL_CODEC(I2S, 0x10, 0x08);	//Un-Mute the ADC Left channel volume
@@ -147,8 +156,8 @@ void __attribute__((section(".critical_text"))) I2S_IRQHandler(void)
 
 		I2S_SET_INTERNAL_CODEC(I2S, 0x08, 0x00);	// Un-Mute headphone of Left channel
 		I2S_SET_INTERNAL_CODEC(I2S, 0x09, 0x00);	// Un-Mute headphone of Right channel
- 		I2S_SET_INTERNAL_CODEC(I2S, 0x10, 0x08);	//az Un-Mute the ADC Left channel volume
- 		I2S_SET_INTERNAL_CODEC(I2S, 0x11, 0x08);	//az Un-Mute the ADC Right channel volume
+ 		I2S_SET_INTERNAL_CODEC(I2S, 0x10, 0x07);	//az Un-Mute the ADC Left channel volume
+ 		I2S_SET_INTERNAL_CODEC(I2S, 0x11, 0x07);	//az Un-Mute the ADC Right channel volume
 //		I2S_SET_INTERNAL_CODEC(I2S, 0x10, 0x15);	//Un-Mute the ADC Left channel volume
 //		I2S_SET_INTERNAL_CODEC(I2S, 0x11, 0x05);	//Un-Mute the ADC Right channel volume
 #endif
@@ -163,6 +172,13 @@ void __attribute__((section(".critical_text"))) I2S_IRQHandler(void)
 
  void I2S_Init(void)
  {
+	 uint16_t buffer_size;
+	 uint16_t buff_threshold_pos;
+	 num_of_uint32_in_buffer_per_chenel = num_of_words_in_buffer_per_chenel * num_of_bytes_in_word / 4 ;
+	 buffer_size = num_of_words_in_buffer_per_chenel * num_of_bytes_in_word * 2 ;//2 for L/R
+	 PcmRxBuff = (int32_t*)malloc(buffer_size * 2);// 2 for double buffering
+	 PcmTxBuff = (int32_t*)malloc(buffer_size * 2);// 2 for double buffering
+
  		/* Enable I2S Module clock */
      CLK_EnableModuleClock(I2S_MODULE);
  		/* I2S module clock from APLL */
@@ -174,7 +190,7 @@ void __attribute__((section(".critical_text"))) I2S_IRQHandler(void)
  		// CLK_SET_APLL(CLK_APLL_45158425);
  		// I2S = 45158425Hz / (0+1) for 11025, 22050, and 44100 sampling rate
 
-#if 	1 == USE_EXTERNAL_CODEC
+#if 	1 == I2S_NUC505_CONFIG_USE_EXTERNAL_CODEC
  		CLK_SetModuleClock(I2S_MODULE, CLK_I2S_SRC_APLL, 3);//3
 #else
  		CLK_SetModuleClock(I2S_MODULE, CLK_I2S_SRC_APLL, 0);
@@ -193,7 +209,7 @@ void __attribute__((section(".critical_text"))) I2S_IRQHandler(void)
  		SYS->GPC_MFPH  = (SYS->GPC_MFPH & (~SYS_GPC_MFPH_PC8MFP_Msk) ) | SYS_GPC_MFPH_PC8MFP_I2S_MCLK;
  		SYS->GPC_MFPH  = (SYS->GPC_MFPH & (~SYS_GPC_MFPH_PC9MFP_Msk) ) | SYS_GPC_MFPH_PC9MFP_I2S_DIN;
  		SYS->GPC_MFPH  = (SYS->GPC_MFPH & (~SYS_GPC_MFPH_PC10MFP_Msk) ) | SYS_GPC_MFPH_PC10MFP_I2S_DOUT;
-#if 	1 == USE_EXTERNAL_CODEC
+#if 	1 == I2S_NUC505_CONFIG_USE_EXTERNAL_CODEC
  		SYS->GPA_MFPH  = (SYS->GPA_MFPH & (~SYS_GPA_MFPH_PA8MFP_Msk) ) | SYS_GPA_MFPH_PA8MFP_I2S_LRCLK;
  		SYS->GPA_MFPH  = (SYS->GPA_MFPH & (~SYS_GPA_MFPH_PA9MFP_Msk) ) | SYS_GPA_MFPH_PA9MFP_I2S_BCLK;
 #else
@@ -201,19 +217,22 @@ void __attribute__((section(".critical_text"))) I2S_IRQHandler(void)
  		SYS->GPC_MFPH  = (SYS->GPC_MFPH & (~SYS_GPC_MFPH_PC12MFP_Msk) ) | SYS_GPC_MFPH_PC12MFP_I2S_BCLK;
 #endif
 
-#if 	1 == USE_EXTERNAL_CODEC
-	#if 	1 == USE_MASTER_MODE
+#if 	1 == I2S_NUC505_CONFIG_USE_EXTERNAL_CODEC
+	#if 	1 == I2S_NUC505_CONFIG_USE_MASTER_MODE
  	    /* Master mode, 16-bit word width, stereo mode, I2S format. Set TX and RX FIFO threshold to middle value. */
- 	    I2S_Open(I2S, I2S_MODE_MASTER, 48000, I2S_DATABIT_16, I2S_STEREO, I2S_FORMAT_I2S, 0);
+ 	    I2S_Open(I2S, I2S_MODE_MASTER, 48000,  (num_of_bytes_in_word-1)<<I2S_CTL_WDWIDTH_Pos,
+ 	    		I2S_STEREO, I2S_FORMAT_I2S, 0);
 	#else
   	   /* Slave mode, 16-bit word width, stereo mode, I2S format. Set TX and RX FIFO threshold to middle value. */
   	    /* I2S peripheral clock rate is equal to PCLK1 clock rate. */
-  	    I2S_Open(I2S, I2S_MODE_SLAVE, 0, I2S_DATABIT_16, I2S_STEREO, I2S_FORMAT_I2S, 0);
+  	    I2S_Open(I2S, I2S_MODE_SLAVE, 0,  (num_of_bytes_in_word-1)<<I2S_CTL_WDWIDTH_Pos,
+  	    		I2S_STEREO, I2S_FORMAT_I2S, 0);
 	#endif
 #else
 		/* Master mode, 16-bit word width, stereo mode, I2S format. Set TX and RX FIFO threshold to middle value. */
 		/* Other sampling rate please change APLL clock setting in I2S_Init() */
-		I2S_Open(I2S, I2S_MODE_MASTER, 48000, I2S_DATABIT_16, I2S_STEREO, I2S_FORMAT_I2S, I2S_ENABLE_INTERNAL_CODEC);
+		I2S_Open(I2S, I2S_MODE_MASTER, 48000, (num_of_bytes_in_word-1)<<I2S_CTL_WDWIDTH_Pos,
+				I2S_STEREO, I2S_FORMAT_I2S, I2S_ENABLE_INTERNAL_CODEC);
 
 		// Open MCLK
 #endif
@@ -222,18 +241,21 @@ void __attribute__((section(".critical_text"))) I2S_IRQHandler(void)
 		I2S_SET_TX_TH_LEVEL(I2S, I2S_FIFO_TX_LEVEL_WORD_15);
 		I2S_SET_RX_TH_LEVEL(I2S, I2S_FIFO_RX_LEVEL_WORD_16);
 
-		I2S_SET_TXDMA_STADDR(I2S, (uint32_t) &PcmTxBuff[0]);								// Tx Start Address
-		I2S_SET_TXDMA_THADDR(I2S, (uint32_t) &PcmTxBuff[0][I2S_BUFF_LEN*2-2]);	// Tx Threshold Address
-		I2S_SET_TXDMA_EADDR( I2S, (uint32_t) &PcmTxBuff[1][I2S_BUFF_LEN*2-2]);	// Tx End Address
 
-		I2S_SET_RXDMA_STADDR(I2S, (uint32_t) &PcmRxBuff[0]);								// Rx Start Address
-		I2S_SET_RXDMA_THADDR(I2S, (uint32_t) &PcmRxBuff[0][I2S_BUFF_LEN*2-2]);	// Rx Threshold Address
-		I2S_SET_RXDMA_EADDR( I2S, (uint32_t) &PcmRxBuff[1][I2S_BUFF_LEN*2-2]);	// Rx End Address
+		buff_threshold_pos = num_of_uint32_in_buffer_per_chenel*2   ;// *2 for L/R
+
+		I2S_SET_TXDMA_STADDR(I2S, (uint32_t) PcmTxBuff );								// Tx Start Address
+		I2S_SET_TXDMA_THADDR(I2S, (uint32_t) (PcmTxBuff + buff_threshold_pos - 1) );	// Tx Threshold Address
+		I2S_SET_TXDMA_EADDR( I2S, (uint32_t) (PcmTxBuff + 2*buff_threshold_pos - 1));	// Tx End Address
+
+		I2S_SET_RXDMA_STADDR(I2S, (uint32_t) PcmRxBuff );								// Rx Start Address
+		I2S_SET_RXDMA_THADDR(I2S, (uint32_t) (PcmRxBuff + buff_threshold_pos -1) );	// Rx Threshold Address
+		I2S_SET_RXDMA_EADDR( I2S, (uint32_t) (PcmRxBuff + 2*buff_threshold_pos - 1));	// Rx End Address
 
 		// Open Rx Dma Enable
 		I2S_ENABLE_RXDMA(I2S);
 
-#if 	1 == USE_EXTERNAL_CODEC
+#if 	1 == I2S_NUC505_CONFIG_USE_EXTERNAL_CODEC
 #else
 		demo_LineIn();
 //		demo_MIC0();
@@ -276,7 +298,15 @@ uint8_t I2S_nuc505_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 			*(uint8_t*)aIoctl_param2 =   0; //size
 			break;
 
+		case I2S_SET_PARAMS :
+			num_of_words_in_buffer_per_chenel = ((I2S_API_set_params_t*)aIoctl_param1)->num_of_words_in_buffer_per_chenel;
+			num_of_bytes_in_word = ((I2S_API_set_params_t*)aIoctl_param1)->num_of_bytes_in_word;
+			break;
+
 		case IOCTL_DEVICE_START :
+
+			if(0 == num_of_words_in_buffer_per_chenel) return 2;
+
 			pI2SHandle = aHandle;
 
 			I2S_Init();
