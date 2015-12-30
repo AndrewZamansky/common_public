@@ -178,6 +178,7 @@ uint8_t uart_stm8_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 			  UART1_Init (INSTANCE(aHandle)->baud_rate, UART1_WORDLENGTH_8D, UART1_STOPBITS_1, UART1_PARITY_NO,
 			              UART1_SYNCMODE_CLOCK_DISABLE, UART1_MODE_TXRX_ENABLE);
 			  pHw_uart_pointer_to_instance = INSTANCE(aHandle);
+			  GPIO_Init(GPIOD,GPIO_PIN_6,GPIO_MODE_IN_PU_NO_IT);
 			  UART1_ITConfig( UART1_IT_RXNE, ENABLE );
 			break;
 		case IOCTL_UART_DISABLE_TX :
