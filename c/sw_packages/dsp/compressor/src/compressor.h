@@ -23,6 +23,9 @@
 typedef struct {
 
 	uint8_t dummy;
+	uint32_t latency;
+	float *latency_buffer_Ch1;
+	float *latency_buffer_Ch2;
 	float threshold;
 	float reverse_ratio;
 	float prev_ratio;

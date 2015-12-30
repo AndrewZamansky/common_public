@@ -36,6 +36,7 @@ typedef void (*dsp_func_t)(const void * const aHandle ,
 		float *apCh1Out , float *apCh2Out
 		)  ;
 
+#define	MAX_NUM_OF_OUTPUT_PADS	2
 
 typedef struct _dsp_descriptor_t
 {
@@ -43,7 +44,7 @@ typedef struct _dsp_descriptor_t
 	void*    			handle;
 	dsp_ioctl_func_t  	ioctl;
 	dsp_func_t  		dsp_func;
-
+	float				*out_pads[MAX_NUM_OF_OUTPUT_PADS];
 }dsp_descriptor_t,*pdsp_descriptor;
 
 typedef const dsp_descriptor_t * pdsp_descriptor_const;
@@ -60,9 +61,28 @@ typedef const dsp_descriptor_t * pdsp_descriptor_const;
 #define DSP_IOCTL_2_PARAMS(dsp,ioctl_num,ioctl_param1,ioctl_param2)    (dsp)->ioctl((dsp)->handle,ioctl_num,ioctl_param1,ioctl_param2)
 
 
+extern	void *dsp_buffers_pool;
 
-#define DSP_FUNC_1CH_IN_1CH_OUT(dsp,ch1In,ch1Out,len)    					(dsp)->dsp_func((dsp)->handle,1,1,len,ch1In,NULL,ch1Out,NULL)
-#define DSP_FUNC_2CH_IN_2CH_OUT(dsp,ch1In,ch2In,ch1Out,ch2Out,len)    		(dsp)->dsp_func((dsp)->handle,2,2,len,ch1In,ch2In,ch1Out,ch2Out)
+#define DSP_FUNC_1CH_IN_1CH_OUT(dsp,ch1In,len)    					\
+		(dsp)->out_pads[0]	= (float*)memory_pool_malloc(dsp_buffers_pool);	\
+		(dsp)->dsp_func((dsp)->handle,1,1,len,ch1In,NULL,(dsp)->out_pads[0],NULL)
+
+#define DSP_FUNC_2CH_IN_2CH_OUT(dsp,ch1In,ch2In,len)    		\
+		(dsp)->out_pads[0]	= (float*)memory_pool_malloc(dsp_buffers_pool);	\
+		(dsp)->out_pads[1]	= (float*)memory_pool_malloc(dsp_buffers_pool);	\
+		(dsp)->dsp_func((dsp)->handle,2,2,len,ch1In,ch2In,(dsp)->out_pads[0],(dsp)->out_pads[1])
+
+#define DSP_FUNC_2CH_IN_1CH_OUT(dsp,ch1In,ch2In,len)    		\
+		(dsp)->out_pads[0]	= (float*)memory_pool_malloc(dsp_buffers_pool);	\
+		(dsp)->dsp_func((dsp)->handle,2,1,len,ch1In,ch2In,(dsp)->out_pads[0],NULL)
+
+#define DSP_FUNC_2CH_IN_1CH_OUT_NO_OUTPUT_ALLOCATION(dsp,ch1In,ch2In,ch1Out,len)    		\
+		(dsp)->dsp_func((dsp)->handle,2,1,len,ch1In,ch2In,ch1Out,NULL)
+
+#define DSP_FUNC_1CH_IN_2CH_OUT(dsp,ch1In,len)    		\
+		(dsp)->out_pads[0]	= (float*)memory_pool_malloc(dsp_buffers_pool);	\
+		(dsp)->out_pads[1]	= (float*)memory_pool_malloc(dsp_buffers_pool);	\
+		(dsp)->dsp_func((dsp)->handle,1,2,len,ch1In,NULL,(dsp)->out_pads[0],(dsp)->out_pads[1])
 
 
 #endif
