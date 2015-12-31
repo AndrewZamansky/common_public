@@ -41,8 +41,6 @@ else
    $(error ---- apps  DIR NOT FOUND ----)
 endif
 
-
-PROJECT_NAME :=$(strip $(PROJECT_NAME))
 WORKSPACE_ROOT_DIR := $(patsubst $(APP_ROOT_DIR)/%,%,$(realpath $(COMMON_ROOT_DIR)/../..))
 WORKSPACE_NAME := $(notdir $(WORKSPACE_ROOT_DIR))
 
@@ -113,6 +111,10 @@ endif
 
 
 include config.mk
+
+PROJECT_NAME :=$(strip $(PROJECT_NAME))
+$(info ---- project name as declared in config.mk : $(PROJECT_NAME) ---- )
+
 
 ####################     configuring git  ######################
 

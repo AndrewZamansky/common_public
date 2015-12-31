@@ -57,7 +57,7 @@ typedef ioctl_get_data_buffer_t    	_if_fail_here_then___ioctl_get_data_buffer_t
 
 
 /**********************************/
-/*** test declaration existence ***/
+/*** test variable/function declaration existence ***/
 
 enum
 {

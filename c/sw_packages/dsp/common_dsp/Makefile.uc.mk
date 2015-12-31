@@ -2,6 +2,9 @@
 ifeq ($(findstring YES,$(_INCLUDE_COMMON_DSP)),YES) 	 
 	INCLUDE_THIS_COMPONENT := YES   # must be here !!
 endif  
+ifeq ($(findstring YES,$(CONFIG_INCLUDE_COMMON_DSP)),YES) 	 
+	INCLUDE_THIS_COMPONENT := YES   # must be here !!
+endif  
 
 #INCLUDE_DIR 
 

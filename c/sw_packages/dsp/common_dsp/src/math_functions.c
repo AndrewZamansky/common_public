@@ -13,8 +13,8 @@
 /********  includes *********************/
 
 #include "common_dsp_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
-#include "dsp_managment_api.h" // for device manager defines and typedefs
+//#include "dev_managment_api.h" // for device manager defines and typedefs
+//#include "dsp_managment_api.h" // for device manager defines and typedefs
 #include "_common_dsp_prerequirements_check.h" // should be after {equalizer_config.h,dev_managment_api.h}
 
 
@@ -43,11 +43,17 @@
 #define A1_log2		(3.8471867f)
 #define A0_log2		(-2.57908006f)
 
-#define A3_2_power_x		(0.055504f)
-#define A2_2_power_x		(0.24023f)
-#define A1_2_power_x		(0.69315f)
-#define A0_2_power_x		(1.0f)
-
+//#define USE_THIRD_TALOR_POWER
+#ifdef USE_THIRD_TALOR_POWER
+	#define A3_2_power_x		(0.055504f)
+	#define A2_2_power_x		(0.24023f)
+	#define A1_2_power_x		(0.69315f)
+	#define A0_2_power_x		(1.0f)
+#else
+	#define A2_2_power_x		(0.33973f)
+	#define A1_2_power_x		(0.64053f)
+	#define A0_2_power_x		(1.009f)
+#endif
 /* function : fast_pow
  *	y=a^b=2^z when z=b*log2(a)
  *	assuming that a is positive
@@ -55,17 +61,18 @@
 float fast_pow(float a, float b)
 {
 	int exp;
-	float	fraction;
-	float	log2_of_fraction;
-	float	tmp;
-	float	log2_of_a;
-	float	z;
-	uint16_t	int_of_z;
-	float	fraction_of_z;
-	float retVal;
-	float	power_of_fraction;
-	uint8_t negative_power_sign ;
-	uint32_t	a_in_raw_bit_represantation;
+	static float	fraction;
+	static float	log2_of_fraction;
+	static float	tmp;
+	static float	log2_of_a;
+	static float	z;
+	static uint16_t	int_of_z;
+	static float	fraction_of_z;
+	static float retVal;
+	static float	power_of_fraction;
+	static uint8_t negative_power_sign ;
+	static uint32_t	a_in_raw_bit_represantation;
+	static uint64_t power_of_2_of_integer_part;
 	a_in_raw_bit_represantation=*((uint32_t*)&a);
 	//log2(a) calculation
 	//fraction = frexpf(a, &exp);
@@ -103,7 +110,8 @@ float fast_pow(float a, float b)
 
 	//2^z calculation
 	int_of_z = (uint16_t)z ;
-	retVal = 1<<int_of_z;
+	power_of_2_of_integer_part = (((uint64_t)1)<<int_of_z);
+	retVal = (float)power_of_2_of_integer_part;
 
 //	if(0>retVal)
 //	{
@@ -112,6 +120,7 @@ float fast_pow(float a, float b)
 //	return (retVal);
 
 	fraction_of_z = z - int_of_z;
+#ifdef USE_THIRD_TALOR_POWER
 		// fraction_of_z = [0.5,1] so it can be approximated by taylor series around 0  :
 		// 2^fraction_of_z ~= A3_2_power_x * fraction_of_z^3 + A2_2_power_x * fraction_of_z^2 + A1_2_power_x * fraction_of_z  + A0_2_power_x
 	power_of_fraction =  A3_2_power_x * fraction_of_z;
@@ -122,7 +131,15 @@ float fast_pow(float a, float b)
 	tmp = A1_2_power_x * fraction_of_z ;
 	power_of_fraction += tmp;
 	power_of_fraction += A0_2_power_x;
-
+#else
+	// fraction_of_z = [0.5,1] so it can be approximated by taylor series around 0  :
+	// 2^fraction_of_z ~= A3_2_power_x * fraction_of_z^3 + A2_2_power_x * fraction_of_z^2 + A1_2_power_x * fraction_of_z  + A0_2_power_x
+	tmp = fraction_of_z * fraction_of_z;
+	power_of_fraction =  A2_2_power_x * tmp;
+	tmp = A1_2_power_x * fraction_of_z;
+	power_of_fraction += tmp;
+	power_of_fraction += A0_2_power_x;
+#endif
 	retVal = retVal * power_of_fraction;
 	//2^z calculation
 

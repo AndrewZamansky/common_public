@@ -50,7 +50,7 @@ typedef uint32_t _if_fail_here_then___uint32_t___is_not_defined_in_dev_managment
 
 
 /**********************************/
-/*** test declaration existence ***/
+/*** test variable/function declaration existence ***/
 
 
 enum

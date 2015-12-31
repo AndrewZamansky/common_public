@@ -32,7 +32,7 @@
 
 
 static int BKPT(int op, void* p1, void* p2) ;
-int smihosting_is_active=0;
+extern int smihosting_is_active ;
 static pdev_descriptor_const   callback_dev = NULL;
 static int terminal_hndl;
 

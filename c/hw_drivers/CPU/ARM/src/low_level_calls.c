@@ -38,6 +38,7 @@ extern uint32_t __relocation_section_start_on_ROM__;
 
 extern void do_startup(void);
 extern void do_software_interrupt_asm(void);
+int smihosting_is_active = 0 ;
 /***********   loacal variables    **************/
 
 
