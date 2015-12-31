@@ -61,18 +61,18 @@
 float fast_pow(float a, float b)
 {
 	int exp;
-	static float	fraction;
-	static float	log2_of_fraction;
-	static float	tmp;
-	static float	log2_of_a;
-	static float	z;
-	static uint16_t	int_of_z;
-	static float	fraction_of_z;
-	static float retVal;
-	static float	power_of_fraction;
-	static uint8_t negative_power_sign ;
-	static uint32_t	a_in_raw_bit_represantation;
-	static uint64_t power_of_2_of_integer_part;
+	float	fraction;
+	float	log2_of_fraction;
+	float	tmp;
+	float	log2_of_a;
+	float	z;
+	uint16_t	int_of_z;
+	float	fraction_of_z;
+	float retVal;
+	float	power_of_fraction;
+	uint8_t negative_power_sign ;
+	uint32_t	a_in_raw_bit_represantation;
+	uint64_t power_of_2_of_integer_part;
 	a_in_raw_bit_represantation=*((uint32_t*)&a);
 	//log2(a) calculation
 	//fraction = frexpf(a, &exp);
@@ -110,14 +110,9 @@ float fast_pow(float a, float b)
 
 	//2^z calculation
 	int_of_z = (uint16_t)z ;
-	power_of_2_of_integer_part = (((uint64_t)1)<<int_of_z);
-	retVal = (float)power_of_2_of_integer_part;
-
-//	if(0>retVal)
-//	{
-//		retVal = retVal * (-1);
-//	}
-//	return (retVal);
+//	power_of_2_of_integer_part = (((uint64_t)1)<<int_of_z);
+//	retVal = (float)power_of_2_of_integer_part;
+	*(uint32_t*)&retVal = (int_of_z+127)<<23;
 
 	fraction_of_z = z - int_of_z;
 #ifdef USE_THIRD_TALOR_POWER

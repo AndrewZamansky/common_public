@@ -261,6 +261,7 @@ void _compressor_2in_2out(const void * const aHandle , size_t data_len ,
 	float curr_ratio = 1;
 	float threshold  ;
 	float reverse_ratio ;
+	float reverse_curr_ratio ;
 	float attack ;
 	float release ;
 	float *latency_buffer_Ch1 = INSTANCE(aHandle)->latency_buffer_Ch1;
@@ -324,7 +325,10 @@ void _compressor_2in_2out(const void * const aHandle , size_t data_len ,
 		if(max_env_follower > threshold)
 		{
 			curr_ratio = threshold/max_env_follower ;
-			curr_ratio = curr_ratio * 1.1;//fast_pow(1/curr_ratio,reverse_ratio);//powf(1/curr_ratio,reverse_ratio);
+			reverse_curr_ratio = 1/curr_ratio;
+			curr_ratio = curr_ratio * fast_pow(reverse_curr_ratio , reverse_ratio);
+//			curr_ratio = curr_ratio * powf(1/curr_ratio,reverse_ratio);
+//			curr_ratio = curr_ratio * 1.1f;
 		}
 
 		*apCh1Out++ = (curr_ratio * (*apCh1In++));

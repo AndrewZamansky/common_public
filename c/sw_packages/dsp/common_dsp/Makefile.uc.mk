@@ -30,7 +30,7 @@ endif
 
 
 SRC = biquads.c
-SRC = math_functions.c
+SRC += math_functions.c
 
 VPATH = src
 
