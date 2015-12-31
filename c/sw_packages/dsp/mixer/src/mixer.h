@@ -21,7 +21,7 @@
 
 typedef struct {
 
-	uint8_t num_of_channels ;
+	uint8_t num_of_input_channels ;
 	float *channels_weights;
 
 } MIXER_Instance_t;

@@ -46,4 +46,7 @@ void biquads_calculation(biquads_filter_mode_t filter_mode,
 		float FreqC,float QValue,float Gain_dB,
 		float SamplingRate, float *pCoeffs );
 
+
+float fast_pow(float a, float b);
+
 #endif
