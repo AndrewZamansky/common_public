@@ -43,8 +43,8 @@
 #define A1_log2		(3.8471867f)
 #define A0_log2		(-2.57908006f)
 
-//#define USE_THIRD_TALOR_POWER
-#ifdef USE_THIRD_TALOR_POWER
+#define USE_THIRD_TAYLOR_POWER
+#ifdef USE_THIRD_TAYLOR_POWER
 	#define A3_2_power_x		(0.055504f)
 	#define A2_2_power_x		(0.24023f)
 	#define A1_2_power_x		(0.69315f)
@@ -66,16 +66,13 @@ float fast_pow(float a, float b)
 	float	tmp;
 	float	log2_of_a;
 	float	z;
-	uint16_t	int_of_z;
+	int16_t	int_of_z;
 	float	fraction_of_z;
 	float retVal;
 	float	power_of_fraction;
-	uint8_t negative_power_sign ;
 	uint32_t	a_in_raw_bit_represantation;
-	uint64_t power_of_2_of_integer_part;
 	a_in_raw_bit_represantation=*((uint32_t*)&a);
 	//log2(a) calculation
-	//fraction = frexpf(a, &exp);
 	exp = a_in_raw_bit_represantation >> 23;
 	exp = exp - 127 + 1; // +1 to have fraction = mantissa/2
 	a_in_raw_bit_represantation = a_in_raw_bit_represantation & 0x7fffff;
@@ -98,24 +95,15 @@ float fast_pow(float a, float b)
 
 
 	z = b * log2_of_a;
-	if(0 > z)
-	{
-		negative_power_sign = 1;
-		z = -z;
-	}
-	else
-	{
-		negative_power_sign =0;
-	}
+
 
 	//2^z calculation
-	int_of_z = (uint16_t)z ;
-//	power_of_2_of_integer_part = (((uint64_t)1)<<int_of_z);
-//	retVal = (float)power_of_2_of_integer_part;
-	*(uint32_t*)&retVal = (int_of_z+127)<<23;
+	int_of_z = (int16_t)z ;
+	*(uint32_t*)&retVal = (int_of_z+127)<<23; // calculation of integer part
 
-	fraction_of_z = z - int_of_z;
-#ifdef USE_THIRD_TALOR_POWER
+	fraction_of_z = z - (float)int_of_z;
+
+#ifdef USE_THIRD_TAYLOR_POWER
 		// fraction_of_z = [0.5,1] so it can be approximated by taylor series around 0  :
 		// 2^fraction_of_z ~= A3_2_power_x * fraction_of_z^3 + A2_2_power_x * fraction_of_z^2 + A1_2_power_x * fraction_of_z  + A0_2_power_x
 	power_of_fraction =  A3_2_power_x * fraction_of_z;
@@ -136,12 +124,7 @@ float fast_pow(float a, float b)
 	power_of_fraction += A0_2_power_x;
 #endif
 	retVal = retVal * power_of_fraction;
-	//2^z calculation
 
-	if(1 == negative_power_sign)
-	{
-		retVal = 1/retVal;
-	}
 
 	return retVal;
 }
