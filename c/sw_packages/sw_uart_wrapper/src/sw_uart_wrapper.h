@@ -68,7 +68,9 @@ typedef struct {
 	const uint8_t  *sendData;
 	tx_int_size_t data_length;
 
-	uint8_t sendDoneFlag;
+	os_queue_t xTX_WaitQueue ;
+
+//	uint8_t sendDoneFlag;
 } SW_UART_WRAPPER_Instance_t;
 
 

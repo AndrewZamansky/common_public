@@ -65,6 +65,9 @@ typedef void  (*delay_func_t)(uint32_t mSec);
 
 #endif // for SW_UART_WRAPPER_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
 
+#define 	TRANSMIT_IN_PROGRESS	0
+#define 	TRANSMIT_DONE			1
+static uint8_t dummy_msg;
 /*---------------------------------------------------------------------------------------------------------*/
 /* Function:        SW_UART_WRAPPER_TX_Done                                                                          */
 /*                                                                                                         */
@@ -78,6 +81,8 @@ typedef void  (*delay_func_t)(uint32_t mSec);
 /*---------------------------------------------------------------------------------------------------------*/
 inline uint8_t SW_UART_WRAPPER_TX_Done(SW_UART_WRAPPER_Instance_t *pInstance,tx_int_size_t transmitedSize)
 {
+//	uint8_t queueMsg;
+	os_queue_t xQueue = pInstance->xTX_WaitQueue;
 	tx_int_size_t data_length = (tx_int_size_t)pInstance->data_length;
 	pdev_descriptor_const   server_dev = pInstance->server_dev;
 	pInstance->sendData += transmitedSize;
@@ -86,14 +91,18 @@ inline uint8_t SW_UART_WRAPPER_TX_Done(SW_UART_WRAPPER_Instance_t *pInstance,tx_
 		data_length -= transmitedSize;
 	    DEV_WRITE(server_dev, pInstance->sendData, data_length );
 	    pInstance->data_length = data_length;
+//	    queueMsg = TRANSMIT_IN_PROGRESS;
     }
     else
     {
     	DEV_IOCTL_0_PARAMS(server_dev,IOCTL_UART_DISABLE_TX);
-
-    	pInstance->sendDoneFlag=1;
-
+    	if(NULL!=xQueue)
+    	{
+    		os_queue_send_immediate( xQueue, ( void * ) &dummy_msg);
+    	}
+//	    queueMsg = TRANSMIT_DONE;
     }
+
 	return 0;
 }
 
@@ -202,41 +211,28 @@ uint8_t sw_uart_wrapper_callback(void * const aHandle ,const uint8_t aCallback_n
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
 static void sw_uart_send_and_wait_for_end(SW_UART_WRAPPER_Instance_t *pInstance ,
-		delay_func_t delay_func,const uint8_t *apData , tx_int_size_t aLength)
+		const uint8_t *apData , tx_int_size_t aLength , uint8_t called_from_task)
 {
-	tx_int_size_t prev_data_len_left;
-	tx_int_size_t curr_data_len_left;
-	pdev_descriptor_const   server_dev = pInstance->server_dev;
 
-	pInstance->sendDoneFlag=0;
+	os_queue_t xTX_WaitQueue = pInstance->xTX_WaitQueue;
+	pdev_descriptor_const   server_dev = pInstance->server_dev;
+//	uint8_t	xRx_TX_Wait_Message;
 	pInstance->data_length=aLength;
 	pInstance->sendData=apData;
 
 	DEV_IOCTL_0_PARAMS(server_dev ,IOCTL_UART_ENABLE_TX);
 	DEV_WRITE(server_dev , apData, aLength);
-
-	prev_data_len_left = aLength + 1;
-	while(0 == pInstance->sendDoneFlag)
+	if(called_from_task)
 	{
-		delay_func(20);
-		curr_data_len_left = pInstance->data_length;
-		if(curr_data_len_left < prev_data_len_left) // transmit in progress
-		{
-			prev_data_len_left = curr_data_len_left;
-		}
-		else// transmit is stuck
-		{
-			DEV_IOCTL_0_PARAMS(server_dev ,IOCTL_UART_DISABLE_TX);
-			pInstance->data_length=0;
-			/*
-			* flushing queue . assuming that during 1 msec usb host will access endpoint
-			* if there is interrupt from endpoint on the way to CPU, then flush queue
-			*/
-			delay_func(20);
-			break;
-		}
-
+		os_queue_receive_with_timeout( xTX_WaitQueue , &( dummy_msg ) , aLength);
 	}
+	else
+	{
+		busy_delay(aLength);
+	}
+	DEV_IOCTL_0_PARAMS(server_dev ,IOCTL_UART_DISABLE_TX);
+	pInstance->data_length=0;
+
 }
 
 /*---------------------------------------------------------------------------------------------------------*/
@@ -255,32 +251,37 @@ size_t sw_uart_wrapper_pwrite(const void *aHandle ,const uint8_t *apData , size_
 	tx_int_size_t dataLen= (tx_int_size_t)aLength;
 	tx_int_size_t curr_transmit_len;
 
-	if(INSTANCE(aHandle)->use_task_for_out)
+
+	uint8_t *pSendData;
+
+	while(dataLen)
 	{
 		xMessage_t xMessage;
-		uint8_t *pSendData;
 		os_queue_t xQueue = INSTANCE(aHandle)->xQueue;
 
-		if(NULL == xQueue) return 1;
-
-
-		while(dataLen)
+		curr_transmit_len = dataLen;
+		if ( SW_UART_WRAPPER_CONFIG_MAX_TX_BUFFER_SIZE < curr_transmit_len )
 		{
-			curr_transmit_len = dataLen;
-			if ( SW_UART_WRAPPER_CONFIG_MAX_TX_BUFFER_SIZE < curr_transmit_len )
-			{
-				curr_transmit_len=SW_UART_WRAPPER_CONFIG_MAX_TX_BUFFER_SIZE;
-			}
+			curr_transmit_len=SW_UART_WRAPPER_CONFIG_MAX_TX_BUFFER_SIZE;
+		}
+
+
+
 #ifdef SW_UART_WRAPPER_CONFIG_USE_MALLOC
 			xMessage.pData=(uint8_t*)malloc(curr_transmit_len * sizeof(uint8_t));
 #endif
 
 
-			pSendData=xMessage.pData;
-			memcpy(pSendData,(uint8_t*)apData,curr_transmit_len);
+		pSendData=xMessage.pData;
+		memcpy(pSendData,(uint8_t*)apData,curr_transmit_len);
 
 
-			xMessage.len=curr_transmit_len;
+		xMessage.len=curr_transmit_len;
+
+		if(INSTANCE(aHandle)->use_task_for_out)
+		{
+			if(NULL == xQueue) return 1;
+
 			if(OS_QUEUE_SEND_SUCCESS != os_queue_send_infinite_wait( xQueue, ( void * ) &xMessage ))
 			{
 #ifdef SW_UART_WRAPPER_CONFIG_USE_MALLOC
@@ -288,16 +289,16 @@ size_t sw_uart_wrapper_pwrite(const void *aHandle ,const uint8_t *apData , size_
 #endif
 				return 0;
 			}
-			dataLen-=curr_transmit_len;
-			apData += curr_transmit_len;
 		}
-	}
-	else
-	{
+		else
+		{
+			sw_uart_send_and_wait_for_end(INSTANCE(aHandle),pSendData,curr_transmit_len,0);
+		}
 
-		sw_uart_send_and_wait_for_end(INSTANCE(aHandle), busy_delay,apData,dataLen);
-
+		dataLen-=curr_transmit_len;
+		apData += curr_transmit_len;
 	}
+
 
 	return aLength;
 
@@ -323,6 +324,10 @@ static void SW_UART_WRAPPER_Send_Task( void *aHandle )
 	xMessage_t xRxMessage;
 
 	os_queue_t xQueue ;
+	os_queue_t xTX_WaitQueue ;
+
+	xTX_WaitQueue = os_create_queue( 1 , sizeof(uint8_t ) );
+	INSTANCE(aHandle)->xTX_WaitQueue = xTX_WaitQueue ;
 
 	xQueue = os_create_queue( SW_UART_WRAPPER_CONFIG_MAX_QUEUE_LEN , sizeof(xMessage_t ) );
 
@@ -335,7 +340,7 @@ static void SW_UART_WRAPPER_Send_Task( void *aHandle )
 		if( OS_QUEUE_RECEIVE_SUCCESS == os_queue_receive_infinite_wait( xQueue , &( xRxMessage )) )
 		{
 			pData = xRxMessage.pData;
-			sw_uart_send_and_wait_for_end(INSTANCE(aHandle), os_delay_ms,pData,xRxMessage.len);
+			sw_uart_send_and_wait_for_end(INSTANCE(aHandle),pData,xRxMessage.len,1);
 
 #ifdef SW_UART_WRAPPER_CONFIG_USE_MALLOC
 			free( pData );

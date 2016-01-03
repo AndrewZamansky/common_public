@@ -29,7 +29,7 @@ extern size_t sw_uart_wrapper_pwrite(const void *aHandle ,const uint8_t *apData 
 					0,				/*bufferWasOverflowed */\
 					0,				/* (*sendData) */		\
 					0,				/*data_length*/			\
-					0				/*sendDoneFlag*/		\
+					NULL			/*xTX_WaitQueue*/		\
 				};														\
 			const dev_descriptor_t dev =								\
 				{											\
@@ -53,7 +53,7 @@ extern size_t sw_uart_wrapper_pwrite(const void *aHandle ,const uint8_t *apData 
 				1,				/* use_task_for_out */	\
 				0,				/* (*sendData) */		\
 				0,				/*data_length*/			\
-				0				/*sendDoneFlag*/		\
+				NULL			/*xTX_WaitQueue*/		\
 			};											\
 		const dev_descriptor_t dev =					\
 			{											\
