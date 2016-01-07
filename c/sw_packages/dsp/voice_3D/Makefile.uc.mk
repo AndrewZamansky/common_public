@@ -1,0 +1,29 @@
+
+ifeq ($(findstring YES,$(CONFIG_INCLUDE_VOICE_3D)),YES) 	 
+    _INCLUDE_COMMON_DSP :=YES	 
+    _INCLUDE_DSP_MANAGMENT :=YES	 
+	INCLUDE_THIS_COMPONENT := YES   # must be here !!
+endif  
+
+#INCLUDE_DIR 
+
+#DEFINES = 
+
+#CFLAGS = 
+
+#ASMFLAGS =  
+
+
+
+
+SRC = voice_3D.c
+
+ifeq ($(findstring AS_SPEED_CRITICAL,$(CONFIG_INCLUDE_VOICE_3D)),AS_SPEED_CRITICAL) 
+    SPEED_CRITICAL_FILES += voice_3D.c
+    _COMMON_DSP_IS_SPEED_CRITICAL := YES
+endif
+
+VPATH = src
+
+
+include $(COMMON_CC)

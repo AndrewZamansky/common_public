@@ -114,11 +114,14 @@
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-void equalizer_dsp(const void * const aHandle ,
-		uint8_t num_of_inputs,uint8_t num_of_ouputs, size_t data_len ,
-		float *apCh1In , float *apCh2In,
-		float *apCh1Out , float *apCh2Out)
+void equalizer_dsp(const void * const aHandle , size_t data_len ,
+		float *in_pads[MAX_NUM_OF_OUTPUT_PADS] , float *out_pads[MAX_NUM_OF_OUTPUT_PADS])
 {
+	float *apCh1In  ;
+	float *apCh1Out ;
+
+	apCh1In = in_pads[0];
+	apCh1Out = out_pads[0];
 
 	biquads_cascading_filter(INSTANCE(aHandle)->pBiquadFilter , apCh1In , apCh1Out , data_len);
 

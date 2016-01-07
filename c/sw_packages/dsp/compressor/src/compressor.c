@@ -23,6 +23,10 @@
 
 #include "math.h"
 
+#ifdef _USE_DSP_
+  #include "arm_math.h"
+#endif
+
 /********  defines *********************/
 #define THRESHOLD_LIMITER_0db000265			0x0002
 #define THRESHOLD_LIMITER_0db000795			0x0004
@@ -64,6 +68,7 @@
 
 #endif // for COMPRESSOR_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
 
+#if 0
 /*---------------------------------------------------------------------------------------------------------*/
 /* Function:        float_memcpy_with_ratio                                                                          */
 /*---------------------------------------------------------------------------------------------------------*/
@@ -74,15 +79,16 @@ static void float_memcpy_with_ratio(float *dest ,float *src , size_t len , float
 		*dest++ = (*src++) * ratio;
 	}
 }
+#endif
 
 /*---------------------------------------------------------------------------------------------------------*/
-/* Function:        , float_memcpy_with_ratio_2_buffers                                                                          */
+/* Function:         float_memcpy_with_ratio_2_buffers                                                                          */
 /*---------------------------------------------------------------------------------------------------------*/
 static void float_memcpy_with_ratio_2_buffers(float *dest1 ,float *src1 ,
 		float *dest2 ,float *src2,
 		float ratio,float step_ratio)
 {
-	size_t len=COMPRESSOR_CONFIG_CHUNK_SIZE;
+	size_t len = COMPRESSOR_CONFIG_CHUNK_SIZE;
 	for( ; len ;len--)
 	{
 		*dest1++ = (*src1++) * ratio;
@@ -90,6 +96,221 @@ static void float_memcpy_with_ratio_2_buffers(float *dest1 ,float *src1 ,
 		ratio += step_ratio;
 	}
 }
+
+
+
+/*---------------------------------------------------------------------------------------------------------*/
+/* Function:         _compressor_buffered_2in_2out                                                                          */
+/*---------------------------------------------------------------------------------------------------------*/
+void _compressor_buffered_2in_2out(const void * const aHandle ,size_t data_len ,
+		float *in_pads[MAX_NUM_OF_OUTPUT_PADS] , float *out_pads[MAX_NUM_OF_OUTPUT_PADS] )
+{
+		float *apCh1In ,  *apCh2In;
+		float *apCh1Out ,  *apCh2Out;
+		//	static int print_count=0;
+	//	int threshold_detectd = 0;
+		float max_val ;
+		float prev_ratio ;
+		float step_ratio ;
+		float reverse_curr_ratio ;
+		float curr_ratio = 1;
+	//	uint32_t accomulator=0;
+		uint8_t usePreviousRatio;
+		uint16_t i;//,j;//,k;
+		float threshold  ;
+		float reverse_ratio ;
+		float *latency_buffer_Ch1 = INSTANCE(aHandle)->latency_buffer_Ch1;
+		float *latency_buffer_Ch2 = INSTANCE(aHandle)->latency_buffer_Ch2;
+	//	uint32_t latency = INSTANCE(aHandle)->latency;
+
+		apCh1In = in_pads[0];
+		apCh2In = in_pads[1];
+		apCh1Out = out_pads[0];
+		apCh2Out = out_pads[1];
+
+		threshold = INSTANCE(aHandle)->threshold;
+		reverse_ratio = INSTANCE(aHandle)->reverse_ratio;
+		prev_ratio = INSTANCE(aHandle)->prev_ratio ;
+
+		max_val = threshold ;
+		usePreviousRatio = 1;
+
+		arm_abs_f32( apCh1In , apCh1Out , data_len);
+		arm_abs_f32( apCh2In , apCh2Out , data_len);
+
+		for(i = 0 ; i < data_len ; i+=COMPRESSOR_CONFIG_CHUNK_SIZE)
+		{
+			float tmp,tmp2;
+			uint32_t dummy_index;
+
+			arm_max_f32(&apCh1Out[i],COMPRESSOR_CONFIG_CHUNK_SIZE,&tmp,&dummy_index);
+			arm_max_f32(&apCh2Out[i],COMPRESSOR_CONFIG_CHUNK_SIZE,&tmp2,&dummy_index);
+
+			max_val = threshold;
+
+			if(tmp > max_val)
+			{
+				max_val =  tmp;
+			}
+
+			if (tmp2 > max_val)
+			{
+				max_val = tmp2;
+			}
+
+
+			if(max_val > threshold)
+			{
+				curr_ratio = threshold/max_val ;
+				reverse_curr_ratio = 1/curr_ratio;
+				tmp = fast_pow(reverse_curr_ratio , reverse_ratio);
+				curr_ratio = curr_ratio * tmp;
+
+				usePreviousRatio = 1;
+
+
+			}
+			else
+			{
+				curr_ratio = 1;
+			}
+
+			if(curr_ratio < prev_ratio)
+			{
+				usePreviousRatio = 1;
+			}
+			else
+			{
+				if(usePreviousRatio)
+				{
+					curr_ratio = prev_ratio;
+					usePreviousRatio=0;
+				}
+
+			}
+			tmp = curr_ratio - prev_ratio;
+			step_ratio = tmp/COMPRESSOR_CONFIG_CHUNK_SIZE;
+
+
+			if(0 == i)
+			{
+				float_memcpy_with_ratio_2_buffers(&apCh1Out[0], &latency_buffer_Ch1[0 ] ,
+						&apCh2Out[0], &latency_buffer_Ch2[0 ]  , prev_ratio,step_ratio);
+			}
+			else
+			{
+				float_memcpy_with_ratio_2_buffers(&apCh1Out[i],
+						&apCh1In[i - COMPRESSOR_CONFIG_CHUNK_SIZE  ] ,
+						&apCh2Out[i],
+						&apCh2In[i -  COMPRESSOR_CONFIG_CHUNK_SIZE]  , prev_ratio,step_ratio);
+			}
+
+
+
+			prev_ratio = curr_ratio;
+
+		}
+
+		float_memcpy_with_ratio_2_buffers(latency_buffer_Ch1, &apCh1In[data_len - COMPRESSOR_CONFIG_CHUNK_SIZE ] ,
+				latency_buffer_Ch2, &apCh2In[data_len - COMPRESSOR_CONFIG_CHUNK_SIZE ]  , 1,0);
+
+		INSTANCE(aHandle)->prev_ratio = prev_ratio;
+
+	//	if(print_count > 100)
+	//	{
+	////		PRINTF_DBG("max_val = %d  \r\n" , max_val);
+	//		if(threshold_detectd)
+	//		{
+	//			PRINTF_DBG("threshold_detectd = %d r=%f \r\n" , threshold_detectd,prev_ratio);
+	//		}
+	//		threshold_detectd = 0;
+	//		print_count = 0;
+	//	}
+	//	print_count++;
+}
+
+
+/*---------------------------------------------------------------------------------------------------------*/
+/* Function:         _compressor_buffered_2in_2out                                                                          */
+/*---------------------------------------------------------------------------------------------------------*/
+void _compressor_2in_2out(const void * const aHandle , size_t data_len ,
+		float *in_pads[MAX_NUM_OF_OUTPUT_PADS] , float *out_pads[MAX_NUM_OF_OUTPUT_PADS])
+{
+	float *apCh1In ,  *apCh2In;
+	float *apCh1Out ,  *apCh2Out;
+
+	float env_follower_ch1 ;
+	float curr_ratio = 1;
+	float threshold  ;
+	float reverse_ratio ;
+	float reverse_curr_ratio ;
+	float attack ;
+	float release ;
+	float release_neg ;
+	float attack_neg ;
+	float *latency_buffer_Ch1 = INSTANCE(aHandle)->latency_buffer_Ch1;
+
+
+	apCh1In = in_pads[0];
+	apCh2In = in_pads[1];
+	apCh1Out = out_pads[0];
+	apCh2Out = out_pads[1];
+
+	attack = INSTANCE(aHandle)->attack;
+	attack_neg = 1 - attack;
+	release = INSTANCE(aHandle)->release;
+	release_neg =  1 - release ;
+	threshold = INSTANCE(aHandle)->threshold;
+	reverse_ratio = INSTANCE(aHandle)->reverse_ratio;
+
+	env_follower_ch1 = *latency_buffer_Ch1;
+
+	arm_abs_f32( apCh1In , apCh1Out , data_len);
+	arm_abs_f32( apCh2In , apCh2Out , data_len);
+
+	while( data_len-- )
+	{
+		float tmp;
+
+		tmp = *apCh1Out;
+		if(tmp < *apCh2Out)
+		{
+			tmp =  *apCh2Out;
+		}
+
+		if (tmp > env_follower_ch1)
+		{
+			tmp *=attack;
+			env_follower_ch1 *= attack_neg;
+		}
+		else
+		{
+			tmp *=release;
+			env_follower_ch1 *= release_neg;
+		}
+		env_follower_ch1 += tmp;
+
+
+
+
+		curr_ratio = 1;
+		if(env_follower_ch1 > threshold)
+		{
+			curr_ratio = threshold/env_follower_ch1 ;
+			reverse_curr_ratio = 1/curr_ratio;
+			tmp = fast_pow(reverse_curr_ratio , reverse_ratio);
+			curr_ratio = curr_ratio * tmp;
+		}
+
+		*apCh1Out++ = (curr_ratio * (*apCh1In++));
+		*apCh2Out++ = (curr_ratio * (*apCh2In++));
+	}
+
+	*latency_buffer_Ch1 = env_follower_ch1 ;
+
+
+}
+
 /*---------------------------------------------------------------------------------------------------------*/
 /* Function:        compressor_dsp                                                                          */
 /*                                                                                                         */
@@ -101,152 +322,23 @@ static void float_memcpy_with_ratio_2_buffers(float *dest1 ,float *src1 ,
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-void compressor_dsp(const void * const aHandle ,
-		uint8_t num_of_inputs,uint8_t num_of_ouputs, size_t data_len ,
-		float *apCh1In , float *apCh2In,
-		float *apCh1Out , float *apCh2Out)
+void compressor_dsp(const void * const aHandle , size_t data_len ,
+		float *in_pads[MAX_NUM_OF_OUTPUT_PADS] , float *out_pads[MAX_NUM_OF_OUTPUT_PADS])
 {
 
-	static int print_count=0;
-	static float max_val ;
-	static float prev_ratio ;
-	static float step_ratio ;
-	static float curr_ratio = 1;
-	static int threshold_detectd = 0;
-//	uint32_t accomulator=0;
-	uint8_t usePreviousRatio;
-	uint16_t i,j;//,k;
-	static float threshold  ;
-	float reverse_ratio ;
-	float *latency_buffer_Ch1 = INSTANCE(aHandle)->latency_buffer_Ch1;
-	float *latency_buffer_Ch2 = INSTANCE(aHandle)->latency_buffer_Ch2;
-//	uint32_t latency = INSTANCE(aHandle)->latency;
 
-	threshold = INSTANCE(aHandle)->threshold;
-	reverse_ratio = INSTANCE(aHandle)->reverse_ratio;
-	prev_ratio = INSTANCE(aHandle)->prev_ratio ;
-
-	max_val = threshold ;
-	j = 0;
-	usePreviousRatio = 1;
-
-	if 	(2 == num_of_inputs)
+	switch(INSTANCE(aHandle)->type)
 	{
-		for(i = 0 ; i < data_len ; i++)
-		{
-			float tmp;
-			tmp = fabs(apCh1In[i]);
-
-			//accomulator += ( tmp + THRESHOLD_LIMITER_0db560309)  & 0xffff0000;
-			if (tmp > max_val)
-			{
-				max_val = tmp;
-	//			accomulator =1 ;
-			}
-
-
-			tmp = fabs(apCh2In[i]);
-			if (tmp > max_val)
-			{
-				max_val = tmp;
-	//			accomulator =1 ;
-			}
-
-			if(( (COMPRESSOR_CONFIG_CHUNK_SIZE-1) == j) /*|| ((buff_len-1) == i)*/)
-			{
-				if(max_val > threshold)
-				{
-					curr_ratio = threshold/max_val ;
-					curr_ratio = curr_ratio * powf(1/curr_ratio,reverse_ratio);
-
-					threshold_detectd++;
-					usePreviousRatio = 1;
-
-//					if(COMPRESSOR_CONFIG_CHUNK_SIZE < i)
-//					{
-//						//if(curr_ratio < prev_ratio) should be if ((2 / (1 + (1/curr_ratio))  < prev_ratio)
-//						if(curr_ratio < prev_ratio)
-//						{
-//							prev_ratio = 2 / (1 + (1/curr_ratio) ); //  = thr/((max_val-thr)/2+thr)
-//						}
-//					}
-				}
-				else
-				{
-//					if(usePreviousRatio)
-//					{
-//						curr_ratio = 2 / (1 + (1/prev_ratio) ); //  = thr/((max_val-thr)/2+thr)
-//						usePreviousRatio=0;
-//					}
-//					else
-//					{
-//						curr_ratio = 1;
-//					}
-					curr_ratio = 1;
-//					step_ratio = (curr_ratio - prev_ratio)/COMPRESSOR_CONFIG_CHUNK_SIZE;
-
-				}
-
-				if(curr_ratio < prev_ratio)
-				{
-					usePreviousRatio = 1;
-					step_ratio = (curr_ratio - prev_ratio)/COMPRESSOR_CONFIG_CHUNK_SIZE;
-				}
-				else
-				{
-					if(usePreviousRatio)
-					{
-						curr_ratio = prev_ratio;
-						usePreviousRatio=0;
-					}
-					step_ratio = (curr_ratio - prev_ratio)/COMPRESSOR_CONFIG_CHUNK_SIZE;
-
-				}
-
-
-				if(COMPRESSOR_CONFIG_CHUNK_SIZE > i)
-				{
-					float_memcpy_with_ratio_2_buffers(&apCh1Out[0], &latency_buffer_Ch1[0 ] ,
-							&apCh2Out[0], &latency_buffer_Ch2[0 ]  , prev_ratio,step_ratio);
-				}
-				else
-				{
-					float_memcpy_with_ratio_2_buffers(&apCh1Out[(i - (COMPRESSOR_CONFIG_CHUNK_SIZE - 1))],
-							&apCh1In[(i - (2*COMPRESSOR_CONFIG_CHUNK_SIZE - 1)) ] ,
-							&apCh2Out[(i - (COMPRESSOR_CONFIG_CHUNK_SIZE - 1))],
-							&apCh2In[(i - (2*COMPRESSOR_CONFIG_CHUNK_SIZE - 1)) ]  , prev_ratio,step_ratio);
-				}
-
-				if(i == (data_len - 1))
-				{
-					float_memcpy_with_ratio_2_buffers(latency_buffer_Ch1, &apCh1In[data_len - COMPRESSOR_CONFIG_CHUNK_SIZE ] ,
-							latency_buffer_Ch2, &apCh2In[data_len - COMPRESSOR_CONFIG_CHUNK_SIZE ]  , 1,0);
-				}
-
-				prev_ratio = curr_ratio;
-
-				max_val = threshold;
-				j=0;
-			}
-			else
-			{
-				j++;
-			}
-		}
+		case COMPRESSOR_API_TYPE_LOOKAHEAD:
+				_compressor_buffered_2in_2out(aHandle , data_len ,
+						in_pads , out_pads);
+			break ;
+		case COMPRESSOR_API_TYPE_REGULAR:
+				_compressor_2in_2out(aHandle , data_len ,
+						in_pads , out_pads);
+			break ;
 	}
-	INSTANCE(aHandle)->prev_ratio = prev_ratio;
 
-	if(print_count > 100)
-	{
-//		PRINTF_DBG("max_val = %d  \r\n" , max_val);
-		if(threshold_detectd)
-		{
-			PRINTF_DBG("threshold_detectd = %d r=%f \r\n" , threshold_detectd,prev_ratio);
-		}
-		threshold_detectd = 0;
-		print_count = 0;
-	}
-	print_count++;
 
 
 }
@@ -279,9 +371,18 @@ uint8_t compressor_ioctl(void * const aHandle ,const uint8_t aIoctl_num , void *
 
 
 		case IOCTL_DEVICE_START :
-			INSTANCE(aHandle)->latency = COMPRESSOR_CONFIG_CHUNK_SIZE;
-			INSTANCE(aHandle)->latency_buffer_Ch1 = (float*)malloc(COMPRESSOR_CONFIG_CHUNK_SIZE*sizeof(float));
-			INSTANCE(aHandle)->latency_buffer_Ch2 = (float*)malloc(COMPRESSOR_CONFIG_CHUNK_SIZE*sizeof(float));
+			switch(INSTANCE(aHandle)->type)
+			{
+				case COMPRESSOR_API_TYPE_LOOKAHEAD:
+					INSTANCE(aHandle)->latency = COMPRESSOR_CONFIG_CHUNK_SIZE;
+					INSTANCE(aHandle)->latency_buffer_Ch1 = (float*)malloc(COMPRESSOR_CONFIG_CHUNK_SIZE*sizeof(float));
+					INSTANCE(aHandle)->latency_buffer_Ch2 = (float*)malloc(COMPRESSOR_CONFIG_CHUNK_SIZE*sizeof(float));
+					break ;
+				case COMPRESSOR_API_TYPE_REGULAR:
+					INSTANCE(aHandle)->latency_buffer_Ch1 = (float*)malloc(1*sizeof(float));
+					INSTANCE(aHandle)->latency_buffer_Ch2 = (float*)malloc(1*sizeof(float));
+					break ;
+			}
 
 			break;
 		case IOCTL_COMPRESSOR_SET_HIGH_THRESHOLD :
@@ -292,7 +393,16 @@ uint8_t compressor_ioctl(void * const aHandle ,const uint8_t aIoctl_num , void *
 //			INSTANCE(aHandle)->latency_buffer = (float*)malloc((uint32_t)((size_t)aIoctl_param1)*sizeof(float));
 			break;
 		case IOCTL_COMPRESSOR_SET_RATIO :
-			INSTANCE(aHandle)->reverse_ratio = 1/(float)((size_t)aIoctl_param1);
+			INSTANCE(aHandle)->reverse_ratio = 1/(*((float*)aIoctl_param1));
+			break;
+		case IOCTL_COMPRESSOR_SET_TYPE :
+			INSTANCE(aHandle)->type = (uint8_t)((size_t)aIoctl_param1);
+			break;
+		case IOCTL_COMPRESSOR_SET_ATTACK :
+			INSTANCE(aHandle)->attack = *((float*)aIoctl_param1);
+			break;
+		case IOCTL_COMPRESSOR_SET_RELEASE :
+			INSTANCE(aHandle)->release = *((float*)aIoctl_param1);
 			break;
 		default :
 			return 1;

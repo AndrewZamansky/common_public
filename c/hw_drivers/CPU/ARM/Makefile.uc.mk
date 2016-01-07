@@ -20,10 +20,11 @@ GLOBAL_INCLUDE_DIR += $(EXTERNAL_SOURCE_ROOT_DIR)/ARM-CMSIS/CMSIS/Include
 
 #ASMFLAGS =  
 
-
-
-SRC = semihosting.c
-_INCLUDE_UART := YES
+SRC =
+ifeq ($(findstring YES,$(CONFIG_INCLUDE_SEMIHOSTING)),YES) 	 
+    SRC += semihosting.c
+    _INCLUDE_UART := YES
+endif
 
 ifeq ($(findstring GCC,$(CONFIG_USE_COMPILER)),GCC) 	 
     SRC += SWI.s

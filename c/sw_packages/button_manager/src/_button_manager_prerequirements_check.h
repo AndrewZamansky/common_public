@@ -49,7 +49,7 @@ typedef dev_param_t   				_if_fail_here_then___dev_param_t___is_not_defined_in_b
 
 
 /**********************************/
-/*** test declaration existence ***/
+/*** test variable/function declaration existence ***/
 
 enum
 {

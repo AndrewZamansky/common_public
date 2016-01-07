@@ -69,13 +69,17 @@
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-void I2S_splitter_dsp(const void * const aHandle ,
-		uint8_t num_of_inputs,uint8_t num_of_ouputs, size_t data_len ,
-		float *apCh1In , float *apCh2In,
-		float *apCh1Out , float *apCh2Out)
+void I2S_splitter_dsp(const void * const aHandle , size_t data_len ,
+		float *in_pads[MAX_NUM_OF_OUTPUT_PADS] , float *out_pads[MAX_NUM_OF_OUTPUT_PADS])
 {
+	float *apCh1Out ,  *apCh2Out;
+
+
+	apCh1Out = out_pads[0];
+	apCh2Out = out_pads[1];
+
 	buffer_type_t *pRxBuf;
-	pRxBuf = (buffer_type_t *)apCh1In;
+	pRxBuf = (buffer_type_t *)in_pads[0];
 	for( ; data_len ;data_len--)
 	{
 		*apCh1Out++ = ((float) (*pRxBuf++)) / FLOAT_NORMALIZER;//  pRxBuf[2*j ];

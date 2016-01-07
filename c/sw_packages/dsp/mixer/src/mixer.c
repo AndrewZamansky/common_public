@@ -61,17 +61,23 @@
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-void mixer_dsp(const void * const aHandle ,
-		uint8_t num_of_inputs,uint8_t num_of_ouputs, size_t data_len ,
-		float *apCh1In , float *apCh2In,
-		float *apCh1Out , float *apCh2Out)
+void mixer_dsp(const void * const aHandle , size_t data_len ,
+		float *in_pads[MAX_NUM_OF_OUTPUT_PADS] , float *out_pads[MAX_NUM_OF_OUTPUT_PADS])
 {
+	uint8_t	num_of_input_channels;
+	float *apCh1In ,  *apCh2In;
+	float *apCh1Out  ;
+
+	apCh1In = in_pads[0];
+	apCh2In = in_pads[1];
+	apCh1Out = out_pads[0];
 
 	float curr_val;
 	float *channels_weights;
 	channels_weights = INSTANCE(aHandle)->channels_weights;
+	num_of_input_channels = INSTANCE(aHandle)->num_of_input_channels;
 
-	switch(num_of_inputs)
+	switch(num_of_input_channels)
 	{
 		case 2:
 			for( ; data_len ;data_len--)
@@ -105,7 +111,7 @@ void mixer_dsp(const void * const aHandle ,
 uint8_t mixer_ioctl(void * const aHandle ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
 {
 	uint8_t i;
-	uint8_t num_of_channels;
+	uint8_t num_of_input_channels;
 	float *channels_weights ;
 
 	channels_weights = INSTANCE(aHandle)->channels_weights ;
@@ -124,11 +130,11 @@ uint8_t mixer_ioctl(void * const aHandle ,const uint8_t aIoctl_num , void * aIoc
 
 			break;
 		case IOCTL_MIXER_SET_NUM_OF_CHANNELS :
-			num_of_channels = (uint8_t)((size_t)aIoctl_param1);
-			INSTANCE(aHandle)->num_of_channels = num_of_channels;
-			channels_weights=(float *)realloc(channels_weights , sizeof(float) * num_of_channels);
+			num_of_input_channels = (uint8_t)((size_t)aIoctl_param1);
+			INSTANCE(aHandle)->num_of_input_channels = num_of_input_channels;
+			channels_weights=(float *)realloc(channels_weights , sizeof(float) * num_of_input_channels);
 			INSTANCE(aHandle)->channels_weights = channels_weights;
-			for(i=0 ; i<num_of_channels ; i++)
+			for(i=0 ; i<num_of_input_channels ; i++)
 			{
 				channels_weights[i] = 0;
 			}
@@ -173,7 +179,7 @@ uint8_t  mixer_api_init_dsp_descriptor(pdsp_descriptor aDspDescriptor)
 	aDspDescriptor->ioctl = mixer_ioctl;
 	aDspDescriptor->dsp_func = mixer_dsp;
 
-	pInstance->num_of_channels =0;
+	pInstance->num_of_input_channels =0;
 	pInstance->channels_weights=NULL;
 
 	usedInstances++;
