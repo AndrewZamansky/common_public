@@ -63,7 +63,6 @@ float fast_pow(float a, float b)
 	int exp;
 	float	fraction;
 	float	log2_of_fraction;
-	float	tmp;
 	float	log2_of_a;
 	float	z;
 	int16_t	int_of_z;
@@ -82,10 +81,9 @@ float fast_pow(float a, float b)
 		// log2(a) = exp + log2(fraction)
 	    // fraction = [0.5,1] so it can be approximated by taylor series around 0.75 :
 		// log2(fraction) ~= A2_log2 * fraction^2 + A2_log1 * fraction  + A2_log0
-	tmp =  fraction * fraction;
-	log2_of_fraction = tmp * A2_log2;
-	tmp = A1_log2 * fraction;
-	log2_of_fraction +=  tmp ;
+	log2_of_fraction = fraction * A2_log2;
+	log2_of_fraction += A1_log2;
+	log2_of_fraction *= fraction;
 	log2_of_fraction +=  A0_log2 ;
 
 	log2_of_a = log2_of_fraction + exp  ;
@@ -106,13 +104,11 @@ float fast_pow(float a, float b)
 #ifdef USE_THIRD_TAYLOR_POWER
 		// fraction_of_z = [0.5,1] so it can be approximated by taylor series around 0  :
 		// 2^fraction_of_z ~= A3_2_power_x * fraction_of_z^3 + A2_2_power_x * fraction_of_z^2 + A1_2_power_x * fraction_of_z  + A0_2_power_x
-	power_of_fraction =  A3_2_power_x * fraction_of_z;
-	tmp = fraction_of_z * fraction_of_z;
-	power_of_fraction =  power_of_fraction * tmp;
-	tmp = tmp * A2_2_power_x;
-	power_of_fraction += tmp;
-	tmp = A1_2_power_x * fraction_of_z ;
-	power_of_fraction += tmp;
+	power_of_fraction = fraction_of_z * A3_2_power_x;
+	power_of_fraction += A2_2_power_x;
+	power_of_fraction *= fraction_of_z ;
+	power_of_fraction += A1_2_power_x;
+	power_of_fraction *= fraction_of_z ;
 	power_of_fraction += A0_2_power_x;
 #else
 	// fraction_of_z = [0.5,1] so it can be approximated by taylor series around 0  :

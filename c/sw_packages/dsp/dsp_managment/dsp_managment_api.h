@@ -37,6 +37,12 @@ typedef uint8_t (*dsp_ioctl_1_params_func_t)(void * const aHandle ,const uint8_t
 typedef void (*dsp_func_t)(const void * const aHandle , size_t data_len ,
 		float *in_pads[MAX_NUM_OF_OUTPUT_PADS] , float *out_pads[MAX_NUM_OF_OUTPUT_PADS] )  ;
 
+typedef enum
+{
+	DSP_MANAGMENT_API_MODULE_CONTROL_ON  =0,
+	DSP_MANAGMENT_API_MODULE_CONTROL_BYPASS ,
+	DSP_MANAGMENT_API_MODULE_CONTROL_MUTE ,
+}DSP_MANAGMENT_API_module_control_t;
 
 typedef struct _dsp_descriptor_t
 {
@@ -44,6 +50,7 @@ typedef struct _dsp_descriptor_t
 	void*    			handle;
 	dsp_ioctl_func_t  	ioctl;
 	dsp_func_t  		dsp_func;
+	DSP_MANAGMENT_API_module_control_t				ctl;
 	float				*in_pads[MAX_NUM_OF_OUTPUT_PADS];
 	float				*out_pads[MAX_NUM_OF_OUTPUT_PADS];
 }dsp_descriptor_t,*pdsp_descriptor;
@@ -62,37 +69,14 @@ typedef const dsp_descriptor_t * pdsp_descriptor_const;
 #define DSP_IOCTL_2_PARAMS(dsp,ioctl_num,ioctl_param1,ioctl_param2)    (dsp)->ioctl((dsp)->handle,ioctl_num,ioctl_param1,ioctl_param2)
 
 
-extern	void *dsp_buffers_pool;
 
-#define DSP_FUNC_1CH_IN_1CH_OUT(dsp,ch1In,len)    					\
-		(dsp)->in_pads[0]	= (float*)ch1In;	\
-		(dsp)->out_pads[0]	= (float*)memory_pool_malloc(dsp_buffers_pool);	\
-		(dsp)->dsp_func((dsp)->handle,len,(dsp)->in_pads,(dsp)->out_pads )
+void DSP_FUNC_1CH_IN_1CH_OUT(pdsp_descriptor dsp,void *ch1In,size_t	len);
+void DSP_FUNC_2CH_IN_2CH_OUT(pdsp_descriptor dsp,void *ch1In,void *ch2In,size_t	len);
+void DSP_FUNC_2CH_IN_1CH_OUT(pdsp_descriptor dsp,void *ch1In,void *ch2In,size_t	len);
+void DSP_FUNC_2CH_IN_1CH_OUT_NO_OUTPUT_ALLOCATION(pdsp_descriptor dsp,void *ch1In,void *ch2In,void *ch1Out,size_t	len);
+void DSP_FUNC_1CH_IN_2CH_OUT(pdsp_descriptor dsp,void *ch1In,size_t	len);
 
-#define DSP_FUNC_2CH_IN_2CH_OUT(dsp,ch1In,ch2In,len)    		\
-		(dsp)->in_pads[0]	= (float*)ch1In;	\
-		(dsp)->in_pads[1]	= (float*)ch2In;	\
-		(dsp)->out_pads[0]	= (float*)memory_pool_malloc(dsp_buffers_pool);	\
-		(dsp)->out_pads[1]	= (float*)memory_pool_malloc(dsp_buffers_pool);	\
-		(dsp)->dsp_func((dsp)->handle,len,(dsp)->in_pads,(dsp)->out_pads )
-
-#define DSP_FUNC_2CH_IN_1CH_OUT(dsp,ch1In,ch2In,len)    		\
-		(dsp)->in_pads[0]	= (float*)ch1In;	\
-		(dsp)->in_pads[1]	= (float*)ch2In;	\
-		(dsp)->out_pads[0]	= (float*)memory_pool_malloc(dsp_buffers_pool);	\
-		(dsp)->dsp_func((dsp)->handle,len,(dsp)->in_pads,(dsp)->out_pads )
-
-#define DSP_FUNC_2CH_IN_1CH_OUT_NO_OUTPUT_ALLOCATION(dsp,ch1In,ch2In,ch1Out,len)    		\
-		(dsp)->in_pads[0]	= (float*)ch1In;	\
-		(dsp)->in_pads[1]	= (float*)ch2In;	\
-		(dsp)->out_pads[0]	= (float*)ch1Out;	\
-		(dsp)->dsp_func((dsp)->handle,len,(dsp)->in_pads,(dsp)->out_pads )
-
-#define DSP_FUNC_1CH_IN_2CH_OUT(dsp,ch1In,len)    		\
-		(dsp)->in_pads[0]	= (float*)ch1In;	\
-		(dsp)->out_pads[0]	= (float*)memory_pool_malloc(dsp_buffers_pool);	\
-		(dsp)->out_pads[1]	= (float*)memory_pool_malloc(dsp_buffers_pool);	\
-		(dsp)->dsp_func((dsp)->handle,len,(dsp)->in_pads,(dsp)->out_pads )
-
+void dsp_managment_api_set_buffers_pool(void *adsp_buffers_pool);
+void dsp_managment_api_set_module_control(pdsp_descriptor dsp , DSP_MANAGMENT_API_module_control_t ctl);
 
 #endif
