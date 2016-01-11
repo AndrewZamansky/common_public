@@ -19,8 +19,10 @@
 
 /********  types  *********************/
 
-typedef struct {
+typedef struct
+{
 	pdev_descriptor_const   callback_dev;
+	uint8_t start_flag;
 } I2S_NUC505_Instance_t;
 
 #endif

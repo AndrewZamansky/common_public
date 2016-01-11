@@ -22,6 +22,7 @@
 #include "NUC505Series.h"
 
 /********  defines *********************/
+#define INSTANCE(hndl)	((I2S_NUC505_Instance_t*)hndl)
 
 
 /********  types  *********************/
@@ -54,7 +55,6 @@ float volume=1;
 
 uint8_t i2s_loopback = 0;
 
-//volatile static uint32_t s_flag1;
 
 
 void __attribute__((section(".critical_text"))) I2S_IRQHandler(void)
@@ -79,12 +79,12 @@ void __attribute__((section(".critical_text"))) I2S_IRQHandler(void)
 		pTxBuf = PcmTxBuff +  (num_of_uint32_in_buffer_per_chenel*2);
 		I2S_CLR_INT_FLAG(I2S, I2S_STATUS_RDMAEIF_Msk);
 
-//		if ( s_flag1 == 0 )
-//		{
-//			s_flag1 = 1;
-//			I2S_ENABLE_TXDMA(I2S);
-//			I2S_ENABLE_TX(I2S);
-//		}
+		if ( pI2SHandle->start_flag == 1 )
+		{
+			pI2SHandle->start_flag = 0;
+			I2S_ENABLE_TXDMA(I2S);
+			I2S_ENABLE_TX(I2S);
+		}
 	}
 
 	if(NULL != pRxBuf)
@@ -322,8 +322,8 @@ uint8_t I2S_nuc505_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 			break;
 
 		case I2S_ENABLE_OUTPUT_IOCTL:
-			I2S_ENABLE_TXDMA(I2S);
-			I2S_ENABLE_TX(I2S);
+			INSTANCE(aHandle)->start_flag = 1;
+
 			break;
 
 		default :
