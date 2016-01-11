@@ -24,7 +24,7 @@ ifeq ($(findstring AS_SPEED_CRITICAL,$(CONFIG_INCLUDE_EQUALIZER)),AS_SPEED_CRITI
 endif
 
 SRC = equalizer.c
-SRC += cmd_set_eq_band.c
+
 
 VPATH = src
 
