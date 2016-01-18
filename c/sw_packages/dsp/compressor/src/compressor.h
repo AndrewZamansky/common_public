@@ -23,6 +23,7 @@
 typedef struct {
 
 	uint8_t type;
+	uint8_t usePreviousRatio;
 	uint32_t latency;
 	float *latency_buffer_Ch1;
 	float *latency_buffer_Ch2;

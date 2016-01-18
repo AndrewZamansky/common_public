@@ -115,13 +115,13 @@
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
 void equalizer_dsp(const void * const aHandle , size_t data_len ,
-		float *in_pads[MAX_NUM_OF_OUTPUT_PADS] , float *out_pads[MAX_NUM_OF_OUTPUT_PADS])
+		dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] , dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])
 {
 	float *apCh1In  ;
 	float *apCh1Out ;
 
-	apCh1In = in_pads[0];
-	apCh1Out = out_pads[0];
+	apCh1In = in_pads[0]->buff;
+	apCh1Out = out_pads[0].buff;
 
 	biquads_cascading_filter(INSTANCE(aHandle)->pBiquadFilter , apCh1In , apCh1Out , data_len);
 

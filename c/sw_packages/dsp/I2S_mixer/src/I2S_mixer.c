@@ -70,15 +70,15 @@
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
 void I2S_mixer_dsp(const void * const aHandle , size_t data_len ,
-		float *in_pads[MAX_NUM_OF_OUTPUT_PADS] , float  *out_pads[MAX_NUM_OF_OUTPUT_PADS])
+		dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] , dsp_pad_t  out_pads[MAX_NUM_OF_OUTPUT_PADS])
 {
 	float *apCh1In ,  *apCh2In;
 
 	buffer_type_t *pTxBuf;
-	pTxBuf = (buffer_type_t*)out_pads[0];
+	pTxBuf = (buffer_type_t*)out_pads[0].buff;
 
-	apCh1In = in_pads[0];
-	apCh2In = in_pads[1];
+	apCh1In = in_pads[0]->buff;
+	apCh2In = in_pads[1]->buff;
 
 	for( ; data_len ;data_len--)
 	{

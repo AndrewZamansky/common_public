@@ -103,7 +103,7 @@ static void float_memcpy_with_ratio_2_buffers(float *dest1 ,float *src1 ,
 /* Function:         _compressor_buffered_2in_2out                                                                          */
 /*---------------------------------------------------------------------------------------------------------*/
 void _compressor_buffered_2in_2out(const void * const aHandle ,size_t data_len ,
-		float *in_pads[MAX_NUM_OF_OUTPUT_PADS] , float *out_pads[MAX_NUM_OF_OUTPUT_PADS] )
+		dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] , dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS] )
 {
 		float *apCh1In ,  *apCh2In;
 		float *apCh1Out ,  *apCh2Out;
@@ -123,17 +123,17 @@ void _compressor_buffered_2in_2out(const void * const aHandle ,size_t data_len ,
 		float *latency_buffer_Ch2 = INSTANCE(aHandle)->latency_buffer_Ch2;
 	//	uint32_t latency = INSTANCE(aHandle)->latency;
 
-		apCh1In = in_pads[0];
-		apCh2In = in_pads[1];
-		apCh1Out = out_pads[0];
-		apCh2Out = out_pads[1];
+		apCh1In = in_pads[0]->buff;
+		apCh2In = in_pads[1]->buff;
+		apCh1Out = out_pads[0].buff;
+		apCh2Out = out_pads[1].buff;
 
 		threshold = INSTANCE(aHandle)->threshold;
 		reverse_ratio = INSTANCE(aHandle)->reverse_ratio;
 		prev_ratio = INSTANCE(aHandle)->prev_ratio ;
+		usePreviousRatio = INSTANCE(aHandle)->usePreviousRatio ;
 
 		max_val = threshold ;
-		usePreviousRatio = 1;
 
 		arm_abs_f32( apCh1In , apCh1Out , data_len);
 		arm_abs_f32( apCh2In , apCh2Out , data_len);
@@ -215,6 +215,7 @@ void _compressor_buffered_2in_2out(const void * const aHandle ,size_t data_len ,
 				latency_buffer_Ch2, &apCh2In[data_len - COMPRESSOR_CONFIG_CHUNK_SIZE ]  , 1,0);
 
 		INSTANCE(aHandle)->prev_ratio = prev_ratio;
+		INSTANCE(aHandle)->usePreviousRatio = usePreviousRatio ;
 
 	//	if(print_count > 100)
 	//	{
@@ -234,7 +235,7 @@ void _compressor_buffered_2in_2out(const void * const aHandle ,size_t data_len ,
 /* Function:         _compressor_buffered_2in_2out                                                                          */
 /*---------------------------------------------------------------------------------------------------------*/
 void _compressor_2in_2out(const void * const aHandle , size_t data_len ,
-		float *in_pads[MAX_NUM_OF_OUTPUT_PADS] , float *out_pads[MAX_NUM_OF_OUTPUT_PADS])
+		dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] , dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])
 {
 	float *apCh1In ,  *apCh2In;
 	float *apCh1Out ,  *apCh2Out;
@@ -251,10 +252,10 @@ void _compressor_2in_2out(const void * const aHandle , size_t data_len ,
 	float *latency_buffer_Ch1 = INSTANCE(aHandle)->latency_buffer_Ch1;
 
 
-	apCh1In = in_pads[0];
-	apCh2In = in_pads[1];
-	apCh1Out = out_pads[0];
-	apCh2Out = out_pads[1];
+	apCh1In = in_pads[0]->buff;
+	apCh2In = in_pads[1]->buff;
+	apCh1Out = out_pads[0].buff;
+	apCh2Out = out_pads[1].buff;
 
 	attack = INSTANCE(aHandle)->attack;
 	attack_neg = 1 - attack;
@@ -323,7 +324,7 @@ void _compressor_2in_2out(const void * const aHandle , size_t data_len ,
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
 void compressor_dsp(const void * const aHandle , size_t data_len ,
-		float *in_pads[MAX_NUM_OF_OUTPUT_PADS] , float *out_pads[MAX_NUM_OF_OUTPUT_PADS])
+		dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] , dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])
 {
 
 
@@ -440,6 +441,7 @@ uint8_t  compressor_api_init_dsp_descriptor(pdsp_descriptor aDspDescriptor)
 	aDspDescriptor->dsp_func = compressor_dsp;
 	pInstance->reverse_ratio = 0;//0.5;
 	pInstance->prev_ratio = 1;
+	pInstance->usePreviousRatio = 1;
 	usedInstances++;
 
 	return 0 ;

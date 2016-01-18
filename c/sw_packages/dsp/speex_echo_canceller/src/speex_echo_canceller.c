@@ -72,15 +72,15 @@
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
 void speex_echo_canceller_dsp(const void * const aHandle , size_t data_len ,
-		float *in_pads[MAX_NUM_OF_OUTPUT_PADS] , float *out_pads[MAX_NUM_OF_OUTPUT_PADS])
+		dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] , dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])
 {
 
 	int16_t *apCh1In ,  *apCh2In ;
 	int16_t *apCh1Out  ;
 
-	apCh1In = (int16_t *)in_pads[0];
-	apCh2In = (int16_t *)in_pads[1];
-	apCh1Out = (int16_t *)out_pads[0];
+	apCh1In = (int16_t *)in_pads[0]->buff;
+	apCh2In = (int16_t *)in_pads[1]->buff;
+	apCh1Out = (int16_t *)out_pads[0].buff;
 
     speex_echo_cancellation(INSTANCE(aHandle)->echo_state , apCh1In, apCh2In, apCh1Out);
     speex_preprocess_run(INSTANCE(aHandle)->preprocess_state , apCh1Out);

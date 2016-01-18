@@ -1,7 +1,12 @@
 
+
+# test for valid target 
+VALID_TARGETS := all clean rebuild archive list_var all_after_makefile_generated archive_step2
+ifeq ($(findstring $(MAKECMDGOALS),$(VALID_TARGETS)),) 
+
 default : 
 	$(info  )
-	$(info No targect selected . available targets listed below :  )
+	$(info No valid targect selected . available targets listed below :  )
 	$(info  )
 	$(info "make all"       :  build whole project  )
 	$(info "make clean"     :  delete objects , project outputs  )
@@ -10,6 +15,12 @@ default :
 	$(info "make list_var"  :  print usefull makefile variables   )
 	$(info  )
 	$(info  )
+	
+$(MAKECMDGOALS) : default
+	$(info  ) 
+
+else # valid target :
+
 
 COMMON_CC :=
 
@@ -122,4 +133,5 @@ list_var:
 	$(MAKE) -f $(MAKEFILE_DEFS_ROOT_DIR)/list_usful_variables.mk  
 	
 .PHONY: default rebuild archive clean all $(SUBDIRS)
-	
+
+endif# test for valid target
