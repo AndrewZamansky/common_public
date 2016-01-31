@@ -60,7 +60,7 @@ typedef QueueHandle_t  os_queue_t;
 
 
 /**	*********  mutex creation ********        **/
-/** os_create_mutex should return os_queue_t  **/
+/** os_create_mutex should return os_mutex_t  **/
 
 /**	function :	[os_create_queue()]  **/
 #define os_create_mutex()	 xSemaphoreCreateMutex(  )
@@ -85,6 +85,10 @@ typedef QueueHandle_t  os_queue_t;
 /**	function :	[os_mutex_give()]  **/
 #define os_mutex_give(mutex )	 xSemaphoreGive(mutex  )
 
+
+
+
+/***********  queue receive **********/
 //infinite wait
 /**	function :	[os_queue_receive_with_timeout()]  **/
 #define os_queue_receive_with_timeout(queue , pData ,timeout )	\

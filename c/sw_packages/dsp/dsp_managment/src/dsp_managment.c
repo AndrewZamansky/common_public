@@ -86,9 +86,8 @@ static void my_float_memset(float *dest ,float val , size_t len)
 	}
 }
 
-#if 0
 /*---------------------------------------------------------------------------------------------------------*/
-/* Function:        DSP_FUNC_1CH_IN_1CH_OUT                                                                          */
+/* Function:        DSP_CREATE_CHAIN                                                                          */
 /*                                                                                                         */
 /* Parameters:                                                                                             */
 /*                                                                                         */
@@ -98,32 +97,18 @@ static void my_float_memset(float *dest ,float val , size_t len)
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-void DSP_FUNC_1CH_IN_1CH_OUT(pdsp_descriptor dsp,void *ch1In,size_t	len)
+dsp_chain_t *DSP_CREATE_CHAIN(size_t max_num_of_dsp_modules)
 {
-	 DSP_MANAGMENT_API_module_control_t ctl;
-
-	dsp->in_pads[0]	= (float*)ch1In;
-	dsp->out_pads[0]	= (float*)memory_pool_malloc(dsp_buffers_pool);
-	ctl = dsp->ctl;
-
-	if(DSP_MANAGMENT_API_MODULE_CONTROL_ON == ctl)
-	{
-		dsp->dsp_func(dsp->handle,len,dsp->in_pads,dsp->out_pads );
-	}
-	else if (DSP_MANAGMENT_API_MODULE_CONTROL_BYPASS == ctl)
-	{
-		my_float_memcpy(dsp->out_pads[0] , dsp->in_pads[0] , len);
-	}
-	else // if (DSP_MANAGMENT_API_MODULE_CONTROL_MUTE == ctl)
-	{
-		my_float_memset(dsp->out_pads[0] ,0 , len);
-	}
+	dsp_chain_t *pdsp_chain;
+	pdsp_chain =  (dsp_chain_t*)malloc( sizeof(dsp_chain_t));
+	pdsp_chain->dsp_chain =  (pdsp_descriptor*)malloc(max_num_of_dsp_modules * sizeof(pdsp_descriptor));
+	pdsp_chain->max_num_of_dsp_modules = max_num_of_dsp_modules;
+	pdsp_chain->occupied_dsp_modules = 0 ;
+	return pdsp_chain;
 }
 
-
-
 /*---------------------------------------------------------------------------------------------------------*/
-/* Function:        DSP_FUNC_2CH_IN_2CH_OUT                                                                          */
+/* Function:        DSP_ADD_MODULE_TO_CHAIN                                                                          */
 /*                                                                                                         */
 /* Parameters:                                                                                             */
 /*                                                                                         */
@@ -133,141 +118,19 @@ void DSP_FUNC_1CH_IN_1CH_OUT(pdsp_descriptor dsp,void *ch1In,size_t	len)
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-void DSP_FUNC_2CH_IN_2CH_OUT(pdsp_descriptor dsp,void *ch1In,void *ch2In,size_t	len)
+void DSP_ADD_MODULE_TO_CHAIN(dsp_chain_t *ap_chain, pdsp_descriptor dsp_module)
 {
-	 DSP_MANAGMENT_API_module_control_t ctl;
+	size_t occupied_dsp_modules;
 
-	dsp->in_pads[0]	= (float*)ch1In;
-	dsp->in_pads[1]	= (float*)ch2In;
-	dsp->out_pads[0]	= (float*)memory_pool_malloc(dsp_buffers_pool);
-	dsp->out_pads[1]	= (float*)memory_pool_malloc(dsp_buffers_pool);
-	ctl = dsp->ctl;
-	if(DSP_MANAGMENT_API_MODULE_CONTROL_ON == ctl)
-	{
-		dsp->dsp_func(dsp->handle,len,dsp->in_pads,dsp->out_pads );
-	}
-	else if (DSP_MANAGMENT_API_MODULE_CONTROL_BYPASS == ctl)
-	{
-		my_float_memcpy_2_buffers(dsp->out_pads[0] , dsp->in_pads[0] ,
-				dsp->out_pads[1] , dsp->in_pads[1] , len);
-	}
-	else // if (DSP_MANAGMENT_API_MODULE_CONTROL_MUTE == ctl)
-	{
-		my_float_memset(dsp->out_pads[0] ,0 , len);
-		my_float_memset(dsp->out_pads[1] ,0 , len);
-	}
+	occupied_dsp_modules = ap_chain->occupied_dsp_modules;
+	while ( occupied_dsp_modules  == ap_chain->max_num_of_dsp_modules) ; // error trap
+
+	ap_chain->dsp_chain[occupied_dsp_modules++] = dsp_module;
+
+	ap_chain->occupied_dsp_modules = occupied_dsp_modules ;
+
 }
 
-
-
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        DSP_FUNC_2CH_IN_1CH_OUT                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-void DSP_FUNC_2CH_IN_1CH_OUT(pdsp_descriptor dsp,void *ch1In,void *ch2In,size_t	len)
-{
-	 DSP_MANAGMENT_API_module_control_t ctl;
-
-	dsp->in_pads[0]	= (float*)ch1In;
-	dsp->in_pads[1]	= (float*)ch2In;
-	dsp->out_pads[0]	= (float*)memory_pool_malloc(dsp_buffers_pool);
-	ctl = dsp->ctl;
-	if(DSP_MANAGMENT_API_MODULE_CONTROL_ON == ctl)
-	{
-		dsp->dsp_func(dsp->handle,len,dsp->in_pads,dsp->out_pads );
-	}
-	else if (DSP_MANAGMENT_API_MODULE_CONTROL_BYPASS == ctl)
-	{
-		my_float_memcpy(dsp->out_pads[0] , dsp->in_pads[0],   len);
-	}
-	else // if (DSP_MANAGMENT_API_MODULE_CONTROL_MUTE == ctl)
-	{
-		my_float_memset(dsp->out_pads[0] ,0 , len);
-	}
-}
-
-
-
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        DSP_FUNC_2CH_IN_1CH_OUT_NO_OUTPUT_ALLOCATION                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-void DSP_FUNC_2CH_IN_1CH_OUT_NO_OUTPUT_ALLOCATION(pdsp_descriptor dsp,void *ch1In,void *ch2In,void *ch1Out,size_t	len)
-{
-	 DSP_MANAGMENT_API_module_control_t ctl;
-
-	dsp->in_pads[0]	= (float*)ch1In;
-	dsp->in_pads[1]	= (float*)ch2In;
-	dsp->out_pads[0]	= (float*)ch1Out;
-	ctl = dsp->ctl;
-	if(DSP_MANAGMENT_API_MODULE_CONTROL_ON == ctl)
-	{
-
-		dsp->dsp_func(dsp->handle,len,dsp->in_pads,dsp->out_pads );
-	}
-	else if (DSP_MANAGMENT_API_MODULE_CONTROL_BYPASS == ctl)
-	{
-		my_float_memcpy(dsp->out_pads[0] , dsp->in_pads[0],   len);
-	}
-	else // if (DSP_MANAGMENT_API_MODULE_CONTROL_MUTE == ctl)
-	{
-		my_float_memset(dsp->out_pads[0] ,0 , len);
-	}
-}
-
-
-
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        DSP_FUNC_1CH_IN_2CH_OUT                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-void DSP_FUNC_1CH_IN_2CH_OUT(pdsp_descriptor dsp,void *ch1In,size_t	len)
-{
-	 DSP_MANAGMENT_API_module_control_t ctl;
-
-	dsp->in_pads[0]	= (float*)ch1In;
-	dsp->out_pads[0]	= (float*)memory_pool_malloc(dsp_buffers_pool);
-	dsp->out_pads[1]	= (float*)memory_pool_malloc(dsp_buffers_pool);
-	ctl = dsp->ctl;
-	if(DSP_MANAGMENT_API_MODULE_CONTROL_ON == ctl)
-	{
-
-		dsp->dsp_func(dsp->handle,len,dsp->in_pads,dsp->out_pads );
-	}
-	else if (DSP_MANAGMENT_API_MODULE_CONTROL_BYPASS == ctl)
-	{
-		my_float_memcpy(dsp->out_pads[0] , dsp->in_pads[0],   len);
-		my_float_memcpy(dsp->out_pads[1] , dsp->in_pads[0],   len);
-	}
-	else // if (DSP_MANAGMENT_API_MODULE_CONTROL_MUTE == ctl)
-	{
-		my_float_memset(dsp->out_pads[0] ,0 , len);
-		my_float_memset(dsp->out_pads[1] ,0 , len);
-	}
-}
-
-#endif
 /*---------------------------------------------------------------------------------------------------------*/
 /* Function:        DSP_PROCESS                                                                          */
 /*                                                                                                         */
@@ -283,6 +146,8 @@ void DSP_PROCESS(pdsp_descriptor dsp , size_t	len)
 {
 	DSP_MANAGMENT_API_module_control_t ctl;
 	dsp_pad_t *curr_out_pad ;
+	dsp_pad_t **in_pads ;
+	dsp_pad_t *out_pads ;
 	dsp_pad_t *curr_source_out_pad ;
 	uint8_t i;
 
@@ -297,18 +162,20 @@ void DSP_PROCESS(pdsp_descriptor dsp , size_t	len)
 	}
 
 	ctl = dsp->ctl;
+	in_pads = dsp->in_pads;
+	out_pads = dsp->out_pads;
 	if(DSP_MANAGMENT_API_MODULE_CONTROL_ON == ctl)
 	{
-		dsp->dsp_func(dsp->handle,len,dsp->in_pads,dsp->out_pads );
+		dsp->dsp_func(dsp->handle , len , in_pads , out_pads );
 	}
 	else if (DSP_MANAGMENT_API_MODULE_CONTROL_BYPASS == ctl)
 	{
 		for(i=0; i<MAX_NUM_OF_OUTPUT_PADS ;i++)
 		{
-			curr_out_pad = &dsp->out_pads[i];
+			curr_out_pad = &out_pads[i];
 			if(DSP_PAD_TYPE_NORMAL == curr_out_pad->pad_type)
 			{
-				my_float_memcpy(curr_out_pad->buff , dsp->in_pads[0]->buff,   len);
+				my_float_memcpy(curr_out_pad->buff , in_pads[0]->buff,   len);
 			}
 		}
 	}
@@ -316,7 +183,7 @@ void DSP_PROCESS(pdsp_descriptor dsp , size_t	len)
 	{
 		for(i=0; i<MAX_NUM_OF_OUTPUT_PADS ;i++)
 		{
-			curr_out_pad = &dsp->out_pads[i];
+			curr_out_pad = &out_pads[i];
 			if(DSP_PAD_TYPE_NORMAL == curr_out_pad->pad_type)
 			{
 				my_float_memset(curr_out_pad->buff ,0,   len);
@@ -327,7 +194,7 @@ void DSP_PROCESS(pdsp_descriptor dsp , size_t	len)
 
 	for(i=0; i<MAX_NUM_OF_OUTPUT_PADS ;i++)
 	{
-		curr_source_out_pad = dsp->in_pads[i];
+		curr_source_out_pad = in_pads[i];
 
 		if(DSP_PAD_TYPE_NORMAL == curr_source_out_pad->pad_type)
 		{
@@ -342,6 +209,32 @@ void DSP_PROCESS(pdsp_descriptor dsp , size_t	len)
 
 }
 
+/*---------------------------------------------------------------------------------------------------------*/
+/* Function:        DSP_PROCESS_CHAIN                                                                          */
+/*                                                                                                         */
+/* Parameters:                                                                                             */
+/*                                                                                         */
+/*                                                                                                  */
+/* Returns:                                                                                      */
+/* Side effects:                                                                                           */
+/* Description:                                                                                            */
+/*                                                            						 */
+/*---------------------------------------------------------------------------------------------------------*/
+void DSP_PROCESS_CHAIN(dsp_chain_t *ap_chain , size_t	len )
+{
+	size_t i;
+	pdsp_descriptor* dsp_chain;
+
+	dsp_chain = ap_chain->dsp_chain;
+	i = ap_chain->occupied_dsp_modules;
+	while(i--)
+	{
+		DSP_PROCESS( *dsp_chain , len);
+		dsp_chain++;
+	}
+
+
+}
 
 /*---------------------------------------------------------------------------------------------------------*/
 /* Function:        DSP_CREATE_LINK                                                                          */
