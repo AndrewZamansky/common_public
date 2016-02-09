@@ -3,11 +3,15 @@
 ; file : startup.s
 ;----------------------------------------------------------
 */
+
+
 .syntax unified
+
 
 .section ._secondary_rom_vector_table,"ax"
 .global _secondary_rom_vector_table
 .global _secondary_rom_vector_table_startup_entry
+
 
 
 .thumb

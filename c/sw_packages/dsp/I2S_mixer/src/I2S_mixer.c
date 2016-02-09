@@ -73,6 +73,7 @@ void I2S_mixer_dsp(const void * const aHandle , size_t data_len ,
 		dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] , dsp_pad_t  out_pads[MAX_NUM_OF_OUTPUT_PADS])
 {
 	float *apCh1In ,  *apCh2In;
+	float normalizer ;
 
 	buffer_type_t *pTxBuf;
 	pTxBuf = (buffer_type_t*)out_pads[0].buff;
@@ -80,14 +81,15 @@ void I2S_mixer_dsp(const void * const aHandle , size_t data_len ,
 	apCh1In = in_pads[0]->buff;
 	apCh2In = in_pads[1]->buff;
 
+	normalizer = FLOAT_NORMALIZER;
 	for( ; data_len ;data_len--)
 	{
-		*apCh1In = *apCh1In * FLOAT_NORMALIZER;
+		*apCh1In = *apCh1In * normalizer;
 		*pTxBuf = (buffer_type_t)(*apCh1In++)		;// pTxBuf[2*i]
 //					*pTxBuf = *pTxBuf & 0x00ffffff;
 		pTxBuf++;
 
-		*apCh2In = *apCh2In * FLOAT_NORMALIZER;
+		*apCh2In = *apCh2In * normalizer;
 		*pTxBuf = (buffer_type_t)(*apCh2In++); // pTxBuf[2*i + 1]
 //					*pTxBuf = *pTxBuf & 0x00ffffff;
 		pTxBuf++;

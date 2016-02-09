@@ -44,7 +44,7 @@ int smihosting_is_active = 0 ;
 
 /******************** default interrupt handlers ******************/
 
-void __attribute__((interrupt("SWI"))) do_app_software_interrupt(uint32_t int_num)
+EXTERN_C_FUNCTION void __attribute__((interrupt("SWI"))) do_app_software_interrupt(uint32_t int_num)
 {
     //based on int_num, you can determine which system call is called
     switch(int_num)
@@ -103,63 +103,63 @@ void __attribute__((weak)) OS_SWI_Handler(void)
 #ifndef __DONT_USE_GCC_LIB
 
 /**************  low level calls from libraries ******************/
-int _getpid(void) {
+EXTERN_C_FUNCTION int _getpid(void) {
   return 1;
 }
 
-void _kill(int pid)
+EXTERN_C_FUNCTION void _kill(int pid)
 {
 	while(1) ;
 }
 
 extern void* __HEAP_START;
 extern void* __HEAP_END;
-unsigned char *gloabal_heap = NULL;
-void* _sbrk ( int incr )
+unsigned char *global_heap = NULL;
+EXTERN_C_FUNCTION void* _sbrk ( int incr )
 {
   unsigned char *prev_heap;
 
-  if( ( gloabal_heap + incr) >= (unsigned char *)&__HEAP_END)
+  if( ( global_heap + incr) >= (unsigned char *)&__HEAP_END)
   {
 	  while(1); // trap of memmory overflow
   }
 
-  if (gloabal_heap == NULL) {
-	  gloabal_heap = (unsigned char *)&__HEAP_START;
+  if (global_heap == NULL) {
+	  global_heap = (unsigned char *)&__HEAP_START;
   }
-  prev_heap = gloabal_heap;
+  prev_heap = global_heap;
   /* check removed to show basic approach */
 
-  gloabal_heap += incr;
+  global_heap += incr;
 
   return (void*) prev_heap;
 }
 
 
-void __attribute__ ((noreturn)) _exit(int status)
+EXTERN_C_FUNCTION void __attribute__ ((noreturn)) _exit(int status)
 {
 	while(1);
 }
 
-int _write(int file, char *ptr, int len) {
+EXTERN_C_FUNCTION int _write(int file, char *ptr, int len) {
 
  return len;
  }
 
-int _close(int file) { return -1; }
+EXTERN_C_FUNCTION int _close(int file) { return -1; }
 
-int _fstat(int file, void *st)
+EXTERN_C_FUNCTION int _fstat(int file, void *st)
 {
  return 0;
 }
 
-int _isatty(int file) { return 1; }
+EXTERN_C_FUNCTION int _isatty(int file) { return 1; }
 
-int _lseek(int file, int ptr, int dir) { return 0; }
+EXTERN_C_FUNCTION int _lseek(int file, int ptr, int dir) { return 0; }
 
-int _open(const char *name, int flags, int mode) { return -1; }
+EXTERN_C_FUNCTION int _open(const char *name, int flags, int mode) { return -1; }
 
-int _read(int file, char *ptr, int len) {
+EXTERN_C_FUNCTION int _read(int file, char *ptr, int len) {
   return 0;
 
 }
@@ -179,7 +179,7 @@ void v7_outer_cache_inval_all(void);
 /*
  *  function : low_level_init()
  */
-void low_level_init()
+EXTERN_C_FUNCTION void low_level_init()
 {
 	uint32_t *src ;
 	uint32_t *dst ;

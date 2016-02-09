@@ -17,7 +17,7 @@
 
 BaseType_t xDummyHigherPriorityTaskWoken ;
 
-void *os_create_task_FreeRTOS(char *taskName , void *taskFunction,
+void *os_create_task_FreeRTOS(char *taskName , void (*taskFunction)(void *apParam),
 		void *taskFunctionParam , uint16_t stackSize , uint8_t priority)
 {
 	TaskHandle_t xHandle=NULL;

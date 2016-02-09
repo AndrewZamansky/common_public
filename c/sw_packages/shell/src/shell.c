@@ -124,7 +124,7 @@ uint8_t shell_callback(void * const aHandle ,const uint8_t aCallback_num
 	}
 
 
-	queueMsg.pShell_instance = aHandle;
+	queueMsg.pShell_instance = (shell_instance_t *)aHandle;
 
 	//xQueueSendFromISR( xQueue, ( void * ) &queueMsg,  &xHigherPriorityTaskWoken );
 	os_queue_send_immediate( xQueue, ( void * ) &queueMsg);

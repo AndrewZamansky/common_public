@@ -81,7 +81,7 @@ uint8_t heartbeat_ioctl( void * const aHandle ,const uint8_t aIoctl_num , void *
 
 		case IOCTL_DEVICE_START :
 
-			DEV_IOCTL_1_PARAMS(INSTANCE(aHandle)->callibration_timer , IOCTL_TIMER_CALLBACK_SET ,  heartbeat_timer_callback);
+			DEV_IOCTL_1_PARAMS(INSTANCE(aHandle)->callibration_timer , IOCTL_TIMER_CALLBACK_SET ,  (void*)heartbeat_timer_callback);
 			DEV_IOCTL_0_PARAMS(INSTANCE(aHandle)->callibration_timer , IOCTL_DEVICE_START );
 
 			while(1)

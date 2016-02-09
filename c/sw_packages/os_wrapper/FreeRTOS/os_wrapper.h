@@ -151,10 +151,10 @@ uint8_t os_queue_send_immediate(os_queue_t queue ,  void * pData  );
 /**	function :	[os_create_task()]  **/
 
 
-#define os_create_task(name , func, funcParam, stackSize , priority)	\
+#define os_create_task(name ,  func, funcParam, stackSize , priority)	\
 		os_create_task_FreeRTOS(name , func, funcParam, stackSize , priority)
 
-void *os_create_task_FreeRTOS(char *taskName , void *taskFunction,
+void *os_create_task_FreeRTOS(char *taskName , void (*taskFunction)(void *apParam),
 		void *taskFunctionParam , uint16_t stackSize , uint8_t priority);
 
 

@@ -53,6 +53,9 @@ ifdef MAKEFILE_WAS_GENERATED
         DEFINES :=
         INCLUDE_DIR :=
         SRC :=
+        CFLAGS :=
+        ASMFLAGS :=
+        DEFINES :=
         
         ifeq ($(findstring YES,$(_NO_OS_FOUND)),YES) 	 
 	     GLOBAL_DEFINES += _NO_OS
@@ -115,7 +118,7 @@ $(SUBDIRS):
 	$(eval export TARGET)
 	$(MAKE) -C $@ -f Makefile.uc.mk $(TARGET)
 
-$(COMPONENTS_MK) : $(ALL_CONFIG_FILES_LEVEL1) $(ALL_CONFIG_FILES_LEVEL2)
+$(COMPONENTS_MK) :
 	$(MAKE) -f $(MAKEFILE_DEFS_ROOT_DIR)/generate_project_files.mk 
 	
 	

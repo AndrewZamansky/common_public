@@ -31,6 +31,11 @@ ifeq ($(findstring GCC,$(CONFIG_USE_COMPILER)),GCC)
     SRC += low_level_calls.c
     SRC += startup.s
     SRC += vectors.s
+else ifeq ($(findstring G++,$(CONFIG_USE_COMPILER)),G++) 	 
+    SRC += SWI.s
+    SRC += low_level_calls.c
+    SRC += startup.s
+    SRC += vectors.s
 else ifeq ($(findstring ARMCC,$(CONFIG_USE_COMPILER)),ARMCC) 
     SRC += startup_armcc.s
     SRC += vectors_armcc.s

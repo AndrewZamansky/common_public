@@ -14,7 +14,11 @@ endif
 
 #DEFINES = 
 
-#CFLAGS = 
+ifeq ($(findstring ARM-NONE-EABI-G++,$(CONFIG_USE_COMPILER)),ARM-NONE-EABI-G++) 
+    CFLAGS = -fpermissive
+endif
+
+
 
 #ASMFLAGS =  
 
@@ -38,6 +42,12 @@ VPATH += : $(EXTERNAL_SOURCE_ROOT_DIR)/FreeRTOS/FreeRTOS/Source/portable/MemMang
 
 SRC += port.c 
 ifeq ($(findstring GCC,$(CONFIG_USE_COMPILER)),GCC) 	
+    ifeq ($(findstring cortex-m3,$(CONFIG_CPU_TYPE)),cortex-m3) 	
+        VPATH += :$(EXTERNAL_SOURCE_ROOT_DIR)/FreeRTOS/FreeRTOS/Source/portable/GCC/ARM_CM3 
+    else
+        VPATH += :$(EXTERNAL_SOURCE_ROOT_DIR)/FreeRTOS/FreeRTOS/Source/portable/GCC/ARM_CM4F 
+    endif
+else ifeq ($(findstring G++,$(CONFIG_USE_COMPILER)),G++) 	
     ifeq ($(findstring cortex-m3,$(CONFIG_CPU_TYPE)),cortex-m3) 	
         VPATH += :$(EXTERNAL_SOURCE_ROOT_DIR)/FreeRTOS/FreeRTOS/Source/portable/GCC/ARM_CM3 
     else

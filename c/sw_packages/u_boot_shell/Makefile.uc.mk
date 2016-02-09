@@ -8,7 +8,9 @@ INCLUDE_DIR =  $(SW_PACKAGES_ROOT_DIR)/u_boot_shell/include
 INCLUDE_DIR += $(EXTERNAL_SOURCE_ROOT_DIR)/u-boot/include
 #DEFINES = 
 
-#CFLAGS = 
+ifeq ($(findstring ARM-NONE-EABI-G++,$(CONFIG_USE_COMPILER)),ARM-NONE-EABI-G++) 
+    CFLAGS = -fpermissive
+endif
 
 #ASMFLAGS =  
 

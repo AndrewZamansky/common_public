@@ -173,13 +173,6 @@ endif
 ####################   end of  configuring git  ######################
 
 COMPONENTS_MK := $(AUTO_GENERATED_FILES_DIR)/include_components.mk
-rwildcard=$(wildcard $1$2) $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2))
-
-
-ALL_CONFIG_FILES := $(call rwildcard,$(APP_ROOT_DIR)/,Makefile.uc.mk)
-ALL_CONFIG_FILES := $(ALL_CONFIG_FILES) $(call rwildcard,$(SW_PACKAGES_ROOT_DIR)/,Makefile.uc.mk)
-ALL_CONFIG_FILES := $(ALL_CONFIG_FILES) $(call rwildcard,$(DRIVERS_ROOT_DIR)/,Makefile.uc.mk)
-$(info scan for uconfig.mk done )
 
 
 OUTPUT_APP_NAME := out
@@ -244,6 +237,8 @@ GLOBAL_DEFINES := $(GLOBAL_DEFINES) PROJECT_NAME="$(PROJECT_NAME)"
 caclulate_component_dir = $(patsubst  %/,%, $(dir $(patsubst $(APP_ROOT_DIR)/%,%,$(realpath $1 ))))
 
 ifeq ($(findstring ARM-NONE-EABI-GCC,$(CONFIG_USE_COMPILER)),ARM-NONE-EABI-GCC) 	 
+	include $(MAKEFILE_DEFS_ROOT_DIR)/gcc/gcc_arm_init.mk
+else ifeq ($(findstring ARM-NONE-EABI-G++,$(CONFIG_USE_COMPILER)),ARM-NONE-EABI-G++) 
 	include $(MAKEFILE_DEFS_ROOT_DIR)/gcc/gcc_arm_init.mk
 else ifeq ($(findstring ARMCC,$(CONFIG_USE_COMPILER)),ARMCC) 
 	include $(MAKEFILE_DEFS_ROOT_DIR)/armcc/armcc_init.mk

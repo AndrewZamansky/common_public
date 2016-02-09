@@ -122,7 +122,7 @@ uint8_t cortexM_systick_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 			break;
 
 		case IOCTL_DEVICE_START :
-			pCORTEXM_SYSTICK_InstanceParams = aHandle;
+			pCORTEXM_SYSTICK_InstanceParams = (CORTEXM_SYSTICK_Instance_t*)aHandle;
 			/* Configure SysTick to interrupt at the requested rate. */
 			  SysTick->LOAD  = ((INSTANCE(aHandle)->input_clock/INSTANCE(aHandle)->rate) & SysTick_LOAD_RELOAD_Msk) - 1;      /* set reload register */
 			  SysTick->VAL   = 0;                                          /* Load the SysTick Counter Value */

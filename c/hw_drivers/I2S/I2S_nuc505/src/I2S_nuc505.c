@@ -307,7 +307,7 @@ uint8_t I2S_nuc505_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 
 			if(0 == num_of_words_in_buffer_per_chenel) return 2;
 
-			pI2SHandle = aHandle;
+			pI2SHandle =(I2S_NUC505_Instance_t*) aHandle;
 
 			I2S_Init();
 

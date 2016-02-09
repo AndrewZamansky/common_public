@@ -19,6 +19,8 @@ endif
 
 ifeq ($(findstring ARM-NONE-EABI-GCC,$(CONFIG_USE_COMPILER)),ARM-NONE-EABI-GCC) 	 
 	GNU_COMPILATION_PREFIX	:= arm-none-eabi
+else ifeq ($(findstring ARM-NONE-EABI-G++,$(CONFIG_USE_COMPILER)),ARM-NONE-EABI-G++) 	 
+	GNU_COMPILATION_PREFIX	:= arm-none-eabi
 endif
 
 ### GLOBAL_CFLAGS calculation

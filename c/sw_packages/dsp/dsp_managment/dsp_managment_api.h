@@ -117,7 +117,7 @@ uint8_t DSP_CREATE_LINK(pdsp_descriptor source_dsp,DSP_OUTPUT_PADS_t source_dsp_
 		pdsp_descriptor sink_dsp,DSP_INPUT_PADS_t sink_dsp_pad);
 
 void DSP_SET_SOURCE_BUFFER(pdsp_descriptor source_dsp,DSP_INPUT_PADS_t source_dsp_pad, void *buffer);
-void DSP_SET_SINK_BUFFER(pdsp_descriptor dsp,DSP_INPUT_PADS_t dsp_output_pad, void *buffer);
+void DSP_SET_SINK_BUFFER(pdsp_descriptor dsp,DSP_OUTPUT_PADS_t dsp_output_pad, void *buffer);
 
 dsp_chain_t *DSP_CREATE_CHAIN(size_t max_num_of_dsp_modules);
 void DSP_ADD_MODULE_TO_CHAIN(dsp_chain_t *ap_chain, pdsp_descriptor dsp_module);

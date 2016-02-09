@@ -167,7 +167,7 @@ uint8_t uart_nuc505_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 			switch(INSTANCE(aHandle)->uart_num)
 			{
 				case 0:
-					pHw_uart_pointer_to_instance[0]=aHandle;
+					pHw_uart_pointer_to_instance[0] = (UART_NUC505_Instance_t*)aHandle;
 
 				    /* Select IP clock source */
 				    CLK_SetModuleClock(UART0_MODULE, CLK_UART0_SRC_EXT, 0);

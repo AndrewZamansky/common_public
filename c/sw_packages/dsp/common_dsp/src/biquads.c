@@ -148,19 +148,20 @@ void biquads_cascading_filter(void *pFilter,float *apIn,float *apOut,size_t buff
 void *biquads_alloc(uint8_t num_of_stages, float *  	pCoeffs )
 {
 	void *tmp;
-	int tmp1;
 	biquads_cascading_filter_t *p_biquads_cascading_filter;
 	p_biquads_cascading_filter=(biquads_cascading_filter_t *)malloc(sizeof(biquads_cascading_filter_t));
 #ifdef _USE_DSP_
-	tmp1 = sizeof(arm_biquad_cascade_df2T_instance_f32);
-	tmp = malloc(tmp1);
-	p_biquads_cascading_filter->pFilterParams = (arm_biquad_cascade_df2T_instance_f32*) tmp;
-//	tmp = malloc(sizeof(arm_biquad_casd_df1_inst_f32));
-//	p_biquads_cascading_filter->pFilterParams = (arm_biquad_casd_df1_inst_f32*) tmp;
-	tmp =malloc(	NUM_OF_STATES_PER_STAGE * num_of_stages * sizeof(float));
-//	memset(tmp , 0 , NUM_OF_STATES_PER_STAGE * num_of_stages * sizeof(float));
-	arm_biquad_cascade_df2T_init_f32(p_biquads_cascading_filter->pFilterParams,num_of_stages,
-			pCoeffs , (float *) tmp );
+	{
+		arm_biquad_cascade_df2T_instance_f32* p_filter_instance;
+		p_filter_instance =(arm_biquad_cascade_df2T_instance_f32*) malloc(sizeof(arm_biquad_cascade_df2T_instance_f32));
+		p_biquads_cascading_filter->pFilterParams = p_filter_instance;
+	//	tmp = malloc(sizeof(arm_biquad_casd_df1_inst_f32));
+	//	p_biquads_cascading_filter->pFilterParams = (arm_biquad_casd_df1_inst_f32*) tmp;
+		tmp =malloc(	NUM_OF_STATES_PER_STAGE * num_of_stages * sizeof(float));
+	//	memset(tmp , 0 , NUM_OF_STATES_PER_STAGE * num_of_stages * sizeof(float));
+		arm_biquad_cascade_df2T_init_f32(p_filter_instance ,num_of_stages,
+				pCoeffs , (float *) tmp );
+	}
 //	arm_biquad_cascade_df1_init_f32(p_biquads_cascading_filter->pFilterParams,num_of_stages,
 //			pCoeffs , (float *) tmp );
 #else

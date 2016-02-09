@@ -67,6 +67,7 @@ void mixer_dsp(const void * const aHandle , size_t data_len ,
 	uint8_t	num_of_input_channels;
 	float *apCh1In ,  *apCh2In;
 	float *apCh1Out  ;
+	float channels_weights_0,channels_weights_1  ;
 
 	apCh1In = in_pads[0]->buff;
 	apCh2In = in_pads[1]->buff;
@@ -77,13 +78,16 @@ void mixer_dsp(const void * const aHandle , size_t data_len ,
 	channels_weights = INSTANCE(aHandle)->channels_weights;
 	num_of_input_channels = INSTANCE(aHandle)->num_of_input_channels;
 
+	channels_weights_0 =  channels_weights[0];
+	channels_weights_1 =  channels_weights[1];
+
 	switch(num_of_input_channels)
 	{
 		case 2:
 			for( ; data_len ;data_len--)
 			{
-				curr_val = (*apCh1In++) * channels_weights[0];
-				curr_val += (*apCh2In++) * channels_weights[1];
+				curr_val = (*apCh1In++) * channels_weights_0;
+				curr_val += (*apCh2In++) * channels_weights_1;
 				*apCh1Out++ = curr_val;
 			}
 			break;

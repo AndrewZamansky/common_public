@@ -151,9 +151,13 @@ void DSP_PROCESS(pdsp_descriptor dsp , size_t	len)
 	dsp_pad_t *curr_source_out_pad ;
 	uint8_t i;
 
+	ctl = dsp->ctl;
+	in_pads = dsp->in_pads;
+	out_pads = dsp->out_pads;
+
 	for(i=0; i<MAX_NUM_OF_OUTPUT_PADS ;i++)
 	{
-		curr_out_pad = &dsp->out_pads[i];
+		curr_out_pad = &out_pads[i];
 		if(DSP_PAD_TYPE_NORMAL == curr_out_pad->pad_type)
 		{
 			curr_out_pad->buff = (float*)memory_pool_malloc(dsp_buffers_pool);
@@ -161,9 +165,6 @@ void DSP_PROCESS(pdsp_descriptor dsp , size_t	len)
 		}
 	}
 
-	ctl = dsp->ctl;
-	in_pads = dsp->in_pads;
-	out_pads = dsp->out_pads;
 	if(DSP_MANAGMENT_API_MODULE_CONTROL_ON == ctl)
 	{
 		dsp->dsp_func(dsp->handle , len , in_pads , out_pads );
@@ -287,7 +288,7 @@ void DSP_SET_SOURCE_BUFFER(pdsp_descriptor source_dsp,DSP_INPUT_PADS_t source_ds
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-void DSP_SET_SINK_BUFFER(pdsp_descriptor dsp,DSP_INPUT_PADS_t dsp_output_pad, void *buffer)
+void DSP_SET_SINK_BUFFER(pdsp_descriptor dsp,DSP_OUTPUT_PADS_t dsp_output_pad, void *buffer)
 {
 	dsp->out_pads[dsp_output_pad].pad_type = DSP_PAD_TYPE_NOT_ALLOCATED_BUFFER;
 	dsp->out_pads[dsp_output_pad].buff = (float*)buffer;
