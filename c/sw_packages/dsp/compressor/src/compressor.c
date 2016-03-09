@@ -122,7 +122,7 @@ static float get_max_abs_value_2_buffers(float *buf1 ,float *buf2 , size_t len ,
 	return max_val;
 }
 
-#define RELEASE_CHUNK_NUM	2
+#define RELEASE_CHUNK_NUM	16.0f
 /*---------------------------------------------------------------------------------------------------------*/
 /* Function:         _compressor_buffered_2in_2out                                                                          */
 /*---------------------------------------------------------------------------------------------------------*/
@@ -148,6 +148,7 @@ void _compressor_buffered_2in_2out(const void * const aHandle ,size_t data_len ,
 		float *look_ahead_length_buffer_Ch1 = INSTANCE(aHandle)->look_ahead_length_buffer_Ch1;
 		float *look_ahead_length_buffer_Ch2 = INSTANCE(aHandle)->look_ahead_length_buffer_Ch2;
 		float release ;
+		static float release_ratio_change_per_chunk = 0;
 		uint32_t hit_counter;
 		uint32_t chunk_size ;
 	//	uint32_t look_ahead_length = INSTANCE(aHandle)->look_ahead_length;
@@ -196,7 +197,7 @@ void _compressor_buffered_2in_2out(const void * const aHandle ,size_t data_len ,
 			{
 				hit_counter++;
 				curr_ratio = threshold/max_val ;
-				reverse_curr_ratio = 1/curr_ratio;
+				reverse_curr_ratio = 1.0f/curr_ratio;
 				tmp = fast_pow(reverse_curr_ratio , reverse_ratio);
 				curr_ratio = curr_ratio * tmp;
 
@@ -206,14 +207,14 @@ void _compressor_buffered_2in_2out(const void * const aHandle ,size_t data_len ,
 			}
 			else
 			{
-				curr_ratio = 1;
+				curr_ratio = 1.0f;
 			}
 
 			tmp_ratio = curr_ratio;
 
-			if(curr_ratio < prev_ratio)
+			if(curr_ratio <= prev_ratio)
 			{
-//				usePreviousRatio = RELEASE_CHUNK_NUM;
+				usePreviousRatio = RELEASE_CHUNK_NUM;
 				ratio_change_per_chunk = curr_ratio - prev_ratio;
 
 //				prev_calculated_ratio = prev_ratio;
@@ -222,7 +223,7 @@ void _compressor_buffered_2in_2out(const void * const aHandle ,size_t data_len ,
 			{
 
 #if 1
-				if (usePreviousRatio)
+				if (RELEASE_CHUNK_NUM == usePreviousRatio)
 				{
 					//					curr_ratio = (RELEASE_CHUNK_NUM - usePreviousRatio) * curr_ratio ;
 					//					curr_ratio += prev_ratio;
@@ -230,15 +231,22 @@ void _compressor_buffered_2in_2out(const void * const aHandle ,size_t data_len ,
 					//					curr_ratio = prev_ratio;
 										ratio_change_per_chunk = 0;
 										usePreviousRatio=0;
+										release_ratio_change_per_chunk = (1.0f - prev_calculated_ratio)/RELEASE_CHUNK_NUM;
 
 				}
 				else
 				{
+						tmp = (curr_ratio - prev_ratio);
+						if(tmp < release_ratio_change_per_chunk)
+						{
+							release_ratio_change_per_chunk = tmp;
+						}
+						ratio_change_per_chunk = release_ratio_change_per_chunk;
+
 //						curr_ratio = ((float)(RELEASE_CHUNK_NUM - usePreviousRatio)) * curr_ratio ;
 //						curr_ratio += prev_calculated_ratio;
 //						curr_ratio /= ((float)((1 + RELEASE_CHUNK_NUM ) - usePreviousRatio));
 //						usePreviousRatio--;
-					ratio_change_per_chunk = (prev_calculated_ratio - prev_ratio)/release;
 //						curr_ratio = prev_calculated_ratio;
 //						usePreviousRatio = 1;
 				}
