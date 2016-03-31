@@ -218,7 +218,7 @@ OUTPUT_CRC32 :=  $(OUT_DIR)/$(OUTPUT_APP_NAME).crc32
 ### calculate date
 DATE_STR := $(subst -,$(SPACE),$(strip $(DATE)))#replace '-' with ' '
 DATE_STR := $(subst /,$(SPACE),$(DATE_STR))#replace '/' with ' '
-$(info ---- $(DATE_STR))
+
 DATE_YEAR_STR :=$(word 1,$(DATE_STR))
 DATE_STR := $(patsubst 20%,%,$(DATE_YEAR_STR)) $(wordlist 2,3,$(DATE_STR))#convert year 20XX to XX and add rest of date
 DATE_STR := $(subst $(SPACE),.,$(DATE_STR))#replace ' ' with '.'
