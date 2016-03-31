@@ -1,8 +1,5 @@
 
-ifeq ($(findstring YES,$(CONFIG_INCLUDE_HEARTBEAT)),YES) 	 
-	#DYNAMIC_COMPONENT := YES
-	INCLUDE_THIS_COMPONENT := YES   # must be here !!
-endif  
+INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_HEARTBEAT)
 
 
 #INCLUDE_DIR = 
@@ -20,7 +17,7 @@ SRC = heartbeat.c
 
 VPATH = src
 
-ifeq ($(findstring AS_SPEED_CRITICAL,$(CONFIG_INCLUDE_HEARTBEAT)),AS_SPEED_CRITICAL) 
+ifdef HEARTBEAT_IS_SPEED_CRITICAL 
     SPEED_CRITICAL_FILES += heartbeat.c
 endif
 

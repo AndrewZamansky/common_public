@@ -62,6 +62,9 @@ MKDIR=mkdir
 
 COMMON_DIR = $(WORKSPACE_ROOT_DIR)/common
 
+EMPTY:=
+SPACE:= $(EMPTY) $(EMPTY)
+
 ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS) 	 
 
 	#replace backslash for slash
@@ -77,10 +80,18 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
 	CRC32CALC	=	$(TOOLS_ROOT_DIR)\crc32\crc32.exe
     ifdef REDEFINE_MAKE_PROGRAM_DIR
         $(info  make  redefined to $(MAKE_PROGRAM_DIR)\make)
-	    MAKE 	:= 	$(REDEFINE_MAKE_PROGRAM_DIR)\make
+	    MAKE_DIR 	:= 	$(REDEFINE_MAKE_PROGRAM_DIR)
 	else
-	    MAKE 	:= 	$(TOOLS_ROOT_DIR)\make4.1\bin\make
+	    MAKE_DIR 	:= 	$(TOOLS_ROOT_DIR)\make4.1\bin
     endif
+    
+    ifeq ("$(wildcard $(MAKE_DIR))","")
+        $(info make path $(MAKE_DIR) dont exists )
+        $(info you can set make path in REDEFINE_MAKE_PROGRAM_DIR variable in $(WORKSPACE_ROOT_DIR)/workspace_config.mk )
+        $(error )
+    endif	
+	
+	MAKE :=$(MAKE_DIR)\make
 	
 	CONFIG_SEMIHOSTING_UPLOADING_DIR :=c:\Temp
     ifeq ($(wildcard $(CONFIG_SEMIHOSTING_UPLOADING_DIR)),) 		#if $(CONFIG_SEMIHOSTING_UPLOADING_DIR) dont exists then $(wildcard $(CONFIG_SEMIHOSTING_UPLOADING_DIR)) will produce empty string 
@@ -91,8 +102,21 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
 	SHELL_GO_TO_COMMON_GIT_DIR :=cd $(COMMON_DIR) & $(COMMON_PARTITION) & 
 	RM		:=rmdir /S /Q
 	CP		:=copy /Y
-	DATE	:=date /T
-	TIME	:=time /T	
+	
+    SHELL_OUTPUT :=$(shell WMIC Path Win32_LocalTime Get Year /value)
+    YEAR := $(word 2,$(subst =,$(SPACE),$(strip $(SHELL_OUTPUT))))
+    SHELL_OUTPUT :=$(shell WMIC Path Win32_LocalTime Get Month /value)
+    MONTH := $(word 2,$(subst =,$(SPACE),$(strip $(SHELL_OUTPUT))))
+    SHELL_OUTPUT :=$(shell WMIC Path Win32_LocalTime Get DAY /value)
+    DAY := $(word 2,$(subst =,$(SPACE),$(strip $(SHELL_OUTPUT))))
+	DATE	:=$(YEAR)-$(MONTH)-$(DAY)
+
+    SHELL_OUTPUT :=$(shell WMIC Path Win32_LocalTime Get Hour /value)
+    HOUR := $(word 2,$(subst =,$(SPACE),$(strip $(SHELL_OUTPUT))))
+    SHELL_OUTPUT :=$(shell WMIC Path Win32_LocalTime Get Minute /value)
+    Minute := $(word 2,$(subst =,$(SPACE),$(strip $(SHELL_OUTPUT))))
+	TIME	:=$(HOUR):$(Minute)
+	
 else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX) 
 
 	CONFIG_SEMIHOSTING_UPLOADING_DIR :=/tmp
@@ -104,15 +128,21 @@ else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX)
 	MAKE 	:= 	make
 	RM		:=rm -rf
 	CP		:=cp -f
-	DATE	:=date "+%Y-%m-%d" 
+	DATE	:=$(shell date "+%Y-%m-%d") 
+	TIME	:=$(shell date "+%H:%M") 
 	
 endif
 
 
 
 include config.mk
+include .config
 
-PROJECT_NAME :=$(strip $(PROJECT_NAME))
+PROJECT_NAME :=$(patsubst "%",%,$(CONFIG_PROJECT_NAME))
+ifeq ($(PROJECT_NAME),) 	 # if $(PROJECT_NAME) is empty
+    $(info project have to be named)
+    $(error )
+endif
 $(info ---- project name as declared in config.mk : $(PROJECT_NAME) ---- )
 
 
@@ -140,12 +170,13 @@ ifeq ($(findstring $(PROJECT_NAME),$(CURR_GIT_BRANCH)),) 	 # if not found $(PROJ
     $(error )
 endif
 
-SHELL_OUTPUT := $(shell $(SHELL_GO_TO_COMMON_GIT_DIR) git rev-parse --abbrev-ref HEAD)
-ifneq ($(sort $(filter $(CURR_GIT_BRANCH),$(SHELL_OUTPUT))),$(CURR_GIT_BRANCH))#if  $(CURR_GIT_BRANCH) is in $(SHELL_OUTPUT)
+CURR_COMMON_GIT_BRANCH := $(shell $(SHELL_GO_TO_COMMON_GIT_DIR) git rev-parse --abbrev-ref HEAD)
+ifneq ($(sort $(filter $(CURR_GIT_BRANCH),$(CURR_COMMON_GIT_BRANCH))),$(CURR_GIT_BRANCH))#if  $(CURR_GIT_BRANCH) is in $(SHELL_OUTPUT)
     SHELL_OUTPUT := $(shell $(SHELL_GO_TO_COMMON_GIT_DIR) git status --porcelain 2>&1)
     ERROR_MESSAGE := M 
     ifeq ($(findstring $(ERROR_MESSAGE),$(SHELL_OUTPUT)),$(ERROR_MESSAGE)) 	 
         $(info  git error : commit all changes to common git($(COMMON_DIR)) before changing branch or project)
+        $(info  current common git branch :   $(CURR_COMMON_GIT_BRANCH) )
         $(error  )
     endif
     ERROR_MESSAGE := D #??
@@ -164,7 +195,7 @@ ifneq ($(sort $(filter $(CURR_GIT_BRANCH),$(SHELL_OUTPUT))),$(CURR_GIT_BRANCH))#
         $(error  )
     else
         $(info checkout $(CURR_GIT_BRANCH) manually in common git)      
-         $(info you can run following comand in common directory:)
+        $(info you can run following comand in common directory:)
         $(info $(SHELL_GO_TO_COMMON_GIT_DIR) git checkout $(CURR_GIT_BRANCH))
         $(error  )
     endif
@@ -173,7 +204,7 @@ endif
 ####################   end of  configuring git  ######################
 
 COMPONENTS_MK := $(AUTO_GENERATED_FILES_DIR)/include_components.mk
-
+GENERATED_KCONFIG := $(AUTO_GENERATED_FILES_DIR)/Kconfig
 
 OUTPUT_APP_NAME := out
 ifdef CONFIG_OUTPUT_NAME
@@ -183,19 +214,17 @@ endif
 OUTPUT_CRC32 :=  $(OUT_DIR)/$(OUTPUT_APP_NAME).crc32
 
 
-EMPTY:=
-SPACE:= $(EMPTY) $(EMPTY)
 
 ### calculate date
-DATE_STR := $(subst -,$(SPACE),$(strip $(shell $(DATE))))#replace '-' with ' '
+DATE_STR := $(subst -,$(SPACE),$(strip $(DATE)))#replace '-' with ' '
 DATE_STR := $(subst /,$(SPACE),$(DATE_STR))#replace '/' with ' '
-
+$(info ---- $(DATE_STR))
 DATE_YEAR_STR :=$(word 1,$(DATE_STR))
 DATE_STR := $(patsubst 20%,%,$(DATE_YEAR_STR)) $(wordlist 2,3,$(DATE_STR))#convert year 20XX to XX and add rest of date
 DATE_STR := $(subst $(SPACE),.,$(DATE_STR))#replace ' ' with '.'
 
 ### calculating version number 
-TIME_STR := $(subst :,.,$(strip $(shell $(TIME))))#replace ':' with '.'
+TIME_STR := $(subst :,.,$(strip $(TIME)))#replace ':' with '.'
 CURR_GIT_VERSION :=$(patsubst $(PROJECT_NAME)%,%,$(CURR_GIT_BRANCH))
 
 CURR_GIT_VERSION :=$(patsubst _%,%,$(CURR_GIT_VERSION))
@@ -214,17 +243,6 @@ ARCHIVE_OUTPUT := $(WORKSPACE_NAME).$(PROJECT_NAME).$(DATE_STR).7z
  
 GLOBAL_DEFINES += CONFIG_RAM_START_ADDR=$(CONFIG_RAM_START_ADDR)
 
-ifeq ($(findstring cortex-m,$(CONFIG_CPU_TYPE)),cortex-m)
-	GLOBAL_DEFINES := $(GLOBAL_DEFINES) CORTEX_M
-endif
-
-ifeq ($(findstring cortex-m3,$(CONFIG_CPU_TYPE)),cortex-m3)
-	GLOBAL_DEFINES := $(GLOBAL_DEFINES) CORTEX_M_TYPE=3
-endif
-
-ifeq ($(findstring cortex-m4,$(CONFIG_CPU_TYPE)),cortex-m4)
-	GLOBAL_DEFINES := $(GLOBAL_DEFINES) CORTEX_M_TYPE=4
-endif
 
 ifeq ($(findstring YES,$(CONFIG_TEST_TASK_STACK)),YES) 	 
 	GLOBAL_DEFINES := $(GLOBAL_DEFINES) TEST_TASK_STACK=1
@@ -236,20 +254,22 @@ GLOBAL_DEFINES := $(GLOBAL_DEFINES) PROJECT_NAME="$(PROJECT_NAME)"
 
 caclulate_component_dir = $(patsubst  %/,%, $(dir $(patsubst $(APP_ROOT_DIR)/%,%,$(realpath $1 ))))
 
-ifeq ($(findstring ARM-NONE-EABI-GCC,$(CONFIG_USE_COMPILER)),ARM-NONE-EABI-GCC) 	 
-	include $(MAKEFILE_DEFS_ROOT_DIR)/gcc/gcc_arm_init.mk
-else ifeq ($(findstring ARM-NONE-EABI-G++,$(CONFIG_USE_COMPILER)),ARM-NONE-EABI-G++) 
-	include $(MAKEFILE_DEFS_ROOT_DIR)/gcc/gcc_arm_init.mk
-else ifeq ($(findstring ARMCC,$(CONFIG_USE_COMPILER)),ARMCC) 
-	include $(MAKEFILE_DEFS_ROOT_DIR)/armcc/armcc_init.mk
-else ifeq ($(findstring CXSTM8,$(CONFIG_USE_COMPILER)),CXSTM8) 
-	include $(MAKEFILE_DEFS_ROOT_DIR)/cxstm8/cxstm8_init.mk
-else ifeq ($(findstring AVR-GCC,$(CONFIG_USE_COMPILER)),AVR-GCC) 
-	include $(MAKEFILE_DEFS_ROOT_DIR)/gcc/gcc_avr_init.mk
-else ifeq ($(findstring HOST-GCC,$(CONFIG_USE_COMPILER)),HOST-GCC) 
-	include $(MAKEFILE_DEFS_ROOT_DIR)/gcc/gcc_host_init.mk
+ifdef CONFIG_ARM
+    ifdef CONFIG_GCC
+        include $(MAKEFILE_DEFS_ROOT_DIR)/gcc/gcc_arm_init.mk
+    else ifdef CONFIG_GPP
+        include $(MAKEFILE_DEFS_ROOT_DIR)/gcc/gcc_arm_init.mk
+    else ifdef CONFIG_ARMCC
+        include $(MAKEFILE_DEFS_ROOT_DIR)/armcc/armcc_init.mk
+    endif
+else ifdef CONFIG_AVR
+    include $(MAKEFILE_DEFS_ROOT_DIR)/gcc/gcc_avr_init.mk
+else ifdef CONFIG_STM8
+    include $(MAKEFILE_DEFS_ROOT_DIR)/cxstm8/cxstm8_init.mk
+else ifdef CONFIG_HOST
+    include $(MAKEFILE_DEFS_ROOT_DIR)/gcc/gcc_host_init.mk
 else
-   $(error ---- unknown compiler ----)
+    $(error ---- unknown compiler ----)
 endif
 
 #########################################################

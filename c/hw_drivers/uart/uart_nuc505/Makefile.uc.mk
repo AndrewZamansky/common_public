@@ -1,11 +1,8 @@
-ifeq ($(findstring nuc505,$(CONFIG_SOC_TYPE)),nuc505)
-    ifeq ($(findstring YES,$(CONFIG_INCLUDE_INTERNAL_UART)),YES) 	 
-	    _INCLUDE_UART := YES
-	    DYNAMIC_COMPONENT := YES
-	    INCLUDE_THIS_COMPONENT := YES   # must be here !!
-    endif  
+
+ifdef CONFIG_NUC505
+    INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_INTERNAL_UART)
+    DYNAMIC_COMPONENT := $(CONFIG_INCLUDE_INTERNAL_UART)
 endif
-  
 
 INCLUDE_DIR = $(EXTERNAL_SOURCE_ROOT_DIR)/BSP_NUC505_v3.00.003/Library/Device/Nuvoton/NUC505Series/Include
 

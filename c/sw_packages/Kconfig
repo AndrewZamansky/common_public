@@ -1,0 +1,161 @@
+#
+
+config INCLUDE_DEV_MENAGMENT
+	def_bool  y
+
+
+config INCLUDE_VERSION_MENAGMENT
+	bool   "version management"
+	default y
+
+config INCLUDE_HEARTBEAT
+	bool   "hearbeat routines"
+	default y
+
+if INCLUDE_HEARTBEAT
+config HEARTBEAT_IS_SPEED_CRITICAL
+	bool   "hearbeat routines are speed critical"
+	default n
+endif
+
+config INCLUDE_PRINTF
+	bool   "printf"
+	default n
+
+menu "RT OS"
+source "$COMMON_DIR_PATH/c/sw_packages/os_wrapper/Kconfig"
+
+config CPU_TEST_TASK_STACK
+	bool   "add stack logs for tasks"
+	default y
+
+
+endmenu	
+
+
+config INCLUDE_SW_UART_WRAPPER
+	bool   "software uart wrapper"
+	depends on INCLUDE_INTERNAL_UART || INCLUDE_USB_VIRTUAL_COM || INCLUDE_WIRELESS_UART
+	default n
+
+config INCLUDE_HTTP
+	bool   "http"
+	default n
+
+config INCLUDE_JSMN
+	bool   "jsmn"
+	default n
+
+config INCLUDE_SW_GPIO_WRAPPER
+	bool   "sw gpio wrapper"
+	depends on INCLUDE_INTERNAL_GPIO
+	default n
+
+config INCLUDE_SPI_FLASH_PARTITION_MANAGER
+	bool   "spi flash partition manager"
+	depends on INCLUDE_SPI_FLASH
+	default n
+
+config INCLUDE_FAT_FS
+	bool   "fat fs"
+	depends on INCLUDE_SPI_FLASH_PARTITION_MANAGER
+	default n
+
+config INCLUDE_LOADED_CONFIG
+	bool   "loaded configuration"
+	depends on INCLUDE_FAT_FS
+	default n
+
+config INCLUDE_SHELL
+	bool   "shell"
+	depends on INCLUDE_SW_UART_WRAPPER
+	default n
+
+config INCLUDE_UBOOT_SHELL
+	bool   "uboot shell"
+	depends on INCLUDE_SHELL
+	default n
+	
+config INCLUDE_BUTTON_MANAGER
+	bool   "button manager"
+	depends on INCLUDE_SW_GPIO_WRAPPER
+	default n
+
+###################  DSP menu ####################
+menu "DSP"
+
+config INCLUDE_COMMON_DSP
+	bool   "common dsp"
+	default n
+
+if INCLUDE_COMMON_DSP
+
+config COMMON_DSP_IS_SPEED_CRITICAL
+	bool   "common dsp is speed critical"
+	default n
+
+config INCLUDE_EQUALIZER
+	bool   "equalizer"
+	default n
+
+config EQUALIZER_IS_SPEED_CRITICAL
+	bool   "equalizer is speed critical"
+	depends on INCLUDE_EQUALIZER
+	default n
+
+
+config INCLUDE_MIXER
+	bool   "audio mixer"
+	default n
+
+config MIXER_IS_SPEED_CRITICAL
+	bool   "mixer is speed critical"
+	depends on INCLUDE_MIXER
+	default y
+
+
+config INCLUDE_I2S_SPLITTER
+	bool   "i2s splitter"
+	default n
+
+
+config I2S_SPLITTER_IS_SPEED_CRITICAL
+	bool   "i2s splitter is speed critical"
+	depends on I2S_SPLITTER
+	default y
+
+
+config INCLUDE_I2S_MIXER
+	bool   "i2s mixer"
+	default n
+
+config I2S_MIXER_IS_SPEED_CRITICAL
+	bool   "i2s mixer is speed critical"
+	depends on INCLUDE_I2S_MIXER
+	default y
+
+
+config INCLUDE_COMPRESSOR
+	bool   "audio compressor"
+	default n
+
+config COMPRESSOR_IS_SPEED_CRITICAL
+	bool   "compressor is speed critical"
+	depends on INCLUDE_COMPRESSOR
+	default y
+
+
+config INCLUDE_FFMPEG
+	bool   "ffmpeg"
+	default n
+	
+config INCLUDE_FFMPEG_IS_SPEED_CRITICAL
+	bool   "ffmpeg is speed critical"
+	depends on INCLUDE_FFMPEG
+	default y
+
+endif
+
+endmenu
+#################### end of DSP menu###############################
+	

@@ -1,7 +1,5 @@
 
-ifeq ($(findstring YES,$(CONFIG_INCLUDE_NVIC)),YES) 	 
-	INCLUDE_THIS_COMPONENT := YES   # must be here !!
-endif  
+INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_NVIC)
 
 
 ifeq ($(findstring stm32f10x,$(CONFIG_SOC_TYPE)),stm32f10x)

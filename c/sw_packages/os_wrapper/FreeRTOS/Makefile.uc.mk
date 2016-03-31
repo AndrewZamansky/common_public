@@ -1,12 +1,13 @@
 
-ifeq ($(findstring freeRtos,$(CONFIG_INCLUDE_OS)),freeRtos) 	 
+INCLUDE_THIS_COMPONENT := $(CONFIG_FREE_RTOS)
+
+ifdef CONFIG_FREE_RTOS 	 
 	GLOBAL_INCLUDE_DIR := $(GLOBAL_INCLUDE_DIR) $(EXTERNAL_SOURCE_ROOT_DIR)/FreeRTOS/FreeRTOS/Source/include
 	GLOBAL_INCLUDE_DIR := $(GLOBAL_INCLUDE_DIR) $(EXTERNAL_SOURCE_ROOT_DIR)/FreeRTOS/FreeRTOS/Demo/Common/include
 	GLOBAL_INCLUDE_DIR := $(GLOBAL_INCLUDE_DIR) $(EXTERNAL_SOURCE_ROOT_DIR)/FreeRTOS/FreeRTOS/Source/portable/GCC/ARM_CM3
 	GLOBAL_DEFINES := $(GLOBAL_DEFINES) PREDEFINED_OS_SWI_HANDLER=vPortSVCHandler
 	GLOBAL_DEFINES := $(GLOBAL_DEFINES) OS_FREE_RTOS=1
 	_NO_OS_FOUND = NO
-	INCLUDE_THIS_COMPONENT := YES   # must be here !!
 endif  
 
 
@@ -14,7 +15,7 @@ endif
 
 #DEFINES = 
 
-ifeq ($(findstring ARM-NONE-EABI-G++,$(CONFIG_USE_COMPILER)),ARM-NONE-EABI-G++) 
+ifdef CONFIG_GPP
     CFLAGS = -fpermissive
 endif
 
@@ -41,32 +42,33 @@ VPATH += : $(EXTERNAL_SOURCE_ROOT_DIR)/FreeRTOS/FreeRTOS/Source/portable/MemMang
 
 
 SRC += port.c 
-ifeq ($(findstring GCC,$(CONFIG_USE_COMPILER)),GCC) 	
-    ifeq ($(findstring cortex-m3,$(CONFIG_CPU_TYPE)),cortex-m3) 	
+ifdef CONFIG_GCC	
+    ifdef CONFIG_CORTEX_M3
         VPATH += :$(EXTERNAL_SOURCE_ROOT_DIR)/FreeRTOS/FreeRTOS/Source/portable/GCC/ARM_CM3 
-    else
+    else ifdef CONFIG_CORTEX_M4
         VPATH += :$(EXTERNAL_SOURCE_ROOT_DIR)/FreeRTOS/FreeRTOS/Source/portable/GCC/ARM_CM4F 
     endif
-else ifeq ($(findstring G++,$(CONFIG_USE_COMPILER)),G++) 	
-    ifeq ($(findstring cortex-m3,$(CONFIG_CPU_TYPE)),cortex-m3) 	
+else ifdef CONFIG_GPP	
+    ifdef CONFIG_CORTEX_M3
         VPATH += :$(EXTERNAL_SOURCE_ROOT_DIR)/FreeRTOS/FreeRTOS/Source/portable/GCC/ARM_CM3 
-    else
+    else ifdef CONFIG_CORTEX_M4
         VPATH += :$(EXTERNAL_SOURCE_ROOT_DIR)/FreeRTOS/FreeRTOS/Source/portable/GCC/ARM_CM4F 
     endif
-else ifeq ($(findstring ARMCC,$(CONFIG_USE_COMPILER)),ARMCC) 
-    ifeq ($(findstring cortex-m3,$(CONFIG_CPU_TYPE)),cortex-m3) 	
+else ifdef CONFIG_ARMCC 
+    ifdef CONFIG_CORTEX_M3
         VPATH += :$(EXTERNAL_SOURCE_ROOT_DIR)/FreeRTOS/FreeRTOS/Source/portable/RVDS/ARM_CM3 
-    else
+    else ifdef CONFIG_CORTEX_M4
         VPATH += :$(EXTERNAL_SOURCE_ROOT_DIR)/FreeRTOS/FreeRTOS/Source/portable/RVDS/ARM_CM4F 
+        
     endif     
 endif
 
-ifeq ($(findstring AS_SPEED_CRITICAL,$(CONFIG_INCLUDE_OS)),AS_SPEED_CRITICAL) 
+ifdef CONFIG_RT_OS_IS_SPEED_CRITICAL
     SPEED_CRITICAL_FILES +=os_wrapper_FreeRTOS.c tasks.c  croutine.c event_groups.c list.c queue.c timers.c heap_3.c port.c
 endif
 
 
-# cortex-M3 porting
+ 
 
 
 include $(COMMON_CC)

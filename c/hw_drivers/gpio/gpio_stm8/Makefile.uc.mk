@@ -1,6 +1,5 @@
 ifeq ($(findstring stm8,$(CONFIG_SOC_TYPE)),stm8)
     ifeq ($(findstring YES,$(CONFIG_INCLUDE_INTERNAL_GPIO)),YES) 	 
-	    _INCLUDE_GPIO := YES
 	    DYNAMIC_COMPONENT := YES
 	    INCLUDE_THIS_COMPONENT := YES   # must be here !!
     endif  

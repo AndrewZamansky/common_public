@@ -19,11 +19,11 @@ else
     GCC_LIB_ROOT_DIR  := $(GCC_ROOT_DIR)/$(GNU_COMPILATION_PREFIX)/lib
 endif
 
-ifeq ($(findstring ARM-NONE-EABI-GCC,$(CONFIG_USE_COMPILER)),ARM-NONE-EABI-GCC) 	 
+ifdef CONFIG_GCC 	 
     CC   :=	$(FULL_GCC_PREFIX)gcc
     ASM  :=	$(FULL_GCC_PREFIX)gcc 
     LD   :=	$(FULL_GCC_PREFIX)gcc 
-else ifeq ($(findstring ARM-NONE-EABI-G++,$(CONFIG_USE_COMPILER)),ARM-NONE-EABI-G++) 
+else ifdef CONFIG_GPP 
 	CC   :=	$(FULL_GCC_PREFIX)g++
     ASM  :=	$(FULL_GCC_PREFIX)g++ 
     LD   :=	$(FULL_GCC_PREFIX)g++ 

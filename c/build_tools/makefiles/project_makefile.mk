@@ -1,7 +1,7 @@
 
 
 # test for valid target 
-VALID_TARGETS := all clean rebuild archive list_var all_after_makefile_generated archive_step2
+VALID_TARGETS := all clean rebuild archive list_var all_after_makefile_generated archive_step2 menuconfig
 ifeq ($(findstring $(MAKECMDGOALS),$(VALID_TARGETS)),) 
 
 default : 
@@ -11,6 +11,7 @@ default :
 	$(info "make all"       :  build whole project  )
 	$(info "make clean"     :  delete objects , project outputs  )
 	$(info "make rebuild"   :  delete objects , project outputs and build whole project  )
+	$(info "make menuconfig":  create configuration file  )
 	$(info "make archive"   :  export source code to archive   )
 	$(info "make list_var"  :  print usefull makefile variables   )
 	$(info  )
@@ -134,6 +135,9 @@ clean:
 	
 list_var:
 	$(MAKE) -f $(MAKEFILE_DEFS_ROOT_DIR)/list_usful_variables.mk  
+
+menuconfig:
+	$(MAKE) -f $(MAKEFILE_DEFS_ROOT_DIR)/menuconfig.mk  
 	
 .PHONY: default rebuild archive clean all $(SUBDIRS)
 

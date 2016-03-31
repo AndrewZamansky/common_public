@@ -1,7 +1,5 @@
 
-ifeq ($(findstring YES,$(CONFIG_INCLUDE_GIC)),YES) 	 
-	INCLUDE_THIS_COMPONENT := YES   # must be here !!
-endif  
+INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_GIC)
 
 
 #INCLUDE_DIR = 

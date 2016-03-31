@@ -1,9 +1,7 @@
-ifeq ($(findstring nuc505,$(CONFIG_SOC_TYPE)),nuc505)
-    ifeq ($(findstring YES,$(CONFIG_INCLUDE_INTERNAL_GPIO)),YES) 	 
-	    _INCLUDE_GPIO := YES
-	    DYNAMIC_COMPONENT := YES
-	    INCLUDE_THIS_COMPONENT := YES   # must be here !!
-    endif  
+
+ifdef CONFIG_NUC505
+    INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_INTERNAL_GPIO)
+    DYNAMIC_COMPONENT := $(CONFIG_INCLUDE_INTERNAL_GPIO)
 endif
 
 

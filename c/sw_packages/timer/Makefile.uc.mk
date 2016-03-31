@@ -1,9 +1,5 @@
 
-ifeq ($(findstring YES,$(CONFIG_INCLUDE_TIMER)),YES) 	 
-	#DYNAMIC_COMPONENT := YES
-	INCLUDE_THIS_COMPONENT := YES   # must be here !!
-endif  
-
+INCLUDE_THIS_COMPONENT := $(_INCLUDE_HW_TIMER)
 
 #INCLUDE_DIR = 
 

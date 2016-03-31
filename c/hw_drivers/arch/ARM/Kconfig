@@ -1,0 +1,131 @@
+#
+
+menu "Platform configurations"
+
+choice
+	prompt "Board"
+	default GENERIC_BOARD
+
+config STM32F10x
+	bool "stm32f10x"
+
+config NUC505
+	bool "nuc505"
+
+config POLEG
+    bool "poleg"
+
+config GENERIC_BOARD
+	bool "generic board"
+
+endchoice
+
+if NUC505
+source "$COMMON_DIR_PATH/c/hw_drivers/arch/ARM/boards/nuc505_Kconfig"
+endif
+
+if GENERIC_BOARD
+source "$COMMON_DIR_PATH/c/hw_drivers/arch/ARM/boards/generic_board_Kconfig"
+endif
+    
+endmenu
+
+menu "Build System"
+
+choice
+	prompt "Compiler"
+	default GCC
+
+config GCC
+	bool "gcc"
+
+config GPP
+    bool "g++"
+
+config ARMCC
+	bool "armcc"
+
+endchoice
+
+
+if GCC || GPP
+choice
+	prompt "Target OS"
+	default TARGET_OS_NONE
+
+config TARGET_OS_LINUX
+	bool "linux"
+
+config TARGET_OS_NONE
+    bool "none"
+endchoice
+
+choice
+	prompt "ABI Type"
+	default EABI
+
+config EABI
+	bool "eabi"
+
+config GNUEABI
+    bool "gnueabi"
+endchoice
+
+config USE_NANO_STD_LIBS
+	bool   "use nano std libs (reduce code size)"
+	default n
+
+
+menu "Toolchain Libraries"
+config INCLUDE_TOOLCHAIN_LIBRARIES
+	bool   "tool chain libraries"
+	default y
+	
+if 	INCLUDE_TOOLCHAIN_LIBRARIES
+config TOOLCHAIN_LIBRARIES_ARE_SPEED_CRUCIAL
+	bool   "tool chain libraries are speed crucial"
+	default n	
+endif
+
+endmenu
+
+endif
+
+
+    
+if CORTEX_M4
+config INCLUDE_FPU
+	bool   "fpu"
+	default n
+endif
+
+choice
+	prompt "Optimisation Level"
+	default OPTIMISE_NONE
+
+config OPTIMISE_NONE
+	bool "No Optimisations"
+
+if GCC || GPP
+config OPTIMISE_WITH_DEBUG
+	bool "-Og (Optimise without loss in debug info)"
+endif
+
+config OPTIMISE_SIZE
+    bool "-Os (Optimise for size)"
+
+config OPTIMISE_SPEED
+	bool "-O2 (Optimise for speed)"
+
+config OPTIMISE_ULTRA_SPEED
+	bool "-O3 (Optimise for ultra-speed (can increase code-size))"
+
+endchoice
+
+endmenu
+
+
+config CPU_SPECIFIC_FILES_ARE_SPEAD_CRITICAL
+	bool   "put cpu specific files in ram (improve speed)"
+	default n
+

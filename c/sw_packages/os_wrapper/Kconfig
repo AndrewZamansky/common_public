@@ -1,0 +1,20 @@
+choice
+	prompt "RT OS select"
+	default NONE_RT_OS
+
+config FREE_RTOS
+	bool "freeRtos"
+
+config ATOM_THREADS
+	bool "atomthreads"
+
+config NONE_RT_OS
+	bool "none"
+
+endchoice
+
+if FREE_RTOS || ATOM_THREADS
+config RT_OS_IS_SPEED_CRITICAL
+	bool   "RT OS is speed critical"
+	default n
+endif

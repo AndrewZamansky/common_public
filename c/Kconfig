@@ -1,0 +1,47 @@
+#
+
+config PROJECT_NAME
+    string "Project Name"
+    default ""
+    
+choice
+	prompt "Architecture"
+	default HOST
+
+config ARM
+	bool "arm"
+
+config STM8
+	bool "stm8"
+
+config AVR
+	bool "avr"
+
+config HOST
+	bool "host"
+
+endchoice
+
+
+    	
+if ARM
+menu "Arm Project Configurations"
+source "$COMMON_DIR_PATH/c/hw_drivers/arch/ARM/Kconfig"
+endmenu
+endif
+
+
+menu "Hardware Drivers"
+source "$COMMON_DIR_PATH/c/hw_drivers/Kconfig"
+endmenu
+
+menu "Software Packages"
+source "$COMMON_DIR_PATH/c/sw_packages/Kconfig"
+endmenu
+
+
+config CPU_CALCULATE_CRC32
+	bool   "calculate crc32 of output binary"
+	default n
+
+    		

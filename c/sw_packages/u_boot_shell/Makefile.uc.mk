@@ -1,14 +1,12 @@
 
-ifeq ($(findstring YES,$(CONFIG_INCLUDE_UBOOT_SHELL)),YES) 	 
-	CONFIG_USE_SHELL := YES	
-	INCLUDE_THIS_COMPONENT := YES   # must be here !!
-endif  
+INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_UBOOT_SHELL)
+
 
 INCLUDE_DIR =  $(SW_PACKAGES_ROOT_DIR)/u_boot_shell/include
 INCLUDE_DIR += $(EXTERNAL_SOURCE_ROOT_DIR)/u-boot/include
 #DEFINES = 
 
-ifeq ($(findstring ARM-NONE-EABI-G++,$(CONFIG_USE_COMPILER)),ARM-NONE-EABI-G++) 
+ifdef CONFIG_GPP
     CFLAGS = -fpermissive
 endif
 

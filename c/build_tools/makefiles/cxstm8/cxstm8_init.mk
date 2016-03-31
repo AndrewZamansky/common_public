@@ -2,6 +2,11 @@
 ### the following section we need to run just one time per build
 ifndef COMMON_INIT_SECTION_THAT_SHOULD_RUN_ONCE
 
+ifeq ("$(wildcard $(CXSTM8_ROOT_DIR))","")
+    $(info gcc path $(CXSTM8_ROOT_DIR) dont exists)
+    $(info you can set make path in CXSTM8_ROOT_DIR variable in $(WORKSPACE_ROOT_DIR)/workspace_config.mk )
+    $(error )
+endif
 
 PREPROCESSOR =	"$(CXSTM8_ROOT_DIR)"\cpstm8
 CC			=	"$(CXSTM8_ROOT_DIR)\cxstm8"

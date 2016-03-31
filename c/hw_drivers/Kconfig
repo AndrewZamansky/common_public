@@ -1,0 +1,101 @@
+#
+
+config INCLUDE_INTERNAL_CLOCK_CONTROL
+	bool   "internal clock control"
+	depends on NUC505 || STM32F10x
+	default n
+
+config INCLUDE_CORTEXM_SYSTICK
+	bool   "cortex-m systick"
+	depends on CORTEX_M3 || CORTEX_M4
+	default n
+
+config INCLUDE_NVIC
+	bool   "nvic"
+	depends on CORTEX_M3 || CORTEX_M4
+	default n
+	
+config CONFIG_INCLUDE_SEMIHOSTING
+	bool   "semihosting"
+	depends on ARM
+	default n
+		
+config INCLUDE_INTERNAL_UART
+	bool   "internal uart"
+	default n
+
+config INCLUDE_INTERNAL_FLASH
+	bool   "internal flash"
+	depends on STM32F10x
+	default n
+
+config INCLUDE_INTERNAL_GPIO
+	bool   "internal gpio"
+	default n
+
+config INCLUDE_INTERNAL_SERIAL_NUMBER
+	bool   "internal serial number"
+	depends on STM32F10x
+	default n
+	
+config INCLUDE_INTERNAL_I2S
+	bool   "internal i2s"
+	depends on NUC505
+	default n
+	
+config INCLUDE_USB_VIRTUAL_COM
+	bool   "usb virtual com"
+	depends on STM32F10x
+	default n
+	
+config INCLUDE_ESP8266
+	bool   "ESP8266"
+	default n
+
+	
+config INCLUDE_USB_MASS_STORAGE
+	bool   "usb mass storage"
+	depends on STM32F10x
+	default n
+
+
+config INCLUDE_LM35
+	bool   "lm35 thermal sensor"
+	default n
+
+config INCLUDE_INTERNAL_ADC
+	bool   "internal adc"
+	depends on STM32F10x
+	default n
+
+config INCLUDE_GPIO_REMOTE
+	bool   "remote spio"
+	default n
+
+config INCLUDE_WIRELESS_UART
+	bool   "wireless uart"
+	default n
+
+config INCLUDE_INTERNAL_SPI
+	bool   "internal spi"
+	depends on STM32F10x
+	default n
+
+config INCLUDE_SPI_FLASH
+	bool   "spi flash"
+	default n
+
+config INCLUDE_TIMER
+	bool   "timer"
+	depends on POLEG
+	default n
+
+######## automatically selected configurations #########
+config INCLUDE_UART
+	def_bool  y
+	depends on CONFIG_INCLUDE_SEMIHOSTING || INCLUDE_INTERNAL_UART || INCLUDE_USB_VIRTUAL_COM
+
+config INCLUDE_GPIO
+	def_bool  y
+	depends on INCLUDE_INTERNAL_GPIO 
+######## end of automatically selected configurations #########	
