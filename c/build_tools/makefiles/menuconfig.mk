@@ -29,8 +29,13 @@ ifeq ("$(wildcard $(KCONFIG_ROOT_DIR))","")
     $(error )
 endif
 
-SHELL_OUTPUT :=$(shell $(KCONFIG_ROOT_DIR)/kconfig-mconf Kconfig 2>&1)
-$(info ---- $(SHELL_OUTPUT))
+ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS) 	 
+    SHELL_OUTPUT :=$(shell start $(KCONFIG_ROOT_DIR)/kconfig-mconf Kconfig 2>&1)
+else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX) 
+    $(warning  MENUCONFIG LINUX BEHAVIOUR SHOULD BE VERIVIED) 
+    SHELL_OUTPUT :=$(shell $(KCONFIG_ROOT_DIR)/kconfig-mconf Kconfig 2>&1)
+endif
+
 
 ifeq ($(findstring Redirection is not supported,$(SHELL_OUTPUT)),Redirection is not supported) 	 
     $(info you can run kconfig utility only from shell . open shell and run the following : )
@@ -40,7 +45,6 @@ endif
 
 menuconfig :
 	$(info auto generated Kconfig created)
-	$(KCONFIG_ROOT_DIR)/kconfig-mconf Kconfig
 
 
 	
