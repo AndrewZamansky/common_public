@@ -27,6 +27,7 @@ source "$COMMON_DIR_PATH/c/sw_packages/os_wrapper/Kconfig"
 
 config CPU_TEST_TASK_STACK
 	bool   "add stack logs for tasks"
+	depends on !NONE_RT_OS
 	default y
 
 
@@ -75,12 +76,25 @@ config INCLUDE_UBOOT_SHELL
 	bool   "uboot shell"
 	depends on INCLUDE_SHELL
 	default n
+
+if INCLUDE_UBOOT_SHELL
+source "$COMMON_DIR_PATH/c/sw_packages/u_boot_shell/Kconfig"
+endif
 	
 config INCLUDE_BUTTON_MANAGER
 	bool   "button manager"
 	depends on INCLUDE_SW_GPIO_WRAPPER
 	default n
 
+config INCLUDE_MEMORY_POOL
+	bool   "memory pool"
+	default n
+
+config MEMORY_POOL_IS_SPEED_CRITICAL 
+	bool   "memory pool is speed critical"
+	depends on INCLUDE_MEMORY_POOL
+	default n
+	
 ###################  DSP menu ####################
 menu "DSP"
 
@@ -92,7 +106,7 @@ if INCLUDE_COMMON_DSP
 
 config COMMON_DSP_IS_SPEED_CRITICAL
 	bool   "common dsp is speed critical"
-	default n
+	default y
 
 config INCLUDE_EQUALIZER
 	bool   "equalizer"
@@ -101,7 +115,7 @@ config INCLUDE_EQUALIZER
 config EQUALIZER_IS_SPEED_CRITICAL
 	bool   "equalizer is speed critical"
 	depends on INCLUDE_EQUALIZER
-	default n
+	default y
 
 
 config INCLUDE_MIXER
@@ -121,7 +135,7 @@ config INCLUDE_I2S_SPLITTER
 
 config I2S_SPLITTER_IS_SPEED_CRITICAL
 	bool   "i2s splitter is speed critical"
-	depends on I2S_SPLITTER
+	depends on INCLUDE_I2S_SPLITTER
 	default y
 
 
@@ -144,6 +158,14 @@ config COMPRESSOR_IS_SPEED_CRITICAL
 	depends on INCLUDE_COMPRESSOR
 	default y
 
+config INCLUDE_VOICE_3D
+	bool   "voice 3D effect"
+	default n
+
+config VOICE_3D_IS_SPEED_CRITICAL
+	bool   "voice 3D effect is speed critical"
+	depends on INCLUDE_VOICE_3D
+	default y
 
 config INCLUDE_FFMPEG
 	bool   "ffmpeg"
@@ -159,3 +181,23 @@ endif
 endmenu
 #################### end of DSP menu###############################
 	
+######## automatically selected configurations #########
+config AUTO_INCLUDE_COMMON_DSP
+	def_bool  y
+	depends on INCLUDE_EQUALIZER || INCLUDE_COMPRESSOR
+
+config AUTO_COMMON_DSP_IS_SPEED_CRITICAL
+	def_bool  y
+	depends on EQUALIZER_IS_SPEED_CRITICAL || COMPRESSOR_IS_SPEED_CRITICAL
+
+config INCLUDE_DSP_MANAGMENT
+	def_bool  y
+	depends on  INCLUDE_EQUALIZER || INCLUDE_COMPRESSOR || INCLUDE_MIXER || \
+				 INCLUDE_I2S_SPLITTER || INCLUDE_I2S_MIXER || INCLUDE_VOICE_3D 
+
+config DSP_MANAGMENT_IS_SPEED_CRITICAL
+	def_bool  y
+	depends on  EQUALIZER_IS_SPEED_CRITICAL || COMPRESSOR_IS_SPEED_CRITICAL || MIXER_IS_SPEED_CRITICAL || \
+				I2S_SPLITTER_IS_SPEED_CRITICAL || I2S_MIXER_IS_SPEED_CRITICAL || VOICE_3D_IS_SPEED_CRITICAL 
+
+######## end of automatically selected configurations #########	

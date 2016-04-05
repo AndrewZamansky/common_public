@@ -15,6 +15,6 @@ INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_GIC)
 SRC = gic.c 
 
 
-VPATH = src:APP_SPECIFIC
+VPATH = src 
 
 include $(COMMON_CC)

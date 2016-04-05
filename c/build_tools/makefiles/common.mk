@@ -17,8 +17,7 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
  endif
 endif
 
-
-
+ADD_TO_GLOBAL_INCLUDE_PATH = $(GLOBAL_INCLUDE_DIR) $(1)
 
 
 

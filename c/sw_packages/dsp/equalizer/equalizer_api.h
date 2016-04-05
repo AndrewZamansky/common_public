@@ -20,18 +20,24 @@ typedef enum
 {
 	IOCTL_EQUALIZER_SET_BAND_BIQUADS = IOCTL_LAST_COMMON_IOCTL+1,
 	IOCTL_EQUALIZER_SET_NUM_OF_BANDS,
+	IOCTL_EQUALIZER_GET_BAND_BIQUADS
 }EQUALIZER_API_ioctl_t;
 
 
-typedef struct _set_band_biquads_t
+typedef struct _equalizer_api_band_set_params_t
 {
-	uint32_t band_num;
-	biquads_filter_mode_t filter_mode;
 	float Fc;
 	float QValue;
 	float Gain;
+	biquads_filter_mode_t filter_mode;
 
-} set_band_biquads_t;
+} equalizer_api_band_set_params_t;
+
+typedef struct _equalizer_api_band_set_t
+{
+	equalizer_api_band_set_params_t  band_set_params;
+	uint8_t band_num;
+} equalizer_api_band_set_t;
 
 /**********  define API  functions  ************/
 

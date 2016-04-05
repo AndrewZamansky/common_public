@@ -9,13 +9,13 @@ OUTPUT_HEX 		:=  $(OUT_DIR)/$(OUTPUT_APP_NAME).s19
 
 #caclulating linker flags
 
-ifeq ($(findstring YES,$(CONFIG_INCLUDE_FPU)),YES)
+ifdef CONFIG_INCLUDE_FPU
    GLOBAL_LDFLAGS += --cpu=$(CONFIG_CPU_TYPE).fp
 else 	 
    GLOBAL_LDFLAGS += --cpu=$(CONFIG_CPU_TYPE) 
 endif
 
-#ifeq ($(findstring flash,$(CONFIG_CODE_LOCATION)),flash)
+#ifdef CONFIG_CODE_LOCATION_FLASH
 #	GLOBAL_LDFLAGS += --ro_base=$(CONFIG_FLASH_START_ADDR)
 #	GLOBAL_LDFLAGS += --entry=$(CONFIG_FLASH_START_ADDR)
 #else

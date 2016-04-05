@@ -4,9 +4,8 @@ ifdef CONFIG_NUC505
     DYNAMIC_COMPONENT := $(CONFIG_INCLUDE_INTERNAL_UART)
 endif
 
-INCLUDE_DIR = $(EXTERNAL_SOURCE_ROOT_DIR)/BSP_NUC505_v3.00.003/Library/Device/Nuvoton/NUC505Series/Include
 
-#INCLUDE_DIR = $(DRIVERS_ROOT_DIR)/Obtainable/ST/nuc505s-periphs/inc
+#INCLUDE_DIR =  
 
 #DEFINES = 
 
@@ -23,6 +22,6 @@ VPATH = src
 SRC += uart.c
 SRC += sys.c
 
-VPATH += | $(EXTERNAL_SOURCE_ROOT_DIR)/BSP_NUC505_v3.00.003/Library/StdDriver/src
+VPATH += | $(NUC505_SRC_DIR)
 
 include $(COMMON_CC)

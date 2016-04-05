@@ -45,12 +45,14 @@
 
 #include <command.h>
 #include "shell_api.h"
+#include "included_modules.h"
 
-extern uint8_t i2s_loopback ;
+extern void* __HEAP_END;
+extern unsigned char *global_heap;
 
 
 /*
- * Subroutine:  do_set_vol
+ * Subroutine:  do_heap_test
  *
  * Description:
  *
@@ -59,26 +61,18 @@ extern uint8_t i2s_loopback ;
  * Return:      None
  *
  */
-int do_set_i2s_loopback(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+int do_heap_test(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
-	if(argc<2) return CMD_RET_USAGE;
 
-	if( 0 ==  atof( argv[1]))
-	{
-		i2s_loopback = 0;
-	}
-	else
-	{
-		i2s_loopback = 1;
-	}
+	PRINTF_DBG("heap left : 0x%x\n",((unsigned char *)&__HEAP_END) - global_heap);
 
 
 	return 0;
 }
 
 U_BOOT_CMD(
-	set_i2s_loopback ,     255,	0,	do_set_i2s_loopback,
+	heap_test ,     255,	0,	do_heap_test,
 	"",
-	"info   - set_i2s_loopback [0|1] \n"
+	"info   - \n"
 );
 

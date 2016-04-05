@@ -1,11 +1,10 @@
 
 ifeq ($(findstring YES,$(CONFIG_INCLUDE_FAT_FS)),YES) 	 
-	GLOBAL_INCLUDE_DIR := $(GLOBAL_INCLUDE_DIR) $(SW_PACKAGES_ROOT_DIR)/Obtainable/Fatfs/src
 	INCLUDE_THIS_COMPONENT := YES   # must be here !!
+    GLOBAL_INCLUDE_DIR := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(EXTERNAL_SOURCE_ROOT_DIR)/Fatfs/src )
 endif  
 
 
-INCLUDE_DIR = $(EXTERNAL_SOURCE_ROOT_DIR)/Fatfs/src
 
 #DEFINES = 
 

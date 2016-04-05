@@ -29,7 +29,7 @@ typedef struct {
 	void *pBiquadFilter   ;
 	size_t num_of_bands ;
 	BandCoeffs_t *pCoeffs;
-
+	equalizer_api_band_set_params_t band_set_params;
 } EQUALIZER_Instance_t;
 
 

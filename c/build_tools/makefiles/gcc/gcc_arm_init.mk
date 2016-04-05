@@ -81,9 +81,6 @@ else
 endif
 
 
-ifeq ($(findstring YES,$(CONFIG_POSITION_INDEPENDENT)),YES) 	 
-	GLOBAL_CFLAGS += -fPIC 
-endif
 
 ifdef CONFIG_CORTEX_M3	
     GLOBAL_CFLAGS += -mfloat-abi=soft

@@ -42,7 +42,12 @@ config INCLUDE_INTERNAL_I2S
 	bool   "internal i2s"
 	depends on NUC505
 	default n
-	
+
+config INTERNAL_I2S_SPEED_CRITICAL
+	bool   "internal i2s is speed critical"
+	depends on INCLUDE_INTERNAL_I2S
+	default y
+		
 config INCLUDE_USB_VIRTUAL_COM
 	bool   "usb virtual com"
 	depends on STM32F10x
@@ -91,9 +96,14 @@ config INCLUDE_TIMER
 	default n
 
 ######## automatically selected configurations #########
+config INCLUDE_SERIAL_NUMBER
+	def_bool  y
+	depends on INCLUDE_INTERNAL_SERIAL_NUMBER
+
 config INCLUDE_UART
 	def_bool  y
 	depends on CONFIG_INCLUDE_SEMIHOSTING || INCLUDE_INTERNAL_UART || INCLUDE_USB_VIRTUAL_COM
+
 
 config INCLUDE_GPIO
 	def_bool  y

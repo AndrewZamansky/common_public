@@ -5,7 +5,7 @@ ifdef CONFIG_NUC505
 endif
 
 
-GLOBAL_INCLUDE_DIR += $(EXTERNAL_SOURCE_ROOT_DIR)/BSP_NUC505_v3.00.003/Library/StdDriver/inc
+#INCLUDE_DIR =  
 
 #DEFINES = 
 
@@ -19,6 +19,7 @@ SRC = gpio_nuc505.c
 VPATH = src
 
 SRC += gpio.c
-VPATH += | $(EXTERNAL_SOURCE_ROOT_DIR)/BSP_NUC505_v3.00.003/Library/StdDriver/src
+VPATH += | $(NUC505_SRC_DIR)
+
 
 include $(COMMON_CC)

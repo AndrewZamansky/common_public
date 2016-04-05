@@ -15,15 +15,10 @@ endif
 
 #ASMFLAGS =  
 
-INCLUDE_DIR =  $(SW_PACKAGES_ROOT_DIR)/u_boot_shell/include
-INCLUDE_DIR += $(EXTERNAL_SOURCE_ROOT_DIR)/u-boot/include
 
 
 SRC = serial_number_stm32f10x.c 
 
-ifeq ($(findstring YES,$(CONFIG_USE_SHELL)),YES) 	 
-	SRC += cmd_get_serial.c
-endif
 
 VPATH = src
 

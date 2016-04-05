@@ -136,6 +136,8 @@ clean:
 list_var:
 	$(MAKE) -f $(MAKEFILE_DEFS_ROOT_DIR)/list_usful_variables.mk  
 
+
+
 menuconfig:
 	$(MAKE) -f $(MAKEFILE_DEFS_ROOT_DIR)/menuconfig.mk  
 	

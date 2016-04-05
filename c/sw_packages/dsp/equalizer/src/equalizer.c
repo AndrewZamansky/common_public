@@ -220,7 +220,9 @@ uint8_t equalizer_ioctl(void * const aHandle ,const uint8_t aIoctl_num , void * 
 {
 	uint8_t i;
 	size_t num_of_bands;
+	uint8_t band_num;
 	BandCoeffs_t *pCoeffs;
+	equalizer_api_band_set_params_t *p_band_set_params;
 
 	switch(aIoctl_num)
 	{
@@ -341,14 +343,18 @@ uint8_t equalizer_ioctl(void * const aHandle ,const uint8_t aIoctl_num , void * 
 
 #else
 		num_of_bands = INSTANCE(aHandle)->num_of_bands;
-		if(num_of_bands > ((set_band_biquads_t*)aIoctl_param1)->band_num)
+		band_num = ((equalizer_api_band_set_t*)aIoctl_param1)->band_num ;
+		if(num_of_bands > band_num )
 		{
-			pCoeffs = &INSTANCE(aHandle)->pCoeffs[((set_band_biquads_t*)aIoctl_param1)->band_num];
+			p_band_set_params = &(((equalizer_api_band_set_t*)aIoctl_param1)->band_set_params);
+			memcpy(&INSTANCE(aHandle)->band_set_params,
+					p_band_set_params,sizeof(equalizer_api_band_set_params_t));
+			pCoeffs = &INSTANCE(aHandle)->pCoeffs[band_num];
 			biquads_calculation(
-					((set_band_biquads_t*)aIoctl_param1)->filter_mode,
-					((set_band_biquads_t*)aIoctl_param1)->Fc,
-					((set_band_biquads_t*)aIoctl_param1)->QValue,
-					((set_band_biquads_t*)aIoctl_param1)->Gain,
+					p_band_set_params->filter_mode,
+					p_band_set_params->Fc,
+					p_band_set_params->QValue,
+					p_band_set_params->Gain,
 					48000,
 					(float*)pCoeffs
 					);
@@ -360,6 +366,11 @@ uint8_t equalizer_ioctl(void * const aHandle ,const uint8_t aIoctl_num , void * 
 //			PRINTF_DBG( "b2 = %f  \n",coeffs[0].b2);
 //			PRINTF_DBG( "a1 = %f  \n",coeffs[0].a1);
 //			PRINTF_DBG( "a2 = %f  \n",coeffs[0].a2);
+			break;
+		case IOCTL_EQUALIZER_GET_BAND_BIQUADS :
+			p_band_set_params = &(((equalizer_api_band_set_t*)aIoctl_param1)->band_set_params);
+			memcpy(p_band_set_params,
+					&INSTANCE(aHandle)->band_set_params, sizeof(equalizer_api_band_set_params_t));
 			break;
 		default :
 			return 1;

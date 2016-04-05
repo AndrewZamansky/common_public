@@ -107,8 +107,32 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
     YEAR := $(word 2,$(subst =,$(SPACE),$(strip $(SHELL_OUTPUT))))
     SHELL_OUTPUT :=$(shell WMIC Path Win32_LocalTime Get Month /value)
     MONTH := $(word 2,$(subst =,$(SPACE),$(strip $(SHELL_OUTPUT))))
+    ifeq (1,$(MONTH))
+        MONTH :=01
+    else
+        ifneq ($(patsubst 1%,X,$(MONTH)),X)
+            MONTH :=0$(MONTH)
+        endif
+    endif
+
     SHELL_OUTPUT :=$(shell WMIC Path Win32_LocalTime Get DAY /value)
     DAY := $(word 2,$(subst =,$(SPACE),$(strip $(SHELL_OUTPUT))))
+    ifeq (1,$(DAY))
+        DAY :=01
+    else ifeq (2,$(DAY))
+        DAY :=02
+    else ifeq (3,$(DAY))
+        DAY :=03
+    else 
+        ifneq ($(patsubst 1%,X,$(DAY)),X)
+            ifneq ($(patsubst 2%,X,$(DAY)),X)
+                ifneq ($(patsubst 3%,X,$(DAY)),X)
+                    DAY :=0$(DAY)
+                endif
+            endif
+        endif
+    endif
+
 	DATE	:=$(YEAR)-$(MONTH)-$(DAY)
 
     SHELL_OUTPUT :=$(shell WMIC Path Win32_LocalTime Get Hour /value)
@@ -134,8 +158,8 @@ else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX)
 endif
 
 
+ifeq ($(findstring menuconfig,$(MAKECMDGOALS)),) 
 
-include config.mk
 include .config
 
 PROJECT_NAME :=$(patsubst "%",%,$(CONFIG_PROJECT_NAME))
@@ -176,6 +200,7 @@ ifneq ($(sort $(filter $(CURR_GIT_BRANCH),$(CURR_COMMON_GIT_BRANCH))),$(CURR_GIT
     ERROR_MESSAGE := M 
     ifeq ($(findstring $(ERROR_MESSAGE),$(SHELL_OUTPUT)),$(ERROR_MESSAGE)) 	 
         $(info  git error : commit all changes to common git($(COMMON_DIR)) before changing branch or project)
+        $(info  current application git branch :   $(CURR_GIT_BRANCH) )
         $(info  current common git branch :   $(CURR_COMMON_GIT_BRANCH) )
         $(error  )
     endif
@@ -202,6 +227,9 @@ ifneq ($(sort $(filter $(CURR_GIT_BRANCH),$(CURR_COMMON_GIT_BRANCH))),$(CURR_GIT
 endif
 
 ####################   end of  configuring git  ######################
+
+endif
+
 
 COMPONENTS_MK := $(AUTO_GENERATED_FILES_DIR)/include_components.mk
 GENERATED_KCONFIG := $(AUTO_GENERATED_FILES_DIR)/Kconfig
@@ -254,6 +282,8 @@ GLOBAL_DEFINES := $(GLOBAL_DEFINES) PROJECT_NAME="$(PROJECT_NAME)"
 
 caclulate_component_dir = $(patsubst  %/,%, $(dir $(patsubst $(APP_ROOT_DIR)/%,%,$(realpath $1 ))))
 
+ifeq ($(findstring menuconfig,$(MAKECMDGOALS)),) 
+
 ifdef CONFIG_ARM
     ifdef CONFIG_GCC
         include $(MAKEFILE_DEFS_ROOT_DIR)/gcc/gcc_arm_init.mk
@@ -270,6 +300,8 @@ else ifdef CONFIG_HOST
     include $(MAKEFILE_DEFS_ROOT_DIR)/gcc/gcc_host_init.mk
 else
     $(error ---- unknown compiler ----)
+endif
+
 endif
 
 #########################################################

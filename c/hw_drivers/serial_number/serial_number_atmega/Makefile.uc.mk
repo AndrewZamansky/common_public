@@ -19,7 +19,7 @@ endif
 
 SRC = serial_number_atmega.c 
 
-ifeq ($(findstring YES,$(CONFIG_USE_SHELL)),YES) 	 
+ifdef CONFIG_INCLUDE_UBOOT_SHELL
 	SRC += cmd_get_serial.c
 endif
 

@@ -19,7 +19,7 @@ INCLUDE_DIR = $(EXTERNAL_SOURCE_ROOT_DIR)/ST/stm8s-periphs/inc
 
 SRC = serial_number_stm8.c 
 
-ifeq ($(findstring YES,$(CONFIG_USE_SHELL)),YES) 	 
+ifdef CONFIG_INCLUDE_UBOOT_SHELL
 	SRC += cmd_get_serial.c
 endif
 

@@ -33,19 +33,21 @@ ifeq ($(findstring cortex-m,$(CONFIG_CPU_TYPE)),cortex-m)
 	LDFLAGS += -mthumb
 endif
 
-ifeq ($(findstring YES,$(CONFIG_POSITION_INDEPENDENT)),YES) 	 
-	LDFLAGS += -Wl,-pie
-endif
+
 
 LDFLAGS += -mcpu=$(CONFIG_CPU_TYPE) -mthumb-interwork -Wl,--gc-sections -nostartfiles  # -msoft-float -mfloat-abi=soft  
 LDFLAGS += -Wl,-Map=$(OUT_DIR)/$(OUTPUT_APP_NAME).map   # -msoft-float -mfloat-abi=soft  
 
-ifeq ($(findstring YES,$(CONFIG_USE_NANO_STD_LIBS)),YES) 	 
+ifdef CONFIG_USE_NANO_STD_LIBS 
     LDFLAGS += -specs=nano.specs 
 endif
 
-ifeq ($(findstring cortex-m4,$(CONFIG_CPU_TYPE)),cortex-m4) 	
-    LDFLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16 
+ifdef CONFIG_CORTEX_M4	
+    ifdef CONFIG_INCLUDE_FPU
+        LDFLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16 
+    else
+        LDFLAGS += -mfloat-abi=soft -mfpu=soft
+    endif
 endif
 
 
@@ -66,7 +68,7 @@ LDS_PREPROCESSOR_DEFINES :=
 LDS_PREPROCESSOR_DEFINES += CONFIG_RAM_START_ADDR=$(CONFIG_RAM_START_ADDR) CONFIG_RAM_SIZE=$(CONFIG_RAM_SIZE)
 LDS_PREPROCESSOR_DEFINES += CONFIG_FLASH_START_ADDR=$(CONFIG_FLASH_START_ADDR) CONFIG_FLASH_SIZE=$(CONFIG_FLASH_SIZE)
 LDS_PREPROCESSOR_DEFINES += DEBUG_SECTIONS_INCLUDE_FILE="\"$(BUILD_TOOLS_ROOT_DIR)/scatter_files/gcc/debug_sections.lds\""
-ifeq ($(findstring flash,$(CONFIG_CODE_LOCATION)),flash)
+ifdef CONFIG_CODE_LOCATION_FLASH
 	LDS_PREPROCESSOR_DEFINES += RUN_FROM_FLASH
 endif
 ifeq ($(findstring cortex-m,$(CONFIG_CPU_TYPE)),cortex-m)
