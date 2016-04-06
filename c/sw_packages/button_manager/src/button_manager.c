@@ -257,7 +257,7 @@ static void button_manager_task( void *aHandle )
 
 
 
-#if ((1==INCLUDE_uxTaskGetStackHighWaterMark ) && (1==OS_FREE_RTOS))
+#if ((1==INCLUDE_uxTaskGetStackHighWaterMark ) && (1==CONFIG_FREE_RTOS))
 		{
 			static  uint32_t stackLeft,minStackLeft=0xffffffff;
 

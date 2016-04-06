@@ -16,17 +16,17 @@
 
 #include "NVIC_api.h"
 
-#if CORTEX_M_TYPE == 4
+#if 1 == CONFIG_CORTEX_M4
  #include "core_cm4.h"
-#elif CORTEX_M_TYPE == 3
+#elif 1 == CONFIG_CORTEX_M3
  #include "core_cm3.h"
 #else
  #error unknown cortex-m type
 #endif
 
-#ifdef GCC
+#ifdef CONFIG_GCC
   #define IRQ_ATTR	__attribute__((interrupt("IRQ")))
-#elif defined ARMCC
+#elif defined CONFIG_ARMCC
   #define IRQ_ATTR	__irq
 #endif
 
@@ -153,7 +153,7 @@ void  NVIC_API_Init(void)
     }
 
 
-#if (CORTEX_M_TYPE == 3) && (__CM3_REV < 0x0201)  /* core<r2p1 */
+#if (1 == CONFIG_CORTEX_M3 ) && (__CM3_REV < 0x0201)  /* core<r2p1 */
     SCB->VTOR = NVIC_CONFIG_START_OF_RAM & SCB_VTOR_TBLBASE_Msk;// set base to start of RAM
 #else
     // make sure that in cortex-m3 with revision < r2p1 bit 29 is 1

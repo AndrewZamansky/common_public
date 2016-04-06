@@ -269,16 +269,6 @@ ARCHIVE_OUTPUT := $(WORKSPACE_NAME).$(PROJECT_NAME).$(DATE_STR).7z
 
 #####   global compiler and linker flags :  #####   
  
-GLOBAL_DEFINES += CONFIG_RAM_START_ADDR=$(CONFIG_RAM_START_ADDR)
-
-
-ifeq ($(findstring YES,$(CONFIG_TEST_TASK_STACK)),YES) 	 
-	GLOBAL_DEFINES := $(GLOBAL_DEFINES) TEST_TASK_STACK=1
-else
-	GLOBAL_DEFINES := $(GLOBAL_DEFINES) TEST_TASK_STACK=0
-endif
-
-GLOBAL_DEFINES := $(GLOBAL_DEFINES) PROJECT_NAME="$(PROJECT_NAME)"
 
 caclulate_component_dir = $(patsubst  %/,%, $(dir $(patsubst $(APP_ROOT_DIR)/%,%,$(realpath $1 ))))
 

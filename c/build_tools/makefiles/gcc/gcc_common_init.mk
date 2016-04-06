@@ -34,10 +34,6 @@ ELF_TO_BIN	:=	$(FULL_GCC_PREFIX)objcopy -O binary
 DISASSEMBLER	:=	$(FULL_GCC_PREFIX)objdump -d 
 ELF_TO_HEX	:=	$(FULL_GCC_PREFIX)objcopy -O ihex 
 
-
-GLOBAL_DEFINES := $(GLOBAL_DEFINES) GCC
-
-
 endif
 ### end of section that run just one time per build
 #####################################################

@@ -94,7 +94,7 @@ uint8_t serial_atmega_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 					}
 				}
 			}
-			hashed_name_result=hush32_function(PROJECT_NAME,sizeof(PROJECT_NAME));
+			hashed_name_result=hush32_function(CONFIG_PROJECT_NAME,sizeof(CONFIG_PROJECT_NAME));
 			memcpy(serial_number,&hashed_name_result,4);
 			for(i=4;i<SERIAL_NUMBER_LEN;i++)
 			{

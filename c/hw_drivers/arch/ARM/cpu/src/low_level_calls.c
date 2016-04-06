@@ -57,7 +57,7 @@ EXTERN_C_FUNCTION void __attribute__((interrupt("SWI"))) do_app_software_interru
     }
 }
 
-#ifndef CORTEX_M
+#if  ( (1 == CONFIG_CORTEX_M3 ) || (1 == CONFIG_CORTEX_M4) )
 
 void __attribute__((interrupt("ABORT"))) do_data_abort_exception()
 {
@@ -94,7 +94,10 @@ void do_reserved_exception()
 
 void __attribute__((weak)) OS_SWI_Handler(void)
 {
-
+#if (1 == CONFIG_FREE_RTOS)
+	EXTERN_C_FUNCTION void vPortSVCHandler( void ) __attribute__ (( naked ));
+	vPortSVCHandler();
+#endif
 }
 
 /******************-------------------*****************************/
@@ -184,8 +187,8 @@ EXTERN_C_FUNCTION void low_level_init()
 	uint32_t *src ;
 	uint32_t *dst ;
 
-#ifdef CORTEX_M
-
+#if  ( (1 == CONFIG_CORTEX_M3 ) || (1 == CONFIG_CORTEX_M4) )
+	//do nothing yet
 #else /* cortex - a9 */
 
 	v7_outer_cache_inval_all();

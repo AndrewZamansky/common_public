@@ -68,7 +68,6 @@ GLOBAL_LDFLAGS := $(GLOBAL_LDFLAGS) #add this line to stop calculate GLOBAL_LDFL
 
 #end of flags definitions
 
-GLOBAL_DEFINES := $(GLOBAL_DEFINES) ARMCC
 
 
 ############   PREPROCESSOR FLAGS FOR LINKER SCRIPT #############

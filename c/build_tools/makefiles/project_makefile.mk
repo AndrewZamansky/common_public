@@ -48,7 +48,6 @@ endif
 
 ifdef MAKEFILE_WAS_GENERATED
 	ifndef SKIP_SECTION_THAT_SHOULD_RUN_ONCE_AFTER_AUTO_FILE_GENERATIONS
-        _NO_OS_FOUND := YES
         include $(COMPONENTS_MK)
         # clean following variables befor exporting to sub-makes
         DEFINES :=
@@ -58,10 +57,6 @@ ifdef MAKEFILE_WAS_GENERATED
         ASMFLAGS :=
         DEFINES :=
         
-        ifeq ($(findstring YES,$(_NO_OS_FOUND)),YES) 	 
-	     GLOBAL_DEFINES += _NO_OS
-        endif  
-     
         GLOBAL_HEADER_FILES_DEPS := $(patsubst %,%/*.h,$(GLOBAL_INCLUDE_DIR)) 
 
         ADDITIONAL_DIRS_FOR_EXPORTS := $(sort $(APP_ROOT_DIR) $(SUBDIRS) $(GLOBAL_INCLUDE_DIR) $(MAKEFILE_DEFS_ROOT_DIR))

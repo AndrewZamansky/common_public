@@ -348,7 +348,7 @@ static void SW_UART_WRAPPER_Send_Task( void *aHandle )
 		}
 
 
-#if ((1==INCLUDE_uxTaskGetStackHighWaterMark ) && (1==OS_FREE_RTOS))
+#if ((1==INCLUDE_uxTaskGetStackHighWaterMark ) && (1==CONFIG_FREE_RTOS))
 		{
 			static  size_t stackLeft,minStackLeft=0xffffffff;
 

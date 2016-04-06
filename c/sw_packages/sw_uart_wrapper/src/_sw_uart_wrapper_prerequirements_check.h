@@ -45,7 +45,7 @@ typedef uint32_t   					_if_fail_here_then___uint32_t___is_not_defined_in_sw_uar
 typedef pdev_descriptor   			_if_fail_here_then___pdev_descriptor___is_not_defined_in_sw_uart_wrapper_config_h;
 typedef dev_param_t   				_if_fail_here_then___dev_param_t___is_not_defined_in_sw_uart_wrapper_config_h;
 
-#ifndef _NO_OS
+#ifndef CONFIG_NONE_RT_OS
 	#ifndef OS_WRAPPER_INCLUDED
 		#error "none of os wrapper was included"
 	#endif
@@ -70,7 +70,7 @@ enum
 
 
 
-#if ((1==INCLUDE_uxTaskGetStackHighWaterMark ) && (1==OS_FREE_RTOS))
+#if ((1==INCLUDE_uxTaskGetStackHighWaterMark ) && (1==CONFIG_FREE_RTOS))
 	#ifndef PRINTF_DBG
 		PRINTF_DBG_not_declared_in_sw_uart_wrapper_config_h=sizeof((int)PRINTF_DBG),
 	#endif

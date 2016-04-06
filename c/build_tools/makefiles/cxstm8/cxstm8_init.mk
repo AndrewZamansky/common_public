@@ -21,10 +21,6 @@ GLOBAL_CFLAGS := $(GLOBAL_CFLAGS) +modsl0 +split -pp +compact +debug -pc99
 GLOBAL_CFLAGS := $(GLOBAL_CFLAGS) -eg#errors compatible to eclipse
 
 
-GLOBAL_DEFINES := $(GLOBAL_DEFINES) CXSTM8
-
-
-
 endif
 ### end of section that run just one time per build
 #####################################################

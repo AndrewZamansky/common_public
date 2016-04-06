@@ -17,9 +17,10 @@
 #include "NVIC_api.h"
 
 
-#if CORTEX_M_TYPE == 4
+
+#if 1 == CONFIG_CORTEX_M4
  #include "core_cm4.h"
-#elif CORTEX_M_TYPE == 3
+#elif 1 == CONFIG_CORTEX_M3
  #include "core_cm3.h"
 #else
  #error unknown cortex-m type

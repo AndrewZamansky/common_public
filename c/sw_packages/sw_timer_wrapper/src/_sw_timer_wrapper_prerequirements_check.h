@@ -56,7 +56,7 @@ enum
 
 
 
-#if ((1==INCLUDE_uxTaskGetStackHighWaterMark ) && (1==OS_FREE_RTOS))
+#if ((1==INCLUDE_uxTaskGetStackHighWaterMark ) && (1==CONFIG_FREE_RTOS))
 	#ifndef PRINTF_DBG
 		PRINTF_DBG_not_declared_in_sw_timer_wrapper_config_h=sizeof((int)PRINTF_DBG),
 	#endif

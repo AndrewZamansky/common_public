@@ -6,6 +6,9 @@ SHELL := $(CALCULATED_SHELL)
 
 ######################################
 
+EMPTY:=
+SPACE:= $(EMPTY) $(EMPTY)
+
 current_dir :=$(dir $(abspath $(firstword $(MAKEFILE_LIST))))
 abspath_fix =$(patsubst $(current_dir)%,%,$(abspath $(1) ))
 
@@ -17,7 +20,11 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
  endif
 endif
 
-ADD_TO_GLOBAL_INCLUDE_PATH = $(GLOBAL_INCLUDE_DIR) $(1)
 
+define ADD_TO_GLOBAL_INCLUDE_PATH =
+    $(eval GLOBAL_INCLUDE_DIR := $(GLOBAL_INCLUDE_DIR) $(1))
+endef
 
-
+define ADD_TO_GLOBAL_DEFINES =
+    $(eval GLOBAL_DEFINES := $(GLOBAL_DEFINES) $(1))
+endef

@@ -91,7 +91,7 @@ uint8_t serial_stm32f10x_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 			break;
 		case IOCTL_DEVICE_START :
 
-			hashed_name_result=hush32_function((uint8_t*)PROJECT_NAME,(sizeof(PROJECT_NAME) + 3 ) & 0xfffffffc );
+			hashed_name_result=hush32_function((uint8_t*)CONFIG_PROJECT_NAME,(sizeof(CONFIG_PROJECT_NAME) + 3 ) & 0xfffffffc );
 			memcpy(serial_number,&hashed_name_result,4);
 
 			#if defined(STM32L1XX_MD) || defined(STM32L1XX_HD) || defined(STM32L1XX_MD_PLUS)

@@ -48,19 +48,10 @@ enum
 	DEV_CALLBACK_1_PARAM_not_declared_in_timer_config_h=sizeof((int)DEV_CALLBACK_1_PARAMS),
 #endif
 
-#ifndef _NO_OS
-
-
-//#if ((1==INCLUDE_uxTaskGetStackHighWaterMark ) && (1==OS_FREE_RTOS))
-//	#ifndef PRINTF_DBG
-//		PRINTF_DBG_not_declared_in_timer_config_h=sizeof((int)PRINTF_DBG),
-//	#endif
-//#endif
-
 
 	memcpy___not_declared_in_timer_config_h=sizeof((int)memcpy)
 
-#endif
+
 };
 
 /***************************/

@@ -62,10 +62,6 @@ bkpt_asm:
 	pop {r4,pc}
 
 
-#ifdef PREDEFINED_OS_SWI_HANDLER
-	_OS_Handle_text: .word PREDEFINED_OS_SWI_HANDLER
-#else
-	_OS_Handle_text: .word OS_SWI_Handler
-#endif
+_OS_Handle_text: .word OS_SWI_Handler
 
 

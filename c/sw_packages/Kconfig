@@ -25,7 +25,7 @@ config INCLUDE_PRINTF
 menu "RT OS"
 source "$COMMON_DIR_PATH/c/sw_packages/os_wrapper/Kconfig"
 
-config CPU_TEST_TASK_STACK
+config TEST_TASK_STACK
 	bool   "add stack logs for tasks"
 	depends on !NONE_RT_OS
 	default y

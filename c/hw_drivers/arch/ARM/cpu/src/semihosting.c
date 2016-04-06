@@ -295,7 +295,7 @@ static void poll_for_semihosting_data_task( void *aHandle )
 
 		}
 
-#if ((1==INCLUDE_uxTaskGetStackHighWaterMark ) && (1==OS_FREE_RTOS))
+#if ((1==INCLUDE_uxTaskGetStackHighWaterMark ) && (1==CONFIG_FREE_RTOS))
 		{
 			static  size_t stackLeft,minStackLeft=0xffffffff;
 

@@ -81,6 +81,19 @@ else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX)
  $(shell echo '};  '>> $(AUTO_GENERATED_FILES_DIR)/included_modules.c)
 endif
 
+# creating "config.h file" :
+$(shell echo /**/ > $(AUTO_GENERATED_FILES_DIR)/project_config.h)
+ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS) 	 
+    CONFIG_CONTENT := $(shell findstr /b /c:"CONFIG" .config)
+    CONFIG_CONTENT := $(patsubst %,echo \#define % >> $(AUTO_GENERATED_FILES_DIR)/project_config.h & ,$(CONFIG_CONTENT))
+else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX) 
+    CONFIG_CONTENT := $(shell cat .config)
+endif
+EQUAL_SIGN = =
+CONFIG_CONTENT := $(subst $(EQUAL_SIGN)y,$(SPACE)  $(SPACE)1,$(CONFIG_CONTENT))
+CONFIG_CONTENT := $(subst $(EQUAL_SIGN),$(SPACE)  $(SPACE),$(CONFIG_CONTENT))
+DUMMY:=$(shell $(CONFIG_CONTENT))
+
 
 all :
 	$(info auto generated include_components.mk created)

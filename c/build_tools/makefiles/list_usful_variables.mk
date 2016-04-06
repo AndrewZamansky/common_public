@@ -23,6 +23,11 @@ $(info TOOLS_ROOT_DIR := $(TOOLS_ROOT_DIR))
 $(info COMMON_PARTITION := $(COMMON_PARTITION))
 
 
+$(info  )
+$(info usefull makefile calls :)
+$(info  DUMMY := $$(call ADD_TO_GLOBAL_INCLUDE_PATH , your/include/path))
+$(info  DUMMY := $$(call ADD_TO_GLOBAL_DEFINES , your_define=xx))
+
 
 list_var :
 	$(info   )
