@@ -12,14 +12,12 @@
 
 /********  includes *********************/
 
-#include "equalizer_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
-#include "dsp_managment_api.h" // for device manager defines and typedefs
-#include "_equalizer_prerequirements_check.h" // should be after {equalizer_config.h,dev_managment_api.h}
+#include "_equalizer_prerequirements_check.h"
+
+#include "PRINTF_api.h"
 
 #include "equalizer_api.h" //place first to test that header file is self-contained
 #include "equalizer.h"
-#include "common_dsp_api.h"
 
 
 /********  defines *********************/
@@ -40,13 +38,6 @@
 
 
 /***********   local variables    **************/
-#if EQUALIZER_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
-
-	static EQUALIZER_Instance_t EQUALIZER_InstanceParams[EQUALIZER_CONFIG_NUM_OF_DYNAMIC_INSTANCES] = { {0} };
-	static uint16_t usedInstances =0 ;
-
-
-#endif // for EQUALIZER_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
 
 
 #if 0
@@ -381,9 +372,6 @@ uint8_t equalizer_ioctl(void * const aHandle ,const uint8_t aIoctl_num , void * 
 
 
 
-
-#if EQUALIZER_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
-
 /*---------------------------------------------------------------------------------------------------------*/
 /* Function:        EQUALIZER_API_Init_Dev_Descriptor                                                                          */
 /*                                                                                                         */
@@ -398,10 +386,11 @@ uint8_t equalizer_ioctl(void * const aHandle ,const uint8_t aIoctl_num , void * 
 uint8_t  equalizer_api_init_dsp_descriptor(pdsp_descriptor aDspDescriptor)
 {
 	EQUALIZER_Instance_t *pInstance;
-	if(NULL == aDspDescriptor) return 1;
-	if (usedInstances >= EQUALIZER_CONFIG_NUM_OF_DYNAMIC_INSTANCES) return 1;
 
-	pInstance = &EQUALIZER_InstanceParams[usedInstances ];
+	if(NULL == aDspDescriptor) return 1;
+
+	pInstance = (EQUALIZER_Instance_t *)malloc(sizeof(EQUALIZER_Instance_t));
+	if(NULL == pInstance) return 1;
 
 	aDspDescriptor->handle = pInstance;
 	aDspDescriptor->ioctl = equalizer_ioctl;
@@ -410,11 +399,8 @@ uint8_t  equalizer_api_init_dsp_descriptor(pdsp_descriptor aDspDescriptor)
 	pInstance->num_of_bands =0;
 	pInstance->pCoeffs=NULL;
 
-	usedInstances++;
 
 	return 0 ;
 
 }
-#endif  // for EQUALIZER_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
-
 

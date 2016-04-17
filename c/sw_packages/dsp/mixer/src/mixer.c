@@ -12,10 +12,7 @@
 
 /********  includes *********************/
 
-#include "mixer_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
-#include "dsp_managment_api.h" // for device manager defines and typedefs
-#include "_mixer_prerequirements_check.h" // should be after {mixer_config.h,dev_managment_api.h}
+#include "_mixer_prerequirements_check.h"
 
 #include "mixer_api.h" //place first to test that header file is self-contained
 #include "mixer.h"
@@ -40,15 +37,6 @@
 
 
 /***********   local variables    **************/
-#if MIXER_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
-
-	static MIXER_Instance_t MIXER_InstanceParams[MIXER_CONFIG_NUM_OF_DYNAMIC_INSTANCES] = { {0} };
-	static uint16_t usedInstances =0 ;
-
-
-#endif // for MIXER_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
-
-
 
 /*---------------------------------------------------------------------------------------------------------*/
 /* Function:        mixer_dsp                                                                          */
@@ -155,11 +143,6 @@ uint8_t mixer_ioctl(void * const aHandle ,const uint8_t aIoctl_num , void * aIoc
 }
 
 
-
-
-
-#if MIXER_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
-
 /*---------------------------------------------------------------------------------------------------------*/
 /* Function:        MIXER_API_Init_Dev_Descriptor                                                                          */
 /*                                                                                                         */
@@ -174,10 +157,11 @@ uint8_t mixer_ioctl(void * const aHandle ,const uint8_t aIoctl_num , void * aIoc
 uint8_t  mixer_api_init_dsp_descriptor(pdsp_descriptor aDspDescriptor)
 {
 	MIXER_Instance_t *pInstance;
-	if(NULL == aDspDescriptor) return 1;
-	if (usedInstances >= MIXER_CONFIG_NUM_OF_DYNAMIC_INSTANCES) return 1;
 
-	pInstance = &MIXER_InstanceParams[usedInstances ];
+	if(NULL == aDspDescriptor) return 1;
+
+	pInstance = (MIXER_Instance_t *)malloc(sizeof(MIXER_Instance_t));
+	if(NULL == pInstance) return 1;
 
 	aDspDescriptor->handle = pInstance;
 	aDspDescriptor->ioctl = mixer_ioctl;
@@ -186,11 +170,6 @@ uint8_t  mixer_api_init_dsp_descriptor(pdsp_descriptor aDspDescriptor)
 	pInstance->num_of_input_channels =0;
 	pInstance->channels_weights=NULL;
 
-	usedInstances++;
-
 	return 0 ;
 
 }
-#endif  // for MIXER_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
-
-

@@ -1,0 +1,15 @@
+#
+	
+menu "audio compressor options"
+
+
+config COMPRESSOR_DEFAULT_CHUNK_SIZE
+	int   "default chunk size"
+	default 64
+
+config COMPRESSOR_IS_SPEED_CRITICAL
+	bool   "compressor is speed critical"
+	depends on INCLUDE_COMPRESSOR
+	default y
+
+endmenu

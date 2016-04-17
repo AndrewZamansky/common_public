@@ -12,19 +12,16 @@
 
 /********  includes *********************/
 
-#include "dsp_managment_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
-#include "dsp_managment_api.h" // for device manager defines and typedefs
-#include "_dsp_managment_prerequirements_check.h" // should be after {dsp_managment_config.h,dev_managment_api.h}
+#include "_dsp_managment_prerequirements_check.h"
 
-#include "dsp_managment_api.h" //place first to test that header file is self-contained
 #include "dsp_managment.h"
 
 #include "memory_pool_api.h"
 
 
 
-#ifdef _USE_DSP_
+#ifdef PROJECT_USE_DSP
+  #include "cpu_config.h"
   #include "arm_math.h"
 #endif
 

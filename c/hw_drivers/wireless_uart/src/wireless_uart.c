@@ -266,19 +266,7 @@ static void wireless_uart_task( void *aHandle )
 
 		}
 
-
-#if (1==INCLUDE_uxTaskGetStackHighWaterMark )
-		{
-			static  size_t stackLeft,minStackLeft=0xffffffff;
-
-			stackLeft = uxTaskGetStackHighWaterMark( NULL );
-			if(minStackLeft > stackLeft)
-			{
-				minStackLeft = stackLeft;
-				PRINTF_DBG("%s stack left = %d\r\n" , __FUNCTION__ ,minStackLeft);
-			}
-		}
-#endif
+		os_stack_test();
 
 	}
 

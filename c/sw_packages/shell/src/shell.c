@@ -11,9 +11,7 @@
 
 
 /********  includes *********************/
-#include "shell_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
-#include "src/_shell_prerequirements_check.h" // should be after {shell_config.h,dev_managment_api.h}
+#include "src/_shell_prerequirements_check.h"
 
 #include "shell_api.h"
 
@@ -46,10 +44,10 @@ typedef struct
 
 /********  externals *********************/
 
-
+extern int run_command(const char *cmd, int flag);
 
 /********  local defs *********************/
-#if SHELL_CONFIG_USE_AS_DYNAMIC_INSTANCE > 0
+#if CONFIG_SHELL_MAX_NUM_OF_DYNAMIC_INSTANCES > 0
 
 
 static const dev_param_t Shell_Dev_Params[]=
@@ -157,7 +155,7 @@ static void Shell_Task( void *pvParameters )
 	ioctl_get_data_buffer_t data_buffer_info;
 	shell_instance_t  *curr_shell_instance;
 
-	xQueue = os_create_queue( SHELL_MAX_QUEUE_LEN , sizeof( xMessage_t ) );
+	xQueue = os_create_queue( CONFIG_SHELL_MAX_QUEUE_LEN , sizeof( xMessage_t ) );
 
     if( 0 == xQueue  ) return ;
 
@@ -312,19 +310,7 @@ static void Shell_Task( void *pvParameters )
 
 		}
 
-
-#if (1==INCLUDE_uxTaskGetStackHighWaterMark )
-		{
-			static  uint32_t stackLeft,minStackLeft=0xffffffff;
-
-			stackLeft = uxTaskGetStackHighWaterMark( NULL );
-			if(minStackLeft > stackLeft)
-			{
-				minStackLeft = stackLeft;
-				PRINTF_DBG("%s stack left = %d\r\n" , __FUNCTION__ ,minStackLeft);
-			}
-		}
-#endif
+		os_stack_test();
 
 	}
 
@@ -348,7 +334,7 @@ uint8_t shell_ioctl( void * const aHandle ,const uint8_t aIoctl_num , void * aIo
 	switch(aIoctl_num)
 	{
 		case IOCTL_GET_PARAMS_ARRAY_FUNC :
-#if SHELL_CONFIG_USE_AS_DYNAMIC_INSTANCE > 0
+#if CONFIG_SHELL_MAX_NUM_OF_DYNAMIC_INSTANCES > 0
 			*(const dev_param_t**)aIoctl_param1  = Shell_Dev_Params;
 			*(uint8_t*)aIoctl_param2 =  sizeof(Shell_Dev_Params)/sizeof(dev_param_t); //size
 #else
@@ -356,7 +342,7 @@ uint8_t shell_ioctl( void * const aHandle ,const uint8_t aIoctl_num , void * aIo
 #endif
 			break;
 
-#if SHELL_CONFIG_USE_AS_DYNAMIC_INSTANCE > 0
+#if CONFIG_SHELL_MAX_NUM_OF_DYNAMIC_INSTANCES > 0
 		case IOCTL_SET_SERVER_DEVICE_BY_NAME :
 			{
 				pdev_descriptor server_device;
@@ -385,7 +371,7 @@ uint8_t shell_ioctl( void * const aHandle ,const uint8_t aIoctl_num , void * aIo
 	return 0;
 }
 
-#if SHELL_CONFIG_USE_AS_DYNAMIC_INSTANCE > 0
+#if CONFIG_SHELL_MAX_NUM_OF_DYNAMIC_INSTANCES > 0
 
 /*---------------------------------------------------------------------------------------------------------*/
 /* Function:        Shell_API_Init_Dev_Descriptor                                                                          */

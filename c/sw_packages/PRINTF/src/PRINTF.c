@@ -11,9 +11,7 @@
 
 
 /********  includes *********************/
-#include "printf_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
-#include "src/_printf_prerequirements_check.h" // should be after {printf_config.h,dev_managment_api.h}
+#include "src/_printf_prerequirements_check.h"
 
 #include "PRINTF.h"
 #include "PRINTF_api.h"
@@ -34,7 +32,7 @@ typedef struct {
 
 /********  local defs *********************/
 
-#if (PRINTF_CONFIG_USE_MINIMAL)
+#if (CONFIG_USE_MINIMAL_PRINTF)
 
 pdev_descriptor_const  print_dev;
 

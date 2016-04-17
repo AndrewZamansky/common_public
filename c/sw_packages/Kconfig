@@ -3,6 +3,9 @@
 config INCLUDE_DEV_MENAGMENT
 	def_bool  y
 
+if INCLUDE_DEV_MENAGMENT
+source "$COMMON_DIR_PATH/c/sw_packages/dev_managment/Kconfig"
+endif
 
 config INCLUDE_VERSION_MENAGMENT
 	bool   "version management"
@@ -22,13 +25,13 @@ config INCLUDE_PRINTF
 	bool   "printf"
 	default n
 
+if INCLUDE_PRINTF || AUTO_INCLUDE_PRINTF
+source "$COMMON_DIR_PATH/c/sw_packages/PRINTF/Kconfig"
+endif
+
+
 menu "RT OS"
 source "$COMMON_DIR_PATH/c/sw_packages/os_wrapper/Kconfig"
-
-config TEST_TASK_STACK
-	bool   "add stack logs for tasks"
-	depends on !NONE_RT_OS
-	default y
 
 
 endmenu	
@@ -38,6 +41,19 @@ config INCLUDE_SW_UART_WRAPPER
 	bool   "software uart wrapper"
 	depends on INCLUDE_INTERNAL_UART || INCLUDE_USB_VIRTUAL_COM || INCLUDE_WIRELESS_UART
 	default n
+
+if INCLUDE_SW_UART_WRAPPER
+source "$COMMON_DIR_PATH/c/sw_packages/sw_uart_wrapper/Kconfig"
+endif
+
+config INCLUDE_TIMER_WRAPPER
+	bool   "timer wrapper"
+	depends on INCLUDE_CORTEXM_SYSTICK 
+	default n
+
+if INCLUDE_TIMER_WRAPPER
+source "$COMMON_DIR_PATH/c/sw_packages/timer/Kconfig"
+endif
 
 config INCLUDE_HTTP
 	bool   "http"
@@ -71,6 +87,10 @@ config INCLUDE_SHELL
 	bool   "shell"
 	depends on INCLUDE_SW_UART_WRAPPER
 	default n
+	
+if INCLUDE_SHELL
+source "$COMMON_DIR_PATH/c/sw_packages/shell/Kconfig"
+endif
 
 config INCLUDE_UBOOT_SHELL
 	bool   "uboot shell"
@@ -95,109 +115,12 @@ config MEMORY_POOL_IS_SPEED_CRITICAL
 	depends on INCLUDE_MEMORY_POOL
 	default n
 	
-###################  DSP menu ####################
-menu "DSP"
-
-config INCLUDE_COMMON_DSP
-	bool   "common dsp"
-	default n
-
-if INCLUDE_COMMON_DSP
-
-config COMMON_DSP_IS_SPEED_CRITICAL
-	bool   "common dsp is speed critical"
-	default y
-
-config INCLUDE_EQUALIZER
-	bool   "equalizer"
-	default n
-
-config EQUALIZER_IS_SPEED_CRITICAL
-	bool   "equalizer is speed critical"
-	depends on INCLUDE_EQUALIZER
-	default y
-
-
-config INCLUDE_MIXER
-	bool   "audio mixer"
-	default n
-
-config MIXER_IS_SPEED_CRITICAL
-	bool   "mixer is speed critical"
-	depends on INCLUDE_MIXER
-	default y
-
-
-config INCLUDE_I2S_SPLITTER
-	bool   "i2s splitter"
-	default n
-
-
-config I2S_SPLITTER_IS_SPEED_CRITICAL
-	bool   "i2s splitter is speed critical"
-	depends on INCLUDE_I2S_SPLITTER
-	default y
-
-
-config INCLUDE_I2S_MIXER
-	bool   "i2s mixer"
-	default n
-
-config I2S_MIXER_IS_SPEED_CRITICAL
-	bool   "i2s mixer is speed critical"
-	depends on INCLUDE_I2S_MIXER
-	default y
-
-
-config INCLUDE_COMPRESSOR
-	bool   "audio compressor"
-	default n
-
-config COMPRESSOR_IS_SPEED_CRITICAL
-	bool   "compressor is speed critical"
-	depends on INCLUDE_COMPRESSOR
-	default y
-
-config INCLUDE_VOICE_3D
-	bool   "voice 3D effect"
-	default n
-
-config VOICE_3D_IS_SPEED_CRITICAL
-	bool   "voice 3D effect is speed critical"
-	depends on INCLUDE_VOICE_3D
-	default y
-
-config INCLUDE_FFMPEG
-	bool   "ffmpeg"
-	default n
-	
-config INCLUDE_FFMPEG_IS_SPEED_CRITICAL
-	bool   "ffmpeg is speed critical"
-	depends on INCLUDE_FFMPEG
-	default y
-
-endif
-
-endmenu
-#################### end of DSP menu###############################
+source "$COMMON_DIR_PATH/c/sw_packages/dsp/Kconfig"
 	
 ######## automatically selected configurations #########
-config AUTO_INCLUDE_COMMON_DSP
-	def_bool  y
-	depends on INCLUDE_EQUALIZER || INCLUDE_COMPRESSOR
 
-config AUTO_COMMON_DSP_IS_SPEED_CRITICAL
+config AUTO_INCLUDE_PRINTF
 	def_bool  y
-	depends on EQUALIZER_IS_SPEED_CRITICAL || COMPRESSOR_IS_SPEED_CRITICAL
-
-config INCLUDE_DSP_MANAGMENT
-	def_bool  y
-	depends on  INCLUDE_EQUALIZER || INCLUDE_COMPRESSOR || INCLUDE_MIXER || \
-				 INCLUDE_I2S_SPLITTER || INCLUDE_I2S_MIXER || INCLUDE_VOICE_3D 
-
-config DSP_MANAGMENT_IS_SPEED_CRITICAL
-	def_bool  y
-	depends on  EQUALIZER_IS_SPEED_CRITICAL || COMPRESSOR_IS_SPEED_CRITICAL || MIXER_IS_SPEED_CRITICAL || \
-				I2S_SPLITTER_IS_SPEED_CRITICAL || I2S_MIXER_IS_SPEED_CRITICAL || VOICE_3D_IS_SPEED_CRITICAL 
+	depends on CONFIG_INCLUDE_SEMIHOSTING || INCLUDE_SHELL
 
 ######## end of automatically selected configurations #########	

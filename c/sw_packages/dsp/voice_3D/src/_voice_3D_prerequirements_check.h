@@ -11,6 +11,9 @@
 #ifndef _voice_3D_prerequirements_check_H
 #define _voice_3D_prerequirements_check_H
 
+#include "_project.h"
+#include "dev_managment_api.h"
+#include "dsp_managment_api.h"
 
 
 /***************************/
@@ -29,7 +32,7 @@
 
 
 /***************************/
-/*** test type existence ***/
+/*** test type existence (suffix should be unique)***/
 
 typedef uint8_t 					_if_fail_here_then___uint8_t___is_not_defined_in_voice_3D_config_h;
 typedef uint16_t		 			_if_fail_here_then___uint16_t___is_not_defined_in_voice_3D_config_h;
@@ -44,7 +47,7 @@ typedef ioctl_get_data_buffer_t    	_if_fail_here_then___ioctl_get_data_buffer_t
 
 
 /**********************************/
-/*** test variable/function declaration existence ***/
+/*** test variable/function declaration existence (suffix should be unique)***/
 
 enum
 {

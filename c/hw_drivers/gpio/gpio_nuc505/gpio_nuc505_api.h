@@ -2,11 +2,9 @@
 #ifndef _GPIO_NUC505_API_H_
 #define _GPIO_NUC505_API_H_
 
-#include "gpio_NUC505_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
-#include "gpio_api.h"
-#include "src/_gpio_NUC505_prerequirements_check.h" // should be after {uart_NUC505_config.h,dev_managment_api.h}
 
+#include "src/_gpio_NUC505_prerequirements_check.h"
+#include "gpio_api.h"
 /**********  define API  types ************/
 
 

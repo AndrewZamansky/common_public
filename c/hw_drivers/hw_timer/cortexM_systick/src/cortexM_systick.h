@@ -13,10 +13,8 @@
 
 /********  includes *********************/
 
-#include "cortexM_systick_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
-#include "src/_cortexM_systick_prerequirements_check.h" // should be after {cortexM_systick_config.h,dev_managment_api.h}
-#include "hw_timer_api.h"
+#include "src/_cortexM_systick_prerequirements_check.h"
+
 /********  types  *********************/
 
 typedef struct {

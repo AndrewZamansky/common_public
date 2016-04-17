@@ -2,10 +2,10 @@
 #define _U_BOOT_SHELL_CONFIG_123456_H
 
 
+#include "_project.h"
 #include "string.h"
 #include "stdio.h"
 #include "stdlib.h"
-#include "u_boot_shell_config.h"
 
 #ifndef  EXIT_SUCCESS
 	typedef remove_or_rename_stdlib_h_in_uboot_include_dir  dummy_type;

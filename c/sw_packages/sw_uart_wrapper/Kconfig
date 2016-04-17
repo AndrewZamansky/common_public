@@ -1,0 +1,30 @@
+#
+	
+menu "software uart wrapper options"
+
+config  SW_UART_WRAPPER_MAX_NUM_OF_DYNAMIC_INSTANCES
+	int   "maximal number of dynamic instances"
+	default 1
+	
+config  SW_UART_WRAPPER_MAX_QUEUE_LEN
+	int   "internal queue length"
+	default 10
+
+config  SW_UART_WRAPPER_USE_MALLOC
+	bool   "use malloc"
+	default 1
+	
+config  SW_UART_WRAPPER_ENABLE_RX
+	bool   "rx enable"
+	default 1
+	
+config  SW_UART_WRAPPER_MAX_RX_BUFFER_SIZE
+	int   "rx buffer size"
+	depends on SW_UART_WRAPPER_ENABLE_RX
+	default 2048
+	
+config  SW_UART_WRAPPER_MAX_TX_BUFFER_SIZE
+	int   "internal queue length"
+	default 255
+	
+endmenu

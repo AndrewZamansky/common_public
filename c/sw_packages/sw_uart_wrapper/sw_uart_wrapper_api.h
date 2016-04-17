@@ -2,9 +2,7 @@
 #ifndef _sw_uart_wrapper_API_H_
 #define _sw_uart_wrapper_API_H_
 
-#include "sw_uart_wrapper_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
-#include "src/_sw_uart_wrapper_prerequirements_check.h" // should be after {sw_uart_wrapper_config.h,dev_managment_api.h}
+#include "src/_sw_uart_wrapper_prerequirements_check.h"
 
 /*****************  defines  **************/
 

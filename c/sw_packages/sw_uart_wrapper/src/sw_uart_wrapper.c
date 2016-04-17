@@ -12,13 +12,11 @@
 
 /********  includes *********************/
 
-#include "sw_uart_wrapper_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
-#include "uart_api.h"
-#include "_sw_uart_wrapper_prerequirements_check.h" // should be after {sw_uart_wrapper_config.h,dev_managment_api.h}
+#include "_sw_uart_wrapper_prerequirements_check.h"
 
 #include "sw_uart_wrapper_api.h" //place first to test that header file is self-contained
 #include "sw_uart_wrapper.h"
+
 
 
 /********  defines *********************/
@@ -28,10 +26,10 @@
 typedef struct
 {
 	tx_int_size_t len;
-#ifdef SW_UART_WRAPPER_CONFIG_USE_MALLOC
+#ifdef CONFIG_SW_UART_WRAPPER_USE_MALLOC
    uint8_t *pData;
 #else
-   uint8_t pData[SW_UART_WRAPPER_CONFIG_MAX_TX_BUFFER_SIZE];
+   uint8_t pData[CONFIG_SW_UART_WRAPPER_MAX_TX_BUFFER_SIZE];
 #endif
 } xMessage_t;
 
@@ -52,9 +50,9 @@ typedef void  (*delay_func_t)(uint32_t mSec);
 
 
 /***********   local variables    **************/
-#if SW_UART_WRAPPER_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
+#if CONFIG_SW_UART_WRAPPER_MAX_NUM_OF_DYNAMIC_INSTANCES>0
 
-	static SW_UART_WRAPPER_Instance_t SW_UART_WRAPPER_InstanceParams[SW_UART_WRAPPER_CONFIG_NUM_OF_DYNAMIC_INSTANCES] = { {0} };
+	static SW_UART_WRAPPER_Instance_t SW_UART_WRAPPER_InstanceParams[CONFIG_SW_UART_WRAPPER_MAX_NUM_OF_DYNAMIC_INSTANCES] = { {0} };
 	static uint16_t usedInstances =0 ;
 
 	static const dev_param_t SW_UART_WRAPPER_Dev_Params[]=
@@ -63,7 +61,7 @@ typedef void  (*delay_func_t)(uint32_t mSec);
 			{IOCTL_SET_SERVER_DEVICE_BY_NAME , IOCTL_VOID , (uint8_t*)SW_UART_WRAPPER_API_SERVER_DEVICE_STR, NOT_FOR_SAVE},
 	};
 
-#endif // for SW_UART_WRAPPER_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
+#endif // for CONFIG_SW_UART_WRAPPER_MAX_NUM_OF_DYNAMIC_INSTANCES>0
 
 #define 	TRANSMIT_IN_PROGRESS	0
 #define 	TRANSMIT_DONE			1
@@ -120,7 +118,7 @@ inline uint8_t SW_UART_WRAPPER_TX_Done(SW_UART_WRAPPER_Instance_t *pInstance,tx_
 /*---------------------------------------------------------------------------------------------------------*/
 inline uint8_t SW_UART_WRAPPER_Data_Received(SW_UART_WRAPPER_Instance_t *pInstance,uint8_t *rcvdData,rx_int_size_t rcvdDataLen)
 {
-#if  SW_UART_WRAPPER_CONFIG_MAX_RX_BUFFER_SIZE>0
+#ifdef  CONFIG_SW_UART_WRAPPER_ENABLE_RX
     uint8_t *rx_buff;
     rx_int_size_t WritePos,ReadPos;
     rx_int_size_t copy_len;
@@ -260,14 +258,14 @@ size_t sw_uart_wrapper_pwrite(const void *aHandle ,const uint8_t *apData , size_
 		os_queue_t xQueue = INSTANCE(aHandle)->xQueue;
 
 		curr_transmit_len = dataLen;
-		if ( SW_UART_WRAPPER_CONFIG_MAX_TX_BUFFER_SIZE < curr_transmit_len )
+		if ( CONFIG_SW_UART_WRAPPER_MAX_TX_BUFFER_SIZE < curr_transmit_len )
 		{
-			curr_transmit_len=SW_UART_WRAPPER_CONFIG_MAX_TX_BUFFER_SIZE;
+			curr_transmit_len=CONFIG_SW_UART_WRAPPER_MAX_TX_BUFFER_SIZE;
 		}
 
 
 
-#ifdef SW_UART_WRAPPER_CONFIG_USE_MALLOC
+#ifdef CONFIG_SW_UART_WRAPPER_USE_MALLOC
 			xMessage.pData=(uint8_t*)malloc(curr_transmit_len * sizeof(uint8_t));
 #endif
 
@@ -284,7 +282,7 @@ size_t sw_uart_wrapper_pwrite(const void *aHandle ,const uint8_t *apData , size_
 
 			if(OS_QUEUE_SEND_SUCCESS != os_queue_send_infinite_wait( xQueue, ( void * ) &xMessage ))
 			{
-#ifdef SW_UART_WRAPPER_CONFIG_USE_MALLOC
+#ifdef CONFIG_SW_UART_WRAPPER_USE_MALLOC
 				free(pSendData);
 #endif
 				return 0;
@@ -329,7 +327,7 @@ static void SW_UART_WRAPPER_Send_Task( void *aHandle )
 	xTX_WaitQueue = os_create_queue( 1 , sizeof(uint8_t ) );
 	INSTANCE(aHandle)->xTX_WaitQueue = xTX_WaitQueue ;
 
-	xQueue = os_create_queue( SW_UART_WRAPPER_CONFIG_MAX_QUEUE_LEN , sizeof(xMessage_t ) );
+	xQueue = os_create_queue( CONFIG_SW_UART_WRAPPER_MAX_QUEUE_LEN , sizeof(xMessage_t ) );
 
 	INSTANCE(aHandle)->xQueue = xQueue ;
 
@@ -342,26 +340,13 @@ static void SW_UART_WRAPPER_Send_Task( void *aHandle )
 			pData = xRxMessage.pData;
 			sw_uart_send_and_wait_for_end(INSTANCE(aHandle),pData,xRxMessage.len,1);
 
-#ifdef SW_UART_WRAPPER_CONFIG_USE_MALLOC
+#ifdef CONFIG_SW_UART_WRAPPER_USE_MALLOC
 			free( pData );
 #endif
 		}
 
+		os_stack_test();
 
-#if ((1==INCLUDE_uxTaskGetStackHighWaterMark ) && (1==CONFIG_FREE_RTOS))
-		{
-			static  size_t stackLeft,minStackLeft=0xffffffff;
-
-			stackLeft = uxTaskGetStackHighWaterMark( NULL );
-			if(minStackLeft > stackLeft)
-			{
-				minStackLeft = stackLeft;
-				// !!!! DONT USE PRINTF_DBG . IT CAN CAUSE RECURCIVE LOCK !!
-				// COMMENT THIS LINE AS SOON AS POSSIBLE
-				PRINTF_DBG("%s   stack left = %d  \r\n" , __FUNCTION__   ,minStackLeft);
-			}
-		}
-#endif
 	}
 
 }
@@ -381,14 +366,14 @@ static void SW_UART_WRAPPER_Send_Task( void *aHandle )
 uint8_t sw_uart_wrapper_ioctl(void * const aHandle ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
 {
 	rx_int_size_t WritePos,ReadPos;
-#if  SW_UART_WRAPPER_CONFIG_MAX_RX_BUFFER_SIZE>0
+#ifdef  CONFIG_SW_UART_WRAPPER_ENABLE_RX
 	WritePos=INSTANCE(aHandle)->WritePos;
 	ReadPos=INSTANCE(aHandle)->ReadPos;
 #endif
 
 	switch(aIoctl_num)
 	{
-#if SW_UART_WRAPPER_CONFIG_NUM_OF_DYNAMIC_INSTANCES > 0
+#if CONFIG_SW_UART_WRAPPER_MAX_NUM_OF_DYNAMIC_INSTANCES > 0
 		case IOCTL_GET_PARAMS_ARRAY_FUNC :
 			*(const dev_param_t**)aIoctl_param1  = SW_UART_WRAPPER_Dev_Params;
 			*(uint8_t*)aIoctl_param2 = sizeof(SW_UART_WRAPPER_Dev_Params)/sizeof(dev_param_t); //size
@@ -400,7 +385,7 @@ uint8_t sw_uart_wrapper_ioctl(void * const aHandle ,const uint8_t aIoctl_num , v
 				DEV_IOCTL(INSTANCE(aHandle)->server_dev,IOCTL_SET_ISR_CALLBACK_DEV, (void*)INSTANCE(aHandle)->this_dev);
 			}
 			break;
- #if  SW_UART_WRAPPER_CONFIG_MAX_RX_BUFFER_SIZE>0
+#ifdef CONFIG_SW_UART_WRAPPER_ENABLE_RX
 		case IOCTL_SW_UART_WRAPPER_SET_BUFF_SIZE :
 			INSTANCE(aHandle)->rx_buff_size = atoi((char*)aIoctl_param1);
 			INSTANCE(aHandle)->rx_buff = (uint8_t*)malloc(INSTANCE(aHandle)->rx_buff_size);
@@ -408,10 +393,10 @@ uint8_t sw_uart_wrapper_ioctl(void * const aHandle ,const uint8_t aIoctl_num , v
 		case IOCTL_SET_ISR_CALLBACK_DEV :
 			INSTANCE(aHandle)->client_dev = (pdev_descriptor)aIoctl_param1;
 			break;
- #endif			//for SW_UART_WRAPPER_CONFIG_MAX_RX_BUFFER_SIZE>0
-#endif // for SW_UART_WRAPPER_CONFIG_NUM_OF_DYNAMIC_INSTANCES > 0
+#endif			//for CONFIG_SW_UART_WRAPPER_MAX_RX_BUFFER_SIZE>0
+#endif // for CONFIG_SW_UART_WRAPPER_MAX_NUM_OF_DYNAMIC_INSTANCES > 0
 
-#if  SW_UART_WRAPPER_CONFIG_MAX_RX_BUFFER_SIZE>0
+#ifdef CONFIG_SW_UART_WRAPPER_ENABLE_RX
 		case IOCTL_GET_AND_LOCK_DATA_BUFFER :
 			INSTANCE(aHandle)->isDataInUse=1; // should be modified first
 
@@ -433,7 +418,7 @@ uint8_t sw_uart_wrapper_ioctl(void * const aHandle ,const uint8_t aIoctl_num , v
 			INSTANCE(aHandle)->isDataInUse= 0 ; // should be modified last
 
 			break;
-#endif // for SW_UART_WRAPPER_CONFIG_MAX_RX_BUFFER_SIZE>0
+#endif // for CONFIG_SW_UART_WRAPPER_MAX_RX_BUFFER_SIZE>0
 
 		case IOCTL_SW_UART_WRAPPER_RESET :
 			DEV_IOCTL_0_PARAMS(INSTANCE(aHandle)->server_dev,IOCTL_UART_DISABLE_TX);
@@ -445,7 +430,7 @@ uint8_t sw_uart_wrapper_ioctl(void * const aHandle ,const uint8_t aIoctl_num , v
 
 		case IOCTL_DEVICE_START :
 			os_create_task("sw_uart_wrapper_task",SW_UART_WRAPPER_Send_Task,
-					aHandle , SW_UART_WRAPPER_CONFIG_TASK_STACK_SIZE , SW_UART_WRAPPER_CONFIG_TASK_PRIORITY);
+					aHandle , SW_UART_WRAPPER_TASK_STACK_SIZE , SW_UART_WRAPPER_TASK_PRIORITY);
 
 			break;
 
@@ -459,7 +444,7 @@ uint8_t sw_uart_wrapper_ioctl(void * const aHandle ,const uint8_t aIoctl_num , v
 
 
 
-#if SW_UART_WRAPPER_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
+#if CONFIG_SW_UART_WRAPPER_MAX_NUM_OF_DYNAMIC_INSTANCES>0
 
 /*---------------------------------------------------------------------------------------------------------*/
 /* Function:        SW_UART_WRAPPER_API_Init_Dev_Descriptor                                                                          */
@@ -476,7 +461,7 @@ uint8_t  sw_uart_wrapper_api_init_dev_descriptor(pdev_descriptor aDevDescriptor)
 {
 	SW_UART_WRAPPER_Instance_t *pInstance;
 	if(NULL == aDevDescriptor) return 1;
-	if (usedInstances >= SW_UART_WRAPPER_CONFIG_NUM_OF_DYNAMIC_INSTANCES) return 1;
+	if (usedInstances >= CONFIG_SW_UART_WRAPPER_MAX_NUM_OF_DYNAMIC_INSTANCES) return 1;
 
 	pInstance = &SW_UART_WRAPPER_InstanceParams[usedInstances ];
 	pInstance->this_dev = aDevDescriptor;
@@ -492,6 +477,6 @@ uint8_t  sw_uart_wrapper_api_init_dev_descriptor(pdev_descriptor aDevDescriptor)
 	return 0 ;
 
 }
-#endif  // for SW_UART_WRAPPER_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
+#endif  // for CONFIG_SW_UART_WRAPPER_MAX_NUM_OF_DYNAMIC_INSTANCES>0
 
 

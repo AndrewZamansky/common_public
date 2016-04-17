@@ -9,10 +9,10 @@
  */
 
 
-#include "_project_typedefs.h"
-#include "_project_defines.h"
-#include "_project_func_declarations.h"
+#include "_project.h"
 
+#define DEBUG
+#include "PRINTF_api.h"
 #include "os_wrapper.h"
 
 BaseType_t xDummyHigherPriorityTaskWoken ;
@@ -37,3 +37,19 @@ uint8_t os_queue_send_immediate(os_queue_t queue ,  void * pData  )
 	return retVal;
 
 }
+
+#ifdef CONFIG_TEST_TASK_STACK
+
+void os_stack_test_free_rtos(uint32_t *p_lowest_stack ,const char *task_name )
+{
+	uint32_t stackLeft;
+
+	stackLeft = uxTaskGetStackHighWaterMark( NULL );
+	if(*p_lowest_stack > stackLeft)
+	{
+		*p_lowest_stack = stackLeft;
+		PRINTF_DBG("%s stack left = %d\r\n" , task_name ,*p_lowest_stack);
+	}
+}
+
+#endif

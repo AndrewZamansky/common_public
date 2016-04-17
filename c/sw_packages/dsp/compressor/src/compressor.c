@@ -12,18 +12,17 @@
 
 /********  includes *********************/
 
-#include "compressor_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
-#include "dsp_managment_api.h" // for device manager defines and typedefs
 #include "_compressor_prerequirements_check.h" // should be after {compressor_config.h,dev_managment_api.h}
 
 #include "compressor_api.h" //place first to test that header file is self-contained
 #include "compressor.h"
-#include "common_dsp_api.h"
 
 #include "math.h"
 
-#ifdef _USE_DSP_
+#include "PRINTF_api.h"
+
+#ifdef PROJECT_USE_DSP
+  #include "cpu_config.h"
   #include "arm_math.h"
 #endif
 
@@ -60,13 +59,7 @@
 
 
 /***********   local variables    **************/
-#if COMPRESSOR_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
 
-	static COMPRESSOR_Instance_t COMPRESSOR_InstanceParams[COMPRESSOR_CONFIG_NUM_OF_DYNAMIC_INSTANCES] = { {0} };
-	static uint16_t usedInstances =0 ;
-
-
-#endif // for COMPRESSOR_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
 
 #if 0
 /*---------------------------------------------------------------------------------------------------------*/
@@ -432,6 +425,26 @@ void compressor_dsp(const void * const aHandle , size_t data_len ,
 
 
 
+/*---------------------------------------------------------------------------------------------------------*/
+/* Function:        compressor_set_buffers                                                                          */
+/*                                                                                                         */
+/* Parameters:                                                                                             */
+/*                                                                                         */
+/*                                                                                                  */
+/* Returns:                                                                                      */
+/* Side effects:                                                                                           */
+/* Description:                                                                                            */
+/*                                                            						 */
+/*---------------------------------------------------------------------------------------------------------*/
+void compressor_set_buffers(COMPRESSOR_Instance_t *pInstance,uint32_t buffer_size)
+{
+	pInstance->look_ahead_length_buffer_Ch1 =
+			(float*)realloc(pInstance->look_ahead_length_buffer_Ch1, buffer_size*sizeof(float));
+	pInstance->look_ahead_length_buffer_Ch2 =
+			(float*)realloc(pInstance->look_ahead_length_buffer_Ch2, buffer_size*sizeof(float));
+
+}
+
 
 /*---------------------------------------------------------------------------------------------------------*/
 /* Function:        compressor_ioctl                                                                          */
@@ -449,27 +462,23 @@ uint8_t compressor_ioctl(void * const aHandle ,const uint8_t aIoctl_num , void *
 	uint32_t look_ahead_length;
 	switch(aIoctl_num)
 	{
-//#if COMPRESSOR_CONFIG_NUM_OF_DYNAMIC_INSTANCES > 0
+//
 //		case IOCTL_GET_PARAMS_ARRAY_FUNC :
 //			*(const dev_param_t**)aIoctl_param1  = COMPRESSOR_Dev_Params;
 //			*(uint8_t*)aIoctl_param2 = sizeof(COMPRESSOR_Dev_Params)/sizeof(dev_param_t); //size
 //			break;
-//#endif // for COMPRESSOR_CONFIG_NUM_OF_DYNAMIC_INSTANCES > 0
-
+//
 
 		case IOCTL_DEVICE_START :
 			switch(INSTANCE(aHandle)->type)
 			{
 				case COMPRESSOR_API_TYPE_LOOKAHEAD:
-					look_ahead_length = COMPRESSOR_CONFIG_CHUNK_SIZE;
-					INSTANCE(aHandle)->look_ahead_length = look_ahead_length;
-					INSTANCE(aHandle)->look_ahead_length_buffer_Ch1 = (float*)malloc(look_ahead_length*sizeof(float));
-					INSTANCE(aHandle)->look_ahead_length_buffer_Ch2 = (float*)malloc(look_ahead_length*sizeof(float));
+					look_ahead_length = INSTANCE(aHandle)->look_ahead_length ;
+					compressor_set_buffers(INSTANCE(aHandle) , look_ahead_length);
 					INSTANCE(aHandle)->release = 64;
 					break ;
 				case COMPRESSOR_API_TYPE_REGULAR:
-					INSTANCE(aHandle)->look_ahead_length_buffer_Ch1 = (float*)malloc(1*sizeof(float));
-					INSTANCE(aHandle)->look_ahead_length_buffer_Ch2 = (float*)malloc(1*sizeof(float));
+					compressor_set_buffers(INSTANCE(aHandle) , 1);
 					break ;
 			}
 
@@ -480,10 +489,7 @@ uint8_t compressor_ioctl(void * const aHandle ,const uint8_t aIoctl_num , void *
 		case IOCTL_COMPRESSOR_SET_LOOK_AHEAD_SIZE :
 			look_ahead_length = (uint32_t)((size_t)aIoctl_param1);
 			INSTANCE(aHandle)->look_ahead_length = look_ahead_length;
-			INSTANCE(aHandle)->look_ahead_length_buffer_Ch1 =
-					(float*)realloc(INSTANCE(aHandle)->look_ahead_length_buffer_Ch1, look_ahead_length*sizeof(float));
-			INSTANCE(aHandle)->look_ahead_length_buffer_Ch2 =
-					(float*)realloc(INSTANCE(aHandle)->look_ahead_length_buffer_Ch2, look_ahead_length*sizeof(float));
+			compressor_set_buffers(INSTANCE(aHandle) , look_ahead_length);
 			break;
 		case IOCTL_COMPRESSOR_SET_RATIO :
 			INSTANCE(aHandle)->reverse_ratio = 1/(*((float*)aIoctl_param1));
@@ -509,10 +515,6 @@ uint8_t compressor_ioctl(void * const aHandle ,const uint8_t aIoctl_num , void *
 
 
 
-
-
-#if COMPRESSOR_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
-
 /*---------------------------------------------------------------------------------------------------------*/
 /* Function:        COMPRESSOR_API_Init_Dev_Descriptor                                                                          */
 /*                                                                                                         */
@@ -527,10 +529,11 @@ uint8_t compressor_ioctl(void * const aHandle ,const uint8_t aIoctl_num , void *
 uint8_t  compressor_api_init_dsp_descriptor(pdsp_descriptor aDspDescriptor)
 {
 	COMPRESSOR_Instance_t *pInstance;
-	if(NULL == aDspDescriptor) return 1;
-	if (usedInstances >= COMPRESSOR_CONFIG_NUM_OF_DYNAMIC_INSTANCES) return 1;
 
-	pInstance = &COMPRESSOR_InstanceParams[usedInstances ];
+	if(NULL == aDspDescriptor) return 1;
+
+	pInstance = (COMPRESSOR_Instance_t *)malloc(sizeof(COMPRESSOR_Instance_t));
+	if(NULL == pInstance) return 1;
 
 	aDspDescriptor->handle = pInstance;
 	aDspDescriptor->ioctl = compressor_ioctl;
@@ -538,11 +541,13 @@ uint8_t  compressor_api_init_dsp_descriptor(pdsp_descriptor aDspDescriptor)
 	pInstance->reverse_ratio = 0;//0.5;
 	pInstance->prev_ratio = 1;
 	pInstance->usePreviousRatio = 1;
-	usedInstances++;
+	pInstance->look_ahead_length_buffer_Ch1 = NULL;
+	pInstance->look_ahead_length_buffer_Ch2 = NULL;
+	pInstance->look_ahead_length = CONFIG_COMPRESSOR_DEFAULT_CHUNK_SIZE;
+	pInstance->release = 64;
 
 	return 0 ;
 
 }
-#endif  // for COMPRESSOR_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
 
 

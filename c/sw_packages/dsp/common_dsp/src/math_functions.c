@@ -12,10 +12,8 @@
 
 /********  includes *********************/
 
-#include "common_dsp_config.h"
-//#include "dev_managment_api.h" // for device manager defines and typedefs
-//#include "dsp_managment_api.h" // for device manager defines and typedefs
-#include "_common_dsp_prerequirements_check.h" // should be after {equalizer_config.h,dev_managment_api.h}
+#include "_project.h"
+#include "_common_dsp_prerequirements_check.h"
 
 
 #include "common_dsp_api.h"

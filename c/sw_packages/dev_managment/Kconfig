@@ -1,0 +1,13 @@
+#
+	
+menu "devices management options"
+
+config MAX_NUM_OF_DYNAMIC_DEVICES
+	int   "maximal number of dynamic devices"
+	default 32
+
+config MAX_DEV_NAME_LEN
+	int   "maximal device name"
+	default 8
+
+endmenu

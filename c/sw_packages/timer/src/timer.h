@@ -11,9 +11,7 @@
 #ifndef _TIMER_H
 #define _TIMER_H
 
-#include "timer_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
-#include "src/_timer_prerequirements_check.h" // should be after {timer_config.h,dev_managment_api.h}
+#include "src/_timer_prerequirements_check.h"
 
 
 /***************   typedefs    *******************/

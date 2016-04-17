@@ -16,6 +16,9 @@
 /***************************/
 /******** test defines *****/
 
+#include "_project.h"
+#include "dev_managment_api.h"
+#include "dsp_managment_api.h"
 
 
 #ifndef DSP_MANAGMENT_CONFIG_NUM_OF_DYNAMIC_INSTANCES
@@ -29,7 +32,7 @@
 
 
 /***************************/
-/*** test type existence ***/
+/*** test type existence (suffix should be unique)***/
 
 typedef uint8_t 					_if_fail_here_then___uint8_t___is_not_defined_in_dsp_managment_config_h;
 typedef uint16_t		 			_if_fail_here_then___uint16_t___is_not_defined_in_dsp_managment_config_h;
@@ -44,7 +47,7 @@ typedef ioctl_get_data_buffer_t    	_if_fail_here_then___ioctl_get_data_buffer_t
 
 
 /**********************************/
-/*** test variable/function declaration existence ***/
+/*** test variable/function declaration existence (suffix should be unique)***/
 
 enum
 {
@@ -56,17 +59,10 @@ enum
 #endif
 
 
-
-
-#ifdef DSP_MANAGMENT_CONFIG_USE_MALLOC
 	memcpy___not_declared_in_dsp_managment_config_h=sizeof((int)memcpy),
 	malloc___not_declared_in_dsp_managment_config_h=sizeof((int)malloc),
 	free___not_declared_in_dsp_managment_config_h=sizeof((int)free),
-#endif
 
-#ifndef busy_delay
-	busy_delay___declared_in_dsp_managment_config_h=sizeof((int)busy_delay)
-#endif
 
 
 };

@@ -44,7 +44,6 @@
 #include "_project_func_declarations.h"
 
 #include "dev_managment_api.h" // for device manager defines and typedefs
-#include "PRINTF_api.h"
 
 #include <command.h>
 #include "shell_api.h"

@@ -2,9 +2,7 @@
 #ifndef _timer_static_dev_macros_h_
 #define _timer_static_dev_macros_h_
 
-#include "timer_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
-#include "src/_timer_prerequirements_check.h" // should be after {timer_config.h,dev_managment_api.h}
+#include "src/_timer_prerequirements_check.h"
 
 extern uint8_t timer_ioctl( void * const aHandle ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2);
 

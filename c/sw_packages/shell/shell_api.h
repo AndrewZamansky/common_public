@@ -2,9 +2,7 @@
 #ifndef _Shell_API_H_
 #define _Shell_API_H_
 
-#include "shell_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
-#include "src/_shell_prerequirements_check.h" // should be after {shell_config.h,dev_managment_api.h}
+#include "src/_shell_prerequirements_check.h"
 
 /*****************  defines  **************/
 
@@ -14,6 +12,7 @@
 
 extern pdev_descriptor_const gCurrReplyDev;
 
+#include "PRINTF_api.h"
 #if !defined(__CSMC__)
 #define SHELL_REPLY_PRINTF(...) 	PRINTF_REPLY(gCurrReplyDev , __VA_ARGS__)
 #endif

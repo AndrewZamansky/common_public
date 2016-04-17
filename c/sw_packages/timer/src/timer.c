@@ -11,9 +11,7 @@
 
 
 /********  includes *********************/
-#include "timer_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
-#include "src/_timer_prerequirements_check.h" // should be after {timer_config.h,dev_managment_api.h}
+#include "src/_timer_prerequirements_check.h"
 
 #include "timer.h"
 
@@ -58,7 +56,6 @@
 uint8_t timer_ioctl( void * const aHandle ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
 {
 	uint64_t curr_timer_val;
-//	volatile static uint64_t test;
 	switch(aIoctl_num)
 	{
 		case IOCTL_GET_PARAMS_ARRAY_FUNC :
@@ -79,17 +76,12 @@ uint8_t timer_ioctl( void * const aHandle ,const uint8_t aIoctl_num , void * aIo
 			DEV_IOCTL(INSTANCE(aHandle)->hw_timer,
 					IOCTL_GET_CURRENT_TIMER_VALUE, (void*)&curr_timer_val);
 			INSTANCE(aHandle)->timer_value_on_start = curr_timer_val;
-//			test = INSTANCE(aHandle)->timer_value_on_start;
 			INSTANCE(aHandle)->countdown_value = curr_timer_val + *(uint64_t*)aIoctl_param1 ;
-//			test = INSTANCE(aHandle)->countdown_value;
-//			PRINTF_DBG( "timer countdown_value =%d\r\n",(uint32_t)INSTANCE(aHandle)->countdown_value);
 			break;
 
 		case TIMER_API_CHECK_IF_COUNTDOWN_ELAPSED :
 			DEV_IOCTL(INSTANCE(aHandle)->hw_timer,
 					IOCTL_GET_CURRENT_TIMER_VALUE, (void*)&curr_timer_val);
-//			PRINTF_DBG( "timer = %d\r\n",(uint32_t)curr_timer_val);
-//			test = INSTANCE(aHandle)->countdown_value;
 			if(curr_timer_val > INSTANCE(aHandle)->countdown_value)
 			{
 				*(uint8_t*)aIoctl_param1 = 1;

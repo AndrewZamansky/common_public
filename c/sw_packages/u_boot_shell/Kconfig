@@ -1,7 +1,14 @@
-menu "common uboot commands"
+
+menu "uboot shell options"
+
+config SYS_MAXARGS
+	int   "maximal number of arguments"
+	default 8
+
+menu "common uboot shell commands"
 
 config UBOOT_CMD_GET_VERSION
-	bool   "get veraion"
+	bool   "get version"
 	depends on INCLUDE_VERSION_MENAGMENT
 	default y
 
@@ -43,4 +50,6 @@ config UBOOT_CMD_SPI_FORMAT
 	depends on INCLUDE_SPI_FLASH_PARTITION_MANAGER
 	default n		
 							
+endmenu
+
 endmenu

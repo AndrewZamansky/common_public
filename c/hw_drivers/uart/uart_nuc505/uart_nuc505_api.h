@@ -2,10 +2,7 @@
 #ifndef _UART_NUC505_API_H_
 #define _UART_NUC505_API_H_
 
-#include "uart_nuc505_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
-#include "uart_api.h"
-#include "src/_uart_nuc505_prerequirements_check.h" // should be after {uart_nuc505_config.h,dev_managment_api.h}
+#include "src/_uart_nuc505_prerequirements_check.h"
 
 /*****************  defines  **************/
 

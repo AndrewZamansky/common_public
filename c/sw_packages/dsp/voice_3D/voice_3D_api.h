@@ -2,10 +2,7 @@
 #ifndef _voice_3D_API_H_
 #define _voice_3D_API_H_
 
-#include "voice_3D_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
-#include "dsp_managment_api.h" // for device manager defines and typedefs
-#include "src/_voice_3D_prerequirements_check.h" // should be after {voice_3D_config.h,dev_managment_api.h}
+#include "src/_voice_3D_prerequirements_check.h"
 
 #include "common_dsp_api.h"
 

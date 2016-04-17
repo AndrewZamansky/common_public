@@ -15,6 +15,7 @@
 #include "_project_defines.h"
 #include "_project_func_declarations.h"
 
+
 #include "FreeRTOS.h"
 #include "queue.h"
 #include "task.h"
@@ -30,7 +31,7 @@ extern BaseType_t xDummyHigherPriorityTaskWoken ;
 
 
 /*define maximal priority for interrupt that can call OS API */
-#define OS_MAX_INTERRUPT_PRIORITY_FOR_API_CALLS 	(configKERNEL_INTERRUPT_PRIORITY>>4) // 4 for priority bits . should be changed to generic model !!
+#define OS_MAX_INTERRUPT_PRIORITY_FOR_API_CALLS 	(configMAX_SYSCALL_INTERRUPT_PRIORITY>>4) // 4 for priority bits . should be changed to generic model !!
 
 
 /**	*********  mutex type definition *****    **/
@@ -163,6 +164,24 @@ void *os_create_task_FreeRTOS(char *taskName , void (*taskFunction)(void *apPara
 #define os_delay_ms   vTaskDelay
 
 
+/********* stack debug ********/
+#ifdef CONFIG_TEST_TASK_STACK
+
+extern void os_stack_test_free_rtos(uint32_t *p_lowest_stack , const char *task_name );
+#define os_stack_test()						\
+{											\
+	static uint32_t lowest_stack = 0xffffffff;			\
+	os_stack_test_free_rtos(&lowest_stack , __FUNCTION__);	\
+}
+
+#define os_low_stack_trap(low_limit) if(low_limit > uxTaskGetStackHighWaterMark( NULL ))	while(1);
+
+#else
+
+#define os_stack_test()
+#define os_low_stack_trap(low_limit)
+
+#endif
 
 #define OS_WRAPPER_INCLUDED
 

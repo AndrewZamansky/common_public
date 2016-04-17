@@ -1,0 +1,19 @@
+#
+	
+menu "nuc505 i2s options"
+
+config  I2S_NUC505_USE_EXTERNAL_CODEC
+	bool   "use external codec"
+	default 0
+
+config  I2S_NUC505_USE_MASTER_MODE
+	bool   "use external codec"
+	depends on I2S_NUC505_USE_EXTERNAL_CODEC
+	default 1
+
+config INTERNAL_I2S_SPEED_CRITICAL
+	bool   "internal i2s is speed critical"
+	depends on INCLUDE_INTERNAL_I2S
+	default y
+	
+endmenu

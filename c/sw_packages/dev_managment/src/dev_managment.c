@@ -7,12 +7,11 @@
 
 
 /***************   includes    *******************/
+
+
+#include "_dev_managment_prerequirements_check.h" // should be after dev_managment_config.h
 #include "dev_managment_api.h" //place first to test that header file is self-contained
 
-#include "dev_managment_config.h"
-#include "_dev_managment_prerequirements_check.h" // should be after dev_managment_config.h
-
-#define MAX_NUM_OF_STATIC_DEVICES	255
 
 
 /***************   defines    *******************/
@@ -37,8 +36,8 @@ const dev_descriptor_t dummy_dev=
 		};
 
 /***********   local variables    **************/
-#if DEV_CONFIG_MAX_NUM_OF_DYNAMIC_DEVICES > 0
-	dev_descriptor_t  dev_descriptors[DEV_CONFIG_MAX_NUM_OF_DYNAMIC_DEVICES];
+#if CONFIG_MAX_NUM_OF_DYNAMIC_DEVICES > 0
+	dev_descriptor_t  dev_descriptors[CONFIG_MAX_NUM_OF_DYNAMIC_DEVICES];
 #endif
 
 /*
@@ -91,7 +90,7 @@ uint8_t DEV_API_dummy_callback_func(void * const aHandle ,
  */
 pdev_descriptor DEV_API_open_device(const uint8_t *device_name)
 {
-#if (DEV_CONFIG_MAX_NUM_OF_DYNAMIC_DEVICES > 256)
+#if (CONFIG_MAX_NUM_OF_DYNAMIC_DEVICES > 256)
 	uint32_t i;
 #else
 	uint8_t i;
@@ -111,8 +110,8 @@ pdev_descriptor DEV_API_open_device(const uint8_t *device_name)
 		}
 	}
 
-#if DEV_CONFIG_MAX_NUM_OF_DYNAMIC_DEVICES > 0
-	for(i=0 ; i<DEV_CONFIG_MAX_NUM_OF_DYNAMIC_DEVICES ; i++)
+#if CONFIG_MAX_NUM_OF_DYNAMIC_DEVICES > 0
+	for(i=0 ; i<CONFIG_MAX_NUM_OF_DYNAMIC_DEVICES ; i++)
 	{
 		if (0 == strcmp( (char*)dev_descriptors[i].name , (char*)device_name ) )
 		{
@@ -123,7 +122,7 @@ pdev_descriptor DEV_API_open_device(const uint8_t *device_name)
 	return NULL;
 }
 
-#if DEV_CONFIG_MAX_NUM_OF_DYNAMIC_DEVICES > 0
+#if CONFIG_MAX_NUM_OF_DYNAMIC_DEVICES > 0
 /*
  * function : DEV_API_add_device()
  *
@@ -134,14 +133,14 @@ pdev_descriptor DEV_API_add_device(const uint8_t *device_name_str,init_dev_descr
 	uint32_t i;
 	pdev_descriptor dev;
 
-	for(i=0 ; i<DEV_CONFIG_MAX_NUM_OF_DYNAMIC_DEVICES ; i++)
+	for(i=0 ; i<CONFIG_MAX_NUM_OF_DYNAMIC_DEVICES ; i++)
 	{
 		dev=&dev_descriptors[i];
 		if(0 == dev->name[0])
 		{
 			if  (NULL != device_name_str)
 			{
-				if((DEV_CONFIG_MAX_DEV_NAME_LEN+1) <= strnlen((char*)device_name_str,(DEV_CONFIG_MAX_DEV_NAME_LEN+1)))
+				if((CONFIG_MAX_DEV_NAME_LEN+1) <= strnlen((char*)device_name_str,(CONFIG_MAX_DEV_NAME_LEN+1)))
 				{
 					return NULL;
 				}
@@ -149,7 +148,7 @@ pdev_descriptor DEV_API_add_device(const uint8_t *device_name_str,init_dev_descr
 			}
 			else
 			{
-				snprintf((char*)dev->name, (DEV_CONFIG_MAX_DEV_NAME_LEN+1) , "devX%u",(unsigned int)i);
+				snprintf((char*)dev->name, (CONFIG_MAX_DEV_NAME_LEN+1) , "devX%u",(unsigned int)i);
 			}
 			dev->handle=NULL;
 			dev->ioctl = DEV_API_dummy_ioctl_func;
@@ -203,7 +202,7 @@ uint8_t get_dev_ioctl(uint8_t *dev_name_str, pdev_descriptor *dev_descriptor,
 }
 #endif
 
-#if DEV_CONFIG_MAX_NUM_OF_DYNAMIC_DEVICES > 0
+#if CONFIG_MAX_NUM_OF_DYNAMIC_DEVICES > 0
 /*
  * function : DevManagment_API_GetAllDevsArray()
  *

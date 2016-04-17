@@ -16,6 +16,7 @@
 #include "_project_func_declarations.h"
 
 #include "dev_managment_api.h" // for device manager defines and typedefs
+#define DEBUG
 #include "PRINTF_api.h"
 
 #include "ESP8266_api.h"
@@ -867,18 +868,8 @@ static void ESP8266_Task( void *pvParameters )
 			}
 #endif
 		}// end of while(data_left_in_buffer)
-#if (1==INCLUDE_uxTaskGetStackHighWaterMark )
-		{
-			static  size_t stackLeft,minStackLeft=0xffffffff;
 
-			stackLeft = uxTaskGetStackHighWaterMark( NULL );
-			if(minStackLeft > stackLeft)
-			{
-				minStackLeft = stackLeft;
-				PRINTF_DBG("%s stack left = %d\r\n" , __FUNCTION__ ,minStackLeft);
-			}
-		}
-#endif
+		os_stack_test();
 
 	}
 

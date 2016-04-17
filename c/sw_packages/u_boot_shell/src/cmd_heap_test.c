@@ -39,9 +39,6 @@
 /*
  *  cmd_get_serial.c
  */
-#include "printf_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
-#include "src/_printf_prerequirements_check.h" // should be after {printf_config.h,dev_managment_api.h}
 
 #include <command.h>
 #include "shell_api.h"
@@ -64,7 +61,7 @@ extern unsigned char *global_heap;
 int do_heap_test(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 
-	PRINTF_DBG("heap left : 0x%x\n",((unsigned char *)&__HEAP_END) - global_heap);
+	SHELL_REPLY_PRINTF("heap left : 0x%x\n",((unsigned char *)&__HEAP_END) - global_heap);
 
 
 	return 0;

@@ -3,7 +3,6 @@
 #define _dev_managment_api_h_
 
 
-#include "dev_managment_config.h"
 #include "src/_dev_managment_prerequirements_check.h"// should be after dev_managment_config.h
 
 #define NOT_FOR_SAVE 	0
@@ -92,7 +91,7 @@ typedef uint8_t (*dev_callback_1_params_func_t)(void * const aHandle , const uin
 
 typedef struct _dev_descriptor_t
 {
-	uint8_t 			name[DEV_CONFIG_MAX_DEV_NAME_LEN+1];// +1 for null char
+	uint8_t 			name[CONFIG_MAX_DEV_NAME_LEN+1];// +1 for null char
 	void*    			handle;
 	dev_ioctl_func_t  	ioctl;
 	dev_pwrite_func_t  	pwrite;

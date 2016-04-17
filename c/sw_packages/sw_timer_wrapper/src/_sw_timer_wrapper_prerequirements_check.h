@@ -29,7 +29,7 @@
 
 
 /***************************/
-/*** test type existence ***/
+/*** test type existence (suffix should be unique)***/
 
 typedef uint8_t 					_if_fail_here_then___uint8_t___is_not_defined_in_sw_timer_wrapper_config_h;
 typedef uint16_t		 			_if_fail_here_then___uint16_t___is_not_defined_in_sw_timer_wrapper_config_h;
@@ -43,7 +43,7 @@ typedef dev_param_t   				_if_fail_here_then___dev_param_t___is_not_defined_in_s
 
 
 /**********************************/
-/*** test variable/function declaration existence ***/
+/*** test variable/function declaration existence (suffix should be unique)***/
 
 enum
 {
@@ -54,14 +54,9 @@ enum
 	DEV_CALLBACK_1_PARAMS_not_declared_in_sw_timer_wrapper_config_h=sizeof((int)DEV_CALLBACK_1_PARAMS),
 #endif
 
-
-
-#if ((1==INCLUDE_uxTaskGetStackHighWaterMark ) && (1==CONFIG_FREE_RTOS))
-	#ifndef PRINTF_DBG
-		PRINTF_DBG_not_declared_in_sw_timer_wrapper_config_h=sizeof((int)PRINTF_DBG),
-	#endif
+#ifndef os_stack_test
+	os_stack_test___not_declared_in_shell_config_h=sizeof((int)os_stack_test),
 #endif
-
 
 #ifndef busy_delay
 	busy_delay___declared_in_sw_timer_wrapper_config_h=sizeof((int)busy_delay)

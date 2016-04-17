@@ -11,9 +11,7 @@
 #ifndef _SHELL_H
 #define _SHELL_H
 
-#include "shell_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
-#include "src/_shell_prerequirements_check.h" // should be after {shell_config.h,dev_managment_api.h}
+#include "src/_shell_prerequirements_check.h"
 
 
 /***************   typedefs    *******************/

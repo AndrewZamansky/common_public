@@ -12,10 +12,7 @@
 
 /********  includes *********************/
 
-#include "I2S_mixer_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
-#include "dsp_managment_api.h" // for device manager defines and typedefs
-#include "_I2S_mixer_prerequirements_check.h" // should be after {I2S_mixer_config.h,dev_managment_api.h}
+#include "_I2S_mixer_prerequirements_check.h"
 
 #include "I2S_mixer_api.h" //place first to test that header file is self-contained
 #include "I2S_mixer.h"
@@ -23,11 +20,11 @@
 
 
 /********  defines *********************/
-#if (2==I2S_MIXER_CONFIG_NUM_OF_BYTES_PER_AUDIO_WORD)
+#if (2==NUM_OF_BYTES_PER_AUDIO_WORD)
 	#define	FLOAT_NORMALIZER	0x7fff
 	typedef int16_t	buffer_type_t	;
 #endif
-#if (4==I2S_MIXER_CONFIG_NUM_OF_BYTES_PER_AUDIO_WORD)
+#if (4==NUM_OF_BYTES_PER_AUDIO_WORD)
 	#define	FLOAT_NORMALIZER	0x7fffffff
 	typedef int32_t	buffer_type_t	;
 #endif
@@ -48,14 +45,6 @@
 
 
 /***********   local variables    **************/
-#if I2S_MIXER_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
-
-	static I2S_MIXER_Instance_t I2S_MIXER_InstanceParams[I2S_MIXER_CONFIG_NUM_OF_DYNAMIC_INSTANCES] = { {0} };
-	static uint16_t usedInstances =0 ;
-
-
-#endif // for I2S_MIXER_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
-
 
 
 /*---------------------------------------------------------------------------------------------------------*/
@@ -138,10 +127,6 @@ uint8_t I2S_mixer_ioctl(void * const aHandle ,const uint8_t aIoctl_num , void * 
 
 
 
-
-
-#if I2S_MIXER_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
-
 /*---------------------------------------------------------------------------------------------------------*/
 /* Function:        I2S_MIXER_API_Init_Dev_Descriptor                                                                          */
 /*                                                                                                         */
@@ -156,21 +141,16 @@ uint8_t I2S_mixer_ioctl(void * const aHandle ,const uint8_t aIoctl_num , void * 
 uint8_t  I2S_mixer_api_init_dsp_descriptor(pdsp_descriptor aDspDescriptor)
 {
 	I2S_MIXER_Instance_t *pInstance;
-	if(NULL == aDspDescriptor) return 1;
-	if (usedInstances >= I2S_MIXER_CONFIG_NUM_OF_DYNAMIC_INSTANCES) return 1;
 
-	pInstance = &I2S_MIXER_InstanceParams[usedInstances ];
+	if(NULL == aDspDescriptor) return 1;
+
+	pInstance = (I2S_MIXER_Instance_t *)malloc(sizeof(I2S_MIXER_Instance_t));
+	if(NULL == pInstance) return 1;
 
 	aDspDescriptor->handle = pInstance;
 	aDspDescriptor->ioctl = I2S_mixer_ioctl;
 	aDspDescriptor->dsp_func = I2S_mixer_dsp;
 
-
-	usedInstances++;
-
 	return 0 ;
 
 }
-#endif  // for I2S_MIXER_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
-
-

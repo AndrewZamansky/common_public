@@ -11,9 +11,7 @@
 
 
 /********  includes *********************/
-#include "heartbeat_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
-#include "src/_heartbeat_prerequirements_check.h" // should be after {heartbeat_config.h,dev_managment_api.h}
+#include "src/_heartbeat_prerequirements_check.h"
 
 #include "heartbeat_api.h"
 
@@ -42,10 +40,6 @@ volatile uint32_t callibrationDone = 0;
 //uint32_t idleCpuUsageCounter;
 static uint32_t cpu_usage_measure_mPercents=0;
 static int16_t one_sec_countdown=1000;
-
-#if HEARTBEAT_CONFIG_USE_AS_DYNAMIC_INSTANCE > 0
-	heartbeat_instance_t heartbeat_instance;
-#endif
 
 
 #define SKIP_MEASURES	3
@@ -110,11 +104,9 @@ uint8_t heartbeat_ioctl( void * const aHandle ,const uint8_t aIoctl_num , void *
 
 			break;
 
-#if HEARTBEAT_CONFIG_USE_AS_DYNAMIC_INSTANCE > 0
 		case HEARTBEAT_API_SET_CALLBACK_FUNC_IOCTL :
 			INSTANCE(aHandle)->heartbeat_callback =  (heartbeat_callback_func_t)aIoctl_param1;
 			break;
-#endif
 
 		case HEARTBEAT_API_EACH_1mS_CALL:
 			restart_counter++;
@@ -139,24 +131,7 @@ uint8_t heartbeat_ioctl( void * const aHandle ,const uint8_t aIoctl_num , void *
 						cpuUsageCounter=0;
 						one_sec_countdown=1000;
 
-#if (1==INCLUDE_uxTaskGetStackHighWaterMark )
-						{
-							static  uint32_t stackLeft,minStackLeft=0xffffffff;
-
-							stackLeft = uxTaskGetStackHighWaterMark( NULL );
-							if(minStackLeft > stackLeft)
-							{
-								minStackLeft = stackLeft;
-								// !!!! DONT USE PRINTF_DBG . IT CAN PUT IDLE TASK TO WAIT STATE . THIS IS WRONG !!
-								// USING TRAP INSTEED
-								//PRINTF_DBG("%s stack left = %d\r\n" , __FUNCTION__ ,minStackLeft);
-								if (32 > minStackLeft)
-								{
-									while(1);
-								}
-							}
-						}
-#endif
+						os_low_stack_trap(32);
 					}
 
 
@@ -184,7 +159,6 @@ uint8_t heartbeat_ioctl( void * const aHandle ,const uint8_t aIoctl_num , void *
 	return 0;
 }
 
-#if HEARTBEAT_CONFIG_USE_AS_DYNAMIC_INSTANCE > 0
 
 /*---------------------------------------------------------------------------------------------------------*/
 /* Function:        heartbeat_API_Init_Dev_Descriptor                                                                          */
@@ -208,5 +182,4 @@ uint8_t  heartbeat_api_init_dev_descriptor(pdev_descriptor aDevDescriptor)
 	return 0;
 }
 
-#endif
 

@@ -1,0 +1,13 @@
+#
+	
+menu "shell options"
+
+config  SHELL_MAX_NUM_OF_DYNAMIC_INSTANCES
+	int   "maximal number of dynamic instances"
+	default 1
+	
+config  SHELL_MAX_QUEUE_LEN
+	int   "internal queue length"
+	default 3
+	
+endmenu

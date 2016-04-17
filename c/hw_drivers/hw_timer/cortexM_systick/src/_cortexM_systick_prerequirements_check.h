@@ -12,6 +12,9 @@
 #define _cortexM_systick_prerequirements_check_H
 
 
+#include "_project.h"
+#include "dev_managment_api.h"
+#include "hw_timer_api.h"
 
 /***************************/
 /******** test defines *****/
@@ -25,7 +28,7 @@
 
 
 /***************************/
-/*** test type existence ***/
+/*** test type existence (suffix should be unique)***/
 
 typedef uint8_t 					_if_fail_here_then___uint8_t___is_not_defined_in_cortexM_systick_config_h;
 typedef uint16_t		 			_if_fail_here_then___uint16_t___is_not_defined_in_cortexM_systick_config_h;
@@ -38,7 +41,7 @@ typedef dev_param_t   				_if_fail_here_then___dev_param_t___is_not_defined_in_c
 
 
 /**********************************/
-/*** test variable/function declaration existence ***/
+/*** test variable/function declaration existence (suffix should be unique)***/
 
 enum
 {

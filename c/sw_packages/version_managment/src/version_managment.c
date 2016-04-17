@@ -11,9 +11,7 @@
 
 
 /********  includes *********************/
-#include "version_managment_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
-#include "src/_version_managment_prerequirements_check.h" // should be after {sw_uart_wrapper_config.h,dev_managment_api.h}
+#include "src/_version_managment_prerequirements_check.h"
 
 #include "version_managment_api.h"
 

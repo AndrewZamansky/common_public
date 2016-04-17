@@ -12,12 +12,14 @@
 #include "_project_func_declarations.h"
 
 #include "dev_managment_api.h" // for device manager defines and typedefs
+#define DEBUG
 #include "PRINTF_api.h"
 
 #include "config_api.h"
 #include "config.h"
 #include "jsmn.h"
 #include "ff.h"
+#include "os_wrapper.h"
 
 /***************   defines    *******************/
 
@@ -126,18 +128,8 @@ static void Config_Task( void *pvParameters )
 			}
 			currDev++;
 		}
-#if (1==INCLUDE_uxTaskGetStackHighWaterMark )
-		{
-			static  uint32_t stackLeft,minStackLeft=0xffffffff;
 
-			stackLeft = uxTaskGetStackHighWaterMark( NULL );
-			if(minStackLeft > stackLeft)
-			{
-				minStackLeft = stackLeft;
-				PRINTF_DBG("%s stack left = %d\r\n" , __FUNCTION__ ,minStackLeft);
-			}
-		}
-#endif
+		os_stack_test();
 
 	}
 

@@ -24,12 +24,17 @@ endchoice
 
 
     	
+menu "Platform configurations"
 if ARM
-menu "Arm Project Configurations"
-source "$COMMON_DIR_PATH/c/hw_drivers/arch/ARM/Kconfig"
-endmenu
+source "$COMMON_DIR_PATH/c/hw_drivers/arch/ARM/boards/Kconfig"
 endif
+endmenu
 
+menu "Arch configurations"
+if ARM
+source "$COMMON_DIR_PATH/c/hw_drivers/arch/ARM/Kconfig"
+endif
+endmenu
 
 menu "Hardware Drivers"
 source "$COMMON_DIR_PATH/c/hw_drivers/Kconfig"

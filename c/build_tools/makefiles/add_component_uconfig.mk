@@ -17,11 +17,11 @@ ifeq ($(filter y,$(sort $(INCLUDE_THIS_COMPONENT))),y)
       endif
     endif #if DYNAMIC_COMPONENT==YES
   endif#DO_GENERATE_FILES
-else
-  ifeq ($(filter y,$(INCLUDE_THIS_FOR_H_FILES_PATH)),y) 
-   GLOBAL_INCLUDE_DIR := $(GLOBAL_INCLUDE_DIR) $(COMPONENT_PATH) 
-  endif
 endif 
+
+ifeq ($(filter y,$(INCLUDE_THIS_FOR_H_FILES_PATH)),y) 
+    GLOBAL_INCLUDE_DIR := $(GLOBAL_INCLUDE_DIR) $(COMPONENT_PATH) 
+endif
 #$(info ----$(COMPONENT_NAME))
 #$(info --INCLUDE_THIS_COMPONENT = $(INCLUDE_THIS_COMPONENT))
 #$(info --INCLUDE_THIS_FOR_H_FILES_PATH = $(INCLUDE_THIS_FOR_H_FILES_PATH))

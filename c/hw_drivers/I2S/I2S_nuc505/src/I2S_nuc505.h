@@ -13,9 +13,7 @@
 
 /********  includes *********************/
 
-#include "I2S_nuc505_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
-#include "src/_I2S_nuc505_prerequirements_check.h" // should be after {I2S_nuc505_config.h,dev_managment_api.h}
+#include "src/_I2S_nuc505_prerequirements_check.h"
 
 /********  types  *********************/
 

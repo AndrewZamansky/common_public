@@ -11,7 +11,6 @@
 //#include "Drivers_APP_HAL/TimerPoleg/TimerPoleg_hal.h"
 #include "TimerPoleg_API.h"
 #include "TimerPoleg.h"
-#include "PRINTF_API.h"
 
 
 /***************   defines    *******************/

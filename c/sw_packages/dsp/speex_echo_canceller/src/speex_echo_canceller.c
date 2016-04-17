@@ -26,7 +26,8 @@
 #include "speex/speex_echo.h"
 #include "speex/speex_preprocess.h"
 
-#ifdef _USE_DSP_
+#ifdef PROJECT_USE_DSP
+  #include "cpu_config.h"
   #include "arm_math.h"
 #endif
 

@@ -91,7 +91,7 @@ uint32_t  clocks_control_nuc505_init(void)
 
 	CLK->PWRCTL |= CLK_PWRCTL_HXTEN_Msk;
 
-	CLK_SetCoreClock(FREQ_96MHZ);
+	CLK_SetCoreClock(CONFIG_CORE_CLOCK);
     /* Set PCLK divider */
     CLK_SetModuleClock(PCLK_MODULE, 0 , 1);
 

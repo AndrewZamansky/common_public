@@ -2,7 +2,10 @@
 #ifndef _nvic_API_H_
 #define _nvic_API_H_
 
-#include "nvic_config.h"
+#include "_project.h"
+
+/* nvic_irq_map.h should be created . look for example in /hw_drivers/arch/ARM/boards/... */
+#include "cpu_config.h"
 
 /*****************  defines  **************/
 

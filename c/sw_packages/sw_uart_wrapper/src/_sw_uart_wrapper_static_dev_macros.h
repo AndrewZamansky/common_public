@@ -9,7 +9,7 @@ extern uint8_t sw_uart_wrapper_callback(void * const aHandle ,const uint8_t aCal
 extern size_t sw_uart_wrapper_pwrite(const void *aHandle ,const uint8_t *apData , size_t aLength, size_t aOffset);
 #include "src/sw_uart_wrapper.h"
 
-#if SW_UART_WRAPPER_CONFIG_MAX_RX_BUFFER_SIZE > 0
+#ifdef CONFIG_SW_UART_WRAPPER_ENABLE_RX
 	#define __SW_UART_WRAPPER_API_CREATE_STATIC_DEV(dev,dev_name, 		\
 				server_dev,client_dev	, rxBuffer,rxBufferSize)		\
 				extern const dev_descriptor_t dev ;						\
@@ -41,7 +41,7 @@ extern size_t sw_uart_wrapper_pwrite(const void *aHandle ,const uint8_t *apData 
 					sw_uart_wrapper_callback				\
 				}
 
-#else // #if SW_UART_WRAPPER_CONFIG_MAX_RX_BUFFER_SIZE = 0
+#else // #ifdef CONFIG_SW_UART_WRAPPER_ENABLE_RX
 
 	#define __SW_UART_WRAPPER_API_CREATE_STATIC_DEV(dev,dev_name, server_dev )	\
 			extern const dev_descriptor_t dev ;						\
@@ -66,7 +66,7 @@ extern size_t sw_uart_wrapper_pwrite(const void *aHandle ,const uint8_t *apData 
 			}
 
 
-#endif // for    #if SW_UART_WRAPPER_CONFIG_MAX_RX_BUFFER_SIZE > 0
+#endif // for    #ifdef CONFIG_SW_UART_WRAPPER_ENABLE_RX
 
 
 

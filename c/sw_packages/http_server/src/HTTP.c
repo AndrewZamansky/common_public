@@ -12,6 +12,7 @@
 #include "_project_func_declarations.h"
 
 #include "dev_managment_api.h" // for device manager defines and typedefs
+#define DEBUG
 #include "PRINTF_api.h"
 
 #include "http_server_api.h"
@@ -425,19 +426,8 @@ static void HTTP_Task( void *pvParameters )
 			DEV_IOCTL(timer_device,TIMER_API_SET_COUNTDOWN_VALUE_AND_REST, &pollPeriod);
 		}
 
+		os_stack_test();
 
-#if (1==INCLUDE_uxTaskGetStackHighWaterMark )
-		{
-			static  size_t stackLeft,minStackLeft=0xffffffff;
-
-			stackLeft = uxTaskGetStackHighWaterMark( NULL );
-			if(minStackLeft > stackLeft)
-			{
-				minStackLeft = stackLeft;
-				PRINTF_DBG("%s stack left = %d\r\n" , __FUNCTION__ ,minStackLeft);
-			}
-		}
-#endif
 	}
 
 

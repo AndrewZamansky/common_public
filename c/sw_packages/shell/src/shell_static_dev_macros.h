@@ -2,9 +2,7 @@
 #ifndef _shell_static_dev_macros_h_
 #define _shell_static_dev_macros_h_
 
-#include "shell_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
-#include "src/_shell_prerequirements_check.h" // should be after {shell_config.h,dev_managment_api.h}
+#include "src/_shell_prerequirements_check.h"
 
 extern uint8_t shell_ioctl( void * const aHandle ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2);
 extern uint8_t shell_callback(void * const aHandle ,

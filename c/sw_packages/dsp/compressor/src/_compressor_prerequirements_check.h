@@ -12,16 +12,16 @@
 #define _compressor_prerequirements_check_H
 
 
+#include "_project.h"
+#include "dev_managment_api.h"
+#include "dsp_managment_api.h"
+#include "common_dsp_api.h"
 
 /***************************/
 /******** test defines *****/
 
 
 
-#ifndef COMPRESSOR_CONFIG_NUM_OF_DYNAMIC_INSTANCES
-	#define COMPRESSOR_CONFIG_NUM_OF_DYNAMIC_INSTANCES 	1
-#endif
-
 
 /***************************/
 
@@ -29,7 +29,7 @@
 
 
 /***************************/
-/*** test type existence ***/
+/*** test type existence (suffix should be unique)***/
 
 typedef uint8_t 					_if_fail_here_then___uint8_t___is_not_defined_in_compressor_config_h;
 typedef uint16_t		 			_if_fail_here_then___uint16_t___is_not_defined_in_compressor_config_h;
@@ -44,7 +44,7 @@ typedef ioctl_get_data_buffer_t    	_if_fail_here_then___ioctl_get_data_buffer_t
 
 
 /**********************************/
-/*** test variable/function declaration existence ***/
+/*** test variable/function declaration existence (suffix should be unique)***/
 
 enum
 {
@@ -58,15 +58,10 @@ enum
 
 
 
-#ifdef COMPRESSOR_CONFIG_USE_MALLOC
 	memcpy___not_declared_in_compressor_config_h=sizeof((int)memcpy),
 	malloc___not_declared_in_compressor_config_h=sizeof((int)malloc),
-	free___not_declared_in_compressor_config_h=sizeof((int)free),
-#endif
+	free___not_declared_in_compressor_config_h=sizeof((int)free)
 
-#ifndef busy_delay
-	busy_delay___declared_in_compressor_config_h=sizeof((int)busy_delay)
-#endif
 
 
 };

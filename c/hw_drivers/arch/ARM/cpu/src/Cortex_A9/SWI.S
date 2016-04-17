@@ -35,7 +35,7 @@ do_software_interrupt_asm:
     ldr pc, _OS_Handle_text
 	MOV r3,#1				/* r3 = 1 then semihosting will not be executed */
 	B end_of_swi_handler
-/*.endif*/
+
 
 not_os_swi_handler:
     LDR pc, =do_app_software_interrupt /* call do_app_software_interrupt . */

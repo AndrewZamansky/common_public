@@ -10,8 +10,6 @@
 
 /********  includes *********************/
 
-#include "I2S_nuc505_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
 #include "src/_I2S_nuc505_prerequirements_check.h" // should be after {I2S_nuc505_config.h,dev_managment_api.h}
 
 #include "I2S_nuc505_api.h"
@@ -39,6 +37,7 @@
 
 static I2S_NUC505_Instance_t *pI2SHandle;
 
+static I2S_NUC505_Instance_t I2S_NUC505_Instance;
 
 uint16_t num_of_words_in_buffer_per_chenel = 0;
 uint16_t num_of_uint32_in_buffer_per_chenel;
@@ -332,7 +331,6 @@ uint8_t I2S_nuc505_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 	return 0;
 }
 
-#if I2S_NUC505_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
 
 /*---------------------------------------------------------------------------------------------------------*/
 /* Function:        I2S_nuc505_api_dev_descriptor                                                                          */
@@ -352,10 +350,9 @@ uint8_t  I2S_nuc505_api_init_dev_descriptor(pdev_descriptor aDevDescriptor)
 
 	aDevDescriptor->handle = &I2S_NUC505_Instance;
 	aDevDescriptor->ioctl = I2S_nuc505_ioctl;
-	aDevDescriptor->pwrite = I2S_nuc505_pwrite;
+	I2S_NUC505_Instance.start_flag = 0;
 
 	return 0 ;
 
 }
 
-#endif

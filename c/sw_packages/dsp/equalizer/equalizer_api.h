@@ -2,12 +2,8 @@
 #ifndef _equalizer_API_H_
 #define _equalizer_API_H_
 
-#include "equalizer_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
-#include "dsp_managment_api.h" // for device manager defines and typedefs
-#include "src/_equalizer_prerequirements_check.h" // should be after {equalizer_config.h,dev_managment_api.h}
+#include "src/_equalizer_prerequirements_check.h"
 
-#include "common_dsp_api.h"
 
 /*****************  defines  **************/
 

@@ -11,9 +11,7 @@
 #ifndef _HEARTBEAT_H
 #define _HEARTBEAT_H
 
-#include "heartbeat_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
-#include "src/_heartbeat_prerequirements_check.h" // should be after {heartbeat_config.h,dev_managment_api.h}
+#include "src/_heartbeat_prerequirements_check.h"
 
 
 /***************   typedefs    *******************/

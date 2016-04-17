@@ -1,0 +1,14 @@
+#
+	
+menu "PRINTF"
+
+config DISABLE_DBG_PRINTS
+	bool   "disable debug prints"
+	depends on INCLUDE_PRINTF
+	default n
+
+config USE_MINIMAL_PRINTF
+	bool   "use only minimal capabilities"
+	default n	
+
+endmenu

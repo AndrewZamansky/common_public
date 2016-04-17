@@ -12,9 +12,6 @@
 
 /********  includes *********************/
 
-#include "voice_3D_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
-#include "dsp_managment_api.h" // for device manager defines and typedefs
 #include "_voice_3D_prerequirements_check.h" // should be after {voice_3D_config.h,dev_managment_api.h}
 
 #include "voice_3D_api.h" //place first to test that header file is self-contained
@@ -23,7 +20,8 @@
 
 #include "math.h"
 
-#ifdef _USE_DSP_
+#ifdef PROJECT_USE_DSP
+  #include "cpu_config.h"
   #include "arm_math.h"
 #endif
 
@@ -45,13 +43,6 @@
 
 
 /***********   local variables    **************/
-#if VOICE_3D_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
-
-	static VOICE_3D_Instance_t VOICE_3D_InstanceParams[VOICE_3D_CONFIG_NUM_OF_DYNAMIC_INSTANCES] = { {0} };
-	static uint16_t usedInstances =0 ;
-
-
-#endif // for VOICE_3D_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
 
 
 /*---------------------------------------------------------------------------------------------------------*/
@@ -161,10 +152,6 @@ uint8_t voice_3D_ioctl(void * const aHandle ,const uint8_t aIoctl_num , void * a
 
 
 
-
-
-#if VOICE_3D_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
-
 /*---------------------------------------------------------------------------------------------------------*/
 /* Function:        VOICE_3D_API_Init_Dev_Descriptor                                                                          */
 /*                                                                                                         */
@@ -179,10 +166,11 @@ uint8_t voice_3D_ioctl(void * const aHandle ,const uint8_t aIoctl_num , void * a
 uint8_t  voice_3D_api_init_dsp_descriptor(pdsp_descriptor aDspDescriptor)
 {
 	VOICE_3D_Instance_t *pInstance;
-	if(NULL == aDspDescriptor) return 1;
-	if (usedInstances >= VOICE_3D_CONFIG_NUM_OF_DYNAMIC_INSTANCES) return 1;
 
-	pInstance = &VOICE_3D_InstanceParams[usedInstances ];
+	if(NULL == aDspDescriptor) return 1;
+
+	pInstance = (VOICE_3D_Instance_t *)malloc(sizeof(VOICE_3D_Instance_t));
+	if(NULL == pInstance) return 1;
 
 	aDspDescriptor->handle = pInstance;
 	aDspDescriptor->ioctl = voice_3D_ioctl;
@@ -190,11 +178,7 @@ uint8_t  voice_3D_api_init_dsp_descriptor(pdsp_descriptor aDspDescriptor)
 	pInstance->medium_gain = 0.5;
 	pInstance->side_gain =  0.5;
 	pInstance->_3D_gain = 0;
-	usedInstances++;
 
 	return 0 ;
 
 }
-#endif  // for VOICE_3D_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
-
-

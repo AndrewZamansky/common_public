@@ -29,7 +29,7 @@
 
 
 /***************************/
-/*** test type existence ***/
+/*** test type existence (suffix should be unique)***/
 
 typedef uint8_t 					_if_fail_here_then___uint8_t___is_not_defined_in_speex_echo_canceller_config_h;
 typedef uint16_t		 			_if_fail_here_then___uint16_t___is_not_defined_in_speex_echo_canceller_config_h;
@@ -44,7 +44,7 @@ typedef ioctl_get_data_buffer_t    	_if_fail_here_then___ioctl_get_data_buffer_t
 
 
 /**********************************/
-/*** test variable/function declaration existence ***/
+/*** test variable/function declaration existence (suffix should be unique)***/
 
 enum
 {

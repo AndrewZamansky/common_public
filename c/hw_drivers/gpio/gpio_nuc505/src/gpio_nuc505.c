@@ -7,9 +7,7 @@
 
 
 /***************   includes    *******************/
-#include "gpio_nuc505_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
-#include "src/_gpio_nuc505_prerequirements_check.h" // should be after {gpio_nuc505_config.h,dev_managment_api.h}
+#include "src/_gpio_nuc505_prerequirements_check.h"
 
 #include "gpio_api.h"
 #include "gpio_nuc505_api.h"

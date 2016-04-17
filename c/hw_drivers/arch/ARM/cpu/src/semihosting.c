@@ -241,9 +241,9 @@ static void poll_for_semihosting_data_task( void *aHandle )
 	size_t i;
 //	int read_size ;
 
-	PRINT_STR_DBG("if you want to enter commands over semihosting  \r\n");
-	PRINT_STR_DBG("create file /tmp/1234 or C:/Temp/1234.txt  \r\n");
-	PRINT_STR_DBG("to stop wait for commands delete created file  \r\n");
+	PRINT_STR_REPLY(aHandle , "if you want to enter commands over semihosting  \r\n");
+	PRINT_STR_REPLY(aHandle , "create file /tmp/1234 or C:/Temp/1234.txt  \r\n");
+	PRINT_STR_REPLY(aHandle , "to stop wait for commands delete created file  \r\n");
 	vTaskDelay( 5000 );
 	for( ;; )
 	{
@@ -258,9 +258,9 @@ static void poll_for_semihosting_data_task( void *aHandle )
 		if (-1 != read_sync_hndl)
 		{
 			ARM_API_SH_Close(read_sync_hndl);
-			PRINT_STR_DBG("waiting for command . \r\n");
+			PRINT_STR_REPLY(aHandle , "waiting for command . \r\n");
 #if 0
-			PRINT_STR_DBG("press 'enter' after each char and double 'enter' at the end \r\n");
+			PRINT_STR_REPLY(aHandle ,"press 'enter' after each char and double 'enter' at the end \r\n");
 			cRead=_SH_ReadC();
 
 			i=0;
@@ -271,7 +271,7 @@ static void poll_for_semihosting_data_task( void *aHandle )
 			}
 			sh_rx_buffer[i++]='\n';
 #else
-			PRINTF_DBG("enter command and press 'enter' till response \r\n",SH_RX_BUFFER);
+			PRINTF_REPLY(aHandle , "enter command and press 'enter' till response \r\n",SH_RX_BUFFER);
 			ARM_API_SH_Read(terminal_hndl,sh_rx_buffer,SH_RX_BUFFER);
 			cRead = sh_rx_buffer[0];
 			i=1;
@@ -281,7 +281,7 @@ static void poll_for_semihosting_data_task( void *aHandle )
 			}
 			if(i == (SH_RX_BUFFER + 1))
 			{
-				PRINTF_DBG("error : command should be less then %d chars \r\n",SH_RX_BUFFER);
+				PRINTF_REPLY(aHandle , "error : command should be less then %d chars \r\n",SH_RX_BUFFER);
 				sh_rx_buffer[0]='\n';
 			}
 #endif
@@ -295,20 +295,8 @@ static void poll_for_semihosting_data_task( void *aHandle )
 
 		}
 
-#if ((1==INCLUDE_uxTaskGetStackHighWaterMark ) && (1==CONFIG_FREE_RTOS))
-		{
-			static  size_t stackLeft,minStackLeft=0xffffffff;
+		os_stack_test();
 
-			stackLeft = uxTaskGetStackHighWaterMark( NULL );
-			if(minStackLeft > stackLeft)
-			{
-				minStackLeft = stackLeft;
-				// !!!! DONT USE PRINTF_DBG . IT CAN CAUSE RECURCIVE LOCK !!
-				// COMMENT THIS LINE AS SOON AS POSSIBLE
-				PRINTF_DBG("%s   stack left = %d  \r\n" , __FUNCTION__   ,minStackLeft);
-			}
-		}
-#endif
 	}
 
 }

@@ -10,10 +10,7 @@
 
 /********  includes *********************/
 
-#include "uart_nuc505_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
-#include "uart_api.h"
-#include "src/_uart_nuc505_prerequirements_check.h" // should be after {uart_nuc505_config.h,dev_managment_api.h}
+#include "src/_uart_nuc505_prerequirements_check.h"
 
 #include "uart_nuc505.h"
 
@@ -38,9 +35,7 @@
 
 
 /********  local defs *********************/
-#if UART_NUC505_CONFIG_NUM_OF_DYNAMIC_INSTANCES > 0
-	UART_NUC505_Instance_t UART_NUC505_Instance;
-#endif
+UART_NUC505_Instance_t UART_NUC505_Instance;
 
 
 #define UART_NUC505_NUM_OF_UARTS	3
@@ -214,18 +209,15 @@ uint8_t uart_nuc505_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 		case IOCTL_UART_ENABLE_TX :
 		    //UART1_ITConfig( UART1_IT_TXE, ENABLE );
 		    break;
-#if UART_NUC505_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
 		case IOCTL_SET_ISR_CALLBACK_DEV:
-			nuc505_callback_dev =(pdev_descriptor) aIoctl_param1;
+			INSTANCE(aHandle)->callback_dev =(pdev_descriptor) aIoctl_param1;
 			break;
-#endif
 		default :
 			return 1;
 	}
 	return 0;
 }
 
-#if UART_NUC505_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
 
 /*---------------------------------------------------------------------------------------------------------*/
 /* Function:        uart_nuc505_api_dev_descriptor                                                                          */
@@ -250,5 +242,3 @@ uint8_t  uart_nuc505_api_init_dev_descriptor(pdev_descriptor aDevDescriptor)
 	return 0 ;
 
 }
-
-#endif

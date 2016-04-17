@@ -14,6 +14,7 @@
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 #include "_project_func_declarations.h"
+#include "PRINTF_api.h"
 
 #include "atom.h"
 #include "atomtimer.h"
@@ -112,6 +113,8 @@ void *os_create_task_atomthreads( void *taskFunction,
 
 void os_delay_ms_atomthreads( uint32_t ms);
 
+/********* stack debug ********/
+#define os_stack_test()
 
 #define OS_WRAPPER_INCLUDED
 

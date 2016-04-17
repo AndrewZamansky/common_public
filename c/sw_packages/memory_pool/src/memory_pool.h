@@ -11,7 +11,6 @@
 #ifndef _memory_pool_H
 #define _memory_pool_H
 
-#include "memory_pool_config.h"
 #include "_memory_pool_prerequirements_check.h" // should be after dev_managment_config.h
 
 /***************   typedefs    *******************/

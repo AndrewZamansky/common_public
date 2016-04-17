@@ -2,7 +2,7 @@
 #ifndef _common_dsp_API_H_
 #define _common_dsp_API_H_
 
-#include "common_dsp_config.h"
+#include "_project.h"
 #include "src/_common_dsp_prerequirements_check.h" // should be after {equalizer_config.h,dev_managment_api.h}
 
 /*****************  defines  **************/

@@ -2,10 +2,7 @@
 #ifndef _I2S_mixer_API_H_
 #define _I2S_mixer_API_H_
 
-#include "I2S_mixer_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
-#include "dsp_managment_api.h" // for device manager defines and typedefs
-#include "src/_I2S_mixer_prerequirements_check.h" // should be after {I2S_mixer_config.h,dev_managment_api.h}
+#include "src/_I2S_mixer_prerequirements_check.h"
 
 #include "common_dsp_api.h"
 

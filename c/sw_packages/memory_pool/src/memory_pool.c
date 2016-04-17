@@ -9,8 +9,7 @@
 /***************   includes    *******************/
 #include "memory_pool_api.h" //place first to test that header file is self-contained
 
-#include "memory_pool_config.h"
-#include "_memory_pool_prerequirements_check.h" // should be after dev_managment_config.h
+#include "_memory_pool_prerequirements_check.h"
 
 #include "memory_pool.h"
 
@@ -24,9 +23,6 @@
 /**********   external variables    **************/
 
 /***********   local variables    **************/
-
-static MEMORY_POOL_Instance_t MEMORY_POOL_InstanceParams[MEMORY_POOL_CONFIG_NUM_OF_INSTANCES] = { {0} };
-static uint16_t usedInstances =0 ;
 
 
 /*---------------------------------------------------------------------------------------------------------*/
@@ -103,9 +99,9 @@ void *memory_pool_init(size_t num_of_chunks,size_t size_of_chunk)
 	MEMORY_POOL_Instance_t *pInstance;
 	xMemPool_t *pool_chunk;
 
-	if (usedInstances >= MEMORY_POOL_CONFIG_NUM_OF_INSTANCES) return NULL;
 
-	pInstance = &MEMORY_POOL_InstanceParams[usedInstances ];
+	pInstance = (MEMORY_POOL_Instance_t *)malloc(sizeof(MEMORY_POOL_Instance_t));
+	if(NULL == pInstance) return NULL;
 
 	pool_chunk = (xMemPool_t *)malloc(num_of_chunks*sizeof(xMemPool_t));
 	pInstance->num_of_chunks = num_of_chunks;
@@ -117,7 +113,6 @@ void *memory_pool_init(size_t num_of_chunks,size_t size_of_chunk)
 		pool_chunk->mem = malloc(size_of_chunk);
 		pool_chunk++;
 	}
-	usedInstances++;
 
 	return pInstance ;
 }

@@ -2,9 +2,7 @@
 #ifndef _PRINTF_API_H_
 #define _PRINTF_API_H_
 
-#include "printf_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
-#include "src/_printf_prerequirements_check.h" // should be after {printf_config.h,dev_managment_api.h}
+#include "src/_printf_prerequirements_check.h"
 
 /*****************  defines  **************/
 
@@ -35,7 +33,7 @@ void PRINTF_print_data(PRINTF_TYPE_t aPrntType , const uint8_t* data,  uint32_t 
 
 
 /**********  define API  functions  ************/
-#if (PRINTF_CONFIG_USE_MINIMAL)
+#if (CONFIG_USE_MINIMAL_PRINTF)
 
  extern pdev_descriptor_const  print_dev;
 
@@ -59,5 +57,21 @@ void PRINTF_print_data(PRINTF_TYPE_t aPrntType , const uint8_t* data,  uint32_t 
 
 #endif
 
+#if !defined(CONFIG_INCLUDE_PRINTF) || defined(CONFIG_DISABLE_DBG_PRINTS) || !defined(DEBUG)
+ #define __DISABLE_DBG_PRINTS
+#endif
+
+
+#ifdef __DISABLE_DBG_PRINTS
+
+	#undef PRINTF_DBG
+	#undef PRINT_STR_DBG
+	#undef PRINT_DATA_DBG
+
+	#define PRINTF_DBG(...)
+	#define PRINT_STR_DBG(str)
+	#define PRINT_DATA_DBG(data,len)
+
+#endif
 
 #endif
