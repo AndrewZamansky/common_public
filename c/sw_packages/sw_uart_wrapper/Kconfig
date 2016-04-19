@@ -1,6 +1,4 @@
 #
-	
-menu "software uart wrapper options"
 
 config  SW_UART_WRAPPER_MAX_NUM_OF_DYNAMIC_INSTANCES
 	int   "maximal number of dynamic instances"
@@ -26,5 +24,3 @@ config  SW_UART_WRAPPER_MAX_RX_BUFFER_SIZE
 config  SW_UART_WRAPPER_MAX_TX_BUFFER_SIZE
 	int   "internal queue length"
 	default 255
-	
-endmenu

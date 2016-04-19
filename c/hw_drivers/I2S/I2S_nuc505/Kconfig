@@ -1,6 +1,5 @@
 #
 	
-menu "nuc505 i2s options"
 
 config  I2S_NUC505_USE_EXTERNAL_CODEC
 	bool   "use external codec"
@@ -15,5 +14,3 @@ config INTERNAL_I2S_SPEED_CRITICAL
 	bool   "internal i2s is speed critical"
 	depends on INCLUDE_INTERNAL_I2S
 	default y
-	
-endmenu

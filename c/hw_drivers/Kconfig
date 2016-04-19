@@ -38,7 +38,7 @@ config INCLUDE_INTERNAL_SERIAL_NUMBER
 	depends on STM32F10x
 	default n
 	
-config INCLUDE_INTERNAL_I2S
+menuconfig INCLUDE_INTERNAL_I2S
 	bool   "internal i2s"
 	depends on NUC505
 	default n

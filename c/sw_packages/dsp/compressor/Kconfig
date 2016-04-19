@@ -1,6 +1,5 @@
 #
 	
-menu "audio compressor options"
 
 
 config COMPRESSOR_DEFAULT_CHUNK_SIZE
@@ -12,4 +11,3 @@ config COMPRESSOR_IS_SPEED_CRITICAL
 	depends on INCLUDE_COMPRESSOR
 	default y
 
-endmenu

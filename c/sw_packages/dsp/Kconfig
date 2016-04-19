@@ -13,7 +13,7 @@ config COMMON_DSP_IS_SPEED_CRITICAL
 	bool   "common dsp is speed critical"
 	default y
 
-config INCLUDE_EQUALIZER
+menuconfig INCLUDE_EQUALIZER
 	bool   "equalizer"
 	default n
 
@@ -23,7 +23,7 @@ config EQUALIZER_IS_SPEED_CRITICAL
 	default y
 
 
-config INCLUDE_MIXER
+menuconfig INCLUDE_MIXER
 	bool   "audio mixer"
 	default n
 
@@ -33,7 +33,7 @@ config MIXER_IS_SPEED_CRITICAL
 	default y
 
 
-config INCLUDE_I2S_SPLITTER
+menuconfig INCLUDE_I2S_SPLITTER
 	bool   "i2s splitter"
 	default n
 
@@ -44,7 +44,7 @@ config I2S_SPLITTER_IS_SPEED_CRITICAL
 	default y
 
 
-config INCLUDE_I2S_MIXER
+menuconfig INCLUDE_I2S_MIXER
 	bool   "i2s mixer"
 	default n
 
@@ -54,7 +54,7 @@ config I2S_MIXER_IS_SPEED_CRITICAL
 	default y
 
 
-config INCLUDE_COMPRESSOR
+menuconfig INCLUDE_COMPRESSOR
 	bool   "audio compressor"
 	default n
 
@@ -62,7 +62,7 @@ if INCLUDE_COMPRESSOR
 source "$COMMON_DIR_PATH/c/sw_packages/dsp/compressor/Kconfig"
 endif
  
-config INCLUDE_VOICE_3D
+menuconfig INCLUDE_VOICE_3D
 	bool   "voice 3D effect"
 	default n
 
@@ -71,7 +71,7 @@ config VOICE_3D_IS_SPEED_CRITICAL
 	depends on INCLUDE_VOICE_3D
 	default y
 
-config INCLUDE_FFMPEG
+menuconfig INCLUDE_FFMPEG
 	bool   "ffmpeg"
 	default n
 	

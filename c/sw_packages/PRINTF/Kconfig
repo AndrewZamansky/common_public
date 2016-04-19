@@ -1,6 +1,5 @@
 #
 	
-menu "PRINTF"
 
 config DISABLE_DBG_PRINTS
 	bool   "disable debug prints"
@@ -10,5 +9,3 @@ config DISABLE_DBG_PRINTS
 config USE_MINIMAL_PRINTF
 	bool   "use only minimal capabilities"
 	default n	
-
-endmenu

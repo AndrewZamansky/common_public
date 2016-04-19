@@ -1,5 +1,4 @@
 
-menu "uboot shell options"
 
 config SYS_MAXARGS
 	int   "maximal number of arguments"
@@ -52,4 +51,3 @@ config UBOOT_CMD_SPI_FORMAT
 							
 endmenu
 
-endmenu
