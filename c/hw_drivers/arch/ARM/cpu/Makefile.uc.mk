@@ -6,11 +6,16 @@ ifneq ($(strip $(INCLUDE_THIS_COMPONENT) ),)
 endif
 
 
-
-
 #INCLUDE_DIR =  
 
-#DEFINES = 
+DEFINES :=
+ifdef CONFIG_CODE_LOCATION_INTERNAL_SRAM
+    DEFINES += CODE_LOCATION_INTERNAL_SRAM_FOR_ASM
+endif
+ifdef CONFIG_CODE_LOCATION_INTERNAL_ROM
+    DEFINES += CODE_LOCATION_INTERNAL_ROM_FOR_ASM
+endif
+
 
 #CFLAGS = 
 
@@ -18,7 +23,7 @@ endif
 
 SRC =
 
-ifdef CONFIG_CONFIG_INCLUDE_SEMIHOSTING 	 
+ifdef CONFIG_INCLUDE_SEMIHOSTING 	 
     SRC += semihosting.c
 endif
 
@@ -45,7 +50,7 @@ ifdef CONFIG_CORTEX_M3
 	VPATH += src/Cortex_M3_M4
 else ifdef CONFIG_CORTEX_M4
 	VPATH += src/Cortex_M3_M4
-else	
+else ifdef CONFIG_CORTEX_A9
 	INCLUDE_DIR += src/Cortex_A9
 	SRC += cache-pl310.c
 	VPATH += src/Cortex_A9

@@ -3,6 +3,7 @@
 #define _gic_API_H_
 
 /**********  define API  types ************/
+#include "src/_gic_prerequirements_check.h"
 
 /*---------------------------------------------------------------------------------------------------------*/
 /* Interrupt handler function prototype                                                                    */

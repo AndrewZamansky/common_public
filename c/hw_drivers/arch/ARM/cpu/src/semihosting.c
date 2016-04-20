@@ -9,9 +9,7 @@
 
 /* ------------------------ INCLUDES ---------------------------------------*/
 
-#include "arm_semihosting_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
-#include "src/_semihosting_prerequirements_check.h" // should be after {arm_semihosting_config.h,dev_managment_api.h}
+#include "src/_semihosting_prerequirements_check.h"
 
 #include "ARM_api.h"
 
@@ -214,11 +212,11 @@ size_t arm_sh_pwrite(const void *aHandle ,const uint8_t *apData , size_t aLength
 {
 	ARM_API_SH_Write(terminal_hndl,apData,aLength);
 	if(NULL != callback_dev)
-		DEV_CALLBACK_1_PARAMS(callback_dev , CALLBACK_TX_DONE,(void*)aLength); // !!! to avoid recursivity transmited length should be '>=aLength'
+		DEV_CALLBACK_1_PARAMS(callback_dev , CALLBACK_TX_DONE,(void*)aLength); // !!! to avoid recursivity in semihosting transmited length should be '>=aLength'
 	return aLength;
 }
 
-#if ( 1 == ARM_SEMIHOSTING_CONFIG_ENABLE_RX)
+#ifdef CONFIG_ARM_SEMIHOSTING_CONFIG_ENABLE_RX
 
 #define SH_RX_BUFFER	32
 static uint8_t sh_rx_buffer[SH_RX_BUFFER];
@@ -324,15 +322,16 @@ uint8_t arm_sh_ioctl( void * const aHandle ,const uint8_t aIoctl_num , void * aI
 			break;
 
 		case IOCTL_DEVICE_START :
-			callback_dev = INSTANCE(aHandle)->callback_dev ;
 			terminal_hndl=ARM_API_SH_Open(":tt",5);//mode 5=wb
 
-
-#if ( 1 == ARM_SEMIHOSTING_CONFIG_ENABLE_RX)
+			if(NULL != aHandle)
+			{
+				callback_dev = INSTANCE(aHandle)->callback_dev ;
+#ifdef CONFIG_ARM_SEMIHOSTING_CONFIG_ENABLE_RX
 			os_create_task("sw_uart_wrapper_task",poll_for_semihosting_data_task,
 					aHandle , ARM_SEMIHOSTING_CONFIG_TASK_STACK_SIZE , ARM_SEMIHOSTING_CONFIG_TASK_PRIORITY);
 #endif
-
+			}
 			break;
 		case IOCTL_SET_ISR_CALLBACK_DEV:
 			callback_dev =(pdev_descriptor) aIoctl_param1;

@@ -7,7 +7,7 @@
 
 
 /***************   includes    *******************/
-#include "global_typedefs.h"
+#include "_project.h"
 #include "adc_api.h"
 #include "adc_stm32f10x_api.h"
 #include "adc_stm32f10x.h"

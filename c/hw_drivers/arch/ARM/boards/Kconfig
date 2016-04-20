@@ -4,14 +4,14 @@ choice
 	prompt "Board"
 	default GENERIC_BOARD
 
-config STM32F10x
-	bool "stm32f10x"
-
 config NUC505
 	bool "nuc505"
 
 config POLEG
-    bool "poleg"
+	bool "poleg"
+
+config STM32F10x
+	bool "stm32f10x"
 
 config GENERIC_BOARD
 	bool "generic board"
@@ -22,7 +22,10 @@ if NUC505
 source "$COMMON_DIR_PATH/c/hw_drivers/arch/ARM/boards/nuc505/Kconfig"
 endif
 
+if POLEG
+source "$COMMON_DIR_PATH/c/hw_drivers/arch/ARM/boards/poleg/Kconfig"
+endif
+
 if GENERIC_BOARD
 source "$COMMON_DIR_PATH/c/hw_drivers/arch/ARM/boards/generic_board_Kconfig"
 endif
-    

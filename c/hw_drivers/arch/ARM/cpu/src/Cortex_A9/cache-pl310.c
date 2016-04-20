@@ -6,7 +6,7 @@
  * SPDX-License-Identifier:	GPL-2.0+
  */
 
-#include "global_typedefs.h"
+#include "_project.h"
 
 //#include <linux/types.h>
 //#include <asm/io.h>

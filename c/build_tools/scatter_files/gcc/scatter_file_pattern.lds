@@ -2,8 +2,8 @@
 ENTRY(_secondary_rom_vector_table_startup_entry)
 
 MEMORY {
-	flash	:   ORIGIN = CONFIG_FLASH_START_ADDR, 	LENGTH = CONFIG_FLASH_SIZE    
-	ram  	:   ORIGIN = CONFIG_RAM_START_ADDR ,   	LENGTH =  CONFIG_RAM_SIZE  
+	rom	:   ORIGIN = ROM_START_ADDR, 	LENGTH = ROM_SIZE    
+	ram  	:   ORIGIN = RAM_START_ADDR ,   	LENGTH =  RAM_SIZE  
     
     /* The following section is for checking illegal sections */
     dummy_area    :   ORIGIN = 0xFFFFFFFFFFFFFFFF,           LENGTH = 0   
@@ -25,19 +25,19 @@ MEMORY {
 SECTIONS
 {
 	__RAM_START__ = ORIGIN(ram);
-	__FLASH_START__ = ORIGIN(flash);
+	__ROM_START__ = ORIGIN(rom);
 	
 
-#ifdef RUN_FROM_FLASH
-	#define CODE_LOCATION flash
-	__tables_relocation_section_start_on_ROM__ =  __FLASH_START__ ;
+#ifdef RUN_FROM_ROM
+	#define CODE_LOCATION rom
+	__tables_relocation_section_start_on_ROM__ =  __ROM_START__ ;
 #else
 	#define CODE_LOCATION ram
 	__tables_relocation_section_start_on_ROM__ = __RAM_START__ ;
 #endif	
 	__tables_relocation_section_start_on_RAM__ = __RAM_START__;
 
-	/* the AT process of first table is not used because it cause problem on nuc-link debugger to flash it : */
+	/* the AT process of first table is not used because it cause problem on nuc-link debugger to rom it : */
 	/*.vector_table __tables_relocation_section_start_on_RAM__ : AT ( __tables_relocation_section_start_on_ROM__ ) */
 	.vector_table __tables_relocation_section_start_on_ROM__ : 
 	{ 
@@ -91,7 +91,7 @@ SECTIONS
 	__relocation_section_start_on_ROM__ = __end_of_text__;
 	__critical_text_section_start_on_ROM__ = __relocation_section_start_on_ROM__;
 	
-#ifdef RUN_FROM_FLASH
+#ifdef RUN_FROM_ROM
 	__relocation_section_start_on_RAM__ = __tables_relocation_section_end_on_RAM__ ;
 #else
 	__relocation_section_start_on_RAM__ = __end_of_text__ ;
@@ -134,26 +134,32 @@ SECTIONS
 #ifdef CORTEX_M
 		. += STACK_SIZE; 
 #else /*cortex-a*/
+		__irq_stack_buttom__ = . ; 
 		. += IRQ_STACK_SIZE; 
 		. = ALIGN (8); 
 		__irq_stack_top__ = . ; 
 
+		__fiq_stack_buttom__ = . ; 
 		. += FIQ_STACK_SIZE; 
 		. = ALIGN (8); 
 		__fiq_stack_top__ = . ; 
 
+		__svc_stack_buttom__ = . ; 
 		. += SVC_STACK_SIZE; 
 		. = ALIGN (8); 
 		__svc_stack_top__ = . ; 
 
+		__abt_stack_buttom__ = . ; 
 		. += ABT_STACK_SIZE; 
 		. = ALIGN (8);
 		__abt_stack_top__ = . ; 
 
+		__und_stack_buttom__ = . ; 
 		. += UND_STACK_SIZE; 
 		. = ALIGN (8); 
 		__und_stack_top__ = . ; 
 
+		__sys_stack_buttom__ = . ; 
 		. += SYS_STACK_SIZE; 
 		. = ALIGN (8); 
 		__sys_stack_top__ = . ; 

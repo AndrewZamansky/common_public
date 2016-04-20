@@ -25,6 +25,8 @@
 /**********   external variables    **************/
 #define TEST_MAX_STACK_USAGE 1
 
+
+
 extern uint32_t Buttom_Of_Stacks;
 extern uint32_t Top_Of_Stacks;
 extern uint32_t __bss_start__;
@@ -57,7 +59,20 @@ EXTERN_C_FUNCTION void __attribute__((interrupt("SWI"))) do_app_software_interru
     }
 }
 
-#if  ( (1 == CONFIG_CORTEX_M3 ) || (1 == CONFIG_CORTEX_M4) )
+#if  defined(CONFIG_CORTEX_A9 )
+
+extern uint32_t __irq_stack_buttom__;
+extern uint32_t __irq_stack_top__;
+extern uint32_t __fiq_stack_buttom__;
+extern uint32_t __fiq_stack_top__;
+extern uint32_t __svc_stack_buttom__;
+extern uint32_t __svc_stack_top__;
+extern uint32_t __abt_stack_buttom__;
+extern uint32_t __abt_stack_top__;
+extern uint32_t __und_stack_buttom__;
+extern uint32_t __und_stack_top__ ;
+extern uint32_t __sys_stack_buttom__;
+extern uint32_t __sys_stack_top__  ;
 
 void __attribute__((interrupt("ABORT"))) do_data_abort_exception()
 {
@@ -170,9 +185,15 @@ EXTERN_C_FUNCTION int _read(int file, char *ptr, int len) {
 /******************-------------------*****************************/
 
 
+void fill_mem32_with_pattern(uint32_t *start , uint32_t *end , uint32_t pattern)
+{
+	while (start < end) // should be strong less (<) for not to overlap next stack area
+	{
+	  *start++ = pattern;
+	}
+}
 
-
-#ifdef REMAP_EXEPTION_TABLE_TO_ROM
+#if defined(CONFIG_CODE_LOCATION_INTERNAL_SRAM)
 	#define VECTOR_TABLE_BA  0xfffd0000
 #else
 	#define VECTOR_TABLE_BA  0x0
@@ -182,19 +203,36 @@ void v7_outer_cache_inval_all(void);
 /*
  *  function : low_level_init()
  */
-EXTERN_C_FUNCTION void low_level_init()
+EXTERN_C_FUNCTION void low_level_init(uint32_t curr_stack)
 {
 	uint32_t *src ;
 	uint32_t *dst ;
-
-#if  ( (1 == CONFIG_CORTEX_M3 ) || (1 == CONFIG_CORTEX_M4) )
-	//do nothing yet
-#else /* cortex - a9 */
+	uint32_t pattern = 0xb6b6b6b6;
 
 	v7_outer_cache_inval_all();
 
+	/* assume that jump to  fill_mem32_with_pattern will not take more than 32 registers in stack */
+	curr_stack = (curr_stack & 0xffffffffc) - (4*32);
+
+
+#if  ( (1 == CONFIG_CORTEX_M3 ) || (1 == CONFIG_CORTEX_M4) )
+    #if (1==TEST_MAX_STACK_USAGE)
+	    fill_mem32_with_pattern(&Buttom_Of_Stacks , curr_stack , pattern);
+    #endif
+#else /* cortex - a9 */
+	#if (1==TEST_MAX_STACK_USAGE)
+		fill_mem32_with_pattern(&__irq_stack_buttom__ , &__irq_stack_top__ , pattern++);
+		fill_mem32_with_pattern(&__fiq_stack_buttom__ , &__fiq_stack_top__ , pattern++);
+		fill_mem32_with_pattern(&__abt_stack_buttom__ , &__abt_stack_top__ , pattern++);
+		fill_mem32_with_pattern(&__und_stack_buttom__ , &__und_stack_top__ , pattern++);
+		fill_mem32_with_pattern(&__sys_stack_buttom__ , &__sys_stack_top__ , pattern++);
+		fill_mem32_with_pattern(&__svc_stack_buttom__ , &curr_stack , pattern);
+	#endif
+
+
+
 #ifdef NUVOTON_POLEG
-	#ifdef REMAP_EXEPTION_TABLE_TO_ROM
+    #if defined(CONFIG_CODE_LOCATION_INTERNAL_SRAM)
 	/* remap 0x100 bytes of 0xffff0000 to sram  */
 		*((volatile uint32_t *)0xf0800074) |=  (1<<18);
 	#else
@@ -246,8 +284,5 @@ EXTERN_C_FUNCTION void low_level_init()
 	for (dst = &__bss_start__; dst< &__bss_end__; dst++ /* 4 bytes copy*/)
 	  *dst = 0;
 
-#if (1==TEST_MAX_STACK_USAGE)
-	for (dst = &Buttom_Of_Stacks; dst<= (&Top_Of_Stacks-100); dst++ /* 4 bytes copy ,  -100 for not */)
-	  *dst = 0xb6b6b6b6;
-#endif
+
 }

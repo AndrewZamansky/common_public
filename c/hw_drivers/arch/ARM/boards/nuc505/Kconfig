@@ -1,45 +1,8 @@
-menu "nuc505 basic configurations"
-
+config NUC505_BOARD
+	def_bool y
+	select INTERNAL_SRAM 
+	select INTERNAL_FLASH 
+	
 config CORTEX_M4
 	def_bool y
-
-config CORE_CLOCK
-    hex "core clock in Hz"
-    default 96000000 
-    
-config RAM_START_ADDR
-    hex "ram start address in hex"
-    default 0x20000000
-
-config RAM_SIZE
-    hex "ram size in hex"
-    default 0x20000    
-
-config FLASH_START_ADDR
-    hex "flash start address in hex"
-    default 0x0
-
-config FLASH_SIZE
-    hex "flash size in hex"
-    default 0x40000   
-
-
-choice
-	prompt "initial code location"
-	default CODE_LOCATION_FLASH
-
-config CODE_LOCATION_FLASH
-	bool "flash"
-
-config CODE_LOCATION_RAM
-	bool "ram"
-
-endchoice
-
-config CONFIG_CODE_LOCATION
-	bool   "put cpu specific files in ram to improve speed"
-	default n
-
-endmenu
-
 

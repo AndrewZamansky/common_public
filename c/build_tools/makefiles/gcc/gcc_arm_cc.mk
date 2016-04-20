@@ -22,7 +22,7 @@ define CALCULATE_ALL_DEFINES
 endef
 
 define CALCULATE_ALL_ASM_DEFINES
-	ALL_ASM_DEFINES	=$(FMT_GLOBAL_DEFINES)  $(patsubst %,-D%,$(DEFINES))
+	ALL_ASM_DEFINES	=$(subst ",\", $(FMT_GLOBAL_DEFINES) $(patsubst %,-D%,$(DEFINES)) )#substitute " to \" for string defines
 endef
 
 define CALCULATE_CC_OUTPUT_FLAG_AND_FILE

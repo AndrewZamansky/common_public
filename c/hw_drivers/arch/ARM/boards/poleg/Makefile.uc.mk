@@ -1,0 +1,4 @@
+
+ifdef CONFIG_POLEG
+	INCLUDE_THIS_FOR_H_FILES_PATH := y
+endif

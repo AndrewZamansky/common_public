@@ -22,13 +22,8 @@ config HOST
 
 endchoice
 
-
-    	
-menu "Platform configurations"
-if ARM
-source "$COMMON_DIR_PATH/c/hw_drivers/arch/ARM/boards/Kconfig"
-endif
-endmenu
+   	
+source "$COMMON_DIR_PATH/c/hw_drivers/arch/Kconfig"
 
 menu "Arch configurations"
 if ARM

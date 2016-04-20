@@ -12,7 +12,7 @@ config INCLUDE_VERSION_MENAGMENT
 	default y
 
 menuconfig INCLUDE_HEARTBEAT
-	bool   "hearbeat routines"
+	bool   "heartbeat routines"
 	default y
 
 if INCLUDE_HEARTBEAT
@@ -25,7 +25,7 @@ menuconfig INCLUDE_PRINTF
 	bool   "printf"
 	default n
 
-if INCLUDE_PRINTF || AUTO_INCLUDE_PRINTF
+if INCLUDE_PRINTF
 source "$COMMON_DIR_PATH/c/sw_packages/PRINTF/Kconfig"
 endif
 
@@ -86,6 +86,7 @@ config INCLUDE_LOADED_CONFIG
 menuconfig INCLUDE_SHELL
 	bool   "shell"
 	depends on INCLUDE_SW_UART_WRAPPER
+	select INCLUDE_PRINTF
 	default n
 	
 if INCLUDE_SHELL
@@ -120,8 +121,5 @@ source "$COMMON_DIR_PATH/c/sw_packages/dsp/Kconfig"
 	
 ######## automatically selected configurations #########
 
-config AUTO_INCLUDE_PRINTF
-	def_bool  y
-	depends on CONFIG_INCLUDE_SEMIHOSTING || INCLUDE_SHELL
 
 ######## end of automatically selected configurations #########	

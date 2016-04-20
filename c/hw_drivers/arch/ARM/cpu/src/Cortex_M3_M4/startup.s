@@ -80,9 +80,11 @@ do_startup_common:
 	ldr   r0,=Top_Of_Stacks
 	mov   sp, r0
 	push {lr}
- 	ldr r0,=low_level_init
+
+	mov r0,sp
+ 	ldr r1,=low_level_init
  	/*orr r0 ,r0, #0x01*/  /*remain in thumb*/
- 	blx r0
+ 	blx r1
  	pop {pc}
 
 

@@ -1,0 +1,152 @@
+#
+
+    	
+menu "Platform configurations"
+
+if ARM
+source "$COMMON_DIR_PATH/c/hw_drivers/arch/ARM/boards/Kconfig"
+endif
+
+
+
+
+menu "memories configuration"
+
+config INTERNAL_ROM
+    bool "internal rom"
+    depends on POLEG_BOARD
+    default n
+
+config INTERNAL_ROM_START_ADDR
+    hex "internal rom start address in hex"
+    depends on INTERNAL_ROM
+    default 0xffff0000
+
+config INTERNAL_ROM_SIZE
+    hex "internal ram size in hex"
+    depends on INTERNAL_ROM
+    default 0x20000
+
+
+
+
+config INTERNAL_SRAM
+    bool "internal sram"
+    depends on GENERIC_BOARD || POLEG_BOARD || NUC505_BOARD
+    default n
+    
+config INTERNAL_SRAM_START_ADDR
+    hex "internal sram start address in hex"
+    depends on INTERNAL_SRAM
+    default 0xfffd0000
+
+config INTERNAL_SRAM_SIZE
+    hex "internal ram size in hex"
+    depends on INTERNAL_SRAM
+    default 0x20000
+
+
+
+
+config INTERNAL_FLASH
+    bool "internal flash"
+    depends on GENERIC_BOARD || NUC505_BOARD
+    default n
+
+config INTERNAL_FLASH_START_ADDR
+    hex "internal flash start address in hex"
+    depends on INTERNAL_FLASH
+    default 0x80080000
+
+config INTERNAL_FLASH_SIZE
+    hex "internal flash size in hex"
+    depends on INTERNAL_FLASH
+    default 0x40000
+
+
+
+config EXTERNAL_FLASH
+    bool "external flash"
+    depends on GENERIC_BOARD || POLEG_BOARD
+    default n
+
+config EXTERNAL_FLASH_START_ADDR
+    hex "external flash start address in hex"
+    depends on EXTERNAL_FLASH
+    default 0x80080000
+
+config EXTERNAL_FLASH_SIZE
+    hex "external flash size in hex"
+    depends on EXTERNAL_FLASH
+    default 0x40000
+
+
+
+    
+config DDR
+    bool "DDR"
+    depends on GENERIC_BOARD || POLEG_BOARD
+    default n
+
+config DDR_START_ADDR
+    hex "ddr start address in hex"
+    depends on DDR
+    default 0x00000000
+
+config DDR_SIZE
+    hex "ddr size in hex"
+    depends on DDR
+    default 0x2000000
+ 
+ 
+   
+choice
+	prompt "initial code location"
+	default CODE_LOCATION_DDR
+
+config CODE_LOCATION_INTERNAL_ROM
+    depends on INTERNAL_ROM
+	bool "internal rom"
+	
+config CODE_LOCATION_INTERNAL_SRAM
+    depends on INTERNAL_SRAM
+	bool "internal sram"
+	
+config CODE_LOCATION_INTERNAL_FLASH
+    depends on INTERNAL_FLASH
+	bool "internal flash"
+
+config CODE_LOCATION_EXTERNAL_FLASH
+    depends on EXTERNAL_FLASH
+	bool "external flash"
+
+config CODE_LOCATION_DDR
+	bool "ddr"
+    depends on DDR
+
+endchoice
+
+
+choice
+	prompt "data location"
+	default DATA_LOCATION_INTERNAL_SRAM
+
+config DATA_LOCATION_INTERNAL_SRAM
+    depends on INTERNAL_SRAM
+	bool "internal sram"
+	
+config DATA_LOCATION_DDR
+	bool "ddr"
+    depends on DDR
+
+endchoice
+
+
+config CPU_SPECIFIC_FILES_ARE_SPEAD_CRITICAL
+	bool   "put cpu specific files in ram to improve speed"
+	default n
+
+endmenu
+
+
+endmenu

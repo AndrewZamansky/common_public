@@ -4,6 +4,8 @@
 
 /**********  define API  types ************/
 
+#include "src/_timer_poleg_prerequirements_check.h"
+
 typedef void*  Timer_API_Handle_t;
 
 
