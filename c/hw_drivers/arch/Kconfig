@@ -14,7 +14,7 @@ menu "memories configuration"
 
 config INTERNAL_ROM
     bool "internal rom"
-    depends on POLEG_BOARD
+    depends on POLEG
     default n
 
 config INTERNAL_ROM_START_ADDR
@@ -32,7 +32,7 @@ config INTERNAL_ROM_SIZE
 
 config INTERNAL_SRAM
     bool "internal sram"
-    depends on GENERIC_BOARD || POLEG_BOARD || NUC505_BOARD
+    depends on GENERIC || POLEG || NUC505
     default n
     
 config INTERNAL_SRAM_START_ADDR
@@ -50,7 +50,7 @@ config INTERNAL_SRAM_SIZE
 
 config INTERNAL_FLASH
     bool "internal flash"
-    depends on GENERIC_BOARD || NUC505_BOARD
+    depends on GENERIC || NUC505
     default n
 
 config INTERNAL_FLASH_START_ADDR
@@ -67,7 +67,7 @@ config INTERNAL_FLASH_SIZE
 
 config EXTERNAL_FLASH
     bool "external flash"
-    depends on GENERIC_BOARD || POLEG_BOARD
+    depends on GENERIC || POLEG
     default n
 
 config EXTERNAL_FLASH_START_ADDR
@@ -85,7 +85,7 @@ config EXTERNAL_FLASH_SIZE
     
 config DDR
     bool "DDR"
-    depends on GENERIC_BOARD || POLEG_BOARD
+    depends on GENERIC || POLEG
     default n
 
 config DDR_START_ADDR
@@ -147,6 +147,16 @@ config CPU_SPECIFIC_FILES_ARE_SPEAD_CRITICAL
 	default n
 
 endmenu
+
+config RUNNING_ON_PALLADIUM
+	bool "running on palladium simulation"
+    depends on POLEG
+    default n
+
+config EXCEPTION_STACKS_DEBUG
+	bool "fill system stacks with pattern (help to debug stack overflow)"
+    depends on POLEG || NUC505
+    default n
 
 
 endmenu

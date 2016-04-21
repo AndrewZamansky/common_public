@@ -23,7 +23,6 @@
 
 
 /**********   external variables    **************/
-#define TEST_MAX_STACK_USAGE 1
 
 
 
@@ -207,7 +206,6 @@ EXTERN_C_FUNCTION void low_level_init(uint32_t curr_stack)
 {
 	uint32_t *src ;
 	uint32_t *dst ;
-	uint32_t pattern = 0xb6b6b6b6;
 
 	v7_outer_cache_inval_all();
 
@@ -216,22 +214,22 @@ EXTERN_C_FUNCTION void low_level_init(uint32_t curr_stack)
 
 
 #if  ( (1 == CONFIG_CORTEX_M3 ) || (1 == CONFIG_CORTEX_M4) )
-    #if (1==TEST_MAX_STACK_USAGE)
-	    fill_mem32_with_pattern(&Buttom_Of_Stacks , curr_stack , pattern);
+    #if (1==CONFIG_EXCEPTION_STACKS_DEBUG)
+	    fill_mem32_with_pattern(&Buttom_Of_Stacks , curr_stack , 0xb1b1b1b1);
     #endif
 #else /* cortex - a9 */
-	#if (1==TEST_MAX_STACK_USAGE)
-		fill_mem32_with_pattern(&__irq_stack_buttom__ , &__irq_stack_top__ , pattern++);
-		fill_mem32_with_pattern(&__fiq_stack_buttom__ , &__fiq_stack_top__ , pattern++);
-		fill_mem32_with_pattern(&__abt_stack_buttom__ , &__abt_stack_top__ , pattern++);
-		fill_mem32_with_pattern(&__und_stack_buttom__ , &__und_stack_top__ , pattern++);
-		fill_mem32_with_pattern(&__sys_stack_buttom__ , &__sys_stack_top__ , pattern++);
-		fill_mem32_with_pattern(&__svc_stack_buttom__ , &curr_stack , pattern);
+	#if (1==CONFIG_EXCEPTION_STACKS_DEBUG)
+		fill_mem32_with_pattern(&__irq_stack_buttom__ , &__irq_stack_top__ , 0xb1b1b1b1);
+		fill_mem32_with_pattern(&__fiq_stack_buttom__ , &__fiq_stack_top__ , 0xb2b2b2b2);
+		fill_mem32_with_pattern(&__abt_stack_buttom__ , &__abt_stack_top__ , 0xb4b4b4b4);
+		fill_mem32_with_pattern(&__und_stack_buttom__ , &__und_stack_top__ , 0xb5b5b5b5);
+		fill_mem32_with_pattern(&__sys_stack_buttom__ , &__sys_stack_top__ , 0xb6b6b6b6);
+		fill_mem32_with_pattern(&__svc_stack_buttom__ , &curr_stack , 0xb3b3b3b3);
 	#endif
 
 
 
-#ifdef NUVOTON_POLEG
+#ifdef CONFIG_POLEG
     #if defined(CONFIG_CODE_LOCATION_INTERNAL_SRAM)
 	/* remap 0x100 bytes of 0xffff0000 to sram  */
 		*((volatile uint32_t *)0xf0800074) |=  (1<<18);
