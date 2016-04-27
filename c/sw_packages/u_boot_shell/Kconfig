@@ -1,4 +1,8 @@
 
+config  U_BOOT_SHELL_MAX_NUM_OF_DYNAMIC_INSTANCES 
+	int   "maximal number of dynamic instances"
+	default 1
+
 
 config SYS_MAXARGS
 	int   "maximal number of arguments"

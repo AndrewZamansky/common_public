@@ -8,9 +8,7 @@
 ***************************************** */
 
 /***************   includes    *******************/
-#include "_project_typedefs.h"
-#include "_project_defines.h"
-#include "_project_func_declarations.h"
+#include "_project.h"
 
 
 /***************   defines    *******************/
@@ -39,6 +37,8 @@ extern uint32_t __relocation_section_start_on_ROM__;
 
 extern void do_startup(void);
 extern void do_software_interrupt_asm(void);
+uint32_t board_init_before_main_function();
+
 int smihosting_is_active = 0 ;
 /***********   loacal variables    **************/
 
@@ -282,5 +282,6 @@ EXTERN_C_FUNCTION void low_level_init(uint32_t curr_stack)
 	for (dst = &__bss_start__; dst< &__bss_end__; dst++ /* 4 bytes copy*/)
 	  *dst = 0;
 
+	board_init_before_main_function();
 
 }

@@ -1,0 +1,18 @@
+
+INCLUDE_THIS_COMPONENT := $(CONFIG_NONE_RT_OS)
+
+
+
+
+#INCLUDE_DIR = 
+
+#DEFINES = 
+
+
+#ASMFLAGS =  
+
+
+VPATH = src
+
+
+include $(COMMON_CC)

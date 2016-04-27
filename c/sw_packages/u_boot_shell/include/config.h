@@ -7,6 +7,14 @@
 #include "stdio.h"
 #include "stdlib.h"
 
+#include "dev_managment_api.h"
+#include "PRINTF_api.h"
+extern pdev_descriptor_const gCurrReplyDev;
+
+#define printf(...)		PRINTF_REPLY(gCurrReplyDev,__VA_ARGS__)
+
+#define CONFIG_USE_STDINT
+
 #ifndef  EXIT_SUCCESS
 	typedef remove_or_rename_stdlib_h_in_uboot_include_dir  dummy_type;
 #endif

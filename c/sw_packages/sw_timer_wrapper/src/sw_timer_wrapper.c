@@ -43,9 +43,9 @@
 
 /***********   local variables    **************/
 
-#if SW_UART_WRAPPER_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
+#if CONFIG_SW_TIMER_WRAPPER_MAX_NUM_OF_DYNAMIC_INSTANCES > 0
 
-	static SW_UART_WRAPPER_Instance_t SW_UART_WRAPPER_InstanceParams[SW_UART_WRAPPER_CONFIG_NUM_OF_DYNAMIC_INSTANCES] = { {0} };
+	static SW_UART_WRAPPER_Instance_t SW_UART_WRAPPER_InstanceParams[CONFIG_SW_TIMER_WRAPPER_MAX_NUM_OF_DYNAMIC_INSTANCES] = { {0} };
 	static uint16_t usedInstances =0 ;
 
 	static const dev_param_t SW_UART_WRAPPER_Dev_Params[]=
@@ -111,7 +111,7 @@ uint8_t sw_timer_wrapper_ioctl(void * const aHandle ,const uint8_t aIoctl_num , 
 
 
 
-#if SW_TIMER_WRAPPER_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
+#if CONFIG_SW_TIMER_WRAPPER_MAX_NUM_OF_DYNAMIC_INSTANCES>0
 
 /*---------------------------------------------------------------------------------------------------------*/
 /* Function:        SW_TIMER_WRAPPER_API_Init_Dev_Descriptor                                                                          */
@@ -128,7 +128,7 @@ uint8_t  sw_timer_wrapper_api_init_dev_descriptor(pdev_descriptor aDevDescriptor
 {
 	SW_TIMER_WRAPPER_Instance_t *pInstance;
 	if(NULL == aDevDescriptor) return 1;
-	if (usedInstances >= SW_TIMER_WRAPPER_CONFIG_NUM_OF_DYNAMIC_INSTANCES) return 1;
+	if (usedInstances >= CONFIG_SW_TIMER_WRAPPER_MAX_NUM_OF_DYNAMIC_INSTANCES) return 1;
 
 	pInstance = &SW_TIMER_WRAPPER_InstanceParams[usedInstances ];
 	pInstance->this_dev = aDevDescriptor;

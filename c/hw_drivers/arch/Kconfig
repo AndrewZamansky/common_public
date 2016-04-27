@@ -148,10 +148,6 @@ config CPU_SPECIFIC_FILES_ARE_SPEAD_CRITICAL
 
 endmenu
 
-config RUNNING_ON_PALLADIUM
-	bool "running on palladium simulation"
-    depends on POLEG
-    default n
 
 config EXCEPTION_STACKS_DEBUG
 	bool "fill system stacks with pattern (help to debug stack overflow)"

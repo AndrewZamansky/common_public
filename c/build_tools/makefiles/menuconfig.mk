@@ -45,6 +45,9 @@ ifeq ($(findstring Redirection is not supported,$(SHELL_OUTPUT)),Redirection is 
 endif
 
 menuconfig :
+	$(RM) $(OBJ_DIR)
+	$(RM) $(OUT_DIR)
+	$(RM) $(AUTO_GENERATED_FILES_DIR)
 	$(info auto generated Kconfig created)
 
 

@@ -19,6 +19,7 @@
 
 typedef struct {
 	pdev_descriptor_const   callback_dev;
+	pdev_descriptor this_dev;
 } SEMIHOSTING_Instance_t;
 
 #endif

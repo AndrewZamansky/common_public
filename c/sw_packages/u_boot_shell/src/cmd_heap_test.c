@@ -39,8 +39,9 @@
 /*
  *  cmd_get_serial.c
  */
+#include "_project.h"
 
-#include <command.h>
+#include <u-boot/include/command.h>
 #include "shell_api.h"
 #include "included_modules.h"
 

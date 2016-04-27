@@ -8,8 +8,9 @@ extern uint8_t arm_sh_ioctl(void * const aHandle ,const uint8_t aIoctl_num , voi
 extern size_t arm_sh_pwrite(const void *aHandle ,const uint8_t *apData , size_t aLength, size_t aOffset);
 
 #define __ARM_SH_API_CREATE_STATIC_DEV(dev,dev_name,callback_dev)	\
+		extern const dev_descriptor_t dev ;							\
 		extern const dev_descriptor_t callback_dev ;			\
-		SEMIHOSTING_Instance_t handle_of_##dev =	 {&callback_dev};	\
+		SEMIHOSTING_Instance_t handle_of_##dev =	 {&callback_dev,&dev};	\
 		const dev_descriptor_t dev =							\
 			{											\
 				dev_name,								\

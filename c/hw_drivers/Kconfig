@@ -19,7 +19,8 @@ config INCLUDE_GIC
 	bool   "gic"
 	depends on CORTEX_A9
 	default n
-	
+
+######## semihosting configurations #########
 menuconfig INCLUDE_SEMIHOSTING
 	bool   "semihosting"
 	depends on ARM
@@ -29,7 +30,14 @@ menuconfig INCLUDE_SEMIHOSTING
 config ARM_SEMIHOSTING_CONFIG_ENABLE_RX
 	bool   "enable rx of semihosting"
 	depends on INCLUDE_SEMIHOSTING
+	select INCLUDE_PRINTF
 	default n
+	
+config ARM_SEMIHOSTING_RX_BUFFER
+	int   "semihostint rx buffer size"
+	depends on INCLUDE_SEMIHOSTING
+	default 32	
+######## end of semihosting configurations #########	
 
 config INCLUDE_INTERNAL_UART
 	bool   "internal uart"

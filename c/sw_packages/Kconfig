@@ -91,10 +91,12 @@ menuconfig INCLUDE_SHELL
 	
 if INCLUDE_SHELL
 source "$COMMON_DIR_PATH/c/sw_packages/shell/Kconfig"
+endif
+
+if INCLUDE_SHELL || ARM_SEMIHOSTING_CONFIG_ENABLE_RX
 
 menuconfig INCLUDE_UBOOT_SHELL
 	bool   "uboot shell"
-	depends on INCLUDE_SHELL
 	default n
 
 if INCLUDE_UBOOT_SHELL

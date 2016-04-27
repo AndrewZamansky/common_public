@@ -69,7 +69,7 @@ choice
 	default OPTIMISE_NONE
 
 config OPTIMISE_NONE
-	bool "No Optimisations"
+	bool "-O0 : No Optimisations"
 
 config OPTIMISE_WITH_DEBUG
 	bool "-Og  : Optimise without loss in debug info "
