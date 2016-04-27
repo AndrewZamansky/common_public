@@ -167,7 +167,7 @@ ifeq ($(PROJECT_NAME),) 	 # if $(PROJECT_NAME) is empty
     $(info project have to be named)
     $(error )
 endif
-$(info ---- project name as declared in config.mk : $(PROJECT_NAME) ---- )
+$(info ---- project name as declared in .config : $(PROJECT_NAME) ---- )
 
 
 ####################     configuring git  ######################
