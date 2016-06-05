@@ -1,0 +1,116 @@
+menu "nuc505 soc configuration"
+
+config MAX_NUMBER_OF_CLOCKS
+    hex
+    default 2 
+    
+config INITIAL_CORE_CLOCK
+    hex
+    default CRYSTAL_CLOCK 
+
+config CORTEX_M4
+	def_bool y
+
+#######################################
+##########  clock tree  ###############
+
+menu "clocks tree"
+
+comment "CONFIG_DT_XTAL_CLOCK : external crystal clock "
+config DT_XTAL_CLOCK
+    hex
+    default 1 
+
+config DT_XTAL_CLOCK_RATE
+    hex
+    default CRYSTAL_CLOCK 
+
+
+
+comment "CONFIG_DT_CORE_CLOCK : cortex m systick clock "
+config DT_CORE_CLOCK
+    hex
+    default 2
+
+endmenu
+
+
+##########  end of  clock tree  ###############
+###############################################
+
+##################################################
+##########  interrupts definitions ###############
+
+menu "interrupts"
+
+comment "CONFIG_DT_CORTEX_M_SYSTICK_INTERRUPT : systick interrupt "
+config DT_CORTEX_M_SYSTICK_INTERRUPT
+    int
+    default -1 
+
+comment "CONFIG_DT_I2S_INTERRUPT : I2S interrupt "
+config DT_I2S_INTERRUPT
+    int
+    default 23 
+
+comment "CONFIG_DT_UART0_INTERRUPT : uart0 interrupt "
+config DT_UART0_INTERRUPT
+    int
+    default 23 
+
+comment "CONFIG_DT_UART1_INTERRUPT : uart1 interrupt "
+config DT_UART1_INTERRUPT
+    int
+    default 24 
+    
+    
+comment "CONFIG_DT_UART2_INTERRUPT : uart2 interrupt "
+config DT_UART2_INTERRUPT
+    int
+    default 28 
+        
+endmenu
+
+
+##########  end of interrupts definitions ###############
+#########################################################
+    
+config RAM_START_ADDR
+    hex "ram start address in hex"
+    default 0x20000000
+
+config RAM_SIZE
+    hex "ram size in hex"
+    default 0x20000    
+
+config FLASH_START_ADDR
+    hex "flash start address in hex"
+    default 0x0
+
+config FLASH_SIZE
+    hex "flash size in hex"
+    default 0x40000   
+
+
+
+
+menuconfig DT_SYSTICK
+	bool   "enable systick"
+	default n
+	
+comment "CONFIG_DT_CORTEX_M_SYSTICK_INPUT_CLOCK : systick clock "
+	depends on DT_SYSTICK
+config DT_CORTEX_M_SYSTICK_INPUT_CLOCK
+	int   
+	default DT_CORE_CLOCK
+	depends on DT_SYSTICK
+
+comment "CONFIG_DT_CORTEX_M_SYSTICK_INTERRUPT : systick interrupt "
+	depends on DT_SYSTICK
+
+
+
+
+endmenu
+
+

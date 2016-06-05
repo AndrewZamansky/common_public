@@ -18,7 +18,6 @@
 /********  types  *********************/
 
 typedef struct {
-	uint32_t input_clock;
 	uint32_t rate;
 	timer_callback_func_t timer_callback;
 	uint8_t mode;

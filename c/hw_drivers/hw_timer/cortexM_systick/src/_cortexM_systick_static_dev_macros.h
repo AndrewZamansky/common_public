@@ -6,9 +6,9 @@
 uint8_t cortexM_systick_ioctl( void * const aHandle ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2);
 
 
-#define __CORTEXM_SYSTICK_API_CREATE_STATIC_DEV(dev,dev_name ,input_clock , rate ,mode , callback)\
+#define __CORTEXM_SYSTICK_API_CREATE_STATIC_DEV(dev,dev_name ,  rate ,mode , callback)\
 		extern const dev_descriptor_t dev ;						\
-		CORTEXM_SYSTICK_Instance_t handle_of_##dev =	 { input_clock , rate , callback , mode };	\
+		CORTEXM_SYSTICK_Instance_t handle_of_##dev =	 {  rate , callback , mode  };	\
 		const dev_descriptor_t dev =								\
 			{											\
 				dev_name,								\

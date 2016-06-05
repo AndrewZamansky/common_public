@@ -86,8 +86,8 @@
 #define configUSE_PREEMPTION		1
 #define configUSE_IDLE_HOOK			1
 #define configUSE_TICK_HOOK			0
-#define configCPU_CLOCK_HZ			( ( unsigned long ) CONFIG_CORE_CLOCK )
-#define configTICK_RATE_HZ			( ( TickType_t ) 1000 )
+#define configCPU_CLOCK_HZ			0 // not in use . os clock configured in application . was : ( ( unsigned long ) CONFIG_CORE_CLOCK )
+#define configTICK_RATE_HZ			1 // not in use . os clock configured in application . was : ( ( TickType_t ) 1000 )
 #define configMAX_PRIORITIES		( 5 )
 #define configMINIMAL_STACK_SIZE	( ( unsigned short ) 256 )
 #define configTOTAL_HEAP_SIZE		( ( size_t ) ( CONFIG_HEAP_SIZE ) )

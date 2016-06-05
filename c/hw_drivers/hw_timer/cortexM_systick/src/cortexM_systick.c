@@ -12,6 +12,7 @@
 #include "cortexM_systick_api.h"
 #include "cortexM_systick.h"
 #include "NVIC_api.h"
+#include "clocks_api.h"
 
 
 
@@ -95,11 +96,6 @@ uint8_t cortexM_systick_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 			*(uint8_t*)aIoctl_param2 =  sizeof(CORTEXM_SYSTICK_Dev_Params)/sizeof(dev_param_t); //size
 			break;
 
-		case IOCTL_TIMER_INPUT_CLOCK_HZ_SET :
-			{
-				INSTANCE(aHandle)-> input_clock = ((timer_callback_func_t)aIoctl_param1);
-			}
-			break;
 #endif
 		case IOCTL_TIMER_RATE_HZ_SET :
 			{
@@ -120,17 +116,19 @@ uint8_t cortexM_systick_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 			break;
 
 		case IOCTL_DEVICE_START :
-			pCORTEXM_SYSTICK_InstanceParams = (CORTEXM_SYSTICK_Instance_t*)aHandle;
-			/* Configure SysTick to interrupt at the requested rate. */
-			  SysTick->LOAD  = ((INSTANCE(aHandle)->input_clock/INSTANCE(aHandle)->rate) & SysTick_LOAD_RELOAD_Msk) - 1;      /* set reload register */
-			  SysTick->VAL   = 0;                                          /* Load the SysTick Counter Value */
-			  SysTick->CTRL  = SysTick_CTRL_CLKSOURCE_Msk |
+			{
+				uint32_t core_clock_rate = 	clocks_api_get_rate(CONFIG_DT_CORTEX_M_SYSTICK_INPUT_CLOCK);
+				pCORTEXM_SYSTICK_InstanceParams = (CORTEXM_SYSTICK_Instance_t*)aHandle;
+				/* Configure SysTick to interrupt at the requested rate. */
+				SysTick->LOAD  = ((core_clock_rate/INSTANCE(aHandle)->rate) & SysTick_LOAD_RELOAD_Msk) - 1;      /* set reload register */
+				SysTick->VAL   = 0;                                          /* Load the SysTick Counter Value */
+				SysTick->CTRL  = SysTick_CTRL_CLKSOURCE_Msk |
 			                   SysTick_CTRL_TICKINT_Msk   |
 			                   SysTick_CTRL_ENABLE_Msk;                    /* Enable SysTick IRQ and SysTick Timer */
 
-			NVIC_API_RegisterInt(SysTick_IRQn , SysTick_IRQHandler);
-			//	NVIC_API_EnableInt(SysTick_IRQn);// no need to enable systick interrupt
-
+				NVIC_API_RegisterInt(CONFIG_DT_CORTEX_M_SYSTICK_INTERRUPT , SysTick_IRQHandler);
+				//	NVIC_API_EnableInt(SysTick_IRQn);// no need to enable systick interrupt
+			}
 			break;
 
 		case IOCTL_TIMER_STOP :
