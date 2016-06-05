@@ -7,8 +7,7 @@
 
 
 /***************   includes    *******************/
-#include "global_typedefs.h"
-//#include "Drivers_APP_HAL/TimerPoleg/TimerPoleg_hal.h"
+#include "src/_timer_poleg_prerequirements_check.h"
 #include "TimerPoleg_API.h"
 #include "TimerPoleg.h"
 
@@ -18,7 +17,8 @@
 /***************   typedefs    *******************/
 
 #define TimerPoleg_hal_writeRegU32(reg,val)  *((volatile uint32_t *)reg)=val
-
+#define TimerPoleg_hal_readRegU32(reg) *((volatile uint32_t *)reg)
+#define TimerPoleg_hal_InputClock() 25000000
 /**********   external variables    **************/
 
 
@@ -72,9 +72,9 @@ uint8_t TWD_DisableTimer(int TimerModule,int PortNum)
 	TimerPoleg_hal_writeRegU32(TISR(3),0x1F); // clear interrupt in timer
 	int IntNum = TIMER_INT_0 + (TimerModule * PortNum);
 
-	TimerPoleg_hal_RegisterInterrupt(IntNum,NULL);
+	GIC_API_RegisterHandler(IntNum,NULL,0);
 
-	TimerPoleg_hal_DisableInt(IntNum);
+	GIC_API_DisableInt(IntNum);
 	return 0;
 
 }
@@ -108,10 +108,11 @@ uint8_t TWD_DisableTimers()
 /*---------------------------------------------------------------------------------------------------------*/
 void TWD_1_ISR()
 {
-	static int i=0;
+	static int tmp,i=0;
 	//--------------------------------------------------------
 	//		Clear Pending interrupts
 	//-----------------------------------------------------------
+	*((volatile uint32_t *)0xfffeff00)=i++;
 
 	//FreeRTOS_Tick_Handler();
 	TimerPoleg_hal_writeRegU32(TISR_1,0x1F);
@@ -223,9 +224,9 @@ uint8_t TimerPoleg_API_Init_No_Start(int TimerModule, int TimerPort,
 
 	int IntNum = TIMER_INT_0 + (TimerModule * TimerPort);
 	//TimerPoleg_hal_RegisterInterrupt(IntNum,afTimerCallback);
-	TimerPoleg_hal_RegisterInterrupt(IntNum,TWD_1_ISR);
+	GIC_API_RegisterHandler(IntNum,TWD_1_ISR,0);
 
-	TimerPoleg_hal_EnableInt(IntNum);
+	GIC_API_EnableInt(IntNum);
 	return 0;
 }
 
@@ -244,6 +245,5 @@ uint8_t TimerPoleg_API_Start(int TimerModule, int TimerPort)
 
 	return 0;
 }
-
 
 

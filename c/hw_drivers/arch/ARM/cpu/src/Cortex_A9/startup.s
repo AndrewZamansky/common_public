@@ -21,17 +21,15 @@
 ;----------------------------------------------------------
 */
 
-.section ._inner_vector_table,"ax"
-.global _inner_vector_table
-.global _inner_vector_table_semihosting_entry
-_inner_vector_table:
+.section ._secondary_rom_vector_table,"ax"
+.global _secondary_rom_vector_table
+.global _secondary_rom_vector_table_startup_entry
+_secondary_rom_vector_table:
 
-_inner_vector_table_startup_entry:
+_secondary_rom_vector_table_startup_entry:
     ldr pc, _startup_text
-_inner_vector_table_startup_with_debugger_entry:
+_secondary_rom_vector_table_startup_with_debugger_entry:
     ldr pc, _startup_text_with_debugger
-_inner_vector_table_semihosting_entry:
-    ldr pc, _return_from_semihosting_text
 
 /*end of _inner_vector_table */
 
@@ -39,6 +37,12 @@ _inner_vector_table_semihosting_entry:
 
 _startup_text: .word do_startup
 _startup_text_with_debugger: .word do_startup_with_debugger
+
+.section ._secondary_ram_vector_table,"ax"
+.global _secondary_ram_vector_table_semihosting_entry
+
+_secondary_ram_vector_table_semihosting_entry:
+    ldr pc, _return_from_semihosting_text
 _return_from_semihosting_text: .word return_from_semihosting
 
 .section .text.startup , "ax"
@@ -101,14 +105,16 @@ do_startup_common:
 	pop {lr}
 
 	push {lr}
- 	ldr r0,=low_level_init
- 	blx r0
+
+	mov r0,sp
+ 	ldr r1,=low_level_init
+ 	blx r1
  	pop {pc}
 
 label_error:
 	B .
 
-
+#define CONFIG_SYS_ICACHE_OFF
 /*************************************************************************
  *
  * cpu_init_cp15
@@ -125,14 +131,14 @@ cpu_init_cp15:
 	mcr	p15, 0, r0, c8, c7, 0	@ invalidate TLBs
 	mcr	p15, 0, r0, c7, c5, 0	@ invalidate icache
 	mcr	p15, 0, r0, c7, c5, 6	@ invalidate BP array
-	mcr     p15, 0, r0, c7, c10, 4	@ DSB
-	mcr     p15, 0, r0, c7, c5, 4	@ ISB
+	mcr p15, 0, r0, c7, c10, 4	@ DSB
+	mcr p15, 0, r0, c7, c5, 4	@ ISB
 
 	/*
 	 * disable MMU stuff and caches
 	 */
 	mrc	p15, 0, r0, c1, c0, 0
-#ifdef REMAP_EXEPTION_TABLE_TO_ROM
+#if defined(CODE_LOCATION_INTERNAL_ROM_FOR_ASM) || defined(CODE_LOCATION_INTERNAL_SRAM_FOR_ASM)
 	orr r0,#0x00002000 @ clear bits 13 (--V-)
 #else
 	bic r0,r0,#0x00002000 @ clear bits 13 (--V-)

@@ -55,8 +55,7 @@ static const dev_param_t Shell_Dev_Params[]=
 		{IOCTL_SET_SERVER_DEVICE_BY_NAME , IOCTL_VOID , (uint8_t*)SHELL_API_SERVER_DEVICE_STR, NOT_FOR_SAVE},
 };
 
-#define MAX_NUM_OF_SHELL_SERVERS	3
-shell_instance_t	shell_instances[MAX_NUM_OF_SHELL_SERVERS] = {{0}};
+shell_instance_t	shell_instances[CONFIG_SHELL_MAX_NUM_OF_DYNAMIC_INSTANCES] = {{0}};
 uint8_t usedShellInstances = 0;
 
 #endif
@@ -388,7 +387,7 @@ uint8_t  shell_api_init_dev_descriptor(pdev_descriptor aDevDescriptor)
 {
 	shell_instance_t *pShell_instance;
 
-	if(MAX_NUM_OF_SHELL_SERVERS <= usedShellInstances) return 1;
+	if(CONFIG_SHELL_MAX_NUM_OF_DYNAMIC_INSTANCES <= usedShellInstances) return 1;
 
 	if(NULL == aDevDescriptor) return 1;
 

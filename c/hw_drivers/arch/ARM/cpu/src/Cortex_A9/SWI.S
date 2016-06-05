@@ -53,7 +53,7 @@ end_of_swi_handler:
     MOVS pc, lr           /* Return if SWI handled. */
 
 execute_semihosting:
-	LDR r4,=_inner_vector_table_semihosting_entry  /* go to semihosting entry  */
+	LDR r4,=_secondary_ram_vector_table_semihosting_entry  /* go to semihosting entry  */
     BX r4
 
 

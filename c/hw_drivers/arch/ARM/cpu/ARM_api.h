@@ -2,9 +2,7 @@
 #ifndef _ARM_API_H_
 #define _ARM_API_H_
 
-#include "arm_semihosting_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
-#include "src/_semihosting_prerequirements_check.h" // should be after {arm_semihosting_config.h,dev_managment_api.h}
+#include "src/_semihosting_prerequirements_check.h"
 
 
 /**********  defines ************/
@@ -14,12 +12,16 @@
 
 /**********  define API  types ************/
 
+typedef enum
+{
+	IOCTL_ARM_SH_CALL_NO_OS_TASK = IOCTL_LAST_COMMON_IOCTL+1
+}ARM_ioctl_t;
 
 /**********  define API  functions  ************/
 
 //int ARM_API_Init(void);
 //int ARM_API_SH_Init(void);
-int ARM_API_SH_Open(char* fileName, int mode);
+int ARM_API_SH_Open(const char* fileName, int mode);
 int ARM_API_SH_Close(int FileHandle);
 int ARM_API_SH_Read(int FileHandle, uint8_t * pBuffer, int NumBytesToRead);
 int ARM_API_SH_GetFileLength(int FileHandle);

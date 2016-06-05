@@ -45,8 +45,8 @@ config USE_NANO_STD_LIBS
 	default n
 
 
-menu "Toolchain Libraries"
-config INCLUDE_TOOLCHAIN_LIBRARIES
+
+menuconfig INCLUDE_TOOLCHAIN_LIBRARIES
 	bool   "tool chain libraries"
 	default y
 	
@@ -54,8 +54,6 @@ config TOOLCHAIN_LIBRARIES_ARE_SPEED_CRUCIAL
 	bool   "tool chain libraries are speed crucial"
 	depends on INCLUDE_TOOLCHAIN_LIBRARIES
 	default n	
-
-endmenu
 
 endif
 
@@ -71,7 +69,7 @@ choice
 	default OPTIMISE_NONE
 
 config OPTIMISE_NONE
-	bool "No Optimisations"
+	bool "-O0 : No Optimisations"
 
 config OPTIMISE_WITH_DEBUG
 	bool "-Og  : Optimise without loss in debug info "

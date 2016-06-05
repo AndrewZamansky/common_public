@@ -9,9 +9,15 @@
  */
 
 
-#include "Drivers_APP_HAL/GIC/gic_hal.h"
+#include "src/_gic_prerequirements_check.h"
 #include "gic.h"
 #include "gic_API.h"
+
+#define GIC_INTERRUPT_NUM               160           // GIC (INTC for A9) first 32 interrupts are not used
+
+#define GIC_PHYS_BASE_ADDR              0xF03FE000
+#define GIC_BASE_ADDR                   GIC_PHYS_BASE_ADDR
+
 
 #define GIC_CPU_INTERFACE_OFFSET   0x0100
 #define GIC_DISTRIBUTOR_OFFSET     0x1000
@@ -76,6 +82,74 @@ static GIC_IsrEntry_T GIC_handler_table[GIC_INTERRUPT_NUM];
 
 
 static int g_init_done=0;
+
+#if defined(CONFIG_CODE_LOCATION_INTERNAL_SRAM)
+	#define VECTOR_TABLE_BA  0xfffd0000
+#else
+	#define VECTOR_TABLE_BA  0x0
+#endif
+
+/* function   gic_hal_init
+ *
+ */
+void	gic_hal_init(void ( GIC_Isr)(void))
+{
+	// install isr  (az fiq also installed ??)
+	*((volatile unsigned int *)(VECTOR_TABLE_BA + 0x18))=0xE59FF018;
+	*((volatile unsigned int *)(VECTOR_TABLE_BA + 0x38))=(uint32_t)GIC_Isr;
+}
+
+
+/*  function   gic_hal_disable_interrupts
+ *
+ */
+void gic_hal_disable_interrupts  (  void )
+{ /* Body */
+	unsigned long old,temp;
+#if defined(__GNUC__)
+	__asm__ __volatile__("mrs %0, cpsr\n"
+			     "orr %1, %0, #0xc0\n"
+			     "msr cpsr_c, %1"
+			     : "=r" (old), "=r" (temp)
+			     :
+			     : "memory");
+#elif defined(__arm)
+	__asm
+	{
+		mrs old, cpsr
+	    orr temp, old, #0xc0
+	    msr cpsr_c, temp
+	};
+#endif
+} /* EndBody */
+
+
+/*  function   gic_hal_enable_interrupts
+ *
+ *
+ */
+void gic_hal_enable_interrupts (  void  )
+{ /* Body */
+	//GIC_EnableInt(USB_INTERRUPT_NUM);
+	unsigned long temp;
+#if defined(__GNUC__)
+	__asm__ __volatile__("mrs %0, cpsr\n"
+			     "bic %0, %0, #0x80\n"
+			     "msr cpsr_c, %0"
+			     : "=r" (temp)
+			     :
+			     : "memory");
+#elif defined(__arm)
+	__asm
+	{
+		mrs temp, cpsr
+	    bic temp, temp, #0x80
+	    msr cpsr_c, temp
+	};
+#endif
+
+
+} /* EndBody */
 
 
 /*---------------------------------------------------------------------------------------------------------*/

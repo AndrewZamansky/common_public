@@ -2,8 +2,12 @@
 INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_UBOOT_SHELL)
 
 ifdef CONFIG_INCLUDE_UBOOT_SHELL
+    ifeq ("$(wildcard $(EXTERNAL_SOURCE_ROOT_DIR)/u-boot)","")
+        $(info !!!   $(EXTERNAL_SOURCE_ROOT_DIR)/u-boot don't exists !!!! )
+        $(error )
+    endif	
     DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH ,  $(SW_PACKAGES_ROOT_DIR)/u_boot_shell/include )
-    DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(EXTERNAL_SOURCE_ROOT_DIR)/u-boot/include)
+    DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(EXTERNAL_SOURCE_ROOT_DIR)/)
 endif
 #DEFINES = 
 
@@ -13,9 +17,9 @@ endif
 
 #ASMFLAGS =  
 
+INCLUDE_DIR = $(EXTERNAL_SOURCE_ROOT_DIR)/u-boot/include
 
-
-SRC = uboot.c
+SRC = u_boot_shell.c
 
 ifdef CONFIG_UBOOT_CMD_GET_SERIAL
     SRC += cmd_get_serial.c

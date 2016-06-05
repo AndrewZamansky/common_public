@@ -2,6 +2,10 @@
 INCLUDE_THIS_COMPONENT := $(CONFIG_FREE_RTOS)
 
 ifdef CONFIG_FREE_RTOS 	 
+    ifeq ("$(wildcard $(EXTERNAL_SOURCE_ROOT_DIR)/FreeRTOS/FreeRTOS/Source/include)","")
+        $(info !!!   $(EXTERNAL_SOURCE_ROOT_DIR)/FreeRTOS/FreeRTOS/Source/include don't exists !!!! )
+        $(error )
+    endif
     DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH ,  $(EXTERNAL_SOURCE_ROOT_DIR)/FreeRTOS/FreeRTOS/Source/include )
     DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH ,  $(EXTERNAL_SOURCE_ROOT_DIR)/FreeRTOS/FreeRTOS/Demo/Common/include )
     DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH ,  $(EXTERNAL_SOURCE_ROOT_DIR)/FreeRTOS/FreeRTOS/Source/portable/GCC/ARM_CM3 )

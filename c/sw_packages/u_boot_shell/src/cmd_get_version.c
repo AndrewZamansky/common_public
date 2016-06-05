@@ -39,8 +39,9 @@
 /*
  *  cmd_get_dev_param.c
  */
+#include "_project.h"
 
-#include <command.h>
+#include "u-boot/include/command.h"
 #include "shell_api.h"
 #include "version_managment_api.h"
 
@@ -61,8 +62,16 @@ int do_get_version (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	uint8_t ret_buff[MAX_RET_BUFF_SIZE+1];
 
 	dev_descriptor = DEV_OPEN((uint8_t*)"version");
-	DEV_READ(dev_descriptor,ret_buff,MAX_RET_BUFF_SIZE);
-	SHELL_REPLY_STR(ret_buff);
+	if(NULL != dev_descriptor)
+	{
+		DEV_READ(dev_descriptor,ret_buff,MAX_RET_BUFF_SIZE);
+		SHELL_REPLY_STR(ret_buff);
+		SHELL_REPLY_STR("\r\n");
+	}
+	else
+	{
+		SHELL_REPLY_STR("no device \"version\"");
+	}
 
 	return 0;
 }

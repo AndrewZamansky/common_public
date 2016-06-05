@@ -25,9 +25,9 @@
  #error unknown cortex-m type
 #endif
 
-#ifdef CONFIG_GCC
+#if defined(__GNUC__)
   #define IRQ_ATTR	__attribute__((interrupt("IRQ")))
-#elif defined CONFIG_ARMCC
+#elif defined(__arm)
   #define IRQ_ATTR	__irq
 #endif
 
@@ -83,7 +83,7 @@ int NVIC_API_RegisterInt(IRQn_Type int_num , NVIC_Isr_t pIsr)
 {
 
 	// +16 offset becouse IRQn_Type starts from -16
-    NVIC_hal_writeRegU32( CONFIG_RAM_START_ADDR + (((int)int_num + 16) << 2),(unsigned int)pIsr);// ( int_num  ) * 4
+    NVIC_hal_writeRegU32( RAM_START_ADDR + (((int)int_num + 16) << 2),(unsigned int)pIsr);// ( int_num  ) * 4
     return 0;
 }
 
@@ -155,10 +155,10 @@ void  NVIC_API_Init(void)
 
 
 #if (1 == CONFIG_CORTEX_M3 ) && (__CM3_REV < 0x0201)  /* core<r2p1 */
-    SCB->VTOR = CONFIG_RAM_START_ADDR & SCB_VTOR_TBLBASE_Msk;// set base to start of RAM
+    SCB->VTOR = RAM_START_ADDR & SCB_VTOR_TBLBASE_Msk;// set base to start of RAM
 #else
     // make sure that in cortex-m3 with revision < r2p1 bit 29 is 1
-    SCB->VTOR = CONFIG_RAM_START_ADDR;
+    SCB->VTOR = RAM_START_ADDR;
 #endif
 
     NVIC_SetPriorityGrouping(NVIC_PriorityGroup_4);

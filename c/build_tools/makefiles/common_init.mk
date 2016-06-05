@@ -167,7 +167,7 @@ ifeq ($(PROJECT_NAME),) 	 # if $(PROJECT_NAME) is empty
     $(info project have to be named)
     $(error )
 endif
-$(info ---- project name as declared in config.mk : $(PROJECT_NAME) ---- )
+$(info ---- project name as declared in .config : $(PROJECT_NAME) ---- )
 
 
 ####################     configuring git  ######################
@@ -178,6 +178,7 @@ ifeq ($(findstring ./.git,$(GIT_DIR)),) 	 # if not found ./.git in $(GIT_DIR)
 endif
 
 CURR_GIT_BRANCH := $(shell git rev-parse --abbrev-ref HEAD 2>&1)
+CURR_GIT_BRANCH := $(patsubst heads/%,%,$(CURR_GIT_BRANCH))#removing heads/ if exists
 ifneq ($(findstring ambiguous argument 'HEAD',$(CURR_GIT_BRANCH)),) 	 # if not found $(PROJECT_NAME) in $(CURR_GIT_BRANCH)
     $(info git error  :   $(CURR_GIT_BRANCH))
     $(info maybe branch was not created after git initialization )
@@ -195,6 +196,7 @@ ifeq ($(findstring $(PROJECT_NAME),$(CURR_GIT_BRANCH)),) 	 # if not found $(PROJ
 endif
 
 CURR_COMMON_GIT_BRANCH := $(shell $(SHELL_GO_TO_COMMON_GIT_DIR) git rev-parse --abbrev-ref HEAD)
+CURR_COMMON_GIT_BRANCH := $(patsubst heads/%,%,$(CURR_COMMON_GIT_BRANCH))#removing heads/ if exists
 ifneq ($(sort $(filter $(CURR_GIT_BRANCH),$(CURR_COMMON_GIT_BRANCH))),$(CURR_GIT_BRANCH))#if  $(CURR_GIT_BRANCH) is in $(SHELL_OUTPUT)
     SHELL_OUTPUT := $(shell $(SHELL_GO_TO_COMMON_GIT_DIR) git status --porcelain 2>&1)
     ERROR_MESSAGE := M 
@@ -269,6 +271,37 @@ ARCHIVE_OUTPUT := $(WORKSPACE_NAME).$(PROJECT_NAME).$(DATE_STR).7z
 
 #####   global compiler and linker flags :  #####   
  
+ifdef CONFIG_DATA_LOCATION_INTERNAL_SRAM
+    RAM_START_ADDR:=$(CONFIG_INTERNAL_SRAM_START_ADDR)
+    RAM_SIZE:=$(CONFIG_INTERNAL_SRAM_SIZE)
+endif
+ifdef CONFIG_DATA_LOCATION_DDR
+    RAM_START_ADDR:=$(CONFIG_DDR_START_ADDR)
+    RAM_SIZE:=$(CONFIG_DDR_SIZE)
+endif
+
+ifdef CONFIG_CODE_LOCATION_INTERNAL_SRAM
+    ROM_START_ADDR:=$(CONFIG_INTERNAL_SRAM_START_ADDR)
+    ROM_SIZE:=$(CONFIG_INTERNAL_SRAM_SIZE)
+endif
+ifdef CONFIG_CODE_LOCATION_DDR
+    ROM_START_ADDR:=$(CONFIG_DDR_START_ADDR)
+    ROM_SIZE:=$(CONFIG_DDR_SIZE)
+endif
+ifdef CONFIG_CODE_LOCATION_INTERNAL_ROM
+    ROM_START_ADDR:=$(CONFIG_INTERNAL_ROM_START_ADDR)
+    ROM_SIZE:=$(CONFIG_INTERNAL_ROM_SIZE)
+endif
+ifdef CONFIG_CODE_LOCATION_INTERNAL_FLASH
+    ROM_START_ADDR:=$(CONFIG_INTERNAL_FLASH_START_ADDR)
+    ROM_SIZE:=$(CONFIG_INTERNAL_FLASH_SIZE)
+endif
+ifdef CONFIG_CODE_LOCATION_EXTERNAL_FLASH
+    ROM_START_ADDR:=$(CONFIG_EXTERNAL_FLASH_START_ADDR)
+    ROM_SIZE:=$(CONFIG_EXTERNAL_FLASH_SIZE)
+endif
+
+GLOBAL_DEFINES += RAM_START_ADDR=$(RAM_START_ADDR)
 
 caclulate_component_dir = $(patsubst  %/,%, $(dir $(patsubst $(APP_ROOT_DIR)/%,%,$(realpath $1 ))))
 

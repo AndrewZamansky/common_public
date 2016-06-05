@@ -1,0 +1,18 @@
+menu "freeRTOS configurations"
+
+config HEAP_SIZE
+	int   "heap size"
+	default 10240
+	
+if ARM && (CORTEX_M3 || CORTEX_M4)
+config MAXIMAL_INTERRUPT_SYSCALL_PRIO
+	int   "maximal allowed priority for syscall from interrups . for nvic arm low number is higher priority"
+	default 5
+endif
+
+config TEST_TASK_STACK
+	bool   "add stack logs for tasks"
+	default y
+
+
+endmenu

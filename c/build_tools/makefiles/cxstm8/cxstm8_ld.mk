@@ -15,13 +15,6 @@ else
    GLOBAL_LDFLAGS += --cpu=$(CONFIG_CPU_TYPE) 
 endif
 
-#ifdef CONFIG_CODE_LOCATION_FLASH
-#	GLOBAL_LDFLAGS += --ro_base=$(CONFIG_FLASH_START_ADDR)
-#	GLOBAL_LDFLAGS += --entry=$(CONFIG_FLASH_START_ADDR)
-#else
-#	GLOBAL_LDFLAGS += --ro_base=$(CONFIG_RAM_START_ADDR)
-#	GLOBAL_LDFLAGS += --entry=$(CONFIG_RAM_START_ADDR)
-#endif
 
 GLOBAL_LDFLAGS += --library_type=microlib --strict 
 GLOBAL_LDFLAGS += --map --datacompressor=off --info=inline --entry do_startup 

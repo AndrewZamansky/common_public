@@ -39,13 +39,11 @@
 /*
  *  cmd_get_serial.c
  */
-#include "_project_typedefs.h"
-#include "_project_defines.h"
-#include "_project_func_declarations.h"
+#include "_project.h"
 
 #include "dev_managment_api.h" // for device manager defines and typedefs
 
-#include <command.h>
+#include <u-boot/include/command.h>
 #include "shell_api.h"
 #include "serial_number_stm32f10x_api.h"
 

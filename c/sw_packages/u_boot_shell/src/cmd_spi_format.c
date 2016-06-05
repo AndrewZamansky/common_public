@@ -39,11 +39,9 @@
 /*
  *  cmd_get_serial.c
  */
-#include "_project_typedefs.h"
-#include "_project_defines.h"
-#include "_project_func_declarations.h"
+#include "_project.h"
 
-#include <command.h>
+#include <u-boot/include/command.h>
 #include "shell_api.h"
 #include "SPI_FLASH_PARTITION_MANAGER_api.h"
 
