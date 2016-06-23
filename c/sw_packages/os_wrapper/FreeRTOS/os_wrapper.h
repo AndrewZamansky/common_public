@@ -15,11 +15,17 @@
 #include "_project_defines.h"
 #include "_project_func_declarations.h"
 
+#include "dev_managment_api.h"
 
 #include "FreeRTOS.h"
 #include "queue.h"
 #include "task.h"
 #include "semphr.h"
+
+
+typedef void (*app_tick_callback_func_t)(void)  ;
+typedef void (*app_idle_entrance_callback_func_t)(void)  ;
+
 
 extern BaseType_t xDummyHigherPriorityTaskWoken ;
 
@@ -53,10 +59,25 @@ typedef QueueHandle_t  os_queue_t;
 /**	function :	[os_init()]  **/
 #define os_init()
 
+/**	*********  setting ticker device ********        **/
+/** 					    		   **/
+/**	function :	[os_set_tick_timer_dev()]  **/
+void  os_set_tick_timer_dev(pdev_descriptor_t a_timer_dev);
+
+/**	*********  setting tick callback (if application need to perform something each tick)  ********        **/
+/** 					    		   **/
+/**	function :	[os_set_tick_callback()]  **/
+void  os_set_tick_callback(app_tick_callback_func_t a_app_tick_callback_func);
+
+/**	*********  setting idle entrance callback  ********        **/
+/** 					    		   **/
+/**	function :	[os_set_idle_entrance_callback()]  **/
+void  os_set_idle_entrance_callback(app_idle_entrance_callback_func_t a_app_idle_entrance_callback_func);
+
 /**	*********  starting os ********        **/
 /** 						    		   **/
 /**	function :	[os_start()]  **/
-#define os_start()		vTaskStartScheduler()
+void  os_start(void);
 
 
 

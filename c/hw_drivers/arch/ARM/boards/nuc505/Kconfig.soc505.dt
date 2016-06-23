@@ -16,7 +16,7 @@ config CORTEX_M4
 
 menu "clocks tree"
 
-comment "CONFIG_DT_XTAL_CLOCK : external crystal clock "
+comment "CONFIG_DT_XTAL_CLOCK : external crystal clock"
 config DT_XTAL_CLOCK
     hex
     default 1 
@@ -27,7 +27,7 @@ config DT_XTAL_CLOCK_RATE
 
 
 
-comment "CONFIG_DT_CORE_CLOCK : cortex m systick clock "
+comment "CONFIG_DT_CORE_CLOCK : cortex m systick clock"
 config DT_CORE_CLOCK
     hex
     default 2
@@ -43,28 +43,38 @@ endmenu
 
 menu "interrupts"
 
-comment "CONFIG_DT_CORTEX_M_SYSTICK_INTERRUPT : systick interrupt "
+comment "CONFIG_DT_SV_CALL_INTERRUPT : sv call interrupt"
+config DT_SV_CALL_INTERRUPT
+    int
+    default -5 
+
+comment "CONFIG_DT_PEND_SV_INTERRUPT : pending sv interrupt"
+config DT_PEND_SV_INTERRUPT
+    int
+    default -2 
+
+comment "CONFIG_DT_CORTEX_M_SYSTICK_INTERRUPT : systick interrupt"
 config DT_CORTEX_M_SYSTICK_INTERRUPT
     int
     default -1 
 
-comment "CONFIG_DT_I2S_INTERRUPT : I2S interrupt "
+comment "CONFIG_DT_I2S_INTERRUPT : I2S interrupt"
 config DT_I2S_INTERRUPT
     int
-    default 23 
+    default 3 
 
-comment "CONFIG_DT_UART0_INTERRUPT : uart0 interrupt "
+comment "CONFIG_DT_UART0_INTERRUPT : uart0 interrupt"
 config DT_UART0_INTERRUPT
     int
     default 23 
 
-comment "CONFIG_DT_UART1_INTERRUPT : uart1 interrupt "
+comment "CONFIG_DT_UART1_INTERRUPT : uart1 interrupt"
 config DT_UART1_INTERRUPT
     int
     default 24 
     
     
-comment "CONFIG_DT_UART2_INTERRUPT : uart2 interrupt "
+comment "CONFIG_DT_UART2_INTERRUPT : uart2 interrupt"
 config DT_UART2_INTERRUPT
     int
     default 28 
@@ -75,22 +85,37 @@ endmenu
 ##########  end of interrupts definitions ###############
 #########################################################
     
-config RAM_START_ADDR
-    hex "ram start address in hex"
+
+
+##################################################
+##############  memories on soc ##################
+
+menu "memories"
+
+comment "sram start : 0x20000000"
+config DT_SOC_RAM_START_ADDR
+    hex 
     default 0x20000000
 
-config RAM_SIZE
-    hex "ram size in hex"
+comment "sram size : 0x20000"
+config DT_SOC_RAM_SIZE
+    hex
     default 0x20000    
 
-config FLASH_START_ADDR
-    hex "flash start address in hex"
+comment "flash start : 0x0"
+config DT_SOC_FLASH_START_ADDR
+    hex
     default 0x0
 
-config FLASH_SIZE
-    hex "flash size in hex"
+comment "flash size : 0x40000"
+config DT_SOC_FLASH_SIZE
+    hex
     default 0x40000   
 
+endmenu
+
+#############  end of memories on soc ###################
+#########################################################
 
 
 
@@ -98,14 +123,14 @@ menuconfig DT_SYSTICK
 	bool   "enable systick"
 	default n
 	
-comment "CONFIG_DT_CORTEX_M_SYSTICK_INPUT_CLOCK : systick clock "
+comment "CONFIG_DT_CORTEX_M_SYSTICK_INPUT_CLOCK : systick clock"
 	depends on DT_SYSTICK
 config DT_CORTEX_M_SYSTICK_INPUT_CLOCK
 	int   
 	default DT_CORE_CLOCK
 	depends on DT_SYSTICK
 
-comment "CONFIG_DT_CORTEX_M_SYSTICK_INTERRUPT : systick interrupt "
+comment "CONFIG_DT_CORTEX_M_SYSTICK_INTERRUPT : systick interrupt"
 	depends on DT_SYSTICK
 
 

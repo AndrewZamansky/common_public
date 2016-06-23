@@ -154,7 +154,7 @@ uint8_t ram_disk_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t  ram_disk_api_init_dev_descriptor(pdev_descriptor aDevDescriptor)
+uint8_t  ram_disk_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor)
 {
 	ram_disk_InstanceParams.chip = apInit_params->chip;
 

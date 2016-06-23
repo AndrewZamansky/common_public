@@ -47,7 +47,7 @@
 
 #define MAX_RET_BUFF_SIZE 31
 /*
- * Subroutine:  force_output
+ * Subroutine:  do_get_version
  *
  * Description:
  *
@@ -58,20 +58,12 @@
  */
 int do_get_version (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
-	pdev_descriptor dev_descriptor;
 	uint8_t ret_buff[MAX_RET_BUFF_SIZE+1];
 
-	dev_descriptor = DEV_OPEN((uint8_t*)"version");
-	if(NULL != dev_descriptor)
-	{
-		DEV_READ(dev_descriptor,ret_buff,MAX_RET_BUFF_SIZE);
-		SHELL_REPLY_STR(ret_buff);
-		SHELL_REPLY_STR("\r\n");
-	}
-	else
-	{
-		SHELL_REPLY_STR("no device \"version\"");
-	}
+	DEV_READ(ver_dev,ret_buff,MAX_RET_BUFF_SIZE);
+	SHELL_REPLY_STR(ret_buff);
+	SHELL_REPLY_STR("\r\n");
+
 
 	return 0;
 }

@@ -24,7 +24,7 @@ typedef struct
 
 
 /***** should be implemented in SOC  files  *************/
-uint8_t clocks_api_init();
+
 /********************************************************/
 uint8_t clocks_api_add_clock(uint8_t clock_id , clocks_common_t *clock_params);
 uint32_t clocks_api_get_rate(uint8_t clock_id );

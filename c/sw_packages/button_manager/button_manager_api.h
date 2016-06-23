@@ -34,7 +34,7 @@ typedef struct
 typedef struct
 {
 	uint8_t num_of_buttons;
-	pdev_descriptor   *server_dev;
+	pdev_descriptor_t   *server_dev;
 } buttons_manager_set_group_servers_devs_t;
 
 typedef struct
@@ -54,7 +54,7 @@ typedef enum
 
 /**********  define API  functions  ************/
 
-uint8_t  button_manager_api_init_dev_descriptor(pdev_descriptor aDevDescriptor);
+uint8_t  button_manager_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor);
 
 #include "src/button_manager_static_dev_macros.h"
 

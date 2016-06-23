@@ -67,6 +67,14 @@ SECTIONS
 	   *(EXCLUDE_FILE ( FILES_TO_FORCE_IN_RAM ) .text )
 	   *(EXCLUDE_FILE ( FILES_TO_FORCE_IN_RAM ) .text.*)
 	}  > CODE_LOCATION
+
+ 	__auto_init_functions_section_start_on_RAM__ = .;
+	.auto_init_functions . : 
+	{ 
+ 		KEEP(*(.auto_init_functions)) ;
+		. = ALIGN(4);
+	}  > CODE_LOCATION
+ 	__auto_init_functions_section_end_on_RAM__ = .;
 	
  	.rodata . : 
  	{ 
@@ -112,7 +120,16 @@ SECTIONS
  		*(.data.*) ;
 		. = ALIGN(4);
  	}  > ram
- 	
+
+ 	__static_devs_section_start_on_ROM__ = __data_section_start_on_ROM__ + SIZEOF(.data);
+ 	__static_devs_section_start_on_RAM__ = .;
+ 	.static_devs . : AT ( __static_devs_section_start_on_ROM__ ) 
+ 	{ 
+ 		*(.static_devs) ;
+		. = ALIGN(4);
+ 	}  > ram
+ 	__static_devs_section_end_on_RAM__ = .;
+
 	__relocation_section_end_on_RAM__ = .;
 
 
@@ -189,6 +206,7 @@ SECTIONS
 	
 }
 
+PROVIDE(__STATIC_DEVICES_START_ADDR = __static_devs_section_start_on_ROM__ );
 PROVIDE(__HEAP_START = Top_Of_Stacks );
 PROVIDE(__END_OF_RAM =  ORIGIN(ram) + LENGTH(ram));
 PROVIDE(__HEAP_END =   ORIGIN(ram) + LENGTH(ram));

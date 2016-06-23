@@ -14,7 +14,7 @@
 
 #include "I2S_nuc505_api.h"
 #include "I2S_nuc505.h"
-#include "NVIC_api.h"
+#include "irq_api.h"
 
 
 #include "NUC505Series.h"
@@ -265,9 +265,9 @@ void __attribute__((section(".critical_text"))) I2S_IRQHandler(void)
 		// Rx Enable
 		I2S_ENABLE_RX(I2S);
 
-		NVIC_API_RegisterInt(I2S_IRQn , I2S_IRQHandler);
-		NVIC_API_SetPriority(I2S_IRQn , OS_MAX_INTERRUPT_PRIORITY_FOR_API_CALLS );
-		NVIC_API_EnableInt(I2S_IRQn);
+		irq_register_interrupt(CONFIG_DT_I2S_INTERRUPT , I2S_IRQHandler);
+		irq_set_priority(CONFIG_DT_I2S_INTERRUPT , OS_MAX_INTERRUPT_PRIORITY_FOR_API_CALLS );
+		irq_enable_interrupt(CONFIG_DT_I2S_INTERRUPT);
 
 
 //		NVIC_EnableIRQ(I2S_IRQn);
@@ -343,7 +343,7 @@ uint8_t I2S_nuc505_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t  I2S_nuc505_api_init_dev_descriptor(pdev_descriptor aDevDescriptor)
+uint8_t  I2S_nuc505_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor)
 {
 	if(NULL == aDevDescriptor) return 1;
 

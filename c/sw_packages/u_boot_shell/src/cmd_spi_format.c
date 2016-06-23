@@ -45,7 +45,7 @@
 #include "shell_api.h"
 #include "SPI_FLASH_PARTITION_MANAGER_api.h"
 
-extern pdev_descriptor spi_flash_manager_dev;
+extern pdev_descriptor_t spi_flash_manager_dev;
 
 /*
  * Subroutine:  force_output

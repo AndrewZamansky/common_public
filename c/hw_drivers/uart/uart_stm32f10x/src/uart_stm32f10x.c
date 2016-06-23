@@ -16,7 +16,7 @@
 
 #include "dev_managment_api.h" // for device manager defines and typedefs
 
-#include "NVIC_api.h"
+#include "irq_api.h"
 #include "stm32f10x_usart.h"
 #include "stm32f10x_gpio.h"
 #include "stm32f10x_rcc.h"
@@ -46,7 +46,7 @@
 #define UART_STM32F103X_NUM_OF_INSTANCES	3
 typedef struct {
 	USART_TypeDef* USARTx_Handle;
-	pdev_descriptor   callback_dev;
+	pdev_descriptor_t   callback_dev;
 	uint8_t   uart_num;
 	uint32_t baud_rate;
 } UART_STM32F103x_Instance_t;
@@ -143,7 +143,7 @@ inline uint8_t UART_STM32F10x_Init(UART_STM32F103x_Instance_t *apHandle)
 	GPIO_InitTypeDef GPIO_InitStructureTX;
 	GPIO_TypeDef * GPIOx;
 	IRQn_Type int_num ;
-	NVIC_Isr_t pIsr;
+	isr_t pIsr;
 
 	if((apHandle->uart_num < 1) || (apHandle->uart_num > 3))
 	{
@@ -218,9 +218,9 @@ inline uint8_t UART_STM32F10x_Init(UART_STM32F103x_Instance_t *apHandle)
 
 	USART_ClockInit(USARTx, &USART_ClockInitStructure);
 
-	NVIC_API_RegisterInt(int_num , pIsr);
-	NVIC_API_SetPriority(int_num , INTERRUPT_LOWEST_PRIORITY - 2 );
-	NVIC_API_EnableInt(int_num);
+	irq_register_interrupt(int_num , pIsr);
+	irq_set_priority(int_num , INTERRUPT_LOWEST_PRIORITY - 2 );
+	irq_enable_interrupt(int_num);
 
 //	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = INTERRUPT_LOWEST_PRIORITY -2;
 //	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
@@ -281,7 +281,7 @@ uint8_t uart_stm32f10x_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 	//	    USART_ITConfig( USARTx , USART_IT_TXE, ENABLE );
 		    break;
 		case IOCTL_SET_ISR_CALLBACK_DEV:
-			INSTANCE(aHandle)->callback_dev =(pdev_descriptor) aIoctl_param1;
+			INSTANCE(aHandle)->callback_dev =(pdev_descriptor_t) aIoctl_param1;
 			break;
 		default :
 			return 1;
@@ -300,7 +300,7 @@ uint8_t uart_stm32f10x_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t  uart_stm32f10x_api_init_dev_descriptor(pdev_descriptor aDevDescriptor)
+uint8_t  uart_stm32f10x_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor)
 {
 	if(NULL == aDevDescriptor) return 1;
 	if (usedInstances >= UART_STM32F103X_NUM_OF_INSTANCES) return 1;

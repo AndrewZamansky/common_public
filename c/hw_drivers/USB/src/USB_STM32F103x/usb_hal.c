@@ -21,7 +21,7 @@
 
 #include "stm32f10x_rcc.h"
 #include "misc.h"
-#include "NVIC_api.h"
+#include "irq_api.h"
 #include "usb_lib.h"
 #include "usb_init.h"
 #include "usb_desc.h"
@@ -187,9 +187,9 @@ void    USB_STM32F103x_Init(void)
 
 
 
-	NVIC_API_RegisterInt(USB_LP_CAN1_RX0_IRQn , USB_Istr);
-	NVIC_API_SetPriority(USB_LP_CAN1_RX0_IRQn , INTERRUPT_LOWEST_PRIORITY - 1 );
-	NVIC_API_EnableInt(USB_LP_CAN1_RX0_IRQn);
+	irq_register_interrupt(USB_LP_CAN1_RX0_IRQn , USB_Istr);
+	irq_set_priority(USB_LP_CAN1_RX0_IRQn , INTERRUPT_LOWEST_PRIORITY - 1 );
+	irq_enable_interrupt(USB_LP_CAN1_RX0_IRQn);
 
 	USB_Init();
 

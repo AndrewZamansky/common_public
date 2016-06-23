@@ -413,7 +413,7 @@ uint8_t arm_sh_ioctl( void * const aHandle ,const uint8_t aIoctl_num , void * aI
 			break;
 		case IOCTL_SET_CALLBACK_DEV:
 		case IOCTL_SET_ISR_CALLBACK_DEV:
-			INSTANCE(aHandle)->callback_dev =(pdev_descriptor) aIoctl_param1;
+			INSTANCE(aHandle)->callback_dev =(pdev_descriptor_t) aIoctl_param1;
 			break;
 		case IOCTL_ARM_SH_CALL_NO_OS_TASK:
 			test_for_input_ready(aHandle);
@@ -437,7 +437,7 @@ uint8_t arm_sh_ioctl( void * const aHandle ,const uint8_t aIoctl_num , void * aI
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t  arm_sh_api_init_dev_descriptor(pdev_descriptor aDevDescriptor)
+uint8_t  arm_sh_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor)
 {
 	if(NULL == aDevDescriptor) return 1;
 

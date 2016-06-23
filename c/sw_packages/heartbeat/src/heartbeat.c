@@ -19,6 +19,7 @@
 
 #include "hw_timer_api.h"
 
+#include "irq_api.h"
 
 /********  defines *********************/
 
@@ -78,6 +79,7 @@ uint8_t heartbeat_ioctl( void * const aHandle ,const uint8_t aIoctl_num , void *
 			DEV_IOCTL_1_PARAMS(INSTANCE(aHandle)->callibration_timer , IOCTL_TIMER_CALLBACK_SET ,  (void*)heartbeat_timer_callback);
 			DEV_IOCTL_0_PARAMS(INSTANCE(aHandle)->callibration_timer , IOCTL_DEVICE_START );
 
+			irq_unblock_all()	;
 			while(1)
 			{
 
@@ -93,6 +95,7 @@ uint8_t heartbeat_ioctl( void * const aHandle ,const uint8_t aIoctl_num , void *
 				}
 				cpuUsageCounter++;
 			}
+			irq_block_all()	 ;
 
 			ticks_per_mSec = cpuUsageCounter;
 			//idleCpuUsageCounter = cpuUsageCounter * 1000;
@@ -171,7 +174,7 @@ uint8_t heartbeat_ioctl( void * const aHandle ,const uint8_t aIoctl_num , void *
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t  heartbeat_api_init_dev_descriptor(pdev_descriptor aDevDescriptor)
+uint8_t  heartbeat_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor)
 {
 
 	if(NULL == aDevDescriptor) return 1;

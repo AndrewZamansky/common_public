@@ -23,6 +23,8 @@
 
 /********  externals *********************/
 
+/********  globals *********************/
+VERSION_MANAGMENT_API_CREATE_STATIC_DEV(ver_dev);
 
 /********  local defs *********************/
 
@@ -58,7 +60,7 @@ size_t version_managment_pread(const void *aHandle ,uint8_t *apData , size_t aLe
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t  version_managment_api_init_dev_descriptor(pdev_descriptor aDevDescriptor)
+uint8_t  version_managment_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor)
 {
 	if(NULL == aDevDescriptor) return 1;
 

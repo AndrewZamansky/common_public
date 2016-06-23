@@ -33,7 +33,7 @@ typedef enum
 } GPIO_Force_t;
 
 typedef struct GPIO_Instance_t_{
-	pdev_descriptor server_dev;
+	pdev_descriptor_t server_dev;
 	GPIO_Force_t forceState;
 	GPIO_OutputBehavior_t  outputBehavior;
 	params_status_t paramStatus;

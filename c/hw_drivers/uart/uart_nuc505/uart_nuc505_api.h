@@ -6,6 +6,9 @@
 
 /*****************  defines  **************/
 
+#define UART_NUC505_API_UART_ID_0	0
+#define UART_NUC505_API_UART_ID_1	1
+#define UART_NUC505_API_UART_ID_2	2
 
 /**********  define API  types ************/
 
@@ -13,14 +16,14 @@
 
 /**********  define API  functions  ************/
 
-uint8_t  uart_nuc505_api_init_dev_descriptor(pdev_descriptor aDevDescriptor);
+uint8_t  uart_nuc505_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor);
 
 
 #include "src/_uart_nuc505_static_dev_macros.h"
 
 
-#define UART_NUC505_API_CREATE_STATIC_DEV(dev,dev_name ,uart_num, callback_dev) \
-			__UART_NUC505_API_CREATE_STATIC_DEV(dev,dev_name, uart_num, callback_dev)
+#define UART_NUC505_API_CREATE_STATIC_DEV( pdev , uart_num, callback_pdev , baud_rate ) \
+			__UART_NUC505_API_CREATE_STATIC_DEV( pdev , uart_num, callback_pdev , baud_rate )
 
 
 #endif

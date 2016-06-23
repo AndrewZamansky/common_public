@@ -18,7 +18,7 @@
 #include "NUC505Series.h"
 
 #include "sw_uart_wrapper_api.h"
-#include "NVIC_api.h"
+#include "irq_api.h"
 
 /********  defines *********************/
 
@@ -188,9 +188,9 @@ uint8_t uart_nuc505_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 				    /* Enable UART RDA/RLS/Time-out interrupt */
 				    UART_EnableInt(UART0, (UART_INTEN_RDAIEN_Msk  | UART_INTEN_RXTOIEN_Msk));
 
-					NVIC_API_RegisterInt(UART0_IRQn , UART0_IRQHandler);
-					NVIC_API_SetPriority(UART0_IRQn , INTERRUPT_LOWEST_PRIORITY - 1 );
-					NVIC_API_EnableInt(UART0_IRQn);
+					irq_register_interrupt(CONFIG_DT_UART0_INTERRUPT , UART0_IRQHandler);
+					irq_set_priority(CONFIG_DT_UART0_INTERRUPT , INTERRUPT_LOWEST_PRIORITY - 1 );
+					irq_enable_interrupt(UART0_IRQn);
 				    break;
 				case 1:
 					break;
@@ -210,7 +210,7 @@ uint8_t uart_nuc505_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 		    //UART1_ITConfig( UART1_IT_TXE, ENABLE );
 		    break;
 		case IOCTL_SET_ISR_CALLBACK_DEV:
-			INSTANCE(aHandle)->callback_dev =(pdev_descriptor) aIoctl_param1;
+			INSTANCE(aHandle)->callback_dev =(pdev_descriptor_t) aIoctl_param1;
 			break;
 		default :
 			return 1;
@@ -230,7 +230,7 @@ uint8_t uart_nuc505_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t  uart_nuc505_api_init_dev_descriptor(pdev_descriptor aDevDescriptor)
+uint8_t  uart_nuc505_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor)
 {
 	if(NULL == aDevDescriptor) return 1;
 

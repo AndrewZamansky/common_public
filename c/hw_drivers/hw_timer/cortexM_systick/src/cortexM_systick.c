@@ -11,7 +11,7 @@
 
 #include "cortexM_systick_api.h"
 #include "cortexM_systick.h"
-#include "NVIC_api.h"
+#include "irq_api.h"
 #include "clocks_api.h"
 
 
@@ -64,10 +64,12 @@ static volatile uint64_t currentTick=0;
 /*---------------------------------------------------------------------------------------------------------*/
 void __attribute__((interrupt("IRQ"))) SysTick_IRQHandler(void)
 {
+	timer_callback_func_t timer_callback;
 	currentTick++;
-	if(NULL != 	pCORTEXM_SYSTICK_InstanceParams->timer_callback)
+	timer_callback = pCORTEXM_SYSTICK_InstanceParams->timer_callback;
+	if(NULL != 	timer_callback)
 	{
-		pCORTEXM_SYSTICK_InstanceParams->timer_callback();
+		timer_callback();
 	}
 }
 
@@ -126,8 +128,8 @@ uint8_t cortexM_systick_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 			                   SysTick_CTRL_TICKINT_Msk   |
 			                   SysTick_CTRL_ENABLE_Msk;                    /* Enable SysTick IRQ and SysTick Timer */
 
-				NVIC_API_RegisterInt(CONFIG_DT_CORTEX_M_SYSTICK_INTERRUPT , SysTick_IRQHandler);
-				//	NVIC_API_EnableInt(SysTick_IRQn);// no need to enable systick interrupt
+				irq_register_interrupt(CONFIG_DT_CORTEX_M_SYSTICK_INTERRUPT , SysTick_IRQHandler);
+				//	irq_enable_interrupt(SysTick_IRQn);// no need to enable systick interrupt
 			}
 			break;
 
@@ -159,7 +161,7 @@ uint8_t cortexM_systick_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t  cortexM_systick_api_init_dev_descriptor(pdev_descriptor aDevDescriptor)
+uint8_t  cortexM_systick_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor)
 {
 	if(NULL == aDevDescriptor) return 1;
 

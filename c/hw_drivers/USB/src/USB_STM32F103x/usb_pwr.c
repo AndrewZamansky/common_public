@@ -31,7 +31,7 @@
 #include "usb_lib.h"
 #include "usb_conf.h"
 #include "usb_pwr.h"
-#include "NVIC_api.h"
+#include "irq_api.h"
 //#include "timer_api.h"
 #include "USB_api.h"
 #include "../USB.h"
@@ -250,7 +250,7 @@ void My_USB_Resume( )
 #ifndef STM32F10X_CL
   uint16_t wCNTR;
 #endif /* STM32F10X_CL */
-	NVIC_API_DisableInt(USB_LP_CAN1_RX0_IRQn);
+	irq_disable_interrupt(USB_LP_CAN1_RX0_IRQn);
 
   wCNTR = _GetCNTR();
   wCNTR |= CNTR_RESUME;
@@ -267,7 +267,7 @@ void My_USB_Resume( )
 
  // SystemTick_API_StartTimeoutTimer(USB_InstanceParams.usb_stabilize_timer);
 
-	NVIC_API_EnableInt(USB_LP_CAN1_RX0_IRQn);
+	irq_enable_interrupt(USB_LP_CAN1_RX0_IRQn);
 
  // USB_InstanceParams.do_resume = 2;
 

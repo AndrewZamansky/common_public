@@ -4,7 +4,6 @@
 
 #include "src/_semihosting_prerequirements_check.h"
 
-
 /**********  defines ************/
 
 
@@ -28,7 +27,7 @@ int ARM_API_SH_GetFileLength(int FileHandle);
 int ARM_API_SH_Write(int FileHandle, const uint8_t* pBuffer, int NumBytesToWrite) ;
 void ARM_API_SH_Write0(const uint8_t* ptr);
 
-uint8_t  arm_sh_api_init_dev_descriptor(pdev_descriptor aDevDescriptor);
+uint8_t  arm_sh_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor);
 
 #include "src/semihosting_static_dev_macros.h"
 

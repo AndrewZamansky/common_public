@@ -43,6 +43,13 @@ VPATH += : $(EXTERNAL_SOURCE_ROOT_DIR)/FreeRTOS/FreeRTOS/Source/portable/MemMang
 
 
 SRC += port.c 
+ifdef CONFIG_CORTEX_M3
+	SRC += freeRtos_cortex_M_port.c
+endif
+ifdef CONFIG_CORTEX_M4
+	SRC += freeRtos_cortex_M_port.c
+endif
+
 ifdef CONFIG_GCC	
     ifdef CONFIG_CORTEX_M3
         VPATH += :$(EXTERNAL_SOURCE_ROOT_DIR)/FreeRTOS/FreeRTOS/Source/portable/GCC/ARM_CM3 

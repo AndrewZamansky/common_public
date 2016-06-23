@@ -47,12 +47,12 @@ typedef enum
 
 
 
-uint8_t  gpio_NUC505_api_init_dev_descriptor(pdev_descriptor aDevDescriptor);
+uint8_t  gpio_NUC505_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor);
 
 
 #include "src/_gpio_NUC505_static_dev_macros.h"
 
-#define GPIO_NUC505_API_CREATE_STATIC_DEV(dev,dev_name ,port , pin , mode) \
-		__GPIO_NUC505_API_CREATE_STATIC_DEV(dev,dev_name ,port , pin , mode)
+#define GPIO_NUC505_API_CREATE_STATIC_DEV(pdev ,port , pin , mode) \
+		__GPIO_NUC505_API_CREATE_STATIC_DEV(pdev ,port , pin , mode)
 
 #endif

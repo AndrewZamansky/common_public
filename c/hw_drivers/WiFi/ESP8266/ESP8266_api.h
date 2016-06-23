@@ -35,13 +35,13 @@ typedef struct
 {
 	uint8_t *strIP;
 	uint8_t *strPort;
-	pdev_descriptor*  new_socket_descriptor;
+	pdev_descriptor_t*  new_socket_descriptor;
 }ioctl_socket_open_t;
 
 
 /**********  define API  functions  ************/
 
-uint8_t ESP8266_api_init_dev_descriptor(pdev_descriptor aDevDescriptor);
+uint8_t ESP8266_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor);
 
 #else
 #pragma message( "warning : this header file had already been included" )

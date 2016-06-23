@@ -71,7 +71,7 @@ static void Config_Task( void *pvParameters )
 {
 
 	uint32_t i;
-	pdev_descriptor currDev;
+	pdev_descriptor_t currDev;
 	uint32_t paramStatus;
 	const dev_param_t *dev_Params;
 	uint8_t dev_Num_Of_Params;
@@ -200,7 +200,7 @@ uint32_t config_device(uint8_t *config_buff , uint32_t buff_len)
 	int maxTokenAvailable ;
 	uint8_t *pParam;
 	uint32_t found_token_num;
-	pdev_descriptor   dev_descriptor;
+	pdev_descriptor_t   dev_descriptor;
 	uint32_t retVal;
 	jsmntok_t curr_token,array_token;
 	const dev_param_t *dev_Params;
@@ -315,7 +315,7 @@ uint32_t config_device(uint8_t *config_buff , uint32_t buff_len)
 uint32_t config_saved_params(uint8_t *config_buff)
 {
 	uint32_t i;
-	pdev_descriptor currDev;
+	pdev_descriptor_t currDev;
 	uint32_t readLen;
 	FIL fp;
 	uint32_t retVal=0;

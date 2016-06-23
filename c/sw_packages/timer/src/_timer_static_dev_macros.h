@@ -8,20 +8,12 @@ extern uint8_t timer_ioctl( void * const aHandle ,const uint8_t aIoctl_num , voi
 
 #include "src/timer.h"
 
-#define __TIMER_API_CREATE_STATIC_DEV(dev,dev_name ,hw_timer_dev )		\
-		extern const dev_descriptor_t dev ;							\
-		extern const dev_descriptor_t hw_timer_dev ;							\
-		timer_instance_t handle_of_##dev =	 {&hw_timer_dev,0,0}; \
-														\
-		const dev_descriptor_t dev =					\
-			{											\
-				dev_name,								\
-				&handle_of_##dev,						\
-				timer_ioctl,							\
-				DEV_API_dummy_pwrite_func,				\
-				DEV_API_dummy_pread_func,				\
-				DEV_API_dummy_callback_func				\
-			}
+#define __TIMER_API_CREATE_STATIC_DEV(pdev ,hw_timer_pdev )											\
+		EXTERN_DECLARATION_TO_STATIC_DEVICE_INST(hw_timer_pdev) ;									\
+		timer_instance_t handle_of_##pdev =	 {P_TO_STATIC_DEVICE_INST(hw_timer_pdev) , 0 , 0}; 		\
+		STATIC_DEVICE(pdev , &handle_of_##pdev , timer_ioctl , 										\
+				DEV_API_dummy_pwrite_func , DEV_API_dummy_pread_func , DEV_API_dummy_callback_func)
+
 
 
 #endif

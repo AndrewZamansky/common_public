@@ -127,7 +127,7 @@ static uint8_t adc_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t  adc_stm32f10x_api_init_dev_descriptor(pdev_descriptor aDevDescriptor)
+uint8_t  adc_stm32f10x_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor)
 {
 	if(NULL == aDevDescriptor) return 1;
 	if (usedInstances >= ADC_HAL_MAX_NUM_OF_ADCS) return 1;

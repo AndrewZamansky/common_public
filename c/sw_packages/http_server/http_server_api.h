@@ -12,7 +12,7 @@
 //typedef struct {
 //	uint8_t *ManagmentServerIP;
 //	uint8_t *ManagmentServerPort;
-//	pdev_descriptor  server_device;
+//	pdev_descriptor_t  server_device;
 ////	OpenLowLevelSocket_func_t fOpenLowLevelSocket;
 ////	CloseLowLevelSocket_func_t   fCloseLowLevelSocket;
 ////	pTransferData_func_t    fSendDataToLowLevelSocket;
@@ -38,7 +38,7 @@ typedef enum
 
 /**********  define API  functions  ************/
 
-uint8_t  http_server_api_init_dev_descriptor(pdev_descriptor aDevDescriptor);
+uint8_t  http_server_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor);
 
 
 #else

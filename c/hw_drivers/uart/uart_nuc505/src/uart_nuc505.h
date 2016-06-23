@@ -18,7 +18,7 @@
 /********  types  *********************/
 
 typedef struct {
-	pdev_descriptor_const   callback_dev;
+	pdev_descriptor_t   callback_dev;
 	uint8_t   uart_num;
 	uint32_t baud_rate;
 } UART_NUC505_Instance_t;

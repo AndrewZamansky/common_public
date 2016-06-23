@@ -16,7 +16,7 @@
 
 /**********  define API  functions  ************/
 
-uint8_t  uart_atmega_api_init_dev_descriptor(pdev_descriptor aDevDescriptor);
+uint8_t  uart_atmega_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor);
 
 
 #include "src/_uart_atmega_static_dev_macros.h"

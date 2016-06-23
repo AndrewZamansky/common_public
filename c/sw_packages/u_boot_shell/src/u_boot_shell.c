@@ -136,7 +136,7 @@ uint8_t u_boot_shell_ioctl( void * const aHandle ,const uint8_t aIoctl_num , voi
 #if CONFIG_U_BOOT_SHELL_MAX_NUM_OF_DYNAMIC_INSTANCES > 0
 		case IOCTL_SET_SERVER_DEVICE_BY_NAME :
 			{
-				pdev_descriptor server_device;
+				pdev_descriptor_t server_device;
 				server_device = DEV_OPEN((uint8_t*)aIoctl_param1);
 				if(NULL != server_device)
 				{
@@ -171,7 +171,7 @@ uint8_t u_boot_shell_ioctl( void * const aHandle ,const uint8_t aIoctl_num , voi
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t  u_boot_shell_api_init_dev_descriptor(pdev_descriptor aDevDescriptor)
+uint8_t  u_boot_shell_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor)
 {
 	u_boot_shell_instance_t *pInstance;
 

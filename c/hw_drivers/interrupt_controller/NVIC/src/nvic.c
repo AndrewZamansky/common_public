@@ -15,7 +15,8 @@
 #include "_project.h"
 #include "cpu_config.h"
 
-#include "NVIC_api.h"
+#include "irq_api.h"
+#include "auto_init_api.h"
 
 #if 1 == CONFIG_CORTEX_M4
  #include "core_cm4.h"
@@ -69,7 +70,7 @@
 
 
 /*---------------------------------------------------------------------------------------------------------*/
-/* Function:        NVIC_API_RegisterInt                                                                          */
+/* Function:        irq_register_interrupt                                                                          */
 /*                                                                                                         */
 /* Parameters:                                                                                             */
 /*                  int_num -                                                                              */
@@ -79,7 +80,7 @@
 /* Description:                                                                                            */
 /*                  This routine enable given interrupt                                                    */
 /*---------------------------------------------------------------------------------------------------------*/
-int NVIC_API_RegisterInt(IRQn_Type int_num , NVIC_Isr_t pIsr)
+int irq_register_interrupt(int int_num , isr_t pIsr)
 {
 
 	// +16 offset becouse IRQn_Type starts from -16
@@ -101,34 +102,13 @@ int NVIC_API_RegisterInt(IRQn_Type int_num , NVIC_Isr_t pIsr)
 /* Description:                                                                                            */
 /*                  This routine disable given interrupt                                                   */
 /*---------------------------------------------------------------------------------------------------------*/
-int NVIC_API_DisableInt(IRQn_Type int_num)
+int irq_disable_interrupt(int int_num)
 {
 	NVIC_DisableIRQ(int_num);
     NVIC_ClearPendingIRQ(int_num);
 
     return 0;
 }
-
-
-/*
- *
- */
-void NVIC_API_EnableAllInt(void)
-{
-
-    __asm__ __volatile__("cpsie i\n");
-}
-
-/*
- *
- */
-void NVIC_API_DisableAllInt(void)
-{
-	__asm__ __volatile__("cpsid i\n");
-}
-
-
-
 
 
 
@@ -168,4 +148,11 @@ void  NVIC_API_Init(void)
 }
 
 
+#include "arch.h"
+
+/**********  defines ************/
+
+
+
+AUTO_INIT_FUNCTION(NVIC_API_Init);
 

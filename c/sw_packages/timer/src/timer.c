@@ -112,7 +112,7 @@ uint8_t timer_ioctl( void * const aHandle ,const uint8_t aIoctl_num , void * aIo
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t  timer_api_init_dev_descriptor(pdev_descriptor aDevDescriptor)
+uint8_t  timer_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor)
 {
 
 	if(NULL == aDevDescriptor) return 1;

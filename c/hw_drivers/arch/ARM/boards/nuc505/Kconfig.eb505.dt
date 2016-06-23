@@ -1,4 +1,4 @@
-menu "nuc505 evaluation board"
+menu "`---> nuc505 evaluation board"
 
 
 config CRYSTAL_CLOCK

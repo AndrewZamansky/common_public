@@ -19,7 +19,7 @@ typedef enum
 	IOCTL_SPI_FLASH_ERRASE_SECTOR,
 }spi_flash_api_ioctl_t;
 
-uint8_t  spi_flash_api_init_dev_descriptor(pdev_descriptor aDevDescriptor);
+uint8_t  spi_flash_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor);
 
 
 #include "src/spi_flash_static_dev_macros.h"

@@ -9,6 +9,7 @@
 
 /***************   includes    *******************/
 #include "_project.h"
+#include "auto_init_api.h"
 
 
 /***************   defines    *******************/
@@ -165,10 +166,7 @@ EXTERN_C_FUNCTION int _write(int file, char *ptr, int len) {
 
 EXTERN_C_FUNCTION int _close(int file) { return -1; }
 
-EXTERN_C_FUNCTION int _fstat(int file, void *st)
-{
- return 0;
-}
+EXTERN_C_FUNCTION int _fstat(int file, void *st) { return 0; }
 
 EXTERN_C_FUNCTION int _isatty(int file) { return 1; }
 
@@ -176,10 +174,12 @@ EXTERN_C_FUNCTION int _lseek(int file, int ptr, int dir) { return 0; }
 
 EXTERN_C_FUNCTION int _open(const char *name, int flags, int mode) { return -1; }
 
-EXTERN_C_FUNCTION int _read(int file, char *ptr, int len) {
-  return 0;
+EXTERN_C_FUNCTION int _read(int file, char *ptr, int len) { return 0; }
 
-}
+EXTERN_C_FUNCTION time_t time (time_t *result) { return -1; }
+
+EXTERN_C_FUNCTION clock_t _times(clock_t * ptms) { return -1; }
+
 #endif
 /******************-------------------*****************************/
 
@@ -207,7 +207,6 @@ EXTERN_C_FUNCTION void low_level_init(uint32_t curr_stack)
 	uint32_t *src ;
 	uint32_t *dst ;
 
-	v7_outer_cache_inval_all();
 
 	/* assume that jump to  fill_mem32_with_pattern will not take more than 32 registers in stack */
 	curr_stack = (curr_stack & 0xffffffffc) - (4*32);
@@ -218,6 +217,8 @@ EXTERN_C_FUNCTION void low_level_init(uint32_t curr_stack)
 	    fill_mem32_with_pattern(&Buttom_Of_Stacks , curr_stack , 0xb1b1b1b1);
     #endif
 #else /* cortex - a9 */
+	v7_outer_cache_inval_all();
+
 	#if (1==CONFIG_EXCEPTION_STACKS_DEBUG)
 		fill_mem32_with_pattern(&__irq_stack_buttom__ , &__irq_stack_top__ , 0xb1b1b1b1);
 		fill_mem32_with_pattern(&__fiq_stack_buttom__ , &__fiq_stack_top__ , 0xb2b2b2b2);
@@ -228,15 +229,6 @@ EXTERN_C_FUNCTION void low_level_init(uint32_t curr_stack)
 	#endif
 
 
-
-#ifdef CONFIG_POLEG
-    #if defined(CONFIG_CODE_LOCATION_INTERNAL_SRAM)
-	/* remap 0x100 bytes of 0xffff0000 to sram  */
-		*((volatile uint32_t *)0xf0800074) |=  (1<<18);
-	#else
-		*((volatile uint32_t *)0xf0800074) &=  (~(1<<18));
-	#endif
-#endif
 
 	/* default exeption functions */
 	*((volatile uint32_t *)(VECTOR_TABLE_BA + 0x0))=0xE59FF018;
@@ -283,5 +275,6 @@ EXTERN_C_FUNCTION void low_level_init(uint32_t curr_stack)
 	  *dst = 0;
 
 	board_init_before_main_function();
+	auto_init_api();
 
 }

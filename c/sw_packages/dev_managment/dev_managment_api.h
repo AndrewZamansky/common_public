@@ -8,6 +8,22 @@
 #define NOT_FOR_SAVE 	0
 #define FOR_SAVE 		1
 
+#define EXTERN_DECLARATION_TO_STATIC_DEVICE_INST(pdev)	extern dev_descriptor_t inst_##pdev
+#define STATIC_DEVICE_INST(pdev)	inst_##pdev
+#define P_TO_STATIC_DEVICE_INST(pdev)	&STATIC_DEVICE_INST(pdev)
+
+#define STATIC_DEVICE(pdev , dev_handle , dev_ioctl , dev_pwrite , dev_pread , dev_callback)  \
+		DEVICE_PLACEMENT dev_descriptor_t STATIC_DEVICE_INST(pdev) =	\
+			{											\
+				""#pdev,								\
+				dev_handle,								\
+				dev_ioctl,								\
+				dev_pwrite,								\
+				dev_pread,								\
+				dev_callback							\
+			};											\
+			pdev_descriptor_t pdev = P_TO_STATIC_DEVICE_INST(pdev)
+
 /**********  define API  types ************/
 
 
@@ -92,18 +108,19 @@ typedef uint8_t (*dev_callback_1_params_func_t)(void * const aHandle , const uin
 
 typedef struct _dev_descriptor_t
 {
-	uint8_t 			name[CONFIG_MAX_DEV_NAME_LEN+1];// +1 for null char
-	void*    			handle;
-	dev_ioctl_func_t  	ioctl;
-	dev_pwrite_func_t  	pwrite;
-	dev_pread_func_t  	pread;
+//	uint8_t 			name[CONFIG_MAX_DEV_NAME_LEN+1];// +1 for null char
+	char 					*name;
+	void*    				handle;
+	dev_ioctl_func_t  		ioctl;
+	dev_pwrite_func_t  		pwrite;
+	dev_pread_func_t  		pread;
 	dev_callback_func_t  	callback;
 
-}dev_descriptor_t,*pdev_descriptor;
+}dev_descriptor_t,*pdev_descriptor_t;
 
 typedef const dev_descriptor_t * pdev_descriptor_const;
 
-typedef uint8_t  (*init_dev_descriptor_func_t)(pdev_descriptor aDevDescriptor);
+typedef uint8_t  (*init_dev_descriptor_func_t)(pdev_descriptor_t aDevDescriptor);
 
 typedef struct
 {
@@ -143,18 +160,11 @@ uint8_t DEV_API_dummy_callback_func( void * const aHandle ,
 		const uint8_t aCallback_num , void * aCallback_param1, void * aCallback_param2)  ;
 size_t DEV_API_dummy_pread_func(const void * const aHandle , uint8_t *apData , size_t aLength, size_t aOffset)  ;
 size_t DEV_API_dummy_pwrite_func(const void * const aHandle ,const uint8_t *apData , size_t aLength, size_t aOffset)  ;
-pdev_descriptor DEV_API_open_device(const uint8_t *device_name) ;
-pdev_descriptor DEV_API_add_device(const uint8_t *device_name_str,init_dev_descriptor_func_t aInitDescFunc);
+pdev_descriptor_t DEV_API_open_device(const uint8_t *device_name) ;
+pdev_descriptor_t DEV_API_add_device(const uint8_t *device_name_str,init_dev_descriptor_func_t aInitDescFunc);
 
-pdev_descriptor DevManagment_API_GetAllDevsArray(void);
+pdev_descriptor_t DevManagment_API_GetAllDevsArray(void);
 
 extern const dev_descriptor_t dummy_dev;
-
-#define INIT_STATIC_DEVICES(...)  pdev_descriptor_const  static_dev_descriptors[] = {__VA_ARGS__ , NULL}
-
-#define DEV_API_ADD_NEW_STATIC_DEVICE(name,handle,dev_functions)	{name,handle,dev_functions}
-
-
-#define DEV_API_GET_STATIC_DEVICE(n) (pdev_descriptor)&static_dev_descriptors[n]
 
 #endif

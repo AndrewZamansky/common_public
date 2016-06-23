@@ -105,7 +105,7 @@ DSTATUS disk_initialize (
 extern BuiltInFlash_API_Handle_t pBuiltInFlashHandle;
 #else
 //extern SPI_FLASH_API_Handle_t spiFlashHandle;
-extern pdev_descriptor spi_flash_manager_dev;
+extern pdev_descriptor_t spi_flash_manager_dev;
 #endif
 
 /*-----------------------------------------------------------------------*/

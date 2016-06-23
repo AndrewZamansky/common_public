@@ -391,7 +391,7 @@ uint8_t sw_uart_wrapper_ioctl(void * const aHandle ,const uint8_t aIoctl_num , v
 			INSTANCE(aHandle)->rx_buff = (uint8_t*)malloc(INSTANCE(aHandle)->rx_buff_size);
 			break;
 		case IOCTL_SET_ISR_CALLBACK_DEV :
-			INSTANCE(aHandle)->client_dev = (pdev_descriptor)aIoctl_param1;
+			INSTANCE(aHandle)->client_dev = (pdev_descriptor_t)aIoctl_param1;
 			break;
 #endif			//for CONFIG_SW_UART_WRAPPER_MAX_RX_BUFFER_SIZE>0
 #endif // for CONFIG_SW_UART_WRAPPER_MAX_NUM_OF_DYNAMIC_INSTANCES > 0
@@ -457,7 +457,7 @@ uint8_t sw_uart_wrapper_ioctl(void * const aHandle ,const uint8_t aIoctl_num , v
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t  sw_uart_wrapper_api_init_dev_descriptor(pdev_descriptor aDevDescriptor)
+uint8_t  sw_uart_wrapper_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor)
 {
 	SW_UART_WRAPPER_Instance_t *pInstance;
 	if(NULL == aDevDescriptor) return 1;

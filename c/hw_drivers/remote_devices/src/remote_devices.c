@@ -26,8 +26,8 @@
 
 /***************   typedefs    *******************/
 typedef struct {
-	pdev_descriptor server_dev;
-	pdev_descriptor this_dev;
+	pdev_descriptor_t server_dev;
+	pdev_descriptor_t this_dev;
 	SemaphoreHandle_t mutex;
 	volatile uint8_t  transaction_done;
 	uint8_t *currRemoteDeviceAddr;
@@ -70,7 +70,7 @@ uint8_t remote_devices_callback(void * const aHandle ,const uint8_t aCallback_nu
 	uint8_t total_length;
 	uint8_t *pBufferStart;
 
-	DEV_IOCTL((pdev_descriptor)aCallback_param1, IOCTL_GET_AND_LOCK_DATA_BUFFER ,  &data_buffer_info);
+	DEV_IOCTL((pdev_descriptor_t)aCallback_param1, IOCTL_GET_AND_LOCK_DATA_BUFFER ,  &data_buffer_info);
 
 	total_length = data_buffer_info.TotalLength ;
 	pBufferStart = data_buffer_info.pBufferStart ;
@@ -84,8 +84,8 @@ uint8_t remote_devices_callback(void * const aHandle ,const uint8_t aCallback_nu
 		}
 	}
 
-	DEV_IOCTL((pdev_descriptor)aCallback_param1, IOCTL_SET_BYTES_CONSUMED_IN_DATA_BUFFER , (void*)(uint32_t)total_length);
-	DEV_IOCTL_0_PARAMS((pdev_descriptor)aCallback_param1, IOCTL_SET_UNLOCK_DATA_BUFFER );
+	DEV_IOCTL((pdev_descriptor_t)aCallback_param1, IOCTL_SET_BYTES_CONSUMED_IN_DATA_BUFFER , (void*)(uint32_t)total_length);
+	DEV_IOCTL_0_PARAMS((pdev_descriptor_t)aCallback_param1, IOCTL_SET_UNLOCK_DATA_BUFFER );
 
 	return 0;
 }
@@ -109,7 +109,7 @@ uint8_t remote_devices_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 	uint16_t tries,count;
 
 
-	pdev_descriptor server_dev;
+	pdev_descriptor_t server_dev;
 
 	switch(aIoctl_num)
 	{
@@ -185,7 +185,7 @@ uint8_t remote_devices_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t  remote_devices_api_init_dev_descriptor(pdev_descriptor aDevDescriptor)
+uint8_t  remote_devices_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor)
 {
 	if(NULL == aDevDescriptor) return 1;
 	if (usedInstances >= REMOTE_DEVICES_MAX_NUM_OF_GPIOS) return 1;

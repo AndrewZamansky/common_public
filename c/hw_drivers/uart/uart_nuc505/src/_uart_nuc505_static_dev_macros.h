@@ -7,18 +7,12 @@ uint8_t uart_nuc505_ioctl( void * const aHandle ,const uint8_t aIoctl_num , void
 size_t uart_nuc505_pwrite(const void *aHandle ,const uint8_t *apData , size_t aLength, size_t aOffset);
 
 
-#define __UART_NUC505_API_CREATE_STATIC_DEV(dev,dev_name, uart_num, callback_dev)\
-		extern const dev_descriptor_t dev ;						\
-		extern const dev_descriptor_t callback_dev ;			\
-		UART_NUC505_Instance_t handle_of_##dev =	 {&callback_dev,uart_num,115200};	\
-		const dev_descriptor_t dev =								\
-			{											\
-				dev_name,								\
-				&handle_of_##dev,						\
-				uart_nuc505_ioctl,						\
-				uart_nuc505_pwrite,						\
-				DEV_API_dummy_pread_func,				\
-				DEV_API_dummy_callback_func				\
-			}
+#define __UART_NUC505_API_CREATE_STATIC_DEV( pdev , uart_num, callback_pdev , baud_rate )	\
+		EXTERN_DECLARATION_TO_STATIC_DEVICE_INST(callback_pdev) ;							\
+		UART_NUC505_Instance_t handle_of_##pdev = 											\
+				{P_TO_STATIC_DEVICE_INST(callback_pdev) , uart_num , baud_rate};			\
+		STATIC_DEVICE(pdev , &handle_of_##pdev , uart_nuc505_ioctl , 						\
+				uart_nuc505_pwrite , DEV_API_dummy_pread_func , DEV_API_dummy_callback_func)
+
 
 #endif

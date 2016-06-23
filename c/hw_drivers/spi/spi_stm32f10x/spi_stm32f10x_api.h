@@ -13,7 +13,7 @@
 
 /**********  define API  functions  ************/
 
-uint8_t  spi_stm32f10x_api_init_dev_descriptor(pdev_descriptor aDevDescriptor);
+uint8_t  spi_stm32f10x_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor);
 
 #include "src/spi_stm32f10x_static_dev_macros.h"
 

@@ -163,7 +163,7 @@ uint8_t gpio_nuc505_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t  gpio_nuc505_api_init_dev_descriptor(pdev_descriptor aDevDescriptor)
+uint8_t  gpio_nuc505_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor)
 {
 	if(NULL == aDevDescriptor) return 1;
 	if (usedInstances >= GPIO_NUC505_MAX_NUM_OF_GPIOS) return 1;

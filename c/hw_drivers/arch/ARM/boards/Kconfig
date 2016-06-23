@@ -1,8 +1,8 @@
 
 
 choice
-	prompt "Board"
-	default GENERIC_BOARD
+	prompt "SOC"
+	default GENERIC_SOC
 
 config NUC505
 	bool "nuc505"
@@ -13,8 +13,8 @@ config POLEG
 config STM32F10x
 	bool "stm32f10x"
 
-config GENERIC_BOARD
-	bool "generic board"
+config GENERIC_SOC
+	bool "generic SOC"
 
 endchoice
 
@@ -26,6 +26,6 @@ if POLEG
 source "$COMMON_DIR_PATH/c/hw_drivers/arch/ARM/boards/poleg/Kconfig"
 endif
 
-if GENERIC_BOARD
+if GENERIC_SOC
 source "$COMMON_DIR_PATH/c/hw_drivers/arch/ARM/boards/generic_board_Kconfig"
 endif

@@ -10,7 +10,7 @@
 /**********  define API  functions  ************/
 
 
-uint8_t  adc_stm32f10x_api_init_dev_descriptor(pdev_descriptor aDevDescriptor);
+uint8_t  adc_stm32f10x_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor);
 
 
 #else

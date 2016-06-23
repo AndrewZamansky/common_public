@@ -13,6 +13,7 @@
 
 
 #include "_project.h"
+#include "arch.h"
 
 /***************************/
 /******** test defines *****/

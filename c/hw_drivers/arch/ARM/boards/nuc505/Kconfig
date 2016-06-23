@@ -1,4 +1,4 @@
-menu "nuc505 basic configurations"
+menu "`--->  nuc505 board configurations"
 
 choice
 	prompt "Board"
@@ -14,22 +14,6 @@ source "$COMMON_DIR_PATH/c/hw_drivers/arch/ARM/boards/nuc505/Kconfig.eb505.dt"
 endif
 
 
-
-choice
-	prompt "initial code location"
-	default CODE_LOCATION_FLASH
-
-config CODE_LOCATION_FLASH
-	bool "flash"
-
-config CODE_LOCATION_RAM
-	bool "ram"
-
-endchoice
-
-config CONFIG_CODE_LOCATION
-	bool   "put cpu specific files in ram to improve speed"
-	default n
 
 endmenu
 

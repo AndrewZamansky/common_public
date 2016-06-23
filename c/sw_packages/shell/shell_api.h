@@ -17,12 +17,12 @@
 
 
 /**********  define API  functions  ************/
-uint8_t  shell_api_init_dev_descriptor(pdev_descriptor aDevDescriptor);
+uint8_t  shell_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor);
 
 #include "src/shell_static_dev_macros.h"
 
-#define SHELL_API_CREATE_STATIC_DEV(dev,dev_name ,server_dev ) \
-			__SHELL_API_CREATE_STATIC_DEV(dev,dev_name ,server_dev)
+#define SHELL_API_CREATE_STATIC_DEV(pdev , server_pdev ) \
+			__SHELL_API_CREATE_STATIC_DEV(pdev ,server_pdev)
 
 #else
 

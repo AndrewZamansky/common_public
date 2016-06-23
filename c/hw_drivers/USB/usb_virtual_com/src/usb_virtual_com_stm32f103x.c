@@ -48,7 +48,7 @@ typedef struct
 
 /********  local defs *********************/
 
-static pdev_descriptor   callback_dev;
+static pdev_descriptor_t   callback_dev;
 
 static uint32_t sentLen;
 
@@ -197,7 +197,7 @@ uint8_t usb_virtual_com_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 		    SetEPTxStatus(ENDP1, EP_TX_NAK);
 			break;
 		case IOCTL_SET_ISR_CALLBACK_DEV:
-			callback_dev =(pdev_descriptor) aIoctl_param1;
+			callback_dev =(pdev_descriptor_t) aIoctl_param1;
 			break;
 		default :
 			return 1;
@@ -217,7 +217,7 @@ uint8_t usb_virtual_com_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t  usb_virtual_com_api_init_dev_descriptor(pdev_descriptor aDevDescriptor)
+uint8_t  usb_virtual_com_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor)
 {
 	if(NULL == aDevDescriptor) return 1;
 

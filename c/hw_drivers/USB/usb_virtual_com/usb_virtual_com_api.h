@@ -11,7 +11,7 @@
 
 
 /**********  define API  functions  ************/
-uint8_t  usb_virtual_com_api_init_dev_descriptor(pdev_descriptor aDevDescriptor);
+uint8_t  usb_virtual_com_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor);
 
 #else
 #pragma message( "warning : this header file had already been included" )

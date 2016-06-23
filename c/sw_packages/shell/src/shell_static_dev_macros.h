@@ -10,20 +10,14 @@ extern uint8_t shell_callback(void * const aHandle ,
 
 #include "src/shell.h"
 
-#define __SHELL_API_CREATE_STATIC_DEV(dev,dev_name,server_dev )		\
-		extern const dev_descriptor_t dev ;							\
-		extern const dev_descriptor_t server_dev ;					\
-		shell_instance_t handle_of_##dev =	 {&server_dev,&dev,0,0}; \
-														\
-		const dev_descriptor_t dev =					\
-			{											\
-				dev_name,								\
-				&handle_of_##dev,						\
-				shell_ioctl,							\
-				DEV_API_dummy_pwrite_func,				\
-				DEV_API_dummy_pread_func,				\
-				shell_callback							\
-			}
+#define __SHELL_API_CREATE_STATIC_DEV(pdev , server_pdev )			\
+		EXTERN_DECLARATION_TO_STATIC_DEVICE_INST(pdev) ;		\
+		EXTERN_DECLARATION_TO_STATIC_DEVICE_INST(server_pdev) ;		\
+		shell_instance_t handle_of_##pdev =	 						\
+			{P_TO_STATIC_DEVICE_INST(server_pdev) , P_TO_STATIC_DEVICE_INST(pdev) , NULL , 0 , 0}; \
+		STATIC_DEVICE(pdev , &handle_of_##pdev , shell_ioctl , 							\
+				DEV_API_dummy_pwrite_func , DEV_API_dummy_pread_func , shell_callback)
+
 
 
 #endif

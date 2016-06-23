@@ -85,7 +85,7 @@ void tx_function(void)
 
 }
 
-//pdev_descriptor   atmega_callback_dev;
+//pdev_descriptor_t   atmega_callback_dev;
 
 /**
   * @brief   TX Interrupt routine.
@@ -218,7 +218,7 @@ uint8_t uart_atmega_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 		    break;
 #if UART_ATMEGA_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
 		case IOCTL_SET_ISR_CALLBACK_DEV:
-			atmega_callback_dev =(pdev_descriptor) aIoctl_param1;
+			atmega_callback_dev =(pdev_descriptor_t) aIoctl_param1;
 			break;
 #endif
 		default :
@@ -240,7 +240,7 @@ uint8_t uart_atmega_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t  uart_atmega_api_init_dev_descriptor(pdev_descriptor aDevDescriptor)
+uint8_t  uart_atmega_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor)
 {
 	if(NULL == aDevDescriptor) return 1;
 

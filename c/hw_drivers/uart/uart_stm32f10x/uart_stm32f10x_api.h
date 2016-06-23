@@ -20,7 +20,7 @@ typedef enum
 	IOCTL_UART_STM32F10X_DISABLE
 }UART_STM32F10X_API_ioctl_t;
 
-uint8_t  uart_stm32f10x_api_init_dev_descriptor(pdev_descriptor aDevDescriptor);
+uint8_t  uart_stm32f10x_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor);
 
 
 #endif

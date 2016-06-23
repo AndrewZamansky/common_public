@@ -20,7 +20,7 @@
 /********  types  *********************/
 
 typedef struct {
-	pdev_descriptor   callback_dev;
+	pdev_descriptor_t   callback_dev;
 	uint32_t baud_rate;
 } UART_STM8_Instance_t;
 

@@ -10,60 +10,45 @@ extern size_t sw_uart_wrapper_pwrite(const void *aHandle ,const uint8_t *apData 
 #include "src/sw_uart_wrapper.h"
 
 #ifdef CONFIG_SW_UART_WRAPPER_ENABLE_RX
-	#define __SW_UART_WRAPPER_API_CREATE_STATIC_DEV(dev,dev_name, 		\
-				server_dev,client_dev	, rxBuffer,rxBufferSize)		\
-				extern const dev_descriptor_t dev ;						\
-				extern const dev_descriptor_t server_dev ;				\
-				extern const dev_descriptor_t client_dev ;				\
-		SW_UART_WRAPPER_Instance_t handle_of_##dev =	 {				\
-					&server_dev ,	/*server_dev*/			\
-					NULL,			/* xQueue */			\
-					1,				/* use_task_for_out */	\
-					&dev,			/* this_dev */			\
-					&client_dev,	/* client_dev */	\
-					rxBuffer,		/* rx_buff */			\
-					rxBufferSize,	/* rx_buff_size */		\
-					0,				/* WritePos */			\
-					0,				/* ReadPos */			\
-					0,				/*isDataInUse */		\
-					0,				/*bufferWasOverflowed */\
-					0,				/* (*sendData) */		\
-					0,				/*data_length*/			\
-					NULL			/*xTX_WaitQueue*/		\
-				};														\
-			const dev_descriptor_t dev =								\
-				{											\
-					dev_name,								\
-					&handle_of_##dev,						\
-					sw_uart_wrapper_ioctl,					\
-					sw_uart_wrapper_pwrite,					\
-					DEV_API_dummy_pread_func,				\
-					sw_uart_wrapper_callback				\
-				}
+	#define __SW_UART_WRAPPER_API_CREATE_STATIC_DEV(pdev,		 			\
+				server_pdev , client_pdev	, rxBuffer,rxBufferSize)		\
+				EXTERN_DECLARATION_TO_STATIC_DEVICE_INST(pdev) ;			\
+				EXTERN_DECLARATION_TO_STATIC_DEVICE_INST(server_pdev) ;		\
+				EXTERN_DECLARATION_TO_STATIC_DEVICE_INST(client_pdev) ;		\
+		SW_UART_WRAPPER_Instance_t handle_of_##pdev =	 {					\
+				P_TO_STATIC_DEVICE_INST(server_pdev) ,	/*server_dev*/		\
+					NULL,			/* xQueue */							\
+					1,				/* use_task_for_out */					\
+				P_TO_STATIC_DEVICE_INST(pdev),			/* this_dev */		\
+				P_TO_STATIC_DEVICE_INST(client_pdev),	/* client_dev */	\
+					rxBuffer,		/* rx_buff */							\
+					rxBufferSize,	/* rx_buff_size */						\
+					0,				/* WritePos */							\
+					0,				/* ReadPos */							\
+					0,				/*isDataInUse */						\
+					0,				/*bufferWasOverflowed */				\
+					0,				/* (*sendData) */						\
+					0,				/*data_length*/							\
+					NULL			/*xTX_WaitQueue*/						\
+				};															\
+			STATIC_DEVICE(pdev , &handle_of_##pdev ,sw_uart_wrapper_ioctl ,	\
+						sw_uart_wrapper_pwrite , DEV_API_dummy_pread_func , sw_uart_wrapper_callback)
 
 #else // #ifdef CONFIG_SW_UART_WRAPPER_ENABLE_RX
 
-	#define __SW_UART_WRAPPER_API_CREATE_STATIC_DEV(dev,dev_name, server_dev )	\
-			extern const dev_descriptor_t dev ;						\
-			extern const dev_descriptor_t server_dev ;				\
-			extern const dev_descriptor_t client_dev ;				\
-	SW_UART_WRAPPER_Instance_t handle_of_##dev =	 {				\
-				&server_dev ,	/*server_dev*/			\
-				NULL,			/* xQueue */			\
-				1,				/* use_task_for_out */	\
-				0,				/* (*sendData) */		\
-				0,				/*data_length*/			\
-				NULL			/*xTX_WaitQueue*/		\
-			};											\
-		const dev_descriptor_t dev =					\
-			{											\
-				dev_name,								\
-				&handle_of_##dev,						\
-				sw_uart_wrapper_ioctl,					\
-				sw_uart_wrapper_pwrite,					\
-				DEV_API_dummy_pread_func,				\
-				sw_uart_wrapper_callback				\
-			}
+	#define __SW_UART_WRAPPER_API_CREATE_STATIC_DEV(pdev , server_pdev )	\
+			EXTERN_DECLARATION_TO_STATIC_DEVICE_INST(server_pdev) ;			\
+	SW_UART_WRAPPER_Instance_t handle_of_##pdev =	 {						\
+			P_TO_STATIC_DEVICE_INST(server_pdev) ,	/*server_dev*/			\
+				NULL,			/* xQueue */								\
+				1,				/* use_task_for_out */						\
+				0,				/* (*sendData) */							\
+				0,				/*data_length*/								\
+				NULL			/*xTX_WaitQueue*/							\
+			};																\
+			STATIC_DEVICE(pdev , &handle_of_##pdev ,sw_uart_wrapper_ioctl ,	\
+					sw_uart_wrapper_pwrite , DEV_API_dummy_pread_func , sw_uart_wrapper_callback)
+
 
 
 #endif // for    #ifdef CONFIG_SW_UART_WRAPPER_ENABLE_RX

@@ -38,12 +38,12 @@ config INTERNAL_SRAM
 config INTERNAL_SRAM_START_ADDR
     hex "internal sram start address in hex"
     depends on INTERNAL_SRAM
-    default 0xfffd0000
+    default DT_SOC_RAM_START_ADDR
 
 config INTERNAL_SRAM_SIZE
     hex "internal ram size in hex"
     depends on INTERNAL_SRAM
-    default 0x20000
+    default DT_SOC_RAM_SIZE
 
 
 
@@ -56,12 +56,12 @@ config INTERNAL_FLASH
 config INTERNAL_FLASH_START_ADDR
     hex "internal flash start address in hex"
     depends on INTERNAL_FLASH
-    default 0x80080000
+    default DT_SOC_FLASH_START_ADDR
 
 config INTERNAL_FLASH_SIZE
     hex "internal flash size in hex"
     depends on INTERNAL_FLASH
-    default 0x40000
+    default DT_SOC_FLASH_SIZE
 
 
 

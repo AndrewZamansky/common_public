@@ -64,7 +64,7 @@ typedef enum
 
 
 
-uint8_t  gpio_stm8_api_init_dev_descriptor(pdev_descriptor aDevDescriptor);
+uint8_t  gpio_stm8_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor);
 
 
 #include "src/_gpio_stm8_static_dev_macros.h"

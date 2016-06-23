@@ -57,7 +57,7 @@
  */
 int do_set_dev_param (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
-	pdev_descriptor dev_descriptor;
+	pdev_descriptor_t dev_descriptor;
 	uint32_t retVal;
 	const dev_param_t *pIoctlParam;
 

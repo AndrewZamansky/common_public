@@ -187,7 +187,7 @@ uint8_t spi_stm32f10x_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t  spi_stm32f10x_api_init_dev_descriptor(pdev_descriptor aDevDescriptor)
+uint8_t  spi_stm32f10x_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor)
 {
 	if(NULL == aDevDescriptor) return 1;
 

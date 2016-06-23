@@ -48,7 +48,7 @@ typedef enum
 
 typedef struct
 {
-	pdev_descriptor low_level_socket;
+	pdev_descriptor_t low_level_socket;
 	uint32_t socket_state;
 } HTTP_socket_info_t;
 
@@ -57,7 +57,7 @@ typedef struct
 {
 	uint32_t len;
 	uint8_t *pData;
-	pdev_descriptor low_level_socket;
+	pdev_descriptor_t low_level_socket;
 }xMessage_t;
 
 
@@ -90,7 +90,7 @@ static uint8_t ManagmentPort[PORT_STR_LEN+1];
 static uint8_t ManagmentServerIPRedandency[IP_STR_LEN+1];
 static uint8_t ManagmentPortRedandency[PORT_STR_LEN+1];
 
-static pdev_descriptor  server_device;
+static pdev_descriptor_t  server_device;
 
 static pdev_descriptor_const  timer_device = &http_timer_inst;
 //static pdev_descriptor_const semihosting_dev = &sh_dev_inst;
@@ -99,15 +99,15 @@ static pdev_descriptor_const  timer_device = &http_timer_inst;
 static uint8_t http_buffer[HTTP_BUFFER_LEN];
 
 
-static pdev_descriptor HTTP_menagmentSocketDesc;
+static pdev_descriptor_t HTTP_menagmentSocketDesc;
 static uint16_t unused_bytes_left;
 
 static BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 static uint32_t comm_reply_state;
 static HTTP_State_t currentState ;
 
-static pdev_descriptor this_dev;
-static pdev_descriptor client_dev;
+static pdev_descriptor_t this_dev;
+static pdev_descriptor_t client_dev;
 
 #define MAX_PERMIITED_SILENCE_TIMEOUT 3
 #define SILENCE_AFTER_LAST_RECEIVE_TIMEOUT 2
@@ -147,7 +147,7 @@ uint8_t http_callback(void * const aHandle ,const uint8_t aCallback_num
 	uint32_t cmdStartPos;
 	uint8_t *pSendData;
 	xMessage_t xMessage;
-//	pdev_descriptor socketHandle=(pdev_descriptor)aCallback_param1;
+//	pdev_descriptor_t socketHandle=(pdev_descriptor_t)aCallback_param1;
 
 	if(NULL == xQueue)
 	{
@@ -171,7 +171,7 @@ uint8_t http_callback(void * const aHandle ,const uint8_t aCallback_num
 
 		memcpy(pSendData,(uint8_t*)&requestStr[cmdStartPos],str_len);
 
-		xMessage.low_level_socket = (pdev_descriptor)aCallback_param1;
+		xMessage.low_level_socket = (pdev_descriptor_t)aCallback_param1;
 		xMessage.len=str_len;
 		xMessage.pData=pSendData;
 
@@ -189,7 +189,7 @@ uint8_t http_callback(void * const aHandle ,const uint8_t aCallback_num
 }
 
 
-pdev_descriptor currLowLevelSocket;
+pdev_descriptor_t currLowLevelSocket;
 
 /*---------------------------------------------------------------------------------------------------------*/
 /* Function:        HTTP_API_SendData                                                                          */
@@ -485,7 +485,7 @@ uint8_t HTTP_socket_ioctl(const void *aHandle ,const uint8_t aIoctl_num
 /*---------------------------------------------------------------------------------------------------------*/
 uint32_t  HTTP_Start( )
 {
-	pdev_descriptor dev_descriptor;
+	pdev_descriptor_t dev_descriptor;
 
 	dev_descriptor = DEV_OPEN((uint8_t*)"serial");
 	DEV_READ(dev_descriptor,&poll_str[POLL_STR_SERIAL_START],POLL_STR_SERIAL_LEN);
@@ -530,7 +530,7 @@ uint8_t HTTP_ioctl( void *const aHandle ,const uint8_t aIoctl_num
 			break;
 
 		case IOCTL_SET_ISR_CALLBACK_DEV :
-			client_dev = (pdev_descriptor)aIoctl_param1;
+			client_dev = (pdev_descriptor_t)aIoctl_param1;
 
 			break;
 
@@ -609,7 +609,7 @@ uint8_t HTTP_ioctl( void *const aHandle ,const uint8_t aIoctl_num
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t  http_server_api_init_dev_descriptor(pdev_descriptor aDevDescriptor)
+uint8_t  http_server_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor)
 {
 
 	if(NULL == aDevDescriptor) return 1;

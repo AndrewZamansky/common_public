@@ -20,9 +20,9 @@
 
 
 typedef struct {
-	pdev_descriptor server_dev;
-	pdev_descriptor   callback_dev;
-	pdev_descriptor   this_dev;
+	pdev_descriptor_t server_dev;
+	pdev_descriptor_t   callback_dev;
+	pdev_descriptor_t   this_dev;
 } WIRELESS_UART_Instance_t;
 
 

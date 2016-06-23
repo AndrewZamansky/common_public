@@ -24,7 +24,7 @@ typedef enum
 
 /**********  define API  functions  ************/
 
-uint8_t  sw_timer_wrapper_api_init_dev_descriptor(pdev_descriptor aDevDescriptor);
+uint8_t  sw_timer_wrapper_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor);
 
 #include "src/sw_timer_wrapper_static_dev_macros.h"
 

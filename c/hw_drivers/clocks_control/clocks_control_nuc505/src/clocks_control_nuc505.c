@@ -14,6 +14,7 @@
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 #include "_project_func_declarations.h"
+#include "auto_init_api.h"
 
 #include "clocks_api.h"
 
@@ -123,14 +124,14 @@ clocks_common_t core_clock = {0 , core_set_clock , core_get_clock};
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t clocks_api_init()
+void clocks_init(void)
 {
 
 
     clocks_api_add_clock(CONFIG_DT_XTAL_CLOCK, &input_xtal_clock);
     clocks_api_add_clock(CONFIG_DT_CORE_CLOCK, &core_clock);
 
-    return 0;
 
 }
 
+AUTO_INIT_FUNCTION(clocks_init);

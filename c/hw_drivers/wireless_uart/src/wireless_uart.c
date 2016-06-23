@@ -39,7 +39,7 @@
 typedef struct
 {
 	uint8_t dummy;
-//	pdev_descriptor dev_descriptor;
+//	pdev_descriptor_t dev_descriptor;
 } xMessage_t;
 
 /********  externals *********************/
@@ -49,7 +49,7 @@ typedef struct
 /********  local defs *********************/
 #if WIRELESS_UART_CONFIG_USE_AS_DYNAMIC_INSTANCE > 0
 
-pdev_descriptor this_dev;
+pdev_descriptor_t this_dev;
 static WIRELESS_UART_Instance_t WIRELESS_UART_InstanceParams = { 0 };
 
 static const dev_param_t wireless_uart_Dev_Params[]=
@@ -91,7 +91,7 @@ uint8_t wireless_uart_callback(void * const aHandle ,const uint8_t aCallback_num
 	}
 
 
-//	queueMsg.dev_descriptor = (pdev_descriptor)aCallback_param1;
+//	queueMsg.dev_descriptor = (pdev_descriptor_t)aCallback_param1;
 
 	os_queue_send_immediate( xQueue, ( void * ) &queueMsg);
 
@@ -288,7 +288,7 @@ uint8_t wireless_uart_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
 
-	pdev_descriptor server_device;
+	pdev_descriptor_t server_device;
 
 	switch(aIoctl_num)
 	{
@@ -307,7 +307,7 @@ uint8_t wireless_uart_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 			INSTANCE(aHandle)->server_dev = server_device;
 			break;
 		case IOCTL_SET_ISR_CALLBACK_DEV :
-			INSTANCE(aHandle)->callback_dev = (pdev_descriptor)aIoctl_param1;
+			INSTANCE(aHandle)->callback_dev = (pdev_descriptor_t)aIoctl_param1;
 			break;
 #endif
 
@@ -351,7 +351,7 @@ uint8_t wireless_uart_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t  wireless_uart_api_init_dev_descriptor(pdev_descriptor aDevDescriptor)
+uint8_t  wireless_uart_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor)
 {
 
 	if(NULL == aDevDescriptor) return 1;

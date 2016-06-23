@@ -25,14 +25,14 @@ typedef struct
 
 /**********  define API  functions  ************/
 
-uint8_t  I2S_nuc505_api_init_dev_descriptor(pdev_descriptor aDevDescriptor);
+uint8_t  I2S_nuc505_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor);
 
 
 #include "src/I2S_nuc505_static_dev_macros.h"
 
 
-#define I2S_NUC505_API_CREATE_STATIC_DEV(dev,dev_name ,callback_dev ) \
-			__I2S_NUC505_API_CREATE_STATIC_DEV(dev,dev_name,callback_dev )
+#define I2S_NUC505_API_CREATE_STATIC_DEV( pdev , callback_pdev ) \
+			__I2S_NUC505_API_CREATE_STATIC_DEV( pdev , callback_pdev )
 
 
 #endif

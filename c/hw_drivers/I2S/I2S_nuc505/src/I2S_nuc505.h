@@ -19,7 +19,7 @@
 
 typedef struct
 {
-	pdev_descriptor_const   callback_dev;
+	pdev_descriptor_t   callback_dev;
 	uint8_t start_flag;
 } I2S_NUC505_Instance_t;
 

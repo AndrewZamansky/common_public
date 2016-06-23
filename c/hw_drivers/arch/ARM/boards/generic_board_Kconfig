@@ -1,4 +1,4 @@
-menu "generic basic configurations"
+menu "`--->  generic basic configurations"
 
 choice
 	prompt "Cpu Type"

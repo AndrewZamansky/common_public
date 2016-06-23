@@ -153,6 +153,7 @@ static void Shell_Task( void *pvParameters )
 	uint8_t curr_char,eol_char;
 	ioctl_get_data_buffer_t data_buffer_info;
 	shell_instance_t  *curr_shell_instance;
+	pdev_descriptor_const   callback_dev;
 
 	xQueue = os_create_queue( CONFIG_SHELL_MAX_QUEUE_LEN , sizeof( xMessage_t ) );
 
@@ -252,10 +253,12 @@ static void Shell_Task( void *pvParameters )
 
 				if(1 == validCommadFound)
 				{
+					size_t cmd_len = curr_buff_pos;
 					pCmdStart=pBufferStart;
 					if ((HEADER_CHAR_ON == pBufferStart[HEADER_SUPPRESS_ECHO_POS]) ||
 							(HEADER_CHAR_OFF == pBufferStart[HEADER_SUPPRESS_ECHO_POS]) )
 					{
+						cmd_len -= START_OF_CMD_POS;
 						pCmdStart=&pBufferStart[START_OF_CMD_POS];
 						if ((HEADER_CHAR_ON != pBufferStart[START_OF_CMD_POS - 1]) &&
 								(HEADER_CHAR_OFF != pBufferStart[START_OF_CMD_POS - 1]) )
@@ -269,13 +272,16 @@ static void Shell_Task( void *pvParameters )
 					if(1==validCommadFound)
 					{
 						eol_char = curr_char;
-						pBufferStart[curr_buff_pos]='\0';
 						if (pBufferStart == pCmdStart )
 						{
 							SHELL_REPLY_DATA( (const uint8_t*)"\r\n",2);
 						}
-						run_command((const char *)pCmdStart,0);
-
+						callback_dev = curr_shell_instance->callback_dev;
+						if (callback_dev )
+						{
+							DEV_CALLBACK_2_PARAMS(callback_dev , CALLBACK_DATA_RECEIVED,
+									pCmdStart, (void*)cmd_len);
+						}
 					}
 
 					if (pBufferStart != pCmdStart )
@@ -344,7 +350,7 @@ uint8_t shell_ioctl( void * const aHandle ,const uint8_t aIoctl_num , void * aIo
 #if CONFIG_SHELL_MAX_NUM_OF_DYNAMIC_INSTANCES > 0
 		case IOCTL_SET_SERVER_DEVICE_BY_NAME :
 			{
-				pdev_descriptor server_device;
+				pdev_descriptor_t server_device;
 				server_device = DEV_OPEN((uint8_t*)aIoctl_param1);
 				if(NULL != server_device)
 				{
@@ -355,6 +361,9 @@ uint8_t shell_ioctl( void * const aHandle ,const uint8_t aIoctl_num , void * aIo
 			}
 			break;
 #endif
+		case IOCTL_SET_CALLBACK_DEV:
+			INSTANCE(aHandle)->callback_dev =(pdev_descriptor_t) aIoctl_param1;
+			break;
 		case IOCTL_DEVICE_START :
 			if(0==task_is_running)
 			{
@@ -383,7 +392,7 @@ uint8_t shell_ioctl( void * const aHandle ,const uint8_t aIoctl_num , void * aIo
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t  shell_api_init_dev_descriptor(pdev_descriptor aDevDescriptor)
+uint8_t  shell_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor)
 {
 	shell_instance_t *pShell_instance;
 

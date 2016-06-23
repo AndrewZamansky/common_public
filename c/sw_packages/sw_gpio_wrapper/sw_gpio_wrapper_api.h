@@ -33,7 +33,7 @@ typedef enum
 
 uint8_t sw_gpio_wrapper_api_init(void);
 
-uint8_t  sw_gpio_wrapper_api_init_dev_descriptor(pdev_descriptor aDevDescriptor);
+uint8_t  sw_gpio_wrapper_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor);
 
 
 #else
