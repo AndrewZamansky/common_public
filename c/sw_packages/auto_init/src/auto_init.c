@@ -1,6 +1,6 @@
 /*
  *
- *   file  :  DevManagment.cpp
+ *   file  :  auto_init.c
  *
  */
 
@@ -9,8 +9,8 @@
 /***************   includes    *******************/
 
 
-#include "_auto_init_prerequirements_check.h" // should be after auto_init_config.h
-#include "auto_init_api.h" //place first to test that header file is self-contained
+#include "_auto_init_prerequirements_check.h"
+#include "auto_init_api.h"
 
 
 
@@ -22,33 +22,38 @@
 
 /**********   external variables    **************/
 
-extern uint32_t __auto_init_functions_section_start_on_RAM__;
-extern uint32_t __auto_init_functions_section_end_on_RAM__;
-
 
 /***********   global variables    **************/
 
 /***********   local variables    **************/
+extern auto_init_struct_t auto_init_dummy_auto_init;
 
+static void _auto_init(int16_t struct_size)
+{
+	auto_init_struct_t *p_curr_auto_init;
+	auto_init_func_t init_function ;
+
+	p_curr_auto_init = &auto_init_dummy_auto_init;
+	while(NAGIC_NUMBER == p_curr_auto_init->magic_number)
+	{
+		init_function = p_curr_auto_init->auto_init_func ;
+		init_function();
+		p_curr_auto_init = (auto_init_struct_t *)( ((uint8_t*)p_curr_auto_init) + struct_size) ;
+	}
+}
 
 /*
- * function : DEV_API_open_device()
+ * function : auto_init_api()
  *
  *
  */
 void auto_init_api(void)
 {
-
-	auto_init_func_t curr_init_function ;
-	auto_init_func_t last_init_function ;
-
-	curr_init_function = (auto_init_func_t)&__auto_init_functions_section_start_on_RAM__;
-	last_init_function = (auto_init_func_t)&__auto_init_functions_section_end_on_RAM__;
-	while(curr_init_function < last_init_function)
-	{
-		curr_init_function();
-		curr_init_function++;
-	}
+	_auto_init( (uint8_t)sizeof(auto_init_struct_t));
+	_auto_init(- (uint8_t)sizeof(auto_init_struct_t));
 }
 
+void dummy_auto_init(){};
+
+AUTO_INIT_FUNCTION(dummy_auto_init)  ;
 

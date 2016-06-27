@@ -2,13 +2,18 @@
 INCLUDE_THIS_COMPONENT := $(CONFIG_FREE_RTOS)
 
 ifdef CONFIG_FREE_RTOS 	 
-    ifeq ("$(wildcard $(EXTERNAL_SOURCE_ROOT_DIR)/FreeRTOS/FreeRTOS/Source/include)","")
-        $(info !!!   $(EXTERNAL_SOURCE_ROOT_DIR)/FreeRTOS/FreeRTOS/Source/include don't exists !!!! )
+    
+    FREE_RTOS_PATH :=$(EXTERNAL_SOURCE_ROOT_DIR)/FreeRTOSv8.0.1
+    ifeq ("$(wildcard $(FREE_RTOS_PATH))","")
+        $(info freeRTOS path $(FREE_RTOS_PATH) dont exists )
+        $(info download freeRTOS version 8.0.1 and unpack it to $(FREE_RTOS_PATH)  )
+        $(info make sure that file Quick_Start_Guide is located in $(FREE_RTOS_PATH)/  after unpacking   )
         $(error )
     endif
-    DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH ,  $(EXTERNAL_SOURCE_ROOT_DIR)/FreeRTOS/FreeRTOS/Source/include )
-    DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH ,  $(EXTERNAL_SOURCE_ROOT_DIR)/FreeRTOS/FreeRTOS/Demo/Common/include )
-    DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH ,  $(EXTERNAL_SOURCE_ROOT_DIR)/FreeRTOS/FreeRTOS/Source/portable/GCC/ARM_CM3 )
+    
+    DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH ,  $(FREE_RTOS_PATH)/FreeRTOS/Source/include )
+    DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH ,  $(FREE_RTOS_PATH)/FreeRTOS/Demo/Common/include )
+    DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH ,  $(FREE_RTOS_PATH)/FreeRTOS/Source/portable/GCC/ARM_CM3 )
 endif  
 
 
@@ -36,10 +41,10 @@ SRC += event_groups.c
 SRC += list.c
 SRC += queue.c
 SRC += timers.c
-VPATH += $(EXTERNAL_SOURCE_ROOT_DIR)/FreeRTOS/FreeRTOS/Source 
+VPATH += $(FREE_RTOS_PATH)/FreeRTOS/Source 
 # memory management
 SRC += heap_3.c 
-VPATH += : $(EXTERNAL_SOURCE_ROOT_DIR)/FreeRTOS/FreeRTOS/Source/portable/MemMang 
+VPATH += : $(FREE_RTOS_PATH)/FreeRTOS/Source/portable/MemMang 
 
 
 SRC += port.c 
@@ -52,21 +57,21 @@ endif
 
 ifdef CONFIG_GCC	
     ifdef CONFIG_CORTEX_M3
-        VPATH += :$(EXTERNAL_SOURCE_ROOT_DIR)/FreeRTOS/FreeRTOS/Source/portable/GCC/ARM_CM3 
+        VPATH += :$(FREE_RTOS_PATH)/FreeRTOS/Source/portable/GCC/ARM_CM3 
     else ifdef CONFIG_CORTEX_M4
-        VPATH += :$(EXTERNAL_SOURCE_ROOT_DIR)/FreeRTOS/FreeRTOS/Source/portable/GCC/ARM_CM4F 
+        VPATH += :$(FREE_RTOS_PATH)/FreeRTOS/Source/portable/GCC/ARM_CM4F 
     endif
 else ifdef CONFIG_GPP	
     ifdef CONFIG_CORTEX_M3
-        VPATH += :$(EXTERNAL_SOURCE_ROOT_DIR)/FreeRTOS/FreeRTOS/Source/portable/GCC/ARM_CM3 
+        VPATH += :$(FREE_RTOS_PATH)/FreeRTOS/Source/portable/GCC/ARM_CM3 
     else ifdef CONFIG_CORTEX_M4
-        VPATH += :$(EXTERNAL_SOURCE_ROOT_DIR)/FreeRTOS/FreeRTOS/Source/portable/GCC/ARM_CM4F 
+        VPATH += :$(FREE_RTOS_PATH)/FreeRTOS/Source/portable/GCC/ARM_CM4F 
     endif
 else ifdef CONFIG_ARMCC 
     ifdef CONFIG_CORTEX_M3
-        VPATH += :$(EXTERNAL_SOURCE_ROOT_DIR)/FreeRTOS/FreeRTOS/Source/portable/RVDS/ARM_CM3 
+        VPATH += :$(FREE_RTOS_PATH)/FreeRTOS/Source/portable/RVDS/ARM_CM3 
     else ifdef CONFIG_CORTEX_M4
-        VPATH += :$(EXTERNAL_SOURCE_ROOT_DIR)/FreeRTOS/FreeRTOS/Source/portable/RVDS/ARM_CM4F 
+        VPATH += :$(FREE_RTOS_PATH)/FreeRTOS/Source/portable/RVDS/ARM_CM4F 
         
     endif     
 endif

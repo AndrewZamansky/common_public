@@ -49,24 +49,25 @@ static uint16_t usedClocks = 0;
 uint8_t clocks_api_set_rate(uint8_t clock_id ,  uint32_t set_rate)
 {
 	uint32_t i;
-	clocks_t *curr_clock ;
-	clocks_common_t *clock_params ;
+	clocks_t *p_curr_clock ;
+	clocks_common_t *p_clock_params ;
 
-	curr_clock = clocks_array;
+	p_curr_clock = clocks_array;
 	for(i=0 ; i<CONFIG_MAX_NUMBER_OF_CLOCKS ; i++)
 	{
-		if( clock_id == curr_clock->clock_id)
+		if( clock_id == p_curr_clock->clock_id)
 		{
-			clock_params = curr_clock->clock_params;
-			if (NULL != clock_params)
+			p_clock_params = p_curr_clock->clock_params;
+			if (NULL != p_clock_params)
 			{
-				return clock_params->clock_set_func(set_rate);
+				return p_clock_params->clock_set_func(set_rate);
 			}
 			else
 			{
 				return 1;
 			}
 		}
+		p_curr_clock++;
 	}
 
 	return 1;
@@ -87,28 +88,29 @@ uint8_t clocks_api_set_rate(uint8_t clock_id ,  uint32_t set_rate)
 uint32_t clocks_api_get_rate(uint8_t clock_id )
 {
 	uint32_t i;
-	clocks_t *curr_clock ;
-	clocks_common_t *clock_params ;
+	clocks_t *p_curr_clock ;
+	clocks_common_t *p_clock_params ;
 
-	curr_clock = clocks_array;
+	p_curr_clock = clocks_array;
 	for(i=0 ; i<CONFIG_MAX_NUMBER_OF_CLOCKS ; i++)
 	{
-		if( clock_id == curr_clock->clock_id)
+		if( clock_id == p_curr_clock->clock_id)
 		{
-			clock_params = curr_clock->clock_params;
-			if (NULL != clock_params)
+			p_clock_params = p_curr_clock->clock_params;
+			if (NULL != p_clock_params)
 			{
-				if (0 != clock_params->rate)
+				if (0 != p_clock_params->rate)
 				{
-					return clock_params->rate;
+					return p_clock_params->rate;
 				}
-				return clock_params->clock_get_func();
+				return p_clock_params->clock_get_func();
 			}
 			else
 			{
 				return 0;
 			}
 		}
+		p_curr_clock++;
 	}
 
 	return 0;

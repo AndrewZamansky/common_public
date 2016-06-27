@@ -8,7 +8,14 @@ ifdef REDEFINE_ARM_GCC_ROOT_DIR
     $(info  gcc dir  redefined to $(REDEFINE_ARM_GCC_ROOT_DIR) )
     GCC_ROOT_DIR 	:= 	$(REDEFINE_ARM_GCC_ROOT_DIR)
 else
-    GCC_ROOT_DIR 	:= 	$(TOOLS_ROOT_DIR)/gcc
+    $(info  looking for gcc in default location)
+    GCC_ROOT_DIR 	:= 	$(TOOLS_ROOT_DIR)/gcc_arm/gcc4.9.3
+    ifeq ("$(wildcard $(GCC_ROOT_DIR))","")
+        $(info gcc path $(GCC_ROOT_DIR) dont exists )
+        $(info download gcc version 4.9.3 and unpack it to $(GCC_ROOT_DIR)  )
+        $(info make sure that arm-none-eabi,bin and lib  folders is located in $(GCC_ROOT_DIR)/  after unpacking   )
+        $(error )
+    endif
 endif
 
 ifeq ("$(wildcard $(GCC_ROOT_DIR))","")

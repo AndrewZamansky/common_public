@@ -21,7 +21,7 @@ extern void os_start_arch_related_components(void) ;
 extern void xPortSysTickHandler(void);
 
 BaseType_t xDummyHigherPriorityTaskWoken ;
-pdev_descriptor_t timer_dev;
+pdev_descriptor_t timer_dev = NULL;
 app_tick_callback_func_t app_tick_callback_func = NULL;
 app_idle_entrance_callback_func_t app_idle_entrance_callback_func = NULL;
 
@@ -42,6 +42,7 @@ uint8_t os_queue_send_immediate(os_queue_t queue ,  void * pData  )
 {
 	uint8_t retVal;
 	BaseType_t xHigherPriorityTaskWoken ;
+
 	retVal = xQueueSendFromISR( queue, ( void * ) pData,  &xHigherPriorityTaskWoken );
 	portEND_SWITCHING_ISR( xHigherPriorityTaskWoken );
 	return retVal;
@@ -51,6 +52,11 @@ uint8_t os_queue_send_immediate(os_queue_t queue ,  void * pData  )
 
 void os_start(void)
 {
+	if (NULL == timer_dev)
+	{
+		return ;
+	}
+
 	os_start_arch_related_components();
 	vTaskStartScheduler();
 }

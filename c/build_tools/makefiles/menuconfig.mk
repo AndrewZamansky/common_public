@@ -20,7 +20,14 @@ ifdef REDEFINE_KCONFIG_DIR
     $(info  gcc dir  redefined to $(REDEFINE_KCONFIG_DIR) )
     KCONFIG_ROOT_DIR 	:= 	$(REDEFINE_KCONFIG_DIR)
 else
+    $(info  looking for kconfig in default location)
     KCONFIG_ROOT_DIR 	:= 	$(TOOLS_ROOT_DIR)/kconfig/kconfig3.12.0
+    ifeq ("$(wildcard $(KCONFIG_ROOT_DIR))","")
+        $(info kconfig path $(KCONFIG_ROOT_DIR) dont exists )
+        $(info download kconfig version 3.12.0 and unpack it to $(KCONFIG_ROOT_DIR)  )
+        $(info make sure that file kconfig-mconf.exe is located in $(KCONFIG_ROOT_DIR)/  after unpacking   )
+        $(error )
+    endif
 endif
 
 ifeq ("$(wildcard $(KCONFIG_ROOT_DIR))","")

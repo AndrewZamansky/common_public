@@ -19,10 +19,10 @@
 /**********  define API  functions  ************/
 uint8_t  shell_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor);
 
-#include "src/shell_static_dev_macros.h"
+#include "src/_shell_static_dev_macros.h"
 
-#define SHELL_API_CREATE_STATIC_DEV(pdev , server_pdev ) \
-			__SHELL_API_CREATE_STATIC_DEV(pdev ,server_pdev)
+#define SHELL_API_CREATE_STATIC_DEV(pdev , server_pdev , callback_pdev ) \
+			__SHELL_API_CREATE_STATIC_DEV(pdev ,server_pdev , callback_pdev)
 
 #else
 

@@ -5,8 +5,6 @@
 #include "src/_clocks_common_prerequirements_check.h"
 
 
-#define CLOCK_INPUT_XTAL	0
-#define CLOCK_CORE			1
 
 /**********  define   types ************/
 typedef uint32_t (*clock_get_func_t)(void )  ;

@@ -2,10 +2,15 @@
 INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_UBOOT_SHELL)
 
 ifdef CONFIG_INCLUDE_UBOOT_SHELL
-    ifeq ("$(wildcard $(EXTERNAL_SOURCE_ROOT_DIR)/u-boot)","")
-        $(info !!!   $(EXTERNAL_SOURCE_ROOT_DIR)/u-boot don't exists !!!! )
+
+    U_BOOT_PATH :=$(EXTERNAL_SOURCE_ROOT_DIR)/u-boot
+    ifeq ("$(wildcard $(U_BOOT_PATH))","")
+        $(info u-boot path $(U_BOOT_PATH) dont exists )
+        $(info get u-boot ported to uCProjects from Andrew Zamansky and unpack it to $(U_BOOT_PATH)  )
+        $(info make sure that .git directory is located in $(U_BOOT_PATH)/  after unpacking   )
         $(error )
-    endif	
+    endif
+    
     DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH ,  $(SW_PACKAGES_ROOT_DIR)/u_boot_shell/include )
     DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(EXTERNAL_SOURCE_ROOT_DIR)/)
 endif
@@ -17,7 +22,7 @@ endif
 
 #ASMFLAGS =  
 
-INCLUDE_DIR = $(EXTERNAL_SOURCE_ROOT_DIR)/u-boot/include
+INCLUDE_DIR = $(U_BOOT_PATH)/include
 
 SRC = u_boot_shell.c
 
@@ -57,6 +62,6 @@ SRC += cli_simple.c
 SRC += cmd_help.c
 
 
-VPATH += | $(EXTERNAL_SOURCE_ROOT_DIR)/u-boot/common
+VPATH += | $(U_BOOT_PATH)/common
 
 include $(COMMON_CC)

@@ -335,7 +335,7 @@ static void test_for_input_ready( SEMIHOSTING_Instance_t *aHandle )
 		if (callback_dev )
 		{
 
-			DEV_CALLBACK_2_PARAMS(callback_dev , CALLBACK_DATA_RECEIVED,  sh_rx_buffer, (void*)i);
+			DEV_CALLBACK_2_PARAMS(callback_dev , CALLBACK_DATA_RECEIVED,  sh_rx_buffer, (void*)(i-1));
 		}
 
 		read_sync_hndl=ARM_API_SH_Open(p_sync_file_str,4);
