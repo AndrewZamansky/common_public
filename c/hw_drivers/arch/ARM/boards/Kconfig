@@ -18,6 +18,10 @@ config GENERIC_SOC
 
 endchoice
 
+config CORTEX_M4
+    bool
+    default n
+    
 if NUC505
 source "$COMMON_DIR_PATH/c/hw_drivers/arch/ARM/boards/nuc505/Kconfig"
 endif
