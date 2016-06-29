@@ -37,7 +37,7 @@ ifeq ("$(wildcard $(KCONFIG_ROOT_DIR))","")
 endif
 
 ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS) 	 
-    $(info running :  start /I $(KCONFIG_ROOT_DIR)/kconfig-mconf.exe Kconfig 2>&1)
+    $(info running :  start /I $(KCONFIG_ROOT_DIR)/kconfig-mconf.exe $(COMMON_DIR)/Kconfig 2>&1)
     SHELL_OUTPUT :=$(shell start /I $(KCONFIG_ROOT_DIR)/kconfig-mconf.exe $(COMMON_DIR)/Kconfig 2>&1)
 else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX) 
     $(warning  MENUCONFIG LINUX BEHAVIOUR SHOULD BE VERIVIED) 

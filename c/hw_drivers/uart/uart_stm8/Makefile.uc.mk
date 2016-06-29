@@ -1,13 +1,10 @@
-ifeq ($(findstring stm8,$(CONFIG_SOC_TYPE)),stm8)
-    ifeq ($(findstring YES,$(CONFIG_INCLUDE_INTERNAL_UART)),YES) 	 
-	    DYNAMIC_COMPONENT := YES
-	    INCLUDE_THIS_COMPONENT := YES   # must be here !!
-    endif  
+ifdef CONFIG_STM8S103F
+    INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_INTERNAL_UART)
+    DYNAMIC_COMPONENT := $(CONFIG_INCLUDE_INTERNAL_UART)
 endif
-  
 
 
-INCLUDE_DIR = $(EXTERNAL_SOURCE_ROOT_DIR)/ST/stm8s-periphs/inc
+#INCLUDE_DIR = 
 
 #DEFINES = 
 
@@ -23,6 +20,6 @@ VPATH = src
 
 SRC += stm8s_uart1.c
 
-VPATH += | $(EXTERNAL_SOURCE_ROOT_DIR)/ST/stm8s-periphs/src
+VPATH += | $(STM8S_SRC_DIR)
 
 include $(COMMON_CC)

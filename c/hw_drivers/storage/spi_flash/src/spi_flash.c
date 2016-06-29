@@ -11,9 +11,7 @@
 
 
 /********  includes *********************/
-#include "spi_flash_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
-#include "src/_spi_flash_prerequirements_check.h" // should be after {spi_stm8_config.h,dev_managment_api.h}
+#include "src/_spi_flash_prerequirements_check.h"
 #include "spi_flash_api.h"
 #include "gpio_api.h"
 #include "spi_flash.h"

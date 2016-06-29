@@ -96,13 +96,13 @@
 	INTERRUPT void TIM2_CAP_COM_IRQHandler(void);
 #endif
 
-#ifndef USE_UART1_TX_IRQHandler
+#ifndef CONFIG_INCLUDE_INTERNAL_UART
 	#define UART1_TX_IRQHandler NonHandledInterrupt
 #else
 	INTERRUPT void UART1_TX_IRQHandler(void);
 #endif
 
-#ifndef USE_UART1_RX_IRQHandler
+#ifndef CONFIG_INCLUDE_INTERNAL_UART
 	#define UART1_RX_IRQHandler NonHandledInterrupt
 #else
 	INTERRUPT void UART1_RX_IRQHandler(void);

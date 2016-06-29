@@ -9,7 +9,7 @@
  */
 
 
-#include "atomthreads_config.h"
+#include "_project.h"
 
 #include "os_wrapper.h"
 

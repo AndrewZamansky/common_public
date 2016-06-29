@@ -82,6 +82,8 @@ uint8_t DEV_API_dummy_callback_func(void * const aHandle ,
 	return 1;
 }
 
+#if CONFIG_MAX_NUM_OF_DYNAMIC_DEVICES > 0
+
 extern uint32_t __static_devs_section_start_on_RAM__;
 extern uint32_t __static_devs_section_end_on_RAM__;
 /*
@@ -96,6 +98,7 @@ pdev_descriptor_t DEV_API_open_device(const uint8_t *device_name)
 #else
 	uint8_t i;
 #endif
+
 
 	pdev_descriptor_t curr_pdev ;
 	pdev_descriptor_t last_pdev ;
@@ -112,7 +115,6 @@ pdev_descriptor_t DEV_API_open_device(const uint8_t *device_name)
 		curr_pdev++;
 	}
 
-#if CONFIG_MAX_NUM_OF_DYNAMIC_DEVICES > 0
 	for(i=0 ; i<CONFIG_MAX_NUM_OF_DYNAMIC_DEVICES ; i++)
 	{
 		if (0 == strcmp( (char*)dev_descriptors[i].name , (char*)device_name ) )
@@ -120,11 +122,9 @@ pdev_descriptor_t DEV_API_open_device(const uint8_t *device_name)
 			return  &dev_descriptors[i];
 		}
 	}
-#endif
 	return NULL;
 }
 
-#if CONFIG_MAX_NUM_OF_DYNAMIC_DEVICES > 0
 /*
  * function : DEV_API_add_device()
  *

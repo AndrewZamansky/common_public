@@ -9,11 +9,6 @@ OUTPUT_HEX 		:=  $(OUT_DIR)/$(OUTPUT_APP_NAME).s19
 
 #caclulating linker flags
 
-ifdef CONFIG_INCLUDE_FPU
-   GLOBAL_LDFLAGS += --cpu=$(CONFIG_CPU_TYPE).fp
-else 	 
-   GLOBAL_LDFLAGS += --cpu=$(CONFIG_CPU_TYPE) 
-endif
 
 
 GLOBAL_LDFLAGS += --library_type=microlib --strict 

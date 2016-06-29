@@ -8,17 +8,10 @@ size_t spi_stm8_pwrite(const void *aHandle ,const uint8_t *apData , size_t aLeng
 size_t spi_stm8_pread(const void *aHandle ,uint8_t *apData , size_t aLength, size_t aOffset);
 
 
-#define __SPI_STM8_API_CREATE_STATIC_DEV(dev,dev_name  )\
-		extern const dev_descriptor_t dev ;						\
-		SPI_STM8_Instance_t handle_of_##dev =	 {0};	\
-		const dev_descriptor_t dev =								\
-			{											\
-				dev_name,								\
-				&handle_of_##dev,						\
-				spi_stm8_ioctl,							\
-				spi_stm8_pwrite,						\
-				spi_stm8_pread,							\
-				DEV_API_dummy_callback_func				\
-			}
+#define __SPI_STM8_API_CREATE_STATIC_DEV(pdev  )							\
+		SPI_STM8_Instance_t handle_of_##pdev =	 {0};						\
+		STATIC_DEVICE(pdev , &handle_of_##pdev , spi_stm8_ioctl , 			\
+				spi_stm8_pwrite , spi_stm8_pread , DEV_API_dummy_callback_func)
+
 
 #endif

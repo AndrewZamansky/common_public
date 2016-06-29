@@ -53,7 +53,7 @@ void auto_init_api(void)
 	_auto_init(- (uint8_t)sizeof(auto_init_struct_t));
 }
 
-void dummy_auto_init(){};
+void dummy_auto_init(void){}
 
 AUTO_INIT_FUNCTION(dummy_auto_init)  ;
 

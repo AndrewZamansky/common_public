@@ -18,19 +18,14 @@ uint8_t spi_flash_ioctl( void * const aHandle ,const uint8_t aIoctl_num , void *
 #endif
 
 
-#define __SPI_FLASH_API_CREATE_STATIC_DEV(dev,dev_name  ,spi_server_dev ,gpio_server_dev)\
-		extern const dev_descriptor_t dev ;						\
-		extern const dev_descriptor_t spi_server_dev ;						\
-		extern const dev_descriptor_t gpio_server_dev ;						\
-		spi_flash_Instance_t handle_of_##dev =	 {&spi_server_dev,&gpio_server_dev};	\
-		const dev_descriptor_t dev =								\
-			{											\
-				dev_name,								\
-				&handle_of_##dev,						\
-				spi_flash_ioctl,						\
-				(dev_pwrite_func_t)spi_flash_pwrite,	\
-				(dev_pread_func_t)spi_flash_pread,		\
-				DEV_API_dummy_callback_func				\
-			}
+#define __SPI_FLASH_API_CREATE_STATIC_DEV(pdev  ,spi_server_pdev ,gpio_server_pdev)					\
+		EXTERN_DECLARATION_TO_STATIC_DEVICE_INST(spi_server_pdev) ;									\
+		EXTERN_DECLARATION_TO_STATIC_DEVICE_INST(gpio_server_pdev) ;								\
+		spi_flash_Instance_t handle_of_##pdev =	 													\
+			{P_TO_STATIC_DEVICE_INST(spi_server_pdev),P_TO_STATIC_DEVICE_INST(gpio_server_pdev)};	\
+		STATIC_DEVICE(pdev , &handle_of_##pdev , spi_flash_ioctl , 									\
+				(dev_pwrite_func_t)spi_flash_pwrite , (dev_pread_func_t)spi_flash_pread ,			\
+				DEV_API_dummy_callback_func)
+
 
 #endif

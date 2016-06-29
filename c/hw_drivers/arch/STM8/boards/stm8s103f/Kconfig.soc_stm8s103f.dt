@@ -1,0 +1,110 @@
+menu "stm8s103f soc configuration"
+
+config MAX_NUMBER_OF_CLOCKS
+    hex
+    default 2 
+    
+config INITIAL_CORE_CLOCK_RATE
+    hex
+    default 2000000 
+
+
+
+#######################################
+##########  clock tree  ###############
+
+menu "clocks tree"
+
+comment "CONFIG_DT_STM8_HSI_CLOCK : internal high speed clock"
+config DT_STM8_HSI_CLOCK
+    hex
+    default 1 
+
+config DT_STM8_HSI_CLOCK_RATE
+    hex
+    default 16000000 
+
+
+
+comment "CONFIG_DT_CORE_CLOCK : cortex m systick clock"
+config DT_CORE_CLOCK
+    hex
+    default 2
+
+endmenu
+
+
+##########  end of  clock tree  ###############
+###############################################
+
+##################################################
+##########  interrupts definitions ###############
+
+menu "interrupts"
+
+comment "CONFIG_DT_STM8_UART1_TX_INTERRUPT : uart tx interrupt"
+config DT_STM8_UART1_TX_INTERRUPT
+    int
+    default 17 
+
+comment "CONFIG_DT_STM8_UART1_RX_INTERRUPT : uart rx interrupt"
+config DT_STM8_UART1_RX_INTERRUPT
+    int
+    default 18 
+
+endmenu
+
+
+##########  end of interrupts definitions ###############
+#########################################################
+    
+
+
+##################################################
+##############  memories on soc ##################
+
+menu "memories"
+
+comment "sram start : 0x0"
+config DT_SOC_RAM_START_ADDR
+    hex 
+    default 0x0
+
+comment "sram size : 1k"
+config DT_SOC_RAM_SIZE
+    hex
+    default 0x400    
+
+comment "eeprom start : 0x4000"
+config DT_SOC_EEPROM_START_ADDR
+    hex
+    default 0x4000
+
+comment "eeprom size : 640"
+config DT_SOC_EEPROM_SIZE
+    int
+    default 640
+    
+comment "flash start : 0x8000"
+config DT_SOC_FLASH_START_ADDR
+    hex
+    default 0x8000
+
+comment "flash size : 8k"
+config DT_SOC_FLASH_SIZE
+    hex
+    default 0x2000   
+
+endmenu
+
+#############  end of memories on soc ###################
+#########################################################
+
+
+
+
+
+
+endmenu
+
+

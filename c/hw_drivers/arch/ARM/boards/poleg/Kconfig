@@ -3,9 +3,7 @@ config POLEG_BOARD
 	select INTERNAL_SRAM 
 	select INTERNAL_ROM 
 	select DDR 
-	select EXTERNAL_FLASH 
-
-config CORTEX_A9
-	def_bool y
+	select EXTERNAL_FLASH
+	select CORTEX_A9
 
 

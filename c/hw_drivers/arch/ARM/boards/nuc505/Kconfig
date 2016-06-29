@@ -22,6 +22,5 @@ config NUC505_BOARD
 	def_bool y
 	select INTERNAL_SRAM 
 	select INTERNAL_FLASH 
+	select CORTEX_M4 
 	
-config CORTEX_M4
-	def_bool y

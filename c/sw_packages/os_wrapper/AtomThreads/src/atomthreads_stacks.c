@@ -5,12 +5,7 @@
  *      Author: azamansk
  */
 
-#include "_project_typedefs.h"
-#include "_project_defines.h"
-#include "_project_func_declarations.h"
-
-
-#include "atomthreads_config.h"
+#include "_project.h"
 
 uint8_t stack_storage_area[ATOMTHREADS_CONFIG_STACK_STORAGE_SIZE];
 

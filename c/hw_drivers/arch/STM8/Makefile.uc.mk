@@ -1,7 +1,5 @@
 
-ifeq ($(findstring stm8,$(CONFIG_CPU_TYPE)),stm8) 	 
-	INCLUDE_THIS_COMPONENT := YES   # must be here !!
-endif  
+INCLUDE_THIS_COMPONENT := $(CONFIG_STM8)
 
 
 #INCLUDE_DIR =  

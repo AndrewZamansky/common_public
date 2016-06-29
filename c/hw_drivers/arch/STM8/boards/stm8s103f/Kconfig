@@ -1,0 +1,25 @@
+menu "`--->  stm8s103f board configurations"
+
+choice
+	prompt "Board"
+	default STM8S103F_EB
+
+config STM8S103F_EB
+	bool "stm8s103f evaluation board"
+
+endchoice
+
+if STM8S103F_EB
+source "$COMMON_DIR_PATH/c/hw_drivers/arch/STM8/boards/stm8s103f/Kconfig.eb_stm8s103f.dt"
+endif
+
+
+
+endmenu
+
+=======
+config STM8S103F_BOARD
+	def_bool y
+	select INTERNAL_SRAM 
+	select INTERNAL_FLASH 
+	

@@ -13,9 +13,7 @@
 
 /********  includes *********************/
 
-#include "uart_stm8_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
-#include "src/_uart_stm8_prerequirements_check.h" // should be after {uart_stm8_config.h,dev_managment_api.h}
+#include "src/_uart_stm8_prerequirements_check.h"
 
 /********  types  *********************/
 

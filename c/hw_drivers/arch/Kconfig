@@ -8,6 +8,10 @@ source "$COMMON_DIR_PATH/c/hw_drivers/arch/ARM/boards/Kconfig"
 endif
 
 
+if STM8
+source "$COMMON_DIR_PATH/c/hw_drivers/arch/STM8/boards/Kconfig"
+endif
+
 
 
 menu "memories configuration"
@@ -31,8 +35,7 @@ config INTERNAL_ROM_SIZE
 
 
 config INTERNAL_SRAM
-    bool "internal sram"
-    depends on GENERIC || POLEG || NUC505
+    bool
     default n
     
 config INTERNAL_SRAM_START_ADDR
@@ -49,8 +52,7 @@ config INTERNAL_SRAM_SIZE
 
 
 config INTERNAL_FLASH
-    bool "internal flash"
-    depends on GENERIC || NUC505
+    bool
     default n
 
 config INTERNAL_FLASH_START_ADDR

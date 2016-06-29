@@ -8,8 +8,6 @@ config INITIAL_CORE_CLOCK
     hex
     default CRYSTAL_CLOCK 
 
-config CORTEX_M4
-	def_bool y
 
 #######################################
 ##########  clock tree  ###############

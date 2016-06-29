@@ -13,9 +13,7 @@
 
 /********  includes *********************/
 
-#include "gpio_stm8_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
-#include "src/_gpio_stm8_prerequirements_check.h" // should be after {gpio_stm8_config.h,dev_managment_api.h}
+#include "src/_gpio_stm8_prerequirements_check.h"
 
 /********  types  *********************/
 

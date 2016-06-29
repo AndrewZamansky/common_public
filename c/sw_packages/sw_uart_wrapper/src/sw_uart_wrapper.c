@@ -104,6 +104,7 @@ inline uint8_t SW_UART_WRAPPER_TX_Done(SW_UART_WRAPPER_Instance_t *pInstance,tx_
 	return 0;
 }
 
+#ifdef CONFIG_SW_UART_WRAPPER_ENABLE_RX
 
 /*---------------------------------------------------------------------------------------------------------*/
 /* Function:        SW_UART_WRAPPER_Data_Received                                                                          */
@@ -116,7 +117,8 @@ inline uint8_t SW_UART_WRAPPER_TX_Done(SW_UART_WRAPPER_Instance_t *pInstance,tx_
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-inline uint8_t SW_UART_WRAPPER_Data_Received(SW_UART_WRAPPER_Instance_t *pInstance,uint8_t *rcvdData,rx_int_size_t rcvdDataLen)
+inline uint8_t SW_UART_WRAPPER_Data_Received(SW_UART_WRAPPER_Instance_t *pInstance ,
+		uint8_t *rcvdData , rx_int_size_t rcvdDataLen)
 {
 #ifdef  CONFIG_SW_UART_WRAPPER_ENABLE_RX
     uint8_t *rx_buff;
@@ -167,6 +169,7 @@ inline uint8_t SW_UART_WRAPPER_Data_Received(SW_UART_WRAPPER_Instance_t *pInstan
 	return 1;
 
 }
+#endif
 
 /*---------------------------------------------------------------------------------------------------------*/
 /* Function:        sw_uart_wrapper_callback                                                                          */
@@ -186,10 +189,13 @@ uint8_t sw_uart_wrapper_callback(void * const aHandle ,const uint8_t aCallback_n
 		case CALLBACK_TX_DONE :
 			return SW_UART_WRAPPER_TX_Done(INSTANCE(aHandle),(tx_int_size_t)((size_t)aCallback_param1));
 		   break;
+#ifdef CONFIG_SW_UART_WRAPPER_ENABLE_RX
 		case CALLBACK_DATA_RECEIVED :
+
 			return SW_UART_WRAPPER_Data_Received(INSTANCE(aHandle),
 					(uint8_t *)aCallback_param1,(rx_int_size_t)((size_t)aCallback_param2));
 			break;
+#endif
 		default:
 			return 1;
 	}
@@ -258,15 +264,16 @@ size_t sw_uart_wrapper_pwrite(const void *aHandle ,const uint8_t *apData , size_
 		os_queue_t xQueue = INSTANCE(aHandle)->xQueue;
 
 		curr_transmit_len = dataLen;
-		if ( CONFIG_SW_UART_WRAPPER_MAX_TX_BUFFER_SIZE < curr_transmit_len )
-		{
-			curr_transmit_len=CONFIG_SW_UART_WRAPPER_MAX_TX_BUFFER_SIZE;
-		}
 
 
 
 #ifdef CONFIG_SW_UART_WRAPPER_USE_MALLOC
-			xMessage.pData=(uint8_t*)malloc(curr_transmit_len * sizeof(uint8_t));
+		xMessage.pData=(uint8_t*)malloc(curr_transmit_len * sizeof(uint8_t));
+#else
+		if ( CONFIG_SW_UART_WRAPPER_MAX_TX_BUFFER_SIZE < curr_transmit_len )
+		{
+			curr_transmit_len=CONFIG_SW_UART_WRAPPER_MAX_TX_BUFFER_SIZE;
+		}
 #endif
 
 
@@ -393,7 +400,7 @@ uint8_t sw_uart_wrapper_ioctl(void * const aHandle ,const uint8_t aIoctl_num , v
 		case IOCTL_SET_ISR_CALLBACK_DEV :
 			INSTANCE(aHandle)->client_dev = (pdev_descriptor_t)aIoctl_param1;
 			break;
-#endif			//for CONFIG_SW_UART_WRAPPER_MAX_RX_BUFFER_SIZE>0
+#endif			//for CONFIG_SW_UART_WRAPPER_ENABLE_RX
 #endif // for CONFIG_SW_UART_WRAPPER_MAX_NUM_OF_DYNAMIC_INSTANCES > 0
 
 #ifdef CONFIG_SW_UART_WRAPPER_ENABLE_RX
@@ -418,7 +425,7 @@ uint8_t sw_uart_wrapper_ioctl(void * const aHandle ,const uint8_t aIoctl_num , v
 			INSTANCE(aHandle)->isDataInUse= 0 ; // should be modified last
 
 			break;
-#endif // for CONFIG_SW_UART_WRAPPER_MAX_RX_BUFFER_SIZE>0
+#endif // for CONFIG_SW_UART_WRAPPER_ENABLE_RX
 
 		case IOCTL_SW_UART_WRAPPER_RESET :
 			DEV_IOCTL_0_PARAMS(INSTANCE(aHandle)->server_dev,IOCTL_UART_DISABLE_TX);

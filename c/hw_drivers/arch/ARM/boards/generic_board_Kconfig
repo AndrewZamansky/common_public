@@ -7,7 +7,7 @@ choice
 config CORTEX_M3
 	bool "cortex-M3"
 
-config CORTEX_M41
+config CORTEX_M4
 	bool "cortex-M4"
 
 config CORTEX_A9

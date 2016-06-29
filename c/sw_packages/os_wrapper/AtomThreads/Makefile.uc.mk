@@ -1,13 +1,24 @@
+INCLUDE_THIS_COMPONENT := $(CONFIG_ATOM_THREADS)
+ifdef CONFIG_ATOM_THREADS
 
-ifeq ($(findstring atomthreads,$(CONFIG_INCLUDE_OS)),atomthreads) 	 
-    DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH ,  $(EXTERNAL_SOURCE_ROOT_DIR)/atomthreads-1.3/kernel )
-	ifeq ($(findstring stm8,$(CONFIG_CPU_TYPE)),stm8) 	 
-        DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH ,  $(EXTERNAL_SOURCE_ROOT_DIR)/atomthreads-1.3/ports/stm8 )
-	else ifeq ($(findstring avr,$(CONFIG_CPU_TYPE)),avr) 	 
-        DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(EXTERNAL_SOURCE_ROOT_DIR)/atomthreads-1.3/ports/avr )
-	endif 
-	INCLUDE_THIS_COMPONENT := YES   # must be here !!
-endif  
+    ATOMTHREADS_RTOS_PATH :=$(EXTERNAL_SOURCE_ROOT_DIR)/atomthreads-1.3
+    ifeq ("$(wildcard $(ATOMTHREADS_RTOS_PATH))","")
+        $(info atomthreads path $(ATOMTHREADS_RTOS_PATH) dont exists )
+        $(info download atomthreads version 1.3 and unpack it to $(ATOMTHREADS_RTOS_PATH)  )
+        $(info make sure that kernel and ports folders are located in $(ATOMTHREADS_RTOS_PATH)/  after unpacking   )
+        $(error )
+    endif
+    
+    DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH ,  $(ATOMTHREADS_RTOS_PATH)/kernel )
+    
+    ifdef CONFIG_STM8
+        DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH ,  $(ATOMTHREADS_RTOS_PATH)/ports/stm8 )
+    endif
+    ifdef CONFIG_AVR
+        DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH ,  $(ATOMTHREADS_RTOS_PATH)/ports/avr )
+    endif
+    
+endif
 
 
 #INCLUDE_DIR = 
@@ -30,13 +41,17 @@ SRC += atommutex.c
 SRC += atomqueue.c
 SRC += atomsem.c
 SRC += atomtimer.c
-VPATH += $(EXTERNAL_SOURCE_ROOT_DIR)/atomthreads-1.3/kernel
+VPATH += $(ATOMTHREADS_RTOS_PATH)/kernel
 
 # memory management
 
-# stm8 porting
-SRC += atomport.c 
-SRC += atomport-asm-cosmic.s
-VPATH += :$(EXTERNAL_SOURCE_ROOT_DIR)/atomthreads-1.3/ports/stm8
+ifdef CONFIG_STM8
+
+    # stm8 porting
+    SRC += atomport.c 
+    SRC += atomport-asm-cosmic.s
+    VPATH += :$(ATOMTHREADS_RTOS_PATH)/ports/stm8
+
+endif
 
 include $(COMMON_CC)
