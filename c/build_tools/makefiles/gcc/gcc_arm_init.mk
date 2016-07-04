@@ -6,7 +6,14 @@ ifndef COMMON_INIT_SECTION_THAT_SHOULD_RUN_ONCE
 
 ifdef REDEFINE_ARM_GCC_ROOT_DIR
     $(info  gcc dir  redefined to $(REDEFINE_ARM_GCC_ROOT_DIR) )
-    GCC_ROOT_DIR 	:= 	$(REDEFINE_ARM_GCC_ROOT_DIR)
+    ifeq ("$(wildcard $(REDEFINE_ARM_GCC_ROOT_DIR))","")
+        $(info gcc path $(REDEFINE_ARM_GCC_ROOT_DIR) dont exists)
+        $(info to use default gcc location remove/comment REDEFINE_ARM_GCC_ROOT_DIR variable in  $(REDEFINE_ARM_GCC_ROOT_DIR)/workspace_config.mk )
+        $(info you can set customized gcc path in REDEFINE_ARM_GCC_ROOT_DIR variable in $(REDEFINE_ARM_GCC_ROOT_DIR)/workspace_config.mk )
+        $(error )
+    else
+        GCC_ROOT_DIR 	:= 	$(REDEFINE_ARM_GCC_ROOT_DIR)
+    endif
 else
     $(info  looking for gcc in default location)
     GCC_ROOT_DIR 	:= 	$(TOOLS_ROOT_DIR)/gcc_arm/gcc4.9.3
@@ -14,20 +21,12 @@ else
         $(info gcc path $(GCC_ROOT_DIR) dont exists )
         $(info download gcc version 4.9.3 and unpack it to $(GCC_ROOT_DIR)  )
         $(info make sure that arm-none-eabi,bin and lib  folders is located in $(GCC_ROOT_DIR)/  after unpacking   )
+        $(info you can set customized gcc path in REDEFINE_ARM_GCC_ROOT_DIR variable in $(REDEFINE_ARM_GCC_ROOT_DIR)/workspace_config.mk )
         $(error )
     endif
 endif
 
-ifeq ("$(wildcard $(GCC_ROOT_DIR))","")
-    $(info gcc path $(GCC_ROOT_DIR) dont exists)
-    ifdef REDEFINE_ARM_GCC_ROOT_DIR
-        $(info gcc path was set in REDEFINE_ARM_GCC_ROOT_DIR variable in $(WORKSPACE_ROOT_DIR)/workspace_config.mk )
-    else
-         $(info check that gcc directory exists in $(TOOLS_ROOT_DIR))   
-         $(info or set gcc path in REDEFINE_ARM_GCC_ROOT_DIR variable in $(WORKSPACE_ROOT_DIR)/workspace_config.mk )   
-    endif    
-    $(error $(WORKSPACE_ROOT_DIR))
-endif
+
 
 ifndef CONFIG_OPTIMIZE_LEVEL
     CONFIG_OPTIMIZE_LEVEL :=O0

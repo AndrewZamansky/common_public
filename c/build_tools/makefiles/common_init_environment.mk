@@ -4,20 +4,23 @@
 ### but becouse this file is included before common.mk , we calclulate SHELL variable here also
 
 ###########  checking host os #############
-#test if we are running in windows
+$(info detecting host OS ... )
+$(info trying Windows ... )
 SHELL := cmd
 OS_TEST	:= $(shell ver)
 ifeq ($(findstring Windows,$(OS_TEST)),Windows) 	 
 	COMPILER_HOST_OS := WINDOWS
+    $(info Windows OS detected . )
 else # we are not in windows now
-
-#test if we are running in linux
-SHELL := sh
-OS_TEST	:= $(shell uname)
-ifeq ($(findstring Linux,$(OS_TEST)),Linux)
-	COMPILER_HOST_OS := LINUX
-else # we are not in linux now
-$(error ---- UNKNOWN HOST OS ----)
+    $(info Windows OS not detected . )
+    $(info trying Linux ... )
+    SHELL := sh
+    OS_TEST	:= $(shell uname)
+    ifeq ($(findstring Linux,$(OS_TEST)),Linux)
+	    COMPILER_HOST_OS := LINUX
+        $(info Linux OS detected . )
+    else # we are not in linux now
+        $(error ---- UNKNOWN HOST OS ----)
 endif 
 	
 endif
