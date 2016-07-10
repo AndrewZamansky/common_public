@@ -31,7 +31,7 @@ uint8_t  arm_sh_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor);
 
 #include "src/semihosting_static_dev_macros.h"
 
-#define ARM_SH_API_CREATE_STATIC_DEV(dev,dev_name,callback_dev) \
-				__ARM_SH_API_CREATE_STATIC_DEV(dev,dev_name,callback_dev)
+#define ARM_SH_API_CREATE_STATIC_DEV(pdev ,callback_pdev) \
+				__ARM_SH_API_CREATE_STATIC_DEV(pdev ,callback_pdev)
 
 #endif

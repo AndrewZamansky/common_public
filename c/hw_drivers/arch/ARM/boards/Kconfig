@@ -21,7 +21,19 @@ endchoice
 config CORTEX_M4
     bool
     default n
-    
+
+config CORTEX_M3
+    bool
+    default n
+
+config CORTEX_A9
+    bool
+    default n
+
+config ARM_926EJ_S
+    bool
+    default n
+
 if NUC505
 source "$COMMON_DIR_PATH/c/hw_drivers/arch/ARM/boards/nuc505/Kconfig"
 endif
@@ -31,5 +43,5 @@ source "$COMMON_DIR_PATH/c/hw_drivers/arch/ARM/boards/poleg/Kconfig"
 endif
 
 if GENERIC_SOC
-source "$COMMON_DIR_PATH/c/hw_drivers/arch/ARM/boards/generic_board_Kconfig"
+source "$COMMON_DIR_PATH/c/hw_drivers/arch/ARM/boards/generic_board/Kconfig"
 endif

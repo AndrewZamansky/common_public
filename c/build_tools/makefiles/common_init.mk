@@ -184,7 +184,7 @@ include .config
 
 PROJECT_NAME :=$(patsubst "%",%,$(CONFIG_PROJECT_NAME))
 ifeq ($(PROJECT_NAME),)      # if $(PROJECT_NAME) is empty
-    $(info project have to be named)
+    $(info error : project have to be named set CONFIG_PROJECT_NAME in .config or using menuconfig)
     $(error )
 endif
 $(info ---- project name as declared in .config : $(PROJECT_NAME) ---- )

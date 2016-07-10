@@ -1,4 +1,4 @@
-menu "freeRTOS configurations"
+menu "`---> freeRTOS configurations"
 
 config HEAP_SIZE
 	int   "heap size"

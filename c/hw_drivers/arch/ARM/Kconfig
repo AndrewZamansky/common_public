@@ -1,4 +1,3 @@
-
 menu "Build System"
 
 choice
@@ -18,33 +17,8 @@ endchoice
 
 
 if GCC || GPP
-choice
-	prompt "Target OS"
-	default TARGET_OS_NONE
-
-config TARGET_OS_LINUX
-	bool "linux"
-
-config TARGET_OS_NONE
-    bool "none"
-endchoice
-
-choice
-	prompt "ABI Type"
-	default EABI
-
-config EABI
-	bool "eabi"
-
-config GNUEABI
-    bool "gnueabi"
-endchoice
-
-config USE_NANO_STD_LIBS
-	bool   "use nano std libs to reduce code size "
-	default n
-
-
+source "$COMMON_DIR_PATH/c/build_tools/makefiles/gcc/Kconfig"
+endif
 
 menuconfig INCLUDE_TOOLCHAIN_LIBRARIES
 	bool   "tool chain libraries"
@@ -55,7 +29,7 @@ config TOOLCHAIN_LIBRARIES_ARE_SPEED_CRUCIAL
 	depends on INCLUDE_TOOLCHAIN_LIBRARIES
 	default n	
 
-endif
+
 
 
     

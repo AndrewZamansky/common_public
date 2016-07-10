@@ -16,12 +16,76 @@ ifdef REDEFINE_ARM_GCC_ROOT_DIR
     endif
 else
     $(info  looking for gcc in default location)
-    GCC_ROOT_DIR 	:= 	$(TOOLS_ROOT_DIR)/gcc_arm/gcc4.9.3
-    ifeq ("$(wildcard $(GCC_ROOT_DIR))","")
-        $(info gcc path $(GCC_ROOT_DIR) dont exists )
-        $(info download gcc version 4.9.3 and unpack it to $(GCC_ROOT_DIR)  )
-        $(info make sure that arm-none-eabi,bin and lib  folders is located in $(GCC_ROOT_DIR)/  after unpacking   )
-        $(info you can set customized gcc path in REDEFINE_ARM_GCC_ROOT_DIR variable in $(REDEFINE_ARM_GCC_ROOT_DIR)/workspace_config.mk )
+    ifeq ("$(wildcard $(TOOLS_ROOT_DIR)/gcc)","")
+        $(info path  $(TOOLS_ROOT_DIR)/gcc dont exists create it )
+        $(error )
+    endif
+
+    TEST_GCC_ROOT_DIR 	:= 	$(TOOLS_ROOT_DIR)/gcc/arm
+    ifeq ("$(wildcard $(TEST_GCC_ROOT_DIR)*)","")
+        $(info gcc for arm dont exists )
+        GCC_NOT_FOUND :=1
+    endif
+
+    VENDOR_NAME :=
+    ifneq ($(CONFIG_GCC_VENDOR_NAME),"")
+       VENDOR_NAME :=$(patsubst "%",%,$(CONFIG_GCC_VENDOR_NAME))
+       VENDOR_NAME :=$(VENDOR_NAME)-
+    endif
+    ifndef GCC_NOT_FOUND
+       TEST_GCC_ROOT_DIR 	:= 	$(TOOLS_ROOT_DIR)/gcc/arm-$(VENDOR_NAME)
+       ifeq ("$(wildcard $(TEST_GCC_ROOT_DIR)*)","")
+           $(info $(TEST_GCC_ROOT_DIR)xxx dont exists )
+           $(info (if needed you can change vendor name using menuconfig in GCC_VENDOR_NAME variable ))
+           GCC_NOT_FOUND :=1
+       endif
+	endif
+	
+    OS_PREFIX :=none-
+    ifdef GCC_CONFIG_TARGET_OS_LINUX  
+        OS_PREFIX:=linux-
+    endif
+    ifndef GCC_NOT_FOUND
+       TEST_GCC_ROOT_DIR 	:= 	$(TOOLS_ROOT_DIR)/gcc/arm-$(VENDOR_NAME)$(OS_PREFIX)
+       ifeq ("$(wildcard $(TEST_GCC_ROOT_DIR)*)","")
+           $(info $(TEST_GCC_ROOT_DIR)xxx dont exists )
+           $(info (if needed you can change target OS using menuconfig in "Building System" menu ))
+           GCC_NOT_FOUND :=1
+       endif
+	endif
+    
+    ABI_PREFIX :=
+    ifdef CONFIG_EABI
+        ABI_PREFIX:=eabi
+    endif
+    ifdef CONFIG_GNUEABI
+        ABI_PREFIX:=gnueabi
+    endif
+    ifndef GCC_NOT_FOUND
+       TEST_GCC_ROOT_DIR 	:= 	$(TOOLS_ROOT_DIR)/gcc/arm-$(VENDOR_NAME)$(OS_PREFIX)$(ABI_PREFIX)
+       ifeq ("$(wildcard $(TEST_GCC_ROOT_DIR)*)","")
+           $(info $(TEST_GCC_ROOT_DIR)-xxx dont exists )
+           $(info (if needed you can change ABI type using menuconfig in "Building System" menu ))
+           GCC_NOT_FOUND :=1
+       endif
+	endif
+                
+    ifndef GCC_NOT_FOUND
+       TEST_GCC_ROOT_DIR 	:= 	$(TOOLS_ROOT_DIR)/gcc/arm-$(VENDOR_NAME)$(OS_PREFIX)$(ABI_PREFIX)
+       GCC_ROOT_DIR :=$(lastword $(wildcard $(TEST_GCC_ROOT_DIR)-*))#take the latest gcc version
+       ifeq ("$(GCC_ROOT_DIR)","")
+           $(info gcc fdirectory should be of form : $(GCC_ROOT_DIR)-[version][revision] )
+           GCC_NOT_FOUND :=1
+       endif
+	endif
+           
+    ifdef GCC_NOT_FOUND
+        TEST_GCC_ROOT_DIR 	:= $(TOOLS_ROOT_DIR)/gcc/arm-$(VENDOR_NAME)$(OS_PREFIX)$(ABI_PREFIX)-[version][revision]
+        $(info gcc path $(TEST_GCC_ROOT_DIR) dont exists )
+        $(info download gcc (tested version is $(CONFIG_GCC_VERSION)) )
+        $(info unpack it to $(TEST_GCC_ROOT_DIR))
+        $(info make sure that arm-none-eabi,bin and lib  folders is located in $(TEST_GCC_ROOT_DIR)/  after unpacking   )
+        $(info you can also set customized gcc path in REDEFINE_ARM_GCC_ROOT_DIR variable in $(REDEFINE_ARM_GCC_ROOT_DIR)/workspace_config.mk )
         $(error )
     endif
 endif
@@ -32,18 +96,8 @@ ifndef CONFIG_OPTIMIZE_LEVEL
     CONFIG_OPTIMIZE_LEVEL :=O0
 endif
 
-GNU_COMPILATION_PREFIX	:= arm
-ifdef CONFIG_TARGET_OS_LINUX
-    GNU_COMPILATION_PREFIX  :=$(GNU_COMPILATION_PREFIX)-linux
-else  
-     GNU_COMPILATION_PREFIX  :=$(GNU_COMPILATION_PREFIX)-none
-endif
+GNU_COMPILATION_PREFIX	:=arm-$(VENDOR_NAME)$(OS_PREFIX)$(ABI_PREFIX)
 
-ifdef CONFIG_GNUEABI
-    GNU_COMPILATION_PREFIX  :=$(GNU_COMPILATION_PREFIX)-gnueabi
-else ifdef CONFIG_EABI
-     GNU_COMPILATION_PREFIX  :=$(GNU_COMPILATION_PREFIX)-eabi
-endif
 
 ifdef CONFIG_OPTIMISE_NONE
     CONFIG_OPTIMIZE_LEVEL := O0

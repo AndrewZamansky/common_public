@@ -1,0 +1,14 @@
+#
+
+menu "utilities"
+
+config INCLUDE_JSMN
+	bool   "jsmn"
+	default n
+
+config INCLUDE_CRC
+	bool   "crc32"
+	default n
+
+	
+endmenu

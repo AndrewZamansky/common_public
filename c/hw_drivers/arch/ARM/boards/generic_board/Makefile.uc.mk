@@ -1,0 +1,6 @@
+
+ifdef CONFIG_GENERIC_ARM_BOARD
+	INCLUDE_THIS_FOR_H_FILES_PATH := y
+	
+endif
+

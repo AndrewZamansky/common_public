@@ -5,9 +5,11 @@ ifdef CONFIG_FREE_RTOS
     
     FREE_RTOS_PATH :=$(EXTERNAL_SOURCE_ROOT_DIR)/FreeRTOSv8.0.1
     ifeq ("$(wildcard $(FREE_RTOS_PATH))","")
-        $(info freeRTOS path $(FREE_RTOS_PATH) dont exists )
-        $(info download freeRTOS version 8.0.1 and unpack it to $(FREE_RTOS_PATH)  )
-        $(info make sure that file Quick_Start_Guide is located in $(FREE_RTOS_PATH)/  after unpacking   )
+        $(info  )
+        $(info --- freeRTOS path $(FREE_RTOS_PATH) dont exists )
+        $(info --- download freeRTOS version 8.0.1 and unpack it to $(FREE_RTOS_PATH)  )
+        $(info --- make sure that file Quick_Start_Guide is located in $(FREE_RTOS_PATH)/  after unpacking   )
+        $(info  )
         $(error )
     endif
     

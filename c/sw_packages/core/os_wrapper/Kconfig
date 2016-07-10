@@ -14,7 +14,7 @@ config NONE_RT_OS
 endchoice
 
 if FREE_RTOS
-source "$COMMON_DIR_PATH/c/sw_packages/os_wrapper/FreeRTOS/Kconfig"
+source "$COMMON_DIR_PATH/c/sw_packages/core/os_wrapper/FreeRTOS/Kconfig"
 endif
 
 if FREE_RTOS || ATOM_THREADS

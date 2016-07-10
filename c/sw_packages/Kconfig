@@ -1,127 +1,15 @@
 #
 
-config INCLUDE_DEV_MENAGMENT
-	def_bool  y
+source "$COMMON_DIR_PATH/c/sw_packages/core/Kconfig"
 
-if INCLUDE_DEV_MENAGMENT
-source "$COMMON_DIR_PATH/c/sw_packages/dev_managment/Kconfig"
-endif
+source "$COMMON_DIR_PATH/c/sw_packages/ancillary/Kconfig"
 
-config INCLUDE_VERSION_MENAGMENT
-	bool   "version management"
-	default y
+source "$COMMON_DIR_PATH/c/sw_packages/management/Kconfig"
 
-menuconfig INCLUDE_HEARTBEAT
-	bool   "heartbeat routines"
-	default y
+source "$COMMON_DIR_PATH/c/sw_packages/utilities/Kconfig"
 
-if INCLUDE_HEARTBEAT
-config HEARTBEAT_IS_SPEED_CRITICAL
-	bool   "hearbeat routines are speed critical"
-	default n
-endif
+source "$COMMON_DIR_PATH/c/sw_packages/storage/Kconfig"
 
-menuconfig INCLUDE_PRINTF
-	bool   "printf"
-	default n
-
-if INCLUDE_PRINTF
-source "$COMMON_DIR_PATH/c/sw_packages/PRINTF/Kconfig"
-endif
-
-
-menu "RT OS"
-source "$COMMON_DIR_PATH/c/sw_packages/os_wrapper/Kconfig"
-
-
-endmenu	
-
-
-menuconfig INCLUDE_SW_UART_WRAPPER
-	bool   "software uart wrapper"
-	depends on INCLUDE_INTERNAL_UART || INCLUDE_USB_VIRTUAL_COM || INCLUDE_WIRELESS_UART
-	default n
-
-if INCLUDE_SW_UART_WRAPPER
-source "$COMMON_DIR_PATH/c/sw_packages/sw_uart_wrapper/Kconfig"
-endif
-
-menuconfig INCLUDE_TIMER_WRAPPER
-	bool   "timer wrapper"
-	depends on INCLUDE_CORTEXM_SYSTICK 
-	default n
-
-if INCLUDE_TIMER_WRAPPER
-source "$COMMON_DIR_PATH/c/sw_packages/timer/Kconfig"
-endif
-
-config INCLUDE_HTTP
-	bool   "http"
-	default n
-
-config INCLUDE_JSMN
-	bool   "jsmn"
-	default n
-
-config INCLUDE_SW_GPIO_WRAPPER
-	bool   "sw gpio wrapper"
-	depends on INCLUDE_INTERNAL_GPIO
-	default n
-
-config INCLUDE_SPI_FLASH_PARTITION_MANAGER
-	bool   "spi flash partition manager"
-	depends on INCLUDE_SPI_FLASH
-	default n
-
-config INCLUDE_FAT_FS
-	bool   "fat fs"
-	depends on INCLUDE_SPI_FLASH_PARTITION_MANAGER
-	default n
-
-config INCLUDE_LOADED_CONFIG
-	bool   "loaded configuration"
-	depends on INCLUDE_FAT_FS
-	default n
-
-menuconfig INCLUDE_SHELL
-	bool   "shell"
-	depends on INCLUDE_SW_UART_WRAPPER
-	select INCLUDE_PRINTF
-	default n
-	
-if INCLUDE_SHELL
-source "$COMMON_DIR_PATH/c/sw_packages/shell/Kconfig"
-endif
-
-if INCLUDE_SHELL || ARM_SEMIHOSTING_CONFIG_ENABLE_RX
-
-menuconfig INCLUDE_UBOOT_SHELL
-	bool   "uboot shell"
-	default n
-
-if INCLUDE_UBOOT_SHELL
-source "$COMMON_DIR_PATH/c/sw_packages/u_boot_shell/Kconfig"
-endif
-
-endif
-	
-config INCLUDE_BUTTON_MANAGER
-	bool   "button manager"
-	depends on INCLUDE_SW_GPIO_WRAPPER
-	default n
-
-menuconfig INCLUDE_MEMORY_POOL
-	bool   "memory pool"
-	default n
-
-config MEMORY_POOL_IS_SPEED_CRITICAL 
-	bool   "memory pool is speed critical"
-	depends on INCLUDE_MEMORY_POOL
-	default n
-	
 source "$COMMON_DIR_PATH/c/sw_packages/dsp/Kconfig"
-	
-######## automatically selected configurations #########
 
-
-######## end of automatically selected configurations #########	
+source "$COMMON_DIR_PATH/c/sw_packages/staging/Kconfig"

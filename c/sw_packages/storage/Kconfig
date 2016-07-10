@@ -1,0 +1,17 @@
+#
+
+menu "storage"
+
+
+config INCLUDE_SPI_FLASH_PARTITION_MANAGER
+	bool   "spi flash partition manager"
+	depends on INCLUDE_SPI_FLASH
+	default n
+
+config INCLUDE_FAT_FS
+	bool   "fat fs"
+	depends on INCLUDE_SPI_FLASH_PARTITION_MANAGER
+	default n
+
+	
+endmenu

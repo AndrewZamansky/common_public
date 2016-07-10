@@ -1,0 +1,10 @@
+#
+
+menu "staging"
+
+
+config INCLUDE_UGFX
+	bool   "ugfx"
+	default n
+	
+endmenu

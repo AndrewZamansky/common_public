@@ -1,0 +1,38 @@
+
+
+config GCC_VENDOR_NAME
+    string "gcc vendor name"
+    default "none"
+    
+choice
+	prompt "OS on target(part of gcc naming convention)"
+	default GCC_TARGET_OS_NONE
+
+config GCC_TARGET_OS_LINUX
+	bool "linux"
+
+config GCC_TARGET_OS_NONE
+    bool "none"
+endchoice
+
+choice
+	prompt "ABI Type"
+	default EABI
+
+config EABI
+	bool "eabi"
+
+config GNUEABI
+    bool "gnueabi"
+endchoice
+
+config GCC_VERSION
+    string "gcc version in form : xx.xx[.xx]"
+    default "4.9.3"
+    
+config USE_NANO_STD_LIBS
+	bool   "use nano std libs to reduce code size "
+	default n
+
+
+

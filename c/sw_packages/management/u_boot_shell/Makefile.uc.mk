@@ -5,13 +5,15 @@ ifdef CONFIG_INCLUDE_UBOOT_SHELL
 
     U_BOOT_PATH :=$(EXTERNAL_SOURCE_ROOT_DIR)/u-boot
     ifeq ("$(wildcard $(U_BOOT_PATH))","")
-        $(info u-boot path $(U_BOOT_PATH) dont exists )
-        $(info get u-boot ported to uCProjects from Andrew Zamansky and unpack it to $(U_BOOT_PATH)  )
-        $(info make sure that .git directory is located in $(U_BOOT_PATH)/  after unpacking   )
+        $(info   )
+        $(info --- u-boot path $(U_BOOT_PATH) dont exists )
+        $(info --- get u-boot ported to uCProjects from Andrew Zamansky and unpack it to $(U_BOOT_PATH)  )
+        $(info --- make sure that .git directory is located in $(U_BOOT_PATH)/  after unpacking   )
+        $(info   )
         $(error )
     endif
     
-    DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH ,  $(SW_PACKAGES_ROOT_DIR)/u_boot_shell/include )
+    DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH ,  $(SW_PACKAGES_ROOT_DIR)/management/u_boot_shell/include )
     DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(EXTERNAL_SOURCE_ROOT_DIR)/)
 endif
 #DEFINES = 
@@ -22,7 +24,7 @@ endif
 
 #ASMFLAGS =  
 
-INCLUDE_DIR = $(U_BOOT_PATH)/include
+INCLUDE_DIR = $(U_BOOT_PATH)/include#  $(U_BOOT_PATH)/arch/arm/include/asm/
 
 SRC = u_boot_shell.c
 

@@ -43,15 +43,14 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
         endif
     endif
 
-    KCONFIG_CMD :=start /I $(KCONFIG_ROOT_DIR)/kconfig-mconf.exe $(COMMON_DIR)/Kconfig 2>&1
-    ifeq ($(findstring Redirection is not supported,$(SHELL_OUTPUT)),Redirection is not supported) 	 
-        $(info you can run kconfig utility only from shell . open shell and run the following : )
-        $(info $(ENTER_PROJECT_DIR) $(SHELL_CMD_DELIMITER) $(MAKE) menuconfig )
-        $(error )
-    endif
+    KCONFIG_CMD :=$(KCONFIG_ROOT_DIR)/kconfig-mconf.exe $(COMMON_DIR)/Kconfig 2>$(ERROR_LOG)
+    MANUAL_KCONFIG_CMD :=cd $(APP_ROOT_DIR) & $(COMMON_PARTITION) & $(KCONFIG_CMD)
+    NEW_WIN_KCONFIG_CMD :=start /I $(KCONFIG_CMD)
+    KCONFIG_PRINT_ERRORS_CMD :=type $(ERROR_LOG)
 
 else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX) 
     SHELL_OUTPUT :=$(shell kconfig-mconf)
+    $(shell sleep 1)
     ifeq ($(findstring can't find file,$(SHELL_OUTPUT)),can't find file) 
         $(info kconfig-mconf found)
     else
@@ -71,17 +70,35 @@ else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX)
         $(error )
     endif
     
-    KCONFIG_CMD :=xterm -e "kconfig-mconf $(COMMON_DIR)/Kconfig 2>$(ERROR_LOG)"
+    KCONFIG_CMD :=kconfig-mconf $(COMMON_DIR)/Kconfig 2>$(ERROR_LOG)
+    MANUAL_KCONFIG_CMD :=cd $(APP_ROOT_DIR) ; $(KCONFIG_CMD)
+    NEW_WIN_KCONFIG_CMD :=xterm -geometry 120x40 -fa DejaVuSansMono -fs 9 -e "$(KCONFIG_CMD)"
+    KCONFIG_PRINT_ERRORS_CMD :=cat $(ERROR_LOG)
 
 endif
 
-$(info running : $(KCONFIG_CMD))
-SHELL_OUTPUT :=$(shell $(KCONFIG_CMD))
-$(info  kconfig errors/warnings are located in $(ERROR_LOG))
+$(info running : $(NEW_WIN_KCONFIG_CMD))
+SHELL_OUTPUT :=$(shell $(NEW_WIN_KCONFIG_CMD))
+ifeq ($(findstring Redirection is not supported,$(SHELL_OUTPUT)),Redirection is not supported) 	 
+    $(info you can run kconfig utility only from shell . open shell and run the following : )
+    $(info $(ENTER_PROJECT_DIR) $(SHELL_CMD_DELIMITER) $(MAKE) menuconfig )
+    $(error )
+endif
+
+SHELL_OUTPUT :=$(shell $(KCONFIG_PRINT_ERRORS_CMD))
+ifneq ($(SHELL_OUTPUT),) 
+    $(info        )
+    $(info  $(SHELL_OUTPUT))
+    $(info        )
+    $(info  kconfig errors/warnings are located in $(ERROR_LOG))
+    $(info        )
+endif
 
 menuconfig :
 	$(RM) $(OBJ_DIR)
 	$(RM) $(OUT_DIR)
+	$(info --- if kconfig window did not opened , run following command in shell : )
+	$(info --- $(MANUAL_KCONFIG_CMD) )
 	$(info auto generated Kconfig created)
 
 

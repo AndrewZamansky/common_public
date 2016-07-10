@@ -30,6 +30,9 @@ extern pdev_descriptor_const gCurrReplyDev;
 #define _LINUX_CTYPE_H
 #define __LINUX_COMPILER_H
 #define __STDLIB_H_
+#define DO_DEPS_ONLY
+#define  _LINUX_BITOPS_H
+#define __ASM_ARM_PTRACE_H
 
 #define CONFIG_OF_CONTROL	0
 
