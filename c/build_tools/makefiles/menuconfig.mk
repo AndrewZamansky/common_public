@@ -1,6 +1,5 @@
 
 include $(MAKEFILE_DEFS_ROOT_DIR)/common.mk
-
 ENTER_PROJECT_DIR :=
 ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS) 	 
     SHELL_CMD_DELIMITER = &
@@ -10,16 +9,12 @@ else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX)
 endif
 ENTER_PROJECT_DIR += cd $(APP_ROOT_DIR) 
 
-DUMMY:=$(shell $(RM) $(AUTO_GENERATED_FILES_DIR)/*)
-
-FILE_CONTENT := echo config COMMON_DIR_PATH>$(GENERATED_KCONFIG) $(SHELL_CMD_DELIMITER)
-FILE_CONTENT += echo     string>>$(GENERATED_KCONFIG) $(SHELL_CMD_DELIMITER)
-FILE_CONTENT += echo     default "$(WORKSPACE_ROOT_DIR)/common">>$(GENERATED_KCONFIG) $(SHELL_CMD_DELIMITER)
-DUMMY:=$(shell $(FILE_CONTENT))
 
 ERROR_LOG = $(AUTO_GENERATED_FILES_DIR)/kconfig.out
 
 ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS) 	 
+
+	DUMMY:=$(shell $(RM) $(AUTO_GENERATED_FILES_DIR)\*)
 
     ifdef REDEFINE_KCONFIG_DIR
         $(info  kconfig dir  redefined to $(REDEFINE_KCONFIG_DIR) )
@@ -49,7 +44,11 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
     KCONFIG_PRINT_ERRORS_CMD :=type $(ERROR_LOG)
 
 else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX) 
+
+	DUMMY:=$(shell $(RM) $(AUTO_GENERATED_FILES_DIR)/*)
+   
     SHELL_OUTPUT :=$(shell kconfig-mconf)
+
     $(shell sleep 1)
     ifeq ($(findstring can't find file,$(SHELL_OUTPUT)),can't find file) 
         $(info kconfig-mconf found)
@@ -76,6 +75,12 @@ else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX)
     KCONFIG_PRINT_ERRORS_CMD :=cat $(ERROR_LOG)
 
 endif
+
+FILE_CONTENT := echo config COMMON_DIR_PATH>$(GENERATED_KCONFIG) $(SHELL_CMD_DELIMITER)
+FILE_CONTENT += echo     string>>$(GENERATED_KCONFIG) $(SHELL_CMD_DELIMITER)
+FILE_CONTENT += echo     default "$(WORKSPACE_ROOT_DIR)/common">>$(GENERATED_KCONFIG) $(SHELL_CMD_DELIMITER)
+DUMMY:=$(shell $(FILE_CONTENT))
+
 
 $(info running : $(NEW_WIN_KCONFIG_CMD))
 SHELL_OUTPUT :=$(shell $(NEW_WIN_KCONFIG_CMD))
