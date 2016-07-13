@@ -17,13 +17,13 @@ ifdef REDEFINE_ARM_GCC_ROOT_DIR
 else
     $(info  looking for gcc in default location)
     ifeq ("$(wildcard $(TOOLS_ROOT_DIR)/gcc)","")
-        $(info path  $(TOOLS_ROOT_DIR)/gcc dont exists create it )
+        $(info --- path  $(TOOLS_ROOT_DIR)/gcc dont exists create it )
         $(error )
     endif
 
     TEST_GCC_ROOT_DIR 	:= 	$(TOOLS_ROOT_DIR)/gcc/arm
     ifeq ("$(wildcard $(TEST_GCC_ROOT_DIR)*)","")
-        $(info gcc for arm dont exists )
+        $(info --- gcc for arm dont exists )
         GCC_NOT_FOUND :=1
     endif
 
@@ -35,8 +35,8 @@ else
     ifndef GCC_NOT_FOUND
        TEST_GCC_ROOT_DIR 	:= 	$(TOOLS_ROOT_DIR)/gcc/arm-$(VENDOR_NAME)
        ifeq ("$(wildcard $(TEST_GCC_ROOT_DIR)*)","")
-           $(info $(TEST_GCC_ROOT_DIR)xxx dont exists )
-           $(info (if needed you can change vendor name using menuconfig in GCC_VENDOR_NAME variable ))
+           $(info --- $(TEST_GCC_ROOT_DIR)xxx dont exists )
+           $(info --- (if needed you can change vendor name using menuconfig in GCC_VENDOR_NAME variable ))
            GCC_NOT_FOUND :=1
        endif
 	endif
@@ -48,8 +48,8 @@ else
     ifndef GCC_NOT_FOUND
        TEST_GCC_ROOT_DIR 	:= 	$(TOOLS_ROOT_DIR)/gcc/arm-$(VENDOR_NAME)$(OS_PREFIX)
        ifeq ("$(wildcard $(TEST_GCC_ROOT_DIR)*)","")
-           $(info $(TEST_GCC_ROOT_DIR)xxx dont exists )
-           $(info (if needed you can change target OS using menuconfig in "Building System" menu ))
+           $(info --- $(TEST_GCC_ROOT_DIR)xxx dont exists )
+           $(info --- (if needed you can change target OS using menuconfig in "Building System" menu ))
            GCC_NOT_FOUND :=1
        endif
 	endif
@@ -64,8 +64,8 @@ else
     ifndef GCC_NOT_FOUND
        TEST_GCC_ROOT_DIR 	:= 	$(TOOLS_ROOT_DIR)/gcc/arm-$(VENDOR_NAME)$(OS_PREFIX)$(ABI_PREFIX)
        ifeq ("$(wildcard $(TEST_GCC_ROOT_DIR)*)","")
-           $(info $(TEST_GCC_ROOT_DIR)-xxx dont exists )
-           $(info (if needed you can change ABI type using menuconfig in "Building System" menu ))
+           $(info --- $(TEST_GCC_ROOT_DIR)-xxx dont exists )
+           $(info --- (if needed you can change ABI type using menuconfig in "Building System" menu ))
            GCC_NOT_FOUND :=1
        endif
 	endif
@@ -74,18 +74,18 @@ else
        TEST_GCC_ROOT_DIR 	:= 	$(TOOLS_ROOT_DIR)/gcc/arm-$(VENDOR_NAME)$(OS_PREFIX)$(ABI_PREFIX)
        GCC_ROOT_DIR :=$(lastword $(wildcard $(TEST_GCC_ROOT_DIR)-*))#take the latest gcc version
        ifeq ("$(GCC_ROOT_DIR)","")
-           $(info gcc fdirectory should be of form : $(GCC_ROOT_DIR)-[version][revision] )
+           $(info --- gcc fdirectory should be of form : $(GCC_ROOT_DIR)-[version][revision] )
            GCC_NOT_FOUND :=1
        endif
 	endif
            
     ifdef GCC_NOT_FOUND
         TEST_GCC_ROOT_DIR 	:= $(TOOLS_ROOT_DIR)/gcc/arm-$(VENDOR_NAME)$(OS_PREFIX)$(ABI_PREFIX)-[version][revision]
-        $(info gcc path $(TEST_GCC_ROOT_DIR) dont exists )
-        $(info download gcc (tested version is $(CONFIG_GCC_VERSION)) )
-        $(info unpack it to $(TEST_GCC_ROOT_DIR))
-        $(info make sure that arm-none-eabi,bin and lib  folders is located in $(TEST_GCC_ROOT_DIR)/  after unpacking   )
-        $(info you can also set customized gcc path in REDEFINE_ARM_GCC_ROOT_DIR variable in $(REDEFINE_ARM_GCC_ROOT_DIR)/workspace_config.mk )
+        $(info --- gcc path $(TEST_GCC_ROOT_DIR) dont exists )
+        $(info --- download gcc (tested version is $(CONFIG_GCC_VERSION)) )
+        $(info --- unpack it to $(TEST_GCC_ROOT_DIR))
+        $(info --- make sure that arm-none-eabi,bin and lib  folders is located in $(TEST_GCC_ROOT_DIR)/  after unpacking   )
+        $(info --- you can also set customized gcc path in REDEFINE_ARM_GCC_ROOT_DIR variable in $(REDEFINE_ARM_GCC_ROOT_DIR)/workspace_config.mk )
         $(error )
     endif
 endif

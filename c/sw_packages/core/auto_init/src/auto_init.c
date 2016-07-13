@@ -34,7 +34,7 @@ static void _auto_init(int16_t struct_size)
 	auto_init_func_t init_function ;
 
 	p_curr_auto_init = &auto_init_dummy_auto_init;
-	while(NAGIC_NUMBER == p_curr_auto_init->magic_number)
+	while(AUTO_INIT_MAGIC_NUMBER == p_curr_auto_init->magic_number)
 	{
 		init_function = p_curr_auto_init->auto_init_func ;
 		init_function();

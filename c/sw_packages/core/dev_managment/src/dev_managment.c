@@ -24,15 +24,6 @@
 
 
 /***********   global variables    **************/
-const dev_descriptor_t dummy_dev=
-		{
-			"dummy",
-			NULL,
-			DEV_API_dummy_ioctl_func,
-			DEV_API_dummy_pwrite_func,
-			DEV_API_dummy_pread_func,
-			DEV_API_dummy_callback_func
-		};
 
 /***********   local variables    **************/
 #if CONFIG_MAX_NUM_OF_DYNAMIC_DEVICES > 0
@@ -81,6 +72,35 @@ uint8_t DEV_API_dummy_callback_func(void * const aHandle ,
 {
 	return 1;
 }
+
+STATIC_DEVICE(dummy_static_dev , NULL ,
+		DEV_API_dummy_ioctl_func ,  DEV_API_dummy_pwrite_func ,
+		DEV_API_dummy_pread_func , DEV_API_dummy_callback_func);
+
+static void _auto_start_devices(int16_t struct_size)
+{
+	dev_descriptor_t *p_dev_descriptor;
+
+	p_dev_descriptor = &inst_dummy_static_dev;
+	while(DEVICE_MAGIC_NUMBER == p_dev_descriptor->magic_number)
+	{
+		DEV_IOCTL_0_PARAMS(p_dev_descriptor , IOCTL_DEVICE_START );
+		p_dev_descriptor = (dev_descriptor_t *)( ((uint8_t*)p_dev_descriptor) + struct_size) ;
+	}
+}
+
+/*
+ * function : DEV_API_auto_start_devices()
+ *
+ *
+ */
+void DEV_API_auto_start_devices(void)
+{
+	_auto_start_devices( (uint8_t)sizeof(dev_descriptor_t));
+	_auto_start_devices(- (uint8_t)sizeof(dev_descriptor_t));
+}
+
+
 
 #if CONFIG_MAX_NUM_OF_DYNAMIC_DEVICES > 0
 

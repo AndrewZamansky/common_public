@@ -8,13 +8,25 @@
 #define NOT_FOR_SAVE 	0
 #define FOR_SAVE 		1
 
+#define DEVICE_MAGIC_NUMBER	0x1B3D
+
+// Macro for adding quotes
+#define STRINGIFY(X) STRINGIFY2(X)
+#define STRINGIFY2(X) #X
+
+#define INIT_CURRENT_DEV()  STRINGIFY(CURRENT_DEV()_add_static_device.h)
+#define ADD_CURRENT_DEV()  	STRINGIFY(CURRENT_DEV()_add_static_device.h)
+
+
 #define EXTERN_DECLARATION_TO_STATIC_DEVICE_INST(pdev)	extern dev_descriptor_t inst_##pdev
+#define STATIC_DEVICE_INNER_INST(pdev)	inner_inst_##pdev
 #define STATIC_DEVICE_INST(pdev)	inst_##pdev
 #define P_TO_STATIC_DEVICE_INST(pdev)	&STATIC_DEVICE_INST(pdev)
 
 #define STATIC_DEVICE(pdev , dev_handle , dev_ioctl , dev_pwrite , dev_pread , dev_callback)  \
 		DEVICE_PLACEMENT dev_descriptor_t STATIC_DEVICE_INST(pdev) =	\
 			{											\
+				DEVICE_MAGIC_NUMBER,					\
 				""#pdev,								\
 				dev_handle,								\
 				dev_ioctl,								\
@@ -109,6 +121,7 @@ typedef uint8_t (*dev_callback_1_params_func_t)(void * const aHandle , const uin
 typedef struct _dev_descriptor_t
 {
 //	uint8_t 			name[CONFIG_MAX_DEV_NAME_LEN+1];// +1 for null char
+	uint16_t 				magic_number;
 	char 					*name;
 	void*    				handle;
 	dev_ioctl_func_t  		ioctl;
@@ -162,9 +175,9 @@ size_t DEV_API_dummy_pread_func(const void * const aHandle , uint8_t *apData , s
 size_t DEV_API_dummy_pwrite_func(const void * const aHandle ,const uint8_t *apData , size_t aLength, size_t aOffset)  ;
 pdev_descriptor_t DEV_API_open_device(const uint8_t *device_name) ;
 pdev_descriptor_t DEV_API_add_device(const uint8_t *device_name_str,init_dev_descriptor_func_t aInitDescFunc);
+void DEV_API_auto_start_devices(void);
 
 pdev_descriptor_t DevManagment_API_GetAllDevsArray(void);
 
-extern const dev_descriptor_t dummy_dev;
 
 #endif

@@ -304,6 +304,8 @@ uint8_t I2S_nuc505_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 
 		case IOCTL_DEVICE_START :
 
+			num_of_words_in_buffer_per_chenel = INSTANCE(aHandle)->num_of_words_in_buffer_per_chenel;
+			num_of_bytes_in_word = INSTANCE(aHandle)->num_of_bytes_in_word;
 			if(0 == num_of_words_in_buffer_per_chenel) return 2;
 
 			pI2SHandle =(I2S_NUC505_Instance_t*) aHandle;

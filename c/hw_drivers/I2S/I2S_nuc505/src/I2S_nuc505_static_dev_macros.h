@@ -8,7 +8,7 @@ uint8_t I2S_nuc505_ioctl( void * const aHandle ,const uint8_t aIoctl_num , void 
 
 #define __I2S_NUC505_API_CREATE_STATIC_DEV(pdev,callback_pdev)									\
 		EXTERN_DECLARATION_TO_STATIC_DEVICE_INST(callback_pdev) ;							\
-		I2S_NUC505_Instance_t handle_of_##pdev =	 {P_TO_STATIC_DEVICE_INST(callback_pdev)};	\
+		I2S_NUC505_Instance_t handle_of_##pdev =	 {P_TO_STATIC_DEVICE_INST(callback_pdev),I2S_BUFF_LEN,NUM_OF_BYTES_PER_AUDIO_WORD};	\
 		STATIC_DEVICE(pdev , &handle_of_##pdev , I2S_nuc505_ioctl , 							\
 				DEV_API_dummy_pwrite_func , DEV_API_dummy_pread_func , DEV_API_dummy_callback_func)
 

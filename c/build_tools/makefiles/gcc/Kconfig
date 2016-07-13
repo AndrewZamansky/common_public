@@ -2,7 +2,7 @@
 
 config GCC_VENDOR_NAME
     string "gcc vendor name"
-    default "none"
+    default ""
     
 choice
 	prompt "OS on target(part of gcc naming convention)"

@@ -117,23 +117,17 @@ endmenu
 
 
 
-menuconfig DT_SYSTICK
-	bool   "enable systick"
-	default n
+menu "systick"
 	
 comment "CONFIG_DT_CORTEX_M_SYSTICK_INPUT_CLOCK : systick clock"
-	depends on DT_SYSTICK
+
 config DT_CORTEX_M_SYSTICK_INPUT_CLOCK
 	int   
 	default DT_CORE_CLOCK
-	depends on DT_SYSTICK
 
 comment "CONFIG_DT_CORTEX_M_SYSTICK_INTERRUPT : systick interrupt"
-	depends on DT_SYSTICK
-
-
 
 
 endmenu
 
-
+endmenu

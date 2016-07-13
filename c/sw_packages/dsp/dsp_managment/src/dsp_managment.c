@@ -248,10 +248,12 @@ void DSP_PROCESS_CHAIN(dsp_chain_t *ap_chain , size_t	len )
 uint8_t DSP_CREATE_LINK(pdsp_descriptor source_dsp,DSP_OUTPUT_PADS_t source_dsp_pad,
 		pdsp_descriptor sink_dsp,DSP_INPUT_PADS_t sink_dsp_pad)
 {
-	sink_dsp->in_pads[sink_dsp_pad] = &(source_dsp->out_pads[source_dsp_pad]);
+	dsp_pad_t *p_curr_out_pad_of_source = &(source_dsp->out_pads[source_dsp_pad]) ;
 
-	source_dsp->out_pads[source_dsp_pad].pad_type = DSP_PAD_TYPE_NORMAL;
-	source_dsp->out_pads[source_dsp_pad].total_registered_sinks++;
+	sink_dsp->in_pads[sink_dsp_pad] = p_curr_out_pad_of_source;
+
+	p_curr_out_pad_of_source->pad_type = DSP_PAD_TYPE_NORMAL;
+	p_curr_out_pad_of_source->total_registered_sinks++;
 	return 0;
 }
 
@@ -269,8 +271,10 @@ uint8_t DSP_CREATE_LINK(pdsp_descriptor source_dsp,DSP_OUTPUT_PADS_t source_dsp_
 /*---------------------------------------------------------------------------------------------------------*/
 void DSP_SET_SOURCE_BUFFER(pdsp_descriptor source_dsp,DSP_INPUT_PADS_t source_dsp_pad, void *buffer)
 {
-	source_dsp->out_pads[source_dsp_pad].pad_type = DSP_PAD_TYPE_NOT_ALLOCATED_BUFFER;
-	source_dsp->out_pads[source_dsp_pad].buff = (float*)buffer;
+	dsp_pad_t *p_curr_out_pad_of_source = &(source_dsp->out_pads[source_dsp_pad]) ;
+
+	p_curr_out_pad_of_source->pad_type = DSP_PAD_TYPE_NOT_ALLOCATED_BUFFER;
+	p_curr_out_pad_of_source->buff = (float*)buffer;
 
 }
 
@@ -287,8 +291,10 @@ void DSP_SET_SOURCE_BUFFER(pdsp_descriptor source_dsp,DSP_INPUT_PADS_t source_ds
 /*---------------------------------------------------------------------------------------------------------*/
 void DSP_SET_SINK_BUFFER(pdsp_descriptor dsp,DSP_OUTPUT_PADS_t dsp_output_pad, void *buffer)
 {
-	dsp->out_pads[dsp_output_pad].pad_type = DSP_PAD_TYPE_NOT_ALLOCATED_BUFFER;
-	dsp->out_pads[dsp_output_pad].buff = (float*)buffer;
+	dsp_pad_t *p_curr_out_pad = &(dsp->out_pads[dsp_output_pad]) ;
+
+	p_curr_out_pad->pad_type = DSP_PAD_TYPE_NOT_ALLOCATED_BUFFER;
+	p_curr_out_pad->buff = (float*)buffer;
 
 }
 
