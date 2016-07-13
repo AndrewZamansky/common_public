@@ -11,7 +11,7 @@
 #ifndef _button_manager_prerequirements_check_H
 #define _button_manager_prerequirements_check_H
 
-#include "dev_managment_api.h"
+#include "dev_management_api.h"
 #include "os_wrapper.h"
 /***************************/
 /******** test defines *****/

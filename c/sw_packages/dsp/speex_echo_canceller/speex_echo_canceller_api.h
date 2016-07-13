@@ -3,9 +3,9 @@
 #define _speex_echo_canceller_API_H_
 
 #include "speex_echo_canceller_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
-#include "dsp_managment_api.h" // for device manager defines and typedefs
-#include "src/_speex_echo_canceller_prerequirements_check.h" // should be after {speex_echo_canceller_config.h,dev_managment_api.h}
+#include "dev_management_api.h" // for device manager defines and typedefs
+#include "dsp_management_api.h" // for device manager defines and typedefs
+#include "src/_speex_echo_canceller_prerequirements_check.h" // should be after {speex_echo_canceller_config.h,dev_management_api.h}
 
 #include "common_dsp_api.h"
 

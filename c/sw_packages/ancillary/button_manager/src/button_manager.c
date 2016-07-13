@@ -13,8 +13,8 @@
 /********  includes *********************/
 
 #include "button_manager_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
-#include "_button_manager_prerequirements_check.h" // should be after {button_manager_config.h,dev_managment_api.h}
+#include "dev_management_api.h" // for device manager defines and typedefs
+#include "_button_manager_prerequirements_check.h" // should be after {button_manager_config.h,dev_management_api.h}
 
 #include "button_manager_api.h" //place first to test that header file is self-contained
 #include "button_manager.h"

@@ -7,7 +7,7 @@ config INCLUDE_INTERNAL_CLOCK_CONTROL
 
 config INCLUDE_CORTEXM_SYSTICK
 	bool   "cortex-m systick"
-	depends on DT_SYSTICK
+	depends on CORTEX_M3 || CORTEX_M4
 	default n
 
 config INCLUDE_NVIC

@@ -13,9 +13,9 @@
 /********  includes *********************/
 
 #include "speex_echo_canceller_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
-#include "dsp_managment_api.h" // for device manager defines and typedefs
-#include "_speex_echo_canceller_prerequirements_check.h" // should be after {speex_echo_canceller_config.h,dev_managment_api.h}
+#include "dev_management_api.h" // for device manager defines and typedefs
+#include "dsp_management_api.h" // for device manager defines and typedefs
+#include "_speex_echo_canceller_prerequirements_check.h" // should be after {speex_echo_canceller_config.h,dev_management_api.h}
 
 #include "speex_echo_canceller_api.h" //place first to test that header file is self-contained
 #include "speex_echo_canceller.h"

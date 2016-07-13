@@ -19,10 +19,10 @@
 //	pCommNotifyForNewData_func_t  fNotifyForNewData;
 //} HTTP_API_Init_params_t;
 
-#define HTTP_API_MNG_SERVER_IP_STR   			"managment_server_ip"
-#define HTTP_API_MNG_SERVER_PORT_STR   			"managment_server_port"
-#define HTTP_API_MNG_SERVER_IP_REDANDENCY_STR   "managment_server_ip_redandancy"
-#define HTTP_API_MNG_SERVER_PORT_REDANDENCY_STR "managment_server_port_redandancy"
+#define HTTP_API_MNG_SERVER_IP_STR   			"management_server_ip"
+#define HTTP_API_MNG_SERVER_PORT_STR   			"management_server_port"
+#define HTTP_API_MNG_SERVER_IP_REDANDENCY_STR   "management_server_ip_redandancy"
+#define HTTP_API_MNG_SERVER_PORT_REDANDENCY_STR "management_server_port_redandancy"
 #define HTTP_API_SERVER_DEVICE_STR  			"server_device"
 
 typedef enum

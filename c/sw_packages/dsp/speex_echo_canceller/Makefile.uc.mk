@@ -1,7 +1,7 @@
 
 ifeq ($(findstring YES,$(CONFIG_INCLUDE_SPEEX_ECHO_CANCELLER)),YES) 	 
     _INCLUDE_COMMON_DSP :=YES	 
-    _INCLUDE_DSP_MANAGMENT :=YES	 
+    _INCLUDE_DSP_MANAGEMENT :=YES	 
 	INCLUDE_THIS_COMPONENT := YES   # must be here !!
 endif  
 

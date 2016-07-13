@@ -8,9 +8,9 @@
 
 /***************   includes    *******************/
 #include "serial_number_atmega_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
+#include "dev_management_api.h" // for device manager defines and typedefs
 #include "serial_number_api.h"
-#include "src/_serial_number_atmega_prerequirements_check.h" // should be after {uart_atmega_config.h,dev_managment_api.h}
+#include "src/_serial_number_atmega_prerequirements_check.h" // should be after {uart_atmega_config.h,dev_management_api.h}
 
 #include "serial_number_atmega_api.h"
 #include "serial_number_atmega.h"

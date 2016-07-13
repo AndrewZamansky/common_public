@@ -3,9 +3,9 @@
 #define _GPIO_STM32F10X_API_H_
 
 #include "gpio_stm32f10x_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
+#include "dev_management_api.h" // for device manager defines and typedefs
 #include "gpio_api.h"
-#include "src/_gpio_stm32f10x_prerequirements_check.h" // should be after {uart_stm32f10x_config.h,dev_managment_api.h}
+#include "src/_gpio_stm32f10x_prerequirements_check.h" // should be after {uart_stm32f10x_config.h,dev_management_api.h}
 
 /**********  define API  types ************/
 

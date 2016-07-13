@@ -1,5 +1,5 @@
 /*
- * file : version_managment_prerequirements_check.h
+ * file : version_management_prerequirements_check.h
  *
  *
  *
@@ -8,12 +8,12 @@
  *
  */
 
-#ifndef _version_managment_prerequirements_check_H
-#define _version_managment_prerequirements_check_H
+#ifndef _version_management_prerequirements_check_H
+#define _version_management_prerequirements_check_H
 
 
 #include "_project.h"
-#include "dev_managment_api.h"
+#include "dev_management_api.h"
 
 /***************************/
 /******** test defines *****/

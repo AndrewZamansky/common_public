@@ -10,7 +10,7 @@ INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_DEV_MENAGMENT)
 
 
 
-SRC = dev_managment.c 
+SRC = dev_management.c 
 
 ifdef CONFIG_INCLUDE_SHELL
     DEFINES += CONFIG_USE_SHELL

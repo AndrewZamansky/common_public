@@ -12,7 +12,7 @@
 
 /********  includes *********************/
 
-#include "_voice_3D_prerequirements_check.h" // should be after {voice_3D_config.h,dev_managment_api.h}
+#include "_voice_3D_prerequirements_check.h" // should be after {voice_3D_config.h,dev_management_api.h}
 
 #include "voice_3D_api.h" //place first to test that header file is self-contained
 #include "voice_3D.h"

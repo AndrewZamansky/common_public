@@ -10,6 +10,7 @@
 /***************   includes    *******************/
 #include "_project.h"
 #include "auto_init_api.h"
+#include "dev_management_api.h"
 
 
 /***************   defines    *******************/
@@ -276,5 +277,5 @@ EXTERN_C_FUNCTION void low_level_init(uint32_t curr_stack)
 
 	board_init_before_main_function();
 	auto_init_api();
-
+//	DEV_API_auto_start_devices();
 }

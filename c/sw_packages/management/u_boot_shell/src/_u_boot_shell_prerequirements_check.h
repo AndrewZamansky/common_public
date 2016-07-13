@@ -12,7 +12,7 @@
 #define _u_boot_shell_prerequirements_check_H
 
 #include "_project.h"
-#include "dev_managment_api.h"
+#include "dev_management_api.h"
 #include "os_wrapper.h"
 
 

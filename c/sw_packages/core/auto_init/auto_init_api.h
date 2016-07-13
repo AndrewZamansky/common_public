@@ -8,7 +8,7 @@
 
 /**********  defines ************/
 
-#define NAGIC_NUMBER	0x1A3C
+#define AUTO_INIT_MAGIC_NUMBER	0x1A3C
 typedef void (*auto_init_func_t)(void)  ;
 
 typedef struct
@@ -18,7 +18,7 @@ typedef struct
 }auto_init_struct_t;
 
 #define AUTO_INIT_FUNCTION(func)  \
-		AUTO_INIT_FUNCTION_PLACEMENT auto_init_struct_t auto_init_##func = { NAGIC_NUMBER, func}
+		AUTO_INIT_FUNCTION_PLACEMENT auto_init_struct_t auto_init_##func = { AUTO_INIT_MAGIC_NUMBER , func}
 
 
 /**********  define API  types ************/

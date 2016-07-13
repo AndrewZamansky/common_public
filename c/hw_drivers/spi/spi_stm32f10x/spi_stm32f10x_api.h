@@ -3,8 +3,8 @@
 #define _SPI_STM32f10X_API_H_
 
 #include "spi_stm32f10x_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
-#include "src/_spi_stm32f10x_prerequirements_check.h" // should be after {spi_stm32f10x_config.h,dev_managment_api.h}
+#include "dev_management_api.h" // for device manager defines and typedefs
+#include "src/_spi_stm32f10x_prerequirements_check.h" // should be after {spi_stm32f10x_config.h,dev_management_api.h}
 
 /*****************  defines  **************/
 

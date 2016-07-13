@@ -12,7 +12,7 @@
 
 /********  includes *********************/
 
-#include "_compressor_prerequirements_check.h" // should be after {compressor_config.h,dev_managment_api.h}
+#include "_compressor_prerequirements_check.h" // should be after {compressor_config.h,dev_management_api.h}
 
 #include "compressor_api.h" //place first to test that header file is self-contained
 #include "compressor.h"

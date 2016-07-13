@@ -13,7 +13,7 @@ DYNAMIC_COMPONENT := $(CONFIG_INCLUDE_VERSION_MENAGMENT)
 
 
 
-SRC = version_managment.c
+SRC = version_management.c
 
 
 VPATH = src

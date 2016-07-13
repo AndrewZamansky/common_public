@@ -11,7 +11,7 @@
 #include "_project_defines.h"
 #include "_project_func_declarations.h"
 
-#include "dev_managment_api.h" // for device manager defines and typedefs
+#include "dev_management_api.h" // for device manager defines and typedefs
 
 #include "gpio_api.h"
 #include "sw_gpio_wrapper_api.h"

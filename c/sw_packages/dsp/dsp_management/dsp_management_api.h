@@ -1,9 +1,9 @@
 
-#ifndef _dsp_managment_api_h_
-#define _dsp_managment_api_h_
+#ifndef _dsp_management_api_h_
+#define _dsp_management_api_h_
 
 
-//#include "src/_dsp_managment_prerequirements_check.h"// should be after dsp_managment_config.h
+//#include "src/_dsp_management_prerequirements_check.h"// should be after dsp_management_config.h
 
 #define NOT_FOR_SAVE 	0
 #define FOR_SAVE 		1
@@ -51,10 +51,10 @@ typedef enum
 
 typedef enum
 {
-	DSP_MANAGMENT_API_MODULE_CONTROL_ON  =0,
-	DSP_MANAGMENT_API_MODULE_CONTROL_BYPASS ,
-	DSP_MANAGMENT_API_MODULE_CONTROL_MUTE ,
-}DSP_MANAGMENT_API_module_control_t;
+	DSP_MANAGEMENT_API_MODULE_CONTROL_ON  =0,
+	DSP_MANAGEMENT_API_MODULE_CONTROL_BYPASS ,
+	DSP_MANAGEMENT_API_MODULE_CONTROL_MUTE ,
+}DSP_MANAGEMENT_API_module_control_t;
 
 typedef struct _dsp_out_pad_t
 {
@@ -80,7 +80,7 @@ typedef struct _dsp_descriptor_t
 	void*    			handle;
 	dsp_ioctl_func_t  	ioctl;
 	dsp_func_t  		dsp_func;
-	DSP_MANAGMENT_API_module_control_t				ctl;
+	DSP_MANAGEMENT_API_module_control_t				ctl;
 	dsp_pad_t	    *in_pads[MAX_NUM_OF_OUTPUT_PADS];
 	dsp_pad_t		out_pads[MAX_NUM_OF_OUTPUT_PADS];
 }dsp_descriptor_t,*pdsp_descriptor;
@@ -110,8 +110,8 @@ typedef struct
 //void DSP_FUNC_2CH_IN_1CH_OUT_NO_OUTPUT_ALLOCATION(pdsp_descriptor dsp,void *ch1In,void *ch2In,void *ch1Out,size_t	len);
 //void DSP_FUNC_1CH_IN_2CH_OUT(pdsp_descriptor dsp,void *ch1In,size_t	len);
 
-void dsp_managment_api_set_buffers_pool(void *adsp_buffers_pool);
-void dsp_managment_api_set_module_control(pdsp_descriptor dsp , DSP_MANAGMENT_API_module_control_t ctl);
+void dsp_management_api_set_buffers_pool(void *adsp_buffers_pool);
+void dsp_management_api_set_module_control(pdsp_descriptor dsp , DSP_MANAGEMENT_API_module_control_t ctl);
 
 uint8_t DSP_CREATE_LINK(pdsp_descriptor source_dsp,DSP_OUTPUT_PADS_t source_dsp_pad,
 		pdsp_descriptor sink_dsp,DSP_INPUT_PADS_t sink_dsp_pad);

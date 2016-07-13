@@ -2,7 +2,7 @@
 #ifndef _UART_API_H_
 #define _UART_API_H_
 
-#include "dev_managment_api.h" // for device manager defines and typedefs
+#include "dev_management_api.h" // for device manager defines and typedefs
 
 /*****************  defines  **************/
 

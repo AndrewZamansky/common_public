@@ -15,7 +15,7 @@
 #include "_project_defines.h"
 #include "_project_func_declarations.h"
 
-#include "dev_managment_api.h"
+#include "dev_management_api.h"
 
 #include "FreeRTOS.h"
 #include "queue.h"

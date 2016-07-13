@@ -11,9 +11,9 @@
 
 
 /********  includes *********************/
-#include "src/_version_managment_prerequirements_check.h"
+#include "src/_version_management_prerequirements_check.h"
 
-#include "version_managment_api.h"
+#include "version_management_api.h"
 
 /********  defines *********************/
 
@@ -24,7 +24,15 @@
 /********  externals *********************/
 
 /********  globals *********************/
-VERSION_MANAGMENT_API_CREATE_STATIC_DEV(ver_dev);
+
+/***********************************/
+/********** ver_dev ********/
+#define CURRENT_DEV		version_management
+#include INIT_CURRENT_DEV()
+
+#define VERSION_MANAGEMENT_DT_DEV_NAME			ver_dev
+
+#include ADD_CURRENT_DEV()
 
 /********  local defs *********************/
 
@@ -39,7 +47,7 @@ VERSION_MANAGMENT_API_CREATE_STATIC_DEV(ver_dev);
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-size_t version_managment_pread(const void *aHandle ,uint8_t *apData , size_t aLength, size_t aOffset)
+size_t version_management_pread(const void *aHandle ,uint8_t *apData , size_t aLength, size_t aOffset)
 {
 	if(aLength > sizeof(VERSION_STR))
 	{
@@ -60,12 +68,12 @@ size_t version_managment_pread(const void *aHandle ,uint8_t *apData , size_t aLe
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t  version_managment_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor)
+uint8_t  version_management_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor)
 {
 	if(NULL == aDevDescriptor) return 1;
 
 	aDevDescriptor->handle = NULL;
-	aDevDescriptor->pread = version_managment_pread;
+	aDevDescriptor->pread = version_management_pread;
 
 	return 0 ;
 
