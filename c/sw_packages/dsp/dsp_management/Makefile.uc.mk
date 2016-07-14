@@ -1,0 +1,25 @@
+
+INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_DSP_MANAGEMENT)
+
+
+#INCLUDE_DIR 
+
+#DEFINES = 
+
+#CFLAGS = 
+
+#ASMFLAGS =  
+
+
+
+
+SRC = dsp_management.c
+
+ifdef CONFIG_DSP_MANAGEMENT_IS_SPEED_CRITICAL
+    SPEED_CRITICAL_FILES += dsp_management.c
+endif
+
+VPATH = src
+
+
+include $(COMMON_CC)

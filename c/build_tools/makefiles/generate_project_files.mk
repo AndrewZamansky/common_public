@@ -50,12 +50,12 @@ CREATE_CONFIG_ENTRY_PRELIMINARY1 :=
 HASH=\#
 ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS) 	 
     $(shell echo  /* */> $(AUTO_GENERATED_FILES_DIR)/included_modules.h)
-    FILE_CONTENT := echo \#include "dev_managment_api.h">$(AUTO_GENERATED_FILES_DIR)/included_modules.c &
+    FILE_CONTENT := echo \#include "dev_management_api.h">$(AUTO_GENERATED_FILES_DIR)/included_modules.c &
     FILE_CONTENT := $(FILE_CONTENT) echo \#include "included_modules.h">>$(AUTO_GENERATED_FILES_DIR)/included_modules.c &
     FILE_CONTENT := $(FILE_CONTENT) echo const included_module_t included_modules[]={  >>$(AUTO_GENERATED_FILES_DIR)/included_modules.c
 else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX) 
     $(shell echo  '/* */'> $(AUTO_GENERATED_FILES_DIR)/included_modules.h)
-    FILE_CONTENT := echo '$(HASH)include "dev_managment_api.h"'>$(AUTO_GENERATED_FILES_DIR)/included_modules.c ;
+    FILE_CONTENT := echo '$(HASH)include "dev_management_api.h"'>$(AUTO_GENERATED_FILES_DIR)/included_modules.c ;
     FILE_CONTENT := $(FILE_CONTENT) echo '$(HASH)include "included_modules.h"'>>$(AUTO_GENERATED_FILES_DIR)/included_modules.c ;
     FILE_CONTENT := $(FILE_CONTENT) echo 'const included_module_t included_modules[]={  '>>$(AUTO_GENERATED_FILES_DIR)/included_modules.c
 endif

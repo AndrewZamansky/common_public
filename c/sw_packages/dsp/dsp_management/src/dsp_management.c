@@ -1,6 +1,6 @@
 /*
  *
- * file :   dsp_managment.c
+ * file :   dsp_management.c
  *
  *
  *
@@ -12,9 +12,9 @@
 
 /********  includes *********************/
 
-#include "_dsp_managment_prerequirements_check.h"
+#include "_dsp_management_prerequirements_check.h"
 
-#include "dsp_managment.h"
+#include "dsp_management.h"
 
 #include "memory_pool_api.h"
 
@@ -141,7 +141,7 @@ void DSP_ADD_MODULE_TO_CHAIN(dsp_chain_t *ap_chain, pdsp_descriptor dsp_module)
 /*---------------------------------------------------------------------------------------------------------*/
 void DSP_PROCESS(pdsp_descriptor dsp , size_t	len)
 {
-	DSP_MANAGMENT_API_module_control_t ctl;
+	DSP_MANAGEMENT_API_module_control_t ctl;
 	dsp_pad_t *curr_out_pad ;
 	dsp_pad_t **in_pads ;
 	dsp_pad_t *out_pads ;
@@ -162,11 +162,11 @@ void DSP_PROCESS(pdsp_descriptor dsp , size_t	len)
 		}
 	}
 
-	if(DSP_MANAGMENT_API_MODULE_CONTROL_ON == ctl)
+	if(DSP_MANAGEMENT_API_MODULE_CONTROL_ON == ctl)
 	{
 		dsp->dsp_func(dsp->handle , len , in_pads , out_pads );
 	}
-	else if (DSP_MANAGMENT_API_MODULE_CONTROL_BYPASS == ctl)
+	else if (DSP_MANAGEMENT_API_MODULE_CONTROL_BYPASS == ctl)
 	{
 		for(i=0; i<MAX_NUM_OF_OUTPUT_PADS ;i++)
 		{
@@ -177,7 +177,7 @@ void DSP_PROCESS(pdsp_descriptor dsp , size_t	len)
 			}
 		}
 	}
-	else // if (DSP_MANAGMENT_API_MODULE_CONTROL_MUTE == ctl)
+	else // if (DSP_MANAGEMENT_API_MODULE_CONTROL_MUTE == ctl)
 	{
 		for(i=0; i<MAX_NUM_OF_OUTPUT_PADS ;i++)
 		{
@@ -299,7 +299,7 @@ void DSP_SET_SINK_BUFFER(pdsp_descriptor dsp,DSP_OUTPUT_PADS_t dsp_output_pad, v
 }
 
 /*---------------------------------------------------------------------------------------------------------*/
-/* Function:        dsp_managment_api_set_buffers_pool                                                                          */
+/* Function:        dsp_management_api_set_buffers_pool                                                                          */
 /*                                                                                                         */
 /* Parameters:                                                                                             */
 /*                                                                                         */
@@ -309,7 +309,7 @@ void DSP_SET_SINK_BUFFER(pdsp_descriptor dsp,DSP_OUTPUT_PADS_t dsp_output_pad, v
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-void dsp_managment_api_set_buffers_pool(void *adsp_buffers_pool)
+void dsp_management_api_set_buffers_pool(void *adsp_buffers_pool)
 {
 
 	dsp_buffers_pool = adsp_buffers_pool ;
@@ -317,7 +317,7 @@ void dsp_managment_api_set_buffers_pool(void *adsp_buffers_pool)
 
 
 /*---------------------------------------------------------------------------------------------------------*/
-/* Function:        dsp_managment_api_set_module_control                                                                          */
+/* Function:        dsp_management_api_set_module_control                                                                          */
 /*                                                                                                         */
 /* Parameters:                                                                                             */
 /*                                                                                         */
@@ -327,7 +327,7 @@ void dsp_managment_api_set_buffers_pool(void *adsp_buffers_pool)
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-void dsp_managment_api_set_module_control(pdsp_descriptor dsp , DSP_MANAGMENT_API_module_control_t ctl)
+void dsp_management_api_set_module_control(pdsp_descriptor dsp , DSP_MANAGEMENT_API_module_control_t ctl)
 {
 	dsp->ctl = ctl ;
 }

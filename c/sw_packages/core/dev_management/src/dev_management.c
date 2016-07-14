@@ -8,9 +8,9 @@
 
 /***************   includes    *******************/
 
-#include "dev_managment_api.h"
-#include "_dev_managment_prerequirements_check.h"
-#include "dev_managment.h"
+#include "dev_management_api.h"
+#include "_dev_management_prerequirements_check.h"
+#include "dev_management.h"
 
 
 
@@ -73,6 +73,7 @@ uint8_t DEV_API_dummy_callback_func(void * const aHandle ,
 	return 1;
 }
 
+#if 0
 STATIC_DEVICE(dummy_static_dev , NULL ,
 		DEV_API_dummy_ioctl_func ,  DEV_API_dummy_pwrite_func ,
 		DEV_API_dummy_pread_func , DEV_API_dummy_callback_func);
@@ -100,6 +101,7 @@ void DEV_API_auto_start_devices(void)
 	_auto_start_devices(- (uint8_t)sizeof(dev_descriptor_t));
 }
 
+#endif
 
 
 #if CONFIG_MAX_NUM_OF_DYNAMIC_DEVICES > 0

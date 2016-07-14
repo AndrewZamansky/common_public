@@ -1,5 +1,5 @@
 /*
- * file : dev_managment_prerequirements_check.h
+ * file : dev_management_prerequirements_check.h
  *
  *
  *
@@ -8,8 +8,8 @@
  *
  */
 
-#ifndef _dev_managment_prerequirements_check_H
-#define _dev_managment_prerequirements_check_H
+#ifndef _dev_management_prerequirements_check_H
+#define _dev_management_prerequirements_check_H
 
 
 #include "_project.h"

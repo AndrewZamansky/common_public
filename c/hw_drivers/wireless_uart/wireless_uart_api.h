@@ -3,8 +3,8 @@
 #define _wireless_uart_API_H_
 
 #include "wireless_uart_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
-#include "src/_wireless_uart_prerequirements_check.h" // should be after {wireless_uart_config.h,dev_managment_api.h}
+#include "dev_management_api.h" // for device manager defines and typedefs
+#include "src/_wireless_uart_prerequirements_check.h" // should be after {wireless_uart_config.h,dev_management_api.h}
 
 /*****************  defines  **************/
 

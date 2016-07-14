@@ -7,7 +7,7 @@
 #include "stdio.h"
 #include "stdlib.h"
 
-#include "dev_managment_api.h"
+#include "dev_management_api.h"
 #include "PRINTF_api.h"
 extern pdev_descriptor_const gCurrReplyDev;
 

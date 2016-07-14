@@ -3,8 +3,8 @@
 #define _LM35_API_H_
 
 #include "LM35_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
-#include "src/_LM35_prerequirements_check.h" // should be after {gpio_stm8_config.h,dev_managment_api.h}
+#include "dev_management_api.h" // for device manager defines and typedefs
+#include "src/_LM35_prerequirements_check.h" // should be after {gpio_stm8_config.h,dev_management_api.h}
 
 /**********  define API  types ************/
 

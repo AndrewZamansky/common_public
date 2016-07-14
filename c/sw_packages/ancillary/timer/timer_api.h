@@ -21,9 +21,4 @@ typedef enum
 /**********  define API  functions  ************/
 uint8_t  timer_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor);
 
-#include "src/_timer_static_dev_macros.h"
-
-#define TIMER_API_CREATE_STATIC_DEV(pdev ,hw_timer_pdev ) \
-			__TIMER_API_CREATE_STATIC_DEV(pdev  ,hw_timer_pdev)
-
 #endif

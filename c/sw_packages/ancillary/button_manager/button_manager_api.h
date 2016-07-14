@@ -3,7 +3,7 @@
 #define _button_manager_API_H_
 
 #include "button_manager_config.h"
-#include "src/_button_manager_prerequirements_check.h" // should be after {button_manager_config.h,dev_managment_api.h}
+#include "src/_button_manager_prerequirements_check.h" // should be after {button_manager_config.h,dev_management_api.h}
 
 /*****************  defines  **************/
 

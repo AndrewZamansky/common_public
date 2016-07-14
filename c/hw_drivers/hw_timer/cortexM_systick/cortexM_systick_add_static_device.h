@@ -43,10 +43,10 @@ CORTEXM_SYSTICK_Instance_t STATIC_DEVICE_INNER_INST(CORTEXM_SYSTICK_DT_DEV_NAME)
 		CORTEXM_SYSTICK_DT_CALLBACK ,
 		CORTEXM_SYSTICK_DT_MODE  };
 
-		STATIC_DEVICE(CORTEXM_SYSTICK_DT_DEV_NAME ,
-				&STATIC_DEVICE_INNER_INST(CORTEXM_SYSTICK_DT_DEV_NAME)  ,
-				cortexM_systick_ioctl ,  DEV_API_dummy_pwrite_func ,
-				DEV_API_dummy_pread_func , DEV_API_dummy_callback_func);
+CREATE_STATIC_DEVICE(CORTEXM_SYSTICK_DT_DEV_NAME ,
+	&STATIC_DEVICE_INNER_INST(CORTEXM_SYSTICK_DT_DEV_NAME)  ,
+	cortexM_systick_ioctl ,  DEV_API_dummy_pwrite_func ,
+	DEV_API_dummy_pread_func , DEV_API_dummy_callback_func);
 
 #undef CURRENT_DEV
 

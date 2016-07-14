@@ -3,9 +3,9 @@
 #define _adc_stm8_API_H_
 
 #include "adc_stm8_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
+#include "dev_management_api.h" // for device manager defines and typedefs
 #include "adc_api.h"
-#include "src/_adc_stm8_prerequirements_check.h" // should be after {uart_stm8_config.h,dev_managment_api.h}
+#include "src/_adc_stm8_prerequirements_check.h" // should be after {uart_stm8_config.h,dev_management_api.h}
 
 /**********  define API  types ************/
 

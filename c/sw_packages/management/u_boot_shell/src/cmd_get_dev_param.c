@@ -40,13 +40,13 @@
  *  cmd_get_dev_param.c
  */
 #include "_project.h"
-#include "dev_managment_config.h"
-#include "src/_dev_managment_prerequirements_check.h"// should be after dev_managment_config.h
+#include "dev_management_config.h"
+#include "src/_dev_management_prerequirements_check.h"// should be after dev_management_config.h
 
 
 #include <u-boot/include/command.h>
 #include "shell_api.h"
-#include "dev_managment.h"
+#include "dev_management.h"
 
 #define MAX_RET_BUFF_SIZE 31
 

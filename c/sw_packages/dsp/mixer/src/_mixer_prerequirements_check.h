@@ -12,8 +12,8 @@
 #define _mixer_prerequirements_check_H
 
 #include "_project.h"
-#include "dev_managment_api.h"
-#include "dsp_managment_api.h"
+#include "dev_management_api.h"
+#include "dsp_management_api.h"
 
 
 /***************************/

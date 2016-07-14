@@ -26,22 +26,5 @@ typedef enum
 
 uint8_t  sw_uart_wrapper_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor);
 
-#include "src/_sw_uart_wrapper_static_dev_macros.h"
-
-#if SW_UART_WRAPPER_CONFIG_MAX_RX_BUFFER_SIZE > 0
-		#define SW_UART_WRAPPER_API_CREATE_STATIC_DEV(pdev, 							\
-								server_pdev,client_pdev	, rxBuffer,rxBufferSize) 	\
-						__SW_UART_WRAPPER_API_CREATE_STATIC_DEV(pdev , 		\
-								server_pdev , client_pdev , rxBuffer,rxBufferSize)
-
-#else //    #if SW_UART_WRAPPER_CONFIG_MAX_RX_BUFFER_SIZE = 0
-
-	#define SW_UART_WRAPPER_API_CREATE_STATIC_DEV(pdev , server_pdev ) 	\
-				__SW_UART_WRAPPER_API_CREATE_STATIC_DEV(pdev , server_pdev )
-
-#endif //  #if SW_UART_WRAPPER_CONFIG_MAX_RX_BUFFER_SIZE > 0
-
-
-
 
 #endif

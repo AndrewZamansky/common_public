@@ -3,8 +3,8 @@
 #define _sw_timer_wrapper_API_H_
 
 #include "sw_timer_wrapper_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
-#include "src/_sw_timer_wrapper_prerequirements_check.h" // should be after {sw_timer_wrapper_config.h,dev_managment_api.h}
+#include "dev_management_api.h" // for device manager defines and typedefs
+#include "src/_sw_timer_wrapper_prerequirements_check.h" // should be after {sw_timer_wrapper_config.h,dev_management_api.h}
 
 /*****************  defines  **************/
 

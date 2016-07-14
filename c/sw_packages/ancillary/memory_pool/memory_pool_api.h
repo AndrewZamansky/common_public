@@ -3,7 +3,7 @@
 #define _memory_pool_api_h_
 
 
-#include "src/_memory_pool_prerequirements_check.h"// should be after dev_managment_config.h
+#include "src/_memory_pool_prerequirements_check.h"// should be after dev_management_config.h
 
 /**********  define API  types ************/
 

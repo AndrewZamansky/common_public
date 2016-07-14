@@ -41,7 +41,7 @@
  */
 #include "_project.h"
 
-#include "dev_managment_api.h" // for device manager defines and typedefs
+#include "dev_management_api.h" // for device manager defines and typedefs
 
 #include <u-boot/include/command.h>
 #include "shell_api.h"

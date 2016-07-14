@@ -28,11 +28,5 @@ typedef struct
 uint8_t  I2S_nuc505_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor);
 
 
-#include "src/I2S_nuc505_static_dev_macros.h"
-
-
-#define I2S_NUC505_API_CREATE_STATIC_DEV( pdev , callback_pdev ) \
-			__I2S_NUC505_API_CREATE_STATIC_DEV( pdev , callback_pdev )
-
 
 #endif

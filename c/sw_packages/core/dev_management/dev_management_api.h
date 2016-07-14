@@ -1,9 +1,9 @@
 
-#ifndef _dev_managment_api_h_
-#define _dev_managment_api_h_
+#ifndef _dev_management_api_h_
+#define _dev_management_api_h_
 
 
-#include "src/_dev_managment_prerequirements_check.h"// should be after dev_managment_config.h
+#include "src/_dev_management_prerequirements_check.h"// should be after dev_management_config.h
 
 #define NOT_FOR_SAVE 	0
 #define FOR_SAVE 		1
@@ -14,19 +14,28 @@
 #define STRINGIFY(X) STRINGIFY2(X)
 #define STRINGIFY2(X) #X
 
-#define INIT_CURRENT_DEV()  STRINGIFY(CURRENT_DEV()_add_static_device.h)
-#define ADD_CURRENT_DEV()  	STRINGIFY(CURRENT_DEV()_add_static_device.h)
+//#define INIT_CURRENT_DEV()  STRINGIFY(CURRENT_DEV()_add_static_device.h)
+//#define ADD_CURRENT_DEV()  	STRINGIFY(CURRENT_DEV()_add_static_device.h)
+#define STATIC_DEVICE_INCLUDE_NAME(a)	STATIC_DEVICE_INCLUDE_NAME2(a)
+#define STATIC_DEVICE_INCLUDE_NAME2(a)	a##_add_static_device.h
+#define INIT_CURRENT_DEV()  STRINGIFY(STATIC_DEVICE_INCLUDE_NAME(CURRENT_DEV))
+#define ADD_CURRENT_DEV()  	STRINGIFY(STATIC_DEVICE_INCLUDE_NAME(CURRENT_DEV))
 
 
-#define EXTERN_DECLARATION_TO_STATIC_DEVICE_INST(pdev)	extern dev_descriptor_t inst_##pdev
-#define STATIC_DEVICE_INNER_INST(pdev)	inner_inst_##pdev
-#define STATIC_DEVICE_INST(pdev)	inst_##pdev
+#define EXTERN_DECLARATION_TO_STATIC_DEVICE_INST(pdev)	EXTERN_DECLARATION_TO_STATIC_DEVICE_INST2(pdev)
+#define EXTERN_DECLARATION_TO_STATIC_DEVICE_INST2(pdev)	extern dev_descriptor_t inst_##pdev
+#define STATIC_DEVICE_INNER_INST(pdev)	STATIC_DEVICE_INNER_INST2(pdev)
+#define STATIC_DEVICE_INNER_INST2(pdev)	inner_inst_##pdev
+#define STATIC_DEVICE_INST(pdev)	STATIC_DEVICE_INST2(pdev)
+#define STATIC_DEVICE_INST2(pdev)	inst_##pdev
 #define P_TO_STATIC_DEVICE_INST(pdev)	&STATIC_DEVICE_INST(pdev)
 
-#define STATIC_DEVICE(pdev , dev_handle , dev_ioctl , dev_pwrite , dev_pread , dev_callback)  \
+#define CREATE_STATIC_DEVICE(pdev , dev_handle , dev_ioctl , dev_pwrite , dev_pread , dev_callback)  \
+	 CREATE_STATIC_DEVICE2(pdev , dev_handle , dev_ioctl , dev_pwrite , dev_pread , dev_callback)
+#define CREATE_STATIC_DEVICE2(pdev , dev_handle , dev_ioctl , dev_pwrite , dev_pread , dev_callback)  \
 		DEVICE_PLACEMENT dev_descriptor_t STATIC_DEVICE_INST(pdev) =	\
 			{											\
-				DEVICE_MAGIC_NUMBER,					\
+				/*DEVICE_MAGIC_NUMBER,					*/\
 				""#pdev,								\
 				dev_handle,								\
 				dev_ioctl,								\
@@ -35,6 +44,7 @@
 				dev_callback							\
 			};											\
 			pdev_descriptor_t pdev = P_TO_STATIC_DEVICE_INST(pdev)
+
 
 /**********  define API  types ************/
 
@@ -120,8 +130,7 @@ typedef uint8_t (*dev_callback_1_params_func_t)(void * const aHandle , const uin
 
 typedef struct _dev_descriptor_t
 {
-//	uint8_t 			name[CONFIG_MAX_DEV_NAME_LEN+1];// +1 for null char
-	uint16_t 				magic_number;
+//	uint16_t 				magic_number;
 	char 					*name;
 	void*    				handle;
 	dev_ioctl_func_t  		ioctl;
@@ -175,7 +184,10 @@ size_t DEV_API_dummy_pread_func(const void * const aHandle , uint8_t *apData , s
 size_t DEV_API_dummy_pwrite_func(const void * const aHandle ,const uint8_t *apData , size_t aLength, size_t aOffset)  ;
 pdev_descriptor_t DEV_API_open_device(const uint8_t *device_name) ;
 pdev_descriptor_t DEV_API_add_device(const uint8_t *device_name_str,init_dev_descriptor_func_t aInitDescFunc);
+
+#if 0
 void DEV_API_auto_start_devices(void);
+#endif
 
 pdev_descriptor_t DevManagment_API_GetAllDevsArray(void);
 

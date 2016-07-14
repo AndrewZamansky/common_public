@@ -13,9 +13,9 @@
 /********  includes *********************/
 
 #include "sw_timer_wrapper_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
+#include "dev_management_api.h" // for device manager defines and typedefs
 #include "timer_api.h"
-#include "_sw_timer_wrapper_prerequirements_check.h" // should be after {sw_timer_wrapper_config.h,dev_managment_api.h}
+#include "_sw_timer_wrapper_prerequirements_check.h" // should be after {sw_timer_wrapper_config.h,dev_management_api.h}
 
 #include "sw_timer_wrapper_api.h" //place first to test that header file is self-contained
 #include "sw_timer_wrapper.h"

@@ -13,7 +13,7 @@
 #include "_project_defines.h"
 #include "_project_func_declarations.h"
 
-#include "dev_managment_api.h" // for device manager defines and typedefs
+#include "dev_management_api.h" // for device manager defines and typedefs
 
 #include "usb_lib.h"
 #include "src/USB_STM32F103x/usb_conf.h"  // relative to  _hw_drivers/USB

@@ -10,7 +10,7 @@
 
 /********  includes *********************/
 
-#include "src/_I2S_nuc505_prerequirements_check.h" // should be after {I2S_nuc505_config.h,dev_managment_api.h}
+#include "src/_I2S_nuc505_prerequirements_check.h" // should be after {I2S_nuc505_config.h,dev_management_api.h}
 
 #include "I2S_nuc505_api.h"
 #include "I2S_nuc505.h"

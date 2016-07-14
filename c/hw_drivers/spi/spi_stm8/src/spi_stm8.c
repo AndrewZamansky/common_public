@@ -12,7 +12,7 @@
 
 /********  includes *********************/
 
-#include "src/_spi_stm8_prerequirements_check.h" // should be after {spi_stm8_config.h,dev_managment_api.h}
+#include "src/_spi_stm8_prerequirements_check.h" // should be after {spi_stm8_config.h,dev_management_api.h}
 
 #include "spi_stm8.h"
 

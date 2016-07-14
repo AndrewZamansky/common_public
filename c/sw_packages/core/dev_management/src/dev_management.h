@@ -1,5 +1,5 @@
 /*
- * file : dev_managment.h
+ * file : dev_management.h
  *
  *
  *
@@ -8,10 +8,10 @@
  *
  */
 
-#ifndef _dev_managment_H
-#define _dev_managment_H
+#ifndef _dev_management_H
+#define _dev_management_H
 
-#include "_dev_managment_prerequirements_check.h" // should be after dev_managment_config.h
+#include "_dev_management_prerequirements_check.h" // should be after dev_management_config.h
 
 /***************   typedefs    *******************/
 

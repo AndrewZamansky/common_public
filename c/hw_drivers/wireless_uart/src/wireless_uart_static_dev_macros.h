@@ -3,8 +3,8 @@
 #define _wireless_uart_static_dev_macros_h_
 
 #include "wireless_uart_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
-#include "src/_wireless_uart_prerequirements_check.h" // should be after {wireless_uart_config.h,dev_managment_api.h}
+#include "dev_management_api.h" // for device manager defines and typedefs
+#include "src/_wireless_uart_prerequirements_check.h" // should be after {wireless_uart_config.h,dev_management_api.h}
 
 extern uint8_t wireless_uart_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 		, void * aIoctl_param1  , void * aIoctl_param2);

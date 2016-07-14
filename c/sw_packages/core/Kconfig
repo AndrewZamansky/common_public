@@ -6,7 +6,7 @@ config INCLUDE_DEV_MENAGMENT
 	def_bool  y
 
 if INCLUDE_DEV_MENAGMENT
-source "$COMMON_DIR_PATH/c/sw_packages/core/dev_managment/Kconfig"
+source "$COMMON_DIR_PATH/c/sw_packages/core/dev_management/Kconfig"
 endif
 
 config INCLUDE_VERSION_MENAGMENT
