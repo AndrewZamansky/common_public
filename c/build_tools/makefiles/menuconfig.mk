@@ -10,11 +10,9 @@ endif
 ENTER_PROJECT_DIR += cd $(APP_ROOT_DIR) 
 
 
-ERROR_LOG = $(AUTO_GENERATED_FILES_DIR)/kconfig.out
-
 ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS) 	 
 
-	DUMMY:=$(shell $(RM) $(AUTO_GENERATED_FILES_DIR)\*)
+    ERROR_LOG = $(AUTO_GENERATED_FILES_DIR)\kconfig.out
 
     ifdef REDEFINE_KCONFIG_DIR
         $(info  kconfig dir  redefined to $(REDEFINE_KCONFIG_DIR) )
@@ -45,7 +43,7 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
 
 else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX) 
 
-	DUMMY:=$(shell $(RM) $(AUTO_GENERATED_FILES_DIR)/*)
+    ERROR_LOG = $(AUTO_GENERATED_FILES_DIR)/kconfig.out
    
     SHELL_OUTPUT :=$(shell kconfig-mconf)
 
@@ -91,6 +89,7 @@ ifeq ($(findstring Redirection is not supported,$(SHELL_OUTPUT)),Redirection is 
 endif
 
 SHELL_OUTPUT :=$(shell $(KCONFIG_PRINT_ERRORS_CMD))
+
 ifneq ($(SHELL_OUTPUT),) 
     $(info        )
     $(info  $(SHELL_OUTPUT))
@@ -100,8 +99,6 @@ ifneq ($(SHELL_OUTPUT),)
 endif
 
 menuconfig :
-	$(RM) $(OBJ_DIR)
-	$(RM) $(OUT_DIR)
 	$(info --- if kconfig window did not opened , run following command in shell : )
 	$(info --- $(MANUAL_KCONFIG_CMD) )
 	$(info auto generated Kconfig created)

@@ -77,7 +77,7 @@ $(CURR_OBJ_DIR)/%.O.asm: %.S
 	$(info -Compiling $<)
 	$(ASM) $(GLOBAL_ASMFLAGS) $(ASMFLAGS)  $(ALL_ASM_DEFINES) $(ASM_OUTPUT_FLAG_AND_FILE) $<
 
-$(CURR_OBJ_DIR)/%.o: %.c $(HEADER_FILES_DEPS)
+$(CURR_OBJ_DIR)/%.o: %.c $(HEADER_FILES_DEPS) $(APP_ROOT_DIR)/.config
 	$(info -Compiling $<)
 	$(CC) $(GLOBAL_CFLAGS) $(CFLAGS) $(ALL_INCLUDE_DIRS) $(ALL_DEFINES) $(CC_OUTPUT_FLAG_AND_FILE) $<  
 #	open line to create preproccesor file

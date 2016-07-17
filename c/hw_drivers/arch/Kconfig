@@ -4,12 +4,12 @@
 menu "Platform configurations"
 
 if ARM
-source "$COMMON_DIR_PATH/c/hw_drivers/arch/ARM/boards/Kconfig"
+source "$COMMON_DIR_PATH/c/hw_drivers/arch/ARM/soc/Kconfig"
 endif
 
 
 if STM8
-source "$COMMON_DIR_PATH/c/hw_drivers/arch/STM8/boards/Kconfig"
+source "$COMMON_DIR_PATH/c/hw_drivers/arch/STM8/soc/Kconfig"
 endif
 
 

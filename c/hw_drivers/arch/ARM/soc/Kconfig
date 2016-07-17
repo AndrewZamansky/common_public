@@ -34,14 +34,18 @@ config ARM_926EJ_S
     bool
     default n
 
+config SOC_HAS_DSP
+    bool
+    default n
+
 if NUC505
-source "$COMMON_DIR_PATH/c/hw_drivers/arch/ARM/boards/nuc505/Kconfig"
+source "$COMMON_DIR_PATH/c/hw_drivers/arch/ARM/soc/nuc505/Kconfig"
 endif
 
 if POLEG
-source "$COMMON_DIR_PATH/c/hw_drivers/arch/ARM/boards/poleg/Kconfig"
+source "$COMMON_DIR_PATH/c/hw_drivers/arch/ARM/soc/poleg/Kconfig"
 endif
 
 if GENERIC_SOC
-source "$COMMON_DIR_PATH/c/hw_drivers/arch/ARM/boards/generic_board/Kconfig"
+source "$COMMON_DIR_PATH/c/hw_drivers/arch/ARM/soc/generic_board/Kconfig"
 endif

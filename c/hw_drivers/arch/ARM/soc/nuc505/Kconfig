@@ -10,7 +10,7 @@ config NUC505_EB
 endchoice
 
 if NUC505_EB
-source "$COMMON_DIR_PATH/c/hw_drivers/arch/ARM/boards/nuc505/Kconfig.eb505.dt"
+source "$COMMON_DIR_PATH/c/hw_drivers/arch/ARM/soc/nuc505/Kconfig.eb505.dt"
 endif
 
 
@@ -23,4 +23,4 @@ config NUC505_BOARD
 	select INTERNAL_SRAM 
 	select INTERNAL_FLASH 
 	select CORTEX_M4 
-	
+	select SOC_HAS_DSP

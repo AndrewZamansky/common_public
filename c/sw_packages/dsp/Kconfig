@@ -9,6 +9,11 @@ config INCLUDE_COMMON_DSP
 
 if INCLUDE_COMMON_DSP
 
+config USE_HW_DSP
+    bool "use hardware dsp"
+    depends on SOC_HAS_DSP
+    default y
+
 config COMMON_DSP_IS_SPEED_CRITICAL
 	bool   "common dsp is speed critical"
 	default y

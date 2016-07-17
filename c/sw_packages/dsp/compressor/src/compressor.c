@@ -21,7 +21,7 @@
 
 #include "PRINTF_api.h"
 
-#ifdef PROJECT_USE_DSP
+#ifdef CONFIG_USE_HW_DSP
   #include "cpu_config.h"
   #include "arm_math.h"
 #endif

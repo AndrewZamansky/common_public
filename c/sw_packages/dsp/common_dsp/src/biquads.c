@@ -37,7 +37,7 @@ typedef struct
 }sw_biquads_params_t;
 
 
-#ifdef PROJECT_USE_DSP
+#ifdef CONFIG_USE_HW_DSP
     #include "cpu_config.h"
     #include "arm_math.h"
 	#define NUM_OF_STATES_PER_STAGE	2
@@ -58,7 +58,7 @@ typedef struct
 
 void biquads_cascading_filter(void *pFilter,float *apIn,float *apOut,size_t buff_len)
 {
-#ifdef PROJECT_USE_DSP
+#ifdef CONFIG_USE_HW_DSP
 	arm_biquad_cascade_df2T_instance_f32 *filter_params;
 	filter_params = ((arm_biquad_cascade_df2T_instance_f32*)(((biquads_cascading_filter_t *)pFilter)->pFilterParams));
 	arm_biquad_cascade_df2T_f32(filter_params,apIn,apOut ,buff_len );
@@ -149,7 +149,7 @@ void *biquads_alloc(uint8_t num_of_stages, float *  	pCoeffs )
 	void *tmp;
 	biquads_cascading_filter_t *p_biquads_cascading_filter;
 	p_biquads_cascading_filter=(biquads_cascading_filter_t *)malloc(sizeof(biquads_cascading_filter_t));
-#ifdef PROJECT_USE_DSP
+#ifdef CONFIG_USE_HW_DSP
 	{
 		arm_biquad_cascade_df2T_instance_f32* p_filter_instance;
 		p_filter_instance =(arm_biquad_cascade_df2T_instance_f32*) malloc(sizeof(arm_biquad_cascade_df2T_instance_f32));
@@ -181,7 +181,7 @@ void *biquads_alloc(uint8_t num_of_stages, float *  	pCoeffs )
  */
 void biquads_free(void *pFilter,uint8_t num_of_stages, float *  	pCoeffs )
 {
-#ifdef PROJECT_USE_DSP
+#ifdef CONFIG_USE_HW_DSP
 	free(  (   (arm_biquad_cascade_df2T_instance_f32*)((biquads_cascading_filter_t *)pFilter)->pFilterParams)->pState  );
 #else
 	free(  (   (sw_biquads_params_t*)((biquads_cascading_filter_t *)pFilter)->pFilterParams)->pStates  );
@@ -331,7 +331,7 @@ void biquads_calculation(biquads_filter_mode_t filter_mode,
 			}
 			break;
 	}
-#ifdef PROJECT_USE_DSP
+#ifdef CONFIG_USE_HW_DSP
 	a1 = -a1;
 	a2 = -a2;
 #endif

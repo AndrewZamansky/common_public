@@ -114,7 +114,7 @@ $(SUBDIRS):
 	$(eval export TARGET)
 	$(MAKE) -C $@ -f Makefile.uc.mk $(TARGET)
 
-$(COMPONENTS_MK) :
+$(COMPONENTS_MK) : $(APP_ROOT_DIR)/.config
 	$(MAKE) -f $(MAKEFILE_DEFS_ROOT_DIR)/generate_project_files.mk 
 	
 	

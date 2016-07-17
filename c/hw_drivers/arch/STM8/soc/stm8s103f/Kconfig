@@ -10,7 +10,7 @@ config STM8S103F_EB
 endchoice
 
 if STM8S103F_EB
-source "$COMMON_DIR_PATH/c/hw_drivers/arch/STM8/boards/stm8s103f/Kconfig.eb_stm8s103f.dt"
+source "$COMMON_DIR_PATH/c/hw_drivers/arch/STM8/soc/stm8s103f/Kconfig.eb_stm8s103f.dt"
 endif
 
 

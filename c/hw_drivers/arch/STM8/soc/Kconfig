@@ -13,9 +13,9 @@ config STM8_GENERIC_SOC
 endchoice
 
 if STM8S103F
-source "$COMMON_DIR_PATH/c/hw_drivers/arch/STM8/boards/stm8s103f/Kconfig"
+source "$COMMON_DIR_PATH/c/hw_drivers/arch/STM8/soc/stm8s103f/Kconfig"
 endif
 
 if STM8_GENERIC_SOC
-source "$COMMON_DIR_PATH/c/hw_drivers/arch/STM8/boards/generic_board_Kconfig"
+source "$COMMON_DIR_PATH/c/hw_drivers/arch/STM8/soc/generic_board_Kconfig"
 endif
