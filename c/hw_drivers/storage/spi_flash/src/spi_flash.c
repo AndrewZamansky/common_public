@@ -401,7 +401,7 @@ size_t  spi_flash_pwrite(const void *apHandle ,const uint8_t *apData , size_t le
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t spi_flash_ioctl( void * const aHandle ,const uint8_t aIoctl_num
+uint8_t spi_flash_ioctl( void * const apHandle ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
 	uint8_t write_data[4];
@@ -415,8 +415,9 @@ uint8_t spi_flash_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 
 		case IOCTL_DEVICE_START :
 			/* Deselect the FLASH: Chip Select high */
-			_chip_select_off(aHandle );
-
+			_chip_select_off(apHandle );
+			DEV_IOCTL_0_PARAMS(INSTANCE(apHandle)->gpio_select_dev , IOCTL_DEVICE_START );
+			DEV_IOCTL_0_PARAMS(INSTANCE(apHandle)->spi_server_dev , IOCTL_DEVICE_START );
 //			{ // for spi test
 //				uint32_t tmp=SPI_FLASH_ReadID(aHandle);
 //			}
@@ -425,14 +426,14 @@ uint8_t spi_flash_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 
 		case IOCTL_SPI_FLASH_ERRASE_ALL :
 			write_data[0]= BE;
-			_write_to_flash_with_wen_and_wait(aHandle , write_data , 1);
+			_write_to_flash_with_wen_and_wait(apHandle , write_data , 1);
 
 			break;
 
 		case IOCTL_SPI_FLASH_ERRASE_SECTOR :
 			write_data[0]= SE;
 			addr_to_bytesBuffer(&write_data[1],*(uint32_t*)aIoctl_param1);
-			_write_to_flash_with_wen_and_wait(aHandle , write_data , 4);
+			_write_to_flash_with_wen_and_wait(apHandle , write_data , 4);
 
 			break;
 

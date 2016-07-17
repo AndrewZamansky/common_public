@@ -373,11 +373,12 @@ static void SW_UART_WRAPPER_Send_Task( void *aHandle )
 uint8_t sw_uart_wrapper_ioctl(void * const aHandle ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
 {
 	rx_int_size_t WritePos,ReadPos;
+	pdev_descriptor_const   server_dev;
 #ifdef  CONFIG_SW_UART_WRAPPER_ENABLE_RX
 	WritePos=INSTANCE(aHandle)->WritePos;
 	ReadPos=INSTANCE(aHandle)->ReadPos;
 #endif
-	pdev_descriptor_const   server_dev  = INSTANCE(aHandle)->server_dev;
+	server_dev  = INSTANCE(aHandle)->server_dev;
 
 	switch(aIoctl_num)
 	{

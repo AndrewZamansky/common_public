@@ -16,10 +16,4 @@
 uint8_t  spi_stm8_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor);
 
 
-#include "src/_spi_stm8_static_dev_macros.h"
-
-#define SPI_STM8_API_CREATE_STATIC_DEV(pdev  ) \
-			__SPI_STM8_API_CREATE_STATIC_DEV(pdev  )
-
-
 #endif

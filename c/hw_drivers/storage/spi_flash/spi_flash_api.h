@@ -20,10 +20,4 @@ typedef enum
 uint8_t  spi_flash_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor);
 
 
-#include "src/_spi_flash_static_dev_macros.h"
-
-
-#define SPI_FLASH_API_CREATE_STATIC_DEV(pdev  ,spi_server_pdev,gpio_server_pdev ) \
-			__SPI_FLASH_API_CREATE_STATIC_DEV(pdev  ,spi_server_pdev ,gpio_server_pdev)
-
 #endif
