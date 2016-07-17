@@ -15,15 +15,15 @@
 #include "PRINTF_api.h"
 #include "os_wrapper.h"
 #include "hw_timer_api.h"
-
+#ifdef CONFIG_INCLUDE_HEARTBEAT
+#include "heartbeat_api.h"
+#endif
 
 extern void os_start_arch_related_components(void) ;
 extern void xPortSysTickHandler(void);
 
-BaseType_t xDummyHigherPriorityTaskWoken ;
-pdev_descriptor_t timer_dev = NULL;
-app_tick_callback_func_t app_tick_callback_func = NULL;
-app_idle_entrance_callback_func_t app_idle_entrance_callback_func = NULL;
+static pdev_descriptor_t l_timer_dev = NULL;
+static pdev_descriptor_t l_heartbeat_dev = NULL;
 
 
 
@@ -52,7 +52,7 @@ uint8_t os_queue_send_immediate(os_queue_t queue ,  void * pData  )
 
 void os_start(void)
 {
-	if (NULL == timer_dev)
+	if (NULL == l_timer_dev)
 	{
 		return ;
 	}
@@ -63,19 +63,23 @@ void os_start(void)
 
 void system_tick_callback(void)
 {
-	if (NULL != app_tick_callback_func)
+#ifdef CONFIG_INCLUDE_HEARTBEAT
+	if(NULL != l_heartbeat_dev)
 	{
-		app_tick_callback_func();
+		DEV_IOCTL_0_PARAMS(l_heartbeat_dev , HEARTBEAT_API_EACH_1mS_CALL );
 	}
+#endif
 	xPortSysTickHandler();
 }
 
 void vApplicationIdleHook()
 {
-	if (NULL != app_idle_entrance_callback_func)
+#ifdef CONFIG_INCLUDE_HEARTBEAT
+	if(NULL != l_heartbeat_dev)
 	{
-		app_idle_entrance_callback_func();
+		DEV_IOCTL_0_PARAMS(l_heartbeat_dev , HEARTBEAT_API_CALL_FROM_IDLE_TASK );
 	}
+#endif
 }
 
 /* implement  vPortSetupTimerInterrupt() function
@@ -84,24 +88,29 @@ void vApplicationIdleHook()
  */
 void vPortSetupTimerInterrupt( void )
 {
-	DEV_IOCTL_1_PARAMS(timer_dev , IOCTL_TIMER_CALLBACK_SET , (void*) system_tick_callback);
-	DEV_IOCTL_0_PARAMS(timer_dev , IOCTL_DEVICE_START );
+	DEV_IOCTL_1_PARAMS(l_timer_dev , IOCTL_TIMER_CALLBACK_SET , (void*) system_tick_callback);
+	DEV_IOCTL_0_PARAMS(l_timer_dev , IOCTL_DEVICE_START );
 }
 
 
 void  os_set_tick_timer_dev(pdev_descriptor_t a_timer_dev)
 {
-	timer_dev = a_timer_dev;
+	l_timer_dev = a_timer_dev;
 }
 
-void  os_set_tick_callback(app_tick_callback_func_t a_app_tick_callback_func)
+void  os_set_heartbeat_dev(pdev_descriptor_t a_heartbeat_dev)
 {
-	app_tick_callback_func = a_app_tick_callback_func;
+	l_heartbeat_dev = a_heartbeat_dev;
 }
 
-void  os_set_idle_entrance_callback(app_idle_entrance_callback_func_t a_app_idle_entrance_callback_func)
+void os_init(void)
 {
-	app_idle_entrance_callback_func = a_app_idle_entrance_callback_func;
+#ifdef CONFIG_INCLUDE_HEARTBEAT
+	if(NULL != l_heartbeat_dev)
+	{
+		DEV_IOCTL_0_PARAMS(l_heartbeat_dev , IOCTL_DEVICE_START );
+	}
+#endif
 }
 
 #ifdef CONFIG_TEST_TASK_STACK

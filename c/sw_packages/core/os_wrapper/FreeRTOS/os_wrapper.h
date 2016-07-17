@@ -23,12 +23,6 @@
 #include "semphr.h"
 
 
-typedef void (*app_tick_callback_func_t)(void)  ;
-typedef void (*app_idle_entrance_callback_func_t)(void)  ;
-
-
-extern BaseType_t xDummyHigherPriorityTaskWoken ;
-
 
 /**	defines :	[OS_QUEUE_SEND_SUCCESS]  **/
 #define OS_QUEUE_SEND_SUCCESS		pdTRUE
@@ -57,7 +51,7 @@ typedef QueueHandle_t  os_queue_t;
 /**	*********  init os ********        **/
 /** 					    		   **/
 /**	function :	[os_init()]  **/
-#define os_init()
+void os_init(void);
 
 /**	*********  setting ticker device ********        **/
 /** 					    		   **/
@@ -67,12 +61,8 @@ void  os_set_tick_timer_dev(pdev_descriptor_t a_timer_dev);
 /**	*********  setting tick callback (if application need to perform something each tick)  ********        **/
 /** 					    		   **/
 /**	function :	[os_set_tick_callback()]  **/
-void  os_set_tick_callback(app_tick_callback_func_t a_app_tick_callback_func);
+void  os_set_heartbeat_dev(pdev_descriptor_t a_heartbeat_dev);
 
-/**	*********  setting idle entrance callback  ********        **/
-/** 					    		   **/
-/**	function :	[os_set_idle_entrance_callback()]  **/
-void  os_set_idle_entrance_callback(app_idle_entrance_callback_func_t a_app_idle_entrance_callback_func);
 
 /**	*********  starting os ********        **/
 /** 						    		   **/
