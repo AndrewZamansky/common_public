@@ -377,6 +377,7 @@ uint8_t sw_uart_wrapper_ioctl(void * const aHandle ,const uint8_t aIoctl_num , v
 	WritePos=INSTANCE(aHandle)->WritePos;
 	ReadPos=INSTANCE(aHandle)->ReadPos;
 #endif
+	pdev_descriptor_const   server_dev  = INSTANCE(aHandle)->server_dev;
 
 	switch(aIoctl_num)
 	{
@@ -386,10 +387,11 @@ uint8_t sw_uart_wrapper_ioctl(void * const aHandle ,const uint8_t aIoctl_num , v
 			*(uint8_t*)aIoctl_param2 = sizeof(SW_UART_WRAPPER_Dev_Params)/sizeof(dev_param_t); //size
 			break;
 		case IOCTL_SET_SERVER_DEVICE_BY_NAME :
-			INSTANCE(aHandle)->server_dev = DEV_OPEN((uint8_t*)aIoctl_param1);
-			if (NULL!=INSTANCE(aHandle)->server_dev)
+			server_dev = DEV_OPEN((uint8_t*)aIoctl_param1);
+			INSTANCE(aHandle)->server_dev = server_dev;
+			if (NULL != server_dev)
 			{
-				DEV_IOCTL(INSTANCE(aHandle)->server_dev,IOCTL_SET_ISR_CALLBACK_DEV, (void*)INSTANCE(aHandle)->this_dev);
+				DEV_IOCTL(server_dev, IOCTL_SET_ISR_CALLBACK_DEV, (void*)INSTANCE(aHandle)->this_dev);
 			}
 			break;
 #ifdef CONFIG_SW_UART_WRAPPER_ENABLE_RX
@@ -428,7 +430,7 @@ uint8_t sw_uart_wrapper_ioctl(void * const aHandle ,const uint8_t aIoctl_num , v
 #endif // for CONFIG_SW_UART_WRAPPER_ENABLE_RX
 
 		case IOCTL_SW_UART_WRAPPER_RESET :
-			DEV_IOCTL_0_PARAMS(INSTANCE(aHandle)->server_dev,IOCTL_UART_DISABLE_TX);
+			DEV_IOCTL_0_PARAMS(server_dev,IOCTL_UART_DISABLE_TX);
 			break;
 
 		case IOCTL_SW_UART_WRAPPER_USE_TASK :
@@ -438,7 +440,7 @@ uint8_t sw_uart_wrapper_ioctl(void * const aHandle ,const uint8_t aIoctl_num , v
 		case IOCTL_DEVICE_START :
 			os_create_task("sw_uart_wrapper_task",SW_UART_WRAPPER_Send_Task,
 					aHandle , SW_UART_WRAPPER_TASK_STACK_SIZE , SW_UART_WRAPPER_TASK_PRIORITY);
-
+			DEV_IOCTL_0_PARAMS(server_dev , IOCTL_DEVICE_START );
 			break;
 
 		default :

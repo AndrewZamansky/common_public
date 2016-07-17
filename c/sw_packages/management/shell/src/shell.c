@@ -335,6 +335,7 @@ static void Shell_Task( void *pvParameters )
 /*---------------------------------------------------------------------------------------------------------*/
 uint8_t shell_ioctl( void * const aHandle ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
 {
+	pdev_descriptor_const   server_dev ;
 
 	switch(aIoctl_num)
 	{
@@ -350,14 +351,13 @@ uint8_t shell_ioctl( void * const aHandle ,const uint8_t aIoctl_num , void * aIo
 #if CONFIG_SHELL_MAX_NUM_OF_DYNAMIC_INSTANCES > 0
 		case IOCTL_SET_SERVER_DEVICE_BY_NAME :
 			{
-				pdev_descriptor_t server_device;
-				server_device = DEV_OPEN((uint8_t*)aIoctl_param1);
-				if(NULL != server_device)
+				server_dev = DEV_OPEN((uint8_t*)aIoctl_param1);
+				if(NULL != server_dev)
 				{
-					DEV_IOCTL(server_device, IOCTL_SET_ISR_CALLBACK_DEV ,  (void*)INSTANCE(aHandle)->this_dev);
+					DEV_IOCTL(server_dev, IOCTL_SET_ISR_CALLBACK_DEV ,  (void*)INSTANCE(aHandle)->this_dev);
 				}
 
-				INSTANCE(aHandle)->server_dev=server_device;
+				INSTANCE(aHandle)->server_dev=server_dev;
 			}
 			break;
 #endif
@@ -370,6 +370,9 @@ uint8_t shell_ioctl( void * const aHandle ,const uint8_t aIoctl_num , void * aIo
 				task_is_running=1;
 				os_create_task("shell_task",Shell_Task,
 						NULL , SHELL_TASK_STACK_SIZE , SHELL_TASK_PRIORITY);
+				server_dev = INSTANCE(aHandle)->server_dev;
+				DEV_IOCTL_0_PARAMS(server_dev , IOCTL_DEVICE_START );
+
 			}
 			break;
 
