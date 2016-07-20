@@ -311,7 +311,7 @@ void _compressor_buffered_2in_2out(const void * const aHandle ,size_t data_len ,
 
 
 /*---------------------------------------------------------------------------------------------------------*/
-/* Function:         _compressor_buffered_2in_2out                                                                          */
+/* Function:         _compressor_2in_2out                                                                          */
 /*---------------------------------------------------------------------------------------------------------*/
 void _compressor_2in_2out(const void * const aHandle , size_t data_len ,
 		dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] , dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])

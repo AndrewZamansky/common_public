@@ -1,23 +1,7 @@
-#ifndef _add_static_device_step1
-#define _add_static_device_step1
+/* !! DONT PUT HEADER FILE PROTECTIONS IN THIS FILE !! */
 
 #include  "heartbeat_api.h"
 
-#undef _add_static_device_step2
-
-#undef HEARTBEAT_DT_DEV_NAME
-#undef HEARTBEAT_DT_CALLBACK_FUNC
-#undef HEARTBEAT_DT_OS_TIMER_PDEV
-
-
-#elif !defined(_add_static_device_step2)
-#define _add_static_device_step2
-
-#undef _add_static_device_step1
-
-#ifndef HEARTBEAT_DT_DEV_NAME
-#error "HEARTBEAT_DT_DEV_NAME should be defined"
-#endif
 
 #ifndef HEARTBEAT_DT_CALLBACK_FUNC
 #error "HEARTBEAT_DT_CALLBACK_FUNC should be defined"
@@ -32,18 +16,19 @@ extern uint8_t heartbeat_ioctl( void * const aHandle ,const uint8_t aIoctl_num ,
 
 #include "src/heartbeat.h"
 
+
 EXTERN_DECLARATION_TO_STATIC_DEVICE_INST(HEARTBEAT_DT_OS_TIMER_PDEV) ;
-heartbeat_instance_t STATIC_DEVICE_INNER_INST(HEARTBEAT_DT_DEV_NAME) =
-	{	HEARTBEAT_DT_CALLBACK_FUNC ,
-		P_TO_STATIC_DEVICE_INST(HEARTBEAT_DT_OS_TIMER_PDEV)
-	};
 
-CREATE_STATIC_DEVICE(HEARTBEAT_DT_DEV_NAME , &STATIC_DEVICE_INNER_INST(HEARTBEAT_DT_DEV_NAME) ,
-		heartbeat_ioctl ,  DEV_API_dummy_pwrite_func ,
-		DEV_API_dummy_pread_func , DEV_API_dummy_callback_func);
+#define STATIC_DEV_DATA_STRUCT_TYPE	heartbeat_instance_t
+#define STATIC_DEV_DATA_STRUCT									\
+	{															\
+		HEARTBEAT_DT_CALLBACK_FUNC ,							\
+		P_TO_STATIC_DEVICE_INST(HEARTBEAT_DT_OS_TIMER_PDEV) ,	\
+	}
+
+#define	STATIC_DEV_IOCTL_FUNCTION	heartbeat_ioctl
+#include "add_static_dev.h"
 
 
-
-#undef CURRENT_DEV
-
-#endif
+#undef HEARTBEAT_DT_CALLBACK_FUNC
+#undef HEARTBEAT_DT_OS_TIMER_PDEV

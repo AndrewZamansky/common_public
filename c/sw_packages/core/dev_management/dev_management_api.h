@@ -3,7 +3,7 @@
 #define _dev_management_api_h_
 
 
-#include "src/_dev_management_prerequirements_check.h"// should be after dev_management_config.h
+#include "src/_dev_management_prerequirements_check.h"
 
 #define NOT_FOR_SAVE 	0
 #define FOR_SAVE 		1
@@ -16,16 +16,13 @@
 
 //#define INIT_CURRENT_DEV()  STRINGIFY(CURRENT_DEV()_add_static_device.h)
 //#define ADD_CURRENT_DEV()  	STRINGIFY(CURRENT_DEV()_add_static_device.h)
-#define STATIC_DEVICE_INCLUDE_NAME(a)	STATIC_DEVICE_INCLUDE_NAME2(a)
-#define STATIC_DEVICE_INCLUDE_NAME2(a)	a##_add_static_device.h
-#define INIT_CURRENT_DEV()  STRINGIFY(STATIC_DEVICE_INCLUDE_NAME(CURRENT_DEV))
-#define ADD_CURRENT_DEV()  	STRINGIFY(STATIC_DEVICE_INCLUDE_NAME(CURRENT_DEV))
+#define STATIC_DEVICE_INCLUDE_NAME(drv_name)	STATIC_DEVICE_INCLUDE_NAME2(drv_name)
+#define STATIC_DEVICE_INCLUDE_NAME2(drv_name)	drv_name##_add_static_device.h
+#define ADD_CURRENT_DEV  		STRINGIFY(STATIC_DEVICE_INCLUDE_NAME(DT_DEV_DRIVER))
 
 
 #define EXTERN_DECLARATION_TO_STATIC_DEVICE_INST(pdev)	EXTERN_DECLARATION_TO_STATIC_DEVICE_INST2(pdev)
 #define EXTERN_DECLARATION_TO_STATIC_DEVICE_INST2(pdev)	extern dev_descriptor_t inst_##pdev
-#define STATIC_DEVICE_INNER_INST(pdev)	STATIC_DEVICE_INNER_INST2(pdev)
-#define STATIC_DEVICE_INNER_INST2(pdev)	inner_inst_##pdev
 #define STATIC_DEVICE_INST(pdev)	STATIC_DEVICE_INST2(pdev)
 #define STATIC_DEVICE_INST2(pdev)	inst_##pdev
 #define P_TO_STATIC_DEVICE_INST(pdev)	&STATIC_DEVICE_INST(pdev)

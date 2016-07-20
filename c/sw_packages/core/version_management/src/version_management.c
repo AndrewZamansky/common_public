@@ -27,12 +27,10 @@
 
 /***********************************/
 /********** ver_dev ********/
-#define CURRENT_DEV		version_management
-#include INIT_CURRENT_DEV()
+#define DT_DEV_NAME							ver_dev
+#define DT_DEV_DRIVER						version_management
 
-#define VERSION_MANAGEMENT_DT_DEV_NAME			ver_dev
-
-#include ADD_CURRENT_DEV()
+#include ADD_CURRENT_DEV
 
 /********  local defs *********************/
 
