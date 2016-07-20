@@ -19,6 +19,11 @@ typedef enum
 	HEARTBEAT_API_BUSY_WAIT_mS
 }HEARTBEAT_API_ioctl_t;
 
+typedef enum
+{
+	HEARTBEAT_API_HEARTBEAT_TICK = CALLBACK_LAST_COMMON_IOCTL + 1
+
+}HEARTBEAT_API_callback_t;
 
 /**********  define API  functions  ************/
 uint8_t  heartbeat_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor);

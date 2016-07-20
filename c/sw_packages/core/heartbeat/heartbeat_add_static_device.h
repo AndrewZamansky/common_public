@@ -3,8 +3,8 @@
 #include  "heartbeat_api.h"
 
 
-#ifndef HEARTBEAT_DT_CALLBACK_FUNC
-#error "HEARTBEAT_DT_CALLBACK_FUNC should be defined"
+#ifndef HEARTBEAT_DT_CALLBACK_PDEV
+#error "HEARTBEAT_DT_CALLBACK_PDEV should be defined"
 #endif
 
 #ifndef HEARTBEAT_DT_OS_TIMER_PDEV
@@ -18,11 +18,12 @@ extern uint8_t heartbeat_ioctl( void * const aHandle ,const uint8_t aIoctl_num ,
 
 
 EXTERN_DECLARATION_TO_STATIC_DEVICE_INST(HEARTBEAT_DT_OS_TIMER_PDEV) ;
+EXTERN_DECLARATION_TO_STATIC_DEVICE_INST(HEARTBEAT_DT_CALLBACK_PDEV) ;
 
 #define STATIC_DEV_DATA_STRUCT_TYPE	heartbeat_instance_t
 #define STATIC_DEV_DATA_STRUCT									\
 	{															\
-		HEARTBEAT_DT_CALLBACK_FUNC ,							\
+		P_TO_STATIC_DEVICE_INST(HEARTBEAT_DT_CALLBACK_PDEV),	\
 		P_TO_STATIC_DEVICE_INST(HEARTBEAT_DT_OS_TIMER_PDEV) ,	\
 	}
 

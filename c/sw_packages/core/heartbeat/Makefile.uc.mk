@@ -17,7 +17,7 @@ SRC = heartbeat.c
 
 VPATH = src
 
-ifdef HEARTBEAT_IS_SPEED_CRITICAL 
+ifdef CONFIG_HEARTBEAT_IS_SPEED_CRITICAL 
     SPEED_CRITICAL_FILES += heartbeat.c
 endif
 

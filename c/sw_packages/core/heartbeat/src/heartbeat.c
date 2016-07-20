@@ -107,9 +107,6 @@ uint8_t heartbeat_ioctl( void * const aHandle ,const uint8_t aIoctl_num , void *
 
 			break;
 
-		case HEARTBEAT_API_SET_CALLBACK_FUNC_IOCTL :
-			INSTANCE(aHandle)->heartbeat_callback =  (heartbeat_callback_func_t)aIoctl_param1;
-			break;
 
 		case HEARTBEAT_API_EACH_1mS_CALL:
 			restart_counter++;
@@ -127,10 +124,12 @@ uint8_t heartbeat_ioctl( void * const aHandle ,const uint8_t aIoctl_num , void *
 					one_sec_countdown -= tmp_restart_counter;
 					if(0 >= one_sec_countdown)
 					{
+						pdev_descriptor_const 	heartbeat_callback_dev;
 						cpu_usage_measure_mPercents = 100000 - (cpuUsageCounter*100)/ticks_per_mSec;
-						if (NULL != INSTANCE(aHandle)->heartbeat_callback)
+						heartbeat_callback_dev = INSTANCE(aHandle)->heartbeat_callback_dev;
+						if (NULL != heartbeat_callback_dev)
 						{
-							INSTANCE(aHandle)->heartbeat_callback();
+							DEV_CALLBACK_0_PARAMS( heartbeat_callback_dev,HEARTBEAT_API_HEARTBEAT_TICK  ) ;
 						}
 						cpuUsageCounter=0;
 						one_sec_countdown=1000;
