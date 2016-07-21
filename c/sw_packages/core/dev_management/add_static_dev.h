@@ -10,16 +10,16 @@
 #define DEV_INNER_INST(pdev)	DEV_INNER_INST2(pdev)
 #define DEV_INNER_INST2(pdev)	inner_inst_##pdev
 
-EXTERN_DECLARATION_TO_STATIC_DEVICE_INST(DT_DEV_NAME) ;
 
 #ifndef	STATIC_DEV_DATA_STRUCT_TYPE
 	#define	HANDLE_TO_DEV_INNER_STRUCT		NULL
 #else
 	#ifndef STATIC_DEV_DATA_STRUCT
-	#error "STATIC_DEV_DATA_STRUCT should be defined"
+		#error "STATIC_DEV_DATA_STRUCT should be defined"
 	#endif
 
-	STATIC_DEV_DATA_STRUCT_TYPE		DEV_INNER_INST(DT_DEV_NAME) = STATIC_DEV_DATA_STRUCT;
+	EXTERN_DECLARATION_TO_STATIC_DEVICE_INST(DT_DEV_NAME) ;
+	STATIC_DEV_DATA_STRUCT_TYPE	 DEVICE_DATA_PLACEMENT	DEV_INNER_INST(DT_DEV_NAME) = STATIC_DEV_DATA_STRUCT;
 	#define	HANDLE_TO_DEV_INNER_STRUCT		&DEV_INNER_INST(DT_DEV_NAME)
 #endif
 
@@ -40,6 +40,23 @@ EXTERN_DECLARATION_TO_STATIC_DEVICE_INST(DT_DEV_NAME) ;
 	#define STATIC_DEV_CALLBACK_FUNCTION		DEV_API_dummy_callback_func
 #endif
 
+
+
+
+#define CREATE_STATIC_DEVICE(pdev , dev_handle , dev_ioctl , dev_pwrite , dev_pread , dev_callback)  \
+	 CREATE_STATIC_DEVICE2(pdev , dev_handle , dev_ioctl , dev_pwrite , dev_pread , dev_callback)
+#define CREATE_STATIC_DEVICE2(pdev , dev_handle , dev_ioctl , dev_pwrite , dev_pread , dev_callback)  \
+		DEVICE_PLACEMENT dev_descriptor_t STATIC_DEVICE_INST(pdev) =	\
+			{											\
+				/*DEVICE_MAGIC_NUMBER,					*/\
+				""#pdev,								\
+				dev_handle,								\
+				dev_ioctl,								\
+				dev_pwrite,								\
+				dev_pread,								\
+				dev_callback							\
+			};											\
+			pdev_descriptor_t pdev = P_TO_STATIC_DEVICE_INST(pdev)
 
 CREATE_STATIC_DEVICE(DT_DEV_NAME , HANDLE_TO_DEV_INNER_STRUCT ,
 		STATIC_DEV_IOCTL_FUNCTION ,  STATIC_DEV_PWRITE_FUNCTION ,

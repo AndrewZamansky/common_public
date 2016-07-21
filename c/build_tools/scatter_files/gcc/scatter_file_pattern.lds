@@ -128,6 +128,11 @@ SECTIONS
  		*(.static_devs) ;
 		. = ALIGN(4);
  	}  > ram
+ 	.static_devs_data . : AT ( __static_devs_section_start_on_ROM__ + SIZEOF(.static_devs)) 
+ 	{ 
+ 		*(.static_devs_data) ;
+		. = ALIGN(4);
+ 	}  > ram
  	__static_devs_section_end_on_RAM__ = .;
 
 	__relocation_section_end_on_RAM__ = .;
