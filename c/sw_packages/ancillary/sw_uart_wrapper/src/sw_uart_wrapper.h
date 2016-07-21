@@ -31,16 +31,19 @@
 
 #ifdef CONFIG_SW_UART_WRAPPER_ENABLE_RX
 
-#if CONFIG_SW_UART_WRAPPER_MAX_RX_BUFFER_SIZE <= (1<<8)
-	typedef uint8_t rx_int_size_t;
-#else
-	#if CONFIG_SW_UART_WRAPPER_MAX_RX_BUFFER_SIZE <= (1<<16)
-		typedef uint16_t rx_int_size_t;
+	#ifdef CONFIG_SW_UART_WRAPPER_USE_MALLOC
+			typedef uint32_t rx_int_size_t;
 	#else
-		typedef uint32_t rx_int_size_t;
+		#if CONFIG_SW_UART_WRAPPER_RX_BUFFER_SIZE <= (1<<8)
+			typedef uint8_t rx_int_size_t;
+		#else
+			#if CONFIG_SW_UART_WRAPPER_RX_BUFFER_SIZE <= (1<<16)
+				typedef uint16_t rx_int_size_t;
+			#else
+				typedef uint32_t rx_int_size_t;
+			#endif
+		#endif
 	#endif
-#endif
-
 #endif
 
 typedef struct {
@@ -55,9 +58,12 @@ typedef struct {
 	pdev_descriptor_const   this_dev;
 	pdev_descriptor_const   client_dev;
 
-	uint8_t *rx_buff;
-
+#ifdef CONFIG_SW_UART_WRAPPER_USE_MALLOC
 	rx_int_size_t rx_buff_size;
+	uint8_t *rx_buff;
+#else
+	uint8_t	rx_buff[CONFIG_SW_UART_WRAPPER_RX_BUFFER_SIZE];
+#endif
 	rx_int_size_t WritePos;
 	rx_int_size_t ReadPos;
 

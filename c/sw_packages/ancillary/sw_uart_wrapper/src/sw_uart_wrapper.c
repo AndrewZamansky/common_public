@@ -133,7 +133,11 @@ inline uint8_t SW_UART_WRAPPER_Data_Received(SW_UART_WRAPPER_Instance_t *pInstan
 
 	WritePos=pInstance->WritePos;
 	ReadPos=pInstance->ReadPos;
+#ifdef CONFIG_SW_UART_WRAPPER_USE_MALLOC
 	rx_buff_size=pInstance->rx_buff_size;
+#else
+	rx_buff_size = CONFIG_SW_UART_WRAPPER_RX_BUFFER_SIZE;
+#endif
 
 	if( 0 == pInstance->isDataInUse)
 	{
@@ -396,10 +400,11 @@ uint8_t sw_uart_wrapper_ioctl(void * const aHandle ,const uint8_t aIoctl_num , v
 			}
 			break;
 #ifdef CONFIG_SW_UART_WRAPPER_ENABLE_RX
+#ifdef CONFIG_SW_UART_WRAPPER_USE_MALLOC
 		case IOCTL_SW_UART_WRAPPER_SET_BUFF_SIZE :
 			INSTANCE(aHandle)->rx_buff_size = atoi((char*)aIoctl_param1);
-			INSTANCE(aHandle)->rx_buff = (uint8_t*)malloc(INSTANCE(aHandle)->rx_buff_size);
 			break;
+#endif			//for CONFIG_SW_UART_WRAPPER_ENABLE_RX
 		case IOCTL_SET_ISR_CALLBACK_DEV :
 			INSTANCE(aHandle)->client_dev = (pdev_descriptor_t)aIoctl_param1;
 			break;
@@ -439,6 +444,9 @@ uint8_t sw_uart_wrapper_ioctl(void * const aHandle ,const uint8_t aIoctl_num , v
 			break;
 
 		case IOCTL_DEVICE_START :
+#ifdef CONFIG_SW_UART_WRAPPER_USE_MALLOC
+			INSTANCE(aHandle)->rx_buff = (uint8_t*)malloc(INSTANCE(aHandle)->rx_buff_size);
+#endif
 			os_create_task("sw_uart_wrapper_task",SW_UART_WRAPPER_Send_Task,
 					aHandle , SW_UART_WRAPPER_TASK_STACK_SIZE , SW_UART_WRAPPER_TASK_PRIORITY);
 			DEV_IOCTL_0_PARAMS(server_dev , IOCTL_DEVICE_START );

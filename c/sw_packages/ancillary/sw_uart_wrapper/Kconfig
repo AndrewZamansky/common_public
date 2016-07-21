@@ -21,8 +21,8 @@ config  SW_UART_WRAPPER_ENABLE_RX
 	bool   "rx enable"
 	default 1
 	
-config  SW_UART_WRAPPER_MAX_RX_BUFFER_SIZE
+config  SW_UART_WRAPPER_RX_BUFFER_SIZE
 	int   "rx buffer size"
-	depends on SW_UART_WRAPPER_ENABLE_RX
-	default 2048
+	depends on SW_UART_WRAPPER_ENABLE_RX && !SW_UART_WRAPPER_USE_MALLOC
+	default 32
 	
