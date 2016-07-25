@@ -2,10 +2,9 @@
 
 #include  "version_management_api.h"
 
-
-
 size_t version_management_pread(const void *aHandle ,uint8_t *apData , size_t aLength, size_t aOffset);
 
+#define	MODULE_NAME				version_management
+#define	MODULE_PREAD_FUNCTION	version_management_pread
 
-#define	STATIC_DEV_PREAD_FUNCTION	version_management_pread
-#include "add_static_dev.h"
+#include "add_component.h"

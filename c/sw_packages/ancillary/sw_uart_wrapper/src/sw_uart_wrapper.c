@@ -17,6 +17,7 @@
 #include "sw_uart_wrapper_api.h" //place first to test that header file is self-contained
 #include "sw_uart_wrapper.h"
 
+#include "sw_uart_wrapper_add_component.h"
 
 
 /********  defines *********************/
@@ -51,9 +52,6 @@ typedef void  (*delay_func_t)(uint32_t mSec);
 
 /***********   local variables    **************/
 #if CONFIG_SW_UART_WRAPPER_MAX_NUM_OF_DYNAMIC_INSTANCES>0
-
-	static SW_UART_WRAPPER_Instance_t SW_UART_WRAPPER_InstanceParams[CONFIG_SW_UART_WRAPPER_MAX_NUM_OF_DYNAMIC_INSTANCES] = { {0} };
-	static uint16_t usedInstances =0 ;
 
 	static const dev_param_t SW_UART_WRAPPER_Dev_Params[]=
 	{
@@ -457,44 +455,3 @@ uint8_t sw_uart_wrapper_ioctl(void * const aHandle ,const uint8_t aIoctl_num , v
 	}
 	return 0;
 }
-
-
-
-
-
-#if CONFIG_SW_UART_WRAPPER_MAX_NUM_OF_DYNAMIC_INSTANCES>0
-
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        SW_UART_WRAPPER_API_Init_Dev_Descriptor                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-uint8_t  sw_uart_wrapper_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor)
-{
-	SW_UART_WRAPPER_Instance_t *pInstance;
-	if(NULL == aDevDescriptor) return 1;
-	if (usedInstances >= CONFIG_SW_UART_WRAPPER_MAX_NUM_OF_DYNAMIC_INSTANCES) return 1;
-
-	pInstance = &SW_UART_WRAPPER_InstanceParams[usedInstances ];
-	pInstance->this_dev = aDevDescriptor;
-
-	pInstance->use_task_for_out = 1;
-
-	aDevDescriptor->handle = pInstance;
-	aDevDescriptor->ioctl = sw_uart_wrapper_ioctl;
-	aDevDescriptor->pwrite = sw_uart_wrapper_pwrite;
-	aDevDescriptor->callback = sw_uart_wrapper_callback;
-	usedInstances++;
-
-	return 0 ;
-
-}
-#endif  // for CONFIG_SW_UART_WRAPPER_MAX_NUM_OF_DYNAMIC_INSTANCES>0
-
-

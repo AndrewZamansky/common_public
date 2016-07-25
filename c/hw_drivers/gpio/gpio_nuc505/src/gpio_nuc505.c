@@ -16,10 +16,9 @@
 #include "NUC505Series.h"
 #include "gpio.h"
 
-
+#include "gpio_nuc505_add_component.h"
 
 /***************   defines    *******************/
-#define GPIO_NUC505_MAX_NUM_OF_GPIOS 4
 
 
 
@@ -30,8 +29,6 @@
 
 
 /***********   local variables    **************/
-static GPIO_NUC505_Instance_t GPIO_NUC505_InstanceParams[GPIO_NUC505_MAX_NUM_OF_GPIOS];
-static uint16_t usedInstances =0 ;
 static void  *ports[]={PA,PB,PC,PD};
 //static void  *ports[]={NULL,NULL,NULL,NULL};
 
@@ -152,28 +149,4 @@ uint8_t gpio_nuc505_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 	return 0;
 }
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        gpio_nuc505_api_dev_descriptor                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-uint8_t  gpio_nuc505_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor)
-{
-	if(NULL == aDevDescriptor) return 1;
-	if (usedInstances >= GPIO_NUC505_MAX_NUM_OF_GPIOS) return 1;
-
-
-	aDevDescriptor->handle = &GPIO_NUC505_InstanceParams[usedInstances];
-	aDevDescriptor->ioctl = gpio_nuc505_ioctl;
-	usedInstances++;
-
-	return 0 ;
-
-}
 

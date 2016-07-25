@@ -2,6 +2,11 @@
 	
 menu "devices management options"
 
+config DYNAMIC_DEVICE_TREE
+	bool   "dynamic device tree"
+	default y
+
+
 config MAX_NUM_OF_DYNAMIC_DEVICES
 	int   "maximal number of dynamic devices"
 	default 32

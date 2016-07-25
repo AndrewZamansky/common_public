@@ -12,14 +12,10 @@ if INCLUDE_SW_UART_WRAPPER
 source "$COMMON_DIR_PATH/c/sw_packages/ancillary/sw_uart_wrapper/Kconfig"
 endif
 
-menuconfig INCLUDE_TIMER_WRAPPER
+config INCLUDE_TIMER_WRAPPER
 	bool   "timer wrapper"
 	depends on INCLUDE_CORTEXM_SYSTICK 
 	default n
-
-if INCLUDE_TIMER_WRAPPER
-source "$COMMON_DIR_PATH/c/sw_packages/ancillary/timer/Kconfig"
-endif
 
 
 config INCLUDE_SW_GPIO_WRAPPER

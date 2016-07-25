@@ -21,6 +21,8 @@
 
 #include "irq_api.h"
 
+#include "heartbeat_add_component.h"
+
 /********  defines *********************/
 
 #define INSTANCE(hndl)	((heartbeat_instance_t*)hndl)
@@ -54,7 +56,7 @@ void heartbeat_timer_callback()
 }
 static volatile int tmp=0;
 /*---------------------------------------------------------------------------------------------------------*/
-/* Function:        HTTP_ioctl                                                                          */
+/* Function:        heartbeat_ioctl                                                                          */
 /*                                                                                                         */
 /* Parameters:                                                                                             */
 /*                                                                                         */
@@ -161,28 +163,4 @@ uint8_t heartbeat_ioctl( void * const aHandle ,const uint8_t aIoctl_num , void *
 	}
 	return 0;
 }
-
-
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        heartbeat_API_Init_Dev_Descriptor                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-uint8_t  heartbeat_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor)
-{
-
-	if(NULL == aDevDescriptor) return 1;
-
-
-	aDevDescriptor->ioctl = heartbeat_ioctl;
-
-	return 0;
-}
-
 

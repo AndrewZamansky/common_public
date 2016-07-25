@@ -14,6 +14,7 @@
 #include "irq_api.h"
 #include "clocks_api.h"
 
+#include "cortexM_systick_add_component.h"
 
 
 #if 1 == CONFIG_CORTEX_M4
@@ -41,8 +42,6 @@
 
 /***********   local variables    **************/
 #if I2S_NUC505_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
- static CORTEXM_SYSTICK_Instance_t CORTEXM_SYSTICK_InstanceParams;
-
 
 static const dev_param_t CORTEXM_SYSTICK_Dev_Params[]=
 {
@@ -147,30 +146,3 @@ uint8_t cortexM_systick_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 	}
 	return 0;
 }
-
-#if I2S_NUC505_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
-
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        cortexM_systick_api_dev_descriptor                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-uint8_t  cortexM_systick_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor)
-{
-	if(NULL == aDevDescriptor) return 1;
-
-
-	aDevDescriptor->handle = &CORTEXM_SYSTICK_InstanceParams ;
-	aDevDescriptor->ioctl = cortexM_systick_ioctl;
-
-	return 0 ;
-
-}
-#endif
-

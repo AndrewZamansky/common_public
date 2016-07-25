@@ -20,6 +20,8 @@
 #include "sw_uart_wrapper_api.h"
 #include "irq_api.h"
 
+#include "app_dev_add_component.h"
+
 /********  defines *********************/
 
 #define INSTANCE(hndl)	((UART_NUC505_Instance_t*)hndl)
@@ -35,8 +37,6 @@
 
 
 /********  local defs *********************/
-UART_NUC505_Instance_t UART_NUC505_Instance;
-
 
 #define UART_NUC505_NUM_OF_UARTS	3
 static UART_NUC505_Instance_t *pHw_uart_pointer_to_instance[UART_NUC505_NUM_OF_UARTS];
@@ -216,29 +216,4 @@ uint8_t uart_nuc505_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 			return 1;
 	}
 	return 0;
-}
-
-
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        uart_nuc505_api_dev_descriptor                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-uint8_t  uart_nuc505_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor)
-{
-	if(NULL == aDevDescriptor) return 1;
-
-
-	aDevDescriptor->handle = &UART_NUC505_Instance;
-	aDevDescriptor->ioctl = uart_nuc505_ioctl;
-	aDevDescriptor->pwrite = uart_nuc505_pwrite;
-
-	return 0 ;
-
 }

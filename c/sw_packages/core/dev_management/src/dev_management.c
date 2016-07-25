@@ -30,6 +30,17 @@
 	dev_descriptor_t  dev_descriptors[CONFIG_MAX_NUM_OF_DYNAMIC_DEVICES];
 #endif
 
+
+/*
+ * function : DEV_API_dummy_init_func()
+ *
+ *
+ */
+size_t DEV_API_dummy_init_func(pdev_descriptor_t aDevDescriptor)
+{
+	return 0;
+}
+
 /*
  * function : DEV_API_dummy_ioctl_func()
  *
@@ -73,36 +84,47 @@ uint8_t DEV_API_dummy_callback_func(void * const aHandle ,
 	return 1;
 }
 
-#if 0
-STATIC_DEVICE(dummy_static_dev , NULL ,
-		DEV_API_dummy_ioctl_func ,  DEV_API_dummy_pwrite_func ,
-		DEV_API_dummy_pread_func , DEV_API_dummy_callback_func);
 
-static void _auto_start_devices(int16_t struct_size)
+#ifdef CONFIG_DYNAMIC_DEVICE_TREE
+
+/*
+ * function : add_new_device()
+ *
+ *
+ */
+static void add_new_device(const uint8_t *drv_name_str ,
+		const uint8_t *device_name_str  )
 {
-	dev_descriptor_t *p_dev_descriptor;
-
-	p_dev_descriptor = &inst_dummy_static_dev;
-	while(DEVICE_MAGIC_NUMBER == p_dev_descriptor->magic_number)
+	included_module_t *curr_include_module;
+	while(curr_include_module < end_of_modules_stamp)
 	{
-		DEV_IOCTL_0_PARAMS(p_dev_descriptor , IOCTL_DEVICE_START );
-		p_dev_descriptor = (dev_descriptor_t *)( ((uint8_t*)p_dev_descriptor) + struct_size) ;
+		if strcmp(drv_name_str , curr_include_module->component_name)
+		{
+			DEV_API_add_device(drv_name_str , curr_include_module->init_dev_descriptor_func);
+			break;
+		}
+		curr_include_module++;
 	}
 }
 
 /*
- * function : DEV_API_auto_start_devices()
+ * function : DEV_API_init_device_tree()
  *
  *
  */
-void DEV_API_auto_start_devices(void)
+void DEV_API_init_device_tree(void *start_of_device_tree_addr)
 {
-	_auto_start_devices( (uint8_t)sizeof(dev_descriptor_t));
-	_auto_start_devices(- (uint8_t)sizeof(dev_descriptor_t));
+	pdev_descriptor_t curr_pdev ;
+
+	curr_pdev = (pdev_descriptor_t) start_of_device_tree_addr;
+	while ( END_OF_DEVICE_TREE_STAMP != *(uint8_t*)curr_pdev)
+	{
+		add_new_device(curr_pdev->drv_name , curr_pdev->name);
+		curr_pdev++;
+	}
 }
 
 #endif
-
 
 #if CONFIG_MAX_NUM_OF_DYNAMIC_DEVICES > 0
 
@@ -122,20 +144,20 @@ pdev_descriptor_t DEV_API_open_device(const uint8_t *device_name)
 #endif
 
 
-	pdev_descriptor_t curr_pdev ;
-	pdev_descriptor_t last_pdev ;
-
-	curr_pdev = (pdev_descriptor_t)&__static_devs_section_start_on_RAM__;
-	last_pdev = (pdev_descriptor_t)&__static_devs_section_end_on_RAM__;
-	while(curr_pdev < last_pdev)
-	{
-		//name_len=strlen((char*)static_dev_descriptors[i].name);
-		if (0 == strcmp( (char*)curr_pdev->name ,(char*) device_name ) )
-		{
-			return  curr_pdev;
-		}
-		curr_pdev++;
-	}
+//	pdev_descriptor_t curr_pdev ;
+//	pdev_descriptor_t last_pdev ;
+//
+//	curr_pdev = (pdev_descriptor_t)&__static_devs_section_start_on_RAM__;
+//	last_pdev = (pdev_descriptor_t)&__static_devs_section_end_on_RAM__;
+//	while(curr_pdev < last_pdev)
+//	{
+//		//name_len=strlen((char*)static_dev_descriptors[i].name);
+//		if (0 == strcmp( (char*)curr_pdev->name ,(char*) device_name ) )
+//		{
+//			return  curr_pdev;
+//		}
+//		curr_pdev++;
+//	}
 
 	for(i=0 ; i<CONFIG_MAX_NUM_OF_DYNAMIC_DEVICES ; i++)
 	{

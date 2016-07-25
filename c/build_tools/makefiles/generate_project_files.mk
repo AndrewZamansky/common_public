@@ -28,7 +28,6 @@ DUMMY:=$(shell $(FILE_CONTENT))
 
 
 
-$(shell echo DYNAMIC_COMPONENT := NO>> $(COMPONENTS_MK))
 $(shell echo INCLUDE_THIS_FOR_H_FILES_PATH := NO>> $(COMPONENTS_MK))
 
 

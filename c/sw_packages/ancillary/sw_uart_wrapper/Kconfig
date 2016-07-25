@@ -1,8 +1,4 @@
 #
-
-config  SW_UART_WRAPPER_MAX_NUM_OF_DYNAMIC_INSTANCES
-	int   "maximal number of dynamic instances"
-	default 1
 	
 config  SW_UART_WRAPPER_MAX_QUEUE_LEN
 	int   "internal queue length"

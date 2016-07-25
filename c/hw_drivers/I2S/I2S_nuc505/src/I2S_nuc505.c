@@ -19,6 +19,8 @@
 
 #include "NUC505Series.h"
 
+#include "I2S_nuc505_add_component.h"
+
 /********  defines *********************/
 #define INSTANCE(hndl)	((I2S_NUC505_Instance_t*)hndl)
 
@@ -37,7 +39,6 @@
 
 static I2S_NUC505_Instance_t *pI2SHandle;
 
-static I2S_NUC505_Instance_t I2S_NUC505_Instance;
 
 uint16_t num_of_words_in_buffer_per_chenel = 0;
 uint16_t num_of_uint32_in_buffer_per_chenel;
@@ -333,28 +334,4 @@ uint8_t I2S_nuc505_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 	return 0;
 }
 
-
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        I2S_nuc505_api_dev_descriptor                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-uint8_t  I2S_nuc505_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor)
-{
-	if(NULL == aDevDescriptor) return 1;
-
-
-	aDevDescriptor->handle = &I2S_NUC505_Instance;
-	aDevDescriptor->ioctl = I2S_nuc505_ioctl;
-	I2S_NUC505_Instance.start_flag = 0;
-
-	return 0 ;
-
-}
 

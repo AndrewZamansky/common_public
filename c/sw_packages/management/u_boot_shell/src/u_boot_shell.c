@@ -17,6 +17,7 @@
 
 #include "u_boot_shell.h"
 #include "config.h"
+#include "u_boot_shell_add_component.h"
 
 #ifdef  _BOOTSTAGE_H
 	typedef enclosure_unnedded _code_by_DONT_USE_STD_IO_in_common_h_in_uboor_include_dir  dummy_type;
@@ -48,8 +49,6 @@ static const dev_param_t u_boot_shell_Dev_Params[]=
 		{IOCTL_SET_SERVER_DEVICE_BY_NAME , IOCTL_VOID , (uint8_t*)U_BOOT_SHELL_API_SERVER_DEVICE_STR, NOT_FOR_SAVE},
 };
 
-u_boot_shell_instance_t	u_boot_shell_instances[CONFIG_U_BOOT_SHELL_MAX_NUM_OF_DYNAMIC_INSTANCES] = {{0}};
-uint8_t usedUbootShellInstances = 0;
 
 #endif
 
@@ -158,40 +157,3 @@ uint8_t u_boot_shell_ioctl( void * const aHandle ,const uint8_t aIoctl_num , voi
 	}
 	return 0;
 }
-
-#if CONFIG_U_BOOT_SHELL_MAX_NUM_OF_DYNAMIC_INSTANCES > 0
-
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        Shell_API_Init_Dev_Descriptor                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-uint8_t  u_boot_shell_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor)
-{
-	u_boot_shell_instance_t *pInstance;
-
-	if(CONFIG_U_BOOT_SHELL_MAX_NUM_OF_DYNAMIC_INSTANCES <= usedUbootShellInstances) return 1;
-
-	if(NULL == aDevDescriptor) return 1;
-
-	pInstance = &u_boot_shell_instances[usedUbootShellInstances];
-
-	aDevDescriptor->handle = pInstance;
-	pInstance->this_dev = aDevDescriptor;
-
-	aDevDescriptor->ioctl = u_boot_shell_ioctl;
-	aDevDescriptor->callback = u_boot_shell_callback;
-
-	usedUbootShellInstances++;
-
-	return 0;
-}
-
-#endif
-

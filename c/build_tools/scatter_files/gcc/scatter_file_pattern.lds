@@ -68,7 +68,23 @@ SECTIONS
 	   *(EXCLUDE_FILE ( FILES_TO_FORCE_IN_RAM ) .text.*)
 	}  > CODE_LOCATION
 
- 	__auto_init_functions_section_start_on_RAM__ = .;
+	. = ALIGN(4);
+ 	.start_of_modules . : 
+	{ 
+	   KEEP(*(.start_of_modules ))
+	}  > CODE_LOCATION
+
+ 	.modules . : 
+	{ 
+	   KEEP(*(.modules ))
+	}  > CODE_LOCATION
+
+ 	.end_of_modules . : 
+	{ 
+	   KEEP(*(.end_of_modules ))
+	}  > CODE_LOCATION
+
+	__auto_init_functions_section_start_on_RAM__ = .;
 	.auto_init_functions . : 
 	{ 
  		KEEP(*(.auto_init_functions)) ;
@@ -126,14 +142,18 @@ SECTIONS
  	.static_devs . : AT ( __static_devs_section_start_on_ROM__ ) 
  	{ 
  		*(.static_devs) ;
-		. = ALIGN(4);
  	}  > ram
- 	.static_devs_data . : AT ( __static_devs_section_start_on_ROM__ + SIZEOF(.static_devs)) 
+ 	__end_of_static_devs_on_ROM__ = __static_devs_section_start_on_ROM__ + SIZEOF(.static_devs);
+ 	.end_of_static_devs . : AT ( __end_of_static_devs_on_ROM__ ) 
+ 	{ 
+ 		*(.end_of_static_devs) ;
+ 	}  > ram
+	__static_devs_data_on_ROM__ = __end_of_static_devs_on_ROM__ + SIZEOF(.end_of_static_devs);
+ 	.static_devs_data . : AT ( __static_devs_data_on_ROM__) 
  	{ 
  		*(.static_devs_data) ;
 		. = ALIGN(4);
  	}  > ram
- 	__static_devs_section_end_on_RAM__ = .;
 
 	__relocation_section_end_on_RAM__ = .;
 

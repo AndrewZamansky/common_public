@@ -14,7 +14,7 @@ extern uint8_t timer_ioctl( void * const aHandle ,const uint8_t aIoctl_num , voi
 #include "src/timer.h"
 
 EXTERN_DECLARATION_TO_STATIC_DEVICE_INST(TIMER_DT_HW_TIMER_PDEV) ;
-#define STATIC_DEV_DATA_STRUCT_TYPE	timer_instance_t
+#define MODULE_DATA_STRUCT_TYPE	timer_instance_t
 #define STATIC_DEV_DATA_STRUCT									\
 	{															\
 		P_TO_STATIC_DEVICE_INST(TIMER_DT_HW_TIMER_PDEV) ,	\
@@ -22,7 +22,7 @@ EXTERN_DECLARATION_TO_STATIC_DEVICE_INST(TIMER_DT_HW_TIMER_PDEV) ;
 			0												\
 	}
 
-#define	STATIC_DEV_IOCTL_FUNCTION	timer_ioctl
+#define	MODULE_IOCTL_FUNCTION	timer_ioctl
 #include "add_static_dev.h"
 
 

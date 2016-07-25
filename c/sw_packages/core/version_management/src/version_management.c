@@ -1,6 +1,6 @@
 /*
  *
- * file :   VersionManagment.c
+ * file :   version_management.c
  *
  *
  *
@@ -15,6 +15,8 @@
 
 #include "version_management_api.h"
 
+#include "version_management_add_component.h"
+
 /********  defines *********************/
 
 
@@ -28,14 +30,14 @@
 /***********************************/
 /********** ver_dev ********/
 #define DT_DEV_NAME							ver_dev
-#define DT_DEV_DRIVER						version_management
+#define DT_DEV_MODULE						version_management
 
 #include ADD_CURRENT_DEV
 
 /********  local defs *********************/
 
 /*---------------------------------------------------------------------------------------------------------*/
-/* Function:        VersionManagment_read                                                                          */
+/* Function:        version_management_pread                                                                          */
 /*                                                                                                         */
 /* Parameters:                                                                                             */
 /*                                                                                         */
@@ -53,26 +55,4 @@ size_t version_management_pread(const void *aHandle ,uint8_t *apData , size_t aL
 	}
 	memcpy(apData,VERSION_STR, aLength);
 	return aLength;
-}
-
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        ARM_SH_API_Init_Dev_Descriptor                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-uint8_t  version_management_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor)
-{
-	if(NULL == aDevDescriptor) return 1;
-
-	aDevDescriptor->handle = NULL;
-	aDevDescriptor->pread = version_management_pread;
-
-	return 0 ;
-
 }

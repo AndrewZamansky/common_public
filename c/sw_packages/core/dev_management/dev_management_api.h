@@ -8,9 +8,8 @@
 #define NOT_FOR_SAVE 	0
 #define FOR_SAVE 		1
 
-#define DEVICE_MAGIC_NUMBER	0x1B3D
 
-
+#define END_OF_DEVICE_TREE_STAMP	0xF1
 
 
 /**********  define API  types ************/
@@ -20,8 +19,8 @@
 #define STRINGIFY2(X) #X
 
 #define STATIC_DEVICE_INCLUDE_NAME(drv_name)	STATIC_DEVICE_INCLUDE_NAME2(drv_name)
-#define STATIC_DEVICE_INCLUDE_NAME2(drv_name)	drv_name##_add_static_device.h
-#define ADD_CURRENT_DEV  		STRINGIFY(STATIC_DEVICE_INCLUDE_NAME(DT_DEV_DRIVER))
+#define STATIC_DEVICE_INCLUDE_NAME2(drv_name)	drv_name##_add_component.h
+#define ADD_CURRENT_DEV  		STRINGIFY(STATIC_DEVICE_INCLUDE_NAME(DT_DEV_MODULE))
 
 #define EXTERN_DECLARATION_TO_STATIC_DEVICE_INST(pdev)	EXTERN_DECLARATION_TO_STATIC_DEVICE_INST2(pdev)
 #define EXTERN_DECLARATION_TO_STATIC_DEVICE_INST2(pdev)	extern dev_descriptor_t inst_##pdev
@@ -112,7 +111,9 @@ typedef uint8_t (*dev_callback_1_params_func_t)(void * const aHandle , const uin
 
 typedef struct _dev_descriptor_t
 {
-//	uint16_t 				magic_number;
+#ifdef CONFIG_USE_DEVICE_TREE
+	char	*drv_name;
+#endif
 	char 					*name;
 	void*    				handle;
 	dev_ioctl_func_t  		ioctl;
@@ -124,12 +125,18 @@ typedef struct _dev_descriptor_t
 
 typedef const dev_descriptor_t * pdev_descriptor_const;
 
+typedef uint8_t  (*init_func_t)(pdev_descriptor_t aDevDescriptor);
 typedef uint8_t  (*init_dev_descriptor_func_t)(pdev_descriptor_t aDevDescriptor);
 
 typedef struct
 {
-	char *component_name;
-	init_dev_descriptor_func_t init_dev_descriptor_func;
+	char *module_name;
+	init_func_t  			init;
+	dev_ioctl_func_t  		ioctl;
+	dev_pwrite_func_t  		pwrite;
+	dev_pread_func_t  		pread;
+	dev_callback_func_t  	callback;
+	uint8_t					module_struct_size;
 }included_module_t;
 
 /**********  define API  functions  ************/
@@ -164,12 +171,11 @@ uint8_t DEV_API_dummy_callback_func( void * const aHandle ,
 		const uint8_t aCallback_num , void * aCallback_param1, void * aCallback_param2)  ;
 size_t DEV_API_dummy_pread_func(const void * const aHandle , uint8_t *apData , size_t aLength, size_t aOffset)  ;
 size_t DEV_API_dummy_pwrite_func(const void * const aHandle ,const uint8_t *apData , size_t aLength, size_t aOffset)  ;
+size_t DEV_API_dummy_init_func(pdev_descriptor_t aDevDescriptor)  ;
 pdev_descriptor_t DEV_API_open_device(const uint8_t *device_name) ;
 pdev_descriptor_t DEV_API_add_device(const uint8_t *device_name_str,init_dev_descriptor_func_t aInitDescFunc);
 
-#if 0
-void DEV_API_auto_start_devices(void);
-#endif
+void DEV_API_init_device_tree(void *start_of_device_tree_addr);
 
 pdev_descriptor_t DevManagment_API_GetAllDevsArray(void);
 

@@ -13,7 +13,6 @@ INCLUDE_DIR = $(AUTO_GENERATED_FILES_DIR)
 #ASMFLAGS =  
 
 SRC = config.c 
-SRC += included_modules.c
 
 
 
