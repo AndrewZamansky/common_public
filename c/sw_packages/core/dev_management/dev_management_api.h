@@ -141,7 +141,6 @@ typedef struct
 
 /**********  define API  functions  ************/
 
-#define DEV_OPEN(dev_name) 						DEV_API_open_device(dev_name)
 
 /*  ioctl functions */
 #define DEV_IOCTL_0_PARAMS(dev,ioctl_num)   			((dev_ioctl_0_params_func_t)(dev)->ioctl)((dev)->handle,ioctl_num)
@@ -172,7 +171,7 @@ uint8_t DEV_API_dummy_callback_func( void * const aHandle ,
 size_t DEV_API_dummy_pread_func(const void * const aHandle , uint8_t *apData , size_t aLength, size_t aOffset)  ;
 size_t DEV_API_dummy_pwrite_func(const void * const aHandle ,const uint8_t *apData , size_t aLength, size_t aOffset)  ;
 size_t DEV_API_dummy_init_func(pdev_descriptor_t aDevDescriptor)  ;
-pdev_descriptor_t DEV_API_open_device(const uint8_t *device_name) ;
+pdev_descriptor_t DEV_OPEN(const char *device_name) ;
 pdev_descriptor_t DEV_API_add_device(const uint8_t *device_name_str,init_dev_descriptor_func_t aInitDescFunc);
 
 void DEV_API_init_device_tree(void *start_of_device_tree_addr);
