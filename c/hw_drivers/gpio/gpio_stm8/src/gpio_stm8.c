@@ -15,6 +15,7 @@
 
 #include "stm8s.h"
 
+#include "uart_stm8_add_component.h"
 
 /***************   defines    *******************/
 
@@ -29,8 +30,6 @@
 
 /***********   local variables    **************/
 #if GPIO_STM8_CONFIG_NUM_OF_DYNAMIC_INSTANCES > 0
-	static GPIO_STM8_Instance_t GPIO_STM8_InstanceParams[UART_STM8_CONFIG_NUM_OF_DYNAMIC_INSTANCES];
-	static uint16_t usedInstances =0 ;
 
 	static GPIO_TypeDef  *ports[]={GPIOA,GPIOB,GPIOC,GPIOD};
 
@@ -133,34 +132,3 @@ uint8_t gpio_stm8_ioctl( void * const aHandle ,const uint8_t aIoctl_num , void *
 	}
 	return 0;
 }
-
-#if UART_STM8_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
-
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        gpio_stm8_api_dev_descriptor                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-uint8_t  gpio_stm8_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor)
-{
-	if(NULL == aDevDescriptor) return 1;
-	if (usedInstances >= GPIO_STM8_MAX_NUM_OF_GPIOS) return 1;
-
-
-	aDevDescriptor->handle = &GPIO_STM8_InstanceParams[usedInstances];
-	aDevDescriptor->ioctl = gpio_stm8_ioctl;
-	usedInstances++;
-
-	return 0 ;
-
-}
-
-#endif
-
-

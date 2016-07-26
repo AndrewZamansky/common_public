@@ -26,6 +26,8 @@
 
 #include "sw_uart_wrapper_api.h"
 
+#include "uart_stm8_add_component.h"
+
 /********  defines *********************/
 
 #define INSTANCE(hndl)	((UART_STM8_Instance_t*)hndl)
@@ -197,33 +199,7 @@ uint8_t uart_stm8_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 	return 0;
 }
 
-#if UART_STM8_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        uart_stm8_api_dev_descriptor                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-uint8_t  uart_stm8_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor)
-{
-	if(NULL == aDevDescriptor) return 1;
-
-
-	aDevDescriptor->handle = &UART_STM8_Instance;
-	aDevDescriptor->ioctl = uart_stm8_ioctl;
-	aDevDescriptor->pwrite = uart_stm8_pwrite;
-
-	return 0 ;
-
-}
-
-#endif
 
 /* COSMIC: Requires putchar() routine to override stdio */
 #if defined(__CSMC__)

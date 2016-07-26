@@ -23,6 +23,7 @@
 //#include "spi.h"
 #include "stm8s_spi.h"
 #include "spi_stm8_api.h"
+#include "spi_stm8_add_component.h"
 
 
 /********  defines *********************/
@@ -40,9 +41,8 @@
 
 
 /********  local defs *********************/
-#if SPI_STM8_CONFIG_NUM_OF_DYNAMIC_INSTANCES > 0
-	SPI_STM8_Instance_t SPI_STM8_Instance;
-#endif
+
+
 
 /*******************************************************************************
 * Function Name  : spi_stm8_SendByte
@@ -153,31 +153,3 @@ uint8_t spi_stm8_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 	}
 	return 0;
 }
-
-#if SPI_STM8_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
-
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        spi_stm8_api_dev_descriptor                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-uint8_t  spi_stm8_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor)
-{
-	if(NULL == aDevDescriptor) return 1;
-
-
-	aDevDescriptor->handle = &SPI_STM8_Instance;
-	aDevDescriptor->ioctl = spi_stm8_ioctl;
-	aDevDescriptor->pwrite = spi_stm8_pwrite;
-	aDevDescriptor->pread = spi_stm8_pread
-	return 0 ;
-
-}
-
-#endif

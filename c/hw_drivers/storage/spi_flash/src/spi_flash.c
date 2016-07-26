@@ -15,6 +15,7 @@
 #include "spi_flash_api.h"
 #include "gpio_api.h"
 #include "spi_flash.h"
+#include "spi_flash_add_component.h"
 
 /********  defines *********************/
 
@@ -35,11 +36,6 @@
 
 
 /***********   local variables    **************/
-#if SPI_FLASH_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
-	static spi_flash_Instance_t SPI_FLASH_InstanceParams = {0} ;
-#endif
-
-
 
 
 /* Private typedef -----------------------------------------------------------*/
@@ -442,32 +438,3 @@ uint8_t spi_flash_ioctl( void * const apHandle ,const uint8_t aIoctl_num
 	}
 	return 0;
 }
-
-#if SPI_FLASH_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
-
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        SPI_FLASH_API_Init_Dev_Descriptor                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-uint8_t  spi_flash_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor)
-{
-	if(NULL == aDevDescriptor) return 1;
-
-
-	aDevDescriptor->handle = &SPI_FLASH_InstanceParams;
-	aDevDescriptor->ioctl = (dev_ioctl_func_t)spi_flash_ioctl;
-	aDevDescriptor->pread = (dev_pread_func_t)spi_flash_pread;
-	aDevDescriptor->pwrite = (dev_pwrite_func_t)spi_flash_pwrite;
-
-	return 0 ;
-
-}
-
-#endif

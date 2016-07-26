@@ -26,8 +26,10 @@ extern size_t sw_uart_wrapper_pwrite(const void *aHandle ,const uint8_t *apData 
 		#error "SW_UART_WRAPPER_DT_CLIENT_PDEV should be defined"
 	#endif
 
-	#ifndef SW_UART_WRAPPER_DT_RX_BUFFER_SIZE
-		#error "SW_UART_WRAPPER_DT_RX_BUFFER_SIZE should be defined"
+	#ifdef CONFIG_SW_UART_WRAPPER_USE_MALLOC
+		#ifndef SW_UART_WRAPPER_DT_RX_BUFFER_SIZE
+			#error "SW_UART_WRAPPER_DT_RX_BUFFER_SIZE should be defined"
+		#endif
 	#endif
 
 	#endif // CONFIG_SW_UART_WRAPPER_ENABLE_RX
@@ -76,5 +78,6 @@ extern size_t sw_uart_wrapper_pwrite(const void *aHandle ,const uint8_t *apData 
 /* device specific defines should be undefined after calling #include "add_static_dev.h" */
 #undef SW_UART_WRAPPER_DT_SERVER_PDEV
 #undef SW_UART_WRAPPER_DT_CLIENT_PDEV
-#undef SW_UART_WRAPPER_DT_RX_BUFFER_SIZE
-
+#ifdef CONFIG_SW_UART_WRAPPER_USE_MALLOC
+	#undef SW_UART_WRAPPER_DT_RX_BUFFER_SIZE
+#endif
