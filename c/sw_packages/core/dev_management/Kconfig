@@ -2,17 +2,23 @@
 	
 menu "devices management options"
 
-config DYNAMIC_DEVICE_TREE
+menuconfig DYNAMIC_DEVICE_TREE
 	bool   "dynamic device tree"
 	default y
 
+config DEVICE_TREE_LOCATION_ADDR
+	int   "device tree location address"
+	depends on DYNAMIC_DEVICE_TREE
+	default 0x40000
+
+config DEVICE_TREE_MAXIMAL_SIZE
+	int   "device tree maximal size"
+	depends on DYNAMIC_DEVICE_TREE
+	default 0x400
 
 config MAX_NUM_OF_DYNAMIC_DEVICES
 	int   "maximal number of dynamic devices"
 	default 32
 
-config MAX_DEV_NAME_LEN
-	int   "maximal device name"
-	default 8
 
 endmenu

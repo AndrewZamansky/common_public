@@ -18,8 +18,8 @@
 #define STRINGIFY(X) STRINGIFY2(X)
 #define STRINGIFY2(X) #X
 
-#define STATIC_DEVICE_INCLUDE_NAME(drv_name)	STATIC_DEVICE_INCLUDE_NAME2(drv_name)
-#define STATIC_DEVICE_INCLUDE_NAME2(drv_name)	drv_name##_add_component.h
+#define STATIC_DEVICE_INCLUDE_NAME(module_name)	STATIC_DEVICE_INCLUDE_NAME2(module_name)
+#define STATIC_DEVICE_INCLUDE_NAME2(module_name)	module_name##_add_component.h
 #define ADD_CURRENT_DEV  		STRINGIFY(STATIC_DEVICE_INCLUDE_NAME(DT_DEV_MODULE))
 
 #define EXTERN_DECLARATION_TO_STATIC_DEVICE_INST(pdev)	EXTERN_DECLARATION_TO_STATIC_DEVICE_INST2(pdev)
@@ -111,8 +111,8 @@ typedef uint8_t (*dev_callback_1_params_func_t)(void * const aHandle , const uin
 
 typedef struct _dev_descriptor_t
 {
-#ifdef CONFIG_USE_DEVICE_TREE
-	char	*drv_name;
+#if defined(CONFIG_DYNAMIC_DEVICE_TREE) || (CONFIG_MAX_NUM_OF_DYNAMIC_DEVICES>0)
+	char	*module_name;
 #endif
 	char 					*name;
 	void*    				handle;
@@ -125,13 +125,10 @@ typedef struct _dev_descriptor_t
 
 typedef const dev_descriptor_t * pdev_descriptor_const;
 
-typedef uint8_t  (*init_func_t)(pdev_descriptor_t aDevDescriptor);
-typedef uint8_t  (*init_dev_descriptor_func_t)(pdev_descriptor_t aDevDescriptor);
 
 typedef struct
 {
 	char *module_name;
-	init_func_t  			init;
 	dev_ioctl_func_t  		ioctl;
 	dev_pwrite_func_t  		pwrite;
 	dev_pread_func_t  		pread;
@@ -172,9 +169,8 @@ size_t DEV_API_dummy_pread_func(const void * const aHandle , uint8_t *apData , s
 size_t DEV_API_dummy_pwrite_func(const void * const aHandle ,const uint8_t *apData , size_t aLength, size_t aOffset)  ;
 size_t DEV_API_dummy_init_func(pdev_descriptor_t aDevDescriptor)  ;
 pdev_descriptor_t DEV_OPEN(const char *device_name) ;
-pdev_descriptor_t DEV_API_add_device(const uint8_t *device_name_str,init_dev_descriptor_func_t aInitDescFunc);
 
-void DEV_API_init_device_tree(void *start_of_device_tree_addr);
+
 
 pdev_descriptor_t DevManagment_API_GetAllDevsArray(void);
 

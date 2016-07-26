@@ -20,7 +20,7 @@
 #include "sw_uart_wrapper_api.h"
 #include "irq_api.h"
 
-#include "app_dev_add_component.h"
+#include "uart_nuc505_add_component.h"
 
 /********  defines *********************/
 

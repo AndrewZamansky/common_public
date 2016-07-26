@@ -1,10 +1,17 @@
+#include "project_config.h"
 
 ENTRY(_secondary_rom_vector_table_startup_entry)
 
 MEMORY {
-	rom	:   ORIGIN = ROM_START_ADDR, 	LENGTH = ROM_SIZE
-	ram  	:   ORIGIN = RAM_START_ADDR ,   	LENGTH =  RAM_SIZE
-    
+#ifdef CONFIG_INTERNAL_FLASH
+	internal_flash	:   ORIGIN = CONFIG_INTERNAL_FLASH_START_ADDR, 	LENGTH = CONFIG_INTERNAL_FLASH_SIZE
+#endif
+#ifdef CONFIG_INTERNAL_SRAM
+	internal_sram  	:   ORIGIN = CONFIG_INTERNAL_SRAM_START_ADDR ,   	LENGTH =  CONFIG_INTERNAL_SRAM_SIZE
+#endif    
+#ifdef CONFIG_DDR
+	ddr  	:   ORIGIN = CONFIG_DDR_START_ADDR ,   	LENGTH =  CONFIG_DDR_SIZE
+#endif    
     /* The following section is for checking illegal sections */
     dummy_area    :   ORIGIN = 0xFFFFFFFFFFFFFFFF,           LENGTH = 0
 }
@@ -24,17 +31,31 @@ MEMORY {
 
 SECTIONS
 {
-	__RAM_START__ = ORIGIN(ram);
-	__ROM_START__ = ORIGIN(rom);
-	
+#ifdef CONFIG_DATA_LOCATION_INTERNAL_SRAM
+	#define DATA_LOCATION internal_sram
+	__RAM_START__ = ORIGIN(internal_sram);
+#endif
+#ifdef CONFIG_DATA_LOCATION_DDR
+	#define DATA_LOCATION ddr
+	__RAM_START__ = ORIGIN(ddr);
+#endif
 
-#ifdef RUN_FROM_ROM
-	#define CODE_LOCATION rom
+#ifdef CONFIG_CODE_LOCATION_INTERNAL_FLASH
+	#define CODE_LOCATION internal_flash
+	__ROM_START__ = ORIGIN(internal_flash);
 	__tables_relocation_section_start_on_ROM__ =  __ROM_START__ ;
-#else
-	#define CODE_LOCATION ram
+#endif
+	
+#ifdef CONFIG_CODE_LOCATION_INTERNAL_SRAM
+	#define CODE_LOCATION internal_sram
 	__tables_relocation_section_start_on_ROM__ = __RAM_START__ ;
 #endif
+
+#ifdef CONFIG_CODE_LOCATION_DDR
+	#define CODE_LOCATION ddr
+	__tables_relocation_section_start_on_ROM__ = __RAM_START__ ;
+#endif
+
 	__tables_relocation_section_start_on_RAM__ = __RAM_START__;
 
 	/* the AT process of first table is not used because it cause problem on nuc-link debugger to rom it : */
@@ -49,11 +70,54 @@ SECTIONS
 	.secondary_ram_vector_table __secondary_RAM_vector_table_start_on_RAM__ : AT ( __secondary_RAM_vector_table_start_on_ROM__ ) 
 	{ 
 	    KEEP(*(._secondary_ram_vector_table))
-	} > ram
+	} > DATA_LOCATION
 
-	__tables_relocation_section_end_on_ROM__ = __secondary_RAM_vector_table_start_on_ROM__ + SECONDARY_RAM_VECTOR_AREA_SIZE ;
-	__tables_relocation_section_end_on_RAM__ = __secondary_RAM_vector_table_start_on_RAM__ + SECONDARY_RAM_VECTOR_AREA_SIZE ;
+	/********************************/
+	/*******  device tree **********/
+	__start_of_device_tree_on_ROM__ = __secondary_RAM_vector_table_start_on_ROM__  + SECONDARY_RAM_VECTOR_AREA_SIZE ;
+	__start_of_device_tree_on_RAM__ =  __secondary_RAM_vector_table_start_on_RAM__ + SECONDARY_RAM_VECTOR_AREA_SIZE ;
 
+#if 0 //TODO : used for creating dynamic device tree file 
+#ifdef CONFIG_DYNAMIC_DEVICE_TREE	
+	__actual_start_of_device_tree_on_ROM__ = CONFIG_DEVICE_TREE_LOCATION_ADDR ;
+#else
+	__actual_start_of_device_tree_on_ROM__ = __start_of_device_tree_on_ROM__ ;
+#endif
+#endif
+	. = __start_of_device_tree_on_RAM__;
+	.start_of_device_tree . : AT ( __start_of_device_tree_on_ROM__ )
+	{
+		KEEP(*(.start_of_device_tree)) ;
+	}  > DATA_LOCATION
+	__static_devs_section_start_on_ROM__ = __start_of_device_tree_on_ROM__ + SIZEOF(.start_of_device_tree);
+	.static_devs . : AT ( __static_devs_section_start_on_ROM__ )
+	{
+		KEEP(*(.static_devs)) ;
+	}  > DATA_LOCATION
+	__end_of_device_tree_on_ROM__ = __static_devs_section_start_on_ROM__ + SIZEOF(.static_devs);
+	.end_of_device_tree . : AT ( __end_of_device_tree_on_ROM__ )
+	{
+		KEEP(*(.end_of_device_tree)) ;
+	}  > DATA_LOCATION
+	__static_devs_data_on_ROM__ = __end_of_device_tree_on_ROM__ + SIZEOF(.end_of_device_tree);
+	.static_devs_data . : AT ( __static_devs_data_on_ROM__)
+	{
+		*(.static_devs_data) ;
+		. = ALIGN(4);
+	}  > DATA_LOCATION
+	__end_of_static_devs_data_on_RAM__ = . ;
+	
+	/******end of device tree **********/
+	/***********************************/
+
+#ifdef CONFIG_DYNAMIC_DEVICE_TREE	
+	__tables_relocation_section_end_on_ROM__ = __start_of_device_tree_on_ROM__ + CONFIG_DEVICE_TREE_MAXIMAL_SIZE ;
+	__tables_relocation_section_end_on_RAM__ = __start_of_device_tree_on_RAM__ + CONFIG_DEVICE_TREE_MAXIMAL_SIZE ;
+#else
+	__tables_relocation_section_end_on_ROM__ = __static_devs_data_on_ROM__ + SIZEOF(.static_devs_data) ;
+	__tables_relocation_section_end_on_RAM__ = . ;
+#endif
+	
 	. = __tables_relocation_section_end_on_ROM__ ;
 
 	.secondary_rom_vector_table . :
@@ -115,7 +179,7 @@ SECTIONS
 	__relocation_section_start_on_ROM__ = __end_of_text__;
 	__critical_text_section_start_on_ROM__ = __relocation_section_start_on_ROM__;
 	
-#ifdef RUN_FROM_ROM
+#ifdef CONFIG_CODE_LOCATION_INTERNAL_FLASH
 	__relocation_section_start_on_RAM__ = __tables_relocation_section_end_on_RAM__ ;
 #else
 	__relocation_section_start_on_RAM__ = __end_of_text__ ;
@@ -127,7 +191,7 @@ SECTIONS
 		* (.text .text*);
 		* (.rodata .rodata*);
 		. = ALIGN(4);
-	}  > ram
+	}  > DATA_LOCATION
 	
 	__data_section_start_on_ROM__ = __critical_text_section_start_on_ROM__ + SIZEOF(.critical_text);
 	.data . : AT ( __data_section_start_on_ROM__ )
@@ -135,30 +199,7 @@ SECTIONS
 		*(.data) ;
 		*(.data.*) ;
 		. = ALIGN(4);
-	}  > ram
-
-	. = ALIGN(4);
-	__start_of_device_tree_on_ROM__ = __data_section_start_on_ROM__ + SIZEOF(.data);
-	.start_of_device_tree . : AT ( __start_of_device_tree_on_ROM__ )
-	{
-		KEEP(*(.start_of_device_tree)) ;
-	}  > ram
-	__static_devs_section_start_on_ROM__ = __start_of_device_tree_on_ROM__ + SIZEOF(.start_of_device_tree);
-	.static_devs . : AT ( __static_devs_section_start_on_ROM__ )
-	{
-		KEEP(*(.static_devs)) ;
-	}  > ram
-	__end_of_device_tree_on_ROM__ = __static_devs_section_start_on_ROM__ + SIZEOF(.static_devs);
-	.end_of_device_tree . : AT ( __end_of_device_tree_on_ROM__ )
-	{
-		KEEP(*(.end_of_device_tree)) ;
-	}  > ram
-	__static_devs_data_on_ROM__ = __end_of_device_tree_on_ROM__ + SIZEOF(.end_of_device_tree);
-	.static_devs_data . : AT ( __static_devs_data_on_ROM__)
-	{
-		*(.static_devs_data) ;
-		. = ALIGN(4);
-	}  > ram
+	}  > DATA_LOCATION
 
 	__relocation_section_end_on_RAM__ = .;
 
@@ -171,7 +212,7 @@ SECTIONS
 		*(.bss*) 	*(COMMON)	
 		. = ALIGN(4);
 		__bss_end__ = .;
-	}  > ram
+	}  > DATA_LOCATION
 	
 	.stack . : {
 		. = ALIGN (8); /*cortex requirement*/
@@ -215,7 +256,7 @@ SECTIONS
 		. = ALIGN (8); /*cortex requirement*/
 		Top_Of_Stacks = .;
 		Size_Of_Stack = Top_Of_Stacks - Buttom_Of_Stacks;
-	} >ram
+	} >DATA_LOCATION
 
 
 	/* debug sections */
@@ -235,7 +276,6 @@ SECTIONS
 
 }
 
-PROVIDE(__STATIC_DEVICES_START_ADDR = __static_devs_section_start_on_ROM__ );
 PROVIDE(__HEAP_START = Top_Of_Stacks );
-PROVIDE(__END_OF_RAM =  ORIGIN(ram) + LENGTH(ram));
-PROVIDE(__HEAP_END =   ORIGIN(ram) + LENGTH(ram));
+PROVIDE(__END_OF_RAM =  ORIGIN(DATA_LOCATION) + LENGTH(DATA_LOCATION));
+PROVIDE(__HEAP_END =   ORIGIN(DATA_LOCATION) + LENGTH(DATA_LOCATION));

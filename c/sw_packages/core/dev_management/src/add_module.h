@@ -3,7 +3,7 @@
 
 #include "dev_management_api.h"
 
-#ifdef CONFIG_DYNAMIC_DEVICE_TREE
+#if defined(CONFIG_DYNAMIC_DEVICE_TREE) || (CONFIG_MAX_NUM_OF_DYNAMIC_DEVICES>0)
 
 #ifndef MODULE_NAME
 	#error "MODULE_NAME should be defined"
@@ -30,18 +30,22 @@
 	#define MODULE_CALLBACK_FUNCTION		DEV_API_dummy_callback_func
 #endif
 
+#ifndef	MODULE_DATA_STRUCT_TYPE
+	#define MODULE_DATA_STRUCT_TYPE			uint8_t
+#endif
+
 #define MODULE_INST2(module)	module_inst_##module
 #define MODULE_INST(module)		MODULE_INST2(module)
 
 
-MODULE_PLACEMENT included_module_t MODULE_INST(MODULE_NAME) =
+MODULES_PLACEMENT included_module_t MODULE_INST(MODULE_NAME) =
 	{
 		STRINGIFY(MODULE_NAME)	,
-		MODULE_INIT_FUNCTION	,
 		MODULE_IOCTL_FUNCTION 	,
 		MODULE_PWRITE_FUNCTION 	,
 		MODULE_PREAD_FUNCTION 	,
-		MODULE_CALLBACK_FUNCTION
+		MODULE_CALLBACK_FUNCTION,
+		sizeof(MODULE_DATA_STRUCT_TYPE)
 	};
 #endif
 

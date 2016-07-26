@@ -7,6 +7,7 @@ uint8_t I2S_nuc505_ioctl( void * const aHandle ,const uint8_t aIoctl_num , void 
 
 #define	MODULE_NAME				I2S_nuc505
 #define	MODULE_IOCTL_FUNCTION	I2S_nuc505_ioctl
+#define MODULE_DATA_STRUCT_TYPE	I2S_NUC505_Instance_t
 
 #ifdef DT_DEV_MODULE
 
@@ -25,7 +26,6 @@ uint8_t I2S_nuc505_ioctl( void * const aHandle ,const uint8_t aIoctl_num , void 
 
 
 	EXTERN_DECLARATION_TO_STATIC_DEVICE_INST(I2S_NUC505_DT_CALLBACK_PDEV) ;
-	#define MODULE_DATA_STRUCT_TYPE	I2S_NUC505_Instance_t
 	#define STATIC_DEV_DATA_STRUCT									\
 		{															\
 			P_TO_STATIC_DEVICE_INST(I2S_NUC505_DT_CALLBACK_PDEV),	\

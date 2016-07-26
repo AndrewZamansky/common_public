@@ -26,10 +26,6 @@
 
 
 
-#ifndef MAX_DEV_NAME_LEN
-	#define MAX_DEV_NAME_LEN			8
-#endif
-
 #ifndef NULL
 	#error  "NULL is not defined in project header files "
 #endif
