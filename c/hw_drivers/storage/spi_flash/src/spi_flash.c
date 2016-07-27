@@ -404,11 +404,6 @@ uint8_t spi_flash_ioctl( void * const apHandle ,const uint8_t aIoctl_num
 
 	switch(aIoctl_num)
 	{
-
-		case IOCTL_GET_PARAMS_ARRAY_FUNC :
-			*(uint8_t*)aIoctl_param2 =   0; //size
-			break;
-
 		case IOCTL_DEVICE_START :
 			/* Deselect the FLASH: Chip Select high */
 			_chip_select_off(apHandle );

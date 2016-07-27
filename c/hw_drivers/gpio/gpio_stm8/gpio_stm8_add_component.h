@@ -34,6 +34,11 @@ uint8_t gpio_stm8_ioctl( void * const aHandle ,const uint8_t aIoctl_num , void *
 
 #endif
 
+#define MODULE_CONFIGURABLE_PARAMS_ARRAY	{	\
+		{IOCTL_GPIO_STM8_SET_PORT_PARAM , IOCTL_VOID , GPIO_STM8_API_PORT_STR, NOT_FOR_SAVE},	\
+		{IOCTL_GPIO_STM8_SET_PIN_PARAM , IOCTL_VOID , GPIO_STM8_API_PIN_STR, NOT_FOR_SAVE},		\
+		{IOCTL_GPIO_STM8_SET_MODE_PARAM , IOCTL_VOID , GPIO_STM8_API_MODE_STR, NOT_FOR_SAVE}	\
+	}
 
 #include "add_component.h"
 

@@ -31,7 +31,7 @@ uint8_t cortexM_systick_ioctl( void * const aHandle ,const uint8_t aIoctl_num , 
 
 #include "add_component.h"
 
-/* device specific defines should be undefined after calling #include "add_static_dev.h" */
+/* device specific defines should be undefined after calling #include "add_component.h" */
 #undef CORTEXM_SYSTICK_DT_INITIAL_RATE
 #undef CORTEXM_SYSTICK_DT_MODE
 #undef CORTEXM_SYSTICK_DT_CALLBACK

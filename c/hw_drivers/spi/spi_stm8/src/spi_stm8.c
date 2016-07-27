@@ -132,10 +132,6 @@ uint8_t spi_stm8_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 {
 	switch(aIoctl_num)
 	{
-		case IOCTL_GET_PARAMS_ARRAY_FUNC :
-			*(uint8_t*)aIoctl_param2 =   0; //size
-			break;
-
 		case IOCTL_DEVICE_START :
 			  SPI_DeInit();
 			  SPI_Init ( SPI_FIRSTBIT_MSB , SPI_BAUDRATEPRESCALER_2 ,

@@ -20,12 +20,4 @@ typedef enum
 }LM35_API_ioctl_t;
 
 
-uint8_t  LM35_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor);
-
-#include "src/LM35_static_dev_macros.h"
-
-#define LM35_API_CREATE_STATIC_DEV(dev,dev_name ,adc_server_dev) \
-			__LM35_API_CREATE_STATIC_DEV(dev,dev_name ,adc_server_dev)
-
-
 #endif

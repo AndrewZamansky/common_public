@@ -43,9 +43,6 @@
 
 
 /********  local defs *********************/
-#if UART_STM8_CONFIG_NUM_OF_DYNAMIC_INSTANCES > 0
-	UART_STM8_Instance_t UART_STM8_Instance;
-#endif
 
 static UART_STM8_Instance_t *pHw_uart_pointer_to_instance=NULL;
 
@@ -166,11 +163,6 @@ uint8_t uart_stm8_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 {
 	switch(aIoctl_num)
 	{
-		case IOCTL_GET_PARAMS_ARRAY_FUNC :
-			*(uint8_t*)aIoctl_param2 =   0; //size
-			break;
-
-
 		case IOCTL_UART_SET_BAUD_RATE :
 			INSTANCE(aHandle)->baud_rate = *(uint32_t*)aIoctl_param1;
 			break;

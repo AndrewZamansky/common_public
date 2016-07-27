@@ -32,16 +32,6 @@ void ADC1_Init_Reduced(ADC1_PresSel_TypeDef ADC1_PrescalerSelection, ADC1_ExtTri
 
 
 /***********   local variables    **************/
-#if ADC_STM8_CONFIG_NUM_OF_DYNAMIC_INSTANCES > 0
-	static ADC_STM8_Instance_t ADC_InstanceParams[ADC_HAL_MAX_NUM_OF_ADCS] = { {0} };
-	static uint16_t usedInstances =0 ;
-#endif
-
-//static const dev_param_t ADC_Dev_Params[]=
-//{
-//		{IOCTL_ADC_SET_CHIP_TYPE , IOCTL_VOID , (uint8_t*)ADC_API_CHIP_TYPE_STR, NOT_FOR_SAVE},
-//};
-
 
 
 /*---------------------------------------------------------------------------------------------------------*/
@@ -93,31 +83,3 @@ uint8_t adc_stm8_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 	}
 	return 0;
 }
-
-#if ADC_STM8_CONFIG_NUM_OF_DYNAMIC_INSTANCES > 0
-
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        adc_stm8_api_init_dev_descriptor                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-uint8_t  adc_stm8_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor)
-{
-	if(NULL == aDevDescriptor) return 1;
-	if (usedInstances >= ADC_HAL_MAX_NUM_OF_ADCS) return 1;
-
-
-	aDevDescriptor->handle = &ADC_InstanceParams[usedInstances ];
-	aDevDescriptor->ioctl = adc_stm8_ioctl;
-	usedInstances++;
-
-	return 0 ;
-
-}
-#endif

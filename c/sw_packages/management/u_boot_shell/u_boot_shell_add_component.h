@@ -34,5 +34,5 @@ extern uint8_t u_boot_shell_callback(void * const aHandle ,
 
 #include "add_component.h"
 
-
+/* device specific defines should be undefined after calling #include "add_component.h" */
 #undef U_BOOT_SHELL_DT_SERVER_PDEV

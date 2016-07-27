@@ -29,20 +29,7 @@
 
 
 /***********   local variables    **************/
-#if GPIO_STM8_CONFIG_NUM_OF_DYNAMIC_INSTANCES > 0
 
-	static GPIO_TypeDef  *ports[]={GPIOA,GPIOB,GPIOC,GPIOD};
-
-
-
-	static const dev_param_t GPIO_STM8_Dev_Params[]=
-	{
-			{IOCTL_GPIO_STM8_SET_PORT_PARAM , IOCTL_VOID , (uint8_t*)GPIO_STM8_API_PORT_STR, NOT_FOR_SAVE},
-			{IOCTL_GPIO_STM8_SET_PIN_PARAM , IOCTL_VOID , (uint8_t*)GPIO_STM8_API_PIN_STR, NOT_FOR_SAVE},
-			{IOCTL_GPIO_STM8_SET_MODE_PARAM , IOCTL_VOID , (uint8_t*)GPIO_STM8_API_MODE_STR, NOT_FOR_SAVE}
-	};
-
-#endif
 
 #define INSTANCE(hndl)	((GPIO_STM8_Instance_t*)hndl)
 
@@ -83,12 +70,6 @@ uint8_t gpio_stm8_ioctl( void * const aHandle ,const uint8_t aIoctl_num , void *
 	switch(aIoctl_num)
 	{
 #if UART_STM8_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
-		case IOCTL_GET_PARAMS_ARRAY_FUNC :
-			*(const dev_param_t**)aIoctl_param1  = GPIO_STM8_Dev_Params;
-			*(uint8_t*)aIoctl_param2 =  sizeof(GPIO_STM8_Dev_Params)/sizeof(dev_param_t); //size
-			break;
-
-
 		case IOCTL_GPIO_STM8_SET_PORT_PARAM :
 			{
 				uint8_t port_num = ((char*)aIoctl_param1)[0]-'a';

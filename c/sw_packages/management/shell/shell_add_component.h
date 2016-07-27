@@ -41,6 +41,7 @@ extern uint8_t shell_callback(void * const aHandle ,
 
 #include "add_component.h"
 
+/* device specific defines should be undefined after calling #include "add_component.h" */
 #undef SHELL_DT_SERVER_PDEV
 #undef SHELL_DT_CALLBACK_PDEV
 

@@ -42,6 +42,7 @@ uint8_t gpio_nuc505_ioctl( void * const aHandle ,const uint8_t aIoctl_num , void
 
 #include "add_component.h"
 
+/* device specific defines should be undefined after calling #include "add_component.h" */
 #undef GPIO_NUC505_DT_PORT
 #undef GPIO_NUC505_DT_PIN
 #undef GPIO_NUC505_DT_MODE

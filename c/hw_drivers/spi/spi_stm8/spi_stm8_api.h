@@ -13,7 +13,4 @@
 
 /**********  define API  functions  ************/
 
-uint8_t  spi_stm8_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor);
-
-
 #endif
