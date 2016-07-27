@@ -28,6 +28,10 @@ extern uint8_t u_boot_shell_callback(void * const aHandle ,
 
 #endif
 
+#define MODULE_CONFIGURABLE_PARAMS_ARRAY	{	\
+		{IOCTL_SET_SERVER_DEVICE_BY_NAME , IOCTL_VOID , U_BOOT_SHELL_API_SERVER_DEVICE_STR, NOT_FOR_SAVE},\
+	}
+
 #include "add_component.h"
 
 

@@ -24,7 +24,6 @@ typedef enum
 
 /**********  define API  functions  ************/
 
-uint8_t  sw_uart_wrapper_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor);
 
 
 #endif

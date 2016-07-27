@@ -72,10 +72,6 @@ uint8_t heartbeat_ioctl( void * const aHandle ,const uint8_t aIoctl_num , void *
 
 	switch(aIoctl_num)
 	{
-		case IOCTL_GET_PARAMS_ARRAY_FUNC :
-			*(uint8_t*)aIoctl_param2 =  0; //size
-			break;
-
 		case IOCTL_DEVICE_START :
 
 			DEV_IOCTL_1_PARAMS(INSTANCE(aHandle)->callibration_timer , IOCTL_TIMER_CALLBACK_SET ,  (void*)heartbeat_timer_callback);

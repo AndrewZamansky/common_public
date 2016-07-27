@@ -16,9 +16,22 @@ config DEVICE_TREE_MAXIMAL_SIZE
 	depends on DYNAMIC_DEVICE_TREE
 	default 0x400
 
+menuconfig USE_DYNAMIC_DEVICES
+	bool   "use dynamic devices"
+	default y
+
 config MAX_NUM_OF_DYNAMIC_DEVICES
 	int   "maximal number of dynamic devices"
+	depends on USE_DYNAMIC_DEVICES
 	default 32
 
+config DEVICE_MANAGEMENT_DUMMY_DELIMITER
+	bool
+	default n
+
+config USE_SHELL_FOR_DEVICE_CONFIGURATION
+	bool   "use shell for device configuration"
+	depends on (DYNAMIC_DEVICE_TREE || USE_DYNAMIC_DEVICES)
+	default n 
 
 endmenu

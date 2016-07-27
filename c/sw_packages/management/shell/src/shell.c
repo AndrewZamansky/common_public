@@ -48,17 +48,8 @@ typedef struct
 
 extern int run_command(const char *cmd, int flag);
 
-/********  local defs *********************/
-#if CONFIG_SHELL_MAX_NUM_OF_DYNAMIC_INSTANCES > 0
 
-
-static const dev_param_t Shell_Dev_Params[]=
-{
-		{IOCTL_SET_SERVER_DEVICE_BY_NAME , IOCTL_VOID , (uint8_t*)SHELL_API_SERVER_DEVICE_STR, NOT_FOR_SAVE},
-};
-
-#endif
-
+/********  local variables *********************/
 static uint8_t task_is_running=0;
 
 static const char erase_seq[] = "\b \b";		/* erase sequence	*/
@@ -338,16 +329,7 @@ uint8_t shell_ioctl( void * const aHandle ,const uint8_t aIoctl_num , void * aIo
 
 	switch(aIoctl_num)
 	{
-		case IOCTL_GET_PARAMS_ARRAY_FUNC :
-#if CONFIG_SHELL_MAX_NUM_OF_DYNAMIC_INSTANCES > 0
-			*(const dev_param_t**)aIoctl_param1  = Shell_Dev_Params;
-			*(uint8_t*)aIoctl_param2 =  sizeof(Shell_Dev_Params)/sizeof(dev_param_t); //size
-#else
-			*(uint8_t*)aIoctl_param2 =  0; //size
-#endif
-			break;
-
-#if CONFIG_SHELL_MAX_NUM_OF_DYNAMIC_INSTANCES > 0
+#ifdef CONFIG_SHELL_USE_RUNTIME_CONFIGURATION
 		case IOCTL_SET_SERVER_DEVICE_BY_NAME :
 			{
 				server_dev = DEV_OPEN((uint8_t*)aIoctl_param1);

@@ -9,10 +9,6 @@
 
 /**********  define API  types ************/
 
-extern pdev_descriptor_t ver_dev;
-
-
-uint8_t  version_management_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor);
 
 
 #endif

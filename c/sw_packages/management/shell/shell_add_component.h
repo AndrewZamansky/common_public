@@ -35,6 +35,10 @@ extern uint8_t shell_callback(void * const aHandle ,
 
 #endif
 
+#define MODULE_CONFIGURABLE_PARAMS_ARRAY	{	\
+		{IOCTL_SET_SERVER_DEVICE_BY_NAME , IOCTL_VOID , SHELL_API_SERVER_DEVICE_STR, NOT_FOR_SAVE},\
+	}
+
 #include "add_component.h"
 
 #undef SHELL_DT_SERVER_PDEV

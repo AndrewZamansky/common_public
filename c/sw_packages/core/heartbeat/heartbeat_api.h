@@ -26,7 +26,6 @@ typedef enum
 }HEARTBEAT_API_callback_t;
 
 /**********  define API  functions  ************/
-uint8_t  heartbeat_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor);
 
 
 #endif

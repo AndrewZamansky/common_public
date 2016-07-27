@@ -140,7 +140,7 @@ void _compressor_buffered_2in_2out(const void * const aHandle ,size_t data_len ,
 		float reverse_ratio ;
 		float *look_ahead_length_buffer_Ch1 = INSTANCE(aHandle)->look_ahead_length_buffer_Ch1;
 		float *look_ahead_length_buffer_Ch2 = INSTANCE(aHandle)->look_ahead_length_buffer_Ch2;
-		float release ;
+		//float release ;
 		static float release_ratio_change_per_chunk = 0;
 		uint32_t hit_counter;
 		uint32_t chunk_size ;
@@ -156,7 +156,7 @@ void _compressor_buffered_2in_2out(const void * const aHandle ,size_t data_len ,
 		prev_ratio = INSTANCE(aHandle)->prev_ratio ;
 		usePreviousRatio = INSTANCE(aHandle)->usePreviousRatio ;
 		chunk_size =  INSTANCE(aHandle)->look_ahead_length ;
-		release = INSTANCE(aHandle)->release;
+		//release = INSTANCE(aHandle)->release;
 		prev_calculated_ratio = INSTANCE(aHandle)->prev_calculated_ratio;
 		hit_counter = INSTANCE(aHandle)->hit_counter;
 

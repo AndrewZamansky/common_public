@@ -3,6 +3,10 @@ config SYS_MAXARGS
 	int   "maximal number of arguments"
 	default 8
 
+config  UBOOT_SHELL_USE_RUNTIME_CONFIGURATION
+	bool   "use runtime configuration for u-boot shell"
+	default n
+
 menu "common uboot shell commands"
 
 config UBOOT_CMD_GET_VERSION

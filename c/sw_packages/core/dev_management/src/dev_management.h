@@ -15,8 +15,6 @@
 
 /***************   typedefs    *******************/
 
-extern uint8_t get_dev_ioctl(char *dev_name_str, pdev_descriptor_t *dev_descriptor,
-		uint8_t *dev_param_str, const dev_param_t **pIoctlParam);
 
 
 #endif /* */

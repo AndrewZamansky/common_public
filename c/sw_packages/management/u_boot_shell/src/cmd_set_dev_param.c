@@ -67,6 +67,8 @@ int do_set_dev_param (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		return 0;
 	}
 
+#if 0 // TODO
+
 	retVal= get_dev_ioctl((uint8_t*)argv[1] , &dev_descriptor ,(uint8_t*)argv[2] ,  &pIoctlParam);
 
 	if(1 == retVal )
@@ -82,6 +84,7 @@ int do_set_dev_param (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		DEV_IOCTL(dev_descriptor, pIoctlParam->paramSetIoctl , (4 > argc) ? 0: argv[3]);
 		SHELL_REPLY_STR("Done");
 	}
+#endif
 	return 0;
 }
 

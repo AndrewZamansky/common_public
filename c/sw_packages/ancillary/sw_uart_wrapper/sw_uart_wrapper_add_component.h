@@ -73,9 +73,15 @@ extern size_t sw_uart_wrapper_pwrite(const void *aHandle ,const uint8_t *apData 
 
 #endif
 
+
+#define MODULE_CONFIGURABLE_PARAMS_ARRAY	{	\
+				{IOCTL_SW_UART_WRAPPER_SET_BUFF_SIZE, IOCTL_VOID , SW_UART_WRAPPER_API_RX_BUFF_SIZE_STR , NOT_FOR_SAVE},\
+				{IOCTL_SET_SERVER_DEVICE_BY_NAME 	, IOCTL_VOID , SW_UART_WRAPPER_API_SERVER_DEVICE_STR, NOT_FOR_SAVE},\
+		}
+
 #include "add_component.h"
 
-/* device specific defines should be undefined after calling #include "add_static_dev.h" */
+/* device specific defines should be undefined after calling #include "add_component.h" */
 #undef SW_UART_WRAPPER_DT_SERVER_PDEV
 #undef SW_UART_WRAPPER_DT_CLIENT_PDEV
 #ifdef CONFIG_SW_UART_WRAPPER_USE_MALLOC

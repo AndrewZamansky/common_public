@@ -15,7 +15,6 @@
 
 
 /**********  define API  functions  ************/
-uint8_t  u_boot_shell_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor);
 
 
 #endif

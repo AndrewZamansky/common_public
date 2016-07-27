@@ -17,7 +17,6 @@
 
 
 /**********  define API  functions  ************/
-uint8_t  shell_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor);
 
 
 #else

@@ -150,11 +150,6 @@ uint8_t uart_nuc505_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 {
 	switch(aIoctl_num)
 	{
-		case IOCTL_GET_PARAMS_ARRAY_FUNC :
-			*(uint8_t*)aIoctl_param2 =   0; //size
-			break;
-
-
 		case IOCTL_UART_SET_BAUD_RATE :
 			INSTANCE(aHandle)->baud_rate = *(uint32_t*)aIoctl_param1;
 			break;

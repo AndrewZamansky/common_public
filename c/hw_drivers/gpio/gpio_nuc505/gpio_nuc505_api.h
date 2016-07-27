@@ -44,10 +44,4 @@ typedef enum
 
 /**********  define API  functions  ************/
 
-
-
-
-uint8_t  gpio_NUC505_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor);
-
-
 #endif

@@ -294,10 +294,6 @@ uint8_t I2S_nuc505_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 
 	switch(aIoctl_num)
 	{
-		case IOCTL_GET_PARAMS_ARRAY_FUNC :
-			*(uint8_t*)aIoctl_param2 =   0; //size
-			break;
-
 		case I2S_SET_PARAMS :
 			num_of_words_in_buffer_per_chenel = ((I2S_API_set_params_t*)aIoctl_param1)->num_of_words_in_buffer_per_chenel;
 			num_of_bytes_in_word = ((I2S_API_set_params_t*)aIoctl_param1)->num_of_bytes_in_word;

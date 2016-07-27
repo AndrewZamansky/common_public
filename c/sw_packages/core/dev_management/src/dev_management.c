@@ -244,15 +244,15 @@ pdev_descriptor_t DEV_API_add_device(const char* module_name_str , const char *d
 #endif
 
 
-#ifdef CONFIG_USE_SHELL
+#ifdef CONFIG_USE_SHELL_FOR_DEVICE_CONFIGURATION
 /*
  * function : get_dev_ioctl()
  *
  *
  */
-uint8_t get_dev_ioctl(char *dev_name_str, pdev_descriptor_t *dev_descriptor,
-		uint8_t *dev_param_str, const dev_param_t ** pIoctlParam)
+uint8_t DEV_SET_PARAM(char *dev_name_str , char *param_name_str , char *param_val_str)
 {
+#if 0 // TODO
 	const dev_param_t *dev_Params;
 	uint8_t dev_Num_Of_Params;
 
@@ -277,6 +277,7 @@ uint8_t get_dev_ioctl(char *dev_name_str, pdev_descriptor_t *dev_descriptor,
 		return 1;
 	}
 	return 2;
+#endif
 }
 #endif
 

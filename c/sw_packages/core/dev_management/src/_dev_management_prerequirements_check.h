@@ -20,11 +20,6 @@
 
 
 
-#ifndef CONFIG_MAX_NUM_OF_DYNAMIC_DEVICES
-	#define CONFIG_MAX_NUM_OF_DYNAMIC_DEVICES 	16
-#endif
-
-
 
 #ifndef NULL
 	#error  "NULL is not defined in project header files "

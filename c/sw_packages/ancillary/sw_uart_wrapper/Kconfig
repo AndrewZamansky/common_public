@@ -6,7 +6,7 @@ config  SW_UART_WRAPPER_MAX_QUEUE_LEN
 
 config  SW_UART_WRAPPER_USE_MALLOC
 	bool   "use malloc"
-	default 1
+	default y
 
 config  SW_UART_WRAPPER_MAX_TX_BUFFER_SIZE
 	int   "tx buffer size"
@@ -15,10 +15,13 @@ config  SW_UART_WRAPPER_MAX_TX_BUFFER_SIZE
 	
 config  SW_UART_WRAPPER_ENABLE_RX
 	bool   "rx enable"
-	default 1
+	default y
 	
 config  SW_UART_WRAPPER_RX_BUFFER_SIZE
 	int   "rx buffer size"
 	depends on SW_UART_WRAPPER_ENABLE_RX && !SW_UART_WRAPPER_USE_MALLOC
 	default 32
 	
+config  SW_UART_WRAPPER_USE_RUNTIME_CONFIGURATION
+	bool   "use runtime configuration for uart wrapper"
+	default n

@@ -33,6 +33,7 @@
 #define portNVIC_SYSTICK_CURRENT_VALUE_REG	( * ( ( volatile uint32_t * ) 0xe000e018 ) )
 
 
+#define INSTANCE(hndl)	((CORTEXM_SYSTICK_Instance_t*)hndl)
 
 /***************   typedefs    *******************/
 
@@ -41,18 +42,6 @@
 
 
 /***********   local variables    **************/
-#if I2S_NUC505_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
-
-static const dev_param_t CORTEXM_SYSTICK_Dev_Params[]=
-{
-		{IOCTL_CORTEXM_SYSTICK_SET_PORT_PARAM , IOCTL_VOID , (uint8_t*)CORTEXM_SYSTICK_API_PORT_STR, NOT_FOR_SAVE},
-		{IOCTL_CORTEXM_SYSTICK_SET_PIN_PARAM , IOCTL_VOID , (uint8_t*)CORTEXM_SYSTICK_API_PIN_STR, NOT_FOR_SAVE},
-		{IOCTL_CORTEXM_SYSTICK_SET_MODE_PARAM , IOCTL_VOID , (uint8_t*)CORTEXM_SYSTICK_API_MODE_STR, NOT_FOR_SAVE},
-};
-
-#endif
-
-#define INSTANCE(hndl)	((CORTEXM_SYSTICK_Instance_t*)hndl)
 
 static CORTEXM_SYSTICK_Instance_t *pCORTEXM_SYSTICK_InstanceParams;
 
@@ -91,13 +80,6 @@ uint8_t cortexM_systick_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 
 	switch(aIoctl_num)
 	{
-#if I2S_NUC505_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
-		case IOCTL_GET_PARAMS_ARRAY_FUNC :
-			*(const dev_param_t**)aIoctl_param1  = CORTEXM_SYSTICK_Dev_Params;
-			*(uint8_t*)aIoctl_param2 =  sizeof(CORTEXM_SYSTICK_Dev_Params)/sizeof(dev_param_t); //size
-			break;
-
-#endif
 		case IOCTL_TIMER_RATE_HZ_SET :
 			{
 				INSTANCE(aHandle)->rate = ((uint32_t)aIoctl_param1);

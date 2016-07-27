@@ -21,6 +21,8 @@
 
 
 /********  defines *********************/
+#define 	TRANSMIT_IN_PROGRESS	0
+#define 	TRANSMIT_DONE			1
 
 
 /********  types  *********************/
@@ -51,18 +53,7 @@ typedef void  (*delay_func_t)(uint32_t mSec);
 
 
 /***********   local variables    **************/
-#if CONFIG_SW_UART_WRAPPER_MAX_NUM_OF_DYNAMIC_INSTANCES>0
 
-	static const dev_param_t SW_UART_WRAPPER_Dev_Params[]=
-	{
-			{IOCTL_SW_UART_WRAPPER_SET_BUFF_SIZE , IOCTL_VOID , (uint8_t*)SW_UART_WRAPPER_API_RX_BUFF_SIZE_STR, NOT_FOR_SAVE},
-			{IOCTL_SET_SERVER_DEVICE_BY_NAME , IOCTL_VOID , (uint8_t*)SW_UART_WRAPPER_API_SERVER_DEVICE_STR, NOT_FOR_SAVE},
-	};
-
-#endif // for CONFIG_SW_UART_WRAPPER_MAX_NUM_OF_DYNAMIC_INSTANCES>0
-
-#define 	TRANSMIT_IN_PROGRESS	0
-#define 	TRANSMIT_DONE			1
 static uint8_t dummy_msg;
 /*---------------------------------------------------------------------------------------------------------*/
 /* Function:        SW_UART_WRAPPER_TX_Done                                                                          */
@@ -384,11 +375,7 @@ uint8_t sw_uart_wrapper_ioctl(void * const aHandle ,const uint8_t aIoctl_num , v
 
 	switch(aIoctl_num)
 	{
-#if CONFIG_SW_UART_WRAPPER_MAX_NUM_OF_DYNAMIC_INSTANCES > 0
-		case IOCTL_GET_PARAMS_ARRAY_FUNC :
-			*(const dev_param_t**)aIoctl_param1  = SW_UART_WRAPPER_Dev_Params;
-			*(uint8_t*)aIoctl_param2 = sizeof(SW_UART_WRAPPER_Dev_Params)/sizeof(dev_param_t); //size
-			break;
+#ifdef CONFIG_SW_UART_WRAPPER_USE_RUNTIME_CONFIGURATION
 		case IOCTL_SET_SERVER_DEVICE_BY_NAME :
 			server_dev = DEV_OPEN((uint8_t*)aIoctl_param1);
 			INSTANCE(aHandle)->server_dev = server_dev;

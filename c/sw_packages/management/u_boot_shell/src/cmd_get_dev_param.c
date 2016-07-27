@@ -46,7 +46,6 @@
 
 #include <u-boot/include/command.h>
 #include "shell_api.h"
-#include "dev_management.h"
 
 #define MAX_RET_BUFF_SIZE 31
 
@@ -67,6 +66,9 @@ int do_get_dev_param (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	const dev_param_t *pIoctlParam;
 	uint8_t ret_buff[MAX_RET_BUFF_SIZE+1];
 
+#if 0 // TODO
+	uint8_t DEV_SET_PARAM(char *dev_name_str , char *param_name_str , char *param_val_str)
+
 	retVal= get_dev_ioctl((uint8_t*)argv[1] , &dev_descriptor ,(uint8_t*)argv[2] , &pIoctlParam);
 
 	if(1 == retVal )
@@ -84,6 +86,7 @@ int do_get_dev_param (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		ret_buff[MAX_RET_BUFF_SIZE] = 0;
 		SHELL_REPLY_STR(ret_buff);
 	}
+#endif
 	return 0;
 }
 

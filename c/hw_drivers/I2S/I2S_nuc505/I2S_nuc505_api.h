@@ -25,8 +25,4 @@ typedef struct
 
 /**********  define API  functions  ************/
 
-uint8_t  I2S_nuc505_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor);
-
-
-
 #endif

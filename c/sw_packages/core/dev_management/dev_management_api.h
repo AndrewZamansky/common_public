@@ -36,7 +36,7 @@ typedef struct
 {
 	uint8_t paramSetIoctl;
 	uint8_t paramGetIoctl;
-	uint8_t *paramStr;
+	char *paramStr;
 	uint8_t usedForSave;
 }dev_param_t;
 
@@ -78,7 +78,6 @@ typedef enum
 typedef enum
 {
 	IOCTL_VOID ,
-	IOCTL_GET_PARAMS_ARRAY_FUNC,
 	IOCTL_SET_SERVER_DEVICE,
 	IOCTL_SET_SERVER_DEVICE_BY_NAME,
 	IOCTL_SET_CALLBACK_DEV,
@@ -133,6 +132,9 @@ typedef struct
 	dev_pwrite_func_t  		pwrite;
 	dev_pread_func_t  		pread;
 	dev_callback_func_t  	callback;
+#ifdef CONFIG_USE_SHELL_FOR_DEVICE_CONFIGURATION
+	dev_param_t  			*config_params_arr;
+#endif
 	uint8_t					module_struct_size;
 }included_module_t;
 
@@ -169,6 +171,7 @@ size_t DEV_API_dummy_pread_func(const void * const aHandle , uint8_t *apData , s
 size_t DEV_API_dummy_pwrite_func(const void * const aHandle ,const uint8_t *apData , size_t aLength, size_t aOffset)  ;
 size_t DEV_API_dummy_init_func(pdev_descriptor_t aDevDescriptor)  ;
 pdev_descriptor_t DEV_OPEN(const char *device_name) ;
+uint8_t DEV_SET_PARAM(char *dev_name_str , char *param_name_str , char *param_val_str);
 
 
 

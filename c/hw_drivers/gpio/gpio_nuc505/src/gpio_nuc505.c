@@ -32,15 +32,8 @@
 static void  *ports[]={PA,PB,PC,PD};
 //static void  *ports[]={NULL,NULL,NULL,NULL};
 
-static const dev_param_t GPIO_NUC505_Dev_Params[]=
-{
-		{IOCTL_GPIO_NUC505_SET_PORT_PARAM , IOCTL_VOID , (uint8_t*)GPIO_NUC505_API_PORT_STR, NOT_FOR_SAVE},
-		{IOCTL_GPIO_NUC505_SET_PIN_PARAM , IOCTL_VOID , (uint8_t*)GPIO_NUC505_API_PIN_STR, NOT_FOR_SAVE},
-		{IOCTL_GPIO_NUC505_SET_MODE_PARAM , IOCTL_VOID , (uint8_t*)GPIO_NUC505_API_MODE_STR, NOT_FOR_SAVE},
-};
 
 #define INSTANCE(hndl)	((GPIO_NUC505_Instance_t*)hndl)
-
 
 
 /*
@@ -81,11 +74,6 @@ uint8_t gpio_nuc505_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 
 	switch(aIoctl_num)
 	{
-		case IOCTL_GET_PARAMS_ARRAY_FUNC :
-			*(const dev_param_t**)aIoctl_param1  = GPIO_NUC505_Dev_Params;
-			*(uint8_t*)aIoctl_param2 =  sizeof(GPIO_NUC505_Dev_Params)/sizeof(dev_param_t); //size
-			break;
-
 		case IOCTL_GPIO_NUC505_SET_PORT_PARAM :
 			{
 				INSTANCE(aHandle)->port_num = ports[((char*)aIoctl_param1)[0]-'a'];

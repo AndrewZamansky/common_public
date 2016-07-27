@@ -31,19 +31,11 @@
 
 
 
-/********  local defs *********************/
-
-
-
-#if TIMER_CONFIG_USE_AS_DYNAMIC_INSTANCE > 0
-	timer_instance_t timer_instance;
-#endif
-
-
+/********  local variables *********************/
 
 
 /*---------------------------------------------------------------------------------------------------------*/
-/* Function:        HTTP_ioctl                                                                          */
+/* Function:        timer_ioctl                                                                          */
 /*                                                                                                         */
 /* Parameters:                                                                                             */
 /*                                                                                         */
@@ -58,19 +50,9 @@ uint8_t timer_ioctl( void * const aHandle ,const uint8_t aIoctl_num , void * aIo
 	uint64_t curr_timer_val;
 	switch(aIoctl_num)
 	{
-		case IOCTL_GET_PARAMS_ARRAY_FUNC :
-			*(uint8_t*)aIoctl_param2 =  0; //size
-			break;
-
-		case IOCTL_DEVICE_START :
-
-			break;
-
-#if TIMER_CONFIG_USE_AS_DYNAMIC_INSTANCE > 0
-		case TIMER_API_SET_CALLBACK_FUNC_IOCTL :
+		case IOCTL_SET_CALLBACK_DEV :
 			INSTANCE(aHandle)->hw_timer =  (pdev_descriptor_const)aIoctl_param1;
 			break;
-#endif
 
 		case TIMER_API_SET_COUNTDOWN_VALUE_AND_REST :
 			DEV_IOCTL(INSTANCE(aHandle)->hw_timer,
@@ -98,30 +80,3 @@ uint8_t timer_ioctl( void * const aHandle ,const uint8_t aIoctl_num , void * aIo
 	}
 	return 0;
 }
-
-#if TIMER_CONFIG_USE_AS_DYNAMIC_INSTANCE > 0
-
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        timer_API_Init_Dev_Descriptor                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-uint8_t  timer_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor)
-{
-
-	if(NULL == aDevDescriptor) return 1;
-
-
-	aDevDescriptor->ioctl = timer_ioctl;
-
-	return 0;
-}
-
-#endif
-

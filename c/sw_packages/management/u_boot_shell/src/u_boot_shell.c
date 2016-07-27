@@ -41,18 +41,6 @@ pdev_descriptor_const gCurrReplyDev;
 extern int run_command(const char *cmd, int flag);
 
 /********  local defs *********************/
-#if CONFIG_U_BOOT_SHELL_MAX_NUM_OF_DYNAMIC_INSTANCES > 0
-
-
-static const dev_param_t u_boot_shell_Dev_Params[]=
-{
-		{IOCTL_SET_SERVER_DEVICE_BY_NAME , IOCTL_VOID , (uint8_t*)U_BOOT_SHELL_API_SERVER_DEVICE_STR, NOT_FOR_SAVE},
-};
-
-
-#endif
-
-
 
 char console_buffer[1];
 
@@ -124,16 +112,7 @@ uint8_t u_boot_shell_ioctl( void * const aHandle ,const uint8_t aIoctl_num , voi
 
 	switch(aIoctl_num)
 	{
-		case IOCTL_GET_PARAMS_ARRAY_FUNC :
-#if CONFIG_U_BOOT_SHELL_MAX_NUM_OF_DYNAMIC_INSTANCES > 0
-			*(const dev_param_t**)aIoctl_param1  = u_boot_shell_Dev_Params;
-			*(uint8_t*)aIoctl_param2 =  sizeof(u_boot_shell_Dev_Params)/sizeof(dev_param_t); //size
-#else
-			*(uint8_t*)aIoctl_param2 =  0; //size
-#endif
-			break;
-
-#if CONFIG_U_BOOT_SHELL_MAX_NUM_OF_DYNAMIC_INSTANCES > 0
+#ifdef CONFIG_UBOOT_SHELL_USE_RUNTIME_CONFIGURATION
 		case IOCTL_SET_SERVER_DEVICE_BY_NAME :
 			{
 				server_dev = DEV_OPEN((uint8_t*)aIoctl_param1);
