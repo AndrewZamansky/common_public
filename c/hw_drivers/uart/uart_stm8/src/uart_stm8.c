@@ -30,7 +30,6 @@
 
 /********  defines *********************/
 
-#define INSTANCE(hndl)	((UART_STM8_Instance_t*)hndl)
 
 /********  types  *********************/
 
@@ -161,16 +160,19 @@ void rx_function(void)
 uint8_t uart_stm8_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
+	UART_STM8_Instance_t *handle;
+
+	handle = apdev->handle;
 	switch(aIoctl_num)
 	{
 		case IOCTL_UART_SET_BAUD_RATE :
-			INSTANCE(aHandle)->baud_rate = *(uint32_t*)aIoctl_param1;
+			handle->baud_rate = *(uint32_t*)aIoctl_param1;
 			break;
 		case IOCTL_DEVICE_START :
 			  UART1_DeInit();
-			  UART1_Init (INSTANCE(aHandle)->baud_rate, UART1_WORDLENGTH_8D, UART1_STOPBITS_1, UART1_PARITY_NO,
+			  UART1_Init (handle->baud_rate, UART1_WORDLENGTH_8D, UART1_STOPBITS_1, UART1_PARITY_NO,
 			              UART1_SYNCMODE_CLOCK_DISABLE, UART1_MODE_TXRX_ENABLE);
-			  pHw_uart_pointer_to_instance = INSTANCE(aHandle);
+			  pHw_uart_pointer_to_instance = handle;
 			  GPIO_Init(GPIOD,GPIO_PIN_6,GPIO_MODE_IN_PU_NO_IT);
 			  UART1_ITConfig( UART1_IT_RXNE, ENABLE );
 			break;

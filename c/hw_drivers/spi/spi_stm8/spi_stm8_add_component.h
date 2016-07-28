@@ -4,8 +4,8 @@
 #include 	"src/spi_stm8.h"
 
 uint8_t spi_stm8_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2);
-size_t spi_stm8_pwrite(const void *aHandle ,const uint8_t *apData , size_t aLength, size_t aOffset);
-size_t spi_stm8_pread(const void *aHandle ,uint8_t *apData , size_t aLength, size_t aOffset);
+size_t spi_stm8_pwrite(pdev_descriptor_t apdev ,const uint8_t *apData , size_t aLength, size_t aOffset);
+size_t spi_stm8_pread(pdev_descriptor_t apdev ,uint8_t *apData , size_t aLength, size_t aOffset);
 
 #define	MODULE_NAME					spi_stm8
 #define	MODULE_IOCTL_FUNCTION		spi_stm8_ioctl
