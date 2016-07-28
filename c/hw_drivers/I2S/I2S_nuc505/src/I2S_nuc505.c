@@ -22,7 +22,6 @@
 #include "I2S_nuc505_add_component.h"
 
 /********  defines *********************/
-#define INSTANCE(hndl)	((I2S_NUC505_Instance_t*)hndl)
 
 
 /********  types  *********************/
@@ -287,10 +286,13 @@ void __attribute__((section(".critical_text"))) I2S_IRQHandler(void)
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t I2S_nuc505_ioctl( void * const aHandle ,const uint8_t aIoctl_num
+uint8_t I2S_nuc505_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
+	I2S_NUC505_Instance_t *handle;
 	float tmp;
+
+	handle = apdev->handle;
 
 	switch(aIoctl_num)
 	{
@@ -301,11 +303,11 @@ uint8_t I2S_nuc505_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 
 		case IOCTL_DEVICE_START :
 
-			num_of_words_in_buffer_per_chenel = INSTANCE(aHandle)->num_of_words_in_buffer_per_chenel;
-			num_of_bytes_in_word = INSTANCE(aHandle)->num_of_bytes_in_word;
+			num_of_words_in_buffer_per_chenel = handle->num_of_words_in_buffer_per_chenel;
+			num_of_bytes_in_word = handle->num_of_bytes_in_word;
 			if(0 == num_of_words_in_buffer_per_chenel) return 2;
 
-			pI2SHandle =(I2S_NUC505_Instance_t*) aHandle;
+			pI2SHandle = handle;
 
 			I2S_Init();
 
@@ -320,7 +322,7 @@ uint8_t I2S_nuc505_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 			break;
 
 		case I2S_ENABLE_OUTPUT_IOCTL:
-			INSTANCE(aHandle)->start_flag = 1;
+			handle->start_flag = 1;
 
 			break;
 

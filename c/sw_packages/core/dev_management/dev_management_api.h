@@ -91,24 +91,26 @@ typedef enum
 	IOCTL_LAST_COMMON_IOCTL
 }common_ioctl_t;
 
+typedef struct _dev_descriptor_t	dev_descriptor_t;
+typedef dev_descriptor_t * pdev_descriptor_t;
 
-typedef uint8_t (*dev_ioctl_func_t)(void * const aHandle ,
+typedef uint8_t (*dev_ioctl_func_t)(const pdev_descriptor_t apdev ,
 		const uint8_t aIoctl_num , void * aIoctl_param1 ,  void * aIoctl_param2)  ;
-typedef uint8_t (*dev_ioctl_0_params_func_t)(void * const aHandle ,const uint8_t aIoctl_num )  ;
-typedef uint8_t (*dev_ioctl_1_params_func_t)(void * const aHandle ,const uint8_t aIoctl_num , void *param1)  ;
-typedef size_t (*dev_pwrite_func_t)(const void * const aHandle ,const uint8_t *apData , size_t aLength, size_t aOffset)  ;
-typedef uint32_t (*dev_pwrite32_func_t)(const void * const aHandle ,const uint8_t *apData , uint32_t aLength, uint32_t aOffset)  ;
-typedef size_t (*dev_write_func_t)(const void * const aHandle ,const uint8_t *apData , size_t aLength)  ;
-typedef size_t (*dev_pread_func_t)(const void *const aHandle , uint8_t *apData , size_t aLength, size_t aOffset)  ;
-typedef uint32_t (*dev_pread32_func_t)(const void *const aHandle , uint8_t *apData , uint32_t aLength, uint32_t aOffset)  ;
-typedef size_t (*dev_read_func_t)(const void *const aHandle , uint8_t *apData , size_t aLength)  ;
-typedef uint8_t (*dev_callback_func_t)(void * const aHandle ,
+typedef uint8_t (*dev_ioctl_0_params_func_t)(const pdev_descriptor_t apdev ,const uint8_t aIoctl_num )  ;
+typedef uint8_t (*dev_ioctl_1_params_func_t)(const pdev_descriptor_t apdev ,const uint8_t aIoctl_num , void *param1)  ;
+typedef size_t (*dev_pwrite_func_t)(const pdev_descriptor_t apdev ,const uint8_t *apData , size_t aLength, size_t aOffset)  ;
+typedef uint32_t (*dev_pwrite32_func_t)(const pdev_descriptor_t apdev ,const uint8_t *apData , uint32_t aLength, uint32_t aOffset)  ;
+typedef size_t (*dev_write_func_t)(const pdev_descriptor_t apdev ,const uint8_t *apData , size_t aLength)  ;
+typedef size_t (*dev_pread_func_t)(const pdev_descriptor_t apdev , uint8_t *apData , size_t aLength, size_t aOffset)  ;
+typedef uint32_t (*dev_pread32_func_t)(const pdev_descriptor_t apdev , uint8_t *apData , uint32_t aLength, uint32_t aOffset)  ;
+typedef size_t (*dev_read_func_t)(const pdev_descriptor_t apdev , uint8_t *apData , size_t aLength)  ;
+typedef uint8_t (*dev_callback_func_t)(const pdev_descriptor_t apdev ,
 		const uint8_t aCallback_num , void * aCallback_param1, void * aCallback_param2)  ;
-typedef uint8_t (*dev_callback_0_params_func_t)(void * const aHandle , const uint8_t aCallback_num)  ;
-typedef uint8_t (*dev_callback_1_params_func_t)(void * const aHandle , const uint8_t aCallback_num, void * aCallback_param1)  ;
+typedef uint8_t (*dev_callback_0_params_func_t)(pdev_descriptor_t apdev , const uint8_t aCallback_num)  ;
+typedef uint8_t (*dev_callback_1_params_func_t)(pdev_descriptor_t apdev , const uint8_t aCallback_num, void * aCallback_param1)  ;
 
 
-typedef struct _dev_descriptor_t
+struct _dev_descriptor_t
 {
 #if defined(CONFIG_DYNAMIC_DEVICE_TREE) || (CONFIG_MAX_NUM_OF_DYNAMIC_DEVICES>0)
 	char	*module_name;
@@ -120,7 +122,7 @@ typedef struct _dev_descriptor_t
 	dev_pread_func_t  		pread;
 	dev_callback_func_t  	callback;
 
-}dev_descriptor_t,*pdev_descriptor_t;
+};
 
 typedef const dev_descriptor_t * pdev_descriptor_const;
 
@@ -142,33 +144,33 @@ typedef struct
 
 
 /*  ioctl functions */
-#define DEV_IOCTL_0_PARAMS(dev,ioctl_num)   			((dev_ioctl_0_params_func_t)(dev)->ioctl)((dev)->handle,ioctl_num)
-#define DEV_IOCTL_1_PARAMS(dev,ioctl_num,ioctl_param)   ((dev_ioctl_1_params_func_t)(dev)->ioctl)((dev)->handle,ioctl_num,ioctl_param)
+#define DEV_IOCTL_0_PARAMS(dev,ioctl_num)   			((dev_ioctl_0_params_func_t)(dev)->ioctl)(dev ,ioctl_num)
+#define DEV_IOCTL_1_PARAMS(dev,ioctl_num,ioctl_param)   ((dev_ioctl_1_params_func_t)(dev)->ioctl)(dev ,ioctl_num,ioctl_param)
 #define DEV_IOCTL		DEV_IOCTL_1_PARAMS
-#define DEV_IOCTL_2_PARAMS(dev,ioctl_num,ioctl_param1,ioctl_param2)    (dev)->ioctl((dev)->handle,ioctl_num,ioctl_param1,ioctl_param2)
+#define DEV_IOCTL_2_PARAMS(dev,ioctl_num,ioctl_param1,ioctl_param2)    (dev)->ioctl(dev ,ioctl_num,ioctl_param1,ioctl_param2)
 
 /* callback functions */
 #define DEV_CALLBACK_0_PARAMS(dev,callback_num)    \
-		  ((dev_callback_0_params_func_t)(dev)->callback)((dev)->handle,callback_num)
+		  ((dev_callback_0_params_func_t)(dev)->callback)(dev ,callback_num)
 #define DEV_CALLBACK_1_PARAMS(dev,callback_num,callback_param)    \
-		  ((dev_callback_1_params_func_t)(dev)->callback)((dev)->handle,callback_num,callback_param)
+		  ((dev_callback_1_params_func_t)(dev)->callback)(dev,callback_num,callback_param)
 #define DEV_CALLBACK_2_PARAMS(dev,callback_num,callback_param1,callback_param2)    \
-	 	 dev->callback((dev)->handle,callback_num,callback_param1,callback_param2)
+	 	 dev->callback(dev ,callback_num,callback_param1,callback_param2)
 
 
-#define DEV_PWRITE(dev,data,len,offset)    		dev->pwrite((dev)->handle,data,len,offset)
-#define DEV_PWRITE32(dev,data,len,offset)    	((dev_pwrite32_func_t)(dev)->pwrite)((dev)->handle,data,len,offset)
-#define DEV_WRITE(dev,data,len)    				((dev_write_func_t)(dev)->pwrite)((dev)->handle,data,len)
-#define DEV_PREAD(dev,data,len,offset)    		dev->pread((dev)->handle,data,len,offset)
-#define DEV_PREAD32(dev,data,len,offset)    	((dev_pread32_func_t)(dev)->pread)((dev)->handle,data,len,offset)
-#define DEV_READ(dev,data,len)    				((dev_read_func_t)(dev)->pread)((dev)->handle,data,len)
+#define DEV_PWRITE(dev,data,len,offset)    		dev->pwrite(dev ,data,len,offset)
+#define DEV_PWRITE32(dev,data,len,offset)    	((dev_pwrite32_func_t)(dev)->pwrite)(dev ,data,len,offset)
+#define DEV_WRITE(dev,data,len)    				((dev_write_func_t)(dev)->pwrite)(dev,data,len)
+#define DEV_PREAD(dev,data,len,offset)    		dev->pread(dev ,data,len,offset)
+#define DEV_PREAD32(dev,data,len,offset)    	((dev_pread32_func_t)(dev)->pread)(dev,data,len,offset)
+#define DEV_READ(dev,data,len)    				((dev_read_func_t)(dev)->pread)(dev,data,len)
 
-uint8_t DEV_API_dummy_ioctl_func( void * const aHandle ,
+uint8_t DEV_API_dummy_ioctl_func( pdev_descriptor_t apdev ,
 		const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)  ;
-uint8_t DEV_API_dummy_callback_func( void * const aHandle ,
+uint8_t DEV_API_dummy_callback_func( pdev_descriptor_t apdev ,
 		const uint8_t aCallback_num , void * aCallback_param1, void * aCallback_param2)  ;
-size_t DEV_API_dummy_pread_func(const void * const aHandle , uint8_t *apData , size_t aLength, size_t aOffset)  ;
-size_t DEV_API_dummy_pwrite_func(const void * const aHandle ,const uint8_t *apData , size_t aLength, size_t aOffset)  ;
+size_t DEV_API_dummy_pread_func(const pdev_descriptor_t apdev , uint8_t *apData , size_t aLength, size_t aOffset)  ;
+size_t DEV_API_dummy_pwrite_func(const pdev_descriptor_t apdev ,const uint8_t *apData , size_t aLength, size_t aOffset)  ;
 size_t DEV_API_dummy_init_func(pdev_descriptor_t aDevDescriptor)  ;
 pdev_descriptor_t DEV_OPEN(const char *device_name) ;
 uint8_t DEV_SET_PARAM(char *dev_name_str , char *param_name_str , char *param_val_str);

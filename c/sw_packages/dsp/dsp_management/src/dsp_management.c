@@ -164,7 +164,7 @@ void DSP_PROCESS(pdsp_descriptor dsp , size_t	len)
 
 	if(DSP_MANAGEMENT_API_MODULE_CONTROL_ON == ctl)
 	{
-		dsp->dsp_func(dsp->handle , len , in_pads , out_pads );
+		dsp->dsp_func(dsp , len , in_pads , out_pads );
 	}
 	else if (DSP_MANAGEMENT_API_MODULE_CONTROL_BYPASS == ctl)
 	{

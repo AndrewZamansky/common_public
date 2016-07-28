@@ -56,10 +56,11 @@
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-void voice_3D_dsp(const void * const aHandle , size_t data_len ,
+void voice_3D_dsp(pdsp_descriptor apdsp, size_t data_len ,
 		dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] , dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])
 {
 
+	VOICE_3D_Instance_t *handle;
 	float *apCh1In ,  *apCh2In;
 	float *apCh1Out ,  *apCh2Out;
 
@@ -70,14 +71,15 @@ void voice_3D_dsp(const void * const aHandle , size_t data_len ,
 	float side_gain;
 	float _3D_gain;
 
+	handle = apdsp->handle;
 	apCh1In = in_pads[0]->buff;
 	apCh2In = in_pads[1]->buff;
 	apCh1Out = out_pads[0].buff;
 	apCh2Out = out_pads[1].buff;
 
-	medium_gain = INSTANCE(aHandle)->medium_gain ;
-	side_gain = INSTANCE(aHandle)->side_gain ;
-	_3D_gain = INSTANCE(aHandle)->_3D_gain ;
+	medium_gain = handle->medium_gain ;
+	side_gain = handle->side_gain ;
+	_3D_gain = handle->_3D_gain ;
 
 	main_ch_gain = medium_gain + side_gain ;
 	second_ch_gain = medium_gain + side_gain + _3D_gain ;
@@ -119,9 +121,11 @@ void voice_3D_dsp(const void * const aHandle , size_t data_len ,
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t voice_3D_ioctl(void * const aHandle ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
+uint8_t voice_3D_ioctl(pdsp_descriptor apdsp ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
 {
+	VOICE_3D_Instance_t *handle;
 
+	handle = apdsp->handle;
 	switch(aIoctl_num)
 	{
 //#if VOICE_3D_CONFIG_NUM_OF_DYNAMIC_INSTANCES > 0
@@ -136,13 +140,13 @@ uint8_t voice_3D_ioctl(void * const aHandle ,const uint8_t aIoctl_num , void * a
 
 			break;
 		case IOCTL_VOICE_3D_SET_MEDIUM_GAIN :
-			INSTANCE(aHandle)->medium_gain = (*((float*)aIoctl_param1))/2;
+			handle->medium_gain = (*((float*)aIoctl_param1))/2;
 			break;
 		case IOCTL_VOICE_3D_SET_SIDE_GAIN :
-			INSTANCE(aHandle)->side_gain = (*((float*)aIoctl_param1))/2;
+			handle->side_gain = (*((float*)aIoctl_param1))/2;
 			break;
 		case IOCTL_VOICE_3D_SET_3D_GAIN :
-			INSTANCE(aHandle)->_3D_gain = *((float*)aIoctl_param1);
+			handle->_3D_gain = *((float*)aIoctl_param1);
 			break;
 		default :
 			return 1;

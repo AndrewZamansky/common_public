@@ -139,7 +139,7 @@ static uint8_t EOF_MARKER_STR[]="\r\n~2@5\r\n";
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t http_callback(void * const aHandle ,const uint8_t aCallback_num
+uint8_t http_callback(pdev_descriptor_t apdev ,const uint8_t aCallback_num
 		, void * aCallback_param1, void * aCallback_param2)
 {
 	uint8_t *requestStr = ((callback_new_data_from_socket_t*)aCallback_param2)->pData;
@@ -514,7 +514,7 @@ uint32_t  HTTP_Start( )
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t HTTP_ioctl( void *const aHandle ,const uint8_t aIoctl_num
+uint8_t HTTP_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
 	ioctl_get_data_buffer_t *pDataBuffer;

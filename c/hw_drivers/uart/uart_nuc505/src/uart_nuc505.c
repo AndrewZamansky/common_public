@@ -1,6 +1,6 @@
 /*
  *
- * uart_stm32f10x.c
+ * uart_nuc505.c
  *
  *
  *
@@ -24,7 +24,6 @@
 
 /********  defines *********************/
 
-#define INSTANCE(hndl)	((UART_NUC505_Instance_t*)hndl)
 
 /********  types  *********************/
 
@@ -122,7 +121,7 @@ static UART_NUC505_Instance_t *pHw_uart_pointer_to_instance[UART_NUC505_NUM_OF_U
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
- size_t uart_nuc505_pwrite(const void *aHandle ,const uint8_t *apData , size_t aLength, size_t aOffset)
+ size_t uart_nuc505_pwrite(pdev_descriptor_t apdev ,const uint8_t *apData , size_t aLength, size_t aOffset)
 {
 //	UART1_SendData8(*apData);
 	UART_WRITE(UART0, *apData);
@@ -145,19 +144,22 @@ static UART_NUC505_Instance_t *pHw_uart_pointer_to_instance[UART_NUC505_NUM_OF_U
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t uart_nuc505_ioctl( void * const aHandle ,const uint8_t aIoctl_num
+uint8_t uart_nuc505_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
+	UART_NUC505_Instance_t *handle;
+
+	handle = apdev->handle;
 	switch(aIoctl_num)
 	{
 		case IOCTL_UART_SET_BAUD_RATE :
-			INSTANCE(aHandle)->baud_rate = *(uint32_t*)aIoctl_param1;
+			handle->baud_rate = *(uint32_t*)aIoctl_param1;
 			break;
 		case IOCTL_DEVICE_START :
-			switch(INSTANCE(aHandle)->uart_num)
+			switch(handle->uart_num)
 			{
 				case 0:
-					pHw_uart_pointer_to_instance[0] = (UART_NUC505_Instance_t*)aHandle;
+					pHw_uart_pointer_to_instance[0] = handle;
 
 				    /* Select IP clock source */
 				    CLK_SetModuleClock(UART0_MODULE, CLK_UART0_SRC_EXT, 0);
@@ -178,7 +180,7 @@ uint8_t uart_nuc505_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 				    SYS_ResetModule(UART0_RST);
 
 				    /* Configure UART0 and set UART0 baud rate */
-				    UART_Open(UART0, INSTANCE(aHandle)->baud_rate);
+				    UART_Open(UART0, handle->baud_rate);
 
 				    /* Enable UART RDA/RLS/Time-out interrupt */
 				    UART_EnableInt(UART0, (UART_INTEN_RDAIEN_Msk  | UART_INTEN_RXTOIEN_Msk));
@@ -205,7 +207,7 @@ uint8_t uart_nuc505_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 		    //UART1_ITConfig( UART1_IT_TXE, ENABLE );
 		    break;
 		case IOCTL_SET_ISR_CALLBACK_DEV:
-			INSTANCE(aHandle)->callback_dev =(pdev_descriptor_t) aIoctl_param1;
+			handle->callback_dev =(pdev_descriptor_t) aIoctl_param1;
 			break;
 		default :
 			return 1;

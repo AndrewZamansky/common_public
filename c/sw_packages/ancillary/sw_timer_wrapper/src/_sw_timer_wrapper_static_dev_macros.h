@@ -3,7 +3,7 @@
 #define _sw_timer_wrapper_static_dev_macros_h_
 
 
-extern uint8_t sw_timer_wrapper_ioctl(void * const aHandle ,const uint8_t aIoctl_num ,void * aIoctl_param1 , void * aIoctl_param2);
+extern uint8_t sw_timer_wrapper_ioctl(pdev_descriptor_t apdev ,const uint8_t aIoctl_num ,void * aIoctl_param1 , void * aIoctl_param2);
 
 #include "src/sw_timer_wrapper.h"
 

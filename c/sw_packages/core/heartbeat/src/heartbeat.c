@@ -25,7 +25,6 @@
 
 /********  defines *********************/
 
-#define INSTANCE(hndl)	((heartbeat_instance_t*)hndl)
 
 
 /********  types  *********************/
@@ -66,16 +65,18 @@ static volatile int tmp=0;
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t heartbeat_ioctl( void * const aHandle ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
+uint8_t heartbeat_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
 {
+	heartbeat_instance_t *handle;
 	static size_t ticks_per_mSec=1;
 
+	handle = apdev->handle;
 	switch(aIoctl_num)
 	{
 		case IOCTL_DEVICE_START :
 
-			DEV_IOCTL_1_PARAMS(INSTANCE(aHandle)->callibration_timer , IOCTL_TIMER_CALLBACK_SET ,  (void*)heartbeat_timer_callback);
-			DEV_IOCTL_0_PARAMS(INSTANCE(aHandle)->callibration_timer , IOCTL_DEVICE_START );
+			DEV_IOCTL_1_PARAMS(handle->callibration_timer , IOCTL_TIMER_CALLBACK_SET ,  (void*)heartbeat_timer_callback);
+			DEV_IOCTL_0_PARAMS(handle->callibration_timer , IOCTL_DEVICE_START );
 
 			irq_unblock_all()	;
 			while(1)
@@ -101,7 +102,7 @@ uint8_t heartbeat_ioctl( void * const aHandle ,const uint8_t aIoctl_num , void *
 
 
 
-			DEV_IOCTL_0_PARAMS(INSTANCE(aHandle)->callibration_timer , IOCTL_TIMER_STOP );
+			DEV_IOCTL_0_PARAMS(handle->callibration_timer , IOCTL_TIMER_STOP );
 
 			break;
 
@@ -122,9 +123,9 @@ uint8_t heartbeat_ioctl( void * const aHandle ,const uint8_t aIoctl_num , void *
 					one_sec_countdown -= tmp_restart_counter;
 					if(0 >= one_sec_countdown)
 					{
-						pdev_descriptor_const 	heartbeat_callback_dev;
+						pdev_descriptor_t 	heartbeat_callback_dev;
 						cpu_usage_measure_mPercents = 100000 - (cpuUsageCounter*100)/ticks_per_mSec;
-						heartbeat_callback_dev = INSTANCE(aHandle)->heartbeat_callback_dev;
+						heartbeat_callback_dev = handle->heartbeat_callback_dev;
 						if (NULL != heartbeat_callback_dev)
 						{
 							DEV_CALLBACK_0_PARAMS( heartbeat_callback_dev,HEARTBEAT_API_HEARTBEAT_TICK  ) ;

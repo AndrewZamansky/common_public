@@ -17,9 +17,8 @@
 /***************   typedefs    *******************/
 
 typedef struct {
-	pdev_descriptor_const server_dev;
-	pdev_descriptor_const this_dev;
-	pdev_descriptor_const   callback_dev;
+	pdev_descriptor_t server_dev;
+	pdev_descriptor_t   callback_dev;
 	uint32_t lastTestedBytePos;
 	uint8_t lastEOLchar;
 } shell_instance_t;

@@ -78,7 +78,7 @@ static uint8_t cmd[4];//=(uint8_t*)"axx\n";
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t gpio_remote_ioctl( void * const aHandle ,const uint8_t aIoctl_num
+uint8_t gpio_remote_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
 	pdev_descriptor_t server_dev;

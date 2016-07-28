@@ -177,7 +177,7 @@ static void GPIO_output_pins_Task( void *pvParameters )
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t GPIO_ioctl( void * const aHandle ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
+uint8_t GPIO_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
 {
 	uint32_t retVal;
 	pdev_descriptor_t   server_dev = INSTANCE(aHandle)->server_dev ;

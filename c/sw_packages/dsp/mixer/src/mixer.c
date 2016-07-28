@@ -29,7 +29,6 @@
 
 /********  local defs *********************/
 
-#define INSTANCE(hndl)	((MIXER_Instance_t*)hndl)
 
 
 /**********   external variables    **************/
@@ -49,22 +48,24 @@
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-void mixer_dsp(const void * const aHandle , size_t data_len ,
+void mixer_dsp(pdsp_descriptor apdsp , size_t data_len ,
 		dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] , dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])
 {
+	MIXER_Instance_t *handle;
 	uint8_t	num_of_input_channels;
 	float *apCh1In ,  *apCh2In;
 	float *apCh1Out  ;
 	float channels_weights_0,channels_weights_1  ;
 
+	handle = apdsp->handle;
 	apCh1In = in_pads[0]->buff;
 	apCh2In = in_pads[1]->buff;
 	apCh1Out = out_pads[0].buff;
 
 	float curr_val;
 	float *channels_weights;
-	channels_weights = INSTANCE(aHandle)->channels_weights;
-	num_of_input_channels = INSTANCE(aHandle)->num_of_input_channels;
+	channels_weights = handle->channels_weights;
+	num_of_input_channels = handle->num_of_input_channels;
 
 	channels_weights_0 =  channels_weights[0];
 	channels_weights_1 =  channels_weights[1];
@@ -100,13 +101,15 @@ void mixer_dsp(const void * const aHandle , size_t data_len ,
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t mixer_ioctl(void * const aHandle ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
+uint8_t mixer_ioctl(pdsp_descriptor apdsp ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
 {
+	MIXER_Instance_t *handle;
 	uint8_t i;
 	uint8_t num_of_input_channels;
 	float *channels_weights ;
 
-	channels_weights = INSTANCE(aHandle)->channels_weights ;
+	handle = apdsp->handle;
+	channels_weights = handle->channels_weights ;
 	switch(aIoctl_num)
 	{
 //#if MIXER_CONFIG_NUM_OF_DYNAMIC_INSTANCES > 0
@@ -123,9 +126,9 @@ uint8_t mixer_ioctl(void * const aHandle ,const uint8_t aIoctl_num , void * aIoc
 			break;
 		case IOCTL_MIXER_SET_NUM_OF_CHANNELS :
 			num_of_input_channels = (uint8_t)((size_t)aIoctl_param1);
-			INSTANCE(aHandle)->num_of_input_channels = num_of_input_channels;
+			handle->num_of_input_channels = num_of_input_channels;
 			channels_weights=(float *)realloc(channels_weights , sizeof(float) * num_of_input_channels);
-			INSTANCE(aHandle)->channels_weights = channels_weights;
+			handle->channels_weights = channels_weights;
 			for(i=0 ; i<num_of_input_channels ; i++)
 			{
 				channels_weights[i] = 0;

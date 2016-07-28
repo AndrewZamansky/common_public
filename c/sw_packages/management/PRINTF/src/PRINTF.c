@@ -23,7 +23,7 @@
 #define PRINTF_BUF_LENGTH  128
 /********  types  *********************/
 typedef struct {
-	pdev_descriptor_const dev_descriptor;
+	pdev_descriptor_t dev_descriptor;
 } PRINTF_params_t;
 
 
@@ -55,7 +55,7 @@ static uint8_t sh_buffer[PRINTF_BUF_LENGTH]; //  define your own buffer’s size
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint32_t PRINTF_API_AddDebugOutput(pdev_descriptor_const aDevHandle)
+uint32_t PRINTF_API_AddDebugOutput(pdev_descriptor_t aDevHandle)
 {
 	uint8_t i;
 
@@ -82,7 +82,7 @@ uint32_t PRINTF_API_AddDebugOutput(pdev_descriptor_const aDevHandle)
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint32_t PRINTF_API_AddNoteOutput(pdev_descriptor_const aDevHandle )
+uint32_t PRINTF_API_AddNoteOutput(pdev_descriptor_t aDevHandle )
 {
 	uint8_t i;
 
@@ -109,7 +109,7 @@ uint32_t PRINTF_API_AddNoteOutput(pdev_descriptor_const aDevHandle )
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint32_t PRINTF_API_RemoveDebugOutput(pdev_descriptor_const aDevHandle)
+uint32_t PRINTF_API_RemoveDebugOutput(pdev_descriptor_t aDevHandle)
 {
 	uint8_t i;
 
@@ -134,7 +134,7 @@ uint32_t PRINTF_API_RemoveDebugOutput(pdev_descriptor_const aDevHandle)
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint32_t PRINTF_API_RemoveNoteOutput(pdev_descriptor_const aDevHandle )
+uint32_t PRINTF_API_RemoveNoteOutput(pdev_descriptor_t aDevHandle )
 {
 	uint8_t i;
 
@@ -210,7 +210,7 @@ static void common_sendData(PRINTF_TYPE_t aPrntType , const uint8_t* pBuffer,uin
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-void PRINTF_printf(PRINTF_TYPE_t aPrntType , pdev_descriptor_const aDevHandle ,
+void PRINTF_printf(PRINTF_TYPE_t aPrntType , pdev_descriptor_t aDevHandle ,
 		   const uint8_t* Format,...)
 {
 	va_list args;

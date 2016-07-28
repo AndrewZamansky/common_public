@@ -54,7 +54,7 @@ static const dev_param_t LM35_Dev_Params[]=
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t LM35_ioctl( void * const aHandle ,const uint8_t aIoctl_num
+uint8_t LM35_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
 

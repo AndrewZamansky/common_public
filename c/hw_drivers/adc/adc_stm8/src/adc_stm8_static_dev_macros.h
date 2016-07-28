@@ -3,7 +3,7 @@
 #define _adc_stm8_static_dev_macros_h_
 
 #include "src/adc_stm8.h"
-uint8_t adc_stm8_ioctl( void * const aHandle ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2);
+uint8_t adc_stm8_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2);
 
 
 #define __ADC_STM8_API_CREATE_STATIC_DEV(dev,dev_name ,channel )\

@@ -26,7 +26,6 @@
 
 /********  defines *********************/
 
-#define INSTANCE(hndl)	((u_boot_shell_instance_t*)hndl)
 
 
 /********  types  *********************/
@@ -36,7 +35,7 @@
 /********  externals *********************/
 
 /* ------------------------------ Exported variables ---------------------------------*/
-pdev_descriptor_const gCurrReplyDev;
+pdev_descriptor_t gCurrReplyDev;
 
 extern int run_command(const char *cmd, int flag);
 
@@ -81,7 +80,7 @@ int cli_readline(const char *const prompt)
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t u_boot_shell_callback(void * const aHandle ,const uint8_t aCallback_num
+uint8_t u_boot_shell_callback(pdev_descriptor_t apdev ,const uint8_t aCallback_num
 		, void * aCallback_param1, void * aCallback_param2)
 {
 
@@ -106,9 +105,12 @@ uint8_t u_boot_shell_callback(void * const aHandle ,const uint8_t aCallback_num
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t u_boot_shell_ioctl( void * const aHandle ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
+uint8_t u_boot_shell_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
 {
-	pdev_descriptor_const   server_dev ;
+	u_boot_shell_instance_t *handle;
+	pdev_descriptor_t   server_dev ;
+
+	handle = apdev->handle;
 
 	switch(aIoctl_num)
 	{
@@ -118,15 +120,15 @@ uint8_t u_boot_shell_ioctl( void * const aHandle ,const uint8_t aIoctl_num , voi
 				server_dev = DEV_OPEN((uint8_t*)aIoctl_param1);
 				if(NULL != server_dev)
 				{
-					DEV_IOCTL(server_dev, IOCTL_SET_ISR_CALLBACK_DEV ,  (void*)INSTANCE(aHandle)->this_dev);
+					DEV_IOCTL(server_dev, IOCTL_SET_ISR_CALLBACK_DEV ,  (void*)apdev);
 				}
 
-				INSTANCE(aHandle)->server_dev=server_dev;
+				handle->server_dev=server_dev;
 			}
 			break;
 #endif
 		case IOCTL_DEVICE_START :
-			server_dev = INSTANCE(aHandle)->server_dev;
+			server_dev = handle->server_dev;
 			DEV_IOCTL_0_PARAMS(server_dev , IOCTL_DEVICE_START );
 
 			break;

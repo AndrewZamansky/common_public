@@ -105,16 +105,18 @@
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-void equalizer_dsp(const void * const aHandle , size_t data_len ,
+void equalizer_dsp(pdsp_descriptor apdsp , size_t data_len ,
 		dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] , dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])
 {
 	float *apCh1In  ;
 	float *apCh1Out ;
+	EQUALIZER_Instance_t *handle;
 
+	handle = apdsp->handle;
 	apCh1In = in_pads[0]->buff;
 	apCh1Out = out_pads[0].buff;
 
-	biquads_cascading_filter(INSTANCE(aHandle)->pBiquadFilter , apCh1In , apCh1Out , data_len);
+	biquads_cascading_filter(handle->pBiquadFilter , apCh1In , apCh1Out , data_len);
 
 }
 
@@ -207,14 +209,16 @@ void av_log_ucprojects_callback(void* ptr, int level, const char* fmt, va_list v
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t equalizer_ioctl(void * const aHandle ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
+uint8_t equalizer_ioctl(pdsp_descriptor apdsp ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
 {
 	uint8_t i;
 	size_t num_of_bands;
 	uint8_t band_num;
 	BandCoeffs_t *pCoeffs;
 	equalizer_api_band_set_params_t *p_band_set_params;
+	EQUALIZER_Instance_t *handle;
 
+	handle = apdsp->handle;
 	switch(aIoctl_num)
 	{
 //#if EQUALIZER_CONFIG_NUM_OF_DYNAMIC_INSTANCES > 0
@@ -227,19 +231,19 @@ uint8_t equalizer_ioctl(void * const aHandle ,const uint8_t aIoctl_num , void * 
 
 		case IOCTL_DEVICE_START :
 
-			pCoeffs = INSTANCE(aHandle)->pCoeffs;
-			INSTANCE(aHandle)->pBiquadFilter = biquads_alloc(INSTANCE(aHandle)->num_of_bands , (float *)pCoeffs );
+			pCoeffs = handle->pCoeffs;
+			handle->pBiquadFilter = biquads_alloc(handle->num_of_bands , (float *)pCoeffs );
 
 			break;
 		case IOCTL_EQUALIZER_SET_NUM_OF_BANDS :
 			num_of_bands = ((size_t)aIoctl_param1);
-			INSTANCE(aHandle)->num_of_bands = num_of_bands;
-			free(INSTANCE(aHandle)->pCoeffs);
+			handle->num_of_bands = num_of_bands;
+			free(handle->pCoeffs);
 			{
 				int tmp=sizeof(BandCoeffs_t) * num_of_bands;
 				pCoeffs=(BandCoeffs_t *)malloc(tmp);
 			}
-			INSTANCE(aHandle)->pCoeffs = pCoeffs;
+			handle->pCoeffs = pCoeffs;
 			for(i=0 ; i<num_of_bands ; i++)
 			{
 				pCoeffs[i].a1 = 0;
@@ -333,14 +337,14 @@ uint8_t equalizer_ioctl(void * const aHandle ,const uint8_t aIoctl_num , void * 
 		}
 
 #else
-		num_of_bands = INSTANCE(aHandle)->num_of_bands;
+		num_of_bands = handle->num_of_bands;
 		band_num = ((equalizer_api_band_set_t*)aIoctl_param1)->band_num ;
 		if(num_of_bands > band_num )
 		{
 			p_band_set_params = &(((equalizer_api_band_set_t*)aIoctl_param1)->band_set_params);
-			memcpy(&INSTANCE(aHandle)->band_set_params,
+			memcpy(&handle->band_set_params,
 					p_band_set_params,sizeof(equalizer_api_band_set_params_t));
-			pCoeffs = &INSTANCE(aHandle)->pCoeffs[band_num];
+			pCoeffs = &handle->pCoeffs[band_num];
 			biquads_calculation(
 					p_band_set_params->filter_mode,
 					p_band_set_params->Fc,
@@ -361,7 +365,7 @@ uint8_t equalizer_ioctl(void * const aHandle ,const uint8_t aIoctl_num , void * 
 		case IOCTL_EQUALIZER_GET_BAND_BIQUADS :
 			p_band_set_params = &(((equalizer_api_band_set_t*)aIoctl_param1)->band_set_params);
 			memcpy(p_band_set_params,
-					&INSTANCE(aHandle)->band_set_params, sizeof(equalizer_api_band_set_params_t));
+					&handle->band_set_params, sizeof(equalizer_api_band_set_params_t));
 			break;
 		default :
 			return 1;

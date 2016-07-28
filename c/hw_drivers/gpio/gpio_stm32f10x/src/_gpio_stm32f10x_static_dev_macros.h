@@ -3,7 +3,7 @@
 #define _gpio_stm32f10x_static_dev_macros_h_
 
 #include "src/gpio_stm32f10x.h"
-uint8_t gpio_stm32f10x_ioctl( void * const aHandle ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2);
+uint8_t gpio_stm32f10x_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2);
 
 #define __GPIO_STM32F10X_API_CREATE_STATIC_DEV(dev,dev_name ,port , pin_mask , mode)\
 		extern const dev_descriptor_t dev ;						\

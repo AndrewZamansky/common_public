@@ -72,10 +72,11 @@
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-void speex_echo_canceller_dsp(const void * const aHandle , size_t data_len ,
+void speex_echo_canceller_dsp(pdsp_descriptor apdsp , size_t data_len ,
 		dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] , dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])
 {
 
+	SPEEX_ECHO_CANCELLER_Instance_t *handle;
 	int16_t *apCh1In ,  *apCh2In ;
 	int16_t *apCh1Out  ;
 
@@ -83,8 +84,9 @@ void speex_echo_canceller_dsp(const void * const aHandle , size_t data_len ,
 	apCh2In = (int16_t *)in_pads[1]->buff;
 	apCh1Out = (int16_t *)out_pads[0].buff;
 
-    speex_echo_cancellation(INSTANCE(aHandle)->echo_state , apCh1In, apCh2In, apCh1Out);
-    speex_preprocess_run(INSTANCE(aHandle)->preprocess_state , apCh1Out);
+	handle = apdsp->handle;
+    speex_echo_cancellation(handle->echo_state , apCh1In, apCh2In, apCh1Out);
+    speex_preprocess_run(handle->preprocess_state , apCh1Out);
 }
 
 
@@ -101,12 +103,14 @@ void speex_echo_canceller_dsp(const void * const aHandle , size_t data_len ,
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t speex_echo_canceller_ioctl(void * const aHandle ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
+uint8_t speex_echo_canceller_ioctl(pdsp_descriptor apdsp ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
 {
+	SPEEX_ECHO_CANCELLER_Instance_t *handle;
 	SpeexEchoState *echo_state;
 	SpeexPreprocessState *preprocess_state;
 	int sampleRate = SAMPLE_RATE;
 
+	handle = apdsp->handle;
 	switch(aIoctl_num)
 	{
 //#if SPEEX_ECHO_CANCELLER_CONFIG_NUM_OF_DYNAMIC_INSTANCES > 0
@@ -120,8 +124,8 @@ uint8_t speex_echo_canceller_ioctl(void * const aHandle ,const uint8_t aIoctl_nu
 		case IOCTL_DEVICE_START :
 			echo_state =  speex_echo_state_init(BUFF_LEN , TAIL);
 			preprocess_state =  speex_preprocess_state_init(BUFF_LEN , SAMPLE_RATE);
-			INSTANCE(aHandle)->echo_state = echo_state ;
-			INSTANCE(aHandle)->preprocess_state = preprocess_state ;
+			handle->echo_state = echo_state ;
+			handle->preprocess_state = preprocess_state ;
 			speex_echo_ctl(echo_state, SPEEX_ECHO_SET_SAMPLING_RATE, &sampleRate);
 			speex_preprocess_ctl(preprocess_state, SPEEX_PREPROCESS_SET_ECHO_STATE, echo_state);
 			break;
