@@ -246,7 +246,7 @@ inline uint8_t UART_STM32F10x_Init(UART_STM32F103x_Instance_t *apHandle)
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t uart_stm32f10x_ioctl( void * const aHandle ,const uint8_t aIoctl_num
+uint8_t uart_stm32f10x_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
     USART_TypeDef* USARTx;

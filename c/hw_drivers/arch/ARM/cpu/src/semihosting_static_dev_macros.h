@@ -4,7 +4,7 @@
 
 
 #include "src/semihosting.h"
-extern uint8_t arm_sh_ioctl(void * const aHandle ,const uint8_t aIoctl_num , void * aIoctl_param1, void * aIoctl_param2);
+extern uint8_t arm_sh_ioctl(pdev_descriptor_t apdev ,const uint8_t aIoctl_num , void * aIoctl_param1, void * aIoctl_param2);
 extern size_t arm_sh_pwrite(const void *aHandle ,const uint8_t *apData , size_t aLength, size_t aOffset);
 
 #define __ARM_SH_API_CREATE_STATIC_DEV(pdev ,callback_pdev)								\

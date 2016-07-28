@@ -3,7 +3,7 @@
 #include  "cortexM_systick_api.h"
 #include "src/cortexM_systick.h"
 
-uint8_t cortexM_systick_ioctl( void * const aHandle ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2);
+uint8_t cortexM_systick_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2);
 
 #define	MODULE_NAME				cortexM_systick
 #define	MODULE_IOCTL_FUNCTION	cortexM_systick_ioctl

@@ -51,7 +51,6 @@
 
 /********  local defs *********************/
 
-#define INSTANCE(hndl)	((COMPRESSOR_Instance_t*)hndl)
 
 
 /**********   external variables    **************/
@@ -119,9 +118,10 @@ static float get_max_abs_value_2_buffers(float *buf1 ,float *buf2 , size_t len ,
 /*---------------------------------------------------------------------------------------------------------*/
 /* Function:         _compressor_buffered_2in_2out                                                                          */
 /*---------------------------------------------------------------------------------------------------------*/
-void _compressor_buffered_2in_2out(const void * const aHandle ,size_t data_len ,
+void _compressor_buffered_2in_2out(pdsp_descriptor apdsp ,size_t data_len ,
 		dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] , dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS] )
 {
+	COMPRESSOR_Instance_t *handle=apdsp->handle;
 		float *apCh1In ,  *apCh2In;
 		float *apCh1Out ,  *apCh2Out;
 		//	static int print_count=0;
@@ -138,27 +138,27 @@ void _compressor_buffered_2in_2out(const void * const aHandle ,size_t data_len ,
 		float threshold  ;
 		float ratio_change_per_chunk  ;
 		float reverse_ratio ;
-		float *look_ahead_length_buffer_Ch1 = INSTANCE(aHandle)->look_ahead_length_buffer_Ch1;
-		float *look_ahead_length_buffer_Ch2 = INSTANCE(aHandle)->look_ahead_length_buffer_Ch2;
+		float *look_ahead_length_buffer_Ch1 = handle->look_ahead_length_buffer_Ch1;
+		float *look_ahead_length_buffer_Ch2 = handle->look_ahead_length_buffer_Ch2;
 		//float release ;
 		static float release_ratio_change_per_chunk = 0;
 		uint32_t hit_counter;
 		uint32_t chunk_size ;
-	//	uint32_t look_ahead_length = INSTANCE(aHandle)->look_ahead_length;
+	//	uint32_t look_ahead_length = handle->look_ahead_length;
 
 		apCh1In = in_pads[0]->buff;
 		apCh2In = in_pads[1]->buff;
 		apCh1Out = out_pads[0].buff;
 		apCh2Out = out_pads[1].buff;
 
-		threshold = INSTANCE(aHandle)->threshold;
-		reverse_ratio = INSTANCE(aHandle)->reverse_ratio;
-		prev_ratio = INSTANCE(aHandle)->prev_ratio ;
-		usePreviousRatio = INSTANCE(aHandle)->usePreviousRatio ;
-		chunk_size =  INSTANCE(aHandle)->look_ahead_length ;
-		//release = INSTANCE(aHandle)->release;
-		prev_calculated_ratio = INSTANCE(aHandle)->prev_calculated_ratio;
-		hit_counter = INSTANCE(aHandle)->hit_counter;
+		threshold = handle->threshold;
+		reverse_ratio = handle->reverse_ratio;
+		prev_ratio = handle->prev_ratio ;
+		usePreviousRatio = handle->usePreviousRatio ;
+		chunk_size =  handle->look_ahead_length ;
+		//release = handle->release;
+		prev_calculated_ratio = handle->prev_calculated_ratio;
+		hit_counter = handle->hit_counter;
 
 //		arm_abs_f32( apCh1In , apCh1Out , data_len);
 //		arm_abs_f32( apCh2In , apCh2Out , data_len);
@@ -291,10 +291,10 @@ void _compressor_buffered_2in_2out(const void * const aHandle ,size_t data_len ,
 		float_memcpy_with_ratio_2_buffers(look_ahead_length_buffer_Ch1, &apCh1In[data_len - chunk_size ] ,
 				look_ahead_length_buffer_Ch2, &apCh2In[data_len - chunk_size ]  ,chunk_size, 1,0);
 
-		INSTANCE(aHandle)->prev_ratio = prev_ratio;
-		INSTANCE(aHandle)->usePreviousRatio = usePreviousRatio ;
-		INSTANCE(aHandle)->hit_counter = hit_counter;
-		INSTANCE(aHandle)->prev_calculated_ratio = prev_calculated_ratio;
+		handle->prev_ratio = prev_ratio;
+		handle->usePreviousRatio = usePreviousRatio ;
+		handle->hit_counter = hit_counter;
+		handle->prev_calculated_ratio = prev_calculated_ratio;
 
 	//	if(print_count > 100)
 	//	{
@@ -313,9 +313,10 @@ void _compressor_buffered_2in_2out(const void * const aHandle ,size_t data_len ,
 /*---------------------------------------------------------------------------------------------------------*/
 /* Function:         _compressor_2in_2out                                                                          */
 /*---------------------------------------------------------------------------------------------------------*/
-void _compressor_2in_2out(const void * const aHandle , size_t data_len ,
+void _compressor_2in_2out(pdsp_descriptor apdsp , size_t data_len ,
 		dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] , dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])
 {
+	COMPRESSOR_Instance_t *handle = apdsp->handle;;
 	float *apCh1In ,  *apCh2In;
 	float *apCh1Out ,  *apCh2Out;
 
@@ -328,7 +329,7 @@ void _compressor_2in_2out(const void * const aHandle , size_t data_len ,
 	float release ;
 	float release_neg ;
 	float attack_neg ;
-	float *look_ahead_length_buffer_Ch1 = INSTANCE(aHandle)->look_ahead_length_buffer_Ch1;
+	float *look_ahead_length_buffer_Ch1 = handle->look_ahead_length_buffer_Ch1;
 
 
 	apCh1In = in_pads[0]->buff;
@@ -336,12 +337,12 @@ void _compressor_2in_2out(const void * const aHandle , size_t data_len ,
 	apCh1Out = out_pads[0].buff;
 	apCh2Out = out_pads[1].buff;
 
-	attack = INSTANCE(aHandle)->attack;
+	attack = handle->attack;
 	attack_neg = 1 - attack;
-	release = INSTANCE(aHandle)->release;
+	release = handle->release;
 	release_neg =  1 - release ;
-	threshold = INSTANCE(aHandle)->threshold;
-	reverse_ratio = INSTANCE(aHandle)->reverse_ratio;
+	threshold = handle->threshold;
+	reverse_ratio = handle->reverse_ratio;
 
 	env_follower_ch1 = *look_ahead_length_buffer_Ch1;
 
@@ -402,19 +403,20 @@ void _compressor_2in_2out(const void * const aHandle , size_t data_len ,
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-void compressor_dsp(const void * const aHandle , size_t data_len ,
+void compressor_dsp(pdsp_descriptor apdsp , size_t data_len ,
 		dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] , dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])
 {
 
+	COMPRESSOR_Instance_t *handle=apdsp->handle;
 
-	switch(INSTANCE(aHandle)->type)
+	switch(handle->type)
 	{
 		case COMPRESSOR_API_TYPE_LOOKAHEAD:
-				_compressor_buffered_2in_2out(aHandle , data_len ,
+				_compressor_buffered_2in_2out(apdsp , data_len ,
 						in_pads , out_pads);
 			break ;
 		case COMPRESSOR_API_TYPE_REGULAR:
-				_compressor_2in_2out(aHandle , data_len ,
+				_compressor_2in_2out(apdsp , data_len ,
 						in_pads , out_pads);
 			break ;
 	}
@@ -457,9 +459,12 @@ void compressor_set_buffers(COMPRESSOR_Instance_t *pInstance,uint32_t buffer_siz
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t compressor_ioctl(void * const aHandle ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
+uint8_t compressor_ioctl(pdsp_descriptor apdsp ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
 {
+	COMPRESSOR_Instance_t *handle;
 	uint32_t look_ahead_length;
+
+	handle = apdsp->handle;
 	switch(aIoctl_num)
 	{
 //
@@ -470,42 +475,42 @@ uint8_t compressor_ioctl(void * const aHandle ,const uint8_t aIoctl_num , void *
 //
 
 		case IOCTL_DEVICE_START :
-			switch(INSTANCE(aHandle)->type)
+			switch(handle->type)
 			{
 				case COMPRESSOR_API_TYPE_LOOKAHEAD:
-					look_ahead_length = INSTANCE(aHandle)->look_ahead_length ;
-					compressor_set_buffers(INSTANCE(aHandle) , look_ahead_length);
-					INSTANCE(aHandle)->release = 64;
+					look_ahead_length = handle->look_ahead_length ;
+					compressor_set_buffers(handle , look_ahead_length);
+					handle->release = 64;
 					break ;
 				case COMPRESSOR_API_TYPE_REGULAR:
-					compressor_set_buffers(INSTANCE(aHandle) , 1);
+					compressor_set_buffers(handle , 1);
 					break ;
 			}
 
 			break;
 		case IOCTL_COMPRESSOR_SET_HIGH_THRESHOLD :
-			INSTANCE(aHandle)->threshold = *((float*)aIoctl_param1);
+			handle->threshold = *((float*)aIoctl_param1);
 			break;
 		case IOCTL_COMPRESSOR_SET_LOOK_AHEAD_SIZE :
 			look_ahead_length = (uint32_t)((size_t)aIoctl_param1);
-			INSTANCE(aHandle)->look_ahead_length = look_ahead_length;
-			compressor_set_buffers(INSTANCE(aHandle) , look_ahead_length);
+			handle->look_ahead_length = look_ahead_length;
+			compressor_set_buffers(handle , look_ahead_length);
 			break;
 		case IOCTL_COMPRESSOR_SET_RATIO :
-			INSTANCE(aHandle)->reverse_ratio = 1/(*((float*)aIoctl_param1));
+			handle->reverse_ratio = 1/(*((float*)aIoctl_param1));
 			break;
 		case IOCTL_COMPRESSOR_SET_TYPE :
-			INSTANCE(aHandle)->type = (uint8_t)((size_t)aIoctl_param1);
+			handle->type = (uint8_t)((size_t)aIoctl_param1);
 			break;
 		case IOCTL_COMPRESSOR_SET_ATTACK :
-			INSTANCE(aHandle)->attack = *((float*)aIoctl_param1);
+			handle->attack = *((float*)aIoctl_param1);
 			break;
 		case IOCTL_COMPRESSOR_SET_RELEASE :
-			INSTANCE(aHandle)->release = *((float*)aIoctl_param1);
+			handle->release = *((float*)aIoctl_param1);
 			break;
 		case IOCTL_COMPRESSOR_GET_HIT_COUNTER :
-			*((uint32_t*)aIoctl_param1) = INSTANCE(aHandle)->hit_counter;
-			INSTANCE(aHandle)->hit_counter = 0;
+			*((uint32_t*)aIoctl_param1) = handle->hit_counter;
+			handle->hit_counter = 0;
 			break;
 		default :
 			return 1;

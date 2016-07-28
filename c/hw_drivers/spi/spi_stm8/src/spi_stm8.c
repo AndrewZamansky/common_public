@@ -127,7 +127,7 @@ size_t spi_stm8_pwrite(const void *aHandle ,const uint8_t *apData , size_t aLeng
 /* Description:                                                                                            */
 /*                                                             						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t spi_stm8_ioctl( void * const aHandle ,const uint8_t aIoctl_num
+uint8_t spi_stm8_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
 	switch(aIoctl_num)

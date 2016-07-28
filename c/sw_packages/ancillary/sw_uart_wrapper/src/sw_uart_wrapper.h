@@ -48,15 +48,14 @@
 
 typedef struct {
 
-	pdev_descriptor_const   server_dev;
+	pdev_descriptor_t   server_dev;
 
 	os_queue_t xQueue ;
 	uint8_t use_task_for_out ;
 
 #ifdef CONFIG_SW_UART_WRAPPER_ENABLE_RX
 
-	pdev_descriptor_const   this_dev;
-	pdev_descriptor_const   client_dev;
+	pdev_descriptor_t   client_dev;
 
 #ifdef CONFIG_SW_UART_WRAPPER_USE_MALLOC
 	rx_int_size_t rx_buff_size;

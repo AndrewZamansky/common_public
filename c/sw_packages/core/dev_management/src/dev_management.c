@@ -50,7 +50,7 @@ size_t DEV_API_dummy_init_func(pdev_descriptor_t aDevDescriptor)
  *
  *
  */
-uint8_t DEV_API_dummy_ioctl_func(void * const aHandle ,const uint8_t aIoctl_num ,
+uint8_t DEV_API_dummy_ioctl_func(pdev_descriptor_t apdev ,const uint8_t aIoctl_num ,
 		void * aIoctl_param1 , void * aIoctl_param2)
 {
 	return 1;
@@ -61,7 +61,7 @@ uint8_t DEV_API_dummy_ioctl_func(void * const aHandle ,const uint8_t aIoctl_num 
  *
  *
  */
-size_t DEV_API_dummy_pread_func(const void * const aHandle , uint8_t *apData , size_t aLength, size_t aOffset)
+size_t DEV_API_dummy_pread_func(const pdev_descriptor_t apdev , uint8_t *apData , size_t aLength, size_t aOffset)
 {
 	return 0;
 }
@@ -71,7 +71,7 @@ size_t DEV_API_dummy_pread_func(const void * const aHandle , uint8_t *apData , s
  *
  *
  */
-size_t DEV_API_dummy_pwrite_func(const void * const aHandle ,const uint8_t *apData , size_t aLength, size_t aOffset)
+size_t DEV_API_dummy_pwrite_func(const pdev_descriptor_t apdev ,const uint8_t *apData , size_t aLength, size_t aOffset)
 {
 	return 0;
 }
@@ -82,7 +82,7 @@ size_t DEV_API_dummy_pwrite_func(const void * const aHandle ,const uint8_t *apDa
  *
  *
  */
-uint8_t DEV_API_dummy_callback_func(void * const aHandle ,
+uint8_t DEV_API_dummy_callback_func(pdev_descriptor_t apdev ,
 		const uint8_t aCallback_num , void * aCallback_param1, void * aCallback_param2)
 {
 	return 1;

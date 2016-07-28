@@ -25,7 +25,7 @@
 
 #endif
 
-extern pdev_descriptor_const gCurrReplyDev;
+extern pdev_descriptor_t gCurrReplyDev;
 
 #include "PRINTF_api.h"
 #if !defined(__CSMC__)// cosmic compiler fix

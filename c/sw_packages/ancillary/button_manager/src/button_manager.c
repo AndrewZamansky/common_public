@@ -72,7 +72,7 @@ typedef struct
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t button_manager_callback(void * const aHandle ,const uint8_t aCallback_num ,
+uint8_t button_manager_callback(pdev_descriptor_t apdev ,const uint8_t aCallback_num ,
 		void * aCallback_param1, void * aCallback_param2)
 {
 	os_queue_t xQueue ;
@@ -273,7 +273,7 @@ static void button_manager_task( void *aHandle )
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t button_manager_ioctl(void * const aHandle ,const uint8_t aIoctl_num
+uint8_t button_manager_ioctl(pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
 	uint8_t i,num;

@@ -350,7 +350,7 @@ static void spi_flash_partition_manager_task( void *pvParameters )
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t  SPI_FLASH_PARTITION_MANAGER_start(void * const aHandle)
+uint8_t  SPI_FLASH_PARTITION_MANAGER_start(pdev_descriptor_t apdev)
 {
 	uint8_t mbr_signiture[2];
 //	uint32_t id;
@@ -388,7 +388,7 @@ uint8_t  SPI_FLASH_PARTITION_MANAGER_start(void * const aHandle)
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t spi_flash_partition_manager_ioctl( void * const aHandle ,const uint8_t aIoctl_num
+uint8_t spi_flash_partition_manager_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
 	switch(aIoctl_num)

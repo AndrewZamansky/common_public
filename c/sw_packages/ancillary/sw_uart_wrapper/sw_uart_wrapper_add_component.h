@@ -3,10 +3,10 @@
 #include  "sw_uart_wrapper_api.h"
 #include "src/sw_uart_wrapper.h"
 
-extern uint8_t sw_uart_wrapper_ioctl(void * const aHandle ,const uint8_t aIoctl_num ,void * aIoctl_param1 , void * aIoctl_param2);
-extern uint8_t sw_uart_wrapper_callback(void * const aHandle ,const uint8_t aCallback_num ,
+extern uint8_t sw_uart_wrapper_ioctl(pdev_descriptor_t apdev ,const uint8_t aIoctl_num ,void * aIoctl_param1 , void * aIoctl_param2);
+extern uint8_t sw_uart_wrapper_callback(pdev_descriptor_t apdev ,const uint8_t aCallback_num ,
 		void * aCallback_param1, void * aCallback_param2);
-extern size_t sw_uart_wrapper_pwrite(const void *aHandle ,const uint8_t *apData , size_t aLength, size_t aOffset);
+extern size_t sw_uart_wrapper_pwrite(pdev_descriptor_t apdev ,const uint8_t *apData , size_t aLength, size_t aOffset);
 
 #define	MODULE_NAME					sw_uart_wrapper
 #define	MODULE_IOCTL_FUNCTION		sw_uart_wrapper_ioctl
@@ -49,7 +49,6 @@ extern size_t sw_uart_wrapper_pwrite(const void *aHandle ,const uint8_t *apData 
 
 	#ifdef CONFIG_SW_UART_WRAPPER_ENABLE_RX
 		#define RX_STRUCT_DATA						\
-				P_TO_STATIC_DEVICE_INST(DT_DEV_NAME),			/* .this_dev */	\
 				P_TO_STATIC_DEVICE_INST(SW_UART_WRAPPER_DT_CLIENT_PDEV),	/* .client_dev */	\
 				RX_BUFFER_STRUCT_DATA							\
 					0,				/* .WritePos */				\

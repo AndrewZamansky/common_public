@@ -43,7 +43,7 @@ static const uint8_t valid_serial_present_stamp[SIZE_OF_STAMP]={0x1A,0xB2,0x3C,0
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t serial_atmega_ioctl( void * const aHandle ,const uint8_t aIoctl_num
+uint8_t serial_atmega_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
 	uint8_t i,val;

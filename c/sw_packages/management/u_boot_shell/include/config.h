@@ -9,7 +9,7 @@
 
 #include "dev_management_api.h"
 #include "PRINTF_api.h"
-extern pdev_descriptor_const gCurrReplyDev;
+extern pdev_descriptor_t gCurrReplyDev;
 
 #define printf(...)		PRINTF_REPLY(gCurrReplyDev,__VA_ARGS__)
 

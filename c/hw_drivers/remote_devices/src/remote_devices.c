@@ -63,7 +63,7 @@ static const dev_param_t REMOTE_DEVICES_Dev_Params[]=
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t remote_devices_callback(void * const aHandle ,const uint8_t aCallback_num
+uint8_t remote_devices_callback(pdev_descriptor_t apdev ,const uint8_t aCallback_num
 		, void * aCallback_param1, void * aCallback_param2)
 {
 	ioctl_get_data_buffer_t data_buffer_info;
@@ -103,7 +103,7 @@ uint8_t packet_buff[48];
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t remote_devices_ioctl( void * const aHandle ,const uint8_t aIoctl_num
+uint8_t remote_devices_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
 	uint16_t tries,count;

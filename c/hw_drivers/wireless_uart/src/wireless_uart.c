@@ -81,7 +81,7 @@ static os_queue_t xQueue = NULL;
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t wireless_uart_callback(void * const aHandle ,const uint8_t aCallback_num
+uint8_t wireless_uart_callback(pdev_descriptor_t apdev ,const uint8_t aCallback_num
 		, void * aCallback_param1, void * aCallback_param2)
 {
 	xMessage_t  queueMsg;
@@ -284,7 +284,7 @@ static void wireless_uart_task( void *aHandle )
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t wireless_uart_ioctl( void * const aHandle ,const uint8_t aIoctl_num
+uint8_t wireless_uart_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
 

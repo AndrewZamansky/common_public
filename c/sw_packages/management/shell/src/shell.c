@@ -32,7 +32,6 @@
 
 /********  defines *********************/
 
-#define INSTANCE(hndl)	((shell_instance_t*)hndl)
 
 
 /********  types  *********************/
@@ -69,7 +68,7 @@ typedef enum
 
 
 static os_queue_t xQueue = NULL;
-pdev_descriptor_const gCurrReplyDev;
+pdev_descriptor_t gCurrReplyDev;
 
 #define SHELL_PRINTF_BUF_LENGTH	 64
 static uint8_t shell_printf_buffer[SHELL_PRINTF_BUF_LENGTH]; //  define your own buffer’s size
@@ -101,17 +100,21 @@ int printf(const char *Format, ...)
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t shell_callback(void * const aHandle ,const uint8_t aCallback_num
+uint8_t shell_callback(pdev_descriptor_t apdev ,const uint8_t aCallback_num
 		, void * aCallback_param1, void * aCallback_param2)
 {
+	shell_instance_t *handle;
 	xMessage_t  queueMsg;
+
+	handle = apdev->handle;
+
 	if (NULL == xQueue)
 	{
 		return 1;
 	}
 
 
-	queueMsg.pShell_instance = (shell_instance_t *)aHandle;
+	queueMsg.pShell_instance = handle;
 
 	//xQueueSendFromISR( xQueue, ( void * ) &queueMsg,  &xHigherPriorityTaskWoken );
 	os_queue_send_immediate( xQueue, ( void * ) &queueMsg);
@@ -143,7 +146,7 @@ static void Shell_Task( void *pvParameters )
 	uint8_t curr_char,eol_char;
 	ioctl_get_data_buffer_t data_buffer_info;
 	shell_instance_t  *curr_shell_instance;
-	pdev_descriptor_const   callback_dev;
+	pdev_descriptor_t   callback_dev;
 
 	xQueue = os_create_queue( CONFIG_SHELL_MAX_QUEUE_LEN , sizeof( xMessage_t ) );
 
@@ -323,9 +326,12 @@ static void Shell_Task( void *pvParameters )
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t shell_ioctl( void * const aHandle ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
+uint8_t shell_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
 {
-	pdev_descriptor_const   server_dev ;
+	shell_instance_t *handle;
+	pdev_descriptor_t   server_dev ;
+
+	handle = apdev->handle;
 
 	switch(aIoctl_num)
 	{
@@ -335,15 +341,15 @@ uint8_t shell_ioctl( void * const aHandle ,const uint8_t aIoctl_num , void * aIo
 				server_dev = DEV_OPEN((uint8_t*)aIoctl_param1);
 				if(NULL != server_dev)
 				{
-					DEV_IOCTL(server_dev, IOCTL_SET_ISR_CALLBACK_DEV ,  (void*)INSTANCE(aHandle)->this_dev);
+					DEV_IOCTL(server_dev, IOCTL_SET_ISR_CALLBACK_DEV ,  (void*)apdev);
 				}
 
-				INSTANCE(aHandle)->server_dev=server_dev;
+				handle->server_dev=server_dev;
 			}
 			break;
 #endif
 		case IOCTL_SET_CALLBACK_DEV:
-			INSTANCE(aHandle)->callback_dev =(pdev_descriptor_t) aIoctl_param1;
+			handle->callback_dev =(pdev_descriptor_t) aIoctl_param1;
 			break;
 		case IOCTL_DEVICE_START :
 			if(0==task_is_running)
@@ -351,7 +357,7 @@ uint8_t shell_ioctl( void * const aHandle ,const uint8_t aIoctl_num , void * aIo
 				task_is_running=1;
 				os_create_task("shell_task",Shell_Task,
 						NULL , SHELL_TASK_STACK_SIZE , SHELL_TASK_PRIORITY);
-				server_dev = INSTANCE(aHandle)->server_dev;
+				server_dev = handle->server_dev;
 				DEV_IOCTL_0_PARAMS(server_dev , IOCTL_DEVICE_START );
 
 			}

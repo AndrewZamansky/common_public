@@ -18,7 +18,7 @@
 
 typedef struct
 {
-	pdev_descriptor_const   hw_timer;
+	pdev_descriptor_t   hw_timer;
 	uint64_t	timer_value_on_start;
 	uint64_t	countdown_value;
 } timer_instance_t;

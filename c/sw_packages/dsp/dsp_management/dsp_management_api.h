@@ -65,16 +65,19 @@ typedef struct _dsp_out_pad_t
 }dsp_pad_t;
 
 
+typedef struct _dsp_descriptor_t	dsp_descriptor_t;
+typedef dsp_descriptor_t*	pdsp_descriptor;
 
 
-typedef uint8_t (*dsp_ioctl_func_t)(void * const aHandle ,
+
+typedef uint8_t (*dsp_ioctl_func_t)(pdsp_descriptor dsp ,
 		const uint8_t aIoctl_num , void * aIoctl_param1 ,  void * aIoctl_param2)  ;
-typedef uint8_t (*dsp_ioctl_0_params_func_t)(void * const aHandle ,const uint8_t aIoctl_num )  ;
-typedef uint8_t (*dsp_ioctl_1_params_func_t)(void * const aHandle ,const uint8_t aIoctl_num , void *param1)  ;
-typedef void (*dsp_func_t)(const void * const aHandle , size_t data_len ,
+typedef uint8_t (*dsp_ioctl_0_params_func_t)(pdsp_descriptor dsp ,const uint8_t aIoctl_num )  ;
+typedef uint8_t (*dsp_ioctl_1_params_func_t)(pdsp_descriptor dsp ,const uint8_t aIoctl_num , void *param1)  ;
+typedef void (*dsp_func_t)(pdsp_descriptor dsp , size_t data_len ,
 		dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] , dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS] )  ;
 
-typedef struct _dsp_descriptor_t
+struct _dsp_descriptor_t
 {
 //	uint8_t 			name[DSP_CONFIG_MAX_DSP_NAME_LEN+1];// +1 for null char
 	void*    			handle;
@@ -83,7 +86,7 @@ typedef struct _dsp_descriptor_t
 	DSP_MANAGEMENT_API_module_control_t				ctl;
 	dsp_pad_t	    *in_pads[MAX_NUM_OF_OUTPUT_PADS];
 	dsp_pad_t		out_pads[MAX_NUM_OF_OUTPUT_PADS];
-}dsp_descriptor_t,*pdsp_descriptor;
+};
 
 typedef const dsp_descriptor_t * pdsp_descriptor_const;
 typedef struct
@@ -97,10 +100,10 @@ typedef struct
 
 
 /*  ioctl functions */
-#define DSP_IOCTL_0_PARAMS(dsp,ioctl_num)   			((dsp_ioctl_0_params_func_t)(dsp)->ioctl)((dsp)->handle,ioctl_num)
-#define DSP_IOCTL_1_PARAMS(dsp,ioctl_num,ioctl_param)   ((dsp_ioctl_1_params_func_t)(dsp)->ioctl)((dsp)->handle,ioctl_num,ioctl_param)
+#define DSP_IOCTL_0_PARAMS(dsp,ioctl_num)   			((dsp_ioctl_0_params_func_t)(dsp)->ioctl)(dsp,ioctl_num)
+#define DSP_IOCTL_1_PARAMS(dsp,ioctl_num,ioctl_param)   ((dsp_ioctl_1_params_func_t)(dsp)->ioctl)(dsp,ioctl_num,ioctl_param)
 #define DSP_IOCTL		DSP_IOCTL_1_PARAMS
-#define DSP_IOCTL_2_PARAMS(dsp,ioctl_num,ioctl_param1,ioctl_param2)    (dsp)->ioctl((dsp)->handle,ioctl_num,ioctl_param1,ioctl_param2)
+#define DSP_IOCTL_2_PARAMS(dsp,ioctl_num,ioctl_param1,ioctl_param2)    (dsp)->ioctl(dsp,ioctl_num,ioctl_param1,ioctl_param2)
 
 
 

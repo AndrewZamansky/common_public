@@ -3,8 +3,8 @@
 #include  "uart_nuc505_api.h"
 #include 	"src/uart_nuc505.h"
 
-uint8_t uart_nuc505_ioctl( void * const aHandle ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2);
-size_t uart_nuc505_pwrite(const void *aHandle ,const uint8_t *apData , size_t aLength, size_t aOffset);
+uint8_t uart_nuc505_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2);
+size_t uart_nuc505_pwrite(pdev_descriptor_t apdev ,const uint8_t *apData , size_t aLength, size_t aOffset);
 
 #define	MODULE_NAME					uart_nuc505
 #define	MODULE_IOCTL_FUNCTION		uart_nuc505_ioctl

@@ -33,7 +33,6 @@
 #define portNVIC_SYSTICK_CURRENT_VALUE_REG	( * ( ( volatile uint32_t * ) 0xe000e018 ) )
 
 
-#define INSTANCE(hndl)	((CORTEXM_SYSTICK_Instance_t*)hndl)
 
 /***************   typedefs    *******************/
 
@@ -74,36 +73,38 @@ void __attribute__((interrupt("IRQ"))) SysTick_IRQHandler(void)
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t cortexM_systick_ioctl( void * const aHandle ,const uint8_t aIoctl_num
+uint8_t cortexM_systick_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
+	CORTEXM_SYSTICK_Instance_t *handle;
 
+	handle = apdev->handle;
 	switch(aIoctl_num)
 	{
 		case IOCTL_TIMER_RATE_HZ_SET :
 			{
-				INSTANCE(aHandle)->rate = ((uint32_t)aIoctl_param1);
+				handle->rate = ((uint32_t)aIoctl_param1);
 			}
 			break;
 
 		case IOCTL_TIMER_CALLBACK_SET :
 			{
-				INSTANCE(aHandle)->timer_callback = ((timer_callback_func_t)aIoctl_param1);
+				handle->timer_callback = ((timer_callback_func_t)aIoctl_param1);
 			}
 			break;
 
 		case IOCTL_TIMER_MODE_SET :
 			{
-				INSTANCE(aHandle)->mode = ((size_t)aIoctl_param1);
+				handle->mode = ((size_t)aIoctl_param1);
 			}
 			break;
 
 		case IOCTL_DEVICE_START :
 			{
 				uint32_t core_clock_rate = 	clocks_api_get_rate(CONFIG_DT_CORTEX_M_SYSTICK_INPUT_CLOCK);
-				pCORTEXM_SYSTICK_InstanceParams = (CORTEXM_SYSTICK_Instance_t*)aHandle;
+				pCORTEXM_SYSTICK_InstanceParams = handle;
 				/* Configure SysTick to interrupt at the requested rate. */
-				SysTick->LOAD  = ((core_clock_rate/INSTANCE(aHandle)->rate) & SysTick_LOAD_RELOAD_Msk) - 1;      /* set reload register */
+				SysTick->LOAD  = ((core_clock_rate/handle->rate) & SysTick_LOAD_RELOAD_Msk) - 1;      /* set reload register */
 				SysTick->VAL   = 0;                                          /* Load the SysTick Counter Value */
 				SysTick->CTRL  = SysTick_CTRL_CLKSOURCE_Msk |
 			                   SysTick_CTRL_TICKINT_Msk   |

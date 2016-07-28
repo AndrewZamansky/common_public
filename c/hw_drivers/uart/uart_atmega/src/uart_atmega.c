@@ -186,7 +186,7 @@ size_t uart_atmega_pwrite(const void *aHandle ,const uint8_t *apData , size_t aL
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t uart_atmega_ioctl( void * const aHandle ,const uint8_t aIoctl_num
+uint8_t uart_atmega_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
 	switch(aIoctl_num)

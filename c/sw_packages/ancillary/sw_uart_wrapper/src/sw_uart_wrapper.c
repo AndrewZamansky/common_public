@@ -37,7 +37,6 @@ typedef struct
 } xMessage_t;
 
 
-typedef void  (*delay_func_t)(uint32_t mSec);
 
 /********  externals *********************/
 
@@ -71,7 +70,7 @@ inline uint8_t SW_UART_WRAPPER_TX_Done(SW_UART_WRAPPER_Instance_t *pInstance,tx_
 //	uint8_t queueMsg;
 	os_queue_t xQueue = pInstance->xTX_WaitQueue;
 	tx_int_size_t data_length = (tx_int_size_t)pInstance->data_length;
-	pdev_descriptor_const   server_dev = pInstance->server_dev;
+	pdev_descriptor_t   server_dev = pInstance->server_dev;
 	pInstance->sendData += transmitedSize;
 	if(data_length > transmitedSize)
     {
@@ -109,12 +108,11 @@ inline uint8_t SW_UART_WRAPPER_TX_Done(SW_UART_WRAPPER_Instance_t *pInstance,tx_
 inline uint8_t SW_UART_WRAPPER_Data_Received(SW_UART_WRAPPER_Instance_t *pInstance ,
 		uint8_t *rcvdData , rx_int_size_t rcvdDataLen)
 {
-#ifdef  CONFIG_SW_UART_WRAPPER_ENABLE_RX
     uint8_t *rx_buff;
     rx_int_size_t WritePos,ReadPos;
     rx_int_size_t copy_len;
     rx_int_size_t rx_buff_size;
-    pdev_descriptor_const   client_dev = pInstance->client_dev;
+    pdev_descriptor_t   client_dev = pInstance->client_dev;
 
 	rx_buff=pInstance->rx_buff;
 
@@ -158,9 +156,8 @@ inline uint8_t SW_UART_WRAPPER_Data_Received(SW_UART_WRAPPER_Instance_t *pInstan
 	{
 		return DEV_CALLBACK_0_PARAMS( client_dev,CALLBACK_NEW_DATA_ARRIVED  ) ;
 	}
-#endif
-	return 1;
 
+	return 1;
 }
 #endif
 
@@ -175,17 +172,20 @@ inline uint8_t SW_UART_WRAPPER_Data_Received(SW_UART_WRAPPER_Instance_t *pInstan
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t sw_uart_wrapper_callback(void * const aHandle ,const uint8_t aCallback_num , void * aCallback_param1, void * aCallback_param2)
+uint8_t sw_uart_wrapper_callback(pdev_descriptor_t apdev ,const uint8_t aCallback_num , void * aCallback_param1, void * aCallback_param2)
 {
+	SW_UART_WRAPPER_Instance_t *handle;
+
+	handle = apdev->handle;
 	switch(aCallback_num)
 	{
 		case CALLBACK_TX_DONE :
-			return SW_UART_WRAPPER_TX_Done(INSTANCE(aHandle),(tx_int_size_t)((size_t)aCallback_param1));
+			return SW_UART_WRAPPER_TX_Done(handle,(tx_int_size_t)((size_t)aCallback_param1));
 		   break;
 #ifdef CONFIG_SW_UART_WRAPPER_ENABLE_RX
 		case CALLBACK_DATA_RECEIVED :
 
-			return SW_UART_WRAPPER_Data_Received(INSTANCE(aHandle),
+			return SW_UART_WRAPPER_Data_Received(handle,
 					(uint8_t *)aCallback_param1,(rx_int_size_t)((size_t)aCallback_param2));
 			break;
 #endif
@@ -212,7 +212,7 @@ static void sw_uart_send_and_wait_for_end(SW_UART_WRAPPER_Instance_t *pInstance 
 {
 
 	os_queue_t xTX_WaitQueue = pInstance->xTX_WaitQueue;
-	pdev_descriptor_const   server_dev = pInstance->server_dev;
+	pdev_descriptor_t   server_dev = pInstance->server_dev;
 //	uint8_t	xRx_TX_Wait_Message;
 	pInstance->data_length=aLength;
 	pInstance->sendData=apData;
@@ -243,18 +243,21 @@ static void sw_uart_send_and_wait_for_end(SW_UART_WRAPPER_Instance_t *pInstance 
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-size_t sw_uart_wrapper_pwrite(const void *aHandle ,const uint8_t *apData , size_t aLength, size_t aOffset)
+size_t sw_uart_wrapper_pwrite(pdev_descriptor_t apdev ,const uint8_t *apData , size_t aLength, size_t aOffset)
 {
+	SW_UART_WRAPPER_Instance_t *handle;
 	tx_int_size_t dataLen= (tx_int_size_t)aLength;
 	tx_int_size_t curr_transmit_len;
 
 
 	uint8_t *pSendData;
 
+	handle = apdev->handle;
+
 	while(dataLen)
 	{
 		xMessage_t xMessage;
-		os_queue_t xQueue = INSTANCE(aHandle)->xQueue;
+		os_queue_t xQueue = handle->xQueue;
 
 		curr_transmit_len = dataLen;
 
@@ -276,7 +279,7 @@ size_t sw_uart_wrapper_pwrite(const void *aHandle ,const uint8_t *apData , size_
 
 		xMessage.len=curr_transmit_len;
 
-		if(INSTANCE(aHandle)->use_task_for_out)
+		if(handle->use_task_for_out)
 		{
 			if(NULL == xQueue) return 1;
 
@@ -290,7 +293,7 @@ size_t sw_uart_wrapper_pwrite(const void *aHandle ,const uint8_t *apData , size_
 		}
 		else
 		{
-			sw_uart_send_and_wait_for_end(INSTANCE(aHandle),pSendData,curr_transmit_len,0);
+			sw_uart_send_and_wait_for_end(handle,pSendData,curr_transmit_len,0);
 		}
 
 		dataLen-=curr_transmit_len;
@@ -363,59 +366,63 @@ static void SW_UART_WRAPPER_Send_Task( void *aHandle )
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t sw_uart_wrapper_ioctl(void * const aHandle ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
+uint8_t sw_uart_wrapper_ioctl(pdev_descriptor_t apdev ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
 {
+	SW_UART_WRAPPER_Instance_t *handle;
 	rx_int_size_t WritePos,ReadPos;
-	pdev_descriptor_const   server_dev;
+	pdev_descriptor_t   server_dev;
+
+	handle = apdev->handle;
+
 #ifdef  CONFIG_SW_UART_WRAPPER_ENABLE_RX
-	WritePos=INSTANCE(aHandle)->WritePos;
-	ReadPos=INSTANCE(aHandle)->ReadPos;
+	WritePos=handle->WritePos;
+	ReadPos=handle->ReadPos;
 #endif
-	server_dev  = INSTANCE(aHandle)->server_dev;
+	server_dev  = handle->server_dev;
 
 	switch(aIoctl_num)
 	{
 #ifdef CONFIG_SW_UART_WRAPPER_USE_RUNTIME_CONFIGURATION
 		case IOCTL_SET_SERVER_DEVICE_BY_NAME :
 			server_dev = DEV_OPEN((uint8_t*)aIoctl_param1);
-			INSTANCE(aHandle)->server_dev = server_dev;
+			handle->server_dev = server_dev;
 			if (NULL != server_dev)
 			{
-				DEV_IOCTL(server_dev, IOCTL_SET_ISR_CALLBACK_DEV, (void*)INSTANCE(aHandle)->this_dev);
+				DEV_IOCTL(server_dev, IOCTL_SET_ISR_CALLBACK_DEV, (void*)apdev);
 			}
 			break;
 #ifdef CONFIG_SW_UART_WRAPPER_ENABLE_RX
 #ifdef CONFIG_SW_UART_WRAPPER_USE_MALLOC
 		case IOCTL_SW_UART_WRAPPER_SET_BUFF_SIZE :
-			INSTANCE(aHandle)->rx_buff_size = atoi((char*)aIoctl_param1);
+			handle->rx_buff_size = atoi((char*)aIoctl_param1);
 			break;
 #endif			//for CONFIG_SW_UART_WRAPPER_ENABLE_RX
 		case IOCTL_SET_ISR_CALLBACK_DEV :
-			INSTANCE(aHandle)->client_dev = (pdev_descriptor_t)aIoctl_param1;
+			handle->client_dev = (pdev_descriptor_t)aIoctl_param1;
 			break;
 #endif			//for CONFIG_SW_UART_WRAPPER_ENABLE_RX
 #endif // for CONFIG_SW_UART_WRAPPER_MAX_NUM_OF_DYNAMIC_INSTANCES > 0
 
 #ifdef CONFIG_SW_UART_WRAPPER_ENABLE_RX
 		case IOCTL_GET_AND_LOCK_DATA_BUFFER :
-			INSTANCE(aHandle)->isDataInUse=1; // should be modified first
+			handle->isDataInUse=1; // should be modified first
 
-			((ioctl_get_data_buffer_t *)aIoctl_param1)->bufferWasOverflowed = INSTANCE(aHandle)->bufferWasOverflowed ;
-			INSTANCE(aHandle)->bufferWasOverflowed = 0;
+			((ioctl_get_data_buffer_t *)aIoctl_param1)->bufferWasOverflowed = handle->bufferWasOverflowed ;
+			handle->bufferWasOverflowed = 0;
 			((ioctl_get_data_buffer_t *)aIoctl_param1)->TotalLength = WritePos - ReadPos;
 
-			((ioctl_get_data_buffer_t *)aIoctl_param1)->pBufferStart = &INSTANCE(aHandle)->rx_buff[ReadPos];
+			((ioctl_get_data_buffer_t *)aIoctl_param1)->pBufferStart = &handle->rx_buff[ReadPos];
 			break;
 		case IOCTL_SET_BYTES_CONSUMED_IN_DATA_BUFFER :
-			INSTANCE(aHandle)->ReadPos += (size_t)aIoctl_param1;
+			handle->ReadPos += (size_t)aIoctl_param1;
 			if(  ReadPos >  WritePos)
 			{
 				// should not be reached :
-				INSTANCE(aHandle)->ReadPos =  WritePos;
+				handle->ReadPos =  WritePos;
 			}
 			break;
 		case IOCTL_SET_UNLOCK_DATA_BUFFER :
-			INSTANCE(aHandle)->isDataInUse= 0 ; // should be modified last
+			handle->isDataInUse= 0 ; // should be modified last
 
 			break;
 #endif // for CONFIG_SW_UART_WRAPPER_ENABLE_RX
@@ -425,15 +432,15 @@ uint8_t sw_uart_wrapper_ioctl(void * const aHandle ,const uint8_t aIoctl_num , v
 			break;
 
 		case IOCTL_SW_UART_WRAPPER_USE_TASK :
-			INSTANCE(aHandle)->use_task_for_out = (size_t)aIoctl_param1;
+			handle->use_task_for_out = (size_t)aIoctl_param1;
 			break;
 
 		case IOCTL_DEVICE_START :
 #ifdef CONFIG_SW_UART_WRAPPER_USE_MALLOC
-			INSTANCE(aHandle)->rx_buff = (uint8_t*)malloc(INSTANCE(aHandle)->rx_buff_size);
+			handle->rx_buff = (uint8_t*)malloc(handle->rx_buff_size);
 #endif
 			os_create_task("sw_uart_wrapper_task",SW_UART_WRAPPER_Send_Task,
-					aHandle , SW_UART_WRAPPER_TASK_STACK_SIZE , SW_UART_WRAPPER_TASK_PRIORITY);
+					handle , SW_UART_WRAPPER_TASK_STACK_SIZE , SW_UART_WRAPPER_TASK_PRIORITY);
 			DEV_IOCTL_0_PARAMS(server_dev , IOCTL_DEVICE_START );
 			break;
 

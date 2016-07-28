@@ -239,7 +239,7 @@ static void   send_str_to_chip	(const uint8_t *data)
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t ESP8266_callback(void * const aHandle ,const uint8_t aCallback_num
+uint8_t ESP8266_callback(pdev_descriptor_t apdev ,const uint8_t aCallback_num
 		, void * aCallback_param1, void * aCallback_param2)
 {
 	xMessage_t  queueMsg;
@@ -926,7 +926,7 @@ static uint32_t  ESP8266_Start( )
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-static uint8_t ESP8266_ioctl(void * const aHandle ,const uint8_t aIoctl_num
+static uint8_t ESP8266_ioctl(pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
 	xMessage_t  queueMsg;
