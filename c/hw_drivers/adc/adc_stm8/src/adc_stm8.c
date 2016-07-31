@@ -19,8 +19,6 @@
 
 /***************   defines    *******************/
 
-#define P_INSTANCE(pHndl)  ((ADC_STM8_Instance_t*)pHndl)
-#define ADC_HAL_MAX_NUM_OF_ADCS 	2
 
 /***************   typedefs    *******************/
 
@@ -48,12 +46,14 @@ void ADC1_Init_Reduced(ADC1_PresSel_TypeDef ADC1_PrescalerSelection, ADC1_ExtTri
 uint8_t adc_stm8_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
+	ADC_STM8_Instance_t *handle;
 
+	handle = apdev->handle;
 	switch(aIoctl_num)
 	{
 		case IOCTL_ADC_GET_CURRENT_VALUE_mV :
 			ADC1_ConversionConfig(
-					ADC1_CONVERSIONMODE_SINGLE,P_INSTANCE(aHandle)->channel,
+					ADC1_CONVERSIONMODE_SINGLE,handle->channel,
 					ADC1_ALIGN_RIGHT
 					);
 			os_delay_ms(1);

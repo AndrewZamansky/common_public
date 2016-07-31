@@ -10,8 +10,8 @@ config NUC505
 config POLEG
 	bool "poleg"
 
-config STM32F10x
-	bool "stm32f10x"
+config STM32F103RC
+	bool "stm32f103rc"
 
 config GENERIC_SOC
 	bool "generic SOC"
@@ -37,6 +37,10 @@ config ARM_926EJ_S
 config SOC_HAS_DSP
     bool
     default n
+
+if STM32F103RC
+source "$COMMON_DIR_PATH/c/hw_drivers/arch/ARM/soc/stm32/stm32f103rc/Kconfig"
+endif
 
 if NUC505
 source "$COMMON_DIR_PATH/c/hw_drivers/arch/ARM/soc/nuc505/Kconfig"
