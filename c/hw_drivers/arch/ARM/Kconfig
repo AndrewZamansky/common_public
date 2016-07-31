@@ -60,5 +60,10 @@ config OPTIMISE_ULTRA_SPEED
 
 endchoice
 
+
+config USED_FOR_SEMIHOSTING_UPLOADING
+	bool   "used for semihosting uploading"
+	default n
+
 endmenu
 

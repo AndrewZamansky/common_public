@@ -1,16 +1,14 @@
-ifeq ($(findstring stm32f10x,$(CONFIG_SOC_TYPE)),stm32f10x)
-    ifeq ($(findstring YES,$(CONFIG_INCLUDE_INTERNAL_CLOCK_CONTROL)),YES) 	 
-    	INCLUDE_THIS_COMPONENT := YES   # must be here !!
-    endif  
+ifdef CONFIG_STM32F103RC
+    INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_INTERNAL_CLOCK_CONTROL)
 endif
 
-INCLUDE_DIR = $(EXTERNAL_SOURCE_ROOT_DIR)/ST/STM32F10x_StdPeriph_Driver/inc
+#INCLUDE_DIR =
 
 #DEFINES = 
 
-#CFLAGS = 
+#CFLAGS =
 
-#ASMFLAGS =  
+#ASMFLAGS =
 
 
 
@@ -18,6 +16,6 @@ SRC = clocks_control_stm32f10x.c
 VPATH = src
 
 SRC += stm32f10x_rcc.c
-VPATH +=  | $(EXTERNAL_SOURCE_ROOT_DIR)/ST/STM32F10x_StdPeriph_Driver/src
+VPATH +=   | $(STM32F10X_SRC_DIR)
 
 include $(COMMON_CC)

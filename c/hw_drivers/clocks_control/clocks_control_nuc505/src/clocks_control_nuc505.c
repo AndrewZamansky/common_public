@@ -11,9 +11,8 @@
 
 
 /********  includes *********************/
-#include "_project_typedefs.h"
-#include "_project_defines.h"
-#include "_project_func_declarations.h"
+#include "_project.h"
+
 #include "auto_init_api.h"
 
 #include "clocks_api.h"

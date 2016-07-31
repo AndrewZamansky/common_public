@@ -10,11 +10,7 @@
 
 /********  includes *********************/
 
-#include "_project_typedefs.h"
-#include "_project_defines.h"
-#include "_project_func_declarations.h"
-
-#include "dev_management_api.h" // for device manager defines and typedefs
+#include "src/_uart_stm32f10x_prerequirements_check.h"
 
 #include "irq_api.h"
 #include "stm32f10x_usart.h"
@@ -23,6 +19,7 @@
 #include "misc.h"
 
 #include "uart_stm32f10x_api.h"
+#include "uart_stm32f10x.h"
 
 #include "sw_uart_wrapper_api.h"
 #include "uart_api.h"
@@ -43,28 +40,11 @@
 
 /********  local defs *********************/
 
-#define UART_STM32F103X_NUM_OF_INSTANCES	3
-typedef struct {
-	USART_TypeDef* USARTx_Handle;
-	pdev_descriptor_t   callback_dev;
-	uint8_t   uart_num;
-	uint32_t baud_rate;
-} UART_STM32F103x_Instance_t;
-
-static UART_STM32F103x_Instance_t UART_STM32F103x_Instance[UART_STM32F103X_NUM_OF_INSTANCES]={{0}};
-static uint16_t usedInstances =0 ;
 
 
 #define INSTANCE(hndl)	((UART_STM32F103x_Instance_t*)hndl)
 
-static UART_STM32F103x_Instance_t *pHw_uart_pointer_to_instance[UART_STM32F103X_NUM_OF_INSTANCES];
-
-static const dev_param_t UART_STM32F10X_Dev_Params[]=
-{
-		{IOCTL_UART_SET_BAUD_RATE , IOCTL_VOID , (uint8_t*)UART_API_BAUD_RATE_STR, NOT_FOR_SAVE},
-		{IOCTL_UART_STM32F10X_SET_UART_NUM , IOCTL_VOID , (uint8_t*)UART_STM32F10X_API_UART_NUM_STR, NOT_FOR_SAVE},
-		{IOCTL_UART_STM32F10X_DISABLE , IOCTL_VOID , (uint8_t*)UART_STM32F10X_API_UART_DISABLE_STR, NOT_FOR_SAVE},
-};
+static UART_STM32F103x_Instance_t *pHw_uart_pointer_to_instance[3];
 
 
 /*  function : Common_UART_Isr
@@ -119,10 +99,13 @@ void UART3_Isr( void )
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-size_t uart_stm32f10x_pwrite(const void *aHandle ,const uint8_t *apData , size_t aLength, size_t aOffset)
+size_t uart_stm32f10x_pwrite(pdev_descriptor_t apdev , const uint8_t *apData , size_t aLength, size_t aOffset)
 {
+	UART_STM32F103x_Instance_t *handle;
     USART_TypeDef* USARTx;
-    USARTx=INSTANCE(aHandle)->USARTx_Handle;
+
+	handle = apdev->handle;
+    USARTx=handle->USARTx_Handle;
     USART_SendData( USARTx, *apData );
     USART_ITConfig( USARTx , USART_IT_TXE, ENABLE );
     return 1;
@@ -156,7 +139,7 @@ inline uint8_t UART_STM32F10x_Init(UART_STM32F103x_Instance_t *apHandle)
 		case 1:
 			USARTx=USART1;
 			pIsr= UART1_Isr;
-			int_num = USART1_IRQn;
+			int_num = CONFIG_DT_UART1_INTERRUPT;
 			RCC_APB2PeriphClockCmd(	RCC_APB2Periph_USART1 | RCC_APB2Periph_GPIOA, ENABLE );
 
 			GPIO_InitStructureTX.GPIO_Pin = GPIO_Pin_9;
@@ -166,7 +149,7 @@ inline uint8_t UART_STM32F10x_Init(UART_STM32F103x_Instance_t *apHandle)
 		case 2:
 			USARTx=USART2;
 			pIsr = UART2_Isr;
-			int_num = USART2_IRQn;
+			int_num = CONFIG_DT_UART2_INTERRUPT;
 			RCC_APB1PeriphClockCmd(	RCC_APB1Periph_USART2 , ENABLE );
 
 			GPIO_InitStructureTX.GPIO_Pin = GPIO_Pin_2;
@@ -176,7 +159,7 @@ inline uint8_t UART_STM32F10x_Init(UART_STM32F103x_Instance_t *apHandle)
 		case 3:
 			USARTx=USART3;
 			pIsr = UART3_Isr;
-			int_num = USART3_IRQn;
+			int_num = CONFIG_DT_UART3_INTERRUPT;
 			RCC_APB1PeriphClockCmd(	RCC_APB1Periph_USART3 , ENABLE );
 
 			GPIO_InitStructureTX.GPIO_Pin = GPIO_Pin_10;
@@ -249,19 +232,17 @@ inline uint8_t UART_STM32F10x_Init(UART_STM32F103x_Instance_t *apHandle)
 uint8_t uart_stm32f10x_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
+	UART_STM32F103x_Instance_t *handle;
     USART_TypeDef* USARTx;
-    USARTx=INSTANCE(aHandle)->USARTx_Handle;
+
+	handle = apdev->handle;
+    USARTx=handle->USARTx_Handle;
 	GPIO_InitTypeDef GPIO_InitStructureTX;
 
 	switch(aIoctl_num)
 	{
-		case IOCTL_GET_PARAMS_ARRAY_FUNC :
-			*(const dev_param_t**)aIoctl_param1  = UART_STM32F10X_Dev_Params;
-			*(uint8_t*)aIoctl_param2 =  sizeof(UART_STM32F10X_Dev_Params)/sizeof(dev_param_t); //size
-			break;
-
 		case IOCTL_UART_STM32F10X_SET_UART_NUM :
-			INSTANCE(aHandle)->uart_num = atoi((char*)aIoctl_param1);
+			handle->uart_num = atoi((char*)aIoctl_param1);
 			break;
 		case IOCTL_UART_TURN_OFF :
 			USART_Cmd( USARTx, DISABLE );
@@ -269,10 +250,10 @@ uint8_t uart_stm32f10x_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 			GPIO_Init( GPIOA, &GPIO_InitStructureTX );
 			break;
 		case IOCTL_UART_SET_BAUD_RATE :
-			INSTANCE(aHandle)->baud_rate = atoi((char*)aIoctl_param1);
+			handle->baud_rate = atoi((char*)aIoctl_param1);
 			break;
 		case IOCTL_DEVICE_START :
-			UART_STM32F10x_Init(INSTANCE(aHandle));
+			UART_STM32F10x_Init(handle);
 			break;
 		case IOCTL_UART_DISABLE_TX :
 			USART_ITConfig( USARTx, USART_IT_TXE, DISABLE );
@@ -281,36 +262,10 @@ uint8_t uart_stm32f10x_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 	//	    USART_ITConfig( USARTx , USART_IT_TXE, ENABLE );
 		    break;
 		case IOCTL_SET_ISR_CALLBACK_DEV:
-			INSTANCE(aHandle)->callback_dev =(pdev_descriptor_t) aIoctl_param1;
+			handle->callback_dev =(pdev_descriptor_t) aIoctl_param1;
 			break;
 		default :
 			return 1;
 	}
 	return 0;
-}
-
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        uart_stm32f10x_api_dev_descriptor                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-uint8_t  uart_stm32f10x_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor)
-{
-	if(NULL == aDevDescriptor) return 1;
-	if (usedInstances >= UART_STM32F103X_NUM_OF_INSTANCES) return 1;
-
-
-	aDevDescriptor->handle = &UART_STM32F103x_Instance[usedInstances];
-	aDevDescriptor->ioctl = uart_stm32f10x_ioctl;
-	aDevDescriptor->pwrite = uart_stm32f10x_pwrite;
-	usedInstances++;
-
-	return 0 ;
-
 }
