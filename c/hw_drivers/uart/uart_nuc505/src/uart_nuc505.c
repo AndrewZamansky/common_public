@@ -185,8 +185,8 @@ uint8_t uart_nuc505_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 				    /* Enable UART RDA/RLS/Time-out interrupt */
 				    UART_EnableInt(UART0, (UART_INTEN_RDAIEN_Msk  | UART_INTEN_RXTOIEN_Msk));
 
-					irq_register_interrupt(CONFIG_DT_UART0_INTERRUPT , UART0_IRQHandler);
-					irq_set_priority(CONFIG_DT_UART0_INTERRUPT , INTERRUPT_LOWEST_PRIORITY - 1 );
+					irq_register_interrupt(UART0_IRQn , UART0_IRQHandler);
+					irq_set_priority(UART0_IRQn , INTERRUPT_LOWEST_PRIORITY - 1 );
 					irq_enable_interrupt(UART0_IRQn);
 				    break;
 				case 1:

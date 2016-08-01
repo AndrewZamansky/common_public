@@ -5,6 +5,8 @@
 
 #include "src/_gpio_NUC505_prerequirements_check.h"
 #include "gpio_api.h"
+
+
 /**********  define API  types ************/
 
 

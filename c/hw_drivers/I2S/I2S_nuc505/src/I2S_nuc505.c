@@ -265,9 +265,9 @@ void __attribute__((section(".critical_text"))) I2S_IRQHandler(void)
 		// Rx Enable
 		I2S_ENABLE_RX(I2S);
 
-		irq_register_interrupt(CONFIG_DT_I2S_INTERRUPT , I2S_IRQHandler);
-		irq_set_priority(CONFIG_DT_I2S_INTERRUPT , OS_MAX_INTERRUPT_PRIORITY_FOR_API_CALLS );
-		irq_enable_interrupt(CONFIG_DT_I2S_INTERRUPT);
+		irq_register_interrupt(I2S_IRQn , I2S_IRQHandler);
+		irq_set_priority(I2S_IRQn , OS_MAX_INTERRUPT_PRIORITY_FOR_API_CALLS );
+		irq_enable_interrupt(I2S_IRQn);
 
 
 //		NVIC_EnableIRQ(I2S_IRQn);

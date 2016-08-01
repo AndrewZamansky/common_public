@@ -12,10 +12,14 @@
 #define _cpu_config_H
 
 /*  just copy from NUC505Series.h */
-#include "NUC505Series.h"
 
 #define ARM_MATH_CM4	1
 
+/*IRQn_Type can be defined in different files describing different socs .
+ so it needs to be disabled in api functions */
+#define IRQn_Type IRQn_Type_GPIO_NUC505_API_H_
+#include "NUC505Series.h"
+#undef IRQn_Type
 
 #if 0 // defined in NUC505Series.h
 
