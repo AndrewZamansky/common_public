@@ -125,7 +125,7 @@ uint8_t cortexM_systick_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 			                   SysTick_CTRL_TICKINT_Msk   |
 			                   SysTick_CTRL_ENABLE_Msk;                    /* Enable SysTick IRQ and SysTick Timer */
 
-				irq_register_interrupt(CONFIG_DT_CORTEX_M_SYSTICK_INTERRUPT , SysTick_IRQHandler);
+				irq_register_interrupt(SysTick_IRQn , SysTick_IRQHandler);
 				//	irq_enable_interrupt(SysTick_IRQn);// no need to enable systick interrupt
 			}
 			break;

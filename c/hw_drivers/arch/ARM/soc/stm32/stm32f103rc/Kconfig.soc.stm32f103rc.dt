@@ -36,48 +36,7 @@ endmenu
 ##########  end of  clock tree  ###############
 ###############################################
 
-##################################################
-##########  interrupts definitions ###############
 
-menu "interrupts"
-
-comment "CONFIG_DT_SV_CALL_INTERRUPT : sv call interrupt"
-config DT_SV_CALL_INTERRUPT
-    int
-    default -5 
-
-comment "CONFIG_DT_PEND_SV_INTERRUPT : pending sv interrupt"
-config DT_PEND_SV_INTERRUPT
-    int
-    default -2 
-
-comment "CONFIG_DT_CORTEX_M_SYSTICK_INTERRUPT : systick interrupt"
-config DT_CORTEX_M_SYSTICK_INTERRUPT
-    int
-    default -1 
-
-comment "CONFIG_DT_UART1_INTERRUPT : uart1 interrupt"
-config DT_UART1_INTERRUPT
-    int
-    default 37
-
-comment "CONFIG_DT_UART1_INTERRUPT : uart2 interrupt"
-config DT_UART2_INTERRUPT
-    int
-    default 38
-    
-    
-comment "CONFIG_DT_UART2_INTERRUPT : uart3 interrupt"
-config DT_UART3_INTERRUPT
-    int
-    default 39
-        
-endmenu
-
-
-##########  end of interrupts definitions ###############
-#########################################################
-    
 
 
 ##################################################
@@ -120,7 +79,6 @@ config DT_CORTEX_M_SYSTICK_INPUT_CLOCK
 	int   
 	default DT_CORE_CLOCK
 
-comment "CONFIG_DT_CORTEX_M_SYSTICK_INTERRUPT : systick interrupt"
 
 
 endmenu
