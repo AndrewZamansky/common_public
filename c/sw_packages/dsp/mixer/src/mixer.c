@@ -112,14 +112,6 @@ uint8_t mixer_ioctl(pdsp_descriptor apdsp ,const uint8_t aIoctl_num , void * aIo
 	channels_weights = handle->channels_weights ;
 	switch(aIoctl_num)
 	{
-//#if MIXER_CONFIG_NUM_OF_DYNAMIC_INSTANCES > 0
-//		case IOCTL_GET_PARAMS_ARRAY_FUNC :
-//			*(const dev_param_t**)aIoctl_param1  = MIXER_Dev_Params;
-//			*(uint8_t*)aIoctl_param2 = sizeof(MIXER_Dev_Params)/sizeof(dev_param_t); //size
-//			break;
-//#endif // for MIXER_CONFIG_NUM_OF_DYNAMIC_INSTANCES > 0
-
-
 		case IOCTL_DEVICE_START :
 
 

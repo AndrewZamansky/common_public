@@ -95,14 +95,6 @@ uint8_t I2S_splitter_ioctl(pdsp_descriptor aDspDescriptor ,const uint8_t aIoctl_
 {
 	switch(aIoctl_num)
 	{
-//#if I2S_SPLITTER_CONFIG_NUM_OF_DYNAMIC_INSTANCES > 0
-//		case IOCTL_GET_PARAMS_ARRAY_FUNC :
-//			*(const dev_param_t**)aIoctl_param1  = I2S_SPLITTER_Dev_Params;
-//			*(uint8_t*)aIoctl_param2 = sizeof(I2S_SPLITTER_Dev_Params)/sizeof(dev_param_t); //size
-//			break;
-//#endif // for I2S_SPLITTER_CONFIG_NUM_OF_DYNAMIC_INSTANCES > 0
-
-
 		case IOCTL_DEVICE_START :
 
 

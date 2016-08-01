@@ -13,6 +13,9 @@ config POLEG
 config STM32F103RC
 	bool "stm32f103rc"
 
+config NPCE586
+	bool "npce586"
+
 config GENERIC_SOC
 	bool "generic SOC"
 
@@ -37,6 +40,11 @@ config ARM_926EJ_S
 config SOC_HAS_DSP
     bool
     default n
+
+if NPCE586
+source "$COMMON_DIR_PATH/c/hw_drivers/arch/ARM/soc/npce586/Kconfig"
+endif
+
 
 if STM32F103RC
 source "$COMMON_DIR_PATH/c/hw_drivers/arch/ARM/soc/stm32/stm32f103rc/Kconfig"

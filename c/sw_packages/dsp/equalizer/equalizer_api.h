@@ -40,9 +40,4 @@ typedef struct _equalizer_api_band_set_t
 
 uint8_t  equalizer_api_init_dsp_descriptor(pdsp_descriptor aDspDescriptor);
 
-//#include "src/_equalizer_static_dev_macros.h"
-//
-//#define EQUALIZER_API_CREATE_STATIC_DEV(dev,dev_name)  __EQUALIZER_API_CREATE_STATIC_DEV(dev,dev_name )
-//
-
 #endif

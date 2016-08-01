@@ -101,10 +101,10 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
         $(info  looking for GNU make in default location)
         MAKE_DIR     :=$(TOOLS_ROOT_DIR)\make\make4.1
         ifeq ("$(wildcard $(MAKE_DIR))","")
-            $(info make path $(MAKE_DIR) dont exists )
-            $(info download GNU make version 4.1 and unpack it to $(MAKE_DIR)  )
-            $(info make sure that bin directory is located in $(MAKE_DIR)\  after unpacking  .  )
-            $(info you can set customized make utility path in REDEFINE_MAKE_PROGRAM_DIR variable in $(REDEFINE_MAKE_PROGRAM_DIR)/workspace_config.mk )
+            $(info !--- make path $(MAKE_DIR) dont exists )
+            $(info !--- download GNU make version 4.1 and unpack it to $(MAKE_DIR)  )
+            $(info !--- make sure that bin directory is located in $(MAKE_DIR)\  after unpacking  .  )
+            $(info !--- you can set customized make utility path in REDEFINE_MAKE_PROGRAM_DIR variable in $(REDEFINE_MAKE_PROGRAM_DIR)/workspace_config.mk )
             $(error )
         endif
         MAKE_DIR := $(MAKE_DIR)/bin

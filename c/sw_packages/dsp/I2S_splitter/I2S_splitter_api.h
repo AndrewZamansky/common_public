@@ -12,19 +12,10 @@
 /**********  define API  types ************/
 
 
-
-
-
-
 /**********  define API  functions  ************/
 
 
 
 uint8_t  I2S_splitter_api_init_dsp_descriptor(pdsp_descriptor aDspDescriptor);
-
-//#include "src/_I2S_splitter_static_dev_macros.h"
-//
-//#define I2S_SPLITTER_API_CREATE_STATIC_DEV(dev,dev_name)  __I2S_SPLITTER_API_CREATE_STATIC_DEV(dev,dev_name )
-//
 
 #endif

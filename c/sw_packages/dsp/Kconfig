@@ -76,6 +76,15 @@ config VOICE_3D_IS_SPEED_CRITICAL
 	depends on INCLUDE_VOICE_3D
 	default y
 
+menuconfig INCLUDE_FFT
+	bool   "fft"
+	default n
+
+config FFT_IS_SPEED_CRITICAL
+	bool   "fft is speed critical"
+	depends on INCLUDE_FFT
+	default y
+
 menuconfig INCLUDE_FFMPEG
 	bool   "ffmpeg"
 	default n

@@ -27,9 +27,4 @@ typedef enum
 
 uint8_t  voice_3D_api_init_dsp_descriptor(pdsp_descriptor aDspDescriptor);
 
-//#include "src/_voice_3D_static_dev_macros.h"
-//
-//#define VOICE_3D_API_CREATE_STATIC_DEV(dev,dev_name)  __VOICE_3D_API_CREATE_STATIC_DEV(dev,dev_name )
-//
-
 #endif

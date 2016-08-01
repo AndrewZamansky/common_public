@@ -32,9 +32,5 @@ typedef struct _set_channel_weight_t
 
 uint8_t  mixer_api_init_dsp_descriptor(pdsp_descriptor aDspDescriptor);
 
-//#include "src/_mixer_static_dev_macros.h"
-//
-//#define MIXER_API_CREATE_STATIC_DEV(dev,dev_name)  __MIXER_API_CREATE_STATIC_DEV(dev,dev_name )
-//
 
 #endif

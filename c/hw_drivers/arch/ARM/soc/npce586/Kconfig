@@ -1,0 +1,25 @@
+menu "`--->  npce586 board configurations"
+
+choice
+	prompt "Board"
+	default NUC505_EB
+
+config NPCE586_EB
+	bool "npce586 evaluation board"
+
+endchoice
+
+if NPCE586_EB
+source "$COMMON_DIR_PATH/c/hw_drivers/arch/ARM/soc/npce586/Kconfig.eb.npce586.dt"
+endif
+
+
+
+endmenu
+
+=======
+config NPCE586_EB_BOARD
+	def_bool y
+	select INTERNAL_SRAM 
+	select CORTEX_M4 
+	select SOC_HAS_DSP

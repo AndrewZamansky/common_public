@@ -28,9 +28,4 @@
 
 uint8_t  speex_echo_canceller_api_init_dsp_descriptor(pdsp_descriptor aDspDescriptor);
 
-//#include "src/_speex_echo_canceller_static_dev_macros.h"
-//
-//#define SPEEX_ECHO_CANCELLER_API_CREATE_STATIC_DEV(dev,dev_name)  __SPEEX_ECHO_CANCELLER_API_CREATE_STATIC_DEV(dev,dev_name )
-//
-
 #endif

@@ -37,9 +37,4 @@ typedef enum
 
 uint8_t  compressor_api_init_dsp_descriptor(pdsp_descriptor aDspDescriptor);
 
-//#include "src/_compressor_static_dev_macros.h"
-//
-//#define COMPRESSOR_API_CREATE_STATIC_DEV(dev,dev_name)  __COMPRESSOR_API_CREATE_STATIC_DEV(dev,dev_name )
-//
-
 #endif
