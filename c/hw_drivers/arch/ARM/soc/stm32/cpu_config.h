@@ -11,7 +11,6 @@
 #ifndef _cpu_config_H
 #define _cpu_config_H
 
-#include "stm32f10x.h"
 
 #define __NVIC_PRIO_BITS	4
 

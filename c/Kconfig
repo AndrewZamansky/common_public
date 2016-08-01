@@ -24,7 +24,7 @@ endchoice
 
 
 
-menu "`--->  architecture configurations"
+menu "Build System"
 
 if ARM
 source "$COMMON_DIR_PATH/c/hw_drivers/arch/ARM/Kconfig"

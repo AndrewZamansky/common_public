@@ -139,7 +139,7 @@ inline uint8_t UART_STM32F10x_Init(UART_STM32F103x_Instance_t *apHandle)
 		case 1:
 			USARTx=USART1;
 			pIsr= UART1_Isr;
-			int_num = CONFIG_DT_UART1_INTERRUPT;
+			int_num = USART1_IRQn;
 			RCC_APB2PeriphClockCmd(	RCC_APB2Periph_USART1 | RCC_APB2Periph_GPIOA, ENABLE );
 
 			GPIO_InitStructureTX.GPIO_Pin = GPIO_Pin_9;
@@ -149,7 +149,7 @@ inline uint8_t UART_STM32F10x_Init(UART_STM32F103x_Instance_t *apHandle)
 		case 2:
 			USARTx=USART2;
 			pIsr = UART2_Isr;
-			int_num = CONFIG_DT_UART2_INTERRUPT;
+			int_num = USART2_IRQn;
 			RCC_APB1PeriphClockCmd(	RCC_APB1Periph_USART2 , ENABLE );
 
 			GPIO_InitStructureTX.GPIO_Pin = GPIO_Pin_2;
@@ -159,7 +159,7 @@ inline uint8_t UART_STM32F10x_Init(UART_STM32F103x_Instance_t *apHandle)
 		case 3:
 			USARTx=USART3;
 			pIsr = UART3_Isr;
-			int_num = CONFIG_DT_UART3_INTERRUPT;
+			int_num = USART3_IRQn;
 			RCC_APB1PeriphClockCmd(	RCC_APB1Periph_USART3 , ENABLE );
 
 			GPIO_InitStructureTX.GPIO_Pin = GPIO_Pin_10;
@@ -204,12 +204,6 @@ inline uint8_t UART_STM32F10x_Init(UART_STM32F103x_Instance_t *apHandle)
 	irq_register_interrupt(int_num , pIsr);
 	irq_set_priority(int_num , INTERRUPT_LOWEST_PRIORITY - 2 );
 	irq_enable_interrupt(int_num);
-
-//	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = INTERRUPT_LOWEST_PRIORITY -2;
-//	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
-//	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-//	NVIC_Init(&NVIC_InitStructure);
-
 
 	USART_ITConfig( USARTx, USART_IT_RXNE, ENABLE );
 	USART_Cmd( USARTx, ENABLE );
