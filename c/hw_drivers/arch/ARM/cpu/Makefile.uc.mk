@@ -23,9 +23,6 @@ endif
 
 SRC =
 
-ifdef CONFIG_INCLUDE_SEMIHOSTING 	 
-    SRC += semihosting.c
-endif
 
 ifdef CONFIG_GCC
     SRC += SWI.s

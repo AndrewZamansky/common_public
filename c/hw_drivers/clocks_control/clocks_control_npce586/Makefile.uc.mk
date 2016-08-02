@@ -1,0 +1,19 @@
+ifdef CONFIG_NPCE586
+    INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_INTERNAL_CLOCK_CONTROL)
+endif
+
+#INCLUDE_DIR =
+
+#DEFINES = 
+
+#CFLAGS =
+
+#ASMFLAGS =
+
+
+
+SRC = clocks_control_npce586.c
+VPATH = src
+
+
+include $(COMMON_CC)

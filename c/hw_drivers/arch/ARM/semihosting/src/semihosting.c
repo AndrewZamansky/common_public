@@ -9,16 +9,17 @@
 
 /* ------------------------ INCLUDES ---------------------------------------*/
 
+#include "semihosting_api.h"
 #include "src/_semihosting_prerequirements_check.h"
 
-#include "ARM_api.h"
 #include "PRINTF_api.h"
 #ifdef CONFIG_ARM_SEMIHOSTING_CONFIG_ENABLE_RX
     #include "os_wrapper.h"
 #endif
 
+#include "semihosting.h"
+
 /* ------------------------ defines ------------------------------*/
-#define INSTANCE(hndl)	((SEMIHOSTING_Instance_t*)hndl)
 
 /* ------------------------typedefs ------------------------------*/
 
@@ -37,7 +38,6 @@
 static int BKPT(int op, void* p1, void* p2) ;
 extern int smihosting_is_active ;
 static int terminal_hndl;
-static SEMIHOSTING_Instance_t  sh_instance;
 
 
 #define SYS_OPEN    	0x01
@@ -212,11 +212,13 @@ void arm_get_line_from_console(uint8_t* pBuffer,int maxLen)
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-size_t arm_sh_pwrite(const void *aHandle ,const uint8_t *apData , size_t aLength, size_t aOffset)
+size_t semihosting_pwrite( pdev_descriptor_t apdev ,const uint8_t *apData , size_t aLength, size_t aOffset)
 {
-	pdev_descriptor_const   callback_dev;
+	SEMIHOSTING_Instance_t *handle;
+	pdev_descriptor_t   callback_dev;
 
-	callback_dev = INSTANCE(aHandle)->callback_dev;
+	handle = apdev->handle ;
+	callback_dev = handle->callback_dev;
 	ARM_API_SH_Write(terminal_hndl,apData,aLength);
 	if(NULL != callback_dev)
 	{
@@ -243,11 +245,12 @@ const char *p_sync_file_str;
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-static void create_sync_file( SEMIHOSTING_Instance_t *aHandle , int sync_file_hanfler )
+static void create_sync_file( pdev_descriptor_t apdev  , int sync_file_hanfler )
 {
-	PRINT_STR_REPLY(INSTANCE(aHandle)->this_dev , "\r\n\r\nif you want to enter commands over semihosting\r\ndelete ");
-	PRINT_STR_REPLY(INSTANCE(aHandle)->this_dev ,p_sync_file_str);
-	PRINT_STR_REPLY(INSTANCE(aHandle)->this_dev , " and wait for shell sign\r\n");
+	PRINT_STR_REPLY(apdev , "\r\n\r\nif you want to enter commands over semihosting\r\ndelete ");
+	PRINT_STR_REPLY(apdev ,p_sync_file_str);
+	PRINT_STR_REPLY(apdev , " and wait for shell sign\r\n");
+	PRINT_STR_REPLY(apdev , " -- if you cannot delete the file , re-open debugger server \r\n");
 	ARM_API_SH_Write(sync_file_hanfler,(const uint8_t*) "a", 1);
 	ARM_API_SH_Close(sync_file_hanfler);
 }
@@ -267,36 +270,39 @@ static void create_sync_file( SEMIHOSTING_Instance_t *aHandle , int sync_file_ha
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-static void test_for_input_ready( SEMIHOSTING_Instance_t *aHandle )
+static void test_for_input_ready( pdev_descriptor_t apdev  )
 {
 	uint8_t cRead;
 	int read_sync_hndl;
 	size_t i;
-	pdev_descriptor_const   callback_dev;
+	pdev_descriptor_t   callback_dev;
+	SEMIHOSTING_Instance_t *handle;
+
 	static uint8_t run_state = RUN_STATE_PREINIT;
 
+	handle = apdev->handle;
 
 	if (RUN_STATE_PREINIT == run_state)
 	{
 		p_sync_file_str = windows_sync_file;
-		PRINTF_REPLY(INSTANCE(aHandle)->this_dev,"trying to create %s \r\n",p_sync_file_str);
+		PRINTF_REPLY(apdev ,"trying to create %s \r\n",p_sync_file_str);
 		read_sync_hndl=ARM_API_SH_Open(p_sync_file_str,4);
 		if(-1 == read_sync_hndl)
 		{
 			p_sync_file_str = linux_sync_file;
-			PRINTF_REPLY(INSTANCE(aHandle)->this_dev,"trying to create %s \r\n",p_sync_file_str);
+			PRINTF_REPLY(apdev ,"trying to create %s \r\n",p_sync_file_str);
 			read_sync_hndl=ARM_API_SH_Open(p_sync_file_str,4);
 		}
 
 
 		if (-1 != read_sync_hndl)
 		{
-			create_sync_file(aHandle,read_sync_hndl);
+			create_sync_file(apdev,read_sync_hndl);
 			run_state = RUN_STATE_RUNNING;
 		}
 		else
 		{
-			PRINT_STR_REPLY(INSTANCE(aHandle)->this_dev,"cannot create sync file \r\n");
+			PRINT_STR_REPLY(apdev ,"cannot create sync file \r\n");
 			run_state = RUN_STATE_FAILED_CREATING_FILE;
 		}
 
@@ -316,9 +322,9 @@ static void test_for_input_ready( SEMIHOSTING_Instance_t *aHandle )
 	}
 	else
 	{
-		PRINTF_REPLY(aHandle->this_dev , "\r\n\r\nenter command (length should be less than %d) \r\n"
+		PRINTF_REPLY(apdev , "\r\n\r\nenter command (length should be less than %d) \r\n"
 				"and press 'enter' till response \r\n>",CONFIG_ARM_SEMIHOSTING_RX_BUFFER);
-		ARM_API_SH_Read(terminal_hndl,sh_rx_buffer,CONFIG_ARM_SEMIHOSTING_RX_BUFFER);
+		ARM_API_SH_Read(terminal_hndl ,sh_rx_buffer,CONFIG_ARM_SEMIHOSTING_RX_BUFFER);
 		cRead = sh_rx_buffer[0];
 		i=1;
 		while (('\n' != cRead) && ('\r' != cRead) && (i<CONFIG_ARM_SEMIHOSTING_RX_BUFFER))
@@ -327,21 +333,21 @@ static void test_for_input_ready( SEMIHOSTING_Instance_t *aHandle )
 		}
 		if(i == (CONFIG_ARM_SEMIHOSTING_RX_BUFFER + 1))
 		{
-			PRINTF_REPLY(aHandle->this_dev , "error : command should be less then %d chars \r\n",CONFIG_ARM_SEMIHOSTING_RX_BUFFER);
+			PRINTF_REPLY(apdev , "error : command should be less then %d chars \r\n",CONFIG_ARM_SEMIHOSTING_RX_BUFFER);
 			sh_rx_buffer[0]='\n';
 		}
 
-		callback_dev = INSTANCE(aHandle)->callback_dev;
+		callback_dev = handle->callback_dev;
 		if (callback_dev )
 		{
 
-			DEV_CALLBACK_2_PARAMS(callback_dev , CALLBACK_DATA_RECEIVED,  sh_rx_buffer, (void*)(i-1));
+			DEV_CALLBACK_2_PARAMS(callback_dev , CALLBACK_DATA_RECEIVED,  sh_rx_buffer, (void*)i);
 		}
 
 		read_sync_hndl=ARM_API_SH_Open(p_sync_file_str,4);
 		if (-1 != read_sync_hndl)
 		{
-			create_sync_file(aHandle,read_sync_hndl);
+			create_sync_file(apdev,read_sync_hndl);
 		}
 	}
 
@@ -370,7 +376,7 @@ void poll_for_semihosting_data_task( void *aHandle )
 	{
 		os_delay_ms( 5000 );
 
-		test_for_input_ready(aHandle);
+		test_for_input_ready((pdev_descriptor_t)aHandle);
 
 		os_stack_test();
 
@@ -392,63 +398,31 @@ void poll_for_semihosting_data_task( void *aHandle )
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t arm_sh_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num , void * aIoctl_param1, void * aIoctl_param2)
+uint8_t semihosting_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num , void * aIoctl_param1, void * aIoctl_param2)
 {
+	SEMIHOSTING_Instance_t *handle;
+
+	handle = apdev->handle;
 	switch(aIoctl_num)
 	{
-		case IOCTL_GET_PARAMS_ARRAY_FUNC :
-			*(uint8_t*)aIoctl_param2 =  0; // size
-			break;
-
 		case IOCTL_DEVICE_START :
 			terminal_hndl=ARM_API_SH_Open(":tt",5);//mode 5=wb
-
 #ifdef CONFIG_ARM_SEMIHOSTING_CONFIG_ENABLE_RX
-			if(NULL != aHandle)
-			{
-				os_create_task("sw_uart_wrapper_task",poll_for_semihosting_data_task,
-						aHandle , ARM_SEMIHOSTING_CONFIG_TASK_STACK_SIZE , ARM_SEMIHOSTING_CONFIG_TASK_PRIORITY);
-			}
+			os_create_task("sw_uart_wrapper_task",poll_for_semihosting_data_task,
+					apdev , ARM_SEMIHOSTING_CONFIG_TASK_STACK_SIZE , ARM_SEMIHOSTING_CONFIG_TASK_PRIORITY);
 #endif
 			break;
 		case IOCTL_SET_CALLBACK_DEV:
 		case IOCTL_SET_ISR_CALLBACK_DEV:
-			INSTANCE(aHandle)->callback_dev =(pdev_descriptor_t) aIoctl_param1;
+			handle->callback_dev =(pdev_descriptor_t) aIoctl_param1;
 			break;
+#ifdef CONFIG_ARM_SEMIHOSTING_CONFIG_ENABLE_RX
 		case IOCTL_ARM_SH_CALL_NO_OS_TASK:
-			test_for_input_ready(aHandle);
+			test_for_input_ready(apdev);
 			break;
+#endif
 		default :
 			return 1;
 	}
 	return 0;
 }
-
-
-
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        ARM_SH_API_Init_Dev_Descriptor                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-uint8_t  arm_sh_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor)
-{
-	if(NULL == aDevDescriptor) return 1;
-
-
-	aDevDescriptor->handle = &sh_instance;
-	aDevDescriptor->ioctl = arm_sh_ioctl;
-	aDevDescriptor->pwrite = arm_sh_pwrite;
-	sh_instance.callback_dev = NULL;
-	sh_instance.this_dev = aDevDescriptor;
-
-	return 0 ;
-
-}
-

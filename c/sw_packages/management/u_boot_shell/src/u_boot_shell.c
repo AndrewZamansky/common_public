@@ -88,7 +88,7 @@ uint8_t u_boot_shell_callback(pdev_descriptor_t apdev ,const uint8_t aCallback_n
 	if(CALLBACK_DATA_RECEIVED == aCallback_num)
 	{
 		pCmdStart =( char *)aCallback_param1;
-		pCmdStart[((size_t)aCallback_param2) ]='\0';
+		pCmdStart[((size_t)aCallback_param2) - 1]='\0';
 		run_command((const char *)pCmdStart,0);
 	}
 	return 0;

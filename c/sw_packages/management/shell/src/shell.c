@@ -273,7 +273,7 @@ static void Shell_Task( void *pvParameters )
 						if (callback_dev )
 						{
 							DEV_CALLBACK_2_PARAMS(callback_dev , CALLBACK_DATA_RECEIVED,
-									pCmdStart, (void*)cmd_len);
+									pCmdStart, (void*)(cmd_len+1));
 						}
 					}
 

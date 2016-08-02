@@ -43,7 +43,7 @@
 
 /***********   local variables    **************/
 
-#define FFT_SIZE	I2S_BUFF_LEN
+#define FFT_SIZE	I2S_BUFF_LEN/2
 /*---------------------------------------------------------------------------------------------------------*/
 /* Function:        fft_dsp                                                                          */
 /*                                                                                                         */
@@ -62,15 +62,15 @@ void fft_dsp(pdsp_descriptor apdsp, size_t data_len ,
 //	FFT_Instance_t *handle;
 	float *apCh1In;
 	float *apCh1Out;
-	arm_cfft_radix2_instance_f32 S;    /* ARM CFFT module */
+	arm_cfft_radix4_instance_f32 S;    /* ARM CFFT module */
 
 
 //	handle = apdsp->handle;
 	apCh1In = in_pads[0]->buff;
 	apCh1Out = out_pads[0].buff;
 
-	 arm_cfft_radix2_init_f32(&S, FFT_SIZE, 0, 1);
-	 arm_cfft_radix2_f32(&S, apCh1In);
+	 arm_cfft_radix4_init_f32(&S, FFT_SIZE, 0, 1);
+	 arm_cfft_radix4_f32(&S, apCh1In);
 	 arm_cmplx_mag_f32(apCh1In, apCh1Out, FFT_SIZE);
 }
 

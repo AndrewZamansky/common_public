@@ -2,7 +2,7 @@ menu "`--->  npce586 board configurations"
 
 choice
 	prompt "Board"
-	default NUC505_EB
+	default NPCE586_EB
 
 config NPCE586_EB
 	bool "npce586 evaluation board"

@@ -22,9 +22,9 @@ extern size_t sw_uart_wrapper_pwrite(pdev_descriptor_t apdev ,const uint8_t *apD
 
 	#ifdef CONFIG_SW_UART_WRAPPER_ENABLE_RX
 
-	#ifndef SW_UART_WRAPPER_DT_CLIENT_PDEV
-		#error "SW_UART_WRAPPER_DT_CLIENT_PDEV should be defined"
-	#endif
+//	#ifndef SW_UART_WRAPPER_DT_CLIENT_PDEV
+//		#error "SW_UART_WRAPPER_DT_CLIENT_PDEV should be defined"
+//	#endif
 
 	#ifdef CONFIG_SW_UART_WRAPPER_USE_MALLOC
 		#ifndef SW_UART_WRAPPER_DT_RX_BUFFER_SIZE
@@ -35,8 +35,13 @@ extern size_t sw_uart_wrapper_pwrite(pdev_descriptor_t apdev ,const uint8_t *apD
 	#endif // CONFIG_SW_UART_WRAPPER_ENABLE_RX
 
 
-	EXTERN_DECLARATION_TO_STATIC_DEVICE_INST(SW_UART_WRAPPER_DT_SERVER_PDEV) ;
+#ifdef SW_UART_WRAPPER_DT_CLIENT_PDEV
 	EXTERN_DECLARATION_TO_STATIC_DEVICE_INST(SW_UART_WRAPPER_DT_CLIENT_PDEV) ;
+	#define POINTER_TO_CLIENT_PDEV		P_TO_STATIC_DEVICE_INST(SW_UART_WRAPPER_DT_CLIENT_PDEV)
+#else
+	#define POINTER_TO_CLIENT_PDEV		NULL
+#endif
+	EXTERN_DECLARATION_TO_STATIC_DEVICE_INST(SW_UART_WRAPPER_DT_SERVER_PDEV) ;
 
 	#ifdef CONFIG_SW_UART_WRAPPER_USE_MALLOC
 		#define RX_BUFFER_STRUCT_DATA									\
@@ -49,7 +54,7 @@ extern size_t sw_uart_wrapper_pwrite(pdev_descriptor_t apdev ,const uint8_t *apD
 
 	#ifdef CONFIG_SW_UART_WRAPPER_ENABLE_RX
 		#define RX_STRUCT_DATA						\
-				P_TO_STATIC_DEVICE_INST(SW_UART_WRAPPER_DT_CLIENT_PDEV),	/* .client_dev */	\
+				POINTER_TO_CLIENT_PDEV,	/* .client_dev */	\
 				RX_BUFFER_STRUCT_DATA							\
 					0,				/* .WritePos */				\
 					0,				/* .ReadPos */				\
