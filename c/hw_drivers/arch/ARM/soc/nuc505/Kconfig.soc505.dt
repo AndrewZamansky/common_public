@@ -1,41 +1,5 @@
 menu "nuc505 soc configuration"
 
-config MAX_NUMBER_OF_CLOCKS
-    hex
-    default 2 
-    
-config INITIAL_CORE_CLOCK
-    hex
-    default CRYSTAL_CLOCK 
-
-
-#######################################
-##########  clock tree  ###############
-
-menu "clocks tree"
-
-comment "CONFIG_DT_XTAL_CLOCK : external crystal clock"
-config DT_XTAL_CLOCK
-    hex
-    default 1 
-
-config DT_XTAL_CLOCK_RATE
-    hex
-    default CRYSTAL_CLOCK 
-
-
-
-comment "CONFIG_DT_CORE_CLOCK : cortex m systick clock"
-config DT_CORE_CLOCK
-    hex
-    default 2
-
-endmenu
-
-
-##########  end of  clock tree  ###############
-###############################################
-
 
 
 ##################################################
@@ -68,19 +32,5 @@ endmenu
 #############  end of memories on soc ###################
 #########################################################
 
-
-
-menu "systick"
-	
-comment "CONFIG_DT_CORTEX_M_SYSTICK_INPUT_CLOCK : systick clock"
-
-config DT_CORTEX_M_SYSTICK_INPUT_CLOCK
-	int   
-	default DT_CORE_CLOCK
-
-comment "CONFIG_DT_CORTEX_M_SYSTICK_INTERRUPT : systick interrupt"
-
-
-endmenu
 
 endmenu

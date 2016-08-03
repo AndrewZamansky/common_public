@@ -14,15 +14,15 @@ size_t uart_nuc505_pwrite(pdev_descriptor_t apdev ,const uint8_t *apData , size_
 #ifdef DT_DEV_MODULE
 
 	#ifndef UART_NUC505_DT_UART_NUMBER
-	#error "UART_NUC505_DT_UART_NUMBER should be defined"
+		#error "UART_NUC505_DT_UART_NUMBER should be defined"
 	#endif
 
 	#ifndef UART_NUC505_DT_CALLBACK_PDEV
-	#error "UART_NUC505_DT_CALLBACK_PDEV should be defined"
+		#error "UART_NUC505_DT_CALLBACK_PDEV should be defined"
 	#endif
 
 	#ifndef UART_NUC505_DT_BAUD_RATE
-	#error "UART_NUC505_DT_BAUD_RATE should be defined"
+		#error "UART_NUC505_DT_BAUD_RATE should be defined"
 	#endif
 
 	EXTERN_DECLARATION_TO_STATIC_DEVICE_INST(UART_NUC505_DT_CALLBACK_PDEV) ;

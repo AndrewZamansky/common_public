@@ -22,7 +22,7 @@ extern "C" {
 /*----------------------------------------------------------------------------
   Define clocks
  *----------------------------------------------------------------------------*/
-#define __HXT         (CONFIG_DT_XTAL_CLOCK_RATE) /*(12000000UL)*/  /*!< High Speed External Crystal Clock Frequency 12MHz */
+#define __HXT         (CONFIG_CRYSTAL_CLOCK) /*(12000000UL)*/  /*!< High Speed External Crystal Clock Frequency 12MHz */
 #define __LXT         (32768UL)     /*!< Low Speed External Crystal Clock Frequency 32.768kHz */
 #define __HIRC        (22118400UL)  /*!< High Speed Internal 22MHz RC Oscillator Frequency */
 #define __LIRC        (10000UL)     /*!< Low Speed Internal 10kHz RC Oscillator Frequency */

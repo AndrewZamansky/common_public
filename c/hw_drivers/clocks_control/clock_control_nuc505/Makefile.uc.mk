@@ -13,7 +13,7 @@ endif
 
 
 
-SRC = clocks_control_nuc505.c
+SRC = clock_control_nuc505.c
 VPATH = src
 
 SRC += clk.c

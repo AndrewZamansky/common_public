@@ -145,17 +145,17 @@ typedef struct
 
 /*  ioctl functions */
 #define DEV_IOCTL_0_PARAMS(dev,ioctl_num)   			((dev_ioctl_0_params_func_t)(dev)->ioctl)(dev ,ioctl_num)
-#define DEV_IOCTL_1_PARAMS(dev,ioctl_num,ioctl_param)   ((dev_ioctl_1_params_func_t)(dev)->ioctl)(dev ,ioctl_num,ioctl_param)
+#define DEV_IOCTL_1_PARAMS(dev,ioctl_num,ioctl_param)   ((dev_ioctl_1_params_func_t)(dev)->ioctl)(dev ,ioctl_num,(void*)ioctl_param)
 #define DEV_IOCTL		DEV_IOCTL_1_PARAMS
-#define DEV_IOCTL_2_PARAMS(dev,ioctl_num,ioctl_param1,ioctl_param2)    (dev)->ioctl(dev ,ioctl_num,ioctl_param1,ioctl_param2)
+#define DEV_IOCTL_2_PARAMS(dev,ioctl_num,ioctl_param1,ioctl_param2)    (dev)->ioctl(dev ,ioctl_num,(void*)ioctl_param1,(void*)ioctl_param2)
 
 /* callback functions */
 #define DEV_CALLBACK_0_PARAMS(dev,callback_num)    \
 		  ((dev_callback_0_params_func_t)(dev)->callback)(dev ,callback_num)
 #define DEV_CALLBACK_1_PARAMS(dev,callback_num,callback_param)    \
-		  ((dev_callback_1_params_func_t)(dev)->callback)(dev,callback_num,callback_param)
+		  ((dev_callback_1_params_func_t)(dev)->callback)(dev,callback_num,(void*)callback_param)
 #define DEV_CALLBACK_2_PARAMS(dev,callback_num,callback_param1,callback_param2)    \
-	 	 dev->callback(dev ,callback_num,callback_param1,callback_param2)
+	 	 dev->callback(dev ,callback_num,(void*)callback_param1,(void*)callback_param2)
 
 
 #define DEV_PWRITE(dev,data,len,offset)    		dev->pwrite(dev ,data,len,offset)

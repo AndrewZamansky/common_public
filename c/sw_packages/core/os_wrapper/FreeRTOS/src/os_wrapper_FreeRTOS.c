@@ -88,7 +88,7 @@ void vApplicationIdleHook()
  */
 void vPortSetupTimerInterrupt( void )
 {
-	DEV_IOCTL_1_PARAMS(l_timer_dev , IOCTL_TIMER_CALLBACK_SET , (void*) system_tick_callback);
+	DEV_IOCTL_1_PARAMS(l_timer_dev , IOCTL_TIMER_CALLBACK_SET , system_tick_callback);
 	DEV_IOCTL_0_PARAMS(l_timer_dev , IOCTL_DEVICE_START );
 }
 

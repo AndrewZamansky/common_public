@@ -75,7 +75,7 @@ uint8_t heartbeat_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num , voi
 	{
 		case IOCTL_DEVICE_START :
 
-			DEV_IOCTL_1_PARAMS(handle->callibration_timer , IOCTL_TIMER_CALLBACK_SET ,  (void*)heartbeat_timer_callback);
+			DEV_IOCTL_1_PARAMS(handle->callibration_timer , IOCTL_TIMER_CALLBACK_SET , heartbeat_timer_callback);
 			DEV_IOCTL_0_PARAMS(handle->callibration_timer , IOCTL_DEVICE_START );
 
 			irq_unblock_all()	;

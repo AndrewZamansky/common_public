@@ -13,9 +13,9 @@
 /********  includes *********************/
 #include "_project.h"
 
-#include "auto_init_api.h"
-
-#include "clocks_api.h"
+#include "clock_control_api.h"
+#include "clock_control_nuc505_api.h"
+#include "clock_control_nuc505.h"
 
 #include "NUC505Series.h"
 
@@ -29,15 +29,23 @@ uint32_t CyclesPerUs      = (__HSI / 1000000);  /*!< Cycles per micro second    
 
 /********  types  *********************/
 
+typedef uint32_t (*clock_get_func_t)(void )  ;
+typedef uint8_t (*clock_set_func_t)(uint32_t )  ;
+
+typedef struct
+{
+	clock_set_func_t clock_set_func;
+	clock_get_func_t clock_get_func;
+}clocks_nuc505_t;
 
 /********  externals *********************/
 
 
-/********  local defs *********************/
+/********  local variables *********************/
+static clocks_nuc505_t clocks_array[];
 
 
-
-uint32_t gau32ClkSrcTbl[] = {__HXT, 0}; 				/*!< System clock source table */
+static uint32_t gau32ClkSrcTbl[] = {__HXT, 0}; 				/*!< System clock source table */
 
 /*----------------------------------------------------------------------------
   Clock functions
@@ -72,19 +80,17 @@ void SystemCoreClockUpdate (void)            /* Get Core Clock Frequency      */
 
 
 
-uint8_t xtal_set_clock(uint32_t rate)
+static uint8_t xtal_set_clock(uint32_t rate)
 {
 	return 0;
 }
-uint32_t xtal_get_clock(void )
+static uint32_t xtal_get_clock(void )
 {
-	return CONFIG_DT_XTAL_CLOCK_RATE;
+	return CONFIG_CRYSTAL_CLOCK;
 }
-clocks_common_t input_xtal_clock = {CONFIG_DT_XTAL_CLOCK_RATE , xtal_set_clock , xtal_get_clock};
 
 
-
-uint8_t core_set_clock(uint32_t rate)
+static uint8_t core_set_clock(uint32_t rate)
 {
 
 	CLK->PWRCTL |= CLK_PWRCTL_HXTEN_Msk;
@@ -97,15 +103,15 @@ uint8_t core_set_clock(uint32_t rate)
     SystemCoreClockUpdate();
     return 0;
 }
-uint32_t core_get_clock(void )
+static uint32_t core_get_clock(void )
 {
 	return SystemCoreClock;;
 }
-clocks_common_t core_clock = {0 , core_set_clock , core_get_clock};
+
 
 
 /*---------------------------------------------------------------------------------------------------------*/
-/* Function:        clocks_api_init                                                                          */
+/* Function:        clocks_control_nuc505_ioctl                                                                          */
 /*                                                                                                         */
 /* Parameters:                                                                                             */
 /*                                                                                         */
@@ -115,14 +121,58 @@ clocks_common_t core_clock = {0 , core_set_clock , core_get_clock};
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-void clocks_init(void)
+uint8_t clock_control_nuc505_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
+		, void * aIoctl_param1 , void * aIoctl_param2)
 {
+	size_t clock_index;
+	CLOCK_CONTROL_NUC505_Instance_t *handle;
+
+	handle = apdev->handle;
+	clock_index = (size_t)aIoctl_param1 ;
+	switch(aIoctl_num)
+	{
+		case IOCTL_CLOCK_CONTROL_GET_RATE :
+			if(NUC505_TOTAL_NUM_OF_CLOCKS <= clock_index )
+			{
+				*(uint32_t*)aIoctl_param2 = 0;
+				return 1;
+			}
+			else
+			{
+				*(uint32_t*)aIoctl_param2 = clocks_array[clock_index].clock_get_func();
+			}
+
+			break;
+
+		case IOCTL_CLOCK_CONTROL_SET_RATE :
+			if(NUC505_TOTAL_NUM_OF_CLOCKS <= clock_index )
+			{
+				return 1;
+			}
+			else
+			{
+				return clocks_array[clock_index].clock_set_func((uint32_t)aIoctl_param2);
+			}
+			break;
+
+		case IOCTL_DEVICE_START :
+			for(clock_index =0; clock_index < NUC505_TOTAL_NUM_OF_CLOCKS ; clock_index++)
+			{
+				clocks_nuc505_t *p_curr_clock;
+				p_curr_clock = &clocks_array[clock_index];
+				p_curr_clock->clock_set_func(handle->initial_clock_rates[clock_index]);
+			}
+			break;
 
 
-    clocks_api_add_clock(CONFIG_DT_XTAL_CLOCK, &input_xtal_clock);
-    clocks_api_add_clock(CONFIG_DT_CORE_CLOCK, &core_clock);
-
-
+		default :
+			return 1;
+	}
+	return 0;
 }
 
-AUTO_INIT_FUNCTION(clocks_init);
+static clocks_nuc505_t clocks_array[NUC505_TOTAL_NUM_OF_CLOCKS] =
+{
+		{xtal_set_clock , xtal_get_clock},
+		{core_set_clock , core_get_clock}
+};

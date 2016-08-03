@@ -12,7 +12,7 @@
 #include "cortexM_systick_api.h"
 #include "cortexM_systick.h"
 #include "irq_api.h"
-#include "clocks_api.h"
+#include "clock_control_api.h"
 
 #include "cortexM_systick_add_component.h"
 
@@ -116,7 +116,8 @@ uint8_t cortexM_systick_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 
 		case IOCTL_DEVICE_START :
 			{
-				uint32_t core_clock_rate = 	clocks_api_get_rate(CONFIG_DT_CORTEX_M_SYSTICK_INPUT_CLOCK);
+				uint32_t core_clock_rate;
+				DEV_IOCTL_2_PARAMS(handle->clock_dev , IOCTL_CLOCK_CONTROL_GET_RATE , handle->clock_index , &core_clock_rate );
 				pCORTEXM_SYSTICK_InstanceParams = handle;
 				/* Configure SysTick to interrupt at the requested rate. */
 				SysTick->LOAD  = ((core_clock_rate/handle->rate) & SysTick_LOAD_RELOAD_Msk) - 1;      /* set reload register */

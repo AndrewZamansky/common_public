@@ -10,5 +10,3 @@ source "$COMMON_DIR_PATH/c/hw_drivers/arch/ARM/soc/nuc505/Kconfig.soc505.dt"
 
 
 endmenu
-
-
