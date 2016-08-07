@@ -94,7 +94,7 @@ rwildcard=$(wildcard $1$2) $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2))
 #some time on windows .O.asm and .o.asm will appear as same files . so $(sort) will eliminate duplication
 
 
-ALL_OBJ_FILES := $(sort $(call rwildcard,$(OBJ_DIR)/,*.o) $(call rwildcard,$(OBJ_DIR)/,*.o.asm) $(call rwildcard,$(OBJ_DIR)/,*.O.asm))
+ALL_OBJ_FILES := $(sort $(call rwildcard,$(OBJ_DIR)/,*.o) $(call rwildcard,$(OBJ_DIR)/,*.oo) $(call rwildcard,$(OBJ_DIR)/,*.o.asm) $(call rwildcard,$(OBJ_DIR)/,*.O.asm))
 
 ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS) 	
 	OUTPUT_BIN := $(subst /,\,$(OUTPUT_BIN))

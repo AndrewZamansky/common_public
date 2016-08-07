@@ -59,13 +59,6 @@ config I2S_MIXER_IS_SPEED_CRITICAL
 	default y
 
 
-menuconfig INCLUDE_COMPRESSOR
-	bool   "audio compressor"
-	default n
-
-if INCLUDE_COMPRESSOR
-source "$COMMON_DIR_PATH/c/sw_packages/dsp/compressor/Kconfig"
-endif
  
 menuconfig INCLUDE_VOICE_3D
 	bool   "voice 3D effect"
@@ -74,6 +67,26 @@ menuconfig INCLUDE_VOICE_3D
 config VOICE_3D_IS_SPEED_CRITICAL
 	bool   "voice 3D effect is speed critical"
 	depends on INCLUDE_VOICE_3D
+	default y
+
+
+menu "staging"
+
+menuconfig INCLUDE_COMPRESSOR
+	bool   "audio compressor"
+	default n
+
+if INCLUDE_COMPRESSOR
+source "$COMMON_DIR_PATH/c/sw_packages/dsp/staging/compressor/Kconfig"
+endif
+
+menuconfig INCLUDE_FFMPEG
+	bool   "ffmpeg"
+	default n
+	
+config INCLUDE_FFMPEG_IS_SPEED_CRITICAL
+	bool   "ffmpeg is speed critical"
+	depends on INCLUDE_FFMPEG
 	default y
 
 menuconfig INCLUDE_FFT
@@ -85,14 +98,12 @@ config FFT_IS_SPEED_CRITICAL
 	depends on INCLUDE_FFT
 	default y
 
-menuconfig INCLUDE_FFMPEG
-	bool   "ffmpeg"
+
+config INCLUDE_WEBRTC_AEC
+	bool   "webrtc echo canxeller"
 	default n
-	
-config INCLUDE_FFMPEG_IS_SPEED_CRITICAL
-	bool   "ffmpeg is speed critical"
-	depends on INCLUDE_FFMPEG
-	default y
+
+endmenu
 
 endif
 

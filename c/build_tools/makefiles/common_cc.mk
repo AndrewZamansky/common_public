@@ -51,13 +51,15 @@ ifeq ($(wildcard $(CURR_OBJ_DIR)),) 		#if $(CURR_OBJ_DIR) dont exists then $(wil
 endif
 
 SRC_C    :=$(filter %.c,$(SRC))
+SRC_CC   :=$(filter %.cc,$(SRC))
 SRC_ASM    :=$(filter %.s,$(SRC)) $(filter %.S,$(SRC))
 SRC_ASM_S    :=$(filter %.S,$(SRC))
 SRC_OBJ := $(patsubst %.c,$(CURR_OBJ_DIR)/%.o,$(SRC_C))
+SRC_CC_OBJ := $(patsubst %.cc,$(CURR_OBJ_DIR)/%.oo,$(SRC_CC))
 ASM_OBJ := $(patsubst %.s,$(CURR_OBJ_DIR)/%.o.asm,$(SRC_ASM))
 ASM_OBJ_O := $(patsubst %.S,$(CURR_OBJ_DIR)/%.O.asm,$(SRC_ASM_S))
 
-all: $(SRC_OBJ) $(ASM_OBJ) $(ASM_OBJ_O)
+all: $(SRC_OBJ)  $(SRC_CC_OBJ) $(ASM_OBJ) $(ASM_OBJ_O)
 
 ifeq ($(findstring $(WORKSPACE_NAME),$(LOCAL_DIRS_FOR_EXPORTS)),$(WORKSPACE_NAME))
 archive :
@@ -78,6 +80,12 @@ $(CURR_OBJ_DIR)/%.O.asm: %.S
 	$(ASM) $(GLOBAL_ASMFLAGS) $(ASMFLAGS)  $(ALL_ASM_DEFINES) $(ASM_OUTPUT_FLAG_AND_FILE) $<
 
 $(CURR_OBJ_DIR)/%.o: %.c $(HEADER_FILES_DEPS) $(APP_ROOT_DIR)/.config
+	$(info -Compiling $<)
+	$(CC) $(GLOBAL_CFLAGS) $(CFLAGS) $(ALL_INCLUDE_DIRS) $(ALL_DEFINES) $(CC_OUTPUT_FLAG_AND_FILE) $<  
+#	open line to create preproccesor file
+#	$(CC) -E -P $(GLOBAL_CFLAGS) $(CFLAGS) $(ALL_INCLUDE_DIRS) $(ALL_DEFINES) $< -o  $@.pre 
+
+$(CURR_OBJ_DIR)/%.oo: %.cc $(HEADER_FILES_DEPS) $(APP_ROOT_DIR)/.config
 	$(info -Compiling $<)
 	$(CC) $(GLOBAL_CFLAGS) $(CFLAGS) $(ALL_INCLUDE_DIRS) $(ALL_DEFINES) $(CC_OUTPUT_FLAG_AND_FILE) $<  
 #	open line to create preproccesor file
