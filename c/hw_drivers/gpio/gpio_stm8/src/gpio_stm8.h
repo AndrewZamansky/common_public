@@ -21,6 +21,6 @@ typedef struct {
 	GPIO_TypeDef* GPIOx;
 	uint8_t pin_num;
 	uint8_t mode;
-} GPIO_STM8_Instance_t;
+} gpio_stm8_instance_t;
 
 #endif

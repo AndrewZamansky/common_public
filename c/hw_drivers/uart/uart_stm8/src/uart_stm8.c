@@ -43,7 +43,7 @@
 
 /********  local defs *********************/
 
-static UART_STM8_Instance_t *pHw_uart_pointer_to_instance=NULL;
+static uart_stm8_instance_t *pHw_uart_pointer_to_instance=NULL;
 
 void tx_function(void)
 {
@@ -160,19 +160,19 @@ void rx_function(void)
 uint8_t uart_stm8_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
-	UART_STM8_Instance_t *handle;
+	uart_stm8_instance_t *config_handle;
 
-	handle = apdev->handle;
+	config_handle = DEV_GET_CONFIG_DATA_POINTER(apdev);
 	switch(aIoctl_num)
 	{
 		case IOCTL_UART_SET_BAUD_RATE :
-			handle->baud_rate = *(uint32_t*)aIoctl_param1;
+			config_handle->baud_rate = *(uint32_t*)aIoctl_param1;
 			break;
 		case IOCTL_DEVICE_START :
 			  UART1_DeInit();
-			  UART1_Init (handle->baud_rate, UART1_WORDLENGTH_8D, UART1_STOPBITS_1, UART1_PARITY_NO,
+			  UART1_Init (config_handle->baud_rate, UART1_WORDLENGTH_8D, UART1_STOPBITS_1, UART1_PARITY_NO,
 			              UART1_SYNCMODE_CLOCK_DISABLE, UART1_MODE_TXRX_ENABLE);
-			  pHw_uart_pointer_to_instance = handle;
+			  pHw_uart_pointer_to_instance = config_handle;
 			  GPIO_Init(GPIOD,GPIO_PIN_6,GPIO_MODE_IN_PU_NO_IT);
 			  UART1_ITConfig( UART1_IT_RXNE, ENABLE );
 			break;

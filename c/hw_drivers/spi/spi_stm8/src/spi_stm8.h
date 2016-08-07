@@ -19,6 +19,6 @@
 
 typedef struct {
 	uint8_t dummy;
-} SPI_STM8_Instance_t;
+}spi_stm8_instance_t;
 
 #endif

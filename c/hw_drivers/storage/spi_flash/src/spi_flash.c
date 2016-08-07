@@ -20,7 +20,7 @@
 /********  defines *********************/
 
 
-#define INSTANCE(hndl)	((spi_flash_Instance_t*)hndl)
+#define INSTANCE(hndl)	((spi_flash_instance_t*)hndl)
 
 
 /********  types  *********************/
@@ -307,15 +307,15 @@ uint32_t  spi_flash_pread( pdev_descriptor_t apdev ,uint8_t *apData , uint32_t l
 size_t  spi_flash_pread( pdev_descriptor_t apdev ,uint8_t *apData , size_t length ,size_t startAddr)
 #endif
 {
-	spi_flash_Instance_t *handle;
+	spi_flash_instance_t *config_handle;
 	pdev_descriptor_t spi_server_dev;
 	uint8_t write_data[4];
 
-	handle = apdev->handle;
-	spi_server_dev = handle->spi_server_dev;
+	config_handle = DEV_GET_CONFIG_DATA_POINTER(apdev);
+	spi_server_dev = config_handle->spi_server_dev;
 
 	/* Select the FLASH: Chip Select low */
-	_chip_select_on(handle);
+	_chip_select_on(config_handle);
 
 	/* Send "Read from Memory " instruction */
 	write_data[0]= READ;
@@ -327,7 +327,7 @@ size_t  spi_flash_pread( pdev_descriptor_t apdev ,uint8_t *apData , size_t lengt
 	DEV_READ(spi_server_dev , apData , length);
 
 	/* Deselect the FLASH: Chip Select high */
-	_chip_select_off(handle );
+	_chip_select_off(config_handle );
 
 	return length;
 
@@ -351,7 +351,7 @@ uint32_t  spi_flash_pwrite( pdev_descriptor_t apdev ,const uint8_t *apData , uin
 size_t  spi_flash_pwrite( pdev_descriptor_t apdev ,const uint8_t *apData , size_t length ,size_t startAddr)
 #endif
 {
-	spi_flash_Instance_t *handle;
+	spi_flash_instance_t *config_handle;
 #if UINT_MAX < 0xffffffff
   uint32_t retVal  ;
 #else
@@ -362,7 +362,7 @@ size_t  spi_flash_pwrite( pdev_descriptor_t apdev ,const uint8_t *apData , size_
 
 
 
-	handle = apdev->handle;
+	config_handle = DEV_GET_CONFIG_DATA_POINTER(apdev);
   alignmentBytes = ((uint16_t)startAddr) & SPI_FLASH_PageSize_mask;/* in case startAddr is not aligned SPI_FLASH_PageSize   */
   while(length)
   {
@@ -377,7 +377,7 @@ size_t  spi_flash_pwrite( pdev_descriptor_t apdev ,const uint8_t *apData , size_
 //	{
 //		  while(1);
 //	}
-	SPI_FLASH_PageWrite(handle ,apData, startAddr, NumOfBytesToWrite);
+	SPI_FLASH_PageWrite(config_handle ,apData, startAddr, NumOfBytesToWrite);
 	startAddr +=  NumOfBytesToWrite;
 	apData += NumOfBytesToWrite;
 	length -=NumOfBytesToWrite;
@@ -405,17 +405,17 @@ size_t  spi_flash_pwrite( pdev_descriptor_t apdev ,const uint8_t *apData , size_
 uint8_t spi_flash_ioctl( pdev_descriptor_t apdev,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
-	spi_flash_Instance_t *handle;
+	spi_flash_instance_t *config_handle;
 	uint8_t write_data[4];
 
-	handle = apdev->handle;
+	config_handle = DEV_GET_CONFIG_DATA_POINTER(apdev);
 	switch(aIoctl_num)
 	{
 		case IOCTL_DEVICE_START :
 			/* Deselect the FLASH: Chip Select high */
-			_chip_select_off(handle );
-			DEV_IOCTL_0_PARAMS(handle->gpio_select_dev , IOCTL_DEVICE_START );
-			DEV_IOCTL_0_PARAMS(handle->spi_server_dev , IOCTL_DEVICE_START );
+			_chip_select_off(config_handle );
+			DEV_IOCTL_0_PARAMS(config_handle->gpio_select_dev , IOCTL_DEVICE_START );
+			DEV_IOCTL_0_PARAMS(config_handle->spi_server_dev , IOCTL_DEVICE_START );
 //			{ // for spi test
 //				uint32_t tmp=SPI_FLASH_ReadID(aHandle);
 //			}
@@ -424,14 +424,14 @@ uint8_t spi_flash_ioctl( pdev_descriptor_t apdev,const uint8_t aIoctl_num
 
 		case IOCTL_SPI_FLASH_ERRASE_ALL :
 			write_data[0]= BE;
-			_write_to_flash_with_wen_and_wait(handle , write_data , 1);
+			_write_to_flash_with_wen_and_wait(config_handle , write_data , 1);
 
 			break;
 
 		case IOCTL_SPI_FLASH_ERRASE_SECTOR :
 			write_data[0]= SE;
 			addr_to_bytesBuffer(&write_data[1],*(uint32_t*)aIoctl_param1);
-			_write_to_flash_with_wen_and_wait(handle , write_data , 4);
+			_write_to_flash_with_wen_and_wait(config_handle , write_data , 4);
 
 			break;
 

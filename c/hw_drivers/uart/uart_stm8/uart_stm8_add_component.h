@@ -9,7 +9,7 @@ size_t uart_stm8_pwrite( pdev_descriptor_t apdev ,const uint8_t *apData , size_t
 #define	MODULE_NAME					uart_stm8
 #define	MODULE_IOCTL_FUNCTION		uart_stm8_ioctl
 #define	MODULE_PWRITE_FUNCTION		uart_stm8_pwrite
-#define MODULE_CONFIG_DATA_STRUCT_TYPE		UART_STM8_Instance_t
+#define MODULE_CONFIG_DATA_STRUCT_TYPE		uart_stm8_instance_t
 
 #ifdef DT_DEV_MODULE
 
