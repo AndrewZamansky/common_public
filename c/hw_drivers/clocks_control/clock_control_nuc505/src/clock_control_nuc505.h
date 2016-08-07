@@ -19,6 +19,6 @@
 
 typedef struct {
 	uint32_t initial_clock_rates[NUC505_TOTAL_NUM_OF_CLOCKS];
-} CLOCK_CONTROL_NUC505_Instance_t;
+} clock_control_nuc505_instance_t;
 
 #endif

@@ -7,7 +7,7 @@ uint8_t gpio_stm32f10x_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num 
 
 #define	MODULE_NAME					gpio_stm32f10x
 #define	MODULE_IOCTL_FUNCTION		gpio_stm32f10x_ioctl
-#define MODULE_DATA_STRUCT_TYPE		GPIO_STM32F10X_Instance_t
+#define MODULE_CONFIG_DATA_STRUCT_TYPE		GPIO_STM32F10X_Instance_t
 
 #ifdef DT_DEV_MODULE
 

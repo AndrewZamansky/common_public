@@ -9,7 +9,7 @@ size_t uart_nuc505_pwrite(pdev_descriptor_t apdev ,const uint8_t *apData , size_
 #define	MODULE_NAME					uart_nuc505
 #define	MODULE_IOCTL_FUNCTION		uart_nuc505_ioctl
 #define	MODULE_PWRITE_FUNCTION		uart_nuc505_pwrite
-#define MODULE_DATA_STRUCT_TYPE		UART_NUC505_Instance_t
+#define MODULE_CONFIG_DATA_STRUCT_TYPE		uart_nuc505_instance_t
 
 #ifdef DT_DEV_MODULE
 

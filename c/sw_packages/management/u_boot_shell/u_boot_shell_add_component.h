@@ -10,7 +10,7 @@ extern uint8_t u_boot_shell_callback(pdev_descriptor_t apdev ,
 #define	MODULE_NAME					u_boot_shell
 #define	MODULE_IOCTL_FUNCTION		u_boot_shell_ioctl
 #define	MODULE_CALLBACK_FUNCTION	u_boot_shell_callback
-#define MODULE_DATA_STRUCT_TYPE		u_boot_shell_instance_t
+#define MODULE_CONFIG_DATA_STRUCT_TYPE		u_boot_shell_instance_t
 
 #ifdef DT_DEV_MODULE
 

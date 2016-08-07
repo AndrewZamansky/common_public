@@ -38,7 +38,7 @@
 typedef struct
 {
 
-	shell_instance_t *pShell_instance;
+	pdev_descriptor_t pdev;
 } xMessage_t;
 
 
@@ -103,10 +103,7 @@ int printf(const char *Format, ...)
 uint8_t shell_callback(pdev_descriptor_t apdev ,const uint8_t aCallback_num
 		, void * aCallback_param1, void * aCallback_param2)
 {
-	shell_instance_t *handle;
 	xMessage_t  queueMsg;
-
-	handle = apdev->handle;
 
 	if (NULL == xQueue)
 	{
@@ -114,7 +111,7 @@ uint8_t shell_callback(pdev_descriptor_t apdev ,const uint8_t aCallback_num
 	}
 
 
-	queueMsg.pShell_instance = handle;
+	queueMsg.pdev = apdev;
 
 	//xQueueSendFromISR( xQueue, ( void * ) &queueMsg,  &xHigherPriorityTaskWoken );
 	os_queue_send_immediate( xQueue, ( void * ) &queueMsg);
@@ -145,8 +142,10 @@ static void Shell_Task( void *pvParameters )
 	uint8_t *pCmdStart;
 	uint8_t curr_char,eol_char;
 	ioctl_get_data_buffer_t data_buffer_info;
-	shell_instance_t  *curr_shell_instance;
+	shell_runtime_instance_t  *runtime_handle;
+	shell_instance_t *config_handle;
 	pdev_descriptor_t   callback_dev;
+	pdev_descriptor_t   curr_dev;
 
 	xQueue = os_create_queue( CONFIG_SHELL_MAX_QUEUE_LEN , sizeof( xMessage_t ) );
 
@@ -156,8 +155,10 @@ static void Shell_Task( void *pvParameters )
 	{
 		if( OS_QUEUE_RECEIVE_SUCCESS == os_queue_receive_infinite_wait( xQueue, &( pxRxedMessage )) )
 		{
-			curr_shell_instance = pxRxedMessage.pShell_instance;
-			gCurrReplyDev = curr_shell_instance->server_dev;
+			curr_dev = pxRxedMessage.pdev;
+			config_handle = DEV_GET_CONFIG_DATA_POINTER(curr_dev);
+			runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(curr_dev);
+			gCurrReplyDev = config_handle->server_dev;
 
 			DEV_IOCTL(gCurrReplyDev, IOCTL_GET_AND_LOCK_DATA_BUFFER , &data_buffer_info);
 
@@ -166,8 +167,8 @@ static void Shell_Task( void *pvParameters )
 
 			if(0 == data_buffer_info.bufferWasOverflowed)
 			{
-				curr_buff_pos = curr_shell_instance->lastTestedBytePos;
-				eol_char = curr_shell_instance->lastEOLchar;
+				curr_buff_pos = runtime_handle->lastTestedBytePos;
+				eol_char = runtime_handle->lastEOLchar;
 			}
 			else
 			{
@@ -269,7 +270,7 @@ static void Shell_Task( void *pvParameters )
 						{
 							SHELL_REPLY_DATA( (const uint8_t*)"\r\n",2);
 						}
-						callback_dev = curr_shell_instance->callback_dev;
+						callback_dev = config_handle->callback_dev;
 						if (callback_dev )
 						{
 							DEV_CALLBACK_2_PARAMS(callback_dev , CALLBACK_DATA_RECEIVED,
@@ -299,8 +300,8 @@ static void Shell_Task( void *pvParameters )
 				}
 
 
-				curr_shell_instance->lastTestedBytePos = curr_buff_pos;
-				curr_shell_instance->lastEOLchar  =eol_char;
+				runtime_handle->lastTestedBytePos = curr_buff_pos;
+				runtime_handle->lastEOLchar  =eol_char;
 				DEV_IOCTL(gCurrReplyDev, IOCTL_SET_BYTES_CONSUMED_IN_DATA_BUFFER , (void *)((uint32_t)bytesConsumed));
 			}
 			DEV_IOCTL(gCurrReplyDev, IOCTL_SET_UNLOCK_DATA_BUFFER ,(void *) 0);
@@ -328,10 +329,10 @@ static void Shell_Task( void *pvParameters )
 /*---------------------------------------------------------------------------------------------------------*/
 uint8_t shell_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
 {
-	shell_instance_t *handle;
+	shell_instance_t *config_handle;
 	pdev_descriptor_t   server_dev ;
 
-	handle = apdev->handle;
+	config_handle = DEV_GET_CONFIG_DATA_POINTER(apdev);
 
 	switch(aIoctl_num)
 	{
@@ -344,12 +345,12 @@ uint8_t shell_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num , void * 
 					DEV_IOCTL(server_dev, IOCTL_SET_ISR_CALLBACK_DEV ,  (void*)apdev);
 				}
 
-				handle->server_dev=server_dev;
+				config_handle->server_dev=server_dev;
 			}
 			break;
 #endif
 		case IOCTL_SET_CALLBACK_DEV:
-			handle->callback_dev =(pdev_descriptor_t) aIoctl_param1;
+			config_handle->callback_dev =(pdev_descriptor_t) aIoctl_param1;
 			break;
 		case IOCTL_DEVICE_START :
 			if(0==task_is_running)
@@ -357,7 +358,7 @@ uint8_t shell_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num , void * 
 				task_is_running=1;
 				os_create_task("shell_task",Shell_Task,
 						NULL , SHELL_TASK_STACK_SIZE , SHELL_TASK_PRIORITY);
-				server_dev = handle->server_dev;
+				server_dev = config_handle->server_dev;
 				DEV_IOCTL_0_PARAMS(server_dev , IOCTL_DEVICE_START );
 
 			}

@@ -146,10 +146,11 @@ static void init_new_device(pdev_descriptor_t pdev )
 			pdev->pwrite	= curr_include_module->pwrite;
 			pdev->pread		= curr_include_module->pread;
 			pdev->callback	= curr_include_module->callback;
-			if (NULL == pdev->handle)
+			if (NULL == pdev->p_config_data)
 			{
-				pdev->handle = malloc(curr_include_module->module_struct_size);
+				pdev->p_config_data = malloc(curr_include_module->module_config_struct_size);
 			}
+			pdev->p_runtime_data = malloc(curr_include_module->module_runtime_struct_size);
 			break;
 		}
 		curr_include_module++;

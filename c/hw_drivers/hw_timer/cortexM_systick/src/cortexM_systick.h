@@ -23,6 +23,6 @@ typedef struct {
 	size_t	clock_index;
 	timer_callback_func_t timer_callback;
 	uint8_t mode;
-} CORTEXM_SYSTICK_Instance_t;
+} cortexM_systick_instance_t;
 
 #endif

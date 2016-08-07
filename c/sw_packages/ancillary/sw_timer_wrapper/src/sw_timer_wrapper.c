@@ -45,7 +45,7 @@
 
 #if CONFIG_SW_TIMER_WRAPPER_MAX_NUM_OF_DYNAMIC_INSTANCES > 0
 
-	static SW_UART_WRAPPER_Instance_t SW_UART_WRAPPER_InstanceParams[CONFIG_SW_TIMER_WRAPPER_MAX_NUM_OF_DYNAMIC_INSTANCES] = { {0} };
+	static sw_uart_wrapper_instance_t sw_uart_wrapper_instanceParams[CONFIG_SW_TIMER_WRAPPER_MAX_NUM_OF_DYNAMIC_INSTANCES] = { {0} };
 	static uint16_t usedInstances =0 ;
 
 	static const dev_param_t SW_UART_WRAPPER_Dev_Params[]=

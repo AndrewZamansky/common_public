@@ -11,7 +11,7 @@ size_t spi_stm8_pread(pdev_descriptor_t apdev ,uint8_t *apData , size_t aLength,
 #define	MODULE_IOCTL_FUNCTION		spi_stm8_ioctl
 #define	MODULE_PWRITE_FUNCTION		spi_stm8_pwrite
 #define	MODULE_PREAD_FUNCTION		spi_stm8_pread
-#define MODULE_DATA_STRUCT_TYPE		SPI_STM8_Instance_t
+#define MODULE_CONFIG_DATA_STRUCT_TYPE		SPI_STM8_Instance_t
 
 #ifdef DT_DEV_MODULE
 	#define STATIC_DEV_DATA_STRUCT	\

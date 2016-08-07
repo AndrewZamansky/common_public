@@ -19,8 +19,11 @@
 typedef struct {
 	pdev_descriptor_t server_dev;
 	pdev_descriptor_t   callback_dev;
+} shell_instance_t;
+
+typedef struct {
 	uint32_t lastTestedBytePos;
 	uint8_t lastEOLchar;
-} shell_instance_t;
+} shell_runtime_instance_t;
 
 #endif /* */

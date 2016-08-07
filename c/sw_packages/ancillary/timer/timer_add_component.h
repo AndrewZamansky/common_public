@@ -7,7 +7,8 @@ extern uint8_t timer_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num , 
 
 #define	MODULE_NAME					timer
 #define	MODULE_IOCTL_FUNCTION		timer_ioctl
-#define MODULE_DATA_STRUCT_TYPE		timer_instance_t
+#define MODULE_CONFIG_DATA_STRUCT_TYPE		timer_instance_t
+#define MODULE_RUNTIME_DATA_STRUCT_TYPE		timer_runtime_instance_t
 
 #ifdef DT_DEV_MODULE
 
@@ -18,9 +19,7 @@ extern uint8_t timer_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num , 
 	EXTERN_DECLARATION_TO_STATIC_DEVICE_INST(TIMER_DT_HW_TIMER_PDEV) ;
 	#define STATIC_DEV_DATA_STRUCT									\
 		{															\
-			P_TO_STATIC_DEVICE_INST(TIMER_DT_HW_TIMER_PDEV) ,	\
-				0 ,												\
-				0												\
+			P_TO_STATIC_DEVICE_INST(TIMER_DT_HW_TIMER_PDEV) 		\
 		}
 #endif
 

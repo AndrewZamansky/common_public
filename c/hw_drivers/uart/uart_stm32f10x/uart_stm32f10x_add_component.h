@@ -9,7 +9,7 @@ size_t 	uart_stm32f10x_pwrite(pdev_descriptor_t apdev ,const uint8_t *apData , s
 #define	MODULE_NAME					uart_stm32f10x
 #define	MODULE_IOCTL_FUNCTION		uart_stm32f10x_ioctl
 #define	MODULE_PWRITE_FUNCTION		uart_stm32f10x_pwrite
-#define MODULE_DATA_STRUCT_TYPE		UART_STM32F103x_Instance_t
+#define MODULE_CONFIG_DATA_STRUCT_TYPE		UART_STM32F103x_Instance_t
 
 #ifdef DT_DEV_MODULE
 

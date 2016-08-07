@@ -22,7 +22,6 @@ typedef struct
 	pdev_descriptor_t   callback_dev;
 	uint16_t num_of_words_in_buffer_per_chenel ;
 	uint8_t	num_of_bytes_in_word;
-	uint8_t start_flag;
-} I2S_NUC505_Instance_t;
+} I2S_nuc505_instance_t;
 
 #endif

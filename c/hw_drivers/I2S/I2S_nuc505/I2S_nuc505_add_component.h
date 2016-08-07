@@ -7,7 +7,7 @@ uint8_t I2S_nuc505_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num , vo
 
 #define	MODULE_NAME				I2S_nuc505
 #define	MODULE_IOCTL_FUNCTION	I2S_nuc505_ioctl
-#define MODULE_DATA_STRUCT_TYPE	I2S_NUC505_Instance_t
+#define MODULE_CONFIG_DATA_STRUCT_TYPE	I2S_nuc505_instance_t
 
 #ifdef DT_DEV_MODULE
 

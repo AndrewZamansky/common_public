@@ -38,7 +38,7 @@ static void  *ports[]={PA,PB,PC,PD};
  *
  *
  */
-uint8_t GPIO_NUC505_Init(GPIO_NUC505_Instance_t *pInstance)
+uint8_t GPIO_NUC505_Init(gpio_nuc505_instance_t *pInstance)
 {
 //	void* GPIOx = ports[pInstance->port_num];
 
@@ -63,32 +63,32 @@ uint8_t GPIO_NUC505_Init(GPIO_NUC505_Instance_t *pInstance)
 uint8_t gpio_nuc505_ioctl( pdev_descriptor_t apdev , const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
-	GPIO_NUC505_Instance_t *handle;
+	gpio_nuc505_instance_t *config_handle;
 	void* GPIOx;
 	uint32_t pin_num_mask;
 
-	handle = apdev->handle;
-	GPIOx = handle->port_num;
-	pin_num_mask = handle->pin_num_mask;
+	config_handle = DEV_GET_CONFIG_DATA_POINTER(apdev);
+	GPIOx = config_handle->port_num;
+	pin_num_mask = config_handle->pin_num_mask;
 
 	switch(aIoctl_num)
 	{
 		case IOCTL_GPIO_NUC505_SET_PORT_PARAM :
 			{
-				handle->port_num = ports[((char*)aIoctl_param1)[0]-'a'];
+				config_handle->port_num = ports[((char*)aIoctl_param1)[0]-'a'];
 			}
 			break;
 		case IOCTL_GPIO_NUC505_SET_PIN_PARAM :
 			{
 				uint8_t pin_num;
 				pin_num = atoi((char*)aIoctl_param1);
-				handle->pin_num_mask = 1 << pin_num;
+				config_handle->pin_num_mask = 1 << pin_num;
 			}
 			break;
 		case IOCTL_GPIO_NUC505_SET_MODE_PARAM :
 			if (0 == memcmp((uint8_t*) aIoctl_param1 , "output" , sizeof("output") ))
 			{
-				handle->mode = GPIO_MODE_OUTPUT;
+				config_handle->mode = GPIO_MODE_OUTPUT;
 			}
 			else // other modes will be added later
 			{
@@ -114,7 +114,7 @@ uint8_t gpio_nuc505_ioctl( pdev_descriptor_t apdev , const uint8_t aIoctl_num
 			break;
 
 		case IOCTL_DEVICE_START :
-			GPIO_NUC505_Init(handle);
+			GPIO_NUC505_Init(config_handle);
 			break;
 
 		case IOCTL_GPIO_PIN_SET :

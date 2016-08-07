@@ -36,7 +36,7 @@
 
 /********  local defs *********************/
 
-static I2S_NUC505_Instance_t *pI2SHandle;
+static I2S_nuc505_instance_t *pI2SHandle;
 
 
 uint16_t num_of_words_in_buffer_per_chenel = 0;
@@ -47,6 +47,7 @@ int32_t *PcmRxBuff;//[2][I2S_BUFF_LEN*2] = {{0}};
 //int16_t test[2][I2S_BUFF_LEN*2] = {{0}};
 int32_t *PcmTxBuff;//[2][I2S_BUFF_LEN*2] = {{0}};
 
+uint8_t start_flag;
 
 
 
@@ -78,9 +79,9 @@ void __attribute__((section(".critical_text"))) I2S_IRQHandler(void)
 		pTxBuf = PcmTxBuff +  (num_of_uint32_in_buffer_per_chenel*2);
 		I2S_CLR_INT_FLAG(I2S, I2S_STATUS_RDMAEIF_Msk);
 
-		if ( pI2SHandle->start_flag == 1 )
+		if ( start_flag == 1 )
 		{
-			pI2SHandle->start_flag = 0;
+			start_flag = 0;
 			I2S_ENABLE_TXDMA(I2S);
 			I2S_ENABLE_TX(I2S);
 		}
@@ -289,10 +290,10 @@ void __attribute__((section(".critical_text"))) I2S_IRQHandler(void)
 uint8_t I2S_nuc505_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
-	I2S_NUC505_Instance_t *handle;
+	I2S_nuc505_instance_t *config_handle;
 	float tmp;
 
-	handle = apdev->handle;
+	config_handle = DEV_GET_CONFIG_DATA_POINTER(apdev);
 
 	switch(aIoctl_num)
 	{
@@ -303,11 +304,11 @@ uint8_t I2S_nuc505_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 
 		case IOCTL_DEVICE_START :
 
-			num_of_words_in_buffer_per_chenel = handle->num_of_words_in_buffer_per_chenel;
-			num_of_bytes_in_word = handle->num_of_bytes_in_word;
+			num_of_words_in_buffer_per_chenel = config_handle->num_of_words_in_buffer_per_chenel;
+			num_of_bytes_in_word = config_handle->num_of_bytes_in_word;
 			if(0 == num_of_words_in_buffer_per_chenel) return 2;
 
-			pI2SHandle = handle;
+			pI2SHandle = config_handle;
 
 			I2S_Init();
 
@@ -322,7 +323,7 @@ uint8_t I2S_nuc505_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 			break;
 
 		case I2S_ENABLE_OUTPUT_IOCTL:
-			handle->start_flag = 1;
+			start_flag = 1;
 
 			break;
 

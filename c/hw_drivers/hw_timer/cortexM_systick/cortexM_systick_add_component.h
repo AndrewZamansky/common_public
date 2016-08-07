@@ -7,7 +7,7 @@ uint8_t cortexM_systick_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 
 #define	MODULE_NAME				cortexM_systick
 #define	MODULE_IOCTL_FUNCTION	cortexM_systick_ioctl
-#define MODULE_DATA_STRUCT_TYPE	CORTEXM_SYSTICK_Instance_t
+#define MODULE_CONFIG_DATA_STRUCT_TYPE	cortexM_systick_instance_t
 
 #ifdef DT_DEV_MODULE
 

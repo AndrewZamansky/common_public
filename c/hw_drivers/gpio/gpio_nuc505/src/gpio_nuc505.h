@@ -21,6 +21,6 @@ typedef struct {
 	void *port_num;
 	uint8_t pin_num_mask;
 	uint8_t mode;
-} GPIO_NUC505_Instance_t;
+} gpio_nuc505_instance_t;
 
 #endif

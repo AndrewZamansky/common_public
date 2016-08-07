@@ -107,10 +107,10 @@ uint8_t u_boot_shell_callback(pdev_descriptor_t apdev ,const uint8_t aCallback_n
 /*---------------------------------------------------------------------------------------------------------*/
 uint8_t u_boot_shell_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
 {
-	u_boot_shell_instance_t *handle;
+	u_boot_shell_instance_t *config_handle;
 	pdev_descriptor_t   server_dev ;
 
-	handle = apdev->handle;
+	config_handle = DEV_GET_CONFIG_DATA_POINTER(apdev);
 
 	switch(aIoctl_num)
 	{
@@ -123,12 +123,12 @@ uint8_t u_boot_shell_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num , 
 					DEV_IOCTL(server_dev, IOCTL_SET_ISR_CALLBACK_DEV ,  (void*)apdev);
 				}
 
-				handle->server_dev=server_dev;
+				config_handle->server_dev=server_dev;
 			}
 			break;
 #endif
 		case IOCTL_DEVICE_START :
-			server_dev = handle->server_dev;
+			server_dev = config_handle->server_dev;
 			DEV_IOCTL_0_PARAMS(server_dev , IOCTL_DEVICE_START );
 
 			break;

@@ -50,9 +50,6 @@ typedef struct {
 
 	pdev_descriptor_t   server_dev;
 
-	os_queue_t xQueue ;
-	uint8_t use_task_for_out ;
-
 #ifdef CONFIG_SW_UART_WRAPPER_ENABLE_RX
 
 	pdev_descriptor_t   client_dev;
@@ -63,6 +60,21 @@ typedef struct {
 #else
 	uint8_t	rx_buff[CONFIG_SW_UART_WRAPPER_RX_BUFFER_SIZE];
 #endif
+
+#endif
+
+	uint8_t use_task_for_out ;
+
+//	uint8_t sendDoneFlag;
+} sw_uart_wrapper_instance_t;
+
+
+typedef struct {
+
+	os_queue_t xQueue ;
+
+#ifdef CONFIG_SW_UART_WRAPPER_ENABLE_RX
+
 	rx_int_size_t WritePos;
 	rx_int_size_t ReadPos;
 
@@ -77,9 +89,6 @@ typedef struct {
 	os_queue_t xTX_WaitQueue ;
 
 //	uint8_t sendDoneFlag;
-} SW_UART_WRAPPER_Instance_t;
-
-
-
+} sw_uart_wrapper_runtime_instance_t;
 
 #endif /* */

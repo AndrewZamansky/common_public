@@ -70,7 +70,7 @@ uint8_t heartbeat_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num , voi
 	heartbeat_instance_t *handle;
 	static size_t ticks_per_mSec=1;
 
-	handle = apdev->handle;
+	handle = DEV_GET_CONFIG_DATA_POINTER(apdev);
 	switch(aIoctl_num)
 	{
 		case IOCTL_DEVICE_START :

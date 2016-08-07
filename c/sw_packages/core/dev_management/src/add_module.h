@@ -26,8 +26,8 @@
 		#define MODULE_CALLBACK_FUNCTION		DEV_API_dummy_callback_func
 	#endif
 
-	#ifndef	MODULE_DATA_STRUCT_TYPE
-		#define MODULE_DATA_STRUCT_TYPE			uint8_t
+	#ifndef	MODULE_CONFIG_DATA_STRUCT_TYPE
+		#define MODULE_CONFIG_DATA_STRUCT_TYPE			uint8_t
 	#endif
 
 	#define MODULE_INST2(module)	module_inst_##module
@@ -56,7 +56,8 @@
 	#ifdef CONFIG_USE_SHELL_FOR_DEVICE_CONFIGURATION
 			POINTER_TO_CONFIGURABLE_PARAMS_ARRAY,
 	#endif
-			sizeof(MODULE_DATA_STRUCT_TYPE)
+			sizeof(MODULE_CONFIG_DATA_STRUCT_TYPE),
+			sizeof(MODULE_RUNTIME_DATA_STRUCT_TYPE)
 		};
 
 #endif

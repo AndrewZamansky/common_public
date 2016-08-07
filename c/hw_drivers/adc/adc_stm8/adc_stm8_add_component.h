@@ -7,7 +7,7 @@ uint8_t adc_stm8_ioctl( void * const aHandle ,const uint8_t aIoctl_num , void * 
 
 #define	MODULE_NAME					adc_stm8
 #define	MODULE_IOCTL_FUNCTION		adc_stm8_ioctl
-#define MODULE_DATA_STRUCT_TYPE		ADC_STM8_Instance_t
+#define MODULE_CONFIG_DATA_STRUCT_TYPE		ADC_STM8_Instance_t
 
 #ifdef DT_DEV_MODULE
 

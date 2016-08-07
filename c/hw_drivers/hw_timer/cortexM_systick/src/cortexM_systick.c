@@ -57,18 +57,18 @@ typedef enum IRQn_local {
 
 /***********   local variables    **************/
 
-static CORTEXM_SYSTICK_Instance_t *pCORTEXM_SYSTICK_InstanceParams;
+static cortexM_systick_instance_t *pcortexM_systick_instanceParams;
 
 static volatile uint64_t currentTick=0;
 
 /*---------------------------------------------------------------------------------------------------------*/
-/* ISR to handle systick                                                        */
+/* ISR to config_handle systick                                                        */
 /*---------------------------------------------------------------------------------------------------------*/
 void __attribute__((interrupt("IRQ"))) SysTick_IRQHandler(void)
 {
 	timer_callback_func_t timer_callback;
 	currentTick++;
-	timer_callback = pCORTEXM_SYSTICK_InstanceParams->timer_callback;
+	timer_callback = pcortexM_systick_instanceParams->timer_callback;
 	if(NULL != 	timer_callback)
 	{
 		timer_callback();
@@ -91,36 +91,36 @@ void __attribute__((interrupt("IRQ"))) SysTick_IRQHandler(void)
 uint8_t cortexM_systick_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
-	CORTEXM_SYSTICK_Instance_t *handle;
+	cortexM_systick_instance_t *config_handle;
 
-	handle = apdev->handle;
+	config_handle = DEV_GET_CONFIG_DATA_POINTER(apdev);
 	switch(aIoctl_num)
 	{
 		case IOCTL_TIMER_RATE_HZ_SET :
 			{
-				handle->rate = ((uint32_t)aIoctl_param1);
+				config_handle->rate = ((uint32_t)aIoctl_param1);
 			}
 			break;
 
 		case IOCTL_TIMER_CALLBACK_SET :
 			{
-				handle->timer_callback = ((timer_callback_func_t)aIoctl_param1);
+				config_handle->timer_callback = ((timer_callback_func_t)aIoctl_param1);
 			}
 			break;
 
 		case IOCTL_TIMER_MODE_SET :
 			{
-				handle->mode = ((size_t)aIoctl_param1);
+				config_handle->mode = ((size_t)aIoctl_param1);
 			}
 			break;
 
 		case IOCTL_DEVICE_START :
 			{
 				uint32_t core_clock_rate;
-				DEV_IOCTL_2_PARAMS(handle->clock_dev , IOCTL_CLOCK_CONTROL_GET_RATE , handle->clock_index , &core_clock_rate );
-				pCORTEXM_SYSTICK_InstanceParams = handle;
+				DEV_IOCTL_2_PARAMS(config_handle->clock_dev , IOCTL_CLOCK_CONTROL_GET_RATE , config_handle->clock_index , &core_clock_rate );
+				pcortexM_systick_instanceParams = config_handle;
 				/* Configure SysTick to interrupt at the requested rate. */
-				SysTick->LOAD  = ((core_clock_rate/handle->rate) & SysTick_LOAD_RELOAD_Msk) - 1;      /* set reload register */
+				SysTick->LOAD  = ((core_clock_rate/config_handle->rate) & SysTick_LOAD_RELOAD_Msk) - 1;      /* set reload register */
 				SysTick->VAL   = 0;                                          /* Load the SysTick Counter Value */
 				SysTick->CTRL  = SysTick_CTRL_CLKSOURCE_Msk |
 			                   SysTick_CTRL_TICKINT_Msk   |

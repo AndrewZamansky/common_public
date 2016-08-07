@@ -10,7 +10,8 @@ extern uint8_t shell_callback(pdev_descriptor_t apdev ,
 #define	MODULE_NAME					shell
 #define	MODULE_IOCTL_FUNCTION		shell_ioctl
 #define	MODULE_CALLBACK_FUNCTION	shell_callback
-#define MODULE_DATA_STRUCT_TYPE		shell_instance_t
+#define MODULE_CONFIG_DATA_STRUCT_TYPE		shell_instance_t
+#define MODULE_RUNTIME_DATA_STRUCT_TYPE		shell_runtime_instance_t
 
 #ifdef DT_DEV_MODULE
 
@@ -27,8 +28,8 @@ extern uint8_t shell_callback(pdev_descriptor_t apdev ,
 	EXTERN_DECLARATION_TO_STATIC_DEVICE_INST(SHELL_DT_CALLBACK_PDEV) ;
 	#define STATIC_DEV_DATA_STRUCT									\
 		{															\
-			P_TO_STATIC_DEVICE_INST(SHELL_DT_SERVER_PDEV) , \
-			P_TO_STATIC_DEVICE_INST(SHELL_DT_CALLBACK_PDEV) , 0 , 0	\
+			P_TO_STATIC_DEVICE_INST(SHELL_DT_SERVER_PDEV) , 		\
+			P_TO_STATIC_DEVICE_INST(SHELL_DT_CALLBACK_PDEV)			\
 		}
 
 #endif

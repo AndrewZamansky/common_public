@@ -105,7 +105,7 @@ static uint8_t core_set_clock(uint32_t rate)
 }
 static uint32_t core_get_clock(void )
 {
-	return SystemCoreClock;;
+	return SystemCoreClock;
 }
 
 
@@ -125,9 +125,9 @@ uint8_t clock_control_nuc505_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoct
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
 	size_t clock_index;
-	CLOCK_CONTROL_NUC505_Instance_t *handle;
+	clock_control_nuc505_instance_t *config_handle;
 
-	handle = apdev->handle;
+	config_handle = DEV_GET_CONFIG_DATA_POINTER(apdev);
 	clock_index = (size_t)aIoctl_param1 ;
 	switch(aIoctl_num)
 	{
@@ -160,7 +160,7 @@ uint8_t clock_control_nuc505_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoct
 			{
 				clocks_nuc505_t *p_curr_clock;
 				p_curr_clock = &clocks_array[clock_index];
-				p_curr_clock->clock_set_func(handle->initial_clock_rates[clock_index]);
+				p_curr_clock->clock_set_func(config_handle->initial_clock_rates[clock_index]);
 			}
 			break;
 

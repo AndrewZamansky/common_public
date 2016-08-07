@@ -7,7 +7,7 @@ uint8_t gpio_nuc505_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num , v
 
 #define	MODULE_NAME				gpio_nuc505
 #define	MODULE_IOCTL_FUNCTION	gpio_nuc505_ioctl
-#define MODULE_DATA_STRUCT_TYPE	GPIO_NUC505_Instance_t
+#define MODULE_CONFIG_DATA_STRUCT_TYPE	gpio_nuc505_instance_t
 
 #ifdef DT_DEV_MODULE
 

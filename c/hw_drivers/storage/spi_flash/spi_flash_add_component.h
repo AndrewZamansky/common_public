@@ -21,7 +21,7 @@ uint8_t spi_flash_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num , voi
 #define	MODULE_IOCTL_FUNCTION		spi_flash_ioctl
 #define	MODULE_PWRITE_FUNCTION		(dev_pwrite_func_t)spi_flash_pwrite
 #define	MODULE_PREAD_FUNCTION		(dev_pread_func_t)spi_flash_pread
-#define MODULE_DATA_STRUCT_TYPE		spi_flash_Instance_t
+#define MODULE_CONFIG_DATA_STRUCT_TYPE		spi_flash_Instance_t
 
 #ifdef DT_DEV_MODULE
 	#ifndef SPI_FLASH_DT_SPI_SERVER_DEV

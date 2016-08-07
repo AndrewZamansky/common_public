@@ -5,9 +5,9 @@
 
 uint8_t clock_control_nuc505_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2);
 
-#define	MODULE_NAME				clock_control_nuc505
-#define	MODULE_IOCTL_FUNCTION	clock_control_nuc505_ioctl
-#define MODULE_DATA_STRUCT_TYPE	CLOCK_CONTROL_NUC505_Instance_t
+#define	MODULE_NAME						clock_control_nuc505
+#define	MODULE_IOCTL_FUNCTION			clock_control_nuc505_ioctl
+#define MODULE_CONFIG_DATA_STRUCT_TYPE	clock_control_nuc505_instance_t
 
 #ifdef DT_DEV_MODULE
 

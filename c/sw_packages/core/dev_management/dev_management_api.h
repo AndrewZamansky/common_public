@@ -112,11 +112,12 @@ typedef uint8_t (*dev_callback_1_params_func_t)(pdev_descriptor_t apdev , const 
 
 struct _dev_descriptor_t
 {
+	void*    				p_config_data;
+	void*    				p_runtime_data;
 #if defined(CONFIG_DYNAMIC_DEVICE_TREE) || (CONFIG_MAX_NUM_OF_DYNAMIC_DEVICES>0)
 	char	*module_name;
 #endif
 	char 					*name;
-	void*    				handle;
 	dev_ioctl_func_t  		ioctl;
 	dev_pwrite_func_t  		pwrite;
 	dev_pread_func_t  		pread;
@@ -137,11 +138,15 @@ typedef struct
 #ifdef CONFIG_USE_SHELL_FOR_DEVICE_CONFIGURATION
 	dev_param_t  			*config_params_arr;
 #endif
-	uint8_t					module_struct_size;
+	uint8_t					module_config_struct_size;
+	uint8_t					module_runtime_struct_size;
 }included_module_t;
 
 /**********  define API  functions  ************/
 
+/*  get data functions */
+#define DEV_GET_CONFIG_DATA_POINTER(dev)		(((pdev_descriptor_t)dev)->p_config_data)
+#define DEV_GET_RUNTIME_DATA_POINTER(dev)		(((pdev_descriptor_t)dev)->p_runtime_data)
 
 /*  ioctl functions */
 #define DEV_IOCTL_0_PARAMS(dev,ioctl_num)   			((dev_ioctl_0_params_func_t)(dev)->ioctl)(dev ,ioctl_num)

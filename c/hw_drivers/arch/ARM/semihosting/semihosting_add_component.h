@@ -9,7 +9,7 @@ extern size_t semihosting_pwrite(pdev_descriptor_t apdev ,const uint8_t *apData 
 #define	MODULE_NAME				semihosting
 #define	MODULE_IOCTL_FUNCTION	semihosting_ioctl
 #define	MODULE_PWRITE_FUNCTION	semihosting_pwrite
-#define MODULE_DATA_STRUCT_TYPE	SEMIHOSTING_Instance_t
+#define MODULE_CONFIG_DATA_STRUCT_TYPE	SEMIHOSTING_Instance_t
 
 #ifdef DT_DEV_MODULE
 
