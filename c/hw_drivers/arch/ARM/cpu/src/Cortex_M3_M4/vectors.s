@@ -17,12 +17,10 @@
 .word 	_dummy_trap 	/* 		 Populate if using SysTick */
 
 // external interrupts start here
-.space 25,0     /*  not used for now */
+.space 128,0     /*  not used for now */
 
-.word	0 // on 32 (+15) position
 
-.space 34,0     /*  not used for now */
-
+/* default interrupts that are used before initialization of NIC */
 .section .text._arm_vector_table,"ax"
 
 _NmiSR:

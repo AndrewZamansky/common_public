@@ -6,10 +6,9 @@
 
 /*****************  defines  **************/
 
-#define UART_NUC505_API_UART_ID_0	0
-#define UART_NUC505_API_UART_ID_1	1
-#define UART_NUC505_API_UART_ID_2	2
-
+#define UART_NUC505_API_BASE_ADDRESS_UART0	(size_t)UART0
+#define UART_NUC505_API_BASE_ADDRESS_UART1	(size_t)UART1
+#define UART_NUC505_API_BASE_ADDRESS_UART2	(size_t)UART2
 /**********  define API  types ************/
 
 

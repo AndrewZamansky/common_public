@@ -3,6 +3,7 @@
 #define _irq_api_H_
 
 #include "_project.h"
+#include "src/_nvic_prerequirements_check.h"
 
 #include "cpu_config.h"
 
@@ -12,6 +13,9 @@ typedef void (*isr_t)(void)  ;
 
 /***************** register isr for interrupt **************/
 int irq_register_interrupt(int int_num , isr_t pIsr);
+
+/***************** register device on interrupt **************/
+int irq_register_device_on_interrupt(int int_num , pdev_descriptor_t pdev);
 
 /***************** enable interrupt **************/
 #define irq_enable_interrupt(int_num)  		NVIC_EnableIRQ(int_num)
