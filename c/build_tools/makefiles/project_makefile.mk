@@ -57,6 +57,9 @@ ifdef MAKEFILE_WAS_GENERATED
         ASMFLAGS :=
         DEFINES :=
         
+        # move global prerequirements_check compilation to first place
+        SUBDIRS := $(filter %prerequirements_check,$(SUBDIRS))  $(filter-out %prerequirements_check,$(SUBDIRS))
+
         GLOBAL_HEADER_FILES_DEPS := $(patsubst %,%/*.h,$(GLOBAL_INCLUDE_DIR)) 
 
         ADDITIONAL_DIRS_FOR_EXPORTS := $(sort $(APP_ROOT_DIR) $(SUBDIRS) $(GLOBAL_INCLUDE_DIR) $(MAKEFILE_DEFS_ROOT_DIR))

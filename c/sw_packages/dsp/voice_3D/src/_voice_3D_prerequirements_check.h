@@ -14,6 +14,7 @@
 #include "_project.h"
 #include "dev_management_api.h"
 #include "dsp_management_api.h"
+#include "global_prerequirements_check.h"
 
 
 /***************************/

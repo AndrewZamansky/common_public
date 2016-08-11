@@ -59,7 +59,7 @@ uint8_t timer_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num , void * 
 			config_handle->hw_timer =  (pdev_descriptor_t)aIoctl_param1;
 			break;
 
-		case TIMER_API_SET_COUNTDOWN_VALUE_AND_REST :
+		case TIMER_API_SET_COUNTDOWN_VALUE_AND_RESET :
 			DEV_IOCTL(config_handle->hw_timer,
 					IOCTL_GET_CURRENT_TIMER_VALUE, (void*)&curr_timer_val);
 			runtime_handle->timer_value_on_start = curr_timer_val;
