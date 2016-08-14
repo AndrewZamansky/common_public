@@ -14,7 +14,7 @@
 
 typedef enum
 {
-	IOCTL_EQUALIZER_SET_BAND_BIQUADS = IOCTL_LAST_COMMON_IOCTL+1,
+	IOCTL_EQUALIZER_SET_BAND_BIQUADS = IOCTL_DSP_LAST_COMMON_IOCTL+1,
 	IOCTL_EQUALIZER_SET_NUM_OF_BANDS,
 	IOCTL_EQUALIZER_GET_BAND_BIQUADS
 }EQUALIZER_API_ioctl_t;
@@ -37,7 +37,8 @@ typedef struct _equalizer_api_band_set_t
 
 /**********  define API  functions  ************/
 
+extern char equalizer_module_name[] ;
+#define EQUALIZER_API_MODULE_NAME	equalizer_module_name
 
-uint8_t  equalizer_api_init_dsp_descriptor(pdsp_descriptor aDspDescriptor);
 
 #endif

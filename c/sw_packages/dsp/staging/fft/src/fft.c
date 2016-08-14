@@ -97,7 +97,7 @@ uint8_t fft_ioctl(pdsp_descriptor apdsp ,const uint8_t aIoctl_num , void * aIoct
 	{
 
 
-		case IOCTL_DEVICE_START :
+		case IOCTL_DSP_INIT :
 
 			break;
 		default :

@@ -26,6 +26,8 @@
   #include "arm_math.h"
 #endif
 
+#include "auto_init_api.h"
+
 /********  defines *********************/
 #define THRESHOLD_LIMITER_0db000265			0x0002
 #define THRESHOLD_LIMITER_0db000795			0x0004
@@ -49,8 +51,9 @@
 /********  externals *********************/
 
 
-/********  local defs *********************/
+/********  exported variables *********************/
 
+char compressor_module_name[] = "compressor";
 
 
 /**********   external variables    **************/
@@ -467,7 +470,14 @@ uint8_t compressor_ioctl(pdsp_descriptor apdsp ,const uint8_t aIoctl_num , void 
 	handle = apdsp->handle;
 	switch(aIoctl_num)
 	{
-		case IOCTL_DEVICE_START :
+		case IOCTL_DSP_INIT :
+			handle->reverse_ratio = 0;//0.5;
+			handle->prev_ratio = 1;
+			handle->usePreviousRatio = 1;
+			handle->look_ahead_length_buffer_Ch1 = NULL;
+			handle->look_ahead_length_buffer_Ch2 = NULL;
+			handle->look_ahead_length = CONFIG_COMPRESSOR_DEFAULT_CHUNK_SIZE;
+			handle->release = 64;
 			switch(handle->type)
 			{
 				case COMPRESSOR_API_TYPE_LOOKAHEAD:
@@ -512,9 +522,8 @@ uint8_t compressor_ioctl(pdsp_descriptor apdsp ,const uint8_t aIoctl_num , void 
 }
 
 
-
 /*---------------------------------------------------------------------------------------------------------*/
-/* Function:        COMPRESSOR_API_Init_Dev_Descriptor                                                                          */
+/* Function:        compressor_init                                                                          */
 /*                                                                                                         */
 /* Parameters:                                                                                             */
 /*                                                                                         */
@@ -524,28 +533,10 @@ uint8_t compressor_ioctl(pdsp_descriptor apdsp ,const uint8_t aIoctl_num , void 
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t  compressor_api_init_dsp_descriptor(pdsp_descriptor aDspDescriptor)
+void  compressor_init(void)
 {
-	COMPRESSOR_Instance_t *pInstance;
-
-	if(NULL == aDspDescriptor) return 1;
-
-	pInstance = (COMPRESSOR_Instance_t *)malloc(sizeof(COMPRESSOR_Instance_t));
-	if(NULL == pInstance) return 1;
-
-	aDspDescriptor->handle = pInstance;
-	aDspDescriptor->ioctl = compressor_ioctl;
-	aDspDescriptor->dsp_func = compressor_dsp;
-	pInstance->reverse_ratio = 0;//0.5;
-	pInstance->prev_ratio = 1;
-	pInstance->usePreviousRatio = 1;
-	pInstance->look_ahead_length_buffer_Ch1 = NULL;
-	pInstance->look_ahead_length_buffer_Ch2 = NULL;
-	pInstance->look_ahead_length = CONFIG_COMPRESSOR_DEFAULT_CHUNK_SIZE;
-	pInstance->release = 64;
-
-	return 0 ;
-
+	DSP_REGISTER_NEW_MODULE(COMPRESSOR_API_MODULE_NAME ,compressor_ioctl , compressor_dsp , COMPRESSOR_Instance_t);
 }
 
+AUTO_INIT_FUNCTION(compressor_init);
 

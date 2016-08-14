@@ -212,4 +212,3 @@ void  NVIC_API_Init(void)
 
 
 AUTO_INIT_FUNCTION(NVIC_API_Init);
-

@@ -16,6 +16,7 @@
 
 
 
-uint8_t  I2S_splitter_api_init_dsp_descriptor(pdsp_descriptor aDspDescriptor);
+extern char I2S_splitter_module_name[] ;
+#define I2S_SPLITTER_API_MODULE_NAME	I2S_splitter_module_name
 
 #endif

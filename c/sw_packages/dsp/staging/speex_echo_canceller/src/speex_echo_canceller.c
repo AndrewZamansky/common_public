@@ -121,7 +121,7 @@ uint8_t speex_echo_canceller_ioctl(pdsp_descriptor apdsp ,const uint8_t aIoctl_n
 //#endif // for SPEEX_ECHO_CANCELLER_CONFIG_NUM_OF_DYNAMIC_INSTANCES > 0
 
 
-		case IOCTL_DEVICE_START :
+		case IOCTL_DSP_INIT :
 			echo_state =  speex_echo_state_init(BUFF_LEN , TAIL);
 			preprocess_state =  speex_preprocess_state_init(BUFF_LEN , SAMPLE_RATE);
 			handle->echo_state = echo_state ;
