@@ -86,7 +86,8 @@ else
 endif
 
 
-OUTPUT_HISTORY_BIN :=  $(OUT_DIR_HISTORY)/$(OUTPUT_APP_NAME).v$(DATE_STR).bin
+OUTPUT_HISTORY_BIN :=  $(OUT_DIR_HISTORY)/$(PROJECT_NAME)_$(MAIN_VERSION_STR)r$(DATE_STR).bin
+LINKER_HISTORY_OUTPUT := $(OUT_DIR_HISTORY)/$(PROJECT_NAME)_$(MAIN_VERSION_STR).elf
 
 
 rwildcard=$(wildcard $1$2) $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2))
@@ -97,8 +98,10 @@ rwildcard=$(wildcard $1$2) $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2))
 ALL_OBJ_FILES := $(sort $(call rwildcard,$(OBJ_DIR)/,*.o) $(call rwildcard,$(OBJ_DIR)/,*.oo) $(call rwildcard,$(OBJ_DIR)/,*.o.asm) $(call rwildcard,$(OBJ_DIR)/,*.O.asm))
 
 ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS) 	
+	LINKER_OUTPUT := $(subst /,\,$(LINKER_OUTPUT))
 	OUTPUT_BIN := $(subst /,\,$(OUTPUT_BIN))
 	OUTPUT_HISTORY_BIN := $(subst /,\,$(OUTPUT_HISTORY_BIN))
+	LINKER_HISTORY_OUTPUT := $(subst /,\,$(LINKER_HISTORY_OUTPUT))
 	OUTPUT_CRC32 := $(subst /,\,$(OUTPUT_CRC32))
 endif
 
@@ -111,8 +114,9 @@ build_outputs :
 	$(LD) $(LDFLAGS) -T $(OUT_DIR)/$(OUTPUT_APP_NAME).lds  $(LIBRARIES_DIRS) $(ALL_OBJ_FILES) $(LIBS) -o $(LINKER_OUTPUT)
 	$(DISASSEMBLER) $(LINKER_OUTPUT) > $(OUT_DIR)/$(OUTPUT_APP_NAME).asm
 	$(ELF_TO_BIN) $(LINKER_OUTPUT) $(OUTPUT_BIN)
-	 $(ELF_TO_HEX) $(LINKER_OUTPUT) $(OUTPUT_HEX)
+	$(ELF_TO_HEX) $(LINKER_OUTPUT) $(OUTPUT_HEX)
 	$(CP)  $(OUTPUT_BIN) $(OUTPUT_HISTORY_BIN)
+	$(CP)  $(LINKER_OUTPUT) $(LINKER_HISTORY_OUTPUT)
 ifeq ($(findstring y,$(CONFIG_CALCULATE_CRC32)),y)
 	$(CRC32CALC) $(OUTPUT_BIN) > $(OUTPUT_CRC32)
 endif

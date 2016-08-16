@@ -26,6 +26,11 @@ typedef struct
 }dsp_param_t;
 
 
+typedef enum
+{
+	IOCTL_DSP_INIT,
+	IOCTL_DSP_LAST_COMMON_IOCTL
+}common_dsp_ioctl_t;
 
 
 
@@ -77,6 +82,14 @@ typedef uint8_t (*dsp_ioctl_1_params_func_t)(pdsp_descriptor dsp ,const uint8_t 
 typedef void (*dsp_func_t)(pdsp_descriptor dsp , size_t data_len ,
 		dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] , dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS] )  ;
 
+typedef struct
+{
+	char  				*name;
+	dsp_ioctl_func_t  	ioctl;
+	dsp_func_t  		dsp_func;
+	uint16_t  			module_data_size;
+} dsp_module_t;
+
 struct _dsp_descriptor_t
 {
 //	uint8_t 			name[DSP_CONFIG_MAX_DSP_NAME_LEN+1];// +1 for null char
@@ -101,9 +114,9 @@ typedef struct
 
 /*  ioctl functions */
 #define DSP_IOCTL_0_PARAMS(dsp,ioctl_num)   			((dsp_ioctl_0_params_func_t)(dsp)->ioctl)(dsp,ioctl_num)
-#define DSP_IOCTL_1_PARAMS(dsp,ioctl_num,ioctl_param)   ((dsp_ioctl_1_params_func_t)(dsp)->ioctl)(dsp,ioctl_num,ioctl_param)
+#define DSP_IOCTL_1_PARAMS(dsp,ioctl_num,ioctl_param)   ((dsp_ioctl_1_params_func_t)(dsp)->ioctl)(dsp,ioctl_num,(void*)ioctl_param)
 #define DSP_IOCTL		DSP_IOCTL_1_PARAMS
-#define DSP_IOCTL_2_PARAMS(dsp,ioctl_num,ioctl_param1,ioctl_param2)    (dsp)->ioctl(dsp,ioctl_num,ioctl_param1,ioctl_param2)
+#define DSP_IOCTL_2_PARAMS(dsp,ioctl_num,ioctl_param1,ioctl_param2)    (dsp)->ioctl(dsp,ioctl_num,(void*)ioctl_param1,(void*)ioctl_param2)
 
 
 
@@ -116,6 +129,11 @@ typedef struct
 void dsp_management_api_set_buffers_pool(void *adsp_buffers_pool);
 void dsp_management_api_set_module_control(pdsp_descriptor dsp , DSP_MANAGEMENT_API_module_control_t ctl);
 
+void _DSP_REGISTER_NEW_MODULE(char *a_module_name, dsp_ioctl_func_t a_ioctle_func
+		, dsp_func_t a_dsp_func , uint16_t a_module_data_size);
+#define DSP_REGISTER_NEW_MODULE(a_module_name, a_ioctle_func , a_dsp_func , a_module_data_size)	\
+		_DSP_REGISTER_NEW_MODULE(a_module_name, a_ioctle_func , a_dsp_func , sizeof(a_module_data_size))
+
 uint8_t DSP_CREATE_LINK(pdsp_descriptor source_dsp,DSP_OUTPUT_PADS_t source_dsp_pad,
 		pdsp_descriptor sink_dsp,DSP_INPUT_PADS_t sink_dsp_pad);
 
@@ -123,7 +141,7 @@ void DSP_SET_SOURCE_BUFFER(pdsp_descriptor source_dsp,DSP_INPUT_PADS_t source_ds
 void DSP_SET_SINK_BUFFER(pdsp_descriptor dsp,DSP_OUTPUT_PADS_t dsp_output_pad, void *buffer);
 
 dsp_chain_t *DSP_CREATE_CHAIN(size_t max_num_of_dsp_modules);
-void DSP_ADD_MODULE_TO_CHAIN(dsp_chain_t *ap_chain, pdsp_descriptor dsp_module);
+void DSP_ADD_MODULE_TO_CHAIN(dsp_chain_t *ap_chain, char *a_module_name,  pdsp_descriptor dsp_module);
 
 void DSP_PROCESS(pdsp_descriptor dsp , size_t	len);
 void DSP_PROCESS_CHAIN(dsp_chain_t *ap_chain , size_t	len );

@@ -16,8 +16,9 @@
 
 /**********  define API  functions  ************/
 
+extern char I2S_mixer_module_name[] ;
+#define I2S_MIXER_API_MODULE_NAME	I2S_mixer_module_name
 
 
-uint8_t  I2S_mixer_api_init_dsp_descriptor(pdsp_descriptor aDspDescriptor);
 
 #endif

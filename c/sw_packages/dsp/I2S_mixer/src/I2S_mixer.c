@@ -18,6 +18,7 @@
 #include "I2S_mixer.h"
 #include "common_dsp_api.h"
 
+#include "auto_init_api.h"
 
 /********  defines *********************/
 #if (2==NUM_OF_BYTES_PER_AUDIO_WORD)
@@ -35,8 +36,9 @@
 /********  externals *********************/
 
 
-/********  local defs *********************/
+/********  exported variables *********************/
 
+char I2S_mixer_module_name[] = "I2S_mixer";
 
 
 /**********   external variables    **************/
@@ -105,7 +107,7 @@ uint8_t I2S_mixer_ioctl(pdsp_descriptor aDspDescriptor ,const uint8_t aIoctl_num
 
 	switch(aIoctl_num)
 	{
-		case IOCTL_DEVICE_START :
+		case IOCTL_DSP_INIT :
 
 
 			break;
@@ -119,7 +121,7 @@ uint8_t I2S_mixer_ioctl(pdsp_descriptor aDspDescriptor ,const uint8_t aIoctl_num
 
 
 /*---------------------------------------------------------------------------------------------------------*/
-/* Function:        I2S_MIXER_API_Init_Dev_Descriptor                                                                          */
+/* Function:         I2S_mixer_init                                                                          */
 /*                                                                                                         */
 /* Parameters:                                                                                             */
 /*                                                                                         */
@@ -129,19 +131,9 @@ uint8_t I2S_mixer_ioctl(pdsp_descriptor aDspDescriptor ,const uint8_t aIoctl_num
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t  I2S_mixer_api_init_dsp_descriptor(pdsp_descriptor aDspDescriptor)
+void  I2S_mixer_init(void)
 {
-	I2S_MIXER_Instance_t *pInstance;
-
-	if(NULL == aDspDescriptor) return 1;
-
-	pInstance = (I2S_MIXER_Instance_t *)malloc(sizeof(I2S_MIXER_Instance_t));
-	if(NULL == pInstance) return 1;
-
-	aDspDescriptor->handle = pInstance;
-	aDspDescriptor->ioctl = I2S_mixer_ioctl;
-	aDspDescriptor->dsp_func = I2S_mixer_dsp;
-
-	return 0 ;
-
+	DSP_REGISTER_NEW_MODULE("I2S_mixer",I2S_mixer_ioctl , I2S_mixer_dsp , I2S_MIXER_Instance_t);
 }
+
+AUTO_INIT_FUNCTION(I2S_mixer_init);

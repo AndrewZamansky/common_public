@@ -18,6 +18,7 @@
 #include "mixer.h"
 #include "common_dsp_api.h"
 
+#include "auto_init_api.h"
 
 /********  defines *********************/
 
@@ -27,9 +28,9 @@
 /********  externals *********************/
 
 
-/********  local defs *********************/
+/********  exported variables *********************/
 
-
+char mixer_module_name[] = "mixer";
 
 /**********   external variables    **************/
 
@@ -112,8 +113,10 @@ uint8_t mixer_ioctl(pdsp_descriptor apdsp ,const uint8_t aIoctl_num , void * aIo
 	channels_weights = handle->channels_weights ;
 	switch(aIoctl_num)
 	{
-		case IOCTL_DEVICE_START :
+		case IOCTL_DSP_INIT :
 
+			handle->num_of_input_channels =0;
+			handle->channels_weights=NULL;
 
 			break;
 		case IOCTL_MIXER_SET_NUM_OF_CHANNELS :
@@ -138,8 +141,9 @@ uint8_t mixer_ioctl(pdsp_descriptor apdsp ,const uint8_t aIoctl_num , void * aIo
 }
 
 
+
 /*---------------------------------------------------------------------------------------------------------*/
-/* Function:        MIXER_API_Init_Dev_Descriptor                                                                          */
+/* Function:        mixer_init                                                                          */
 /*                                                                                                         */
 /* Parameters:                                                                                             */
 /*                                                                                         */
@@ -149,22 +153,9 @@ uint8_t mixer_ioctl(pdsp_descriptor apdsp ,const uint8_t aIoctl_num , void * aIo
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t  mixer_api_init_dsp_descriptor(pdsp_descriptor aDspDescriptor)
+void  mixer_init(void)
 {
-	MIXER_Instance_t *pInstance;
-
-	if(NULL == aDspDescriptor) return 1;
-
-	pInstance = (MIXER_Instance_t *)malloc(sizeof(MIXER_Instance_t));
-	if(NULL == pInstance) return 1;
-
-	aDspDescriptor->handle = pInstance;
-	aDspDescriptor->ioctl = mixer_ioctl;
-	aDspDescriptor->dsp_func = mixer_dsp;
-
-	pInstance->num_of_input_channels =0;
-	pInstance->channels_weights=NULL;
-
-	return 0 ;
-
+	DSP_REGISTER_NEW_MODULE("mixer",mixer_ioctl , mixer_dsp , MIXER_Instance_t);
 }
+
+AUTO_INIT_FUNCTION(mixer_init);

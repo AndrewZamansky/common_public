@@ -19,6 +19,7 @@
 #include "equalizer_api.h" //place first to test that header file is self-contained
 #include "equalizer.h"
 
+#include "auto_init_api.h"
 
 /********  defines *********************/
 
@@ -28,9 +29,9 @@
 /********  externals *********************/
 
 
-/********  local defs *********************/
+/********  exported variables *********************/
 
-#define INSTANCE(hndl)	((EQUALIZER_Instance_t*)hndl)
+char equalizer_module_name[] = "equalizer";
 
 
 /**********   external variables    **************/
@@ -113,6 +114,12 @@ void equalizer_dsp(pdsp_descriptor apdsp , size_t data_len ,
 	EQUALIZER_Instance_t *handle;
 
 	handle = apdsp->handle;
+
+	if(0 == handle->num_of_bands)
+	{
+		return;
+	}
+
 	apCh1In = in_pads[0]->buff;
 	apCh1Out = out_pads[0].buff;
 
@@ -221,20 +228,18 @@ uint8_t equalizer_ioctl(pdsp_descriptor apdsp ,const uint8_t aIoctl_num , void *
 	handle = apdsp->handle;
 	switch(aIoctl_num)
 	{
-		case IOCTL_DEVICE_START :
+		case IOCTL_DSP_INIT :
 
-			pCoeffs = handle->pCoeffs;
-			handle->pBiquadFilter = biquads_alloc(handle->num_of_bands , (float *)pCoeffs );
+			handle->num_of_bands =0;
+			handle->pCoeffs = NULL ;
 
 			break;
 		case IOCTL_EQUALIZER_SET_NUM_OF_BANDS :
 			num_of_bands = ((size_t)aIoctl_param1);
 			handle->num_of_bands = num_of_bands;
 			free(handle->pCoeffs);
-			{
-				int tmp=sizeof(BandCoeffs_t) * num_of_bands;
-				pCoeffs=(BandCoeffs_t *)malloc(tmp);
-			}
+
+			pCoeffs=(BandCoeffs_t *)malloc(sizeof(BandCoeffs_t) * num_of_bands);
 			handle->pCoeffs = pCoeffs;
 			for(i=0 ; i<num_of_bands ; i++)
 			{
@@ -244,6 +249,8 @@ uint8_t equalizer_ioctl(pdsp_descriptor apdsp ,const uint8_t aIoctl_num , void *
 				pCoeffs[i].b1 = 0;
 				pCoeffs[i].b2 = 0;
 			}
+
+			handle->pBiquadFilter = biquads_alloc(handle->num_of_bands , (float *)pCoeffs );
 
 			break;
 		case IOCTL_EQUALIZER_SET_BAND_BIQUADS :
@@ -366,10 +373,8 @@ uint8_t equalizer_ioctl(pdsp_descriptor apdsp ,const uint8_t aIoctl_num , void *
 }
 
 
-
-
 /*---------------------------------------------------------------------------------------------------------*/
-/* Function:        EQUALIZER_API_Init_Dev_Descriptor                                                                          */
+/* Function:         equalizer_init                                                                          */
 /*                                                                                                         */
 /* Parameters:                                                                                             */
 /*                                                                                         */
@@ -379,24 +384,9 @@ uint8_t equalizer_ioctl(pdsp_descriptor apdsp ,const uint8_t aIoctl_num , void *
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t  equalizer_api_init_dsp_descriptor(pdsp_descriptor aDspDescriptor)
+void  equalizer_init(void)
 {
-	EQUALIZER_Instance_t *pInstance;
-
-	if(NULL == aDspDescriptor) return 1;
-
-	pInstance = (EQUALIZER_Instance_t *)malloc(sizeof(EQUALIZER_Instance_t));
-	if(NULL == pInstance) return 1;
-
-	aDspDescriptor->handle = pInstance;
-	aDspDescriptor->ioctl = equalizer_ioctl;
-	aDspDescriptor->dsp_func = equalizer_dsp;
-
-	pInstance->num_of_bands =0;
-	pInstance->pCoeffs=NULL;
-
-
-	return 0 ;
-
+	DSP_REGISTER_NEW_MODULE("equalizer",equalizer_ioctl , equalizer_dsp , EQUALIZER_Instance_t);
 }
 
+AUTO_INIT_FUNCTION(equalizer_init);

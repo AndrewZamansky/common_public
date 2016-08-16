@@ -123,39 +123,53 @@ uint8_t uart_nuc505_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 			config_handle->baud_rate = *(uint32_t*)aIoctl_param1;
 			break;
 		case IOCTL_DEVICE_START :
-			if(UART0 == uart_regs)
 			{
-				uart_irq = UART0_IRQn;
+				uint32_t uart_module_num;
+				uint32_t uart_clk_src;
+				uint32_t uart_module_rst;
+
+				if(UART0 == uart_regs)
+				{
+					uart_irq = UART0_IRQn;
+					uart_module_num = UART0_MODULE;
+					uart_clk_src = CLK_UART0_SRC_EXT;
+					uart_module_rst = UART0_RST;
+					/*---------------------------------------------------------------------------------------------------------*/
+					/* Init I/O Multi-function                                                                                 */
+					/*---------------------------------------------------------------------------------------------------------*/
+					/* Configure multi-function pins for UART0 RXD and TXD */
+					SYS->GPB_MFPL  = (SYS->GPB_MFPL & (~SYS_GPB_MFPL_PB0MFP_Msk) ) | SYS_GPB_MFPL_PB0MFP_UART0_TXD;
+					SYS->GPB_MFPL  = (SYS->GPB_MFPL & (~SYS_GPB_MFPL_PB1MFP_Msk) ) | SYS_GPB_MFPL_PB1MFP_UART0_RXD;
+
+				}
+				else
+				{
+					return 1;
+				}
+
 				/* Select IP clock source */
-				CLK_SetModuleClock(UART0_MODULE, CLK_UART0_SRC_EXT, 0);
+				CLK_SetModuleClock(uart_module_num, uart_clk_src, 0);
 
 				/* Enable IP clock */
-				CLK_EnableModuleClock(UART0_MODULE);
-				/*---------------------------------------------------------------------------------------------------------*/
-				/* Init I/O Multi-function                                                                                 */
-				/*---------------------------------------------------------------------------------------------------------*/
-				/* Configure multi-function pins for UART0 RXD and TXD */
-				SYS->GPB_MFPL  = (SYS->GPB_MFPL & (~SYS_GPB_MFPL_PB0MFP_Msk) ) | SYS_GPB_MFPL_PB0MFP_UART0_TXD;
-				SYS->GPB_MFPL  = (SYS->GPB_MFPL & (~SYS_GPB_MFPL_PB1MFP_Msk) ) | SYS_GPB_MFPL_PB1MFP_UART0_RXD;
+				CLK_EnableModuleClock(uart_module_num);
 
 				/*---------------------------------------------------------------------------------------------------------*/
 				/* Init UART                                                                                               */
 				/*---------------------------------------------------------------------------------------------------------*/
 				/* Reset UART module */
-				SYS_ResetModule(UART0_RST);
+				SYS_ResetModule(uart_module_rst);
+
+				/* Configure UART and set UART baud rate */
+				UART_Open(uart_regs, config_handle->baud_rate);
+
+				/* Enable UART RDA/RLS/Time-out interrupt */
+				UART_EnableInt(uart_regs, (UART_INTEN_RDAIEN_Msk  | UART_INTEN_RXTOIEN_Msk));
+
+
+				irq_register_device_on_interrupt(uart_irq , apdev);
+				irq_set_priority(uart_irq , INTERRUPT_LOWEST_PRIORITY - 1 );
+				irq_enable_interrupt(uart_irq);
 			}
-
-
-		    /* Configure UART and set UART baud rate */
-		    UART_Open(uart_regs, config_handle->baud_rate);
-
-		    /* Enable UART RDA/RLS/Time-out interrupt */
-		    UART_EnableInt(uart_regs, (UART_INTEN_RDAIEN_Msk  | UART_INTEN_RXTOIEN_Msk));
-
-		    irq_register_device_on_interrupt(uart_irq , apdev);
-			irq_set_priority(uart_irq , INTERRUPT_LOWEST_PRIORITY - 1 );
-			irq_enable_interrupt(uart_irq);
-
 			break;
 		case IOCTL_UART_DISABLE_TX :
 			UART_DISABLE_INT(uart_regs,  UART_INTEN_THREIEN_Msk);

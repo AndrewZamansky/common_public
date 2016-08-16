@@ -25,6 +25,8 @@
   #include "arm_math.h"
 #endif
 
+#include "auto_init_api.h"
+
 /********  defines *********************/
 
 
@@ -33,9 +35,9 @@
 /********  externals *********************/
 
 
-/********  local defs *********************/
+/********  exported variables *********************/
 
-#define INSTANCE(hndl)	((VOICE_3D_Instance_t*)hndl)
+char voice_3D_module_name[] = "voice_3D";
 
 
 /**********   external variables    **************/
@@ -128,8 +130,10 @@ uint8_t voice_3D_ioctl(pdsp_descriptor apdsp ,const uint8_t aIoctl_num , void * 
 	handle = apdsp->handle;
 	switch(aIoctl_num)
 	{
-		case IOCTL_DEVICE_START :
-
+		case IOCTL_DSP_INIT :
+			handle->medium_gain = 0.5;
+			handle->side_gain =  0.5;
+			handle->_3D_gain = 0;
 			break;
 		case IOCTL_VOICE_3D_SET_MEDIUM_GAIN :
 			handle->medium_gain = (*((float*)aIoctl_param1))/2;
@@ -148,8 +152,9 @@ uint8_t voice_3D_ioctl(pdsp_descriptor apdsp ,const uint8_t aIoctl_num , void * 
 
 
 
+
 /*---------------------------------------------------------------------------------------------------------*/
-/* Function:        VOICE_3D_API_Init_Dev_Descriptor                                                                          */
+/* Function:        voice_3D_init                                                                          */
 /*                                                                                                         */
 /* Parameters:                                                                                             */
 /*                                                                                         */
@@ -159,22 +164,9 @@ uint8_t voice_3D_ioctl(pdsp_descriptor apdsp ,const uint8_t aIoctl_num , void * 
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t  voice_3D_api_init_dsp_descriptor(pdsp_descriptor aDspDescriptor)
+void  voice_3D_init(void)
 {
-	VOICE_3D_Instance_t *pInstance;
-
-	if(NULL == aDspDescriptor) return 1;
-
-	pInstance = (VOICE_3D_Instance_t *)malloc(sizeof(VOICE_3D_Instance_t));
-	if(NULL == pInstance) return 1;
-
-	aDspDescriptor->handle = pInstance;
-	aDspDescriptor->ioctl = voice_3D_ioctl;
-	aDspDescriptor->dsp_func = voice_3D_dsp;
-	pInstance->medium_gain = 0.5;
-	pInstance->side_gain =  0.5;
-	pInstance->_3D_gain = 0;
-
-	return 0 ;
-
+	DSP_REGISTER_NEW_MODULE("voice_3D",voice_3D_ioctl , voice_3D_dsp , VOICE_3D_Instance_t);
 }
+
+AUTO_INIT_FUNCTION(voice_3D_init);

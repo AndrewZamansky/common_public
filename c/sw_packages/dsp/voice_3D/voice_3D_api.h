@@ -15,7 +15,7 @@
 
 typedef enum
 {
-	IOCTL_VOICE_3D_SET_MEDIUM_GAIN = IOCTL_LAST_COMMON_IOCTL+1,
+	IOCTL_VOICE_3D_SET_MEDIUM_GAIN = IOCTL_DSP_LAST_COMMON_IOCTL+1,
 	IOCTL_VOICE_3D_SET_SIDE_GAIN,
 	IOCTL_VOICE_3D_SET_3D_GAIN,
 }VOICE_3D_API_ioctl_t;
@@ -24,7 +24,8 @@ typedef enum
 
 /**********  define API  functions  ************/
 
+extern char voice_3D_module_name[] ;
+#define VOICE_3D_API_MODULE_NAME	voice_3D_module_name
 
-uint8_t  voice_3D_api_init_dsp_descriptor(pdsp_descriptor aDspDescriptor);
 
 #endif

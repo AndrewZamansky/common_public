@@ -14,7 +14,7 @@
 
 typedef enum
 {
-	IOCTL_COMPRESSOR_SET_TYPE = IOCTL_LAST_COMMON_IOCTL+1,
+	IOCTL_COMPRESSOR_SET_TYPE = IOCTL_DSP_LAST_COMMON_IOCTL+1,
 	IOCTL_COMPRESSOR_SET_HIGH_THRESHOLD,
 	IOCTL_COMPRESSOR_SET_ATTACK,
 	IOCTL_COMPRESSOR_SET_RELEASE,
@@ -34,7 +34,7 @@ typedef enum
 
 /**********  define API  functions  ************/
 
-
-uint8_t  compressor_api_init_dsp_descriptor(pdsp_descriptor aDspDescriptor);
+extern char compressor_module_name[] ;
+#define COMPRESSOR_API_MODULE_NAME	compressor_module_name
 
 #endif

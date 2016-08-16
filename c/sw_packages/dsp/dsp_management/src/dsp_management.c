@@ -17,6 +17,7 @@
 #include "dsp_management.h"
 
 #include "memory_pool_api.h"
+#include "string.h"
 
 
 
@@ -35,15 +36,15 @@ static	void *dsp_buffers_pool;
 /********  externals *********************/
 
 
-/********  local defs *********************/
-
-
 
 /**********   external variables    **************/
 
 
 
 /***********   local variables    **************/
+
+uint8_t size_of_module_array = 0;
+dsp_module_t *dsp_module_array;
 
 /*---------------------------------------------------------------------------------------------------------*/
 /* Function:        my_float_memcpy                                                                          */
@@ -84,6 +85,31 @@ static void my_float_memset(float *dest ,float val , size_t len)
 }
 
 /*---------------------------------------------------------------------------------------------------------*/
+/* Function:        DSP_REGISTER_NEW_MODULE                                                                          */
+/*                                                                                                         */
+/* Parameters:                                                                                             */
+/*                                                                                         */
+/*                                                                                                  */
+/* Returns:                                                                                      */
+/* Side effects:                                                                                           */
+/* Description:                                                                                            */
+/*                                                            						 */
+/*---------------------------------------------------------------------------------------------------------*/
+void _DSP_REGISTER_NEW_MODULE(char *a_module_name, dsp_ioctl_func_t a_ioctle_func , dsp_func_t a_dsp_func
+		, uint16_t a_module_data_size)
+{
+	dsp_module_t* p_new_dsp_module;
+	size_of_module_array++;
+	dsp_module_array = (dsp_module_t*)realloc(dsp_module_array, sizeof(dsp_module_t) * size_of_module_array);
+	p_new_dsp_module = &dsp_module_array[size_of_module_array-1];
+	p_new_dsp_module->name = a_module_name;
+	p_new_dsp_module->ioctl = a_ioctle_func;
+	p_new_dsp_module->dsp_func = a_dsp_func;
+	p_new_dsp_module->module_data_size = a_module_data_size;
+}
+
+
+/*---------------------------------------------------------------------------------------------------------*/
 /* Function:        DSP_CREATE_CHAIN                                                                          */
 /*                                                                                                         */
 /* Parameters:                                                                                             */
@@ -115,17 +141,34 @@ dsp_chain_t *DSP_CREATE_CHAIN(size_t max_num_of_dsp_modules)
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-void DSP_ADD_MODULE_TO_CHAIN(dsp_chain_t *ap_chain, pdsp_descriptor dsp_module)
+void DSP_ADD_MODULE_TO_CHAIN(dsp_chain_t *ap_chain, char *a_module_name,  pdsp_descriptor dsp_module)
 {
+	uint8_t i;
 	size_t occupied_dsp_modules;
+	dsp_module_t* p_dsp_module;
+	uint8_t retVal;
 
 	occupied_dsp_modules = ap_chain->occupied_dsp_modules;
 	while ( occupied_dsp_modules  == ap_chain->max_num_of_dsp_modules) ; // error trap
 
-	ap_chain->dsp_chain[occupied_dsp_modules++] = dsp_module;
+	for(i=0 ; i < size_of_module_array ; i++)
+	{
+		p_dsp_module = &dsp_module_array[i];
+		if(0==strcmp(a_module_name,p_dsp_module->name))
+		{
+			dsp_module->ioctl = p_dsp_module->ioctl;
+			dsp_module->dsp_func = p_dsp_module->dsp_func;
+			dsp_module->handle =malloc( p_dsp_module->module_data_size );
+			retVal = DSP_IOCTL_0_PARAMS(dsp_module , IOCTL_DSP_INIT );
+			if (retVal) while(1);// error trap in case dsp module failed to start
 
-	ap_chain->occupied_dsp_modules = occupied_dsp_modules ;
+			ap_chain->dsp_chain[occupied_dsp_modules++] = dsp_module;
 
+			ap_chain->occupied_dsp_modules = occupied_dsp_modules ;
+			return ;
+		}
+	}
+	while(1);// error trap in case module with a_module_name string was not found
 }
 
 /*---------------------------------------------------------------------------------------------------------*/

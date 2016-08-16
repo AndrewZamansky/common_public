@@ -15,7 +15,7 @@
 
 typedef enum
 {
-	IOCTL_MIXER_SET_CHANNEL_WEIGHT = IOCTL_LAST_COMMON_IOCTL+1,
+	IOCTL_MIXER_SET_CHANNEL_WEIGHT = IOCTL_DSP_LAST_COMMON_IOCTL+1,
 	IOCTL_MIXER_SET_NUM_OF_CHANNELS,
 }MIXER_API_ioctl_t;
 
@@ -30,7 +30,8 @@ typedef struct _set_channel_weight_t
 	float weight;
 } set_channel_weight_t;
 
-uint8_t  mixer_api_init_dsp_descriptor(pdsp_descriptor aDspDescriptor);
 
+extern char mixer_module_name[] ;
+#define MIXER_API_MODULE_NAME	mixer_module_name
 
 #endif
