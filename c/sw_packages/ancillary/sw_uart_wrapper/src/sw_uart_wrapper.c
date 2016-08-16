@@ -68,12 +68,12 @@ inline uint8_t SW_UART_WRAPPER_TX_Done(sw_uart_wrapper_instance_t *config_handle
 	tx_int_size_t data_length ;
 	pdev_descriptor_t   server_dev ;
 
+	server_dev = config_handle->server_dev;
 	data_length = (tx_int_size_t)runtime_handle->data_length;
 	if(data_length > transmitedSize)
     {
 		runtime_handle->sendData += transmitedSize;
 		data_length -= transmitedSize;
-		server_dev = config_handle->server_dev;
 	    DEV_WRITE(server_dev, runtime_handle->sendData, data_length );
 	    runtime_handle->data_length = data_length;
 //	    queueMsg = TRANSMIT_IN_PROGRESS;
