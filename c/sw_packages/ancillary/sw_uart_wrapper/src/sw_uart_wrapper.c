@@ -41,11 +41,6 @@ typedef struct
 /********  externals *********************/
 
 
-/********  local defs *********************/
-
-
-#define INSTANCE(hndl)	((sw_uart_wrapper_instance_t*)hndl)
-
 
 /**********   external variables    **************/
 
@@ -69,13 +64,16 @@ inline uint8_t SW_UART_WRAPPER_TX_Done(sw_uart_wrapper_instance_t *config_handle
 		sw_uart_wrapper_runtime_instance_t *runtime_handle ,tx_int_size_t transmitedSize)
 {
 //	uint8_t queueMsg;
-	os_queue_t xQueue = runtime_handle->xTX_WaitQueue;
-	tx_int_size_t data_length = (tx_int_size_t)runtime_handle->data_length;
-	pdev_descriptor_t   server_dev = config_handle->server_dev;
-	runtime_handle->sendData += transmitedSize;
+	os_queue_t xQueue  ;
+	tx_int_size_t data_length ;
+	pdev_descriptor_t   server_dev ;
+
+	data_length = (tx_int_size_t)runtime_handle->data_length;
 	if(data_length > transmitedSize)
     {
+		runtime_handle->sendData += transmitedSize;
 		data_length -= transmitedSize;
+		server_dev = config_handle->server_dev;
 	    DEV_WRITE(server_dev, runtime_handle->sendData, data_length );
 	    runtime_handle->data_length = data_length;
 //	    queueMsg = TRANSMIT_IN_PROGRESS;
@@ -83,6 +81,7 @@ inline uint8_t SW_UART_WRAPPER_TX_Done(sw_uart_wrapper_instance_t *config_handle
     else
     {
     	DEV_IOCTL_0_PARAMS(server_dev,IOCTL_UART_DISABLE_TX);
+    	xQueue = runtime_handle->xTX_WaitQueue;
     	if(NULL!=xQueue)
     	{
     		os_queue_send_immediate( xQueue, ( void * ) &dummy_msg);
@@ -418,7 +417,7 @@ uint8_t sw_uart_wrapper_ioctl(pdev_descriptor_t apdev ,const uint8_t aIoctl_num 
 			config_handle->client_dev = (pdev_descriptor_t)aIoctl_param1;
 			break;
 #endif			//for CONFIG_SW_UART_WRAPPER_ENABLE_RX
-#endif // for CONFIG_SW_UART_WRAPPER_MAX_NUM_OF_DYNAMIC_INSTANCES > 0
+#endif // for CONFIG_SW_UART_WRAPPER_USE_RUNTIME_CONFIGURATION
 
 #ifdef CONFIG_SW_UART_WRAPPER_ENABLE_RX
 		case IOCTL_GET_AND_LOCK_DATA_BUFFER :
