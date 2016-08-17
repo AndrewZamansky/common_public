@@ -4,15 +4,6 @@
 
 /**********  defines ************/
 
-/* compiler dependent definitions : */
-#if defined(__CSMC__)
-#undef INTERRUPT
-#define INTERRUPT @far @interrupt @svlreg
-#elif defined (__IAR_SYSTEMS_ICC__)
-#define INTERRUPT __interrupt
-#elif defined(__RCSTM8__)
-#define INTERRUPT
-#endif
 
 
 #define arch_enter_interrupt()		 atomIntEnter();\

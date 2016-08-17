@@ -11,6 +11,7 @@
 #ifndef _irq_definitions_H
 #define _irq_definitions_H
 
+#include "_project.h"
 
 #ifndef TRAP_IRQHandler
 	#define TRAP_IRQHandler NonHandledInterrupt

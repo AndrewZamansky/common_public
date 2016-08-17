@@ -30,7 +30,7 @@ LDFLAGS :=
 #LDFLAGS += -fno-builtin-printf
 
 ifeq ($(findstring cortex-m,$(CONFIG_CPU_TYPE)),cortex-m) 	 
-	LDFLAGS += -mthumb
+    LDFLAGS += -mthumb
 endif
 
 
@@ -69,7 +69,7 @@ FILES_TO_FORCE_IN_RAM := $(FILES_TO_FORCE_IN_RAM) 123_DUMMY.X # add dummy file t
 LDS_PREPROCESSOR_DEFINES := 
 LDS_PREPROCESSOR_DEFINES += DEBUG_SECTIONS_INCLUDE_FILE="\"$(BUILD_TOOLS_ROOT_DIR)/scatter_files/gcc/debug_sections.lds\""
 ifeq ($(findstring cortex-m,$(CONFIG_CPU_TYPE)),cortex-m)
-	LDS_PREPROCESSOR_DEFINES += CORTEX_M
+    LDS_PREPROCESSOR_DEFINES += CORTEX_M
 endif
 LDS_PREPROCESSOR_DEFINES_FRMT 	:= $(patsubst %,-D%,$(LDS_PREPROCESSOR_DEFINES))
 LDS_PREPROCESSOR_DEFINES_FRMT := $(LDS_PREPROCESSOR_DEFINES_FRMT) -DFILES_TO_FORCE_IN_RAM="$(FILES_TO_FORCE_IN_RAM)"
@@ -82,7 +82,7 @@ ifeq ($(findstring cortex-m,$(CONFIG_CPU_TYPE)),cortex-m)
 #	GLOBAL_LIBS_PATH := $(GLOBAL_LIBS_PATH) $(GCC_LIB_ROOT_DIR)/fpu
 #	GLOBAL_LIBS_PATH := $(GLOBAL_LIBS_PATH) $(GCC_LIB_ROOT_DIR)/thumb
 else	
-	GLOBAL_LIBS_PATH := $(GLOBAL_LIBS_PATH) $(GCC_LIB_ROOT_DIR) 
+    GLOBAL_LIBS_PATH := $(GLOBAL_LIBS_PATH) $(GCC_LIB_ROOT_DIR) 
 endif
 
 
@@ -98,11 +98,11 @@ rwildcard=$(wildcard $1$2) $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2))
 ALL_OBJ_FILES := $(sort $(call rwildcard,$(OBJ_DIR)/,*.o) $(call rwildcard,$(OBJ_DIR)/,*.oo) $(call rwildcard,$(OBJ_DIR)/,*.o.asm) $(call rwildcard,$(OBJ_DIR)/,*.O.asm))
 
 ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS) 	
-	LINKER_OUTPUT := $(subst /,\,$(LINKER_OUTPUT))
-	OUTPUT_BIN := $(subst /,\,$(OUTPUT_BIN))
-	OUTPUT_HISTORY_BIN := $(subst /,\,$(OUTPUT_HISTORY_BIN))
-	LINKER_HISTORY_OUTPUT := $(subst /,\,$(LINKER_HISTORY_OUTPUT))
-	OUTPUT_CRC32 := $(subst /,\,$(OUTPUT_CRC32))
+    LINKER_OUTPUT := $(subst /,\,$(LINKER_OUTPUT))
+    OUTPUT_BIN := $(subst /,\,$(OUTPUT_BIN))
+    OUTPUT_HISTORY_BIN := $(subst /,\,$(OUTPUT_HISTORY_BIN))
+    LINKER_HISTORY_OUTPUT := $(subst /,\,$(LINKER_HISTORY_OUTPUT))
+    OUTPUT_CRC32 := $(subst /,\,$(OUTPUT_CRC32))
 endif
 
 ifeq ($(findstring y,$(CONFIG_USED_FOR_SEMIHOSTING_UPLOADING)),y)

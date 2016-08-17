@@ -50,12 +50,13 @@ void tx_function(void)
     /* In order to detect unexpected events during development,
    it is recommended to set a breakpoint on the following instruction.
 */
-    static uint8_t dummy;
+    pdev_descriptor_t   callback_dev;
 
     if (UART1_GetFlagStatus(UART1_FLAG_TXE) == SET)
     {
-    	if(pHw_uart_pointer_to_instance->callback_dev)
-    		DEV_CALLBACK_1_PARAMS(pHw_uart_pointer_to_instance->callback_dev , CALLBACK_TX_DONE,(void*)1);
+    	callback_dev = pHw_uart_pointer_to_instance->callback_dev ;
+    	if(NULL != callback_dev)
+    		DEV_CALLBACK_1_PARAMS(callback_dev , CALLBACK_TX_DONE, 1);
     }
 
 }
@@ -91,16 +92,18 @@ void rx_function(void)
     /* In order to detect unexpected events during development,
    it is recommended to set a breakpoint on the following instruction.
 */
-    static uint8_t cChar;
+    uint8_t cChar;
+    pdev_descriptor_t   callback_dev;
 
     if (UART1_GetFlagStatus(UART1_FLAG_RXNE) == SET)
     {
 		cChar = UART1_ReceiveData8();
-		if (NULL ==pHw_uart_pointer_to_instance->callback_dev )  return ;
+		callback_dev = pHw_uart_pointer_to_instance->callback_dev;
+		if (NULL == callback_dev)  return ;
 
 
-		DEV_CALLBACK_2_PARAMS(pHw_uart_pointer_to_instance->callback_dev ,
-				CALLBACK_DATA_RECEIVED,  &cChar, (void*)1);
+		DEV_CALLBACK_2_PARAMS( callback_dev ,
+				CALLBACK_DATA_RECEIVED,  &cChar,  1);
 
     }
 

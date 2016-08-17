@@ -82,10 +82,8 @@ inline uint8_t SW_UART_WRAPPER_TX_Done(sw_uart_wrapper_instance_t *config_handle
     {
     	DEV_IOCTL_0_PARAMS(server_dev,IOCTL_UART_DISABLE_TX);
     	xQueue = runtime_handle->xTX_WaitQueue;
-    	if(NULL!=xQueue)
-    	{
-    		os_queue_send_immediate( xQueue, ( void * ) &dummy_msg);
-    	}
+   		os_queue_send_immediate( xQueue, ( void * ) &dummy_msg);
+
 //	    queueMsg = TRANSMIT_DONE;
     }
 
@@ -339,10 +337,9 @@ static void SW_UART_WRAPPER_Send_Task( void *apdev )
 	os_queue_t xQueue ;
 	os_queue_t xTX_WaitQueue ;
 
-	xTX_WaitQueue = os_create_queue( 1 , sizeof(uint8_t ) );
 	config_handle = DEV_GET_CONFIG_DATA_POINTER(apdev);
 	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(apdev);
-	runtime_handle->xTX_WaitQueue = xTX_WaitQueue ;
+	xTX_WaitQueue = runtime_handle->xTX_WaitQueue ;
 
 	xQueue = os_create_queue( CONFIG_SW_UART_WRAPPER_MAX_QUEUE_LEN , sizeof(xMessage_t ) );
 
@@ -452,12 +449,19 @@ uint8_t sw_uart_wrapper_ioctl(pdev_descriptor_t apdev ,const uint8_t aIoctl_num 
 			break;
 
 		case IOCTL_DEVICE_START :
+			if(NULL == runtime_handle->xTX_WaitQueue)
+			{
+				os_queue_t xTX_WaitQueue ;
+
+				xTX_WaitQueue = os_create_queue( 1 , sizeof(uint8_t ) );
+				runtime_handle->xTX_WaitQueue = xTX_WaitQueue ;
 #ifdef CONFIG_SW_UART_WRAPPER_USE_MALLOC
-			config_handle->rx_buff = (uint8_t*)malloc(config_handle->rx_buff_size);
+				config_handle->rx_buff = (uint8_t*)malloc(config_handle->rx_buff_size);
 #endif
-			os_create_task("sw_uart_wrapper_task",SW_UART_WRAPPER_Send_Task,
-					apdev , SW_UART_WRAPPER_TASK_STACK_SIZE , SW_UART_WRAPPER_TASK_PRIORITY);
-			DEV_IOCTL_0_PARAMS(server_dev , IOCTL_DEVICE_START );
+				os_create_task("sw_uart_wrapper_task",SW_UART_WRAPPER_Send_Task,
+						apdev , SW_UART_WRAPPER_TASK_STACK_SIZE , SW_UART_WRAPPER_TASK_PRIORITY);
+				DEV_IOCTL_0_PARAMS(server_dev , IOCTL_DEVICE_START );
+			}
 			break;
 
 		default :

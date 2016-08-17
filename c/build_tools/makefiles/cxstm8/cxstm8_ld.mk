@@ -30,14 +30,17 @@ ALL_OBJ_FILES := $(sort $(call rwildcard,$(OBJ_DIR)/,*.o) $(call rwildcard,$(OBJ
 ALL_OBJ_FILES := $(patsubst %stm8_interrupt_vector.o,,$(ALL_OBJ_FILES))
 ALL_OBJ_FILES := $(patsubst %stacks.o,,$(ALL_OBJ_FILES))
 
-OUTPUT_HISTORY_BIN :=  $(OUT_DIR_HISTORY)/$(OUTPUT_APP_NAME).v$(DATE_STR).bin
+OUTPUT_HISTORY_BIN :=  $(OUT_DIR_HISTORY)/$(PROJECT_NAME)_$(MAIN_VERSION_STR)r$(DATE_STR).bin
+LINKER_HISTORY_OUTPUT := $(OUT_DIR_HISTORY)/$(PROJECT_NAME)_$(MAIN_VERSION_STR).stm8
 
 ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS) 	 
-	#replace backslash for slash
-	OUTPUT_BIN := $(subst /,\,$(OUTPUT_BIN))
-	OUTPUT_HEX := $(subst /,\,$(OUTPUT_HEX))
-	OUTPUT_CRC32 := $(subst /,\,$(OUTPUT_CRC32))
-	OUTPUT_HISTORY_BIN := $(subst /,\,$(OUTPUT_HISTORY_BIN))
+    #replace backslash for slash
+    LINKER_OUTPUT := $(subst /,\,$(LINKER_OUTPUT))
+    OUTPUT_BIN := $(subst /,\,$(OUTPUT_BIN))
+    OUTPUT_HEX := $(subst /,\,$(OUTPUT_HEX))
+    OUTPUT_CRC32 := $(subst /,\,$(OUTPUT_CRC32))
+    OUTPUT_HISTORY_BIN := $(subst /,\,$(OUTPUT_HISTORY_BIN))
+    LINKER_HISTORY_OUTPUT := $(subst /,\,$(LINKER_HISTORY_OUTPUT))
 endif
 
 
@@ -49,6 +52,7 @@ build_outputs :
 	$(STM8_TO_HEX)  -o $(OUTPUT_HEX) $(LINKER_OUTPUT)
 	$(HEX_TO_BIN) $(OUTPUT_HEX) 
 	$(CP)  $(OUTPUT_BIN) $(OUTPUT_HISTORY_BIN) 
+	$(CP)  $(LINKER_OUTPUT) $(LINKER_HISTORY_OUTPUT)
 ifeq ($(findstring YES,$(CONFIG_CALCULATE_CRC32)),YES) 	 
 	$(CRC32CALC) $(OUTPUT_BIN) > $(OUTPUT_CRC32) 
 endif	
