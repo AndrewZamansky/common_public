@@ -30,6 +30,10 @@ ALL_OBJ_FILES := $(sort $(call rwildcard,$(OBJ_DIR)/,*.o) $(call rwildcard,$(OBJ
 ALL_OBJ_FILES := $(patsubst %stm8_interrupt_vector.o,,$(ALL_OBJ_FILES))
 ALL_OBJ_FILES := $(patsubst %stacks.o,,$(ALL_OBJ_FILES))
 
+#need to split in two variables because preprossesor cannot deal with strings larger then 2048 chars
+OBJ_FILES1 := $(wordlist 1, 5, $(ALL_OBJ_FILES))
+OBJ_FILES2 := $(wordlist 6, 1000, $(ALL_OBJ_FILES))
+
 OUTPUT_HISTORY_BIN :=  $(OUT_DIR_HISTORY)/$(PROJECT_NAME)_$(MAIN_VERSION_STR)r$(DATE_STR).bin
 LINKER_HISTORY_OUTPUT := $(OUT_DIR_HISTORY)/$(PROJECT_NAME)_$(MAIN_VERSION_STR).stm8
 
@@ -46,7 +50,7 @@ endif
 
 
 build_outputs : 
-	$(PREPROCESSOR) -e -dOBJ_DIR="$(OBJ_DIR)" -dFILES_LIST="$(ALL_OBJ_FILES)" $(LDS_PREPROCESSOR_DEFINES_FRMT)  $(BUILD_TOOLS_ROOT_DIR)/scatter_files/cxstm8/scatter_file_pattern.lkf > $(OUT_DIR)/$(OUTPUT_APP_NAME).lkf
+	$(PREPROCESSOR) -e -dOBJ_DIR="$(OBJ_DIR)" -dFILES_LIST1="$(OBJ_FILES1)" -dFILES_LIST2="$(OBJ_FILES2)" $(LDS_PREPROCESSOR_DEFINES_FRMT)  $(BUILD_TOOLS_ROOT_DIR)/scatter_files/cxstm8/scatter_file_pattern.lkf > $(OUT_DIR)/$(OUTPUT_APP_NAME).lkf
 	$(LD)  -m $(OUT_DIR)/$(OUTPUT_APP_NAME).map -o $(LINKER_OUTPUT) $(OUT_DIR)/$(OUTPUT_APP_NAME).lkf
 	$(CXSTM8_ROOT_DIR)\cvdwarf  $(LINKER_OUTPUT) -o $(OUT_DIR)/$(OUTPUT_APP_NAME).elf
 	$(STM8_TO_HEX)  -o $(OUTPUT_HEX) $(LINKER_OUTPUT)

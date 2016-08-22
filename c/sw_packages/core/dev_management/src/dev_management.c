@@ -34,6 +34,26 @@ extern uint8_t end_of_modules_stamp ;
 	dev_descriptor_t  dev_descriptors[CONFIG_MAX_NUM_OF_DYNAMIC_DEVICES];
 #endif
 
+uint8_t	DEV_IOCTL_0_PARAMS(pdev_descriptor_t dev,uint8_t ioctl_num)
+{
+	((dev_ioctl_0_params_func_t)(dev)->ioctl)(dev ,ioctl_num);
+}
+
+
+//uint8_t	_DEV_IOCTL_1_PARAMS(pdev_descriptor_t dev,uint8_t ioctl_num , void *ioctl_param)
+//{
+//	_DEV_IOCTL_2_PARAMS(dev , ioctl_num , ioctl_param , NULL);
+//}
+//
+//uint8_t	_DEV_IOCTL_2_PARAMS(pdev_descriptor_t dev,uint8_t ioctl_num , void *ioctl_param1 , void *ioctl_param2)
+//{
+//	(dev)->ioctl(dev ,ioctl_num,ioctl_param1 , ioctl_param2);
+//}
+
+uint8_t	DEV_WRITE(const pdev_descriptor_t apdev , uint8_t *apData , size_t aLength )
+{
+	((dev_write_func_t)(apdev)->pwrite)(apdev ,apData , aLength);
+}
 
 /*
  * function : DEV_API_dummy_init_func()
@@ -89,6 +109,8 @@ uint8_t DEV_API_dummy_callback_func(pdev_descriptor_t apdev ,
 }
 
 
+#if !defined(CONFIG_DONT_USE_DEVICE_NAME_STRINGS)
+
 /*
  * function : DEV_OPEN()
  *
@@ -122,7 +144,7 @@ pdev_descriptor_t DEV_OPEN(const char *device_name)
 #endif
 	return NULL;
 }
-
+#endif /* !defined(CONFIG_DONT_USE_DEVICE_NAME_STRINGS) */
 
 #if defined(CONFIG_DYNAMIC_DEVICE_TREE) || (CONFIG_MAX_NUM_OF_DYNAMIC_DEVICES>0)
 

@@ -118,7 +118,9 @@ struct _dev_descriptor_t
 #if defined(CONFIG_DYNAMIC_DEVICE_TREE) || (CONFIG_MAX_NUM_OF_DYNAMIC_DEVICES>0)
 	char	*module_name;
 #endif
+#if !defined(CONFIG_DONT_USE_DEVICE_NAME_STRINGS)
 	char 					*name;
+#endif
 	dev_ioctl_func_t  		ioctl;
 	dev_pwrite_func_t  		pwrite;
 	dev_pread_func_t  		pread;
@@ -150,10 +152,12 @@ typedef struct
 #define DEV_GET_RUNTIME_DATA_POINTER(dev)		(((pdev_descriptor_t)dev)->p_runtime_data)
 
 /*  ioctl functions */
-#define DEV_IOCTL_0_PARAMS(dev,ioctl_num)   			((dev_ioctl_0_params_func_t)(dev)->ioctl)(dev ,ioctl_num)
+uint8_t	DEV_IOCTL_0_PARAMS(pdev_descriptor_t dev , uint8_t ioctl_num);
+
 #define DEV_IOCTL_1_PARAMS(dev,ioctl_num,ioctl_param)   ((dev_ioctl_1_params_func_t)(dev)->ioctl)(dev ,ioctl_num,(void*)ioctl_param)
 #define DEV_IOCTL		DEV_IOCTL_1_PARAMS
 #define DEV_IOCTL_2_PARAMS(dev,ioctl_num,ioctl_param1,ioctl_param2)    (dev)->ioctl(dev ,ioctl_num,(void*)ioctl_param1,(void*)ioctl_param2)
+
 
 /* callback functions */
 #define DEV_CALLBACK_0_PARAMS(dev,callback_num)    \
@@ -166,7 +170,7 @@ typedef struct
 
 #define DEV_PWRITE(dev,data,len,offset)    		dev->pwrite(dev ,data,len,offset)
 #define DEV_PWRITE32(dev,data,len,offset)    	((dev_pwrite32_func_t)(dev)->pwrite)(dev ,data,len,offset)
-#define DEV_WRITE(dev,data,len)    				((dev_write_func_t)(dev)->pwrite)(dev,data,len)
+uint8_t	DEV_WRITE(const pdev_descriptor_t apdev , uint8_t *apData , size_t aLength);
 #define DEV_PREAD(dev,data,len,offset)    		dev->pread(dev ,data,len,offset)
 #define DEV_PREAD32(dev,data,len,offset)    	((dev_pread32_func_t)(dev)->pread)(dev,data,len,offset)
 #define DEV_READ(dev,data,len)    				((dev_read_func_t)(dev)->pread)(dev,data,len)

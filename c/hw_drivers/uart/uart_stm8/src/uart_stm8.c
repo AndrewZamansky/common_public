@@ -24,7 +24,7 @@
 #include "stm8s_uart1.h"
 #include "uart_stm8_api.h"
 
-#include "sw_uart_wrapper_api.h"
+//#include "sw_uart_wrapper_api.h"
 
 #include "uart_stm8_add_component.h"
 
@@ -50,13 +50,13 @@ void tx_function(void)
     /* In order to detect unexpected events during development,
    it is recommended to set a breakpoint on the following instruction.
 */
-    pdev_descriptor_t   callback_dev;
+    pdev_descriptor_t   callback_tx_dev;
 
     if (UART1_GetFlagStatus(UART1_FLAG_TXE) == SET)
     {
-    	callback_dev = pHw_uart_pointer_to_instance->callback_dev ;
-    	if(NULL != callback_dev)
-    		DEV_CALLBACK_1_PARAMS(callback_dev , CALLBACK_TX_DONE, 1);
+    	callback_tx_dev = pHw_uart_pointer_to_instance->callback_tx_dev ;
+    	if(NULL != callback_tx_dev)
+    		DEV_CALLBACK_1_PARAMS(callback_tx_dev , CALLBACK_TX_DONE, 1);
     }
 
 }
@@ -93,16 +93,16 @@ void rx_function(void)
    it is recommended to set a breakpoint on the following instruction.
 */
     uint8_t cChar;
-    pdev_descriptor_t   callback_dev;
+    pdev_descriptor_t   callback_rx_dev;
 
     if (UART1_GetFlagStatus(UART1_FLAG_RXNE) == SET)
     {
 		cChar = UART1_ReceiveData8();
-		callback_dev = pHw_uart_pointer_to_instance->callback_dev;
-		if (NULL == callback_dev)  return ;
+		callback_rx_dev = pHw_uart_pointer_to_instance->callback_rx_dev;
+		if (NULL == callback_rx_dev)  return ;
 
 
-		DEV_CALLBACK_2_PARAMS( callback_dev ,
+		DEV_CALLBACK_2_PARAMS( callback_rx_dev ,
 				CALLBACK_DATA_RECEIVED,  &cChar,  1);
 
     }

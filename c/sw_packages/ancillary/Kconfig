@@ -3,13 +3,22 @@
 menu "ancillary"
 
 
-menuconfig INCLUDE_SW_UART_WRAPPER
-	bool   "software uart wrapper"
+menuconfig INCLUDE_ASYNC_TX_WRAPPER
+	bool   "async tx wrapper"
 	depends on INCLUDE_INTERNAL_UART || INCLUDE_USB_VIRTUAL_COM || INCLUDE_WIRELESS_UART || INCLUDE_SEMIHOSTING
 	default n
 
-if INCLUDE_SW_UART_WRAPPER
-source "$COMMON_DIR_PATH/c/sw_packages/ancillary/sw_uart_wrapper/Kconfig"
+if INCLUDE_ASYNC_TX_WRAPPER
+source "$COMMON_DIR_PATH/c/sw_packages/ancillary/async_tx_wrapper/Kconfig"
+endif
+
+menuconfig INCLUDE_ASYNC_RX_WRAPPER
+	bool   "async rx wrapper"
+	depends on INCLUDE_INTERNAL_UART || INCLUDE_USB_VIRTUAL_COM || INCLUDE_WIRELESS_UART || INCLUDE_SEMIHOSTING
+	default n
+
+if INCLUDE_ASYNC_RX_WRAPPER
+source "$COMMON_DIR_PATH/c/sw_packages/ancillary/async_rx_wrapper/Kconfig"
 endif
 
 config INCLUDE_TIMER_WRAPPER

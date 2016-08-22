@@ -25,9 +25,16 @@ config MAX_NUM_OF_DYNAMIC_DEVICES
 	depends on USE_DYNAMIC_DEVICES
 	default 32
 
+#following delimiter used for ending USE_DYNAMIC_DEVICES menu
 config DEVICE_MANAGEMENT_DUMMY_DELIMITER
 	bool
 	default n
+
+config DONT_USE_DEVICE_NAME_STRINGS
+	bool   "dont use device name strings (reduce code size)"
+	depends on !DYNAMIC_DEVICE_TREE
+	default n
+
 
 config USE_SHELL_FOR_DEVICE_CONFIGURATION
 	bool   "use shell for device configuration"
