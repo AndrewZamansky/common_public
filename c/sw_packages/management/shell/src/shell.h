@@ -17,7 +17,8 @@
 /***************   typedefs    *******************/
 
 typedef struct {
-	pdev_descriptor_t server_dev;
+	pdev_descriptor_t server_tx_dev;
+	pdev_descriptor_t server_rx_dev;
 	pdev_descriptor_t   callback_dev;
 } shell_instance_t;
 

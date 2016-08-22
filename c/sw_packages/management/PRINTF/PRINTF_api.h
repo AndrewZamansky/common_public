@@ -45,15 +45,15 @@ void PRINTF_print_data(PRINTF_TYPE_t aPrntType , const uint8_t* data,  uint32_t 
 
  #define PRINTF_DBG(...) 						PRINTF_printf(PRINTF_TYPE_DBG	,NULL 	,(uint8_t*)__VA_ARGS__)
  #define PRINTF_NOTE(...) 						PRINTF_printf(PRINTF_TYPE_NOTE	,NULL 	,(uint8_t*)__VA_ARGS__)
- #define PRINTF_REPLY(dev_desc,...) 				PRINTF_printf(PRINTF_TYPE_REPLY	,dev_desc,(uint8_t*)__VA_ARGS__)
+ #define PRINTF_REPLY(dev_desc,...) 			PRINTF_printf(PRINTF_TYPE_REPLY	,dev_desc,(uint8_t*)__VA_ARGS__)
 
- #define PRINT_STR_DBG(str) 						PRINTF_print_data(PRINTF_TYPE_DBG	 ,(uint8_t*)str, strlen((char*)str)) // to avoid printf code
+ #define PRINT_STR_DBG(str) 					PRINTF_print_data(PRINTF_TYPE_DBG	 ,(uint8_t*)str, strlen((char*)str)) // to avoid printf code
  #define PRINT_STR_NOTE(str) 					PRINTF_print_data(PRINTF_TYPE_NOTE	 ,(uint8_t*)str, strlen((char*)str)) // to avoid printf code
- #define PRINT_STR_REPLY(dev_desc,str) 			DEV_WRITE(dev_desc, (const uint8_t*)str , strlen((char*)str))// to avoid printf code
+ #define PRINT_STR_REPLY(dev_desc,str) 			DEV_WRITE(dev_desc, (uint8_t*)str , strlen((char*)str))// to avoid printf code
 
  #define PRINT_DATA_DBG(data,len) 				PRINTF_print_data(PRINTF_TYPE_DBG  ,(uint8_t*)data,len) // to avoid printf code
  #define PRINT_DATA_NOTE(data,len) 				PRINTF_print_data(PRINTF_TYPE_NOTE ,(uint8_t*)data,len) // to avoid printf code
- #define PRINT_DATA_REPLY(dev_desc,data,len) 	DEV_WRITE(dev_desc,(const uint8_t*)data , len)// to avoid printf code
+ #define PRINT_DATA_REPLY(dev_desc,data,len) 	DEV_WRITE(dev_desc,(uint8_t*)data , len)// to avoid printf code
 
 #endif
 

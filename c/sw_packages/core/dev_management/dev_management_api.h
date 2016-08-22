@@ -170,7 +170,7 @@ uint8_t	DEV_IOCTL_0_PARAMS(pdev_descriptor_t dev , uint8_t ioctl_num);
 
 #define DEV_PWRITE(dev,data,len,offset)    		dev->pwrite(dev ,data,len,offset)
 #define DEV_PWRITE32(dev,data,len,offset)    	((dev_pwrite32_func_t)(dev)->pwrite)(dev ,data,len,offset)
-uint8_t	DEV_WRITE(const pdev_descriptor_t apdev , uint8_t *apData , size_t aLength);
+uint8_t	DEV_WRITE(const pdev_descriptor_t apdev ,const uint8_t *apData , size_t aLength);
 #define DEV_PREAD(dev,data,len,offset)    		dev->pread(dev ,data,len,offset)
 #define DEV_PREAD32(dev,data,len,offset)    	((dev_pread32_func_t)(dev)->pread)(dev,data,len,offset)
 #define DEV_READ(dev,data,len)    				((dev_read_func_t)(dev)->pread)(dev,data,len)

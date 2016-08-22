@@ -36,7 +36,7 @@ extern uint8_t end_of_modules_stamp ;
 
 uint8_t	DEV_IOCTL_0_PARAMS(pdev_descriptor_t dev,uint8_t ioctl_num)
 {
-	((dev_ioctl_0_params_func_t)(dev)->ioctl)(dev ,ioctl_num);
+	return ((dev_ioctl_0_params_func_t)(dev)->ioctl)(dev ,ioctl_num);
 }
 
 
@@ -50,9 +50,9 @@ uint8_t	DEV_IOCTL_0_PARAMS(pdev_descriptor_t dev,uint8_t ioctl_num)
 //	(dev)->ioctl(dev ,ioctl_num,ioctl_param1 , ioctl_param2);
 //}
 
-uint8_t	DEV_WRITE(const pdev_descriptor_t apdev , uint8_t *apData , size_t aLength )
+uint8_t	DEV_WRITE(const pdev_descriptor_t apdev ,const uint8_t *apData , size_t aLength )
 {
-	((dev_write_func_t)(apdev)->pwrite)(apdev ,apData , aLength);
+	return ((dev_write_func_t)(apdev)->pwrite)(apdev ,apData , aLength);
 }
 
 /*

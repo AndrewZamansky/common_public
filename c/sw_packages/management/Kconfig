@@ -22,7 +22,7 @@ config INCLUDE_LOADED_CONFIG
 
 menuconfig INCLUDE_SHELL
 	bool   "shell"
-	depends on INCLUDE_SW_UART_WRAPPER
+	depends on INCLUDE_ASYNC_RX_WRAPPER
 	select INCLUDE_PRINTF
 	default n
 	

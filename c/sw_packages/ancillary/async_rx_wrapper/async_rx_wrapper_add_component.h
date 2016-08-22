@@ -45,14 +45,12 @@ extern uint8_t async_rx_wrapper_callback(pdev_descriptor_t apdev ,const uint8_t 
 				{0}								/*.rx_buff*/
 	#endif
 
-	#define RX_STRUCT_DATA									\
-			POINTER_TO_CLIENT_PDEV,	/* .client_dev */		\
-			RX_BUFFER_STRUCT_DATA
 
 	#define STATIC_DEV_DATA_STRUCT														\
 		{																				\
 			P_TO_STATIC_DEVICE_INST(ASYNC_RX_WRAPPER_DT_SERVER_PDEV) ,	/*server_dev*/	\
-			RX_STRUCT_DATA																\
+			POINTER_TO_CLIENT_PDEV,								/* .client_dev */		\
+			RX_BUFFER_STRUCT_DATA														\
 		}
 
 #endif
@@ -66,6 +64,8 @@ extern uint8_t async_rx_wrapper_callback(pdev_descriptor_t apdev ,const uint8_t 
 #include "add_component.h"
 
 /* device specific defines should be undefined after calling #include "add_component.h" */
+#undef POINTER_TO_CLIENT_PDEV
+#undef RX_BUFFER_STRUCT_DATA
 #undef ASYNC_RX_WRAPPER_DT_SERVER_PDEV
 #undef ASYNC_RX_WRAPPER_DT_CLIENT_PDEV
 #ifdef CONFIG_ASYNC_RX_WRAPPER_USE_MALLOC

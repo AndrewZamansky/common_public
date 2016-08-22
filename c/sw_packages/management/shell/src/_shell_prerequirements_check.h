@@ -52,22 +52,7 @@
 /*** test variable/function declaration existence (suffix should be unique)***/
 
 
-enum
-{
 
-
-#ifndef os_stack_test
-	os_stack_test___not_declared_in_project_header_files_as_required_by_shell=sizeof((int)os_stack_test),
-#endif
-
-#ifdef CONFIG_SW_UART_WRAPPER_USE_MALLOC
-	memcpy___not_declared_in_project_header_files_as_required_by_shell=sizeof((int)memcpy),
-	malloc___not_declared_in_project_header_files_as_required_by_shell=sizeof((int)malloc),
-	free___not_declared_in_project_header_files_as_required_by_shell=sizeof((int)free),
-#endif
-
-
-};
 
 /***************************/
 

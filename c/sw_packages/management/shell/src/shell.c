@@ -145,6 +145,7 @@ static void Shell_Task( void *pvParameters )
 	shell_runtime_instance_t  *runtime_handle;
 	shell_instance_t *config_handle;
 	pdev_descriptor_t   callback_dev;
+	pdev_descriptor_t   curr_rx_dev;
 	pdev_descriptor_t   curr_dev;
 
 	xQueue = os_create_queue( CONFIG_SHELL_MAX_QUEUE_LEN , sizeof( xMessage_t ) );
@@ -158,9 +159,10 @@ static void Shell_Task( void *pvParameters )
 			curr_dev = pxRxedMessage.pdev;
 			config_handle = DEV_GET_CONFIG_DATA_POINTER(curr_dev);
 			runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(curr_dev);
-			gCurrReplyDev = config_handle->server_dev;
+			gCurrReplyDev = config_handle->server_tx_dev;
+			curr_rx_dev = config_handle->server_rx_dev;
 
-			DEV_IOCTL(gCurrReplyDev, IOCTL_GET_AND_LOCK_DATA_BUFFER , &data_buffer_info);
+			DEV_IOCTL(curr_rx_dev, IOCTL_GET_AND_LOCK_DATA_BUFFER , &data_buffer_info);
 
 			total_length = data_buffer_info.TotalLength ;
 			pBufferStart = data_buffer_info.pBufferStart ;
@@ -302,9 +304,9 @@ static void Shell_Task( void *pvParameters )
 
 				runtime_handle->lastTestedBytePos = curr_buff_pos;
 				runtime_handle->lastEOLchar  =eol_char;
-				DEV_IOCTL(gCurrReplyDev, IOCTL_SET_BYTES_CONSUMED_IN_DATA_BUFFER , (void *)((uint32_t)bytesConsumed));
+				DEV_IOCTL(curr_rx_dev, IOCTL_SET_BYTES_CONSUMED_IN_DATA_BUFFER , (void *)((uint32_t)bytesConsumed));
 			}
-			DEV_IOCTL(gCurrReplyDev, IOCTL_SET_UNLOCK_DATA_BUFFER ,(void *) 0);
+			DEV_IOCTL(curr_rx_dev, IOCTL_SET_UNLOCK_DATA_BUFFER ,(void *) 0);
 
 
 		}
@@ -358,7 +360,9 @@ uint8_t shell_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num , void * 
 				task_is_running=1;
 				os_create_task("shell_task",Shell_Task,
 						NULL , SHELL_TASK_STACK_SIZE , SHELL_TASK_PRIORITY);
-				server_dev = config_handle->server_dev;
+				server_dev = config_handle->server_tx_dev;
+				DEV_IOCTL_0_PARAMS(server_dev , IOCTL_DEVICE_START );
+				server_dev = config_handle->server_rx_dev;
 				DEV_IOCTL_0_PARAMS(server_dev , IOCTL_DEVICE_START );
 
 			}

@@ -60,13 +60,15 @@ uint8_t async_rx_wrapper_callback(pdev_descriptor_t apdev ,const uint8_t aCallba
     rx_int_size_t rcvdDataLen;
     pdev_descriptor_t   client_dev ;
 
-    client_dev = config_handle->client_dev;
     rcvdData = (uint8_t *)aCallback_param1;
     rcvdDataLen = (rx_int_size_t)((size_t)aCallback_param2);
 
 	config_handle = DEV_GET_CONFIG_DATA_POINTER(apdev);
 	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(apdev);
-	if (CALLBACK_DATA_RECEIVED == aCallback_num)
+
+    client_dev = config_handle->client_dev;
+
+    if (CALLBACK_DATA_RECEIVED == aCallback_num)
 	{
 		rx_buff=config_handle->rx_buff;
 
@@ -138,7 +140,6 @@ uint8_t async_rx_wrapper_ioctl(pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 	async_rx_wrapper_runtime_instance_t *runtime_handle;
 	rx_int_size_t WritePos,ReadPos;
 	pdev_descriptor_t   server_dev;
-	os_queue_t xQueue ;
 
 	config_handle = DEV_GET_CONFIG_DATA_POINTER(apdev);
 	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(apdev);

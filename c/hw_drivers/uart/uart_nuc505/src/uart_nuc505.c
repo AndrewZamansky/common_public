@@ -17,8 +17,9 @@
 
 #include "NUC505Series.h"
 
-#include "sw_uart_wrapper_api.h"
 #include "irq_api.h"
+
+#include "uart_api.h"
 
 #include "uart_nuc505_add_component.h"
 
@@ -43,7 +44,6 @@ uint8_t uart_nuc505_callback(pdev_descriptor_t apdev ,
 		const uint8_t aCallback_num , void * aCallback_param1, void * aCallback_param2)
 {
 	uart_nuc505_instance_t *config_handle;
-	pdev_descriptor_t callback_dev ;
 
     uint8_t u8InChar;
     uint32_t u32IntSts ;
@@ -51,22 +51,30 @@ uint8_t uart_nuc505_callback(pdev_descriptor_t apdev ,
 
 	config_handle = DEV_GET_CONFIG_DATA_POINTER(apdev);
 	uart_regs =(UART_T *)config_handle->base_address;
-	callback_dev = config_handle->callback_dev;
 
 	u32IntSts = uart_regs->INTSTS;
-	if (NULL != callback_dev)
-	{
-		if(u32IntSts & UART_INTSTS_RDAINT_Msk)
-		{
-				u8InChar = UART_READ(uart_regs);
-				DEV_CALLBACK_2_PARAMS(callback_dev , CALLBACK_DATA_RECEIVED,  &u8InChar, (void*)1);
-		}
 
-		if(u32IntSts & UART_INTSTS_THREINT_Msk)
+	if(u32IntSts & UART_INTSTS_RDAINT_Msk)
+	{
+		pdev_descriptor_t callback_rx_dev ;
+		callback_rx_dev = config_handle->callback_rx_dev;
+		u8InChar = UART_READ(uart_regs);
+		if (NULL != callback_rx_dev)
 		{
-			DEV_CALLBACK_1_PARAMS( callback_dev , CALLBACK_TX_DONE,(void*)1);
-	   }
+			DEV_CALLBACK_2_PARAMS(callback_rx_dev , CALLBACK_DATA_RECEIVED,  &u8InChar,  1);
+		}
 	}
+
+	if(u32IntSts & UART_INTSTS_THREINT_Msk)
+	{
+		pdev_descriptor_t callback_tx_dev ;
+		callback_tx_dev = config_handle->callback_tx_dev;
+		if (NULL != callback_tx_dev)
+		{
+			DEV_CALLBACK_1_PARAMS( callback_tx_dev , CALLBACK_TX_DONE, 1);
+		}
+   }
+
     return 0;
 }
 
@@ -176,8 +184,11 @@ uint8_t uart_nuc505_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 			break;
 		case IOCTL_UART_ENABLE_TX :
 		    break;
-		case IOCTL_SET_ISR_CALLBACK_DEV:
-			config_handle->callback_dev =(pdev_descriptor_t) aIoctl_param1;
+		case IOCTL_UART_SET_ISR_CALLBACK_TX_DEV:
+			config_handle->callback_tx_dev =(pdev_descriptor_t) aIoctl_param1;
+			break;
+		case IOCTL_UART_SET_ISR_CALLBACK_RX_DEV:
+			config_handle->callback_rx_dev =(pdev_descriptor_t) aIoctl_param1;
 			break;
 		default :
 			return 1;

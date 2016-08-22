@@ -19,20 +19,32 @@ size_t uart_nuc505_pwrite(pdev_descriptor_t apdev ,const uint8_t *apData , size_
 		#error "UART_NUC505_DT_BASE_ADDRESS should be defined"
 	#endif
 
-	#ifndef UART_NUC505_DT_CALLBACK_PDEV
-		#error "UART_NUC505_DT_CALLBACK_PDEV should be defined"
+	#ifdef UART_NUC505_DT_TX_CALLBACK_PDEV
+		EXTERN_DECLARATION_TO_STATIC_DEVICE_INST(UART_NUC505_DT_TX_CALLBACK_PDEV) ;
+		#define POINTER_TO_TX_CALLBACK_PDEV		P_TO_STATIC_DEVICE_INST(UART_NUC505_DT_TX_CALLBACK_PDEV)
+	#else
+		#warning "UART_NUC505_DT_TX_CALLBACK_PDEV not defined in device tree"
+		#define POINTER_TO_TX_CALLBACK_PDEV		NULL
+	#endif
+
+	#ifdef UART_NUC505_DT_RX_CALLBACK_PDEV
+		EXTERN_DECLARATION_TO_STATIC_DEVICE_INST(UART_NUC505_DT_RX_CALLBACK_PDEV) ;
+		#define POINTER_TO_RX_CALLBACK_PDEV		P_TO_STATIC_DEVICE_INST(UART_NUC505_DT_RX_CALLBACK_PDEV)
+	#else
+		#warning "UART_NUC505_DT_RX_CALLBACK_PDEV not defined in device tree"
+		#define POINTER_TO_RX_CALLBACK_PDEV		NULL
 	#endif
 
 	#ifndef UART_NUC505_DT_BAUD_RATE
 		#error "UART_NUC505_DT_BAUD_RATE should be defined"
 	#endif
 
-	EXTERN_DECLARATION_TO_STATIC_DEVICE_INST(UART_NUC505_DT_CALLBACK_PDEV) ;
-	#define STATIC_DEV_DATA_STRUCT									\
-		{															\
-			P_TO_STATIC_DEVICE_INST(UART_NUC505_DT_CALLBACK_PDEV) ,	\
-			UART_NUC505_DT_BASE_ADDRESS ,							\
-			UART_NUC505_DT_BAUD_RATE 								\
+	#define STATIC_DEV_DATA_STRUCT			\
+		{									\
+			POINTER_TO_TX_CALLBACK_PDEV ,	\
+			POINTER_TO_RX_CALLBACK_PDEV ,	\
+			UART_NUC505_DT_BASE_ADDRESS ,	\
+			UART_NUC505_DT_BAUD_RATE 		\
 		}
 
 	#endif
@@ -40,6 +52,8 @@ size_t uart_nuc505_pwrite(pdev_descriptor_t apdev ,const uint8_t *apData , size_
 #include "add_component.h"
 
 /* device specific defines should be undefined after calling #include "add_static_dev.h" */
+#undef POINTER_TO_TX_CALLBACK_PDEV
+#undef POINTER_TO_RX_CALLBACK_PDEV
 #undef UART_NUC505_DT_UART_NUMBER
 #undef UART_NUC505_DT_CALLBACK_PDEV
 #undef UART_NUC505_DT_BAUD_RATE
