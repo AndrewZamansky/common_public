@@ -40,9 +40,9 @@ else
            GCC_NOT_FOUND :=1
        endif
 	endif
-	
+
     OS_PREFIX :=none-
-    ifdef GCC_CONFIG_TARGET_OS_LINUX  
+    ifdef CONFIG_GCC_TARGET_OS_LINUX
         OS_PREFIX:=linux-
     endif
     ifndef GCC_NOT_FOUND
@@ -53,7 +53,7 @@ else
            GCC_NOT_FOUND :=1
        endif
 	endif
-    
+
     ABI_PREFIX :=
     ifdef CONFIG_EABI
         ABI_PREFIX:=eabi
@@ -69,18 +69,21 @@ else
            GCC_NOT_FOUND :=1
        endif
 	endif
-                
+
+
+    GCC_VERSION :=$(patsubst "%",%,$(CONFIG_GCC_VERSION))
     ifndef GCC_NOT_FOUND
-       TEST_GCC_ROOT_DIR 	:= 	$(TOOLS_ROOT_DIR)/gcc/arm-$(VENDOR_NAME)$(OS_PREFIX)$(ABI_PREFIX)
-       GCC_ROOT_DIR :=$(lastword $(wildcard $(TEST_GCC_ROOT_DIR)-*))#take the latest gcc version
-       ifeq ("$(GCC_ROOT_DIR)","")
-           $(info !--- gcc fdirectory should be of form : $(GCC_ROOT_DIR)-[version][revision] )
+       TEST_GCC_ROOT_DIR 	:= 	$(TOOLS_ROOT_DIR)/gcc/arm-$(VENDOR_NAME)$(OS_PREFIX)$(ABI_PREFIX)-$(GCC_VERSION)
+       ifeq ("$(wildcard $(TEST_GCC_ROOT_DIR))","")
+           $(info !--- $(TEST_GCC_ROOT_DIR) dont exists )
+           $(info !--- (if needed you can change gcc version using menuconfig in "Building System" menu ))
            GCC_NOT_FOUND :=1
        endif
 	endif
-           
+
+
     ifdef GCC_NOT_FOUND
-        TEST_GCC_ROOT_DIR 	:= $(TOOLS_ROOT_DIR)/gcc/arm-$(VENDOR_NAME)$(OS_PREFIX)$(ABI_PREFIX)-[version][revision]
+       TEST_GCC_ROOT_DIR 	:= 	$(TOOLS_ROOT_DIR)/gcc/arm-$(VENDOR_NAME)$(OS_PREFIX)$(ABI_PREFIX)-$(GCC_VERSION)
         $(info !--- gcc path $(TEST_GCC_ROOT_DIR) dont exists )
         $(info !--- download gcc (tested version is $(CONFIG_GCC_VERSION)) )
         $(info !--- unpack it to $(TEST_GCC_ROOT_DIR))
@@ -88,6 +91,9 @@ else
         $(info !--- you can also set customized gcc path in REDEFINE_ARM_GCC_ROOT_DIR variable in $(REDEFINE_ARM_GCC_ROOT_DIR)/workspace_config.mk )
         $(error )
     endif
+
+    GCC_ROOT_DIR :=$(lastword $(wildcard $(TEST_GCC_ROOT_DIR)))#take the latest gcc version
+
 endif
 
 
@@ -124,11 +130,11 @@ endif
 
 ### GLOBAL_CFLAGS calculation
 GLOBAL_CFLAGS := $(GLOBAL_CFLAGS)
-GLOBAL_CFLAGS += -mcpu=$(CONFIG_CPU_TYPE) -gdwarf-2 -MD 
+GLOBAL_CFLAGS += -mcpu=$(CONFIG_CPU_TYPE) -gdwarf-2 -MD
 GLOBAL_CFLAGS += -mapcs-frame -mthumb-interwork
 GLOBAL_CFLAGS += -c -Wall -fdata-sections
 
-ifeq ($(findstring cortex-m,$(CONFIG_CPU_TYPE)),cortex-m) 	 
+ifeq ($(findstring cortex-m,$(CONFIG_CPU_TYPE)),cortex-m)
    	GLOBAL_CFLAGS +=  -mthumb
 else	
 	GLOBAL_CFLAGS += -mno-unaligned-access	
@@ -136,16 +142,16 @@ endif
 
 
 
-ifdef CONFIG_CORTEX_M3	
+ifdef CONFIG_CORTEX_M3
     GLOBAL_CFLAGS += -mfloat-abi=soft
-else ifdef CONFIG_CORTEX_M4	
+else ifdef CONFIG_CORTEX_M4
     GLOBAL_CFLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16
 endif
 
  ifdef CONFIG_OPTIMISE_SIZE
-	GLOBAL_CFLAGS +=  -ffunction-sections 
+	GLOBAL_CFLAGS +=  -ffunction-sections
 endif
-	
+
 GLOBAL_CFLAGS += -$(CONFIG_OPTIMIZE_LEVEL) -g -g3 -ggdb3 #-gstabs3
 
 GLOBAL_CFLAGS := $(GLOBAL_CFLAGS)
@@ -153,16 +159,16 @@ GLOBAL_CFLAGS := $(GLOBAL_CFLAGS)
 ### GLOBAL_ASMFLAGS calculation
 GLOBAL_ASMFLAGS += -mcpu=$(CONFIG_CPU_TYPE)  -gdwarf-2   -mthumb-interwork
 
-ifeq ($(findstring cortex-m,$(CONFIG_CPU_TYPE)),cortex-m) 	 
+ifeq ($(findstring cortex-m,$(CONFIG_CPU_TYPE)),cortex-m)
 	GLOBAL_ASMFLAGS += -mthumb 
 else	
 endif
 
-ifdef CONFIG_CORTEX_M4	
+ifdef CONFIG_CORTEX_M4
 	GLOBAL_ASMFLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16
 endif
 
-GLOBAL_ASMFLAGS += -c -x assembler-with-cpp 
+GLOBAL_ASMFLAGS += -c -x assembler-with-cpp
 
 GLOBAL_ASMFLAGS += -g -g3 -ggdb3 #-gstabs3
 

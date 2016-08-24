@@ -1,5 +1,10 @@
 menu "`---> freeRTOS configurations"
 
+config FREE_RTOS_VERSION
+    string "nuc bsp version in form : xx.xx.xx"
+    default "8.0.1"
+
+
 config HEAP_SIZE
 	int   "heap size"
 	default 10240

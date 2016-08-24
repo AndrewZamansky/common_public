@@ -1,9 +1,8 @@
 
-
 config GCC_VENDOR_NAME
     string "gcc vendor name"
     default ""
-    
+
 choice
 	prompt "OS on target(part of gcc naming convention)"
 	default GCC_TARGET_OS_NONE
@@ -33,6 +32,3 @@ config GCC_VERSION
 config USE_NANO_STD_LIBS
 	bool   "use nano std libs to reduce code size "
 	default n
-
-
-
