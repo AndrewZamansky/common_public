@@ -30,8 +30,7 @@ LDFLAGS :=
 #LDFLAGS += -fno-builtin-printf
 
 
-
-
+LDFLAGS += -Wl,-Map=$(OUT_DIR)/$(OUTPUT_APP_NAME).map   # -msoft-float -mfloat-abi=soft
 LDFLAGS += -g -g3 -ggdb3
 
 LDFLAGS := $(GLOBAL_LDFLAGS) $(LDFLAGS)
