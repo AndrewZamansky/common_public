@@ -3,28 +3,28 @@ include $(MAKEFILE_DEFS_ROOT_DIR)/common.mk
 
 ifdef CONFIG_ARM
     ifdef CONFIG_GCC
-        include $(MAKEFILE_DEFS_ROOT_DIR)/gcc/gcc_arm_cc.mk
+        include $(MAKEFILE_DEFS_ROOT_DIR)/gcc/gcc_cc.mk
     else ifdef CONFIG_GPP
-        include $(MAKEFILE_DEFS_ROOT_DIR)/gcc/gcc_arm_cc.mk
+        include $(MAKEFILE_DEFS_ROOT_DIR)/gcc/gcc_cc.mk
     else ifdef CONFIG_ARMCC
         include $(MAKEFILE_DEFS_ROOT_DIR)/armcc/armcc_cc.mk
     endif
 else ifdef CONFIG_AVR
-    include $(MAKEFILE_DEFS_ROOT_DIR)/gcc/gcc_avr_cc.mk
+    include $(MAKEFILE_DEFS_ROOT_DIR)/gcc/gcc_cc.mk
 else ifdef CONFIG_STM8
     include $(MAKEFILE_DEFS_ROOT_DIR)/cxstm8/cxstm8_cc.mk
 else ifdef CONFIG_HOST
-    include $(MAKEFILE_DEFS_ROOT_DIR)/gcc/gcc_host_cc.mk
+    include $(MAKEFILE_DEFS_ROOT_DIR)/gcc/gcc_cc.mk
 else
     $(error ---- unknown compiler ----)
 endif
-
 
 $(eval $(CALCULATE_ALL_INCLUDE_DIRS))
 $(eval $(CALCULATE_ALL_DEFINES))
 $(eval $(CALCULATE_ALL_ASM_DEFINES))
 $(eval $(CALCULATE_CC_OUTPUT_FLAG_AND_FILE))
 $(eval $(CALCULATE_ASM_OUTPUT_FLAG_AND_FILE))
+
 
 CURRENT_COMPILATION_DIR_NAME := $(notdir $(abspath .))
 
@@ -34,19 +34,19 @@ HEADER_FILES_DEPS := $(wildcard $(GLOBAL_HEADER_FILES_DEPS) $(LOCAL_HEADER_FILES
 
 
 ifdef CREATING_ARCHIVE
-	CURR_DIR := $(patsubst %/,%,$(dir $(abspath $(firstword $(MAKEFILE_LIST)))))
-	LOCAL_DIRS_FOR_EXPORTS := $(filter $(WORKSPACE_ROOT_DIR)%,$(CURRENT_COMPILE_DIRS) $(INCLUDE_DIR))
-	LOCAL_DIRS_FOR_EXPORTS := $(patsubst $(CURR_DIR)/%,%,$(realpath $(LOCAL_DIRS_FOR_EXPORTS)))
-	LOCAL_DIRS_FOR_EXPORTS :=  $(patsubst $(WORKSPACE_ROOT_DIR)/%,$(WORKSPACE_NAME)/%,$(LOCAL_DIRS_FOR_EXPORTS))#make folder relative to workspace
+    CURR_DIR := $(patsubst %/,%,$(dir $(abspath $(firstword $(MAKEFILE_LIST)))))
+    LOCAL_DIRS_FOR_EXPORTS := $(filter $(WORKSPACE_ROOT_DIR)%,$(CURRENT_COMPILE_DIRS) $(INCLUDE_DIR))
+    LOCAL_DIRS_FOR_EXPORTS := $(patsubst $(CURR_DIR)/%,%,$(realpath $(LOCAL_DIRS_FOR_EXPORTS)))
+    LOCAL_DIRS_FOR_EXPORTS :=  $(patsubst $(WORKSPACE_ROOT_DIR)/%,$(WORKSPACE_NAME)/%,$(LOCAL_DIRS_FOR_EXPORTS))#make folder relative to workspace
 endif
 
 CURR_OBJ_DIR := $(OBJ_DIR)/$(CURRENT_COMPILATION_DIR_NAME)
 ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS) 	 
-	#replace backslash for slash
-	CURR_OBJ_DIR := $(subst /,\,$(CURR_OBJ_DIR))
+    #replace backslash for slash
+    CURR_OBJ_DIR := $(subst /,\,$(CURR_OBJ_DIR))
 endif
 
-ifeq ($(wildcard $(CURR_OBJ_DIR)),) 		#if $(CURR_OBJ_DIR) dont exists then $(wildcard $(CURR_OBJ_DIR)) will produce empty string 
+ifeq ($(wildcard $(CURR_OBJ_DIR)),) 		#if $(CURR_OBJ_DIR) dont exists then $(wildcard $(CURR_OBJ_DIR)) will produce empty string
    DUMMY:=$(shell $(MKDIR)  $(CURR_OBJ_DIR)) # create   $(CURR_OBJ_DIR)
 endif
 
@@ -64,7 +64,7 @@ all: $(SRC_OBJ)  $(SRC_CC_OBJ) $(ASM_OBJ) $(ASM_OBJ_O)
 ifeq ($(findstring $(WORKSPACE_NAME),$(LOCAL_DIRS_FOR_EXPORTS)),$(WORKSPACE_NAME))
 archive :
 	$(ARCHIVER) $(ARCHIVE_OUTPUT) $(LOCAL_DIRS_FOR_EXPORTS)
-else	
+else
 archive :
 	@echo "no files to add"
 endif
@@ -81,14 +81,12 @@ $(CURR_OBJ_DIR)/%.O.asm: %.S
 
 $(CURR_OBJ_DIR)/%.o: %.c $(HEADER_FILES_DEPS) $(APP_ROOT_DIR)/.config
 	$(info -Compiling $<)
-	$(CC) $(GLOBAL_CFLAGS) $(CFLAGS) $(ALL_INCLUDE_DIRS) $(ALL_DEFINES) $(CC_OUTPUT_FLAG_AND_FILE) $<  
+	$(CC) $(GLOBAL_CFLAGS) $(CFLAGS) $(ALL_INCLUDE_DIRS) $(ALL_DEFINES) $(CC_OUTPUT_FLAG_AND_FILE) $<
 #	open line to create preproccesor file
 #	$(CC) -E -P $(GLOBAL_CFLAGS) $(CFLAGS) $(ALL_INCLUDE_DIRS) $(ALL_DEFINES) $< -o  $@.pre 
 
 $(CURR_OBJ_DIR)/%.oo: %.cc $(HEADER_FILES_DEPS) $(APP_ROOT_DIR)/.config
 	$(info -Compiling $<)
-	$(CC) $(GLOBAL_CFLAGS) $(CFLAGS) $(ALL_INCLUDE_DIRS) $(ALL_DEFINES) $(CC_OUTPUT_FLAG_AND_FILE) $<  
+	$(CC) $(GLOBAL_CFLAGS) $(CFLAGS) $(ALL_INCLUDE_DIRS) $(ALL_DEFINES) $(CC_OUTPUT_FLAG_AND_FILE) $<
 #	open line to create preproccesor file
 #	$(CC) -E -P $(GLOBAL_CFLAGS) $(CFLAGS) $(ALL_INCLUDE_DIRS) $(ALL_DEFINES) $< -o  $@.pre 
-
-

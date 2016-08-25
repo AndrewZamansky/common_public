@@ -5,17 +5,6 @@ ifndef COMMON_INIT_SECTION_THAT_SHOULD_RUN_ONCE
 
 GCC_ROOT_DIR :=
 
-ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
-    GCC_ROOT_DIR := $(HOST_GCC_ROOT_DIR)
-    GNU_COMPILATION_PREFIX	:= mingw32
-    OUTPUT_BIN := $(OUTPUT_BIN).exe
-    FIND_MINGW_PATH=$(shell echo %path%)
-    ifeq ($(findstring $(HOST_GCC_ROOT_DIR)\bin,$(FIND_MINGW_PATH)),) 	 
-        $(info $(FIND_MINGW_PATH))
-        $(error ---- add $(HOST_GCC_ROOT_DIR)\bin to your system PATH environment)
-    endif
-
-endif
 
 ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
 
@@ -41,7 +30,7 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
 
        TEST_GCC_ROOT_DIR 	:= 	$(TOOLS_ROOT_DIR)/gcc/MinGW
        ifeq ("$(wildcard $(TEST_GCC_ROOT_DIR)*)","")
-           $(info --- MinGW dont exists )
+           $(info !--- MinGW dont exists )
            GCC_NOT_FOUND :=1
        endif
 
@@ -65,25 +54,24 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
            $(info !--- you can also set customized gcc path in REDEFINE_MINGW_ROOT_DIR variable in $(WORKSPACE_ROOT_DIR)/workspace_config.mk )
            $(error )
        endif
-    
+
        GCC_ROOT_DIR :=$(lastword $(wildcard $(TEST_GCC_ROOT_DIR)))#take the latest gcc version
-    
+
     endif
 
+    #clear PATH environment variable to get rid of different mingw conflicts
+    FULL_GCC_PREFIX 		:= set "PATH=$(TEST_GCC_ROOT_DIR)/bin" & $(GCC_ROOT_DIR)/bin/
+    FULL_GCC_PREFIX := $(subst /,\,$(FULL_GCC_PREFIX))
+    COMPILER_INCLUDE_DIR 	:= $(GCC_ROOT_DIR)/include
+    GCC_LIB_ROOT_DIR  		:= $(GCC_ROOT_DIR)/lib
+
 endif #end of 'ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)'
-
-LINKER_OUTPUT :=  $(OUTPUT_BIN)
-
 
 
 
 # define flags for asm compiler :
 #GLOBAL_ASMFLAGS := $(GLOBAL_ASMFLAGS)
 
-# define flags for linker :
-GLOBAL_LDFLAGS := $(GLOBAL_PROJECT_SPECIFIC_LDFLAGS)
-#GLOBAL_LDFLAGS := $(GLOBAL_LDFLAGS) -mcpu=$(CONFIG_CPU_TYPE) -Wl,--gc-sections -nostartfiles  -specs=nano.specs # -msoft-float -mfloat-abi=soft  
-GLOBAL_LDFLAGS := $(GLOBAL_LDFLAGS) -Wl,-Map=$(OUT_DIR)/$(OUTPUT_APP_NAME).map   # -msoft-float -mfloat-abi=soft  
 
 
 
@@ -92,13 +80,17 @@ GLOBAL_LDFLAGS := $(GLOBAL_LDFLAGS) -Wl,-Map=$(OUT_DIR)/$(OUTPUT_APP_NAME).map  
 
 
 
+ifdef CONFIG_MIN_GW_GCC
+    CC   :=	$(FULL_GCC_PREFIX)gcc -c
+    ASM  :=	$(FULL_GCC_PREFIX)gcc
+    LD   :=	$(FULL_GCC_PREFIX)gcc
+else ifdef CONFIG_MIN_GW_GPP
+	CC   :=	$(FULL_GCC_PREFIX)g++
+    ASM  :=	$(FULL_GCC_PREFIX)g++
+    LD   :=	$(FULL_GCC_PREFIX)g++
+endif
+STRIP   :=	$(FULL_GCC_PREFIX)strip
 
-include $(MAKEFILE_DEFS_ROOT_DIR)/gcc/gcc_common_init.mk
-
-
-LIBS := $(patsubst lib%,-l%,$(GLOBAL_LIBS))
-LIBS := $(patsubst %.a,%,$(LIBS))
-LIBRARIES_DIRS := $(patsubst %,-L%,$(GLOBAL_LIBS_PATH))
 
 
 endif

@@ -2,14 +2,14 @@ menu "`--->  stm32f103rc board configurations"
 
 choice
 	prompt "Board"
-	default TAOBAO_BOARD
+	default EUSE_TAOBAO_BOARD
 
-config TAOBAO_BOARD
+config EUSE_TAOBAO_BOARD
 	bool "euse taobao board"
 
 endchoice
 
-if TAOBAO_BOARD
+if EUSE_TAOBAO_BOARD
 source "$COMMON_DIR_PATH/c/hw_drivers/arch/ARM/soc/stm32/stm32f103rc/Kconfig.euse.taobao.dt"
 endif
 

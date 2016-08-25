@@ -25,12 +25,14 @@ endchoice
 
 source "$COMMON_DIR_PATH/c/build_tools/makefiles/Kconfig"
 	   	
+if !HOST
 source "$COMMON_DIR_PATH/c/hw_drivers/arch/Kconfig"
-
+endif
 
 menu "Hardware Drivers"
 source "$COMMON_DIR_PATH/c/hw_drivers/Kconfig"
 endmenu
+
 
 menu "Software Packages"
 source "$COMMON_DIR_PATH/c/sw_packages/Kconfig"

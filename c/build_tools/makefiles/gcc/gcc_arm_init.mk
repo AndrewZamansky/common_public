@@ -137,7 +137,7 @@ GLOBAL_CFLAGS += -c -Wall -fdata-sections
 ifeq ($(findstring cortex-m,$(CONFIG_CPU_TYPE)),cortex-m)
    	GLOBAL_CFLAGS +=  -mthumb
 else	
-	GLOBAL_CFLAGS += -mno-unaligned-access	
+    GLOBAL_CFLAGS += -mno-unaligned-access
 endif
 
 
@@ -178,11 +178,19 @@ GLOBAL_ASMFLAGS := $(GLOBAL_ASMFLAGS)
 
 
 
+FULL_GCC_PREFIX 		:= $(GCC_ROOT_DIR)/bin/$(GNU_COMPILATION_PREFIX)-
+COMPILER_INCLUDE_DIR 	:= $(GCC_ROOT_DIR)/$(GNU_COMPILATION_PREFIX)/include
+GCC_LIB_ROOT_DIR  		:= $(GCC_ROOT_DIR)/$(GNU_COMPILATION_PREFIX)/lib
 
-
-
-include $(MAKEFILE_DEFS_ROOT_DIR)/gcc/gcc_common_init.mk
-
+ifdef CONFIG_GCC
+    CC   :=	$(FULL_GCC_PREFIX)gcc
+    ASM  :=	$(FULL_GCC_PREFIX)gcc
+    LD   :=	$(FULL_GCC_PREFIX)gcc
+else ifdef CONFIG_GPP
+	CC   :=	$(FULL_GCC_PREFIX)g++
+    ASM  :=	$(FULL_GCC_PREFIX)g++
+    LD   :=	$(FULL_GCC_PREFIX)g++
+endif
 
 endif
 ### end of section that run just one time per build

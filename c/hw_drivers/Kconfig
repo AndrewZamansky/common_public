@@ -41,14 +41,17 @@ config ARM_SEMIHOSTING_RX_BUFFER
 
 config INCLUDE_INTERNAL_UART
 	bool   "internal uart"
+	depends on NUC505 || STM32F103RC || NPCE586 || STM8S103F
 	default n
 
 config INCLUDE_INTERNAL_SPI
 	bool   "internal spi"
+	depends on NUC505 || STM32F103RC || NPCE586 || STM8S103F
 	default n
 
 config INCLUDE_INTERNAL_TIMER
 	bool   "internal timer"
+	depends on NUC505 || STM32F103RC || NPCE586 || STM8S103F
 	default n
 
 config INCLUDE_INTERNAL_FLASH
@@ -58,6 +61,7 @@ config INCLUDE_INTERNAL_FLASH
 
 config INCLUDE_INTERNAL_GPIO
 	bool   "internal gpio"
+	depends on NUC505 || STM32F103RC || NPCE586 || STM8S103F
 	default n
 
 config INCLUDE_INTERNAL_SERIAL_NUMBER

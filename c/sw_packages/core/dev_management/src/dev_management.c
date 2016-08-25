@@ -255,7 +255,8 @@ pdev_descriptor_t DEV_API_add_device(const char* module_name_str , const char *d
 			strcpy( new_str ,  device_name_str );
 			dev->name =  new_str;
 
-			dev->handle=NULL;
+			dev->p_config_data	=NULL;
+			dev->p_runtime_data	=NULL;
 			init_new_device(dev);
 			return dev;
 		}
