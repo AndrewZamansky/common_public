@@ -30,18 +30,18 @@ include $(MAKEFILE_DEFS_ROOT_DIR)/common_init.mk
 include $(MAKEFILE_DEFS_ROOT_DIR)/common.mk
 
 
-ifeq ($(wildcard $(OBJ_DIR)),) 		#if $(OBJ_DIR) dont exists then $(wildcard $(OBJ_DIR)) will produce empty string 
+ifeq ($(wildcard $(OBJ_DIR)),) 		#if $(OBJ_DIR) dont exists then $(wildcard $(OBJ_DIR)) will produce empty string
    DUMMY:=$(shell $(MKDIR)  $(OBJ_DIR)) # create   $(OBJ_DIR)
 endif
-ifeq ($(wildcard $(OUT_DIR)),) 		#if $(OUT_DIR) dont exists then $(wildcard $(OUT_DIR)) will produce empty string 
+ifeq ($(wildcard $(OUT_DIR)),) 		#if $(OUT_DIR) dont exists then $(wildcard $(OUT_DIR)) will produce empty string
    DUMMY:=$(shell $(MKDIR)  $(OUT_DIR))  # create   $(OUT_DIR)
 endif
 
-ifeq ($(wildcard $(OUT_DIR_HISTORY)),) 		#if $(OUT_DIR) dont exists then $(wildcard $(OUT_DIR)) will produce empty string 
+ifeq ($(wildcard $(OUT_DIR_HISTORY)),) 		#if $(OUT_DIR) dont exists then $(wildcard $(OUT_DIR)) will produce empty string
    DUMMY:=$(shell $(MKDIR)  $(OUT_DIR_HISTORY))  # create   $(OUT_DIR)
 endif
 
-ifeq ($(wildcard $(AUTO_GENERATED_FILES_DIR)),) 		#if $(OUT_DIR) dont exists then $(wildcard $(OUT_DIR)) will produce empty string 
+ifeq ($(wildcard $(AUTO_GENERATED_FILES_DIR)),) 		#if $(OUT_DIR) dont exists then $(wildcard $(OUT_DIR)) will produce empty string
    DUMMY:=$(shell $(MKDIR)  $(AUTO_GENERATED_FILES_DIR))  # create   $(OUT_DIR)
 endif
 
@@ -56,7 +56,7 @@ ifdef MAKEFILE_WAS_GENERATED
         CFLAGS :=
         ASMFLAGS :=
         DEFINES :=
-        
+
         # move global prerequirements_check compilation to first place
         SUBDIRS := $(filter %prerequirements_check,$(SUBDIRS))  $(filter-out %prerequirements_check,$(SUBDIRS))
 
@@ -100,7 +100,7 @@ all_after_makefile_generated : build_outputs
 
 rebuild : clean
 	$(MAKE) all
-	
+
 archive : 
 	$(eval CREATING_ARCHIVE := YES)
 	$(eval export CREATING_ARCHIVE)
@@ -118,27 +118,27 @@ $(SUBDIRS):
 	$(MAKE) -C $@ -f Makefile.uc.mk $(TARGET)
 
 $(COMPONENTS_MK) : $(APP_ROOT_DIR)/.config
-	$(MAKE) -f $(MAKEFILE_DEFS_ROOT_DIR)/generate_project_files.mk 
-	
-	
+	$(MAKE) -f $(MAKEFILE_DEFS_ROOT_DIR)/generate_project_files.mk
+
+
 build_outputs :  $(SUBDIRS)
-	$(MAKE) -f $(MAKEFILE_DEFS_ROOT_DIR)/build_final_outputs.mk 
+	$(MAKE) -f $(MAKEFILE_DEFS_ROOT_DIR)/build_final_outputs.mk
 
 
 clean:
 	$(RM) $(OBJ_DIR)
 	$(RM) $(OUT_DIR)
 	$(RM) $(AUTO_GENERATED_FILES_DIR)
-	
-	
+
+
 list_var:
-	$(MAKE) -f $(MAKEFILE_DEFS_ROOT_DIR)/list_usful_variables.mk  
+	$(MAKE) -f $(MAKEFILE_DEFS_ROOT_DIR)/list_usful_variables.mk
 
 
 
 menuconfig:
-	$(MAKE) -f $(MAKEFILE_DEFS_ROOT_DIR)/menuconfig.mk  
-	
+	$(MAKE) -f $(MAKEFILE_DEFS_ROOT_DIR)/menuconfig.mk
+
 .PHONY: default rebuild archive clean all $(SUBDIRS)
 
 endif# test for valid target

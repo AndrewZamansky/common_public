@@ -2,14 +2,14 @@ menu "`--->  stm32f103rc board configurations"
 
 choice
 	prompt "Board"
-	default EUSE_TAOBAO_BOARD
+	default TAOBAO_BOARD
 
-config EUSE_TAOBAO_BOARD
+config TAOBAO_BOARD
 	bool "euse taobao board"
 
 endchoice
 
-if EUSE_TAOBAO_BOARD
+if TAOBAO_BOARD
 source "$COMMON_DIR_PATH/c/hw_drivers/arch/ARM/soc/stm32/stm32f103rc/Kconfig.euse.taobao.dt"
 endif
 
@@ -18,7 +18,7 @@ endif
 endmenu
 
 =======
-config EUSE_TAOBAO_BOARD
+config STM32F103RC_BOARD
 	def_bool y
 	select INTERNAL_SRAM
 	select INTERNAL_FLASH

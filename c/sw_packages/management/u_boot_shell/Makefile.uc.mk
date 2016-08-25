@@ -19,7 +19,7 @@ ifdef CONFIG_INCLUDE_UBOOT_SHELL
         $(info   )
         $(error )
     endif
-    
+
     DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH ,  $(SW_PACKAGES_ROOT_DIR)/management/u_boot_shell/include )
     DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(EXTERNAL_SOURCE_ROOT_DIR)/)
 endif

@@ -1,3 +1,11 @@
+menu "GCC options"
+
+config GCC_VERSION
+    string "gcc version in form : xx.xx[.xx]"
+    default "4.9.3"
+
+
+if ARM
 
 config GCC_VENDOR_NAME
     string "gcc vendor name"
@@ -25,10 +33,45 @@ config GNUEABI
     bool "gnueabi"
 endchoice
 
-config GCC_VERSION
-    string "gcc version in form : xx.xx[.xx]"
-    default "4.9.3"
-    
+
+
 config USE_NANO_STD_LIBS
 	bool   "use nano std libs to reduce code size "
 	default n
+
+config USED_FOR_SEMIHOSTING_UPLOADING
+	bool   "used for semihosting uploading"
+	default n
+
+endif
+
+if HOST
+endif
+
+
+choice
+	prompt "Optimisation Level"
+	default GCC_OPTIMISE_NONE
+
+config GCC_OPTIMISE_NONE
+	bool "-O0 : No Optimisations"
+
+config GCC_OPTIMISE_WITH_DEBUG
+	bool "-Og  : Optimise without loss in debug info "
+	depends on GCC || GPP
+
+config GCC_OPTIMISE_SIZE
+    bool "-Os : Optimise for size "
+
+config GCC_OPTIMISE_SPEED
+	bool "-O2 : Optimise for speed "
+
+config GCC_OPTIMISE_ULTRA_SPEED
+	bool "-O3 : Optimise for ultra-speed but can increase code-size "
+
+endchoice
+
+
+
+
+endmenu

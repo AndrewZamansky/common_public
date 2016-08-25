@@ -1,8 +1,0 @@
-choice
-	prompt "Compiler"
-	default CXSTM8
-
-config CXSTM8
-	bool "cosmic compiler for stm8 "
-
-endchoice

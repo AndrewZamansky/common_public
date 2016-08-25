@@ -8,8 +8,8 @@ ifdef REDEFINE_ARM_GCC_ROOT_DIR
     $(info  gcc dir  redefined to $(REDEFINE_ARM_GCC_ROOT_DIR) )
     ifeq ("$(wildcard $(REDEFINE_ARM_GCC_ROOT_DIR))","")
         $(info !--- gcc path $(REDEFINE_ARM_GCC_ROOT_DIR) dont exists)
-        $(info !--- to use default gcc location remove/comment REDEFINE_ARM_GCC_ROOT_DIR variable in  $(REDEFINE_ARM_GCC_ROOT_DIR)/workspace_config.mk )
-        $(info !--- you can set customized gcc path in REDEFINE_ARM_GCC_ROOT_DIR variable in $(REDEFINE_ARM_GCC_ROOT_DIR)/workspace_config.mk )
+        $(info !--- to use default gcc location remove/comment REDEFINE_ARM_GCC_ROOT_DIR variable in  $(WORKSPACE_ROOT_DIR)/workspace_config.mk )
+        $(info !--- you can set customized gcc path in REDEFINE_ARM_GCC_ROOT_DIR variable in $(WORKSPACE_ROOT_DIR)/workspace_config.mk )
         $(error )
     else
         GCC_ROOT_DIR 	:= 	$(REDEFINE_ARM_GCC_ROOT_DIR)
@@ -88,7 +88,7 @@ else
         $(info !--- download gcc (tested version is $(CONFIG_GCC_VERSION)) )
         $(info !--- unpack it to $(TEST_GCC_ROOT_DIR))
         $(info !--- make sure that arm-none-eabi,bin and lib  folders is located in $(TEST_GCC_ROOT_DIR)/  after unpacking   )
-        $(info !--- you can also set customized gcc path in REDEFINE_ARM_GCC_ROOT_DIR variable in $(REDEFINE_ARM_GCC_ROOT_DIR)/workspace_config.mk )
+        $(info !--- you can also set customized gcc path in REDEFINE_ARM_GCC_ROOT_DIR variable in $(WORKSPACE_ROOT_DIR)/workspace_config.mk )
         $(error )
     endif
 
@@ -105,15 +105,15 @@ endif
 GNU_COMPILATION_PREFIX	:=arm-$(VENDOR_NAME)$(OS_PREFIX)$(ABI_PREFIX)
 
 
-ifdef CONFIG_OPTIMISE_NONE
+ifdef CONFIG_GCC_OPTIMISE_NONE
     CONFIG_OPTIMIZE_LEVEL := O0
-else ifdef CONFIG_OPTIMISE_WITH_DEBUG
+else ifdef CONFIG_GCC_OPTIMISE_WITH_DEBUG
     CONFIG_OPTIMIZE_LEVEL := Og
-else ifdef CONFIG_OPTIMISE_SIZE
+else ifdef CONFIG_GCC_OPTIMISE_SIZE
     CONFIG_OPTIMIZE_LEVEL := Os
-else ifdef CONFIG_OPTIMISE_SPEED
+else ifdef CONFIG_GCC_OPTIMISE_SPEED
     CONFIG_OPTIMIZE_LEVEL := O2
-else ifdef CONFIG_OPTIMISE_ULTRA_SPEED
+else ifdef CONFIG_GCC_OPTIMISE_ULTRA_SPEED
     CONFIG_OPTIMIZE_LEVEL := O3
 endif
 
@@ -148,7 +148,7 @@ else ifdef CONFIG_CORTEX_M4
     GLOBAL_CFLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16
 endif
 
- ifdef CONFIG_OPTIMISE_SIZE
+ ifdef CONFIG_GCC_OPTIMISE_SIZE
 	GLOBAL_CFLAGS +=  -ffunction-sections
 endif
 

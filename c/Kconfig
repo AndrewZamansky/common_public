@@ -23,21 +23,9 @@ config HOST
 endchoice
 
 
-
-menu "Build System"
-
-if ARM
-source "$COMMON_DIR_PATH/c/hw_drivers/arch/ARM/Kconfig"
-endif
-
-if STM8
-source "$COMMON_DIR_PATH/c/hw_drivers/arch/STM8/Kconfig"
-endif
-
-endmenu
+source "$COMMON_DIR_PATH/c/build_tools/makefiles/Kconfig"
 	   	
 source "$COMMON_DIR_PATH/c/hw_drivers/arch/Kconfig"
-
 
 
 menu "Hardware Drivers"
