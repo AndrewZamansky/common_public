@@ -26,11 +26,11 @@
 /***********   global variables    **************/
 
 /***********   local variables    **************/
-extern AUTO_INIT_FUNCTION_PLACEMENT auto_init_struct_t auto_init_dummy_auto_init;
+extern  auto_init_struct_t AUTO_INIT_FUNCTION_PLACEMENT auto_init_dummy_auto_init;
 
 static void _auto_init(int16_t struct_size)
 {
-	AUTO_INIT_FUNCTION_PLACEMENT auto_init_struct_t *p_curr_auto_init;
+	auto_init_struct_t const *p_curr_auto_init;
 	auto_init_func_t init_function ;
 
 	p_curr_auto_init = &auto_init_dummy_auto_init;
