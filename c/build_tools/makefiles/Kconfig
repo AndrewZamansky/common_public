@@ -56,6 +56,18 @@ config MIN_GW_GPP
 
 endchoice
 
+choice
+	prompt "Compiler for linux host"
+	default LINUX_HOST_GCC
+
+config LINUX_HOST_GCC
+	bool "gcc"
+
+config LINUX_HOST_GPP
+    bool "g++"
+
+endchoice
+
 endif
 
 

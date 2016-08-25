@@ -132,7 +132,7 @@ endif
 GLOBAL_CFLAGS := $(GLOBAL_CFLAGS)
 GLOBAL_CFLAGS += -mcpu=$(CONFIG_CPU_TYPE) -gdwarf-2 -MD
 GLOBAL_CFLAGS += -mapcs-frame -mthumb-interwork
-GLOBAL_CFLAGS += -c -Wall -fdata-sections
+GLOBAL_CFLAGS += -Wall -fdata-sections
 
 ifeq ($(findstring cortex-m,$(CONFIG_CPU_TYPE)),cortex-m)
    	GLOBAL_CFLAGS +=  -mthumb
@@ -168,7 +168,7 @@ ifdef CONFIG_CORTEX_M4
 	GLOBAL_ASMFLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16
 endif
 
-GLOBAL_ASMFLAGS += -c -x assembler-with-cpp
+GLOBAL_ASMFLAGS += -x assembler-with-cpp
 
 GLOBAL_ASMFLAGS += -g -g3 -ggdb3 #-gstabs3
 
@@ -183,12 +183,12 @@ COMPILER_INCLUDE_DIR 	:= $(GCC_ROOT_DIR)/$(GNU_COMPILATION_PREFIX)/include
 GCC_LIB_ROOT_DIR  		:= $(GCC_ROOT_DIR)/$(GNU_COMPILATION_PREFIX)/lib
 
 ifdef CONFIG_GCC
-    CC   :=	$(FULL_GCC_PREFIX)gcc
-    ASM  :=	$(FULL_GCC_PREFIX)gcc
+    CC   :=	$(FULL_GCC_PREFIX)gcc -c
+    ASM  :=	$(FULL_GCC_PREFIX)gcc -c
     LD   :=	$(FULL_GCC_PREFIX)gcc
 else ifdef CONFIG_GPP
-	CC   :=	$(FULL_GCC_PREFIX)g++
-    ASM  :=	$(FULL_GCC_PREFIX)g++
+	CC   :=	$(FULL_GCC_PREFIX)g++ -c
+    ASM  :=	$(FULL_GCC_PREFIX)g++ -c
     LD   :=	$(FULL_GCC_PREFIX)g++
 endif
 

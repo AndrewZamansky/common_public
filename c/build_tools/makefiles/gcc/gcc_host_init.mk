@@ -65,6 +65,21 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
     COMPILER_INCLUDE_DIR 	:= $(GCC_ROOT_DIR)/include
     GCC_LIB_ROOT_DIR  		:= $(GCC_ROOT_DIR)/lib
 
+    ifdef CONFIG_MIN_GW_GCC
+        COMPILE_WITH_GCC   :=y
+    else ifdef CONFIG_MIN_GW_GPP
+        COMPILE_WITH_GPP   :=y
+    endif
+
+else # for 'ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)'
+
+    ifdef CONFIG_LINUX_HOST_GCC
+        COMPILE_WITH_GCC   :=y
+    else ifdef CONFIG_LINUX_HOST_GCC
+        COMPILE_WITH_GPP   :=y
+    endif
+
+
 endif #end of 'ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)'
 
 
@@ -80,13 +95,13 @@ endif #end of 'ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)'
 
 
 
-ifdef CONFIG_MIN_GW_GCC
+ifdef COMPILE_WITH_GCC
     CC   :=	$(FULL_GCC_PREFIX)gcc -c
-    ASM  :=	$(FULL_GCC_PREFIX)gcc
+    ASM  :=	$(FULL_GCC_PREFIX)gcc -c
     LD   :=	$(FULL_GCC_PREFIX)gcc
-else ifdef CONFIG_MIN_GW_GPP
-	CC   :=	$(FULL_GCC_PREFIX)g++
-    ASM  :=	$(FULL_GCC_PREFIX)g++
+else ifdef COMPILE_WITH_GPP
+	CC   :=	$(FULL_GCC_PREFIX)g++ -c
+    ASM  :=	$(FULL_GCC_PREFIX)g++ -c
     LD   :=	$(FULL_GCC_PREFIX)g++
 endif
 STRIP   :=	$(FULL_GCC_PREFIX)strip
