@@ -11,6 +11,9 @@ choice
 config ARM
 	bool "arm"
 
+config PIC32
+	bool "pic32"
+
 config STM8
 	bool "stm8"
 

@@ -27,7 +27,7 @@ else ifneq ($(wildcard $(APP_ROOT_DIR)/../../../common/c),)
 else ifneq ($(wildcard $(APP_ROOT_DIR)/../../../../common/c),) 
     COMMON_ROOT_DIR    :=    $(APP_ROOT_DIR)/../../../../common/c
 else
-    $(error ---- COMMON C \(common/c\) DIR NOT FOUND ----)
+    $(error !---- COMMON C \(common/c\) DIR NOT FOUND ----)
 endif
 
 #find root project directory  :
@@ -38,7 +38,7 @@ else ifneq ($(wildcard $(APP_ROOT_DIR)/../../../apps),)
 else ifneq ($(wildcard $(APP_ROOT_DIR)/../../../../apps),) 
     RELATIVE_PROJECT_ROOT_PATH    :=../..
 else
-   $(error ---- apps  DIR NOT FOUND ----)
+   $(error !---- apps  DIR NOT FOUND ----)
 endif
 
 WORKSPACE_ROOT_DIR := $(patsubst $(APP_ROOT_DIR)/%,%,$(realpath $(COMMON_ROOT_DIR)/../..))
@@ -46,12 +46,12 @@ WORKSPACE_NAME := $(notdir $(WORKSPACE_ROOT_DIR))
 
 EXTERNAL_SOURCE_ROOT_DIR := $(patsubst %/,%,$(dir $(WORKSPACE_ROOT_DIR)))/external_source
 ifeq ("$(wildcard $(EXTERNAL_SOURCE_ROOT_DIR))","")
-    $(info directory $(EXTERNAL_SOURCE_ROOT_DIR) dont exists . create it .)
+    $(info !--- directory $(EXTERNAL_SOURCE_ROOT_DIR) dont exists . create it .)
     $(error )
 endif
 TOOLS_ROOT_DIR := $(patsubst %/,%,$(dir $(WORKSPACE_ROOT_DIR)))/tools
 ifeq ("$(wildcard $(TOOLS_ROOT_DIR))","")
-    $(info directory $(TOOLS_ROOT_DIR) dont exists . create it .)
+    $(info !--- directory $(TOOLS_ROOT_DIR) dont exists . create it .)
     $(error )
 endif
 
@@ -94,9 +94,9 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
     ifdef REDEFINE_MAKE_PROGRAM_DIR
         $(info  make  redefined to $(REDEFINE_MAKE_PROGRAM_DIR)\make)
         ifeq ("$(wildcard $(REDEFINE_MAKE_PROGRAM_DIR))","")
-            $(info make path $(REDEFINE_MAKE_PROGRAM_DIR) dont exists)
-            $(info to use default make location remove/comment REDEFINE_MAKE_PROGRAM_DIR variable in  $(REDEFINE_MAKE_PROGRAM_DIR)/workspace_config.mk )
-            $(info you can set customized make utility path in REDEFINE_MAKE_PROGRAM_DIR variable in $(REDEFINE_MAKE_PROGRAM_DIR)/workspace_config.mk )
+            $(info !--- make path $(REDEFINE_MAKE_PROGRAM_DIR) dont exists)
+            $(info !--- to use default make location remove/comment REDEFINE_MAKE_PROGRAM_DIR variable in  $(REDEFINE_MAKE_PROGRAM_DIR)/workspace_config.mk )
+            $(info !--- you can set customized make utility path in REDEFINE_MAKE_PROGRAM_DIR variable in $(REDEFINE_MAKE_PROGRAM_DIR)/workspace_config.mk )
             $(error )
         else
             MAKE_DIR  :=$(REDEFINE_MAKE_PROGRAM_DIR)
@@ -185,8 +185,13 @@ else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX)
 
 endif
 
-
+#dont proceed if we are bulding .config file now
 ifeq ($(findstring menuconfig,$(MAKECMDGOALS)),) 
+
+ifeq ("$(wildcard .config)","")
+    $(info !--- .config file dont exists . run 'make menuconfig')
+    $(error )
+endif
 
 include .config
 
@@ -347,6 +352,8 @@ ifdef CONFIG_ARM
     else ifdef CONFIG_ARMCC
         include $(MAKEFILE_DEFS_ROOT_DIR)/armcc/armcc_init.mk
     endif
+else ifdef CONFIG_PIC32
+    include $(MAKEFILE_DEFS_ROOT_DIR)/gcc/gcc_pic32_init.mk
 else ifdef CONFIG_AVR
     include $(MAKEFILE_DEFS_ROOT_DIR)/gcc/gcc_avr_init.mk
 else ifdef CONFIG_STM8

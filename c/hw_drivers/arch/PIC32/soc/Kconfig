@@ -1,0 +1,21 @@
+
+
+choice
+	prompt "SOC"
+	default GENERIC_PIC32_SOC
+
+config PIC32MX575
+	bool "PIC32MX575"
+
+config PIC32_GENERIC_PIC32_SOC
+	bool "generic SOC"
+
+endchoice
+
+if PIC32MX575
+source "$COMMON_DIR_PATH/c/hw_drivers/arch/PIC32/soc/pic32mx575/Kconfig"
+endif
+
+if PIC32_GENERIC_PIC32_SOC
+source "$COMMON_DIR_PATH/c/hw_drivers/arch/PIC32/soc/generic_board_Kconfig"
+endif

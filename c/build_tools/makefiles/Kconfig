@@ -1,7 +1,7 @@
 menu "Build System"
 
 
-
+##### ARM  #########
 if ARM
 
 choice
@@ -27,6 +27,27 @@ config INCLUDE_CORTEX_M_FPU
 
 endif
 
+
+##### PIC32  #########
+if PIC32
+
+choice
+	prompt "Compiler"
+	default PIC_C32
+
+config PIC_C32
+	bool "C32 "
+
+config PIC_XC32
+	bool "XC32 "
+
+endchoice
+
+
+endif
+
+
+##### STM8  #########
 if STM8
 
 choice
@@ -42,6 +63,7 @@ endchoice
 endif
 
 
+##### HOST  #########
 if HOST
 
 choice
@@ -71,7 +93,7 @@ endchoice
 endif
 
 
-if GCC || GPP || MIN_GW_GCC || MIN_GW_GPP
+if GCC || GPP || MIN_GW_GCC || MIN_GW_GPP || PIC_C32 || PIC_XC32
 source "$COMMON_DIR_PATH/c/build_tools/makefiles/gcc/Kconfig"
 endif
 
@@ -83,6 +105,6 @@ menuconfig INCLUDE_TOOLCHAIN_LIBRARIES
 config TOOLCHAIN_LIBRARIES_ARE_SPEED_CRUCIAL
 	bool   "tool chain libraries are speed crucial"
 	depends on INCLUDE_TOOLCHAIN_LIBRARIES
-	default n	
+	default n
 
 endmenu

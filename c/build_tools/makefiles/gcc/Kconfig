@@ -1,11 +1,14 @@
 menu "GCC options"
 
-config GCC_VERSION
+
+
+##### ARM  #########
+if ARM
+
+config ARM_GCC_VERSION
     string "gcc version in form : xx.xx[.xx]"
     default "4.9.3"
 
-
-if ARM
 
 config GCC_VENDOR_NAME
     string "gcc vendor name"
@@ -45,8 +48,41 @@ config USED_FOR_SEMIHOSTING_UPLOADING
 
 endif
 
+##### HOST  #########
 if HOST
+
+config MINGW_GCC_VERSION
+    string "MinGW  version in form : xx.xx[.xx]"
+    default "4.8.1"
+
 endif
+
+##### PIC32  #########
+if PIC32
+
+choice
+	prompt "compiler location"
+	default PIC32_COMPILER_LOCATION_WINDOWS_DEFAULT
+
+config PIC32_COMPILER_LOCATION_WINDOWS_DEFAULT
+	bool "pic32 compiler located in windows default location"
+
+config PIC32_COMPILER_LOCATION_WORKSPACE_TOOLS_DIRECTORY
+    bool "pic32 compiler located in workspace tool directory"
+endchoice
+
+config PIC32_C32_VERSION
+    string "PIC32 C32  version in form : xx.xx"
+    depends on PIC32_COMPILER_LOCATION_WORKSPACE_TOOLS_DIRECTORY
+    default "2.01"
+
+
+config BUILD_FOR_USE_WITH_BOOTLOADER
+	bool   "build for use with bootloader"
+	default y
+
+endif
+
 
 
 choice

@@ -3,7 +3,7 @@
 #define _GPIO_NUC505_API_H_
 
 
-#include "src/_gpio_NUC505_prerequirements_check.h"
+#include "src/_gpio_nuc505_prerequirements_check.h"
 #include "gpio_api.h"
 
 

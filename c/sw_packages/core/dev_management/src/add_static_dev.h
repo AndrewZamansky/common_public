@@ -106,7 +106,7 @@
 
 
 #ifndef CONFIG_DYNAMIC_DEVICE_TREE
-	pdev_descriptor_t DT_DEV_NAME = P_TO_STATIC_DEVICE_INST(DT_DEV_NAME);
+	dev_descriptor_t const * DT_DEV_NAME = P_TO_STATIC_DEVICE_INST(DT_DEV_NAME);
 #endif
 
 #undef	DT_DEV_MODULE

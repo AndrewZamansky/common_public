@@ -11,6 +11,8 @@ ifdef CONFIG_ARM
     endif
 else ifdef CONFIG_AVR
     include $(MAKEFILE_DEFS_ROOT_DIR)/gcc/gcc_cc.mk
+else ifdef CONFIG_PIC32
+    include $(MAKEFILE_DEFS_ROOT_DIR)/gcc/gcc_cc.mk
 else ifdef CONFIG_STM8
     include $(MAKEFILE_DEFS_ROOT_DIR)/cxstm8/cxstm8_cc.mk
 else ifdef CONFIG_HOST

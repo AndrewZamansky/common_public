@@ -1,0 +1,36 @@
+menu "pic32mx575 soc configuration"
+
+
+##################################################
+##############  memories on soc ##################
+
+menu "memories"
+
+comment "sram start : 0xA0000000"
+config DT_SOC_RAM_START_ADDR
+    hex 
+    default 0xA0000000
+
+comment "sram size : 64k"
+config DT_SOC_RAM_SIZE
+    hex
+    default 0x10000    
+
+comment "flash start : 0x9d007490 . 0x7490 offset for bootloader "
+config DT_SOC_FLASH_START_ADDR
+    hex
+    default 0x9d007490
+
+comment "flash size : (0x81000 - 0x7490)"
+config DT_SOC_FLASH_SIZE
+    hex
+    default 0x79B70   
+
+endmenu
+
+#############  end of memories on soc ###################
+#########################################################
+
+
+
+endmenu

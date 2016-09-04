@@ -34,7 +34,7 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
            GCC_NOT_FOUND :=1
        endif
 
-       GCC_VERSION :=$(patsubst "%",%,$(CONFIG_GCC_VERSION))
+       GCC_VERSION :=$(patsubst "%",%,$(CONFIG_MINGW_GCC_VERSION))
        ifndef GCC_NOT_FOUND
           TEST_GCC_ROOT_DIR 	:= 	$(TOOLS_ROOT_DIR)/gcc/MinGW-$(GCC_VERSION)
           ifeq ("$(wildcard $(TEST_GCC_ROOT_DIR))","")

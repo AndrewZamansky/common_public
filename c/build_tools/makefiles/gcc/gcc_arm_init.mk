@@ -5,9 +5,9 @@ ifndef COMMON_INIT_SECTION_THAT_SHOULD_RUN_ONCE
 
 
 ifdef REDEFINE_ARM_GCC_ROOT_DIR
-    $(info  gcc dir  redefined to $(REDEFINE_ARM_GCC_ROOT_DIR) )
+    $(info  arm gcc dir  redefined to $(REDEFINE_ARM_GCC_ROOT_DIR) )
     ifeq ("$(wildcard $(REDEFINE_ARM_GCC_ROOT_DIR))","")
-        $(info !--- gcc path $(REDEFINE_ARM_GCC_ROOT_DIR) dont exists)
+        $(info !--- arm gcc path $(REDEFINE_ARM_GCC_ROOT_DIR) dont exists)
         $(info !--- to use default gcc location remove/comment REDEFINE_ARM_GCC_ROOT_DIR variable in  $(WORKSPACE_ROOT_DIR)/workspace_config.mk )
         $(info !--- you can set customized gcc path in REDEFINE_ARM_GCC_ROOT_DIR variable in $(WORKSPACE_ROOT_DIR)/workspace_config.mk )
         $(error )
@@ -15,7 +15,7 @@ ifdef REDEFINE_ARM_GCC_ROOT_DIR
         GCC_ROOT_DIR 	:= 	$(REDEFINE_ARM_GCC_ROOT_DIR)
     endif
 else
-    $(info  looking for gcc in default location)
+    $(info  looking for arm gcc in default location)
     ifeq ("$(wildcard $(TOOLS_ROOT_DIR)/gcc)","")
         $(info !--- path  $(TOOLS_ROOT_DIR)/gcc dont exists create it )
         $(error )
@@ -71,7 +71,7 @@ else
 	endif
 
 
-    GCC_VERSION :=$(patsubst "%",%,$(CONFIG_GCC_VERSION))
+    GCC_VERSION :=$(patsubst "%",%,$(CONFIG_ARM_GCC_VERSION))
     ifndef GCC_NOT_FOUND
        TEST_GCC_ROOT_DIR 	:= 	$(TOOLS_ROOT_DIR)/gcc/arm-$(VENDOR_NAME)$(OS_PREFIX)$(ABI_PREFIX)-$(GCC_VERSION)
        ifeq ("$(wildcard $(TEST_GCC_ROOT_DIR))","")
@@ -129,7 +129,7 @@ endif
 
 
 ### GLOBAL_CFLAGS calculation
-GLOBAL_CFLAGS := $(GLOBAL_CFLAGS)
+
 GLOBAL_CFLAGS += -mcpu=$(CONFIG_CPU_TYPE) -gdwarf-2 -MD
 GLOBAL_CFLAGS += -mapcs-frame -mthumb-interwork
 GLOBAL_CFLAGS += -Wall -fdata-sections
@@ -154,7 +154,7 @@ endif
 
 GLOBAL_CFLAGS += -$(CONFIG_OPTIMIZE_LEVEL) -g -g3 -ggdb3 #-gstabs3
 
-GLOBAL_CFLAGS := $(GLOBAL_CFLAGS)
+GLOBAL_CFLAGS := $(GLOBAL_CFLAGS) #stop GLOBAL_CFLAGS calculation each time it used
 
 ### GLOBAL_ASMFLAGS calculation
 GLOBAL_ASMFLAGS += -mcpu=$(CONFIG_CPU_TYPE)  -gdwarf-2   -mthumb-interwork

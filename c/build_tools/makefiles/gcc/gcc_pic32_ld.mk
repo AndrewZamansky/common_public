@@ -1,14 +1,14 @@
 
 
-ELF_TO_BIN		:=	$(FULL_GCC_PREFIX)objcopy -O binary
-DISASSEMBLER	:=	$(FULL_GCC_PREFIX)objdump -d
-ELF_TO_HEX		:=	$(FULL_GCC_PREFIX)objcopy -O ihex
-
+ELF_TO_BIN		:=	"$(FULL_GCC_PREFIX)objcopy" -O binary
+DISASSEMBLER	:=	"$(FULL_GCC_PREFIX)objdump" -d
+#ELF_TO_HEX		:=	"$(FULL_GCC_PREFIX)objcopy" -O ihex
+ELF_TO_HEX		:=	"$(FULL_GCC_PREFIX)bin2hex"
 
 GLOBAL_LIBS := $(GLOBAL_LIBS)
 
 ifdef CONFIG_INCLUDE_TOOLCHAIN_LIBRARIES
-   STD_LIBRARIES := libc.a libm.a libc_nano.a libgcc.a
+   STD_LIBRARIES := libc.a libm.a
    GLOBAL_LIBS := $(GLOBAL_LIBS) $(STD_LIBRARIES)
    ifdef CONFIG_TOOLCHAIN_LIBRARIES_ARE_SPEED_CRUCIAL
        CRITICAL_SPEED_STD_LIBRARIES := $(STD_LIBRARIES)
@@ -22,8 +22,10 @@ LIBRARIES_DIRS := $(patsubst %,-L%,$(GLOBAL_LIBS_PATH))
 
 #LINKER_OUTPUT := $(OUT_DIR)/$(OUTPUT_APP_NAME).axf
 LINKER_OUTPUT := $(OUT_DIR)/$(OUTPUT_APP_NAME).elf
+LINKER_OUTPUT_FOR_BOOTLOADER := $(OUT_DIR)/$(OUTPUT_APP_NAME)_for_boot_loader.elf
 OUTPUT_BIN := $(OUT_DIR)/$(OUTPUT_APP_NAME).bin
 OUTPUT_HEX :=  $(OUT_DIR)/$(OUTPUT_APP_NAME).hex
+OUTPUT_HEX_FOR_BOOTLOADER :=  $(OUT_DIR)/$(OUTPUT_APP_NAME)_for_boot_loader.hex
 
 
 
@@ -32,29 +34,20 @@ LDFLAGS :=
 
 #LDFLAGS += -fno-builtin-printf
 
-ifeq ($(findstring cortex-m,$(CONFIG_CPU_TYPE)),cortex-m)
-    LDFLAGS += -mthumb
-endif
 
 
 
-LDFLAGS += -mcpu=$(CONFIG_CPU_TYPE) -mthumb-interwork -Wl,--gc-sections -nostartfiles  # -msoft-float -mfloat-abi=soft
+#LDFLAGS += -Wl,--gc-sections #-nostartfiles
 LDFLAGS += -Wl,-Map=$(OUT_DIR)/$(OUTPUT_APP_NAME).map   # -msoft-float -mfloat-abi=soft
+LDFLAGS += -Wl,--defsym=__MPLAB_BUILD=1
 
-ifdef CONFIG_USE_NANO_STD_LIBS
-    LDFLAGS += -specs=nano.specs
+
+LDFLAGS += -g -g3 -ggdb3#-gstabs3  #-O0   
+
+ifdef CONFIG_PIC32MX575
+    LDFLAGS += -mprocessor=32MX575F512L
+    SCATTER_FILE_LOCATION := $(BUILD_TOOLS_ROOT_DIR)/scatter_files/pic32mx575
 endif
-
-ifdef CONFIG_CORTEX_M4
-    ifdef CONFIG_INCLUDE_CORTEX_M_FPU
-        LDFLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16
-    else
-        LDFLAGS += -mfloat-abi=soft -mfpu=soft
-    endif
-endif
-
-
-LDFLAGS += -g -g3 -ggdb3 #-gstabs3  #-O0   
 
 LDFLAGS := $(GLOBAL_LDFLAGS) $(LDFLAGS)
 
@@ -70,10 +63,8 @@ FILES_TO_FORCE_IN_RAM := $(FILES_TO_FORCE_IN_RAM) 123_DUMMY.X # add dummy file t
 
 
 LDS_PREPROCESSOR_DEFINES :=
-LDS_PREPROCESSOR_DEFINES += DEBUG_SECTIONS_INCLUDE_FILE="\"$(BUILD_TOOLS_ROOT_DIR)/scatter_files/arm_gcc/debug_sections.lds\""
-ifeq ($(findstring cortex-m,$(CONFIG_CPU_TYPE)),cortex-m)
-    LDS_PREPROCESSOR_DEFINES += CORTEX_M
-endif
+LDS_PREPROCESSOR_DEFINES += DEBUG_SECTIONS_INCLUDE_FILE="\"$(SCATTER_FILE_LOCATION)/debug_sections.lds\""
+
 LDS_PREPROCESSOR_DEFINES_FRMT 	:= $(patsubst %,-D%,$(LDS_PREPROCESSOR_DEFINES))
 LDS_PREPROCESSOR_DEFINES_FRMT := $(LDS_PREPROCESSOR_DEFINES_FRMT) -DFILES_TO_FORCE_IN_RAM="$(FILES_TO_FORCE_IN_RAM)"
 
@@ -112,18 +103,20 @@ ifeq ($(findstring y,$(CONFIG_USED_FOR_SEMIHOSTING_UPLOADING)),y)
     CONFIG_CALCULATE_CRC32=y
 endif
 
+	#$(ELF_TO_BIN) $(LINKER_OUTPUT) $(OUTPUT_BIN)
+	#$(CP)  $(OUTPUT_BIN) $(OUTPUT_HISTORY_BIN)
 build_outputs :
-	$(CC) -E -P -x c -I z_auto_generated_files $(LDS_PREPROCESSOR_DEFINES_FRMT)  $(BUILD_TOOLS_ROOT_DIR)/scatter_files/arm_gcc/arm_scatter_file_pattern.lds -o $(OUT_DIR)/$(OUTPUT_APP_NAME).lds
-	$(LD) $(LDFLAGS) -T $(OUT_DIR)/$(OUTPUT_APP_NAME).lds  $(LIBRARIES_DIRS) $(ALL_OBJ_FILES) $(LIBS) -o $(LINKER_OUTPUT)
+	$(CC) -E -P -x c -I z_auto_generated_files $(LDS_PREPROCESSOR_DEFINES_FRMT)  $(SCATTER_FILE_LOCATION)/scatter_file_pattern.lds -o $(OUT_DIR)/$(OUTPUT_APP_NAME).lds
+	$(LD) $(LDFLAGS)  $(LIBRARIES_DIRS) $(ALL_OBJ_FILES) $(LIBS) -o $(LINKER_OUTPUT)
+ifdef CONFIG_BUILD_FOR_USE_WITH_BOOTLOADER
+	$(LD) $(LDFLAGS) -T $(OUT_DIR)/$(OUTPUT_APP_NAME).lds $(LIBRARIES_DIRS) $(ALL_OBJ_FILES) $(LIBS) -o $(LINKER_OUTPUT_FOR_BOOTLOADER)
+endif
 	$(DISASSEMBLER) $(LINKER_OUTPUT) > $(OUT_DIR)/$(OUTPUT_APP_NAME).asm
-	$(ELF_TO_BIN) $(LINKER_OUTPUT) $(OUTPUT_BIN)
-	$(ELF_TO_HEX) $(LINKER_OUTPUT) $(OUTPUT_HEX)
-	$(CP)  $(OUTPUT_BIN) $(OUTPUT_HISTORY_BIN)
-	$(CP)  $(LINKER_OUTPUT) $(LINKER_HISTORY_OUTPUT)
+	$(ELF_TO_HEX) $(LINKER_OUTPUT)
+ifdef CONFIG_BUILD_FOR_USE_WITH_BOOTLOADER
+	$(ELF_TO_HEX) $(LINKER_OUTPUT_FOR_BOOTLOADER)
+endif
+	$(CP)  $(LINKER_OUTPUT)
 ifeq ($(findstring y,$(CONFIG_CALCULATE_CRC32)),y)
 	$(CRC32CALC) $(OUTPUT_BIN) > $(OUTPUT_CRC32)
-endif
-ifeq ($(findstring y,$(CONFIG_USED_FOR_SEMIHOSTING_UPLOADING)),y)
-	$(CP)  $(OUTPUT_BIN) $(CONFIG_SEMIHOSTING_UPLOADING_DIR)
-	$(CP) $(OUTPUT_CRC32) $(CONFIG_SEMIHOSTING_UPLOADING_DIR)
 endif
