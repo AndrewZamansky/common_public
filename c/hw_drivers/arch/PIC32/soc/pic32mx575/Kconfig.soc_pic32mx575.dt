@@ -16,15 +16,15 @@ config DT_SOC_RAM_SIZE
     hex
     default 0x10000    
 
-comment "flash start : 0x9d007490 . 0x7490 offset for bootloader "
+comment "flash start : 0x9d000000"
 config DT_SOC_FLASH_START_ADDR
     hex
-    default 0x9d007490
+    default 0x9d000000
 
-comment "flash size : (0x81000 - 0x7490)"
+comment "flash size : 0x81000"
 config DT_SOC_FLASH_SIZE
     hex
-    default 0x79B70   
+    default 0x81000
 
 endmenu
 

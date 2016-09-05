@@ -1,3 +1,5 @@
+#include "project_config.h"
+
 /* Default linker script, for normal executables */
 OUTPUT_FORMAT("elf32-tradlittlemips")
 OUTPUT_ARCH(pic32mx)
@@ -28,11 +30,33 @@ OPTIONAL("libmchp_peripheral.a")
 OPTIONAL("libmchp_peripheral_32MX575F512L.a")
 #endif
 
+#define EXCEPTION_VECTOR_SECTION_SIZE  		0x1000
+#define C_STARTUP_CODE_SIZE			  		0x490
+#define MAXIMAL_BOOTLOADER_SIZE			  	0x6000
+
+#ifdef FOR_USE_WITH_BOOT_LOADER
+	#define EXCEPTION_BASE_ADDR  					(CONFIG_DT_SOC_FLASH_START_ADDR + MAXIMAL_BOOTLOADER_SIZE)
+	#define RESET_ADDR   							(EXCEPTION_BASE_ADDR + EXCEPTION_VECTOR_SECTION_SIZE)
+	#define CODE_START_ADDR   						(RESET_ADDR + C_STARTUP_CODE_SIZE)
+	#define MAXIMAL_CODE_SECTION_SIZE_ON_FLASH   	(CONFIG_DT_SOC_FLASH_SIZE - MAXIMAL_BOOTLOADER_SIZE - EXCEPTION_VECTOR_SECTION_SIZE - C_STARTUP_CODE_SIZE)
+#else
+	#define EXCEPTION_BASE_ADDR  					0x9FC01000
+	#define RESET_ADDR   							0xBFC00000
+	#define CODE_START_ADDR   						CONFIG_DT_SOC_FLASH_START_ADDR
+	#if CONFIG_PROJECT_IS_BOOTLOADER
+		#define MAXIMAL_CODE_SECTION_SIZE_ON_FLASH   	MAXIMAL_BOOTLOADER_SIZE
+	#else
+		#define MAXIMAL_CODE_SECTION_SIZE_ON_FLASH   	CONFIG_DT_SOC_FLASH_SIZE
+	#endif
+#endif
+
+
 /*************************************************************************
  * For interrupt vector handling
  *************************************************************************/
 PROVIDE(_vector_spacing = 0x00000001);
-_ebase_address =  0x9D006000;
+
+_ebase_address =  EXCEPTION_BASE_ADDR;
 
 /*************************************************************************
  * Memory Address Equates
@@ -43,9 +67,10 @@ _ebase_address =  0x9D006000;
  * _DBG_CODE_SIZE   -- In-circuit Debug Executive size
  * _GEN_EXCPT_ADDR  -- General Exception Vector
  *************************************************************************/
-_RESET_ADDR              = (0x9D006000 + 0x1000);
-_BEV_EXCPT_ADDR          = ((0x9D006000 + 0x1000) + 0x380);
-_DBG_EXCPT_ADDR          = ((0x9D006000 + 0x1000) + 0x480);
+
+_RESET_ADDR 			 =  RESET_ADDR;
+_BEV_EXCPT_ADDR          = (_RESET_ADDR + 0x380);
+_DBG_EXCPT_ADDR          = (_RESET_ADDR + 0x480);
 _DBG_CODE_ADDR           = 0xBFC02000;
 _DBG_CODE_SIZE           = 0xFF0     ;
 _GEN_EXCPT_ADDR          = _ebase_address + 0x180;
@@ -59,10 +84,10 @@ _GEN_EXCPT_ADDR          = _ebase_address + 0x180;
  *************************************************************************/
 MEMORY
 {
-  kseg0_program_mem    (rx)  : ORIGIN = (0x9D006000 + 0x1000 + 0x490), LENGTH = 0x81000 - (0x6000 + 0x1000 + 0x490) /* All C Files will be located here */ 
-  kseg0_boot_mem             : ORIGIN = 0x9D006000, LENGTH = 0x0 /* This memory region is dummy */ 
-  exception_mem              : ORIGIN = 0x9D006000, LENGTH = 0x1000 /* Interrupt vector table */
-  kseg1_boot_mem             : ORIGIN = (0x9D006000 + 0x1000), LENGTH = 0x490 /* C Startup code */
+  kseg0_program_mem    (rx)  : ORIGIN = CODE_START_ADDR , LENGTH = MAXIMAL_CODE_SECTION_SIZE_ON_FLASH  /* All C Files will be located here */ 
+  kseg0_boot_mem             : ORIGIN = 0xFFFFFFFF, LENGTH = 0x0 /* This memory region is dummy */ 
+  exception_mem              : ORIGIN = EXCEPTION_BASE_ADDR , LENGTH = EXCEPTION_VECTOR_SECTION_SIZE /* Interrupt vector table */
+  kseg1_boot_mem             : ORIGIN = RESET_ADDR , LENGTH = 0x490 /* C Startup code */
   debug_exec_mem             : ORIGIN = 0xBFC02000, LENGTH = 0xFF0
   config3                    : ORIGIN = 0xBFC02FF0, LENGTH = 0x4
   config2                    : ORIGIN = 0xBFC02FF4, LENGTH = 0x4

@@ -21,89 +21,31 @@ endif
 menu "memories configuration"
 
 config INTERNAL_ROM
-    bool "internal rom"
-    depends on POLEG
+    bool
     default n
-
-config INTERNAL_ROM_START_ADDR
-    hex "internal rom start address in hex"
-    depends on INTERNAL_ROM
-    default 0xffff0000
-
-config INTERNAL_ROM_SIZE
-    hex "internal ram size in hex"
-    depends on INTERNAL_ROM
-    default 0x20000
-
-
 
 
 config INTERNAL_SRAM
     bool
     default n
     
-config INTERNAL_SRAM_START_ADDR
-    hex "internal sram start address in hex"
-    depends on INTERNAL_SRAM
-    default DT_SOC_RAM_START_ADDR
-
-config INTERNAL_SRAM_SIZE
-    hex "internal ram size in hex"
-    depends on INTERNAL_SRAM
-    default DT_SOC_RAM_SIZE
-
-
-
 
 config INTERNAL_FLASH
     bool
     default n
 
-config INTERNAL_FLASH_START_ADDR
-    hex "internal flash start address in hex"
-    depends on INTERNAL_FLASH
-    default DT_SOC_FLASH_START_ADDR
-
-config INTERNAL_FLASH_SIZE
-    hex "internal flash size in hex"
-    depends on INTERNAL_FLASH
-    default DT_SOC_FLASH_SIZE
-
 
 
 config EXTERNAL_FLASH
-    bool "external flash"
-    depends on GENERIC || POLEG
+    bool
     default n
-
-config EXTERNAL_FLASH_START_ADDR
-    hex "external flash start address in hex"
-    depends on EXTERNAL_FLASH
-    default 0x80080000
-
-config EXTERNAL_FLASH_SIZE
-    hex "external flash size in hex"
-    depends on EXTERNAL_FLASH
-    default 0x40000
-
-
 
     
 config DDR
-    bool "DDR"
-    depends on GENERIC || POLEG
+    bool
     default n
 
-config DDR_START_ADDR
-    hex "ddr start address in hex"
-    depends on DDR
-    default 0x00000000
 
-config DDR_SIZE
-    hex "ddr size in hex"
-    depends on DDR
-    default 0x2000000
- 
  
    
 choice
@@ -152,6 +94,22 @@ config CPU_SPECIFIC_FILES_ARE_SPEAD_CRITICAL
 	bool   "put cpu specific files in ram to improve speed"
 	default n
 
+
+config PROJECT_IS_BOOTLOADER
+    bool "this project is bootloader"
+    default n
+
+
+config LIMIT_CODE_SIZE
+    bool "enable code size limitation"
+    default n
+
+config CODE_SIZE_LIMIT
+    hex "code size limit"
+    depends on LIMIT_CODE_SIZE
+    default 0xffffffff
+    
+    
 endmenu
 
 
@@ -159,6 +117,7 @@ config EXCEPTION_STACKS_DEBUG
 	bool "fill system stacks with pattern (help to debug stack overflow)"
     depends on POLEG || NUC505
     default n
+
 
 
 endmenu
