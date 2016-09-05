@@ -99,6 +99,12 @@ config PROJECT_IS_BOOTLOADER
     bool "this project is bootloader"
     default n
 
+config BUILD_FOR_USE_WITH_BOOTLOADER
+	bool   "build for use with bootloader"
+    depends on !PROJECT_IS_BOOTLOADER
+	default n
+
+
 
 config LIMIT_CODE_SIZE
     bool "enable code size limitation"

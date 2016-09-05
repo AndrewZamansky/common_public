@@ -77,10 +77,6 @@ config PIC32_C32_VERSION
     default "2.01"
 
 
-config BUILD_FOR_USE_WITH_BOOTLOADER
-	bool   "build for use with bootloader"
-	default y
-
 endif
 
 
