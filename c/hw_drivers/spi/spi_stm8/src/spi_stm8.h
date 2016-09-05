@@ -13,14 +13,12 @@
 
 /********  includes *********************/
 
-#include "spi_stm8_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
-#include "src/_spi_stm8_prerequirements_check.h" // should be after {spi_stm8_config.h,dev_managment_api.h}
+#include "src/_spi_stm8_prerequirements_check.h" // should be after {spi_stm8_config.h,dev_management_api.h}
 
 /********  types  *********************/
 
 typedef struct {
 	uint8_t dummy;
-} SPI_STM8_Instance_t;
+}spi_stm8_instance_t;
 
 #endif

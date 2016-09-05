@@ -1,0 +1,129 @@
+#
+
+    	
+menu "Platform configurations"
+
+if ARM
+source "$COMMON_DIR_PATH/c/hw_drivers/arch/ARM/soc/Kconfig"
+endif
+
+
+if STM8
+source "$COMMON_DIR_PATH/c/hw_drivers/arch/STM8/soc/Kconfig"
+endif
+
+if PIC32
+source "$COMMON_DIR_PATH/c/hw_drivers/arch/PIC32/soc/Kconfig"
+endif
+
+
+
+menu "memories configuration"
+
+config INTERNAL_ROM
+    bool
+    default n
+
+
+config INTERNAL_SRAM
+    bool
+    default n
+    
+
+config INTERNAL_FLASH
+    bool
+    default n
+
+
+
+config EXTERNAL_FLASH
+    bool
+    default n
+
+    
+config DDR
+    bool
+    default n
+
+
+ 
+   
+choice
+	prompt "initial code location"
+	default CODE_LOCATION_DDR
+
+config CODE_LOCATION_INTERNAL_ROM
+    depends on INTERNAL_ROM
+	bool "internal rom"
+	
+config CODE_LOCATION_INTERNAL_SRAM
+    depends on INTERNAL_SRAM
+	bool "internal sram"
+	
+config CODE_LOCATION_INTERNAL_FLASH
+    depends on INTERNAL_FLASH
+	bool "internal flash"
+
+config CODE_LOCATION_EXTERNAL_FLASH
+    depends on EXTERNAL_FLASH
+	bool "external flash"
+
+config CODE_LOCATION_DDR
+	bool "ddr"
+    depends on DDR
+
+endchoice
+
+
+choice
+	prompt "data location"
+	default DATA_LOCATION_INTERNAL_SRAM
+
+config DATA_LOCATION_INTERNAL_SRAM
+    depends on INTERNAL_SRAM
+	bool "internal sram"
+	
+config DATA_LOCATION_DDR
+	bool "ddr"
+    depends on DDR
+
+endchoice
+
+
+config CPU_SPECIFIC_FILES_ARE_SPEAD_CRITICAL
+	bool   "put cpu specific files in ram to improve speed"
+	default n
+
+
+config PROJECT_IS_BOOTLOADER
+    bool "this project is bootloader"
+    default n
+
+config BUILD_FOR_USE_WITH_BOOTLOADER
+	bool   "build for use with bootloader"
+    depends on !PROJECT_IS_BOOTLOADER
+	default n
+
+
+
+config LIMIT_CODE_SIZE
+    bool "enable code size limitation"
+    default n
+
+config CODE_SIZE_LIMIT
+    hex "code size limit"
+    depends on LIMIT_CODE_SIZE
+    default 0xffffffff
+    
+    
+endmenu
+
+
+config EXCEPTION_STACKS_DEBUG
+	bool "fill system stacks with pattern (help to debug stack overflow)"
+    depends on POLEG || NUC505
+    default n
+
+
+
+endmenu

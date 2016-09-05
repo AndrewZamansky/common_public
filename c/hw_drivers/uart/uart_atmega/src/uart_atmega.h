@@ -14,13 +14,13 @@
 /********  includes *********************/
 
 #include "uart_atmega_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
-#include "src/_uart_atmega_prerequirements_check.h" // should be after {uart_atmega_config.h,dev_managment_api.h}
+#include "dev_management_api.h" // for device manager defines and typedefs
+#include "src/_uart_atmega_prerequirements_check.h" // should be after {uart_atmega_config.h,dev_management_api.h}
 
 /********  types  *********************/
 
 typedef struct {
-	pdev_descriptor   callback_dev;
+	pdev_descriptor_t   callback_dev;
 	uint32_t baud_rate;
 } UART_ATMEGA_Instance_t;
 

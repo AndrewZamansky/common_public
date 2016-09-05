@@ -11,17 +11,16 @@
 
 
 /********  includes *********************/
-#include "spi_flash_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
-#include "src/_spi_flash_prerequirements_check.h" // should be after {spi_stm8_config.h,dev_managment_api.h}
+#include "src/_spi_flash_prerequirements_check.h"
 #include "spi_flash_api.h"
 #include "gpio_api.h"
 #include "spi_flash.h"
+#include "spi_flash_add_component.h"
 
 /********  defines *********************/
 
 
-#define INSTANCE(hndl)	((spi_flash_Instance_t*)hndl)
+#define INSTANCE(hndl)	((spi_flash_instance_t*)hndl)
 
 
 /********  types  *********************/
@@ -37,11 +36,6 @@
 
 
 /***********   local variables    **************/
-#if SPI_FLASH_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
-	static spi_flash_Instance_t SPI_FLASH_InstanceParams = {0} ;
-#endif
-
-
 
 
 /* Private typedef -----------------------------------------------------------*/
@@ -308,17 +302,20 @@ uint32_t SPI_FLASH_ReadID(const void *apHandle)
 * Return         : None.
 *******************************************************************************/
 #if UINT_MAX < 0xffffffff
-uint32_t  spi_flash_pread(const void *apHandle ,uint8_t *apData , uint32_t length ,uint32_t startAddr)
+uint32_t  spi_flash_pread( pdev_descriptor_t apdev ,uint8_t *apData , uint32_t length ,uint32_t startAddr)
 #else
-size_t  spi_flash_pread(const void *apHandle ,uint8_t *apData , size_t length ,size_t startAddr)
+size_t  spi_flash_pread( pdev_descriptor_t apdev ,uint8_t *apData , size_t length ,size_t startAddr)
 #endif
 {
+	spi_flash_instance_t *config_handle;
+	pdev_descriptor_t spi_server_dev;
 	uint8_t write_data[4];
 
-	pdev_descriptor_const spi_server_dev = INSTANCE(apHandle)->spi_server_dev;
+	config_handle = DEV_GET_CONFIG_DATA_POINTER(apdev);
+	spi_server_dev = config_handle->spi_server_dev;
 
 	/* Select the FLASH: Chip Select low */
-	_chip_select_on(apHandle);
+	_chip_select_on(config_handle);
 
 	/* Send "Read from Memory " instruction */
 	write_data[0]= READ;
@@ -330,7 +327,7 @@ size_t  spi_flash_pread(const void *apHandle ,uint8_t *apData , size_t length ,s
 	DEV_READ(spi_server_dev , apData , length);
 
 	/* Deselect the FLASH: Chip Select high */
-	_chip_select_off(apHandle );
+	_chip_select_off(config_handle );
 
 	return length;
 
@@ -349,11 +346,12 @@ size_t  spi_flash_pread(const void *apHandle ,uint8_t *apData , size_t length ,s
  * 	size of flash is usualy greater than 2^16 so address must be at least uint32_t
  */
 #if UINT_MAX < 0xffffffff
-uint32_t  spi_flash_pwrite(const void *apHandle ,const uint8_t *apData , uint32_t length ,uint32_t startAddr)
+uint32_t  spi_flash_pwrite( pdev_descriptor_t apdev ,const uint8_t *apData , uint32_t length ,uint32_t startAddr)
 #else
-size_t  spi_flash_pwrite(const void *apHandle ,const uint8_t *apData , size_t length ,size_t startAddr)
+size_t  spi_flash_pwrite( pdev_descriptor_t apdev ,const uint8_t *apData , size_t length ,size_t startAddr)
 #endif
 {
+	spi_flash_instance_t *config_handle;
 #if UINT_MAX < 0xffffffff
   uint32_t retVal  ;
 #else
@@ -364,6 +362,7 @@ size_t  spi_flash_pwrite(const void *apHandle ,const uint8_t *apData , size_t le
 
 
 
+	config_handle = DEV_GET_CONFIG_DATA_POINTER(apdev);
   alignmentBytes = ((uint16_t)startAddr) & SPI_FLASH_PageSize_mask;/* in case startAddr is not aligned SPI_FLASH_PageSize   */
   while(length)
   {
@@ -378,7 +377,7 @@ size_t  spi_flash_pwrite(const void *apHandle ,const uint8_t *apData , size_t le
 //	{
 //		  while(1);
 //	}
-	SPI_FLASH_PageWrite(apHandle,apData, startAddr, NumOfBytesToWrite);
+	SPI_FLASH_PageWrite(config_handle ,apData, startAddr, NumOfBytesToWrite);
 	startAddr +=  NumOfBytesToWrite;
 	apData += NumOfBytesToWrite;
 	length -=NumOfBytesToWrite;
@@ -403,22 +402,20 @@ size_t  spi_flash_pwrite(const void *apHandle ,const uint8_t *apData , size_t le
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t spi_flash_ioctl( void * const aHandle ,const uint8_t aIoctl_num
+uint8_t spi_flash_ioctl( pdev_descriptor_t apdev,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
+	spi_flash_instance_t *config_handle;
 	uint8_t write_data[4];
 
+	config_handle = DEV_GET_CONFIG_DATA_POINTER(apdev);
 	switch(aIoctl_num)
 	{
-
-		case IOCTL_GET_PARAMS_ARRAY_FUNC :
-			*(uint8_t*)aIoctl_param2 =   0; //size
-			break;
-
 		case IOCTL_DEVICE_START :
 			/* Deselect the FLASH: Chip Select high */
-			_chip_select_off(aHandle );
-
+			_chip_select_off(config_handle );
+			DEV_IOCTL_0_PARAMS(config_handle->gpio_select_dev , IOCTL_DEVICE_START );
+			DEV_IOCTL_0_PARAMS(config_handle->spi_server_dev , IOCTL_DEVICE_START );
 //			{ // for spi test
 //				uint32_t tmp=SPI_FLASH_ReadID(aHandle);
 //			}
@@ -427,14 +424,14 @@ uint8_t spi_flash_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 
 		case IOCTL_SPI_FLASH_ERRASE_ALL :
 			write_data[0]= BE;
-			_write_to_flash_with_wen_and_wait(aHandle , write_data , 1);
+			_write_to_flash_with_wen_and_wait(config_handle , write_data , 1);
 
 			break;
 
 		case IOCTL_SPI_FLASH_ERRASE_SECTOR :
 			write_data[0]= SE;
 			addr_to_bytesBuffer(&write_data[1],*(uint32_t*)aIoctl_param1);
-			_write_to_flash_with_wen_and_wait(aHandle , write_data , 4);
+			_write_to_flash_with_wen_and_wait(config_handle , write_data , 4);
 
 			break;
 
@@ -443,32 +440,3 @@ uint8_t spi_flash_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 	}
 	return 0;
 }
-
-#if SPI_FLASH_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
-
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        SPI_FLASH_API_Init_Dev_Descriptor                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-uint8_t  spi_flash_api_init_dev_descriptor(pdev_descriptor aDevDescriptor)
-{
-	if(NULL == aDevDescriptor) return 1;
-
-
-	aDevDescriptor->handle = &SPI_FLASH_InstanceParams;
-	aDevDescriptor->ioctl = (dev_ioctl_func_t)spi_flash_ioctl;
-	aDevDescriptor->pread = (dev_pread_func_t)spi_flash_pread;
-	aDevDescriptor->pwrite = (dev_pwrite_func_t)spi_flash_pwrite;
-
-	return 0 ;
-
-}
-
-#endif

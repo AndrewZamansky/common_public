@@ -1,0 +1,4 @@
+#
+mainmenu "uCProjects Configuration"
+source "z_auto_generated_files/Kconfig"
+source "$COMMON_DIR_PATH/c/Kconfig"

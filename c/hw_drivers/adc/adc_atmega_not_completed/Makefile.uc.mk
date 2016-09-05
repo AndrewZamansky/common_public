@@ -1,7 +1,6 @@
 ifeq ($(findstring nuc505,$(CONFIG_SOC_TYPE)),nuc505)
     ifeq ($(findstring YES,$(CONFIG_INCLUDE_INTERNAL_ADC)),YES) 	 
         _INCLUDE_ADC := YES
-    	DYNAMIC_COMPONENT := YES
     	INCLUDE_THIS_COMPONENT := YES   # must be here !!
     endif  
 endif

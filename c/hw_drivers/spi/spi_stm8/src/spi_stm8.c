@@ -12,9 +12,7 @@
 
 /********  includes *********************/
 
-#include "spi_stm8_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
-#include "src/_spi_stm8_prerequirements_check.h" // should be after {spi_stm8_config.h,dev_managment_api.h}
+#include "src/_spi_stm8_prerequirements_check.h" // should be after {spi_stm8_config.h,dev_management_api.h}
 
 #include "spi_stm8.h"
 
@@ -25,6 +23,7 @@
 //#include "spi.h"
 #include "stm8s_spi.h"
 #include "spi_stm8_api.h"
+#include "spi_stm8_add_component.h"
 
 
 /********  defines *********************/
@@ -42,9 +41,8 @@
 
 
 /********  local defs *********************/
-#if SPI_STM8_CONFIG_NUM_OF_DYNAMIC_INSTANCES > 0
-	SPI_STM8_Instance_t SPI_STM8_Instance;
-#endif
+
+
 
 /*******************************************************************************
 * Function Name  : spi_stm8_SendByte
@@ -80,7 +78,7 @@ static uint8_t spi_stm8_SendByte(uint8_t byte)
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-size_t spi_stm8_pread(const void *aHandle , uint8_t *apData , size_t aLength, size_t aOffset)
+size_t spi_stm8_pread(pdev_descriptor_t apdev , uint8_t *apData , size_t aLength, size_t aOffset)
 {
 	size_t retVal = aLength;
 	while(aLength--)
@@ -105,7 +103,7 @@ size_t spi_stm8_pread(const void *aHandle , uint8_t *apData , size_t aLength, si
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-size_t spi_stm8_pwrite(const void *aHandle ,const uint8_t *apData , size_t aLength, size_t aOffset)
+size_t spi_stm8_pwrite(pdev_descriptor_t apdev ,const uint8_t *apData , size_t aLength, size_t aOffset)
 {
 	size_t retVal = aLength;
 	while(aLength--)
@@ -129,15 +127,12 @@ size_t spi_stm8_pwrite(const void *aHandle ,const uint8_t *apData , size_t aLeng
 /* Description:                                                                                            */
 /*                                                             						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t spi_stm8_ioctl( void * const aHandle ,const uint8_t aIoctl_num
+uint8_t spi_stm8_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
+
 	switch(aIoctl_num)
 	{
-		case IOCTL_GET_PARAMS_ARRAY_FUNC :
-			*(uint8_t*)aIoctl_param2 =   0; //size
-			break;
-
 		case IOCTL_DEVICE_START :
 			  SPI_DeInit();
 			  SPI_Init ( SPI_FIRSTBIT_MSB , SPI_BAUDRATEPRESCALER_2 ,
@@ -155,31 +150,3 @@ uint8_t spi_stm8_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 	}
 	return 0;
 }
-
-#if SPI_STM8_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
-
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        spi_stm8_api_dev_descriptor                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-uint8_t  spi_stm8_api_init_dev_descriptor(pdev_descriptor aDevDescriptor)
-{
-	if(NULL == aDevDescriptor) return 1;
-
-
-	aDevDescriptor->handle = &SPI_STM8_Instance;
-	aDevDescriptor->ioctl = spi_stm8_ioctl;
-	aDevDescriptor->pwrite = spi_stm8_pwrite;
-	aDevDescriptor->pread = spi_stm8_pread
-	return 0 ;
-
-}
-
-#endif

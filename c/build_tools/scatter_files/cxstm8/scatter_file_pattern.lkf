@@ -41,7 +41,8 @@ crtsi0.sm8
 
 
 ## Object files list  
-FILES_LIST
+FILES_LIST1
+FILES_LIST2
 
 ## Caller passes in test application object name as param1
 ## @1

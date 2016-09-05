@@ -13,16 +13,16 @@
 
 /********  includes *********************/
 
-#include "uart_nuc505_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
-#include "src/_uart_nuc505_prerequirements_check.h" // should be after {uart_nuc505_config.h,dev_managment_api.h}
+#include "src/_uart_nuc505_prerequirements_check.h"
 
 /********  types  *********************/
 
 typedef struct {
-	pdev_descriptor_const   callback_dev;
-	uint8_t   uart_num;
+	pdev_descriptor_t   callback_tx_dev;
+	pdev_descriptor_t   callback_rx_dev;
+	size_t   base_address;
 	uint32_t baud_rate;
-} UART_NUC505_Instance_t;
+} uart_nuc505_instance_t;
+
 
 #endif

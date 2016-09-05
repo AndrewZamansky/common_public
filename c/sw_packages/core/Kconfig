@@ -1,0 +1,36 @@
+#
+
+menu "core"
+
+config INCLUDE_DEV_MENAGMENT
+	def_bool  y
+
+if INCLUDE_DEV_MENAGMENT
+source "$COMMON_DIR_PATH/c/sw_packages/core/dev_management/Kconfig"
+endif
+
+config INCLUDE_VERSION_MENAGMENT
+	bool   "version management"
+	default y
+
+menuconfig INCLUDE_HEARTBEAT
+	bool   "heartbeat routines"
+	depends on !GCC_TARGET_OS_LINUX && !HOST
+	default y
+
+if INCLUDE_HEARTBEAT
+config HEARTBEAT_IS_SPEED_CRITICAL
+	bool   "hearbeat routines are speed critical"
+	default n
+endif
+
+
+menu "RT OS"
+depends on !GCC_TARGET_OS_LINUX && !HOST
+source "$COMMON_DIR_PATH/c/sw_packages/core/os_wrapper/Kconfig"
+
+
+endmenu	
+
+
+endmenu

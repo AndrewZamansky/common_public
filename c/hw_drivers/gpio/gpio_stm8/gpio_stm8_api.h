@@ -2,10 +2,8 @@
 #ifndef _GPIO_STM8_API_H_
 #define _GPIO_STM8_API_H_
 
-#include "gpio_stm8_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
+#include "src/_gpio_stm8_prerequirements_check.h"
 #include "gpio_api.h"
-#include "src/_gpio_stm8_prerequirements_check.h" // should be after {uart_stm8_config.h,dev_managment_api.h}
 
 /**********  define API  types ************/
 
@@ -60,16 +58,5 @@ typedef enum
 #define GPIO_STM8_API_PORT_D	GPIOD
 
 /**********  define API  functions  ************/
-
-
-
-
-uint8_t  gpio_stm8_api_init_dev_descriptor(pdev_descriptor aDevDescriptor);
-
-
-#include "src/_gpio_stm8_static_dev_macros.h"
-
-#define GPIO_STM8_API_CREATE_STATIC_DEV(dev,dev_name ,port , pin , mode) \
-		__GPIO_STM8_API_CREATE_STATIC_DEV(dev,dev_name ,port , pin , mode)
 
 #endif

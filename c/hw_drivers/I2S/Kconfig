@@ -1,0 +1,5 @@
+#
+	
+if NUC505
+source "$COMMON_DIR_PATH/c/hw_drivers/I2S/I2S_nuc505/Kconfig"
+endif

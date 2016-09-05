@@ -1,7 +1,5 @@
 ifeq ($(findstring YES,$(CONFIG_INCLUDE_GPIO_REMOTE)),YES) 	 
 	_INCLUDE_REMOTE_DEVICES := YES
-	_INCLUDE_GPIO := YES
-	DYNAMIC_COMPONENT := YES
 	INCLUDE_THIS_COMPONENT := YES   # must be here !!
 endif  
 

@@ -10,16 +10,16 @@
 
 /********  includes *********************/
 
-#include "I2S_nuc505_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
-#include "src/_I2S_nuc505_prerequirements_check.h" // should be after {I2S_nuc505_config.h,dev_managment_api.h}
+#include "src/_I2S_nuc505_prerequirements_check.h" // should be after {I2S_nuc505_config.h,dev_management_api.h}
 
 #include "I2S_nuc505_api.h"
 #include "I2S_nuc505.h"
-#include "NVIC_api.h"
+#include "irq_api.h"
 
 
 #include "NUC505Series.h"
+
+#include "I2S_nuc505_add_component.h"
 
 /********  defines *********************/
 
@@ -36,7 +36,7 @@
 
 /********  local defs *********************/
 
-static I2S_NUC505_Instance_t *pI2SHandle;
+static I2S_nuc505_instance_t *pI2SHandle;
 
 
 uint16_t num_of_words_in_buffer_per_chenel = 0;
@@ -47,6 +47,7 @@ int32_t *PcmRxBuff;//[2][I2S_BUFF_LEN*2] = {{0}};
 //int16_t test[2][I2S_BUFF_LEN*2] = {{0}};
 int32_t *PcmTxBuff;//[2][I2S_BUFF_LEN*2] = {{0}};
 
+uint8_t start_flag;
 
 
 
@@ -54,7 +55,6 @@ float volume=1;
 
 uint8_t i2s_loopback = 0;
 
-//volatile static uint32_t s_flag1;
 
 
 void __attribute__((section(".critical_text"))) I2S_IRQHandler(void)
@@ -79,12 +79,12 @@ void __attribute__((section(".critical_text"))) I2S_IRQHandler(void)
 		pTxBuf = PcmTxBuff +  (num_of_uint32_in_buffer_per_chenel*2);
 		I2S_CLR_INT_FLAG(I2S, I2S_STATUS_RDMAEIF_Msk);
 
-//		if ( s_flag1 == 0 )
-//		{
-//			s_flag1 = 1;
-//			I2S_ENABLE_TXDMA(I2S);
-//			I2S_ENABLE_TX(I2S);
-//		}
+		if ( start_flag == 1 )
+		{
+			start_flag = 0;
+			I2S_ENABLE_TXDMA(I2S);
+			I2S_ENABLE_TX(I2S);
+		}
 	}
 
 	if(NULL != pRxBuf)
@@ -266,9 +266,9 @@ void __attribute__((section(".critical_text"))) I2S_IRQHandler(void)
 		// Rx Enable
 		I2S_ENABLE_RX(I2S);
 
-		NVIC_API_RegisterInt(I2S_IRQn , I2S_IRQHandler);
-		NVIC_API_SetPriority(I2S_IRQn , OS_MAX_INTERRUPT_PRIORITY_FOR_API_CALLS );
-		NVIC_API_EnableInt(I2S_IRQn);
+		irq_register_interrupt(I2S_IRQn , I2S_IRQHandler);
+		irq_set_priority(I2S_IRQn , OS_MAX_INTERRUPT_PRIORITY_FOR_API_CALLS );
+		irq_enable_interrupt(I2S_IRQn);
 
 
 //		NVIC_EnableIRQ(I2S_IRQn);
@@ -287,17 +287,16 @@ void __attribute__((section(".critical_text"))) I2S_IRQHandler(void)
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t I2S_nuc505_ioctl( void * const aHandle ,const uint8_t aIoctl_num
+uint8_t I2S_nuc505_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
+	I2S_nuc505_instance_t *config_handle;
 	float tmp;
+
+	config_handle = DEV_GET_CONFIG_DATA_POINTER(apdev);
 
 	switch(aIoctl_num)
 	{
-		case IOCTL_GET_PARAMS_ARRAY_FUNC :
-			*(uint8_t*)aIoctl_param2 =   0; //size
-			break;
-
 		case I2S_SET_PARAMS :
 			num_of_words_in_buffer_per_chenel = ((I2S_API_set_params_t*)aIoctl_param1)->num_of_words_in_buffer_per_chenel;
 			num_of_bytes_in_word = ((I2S_API_set_params_t*)aIoctl_param1)->num_of_bytes_in_word;
@@ -305,9 +304,11 @@ uint8_t I2S_nuc505_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 
 		case IOCTL_DEVICE_START :
 
+			num_of_words_in_buffer_per_chenel = config_handle->num_of_words_in_buffer_per_chenel;
+			num_of_bytes_in_word = config_handle->num_of_bytes_in_word;
 			if(0 == num_of_words_in_buffer_per_chenel) return 2;
 
-			pI2SHandle = aHandle;
+			pI2SHandle = config_handle;
 
 			I2S_Init();
 
@@ -322,8 +323,8 @@ uint8_t I2S_nuc505_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 			break;
 
 		case I2S_ENABLE_OUTPUT_IOCTL:
-			I2S_ENABLE_TXDMA(I2S);
-			I2S_ENABLE_TX(I2S);
+			start_flag = 1;
+
 			break;
 
 		default :
@@ -332,30 +333,4 @@ uint8_t I2S_nuc505_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 	return 0;
 }
 
-#if I2S_NUC505_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        I2S_nuc505_api_dev_descriptor                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-uint8_t  I2S_nuc505_api_init_dev_descriptor(pdev_descriptor aDevDescriptor)
-{
-	if(NULL == aDevDescriptor) return 1;
-
-
-	aDevDescriptor->handle = &I2S_NUC505_Instance;
-	aDevDescriptor->ioctl = I2S_nuc505_ioctl;
-	aDevDescriptor->pwrite = I2S_nuc505_pwrite;
-
-	return 0 ;
-
-}
-
-#endif

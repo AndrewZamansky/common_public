@@ -2,28 +2,17 @@
 #ifndef _UART_NUC505_API_H_
 #define _UART_NUC505_API_H_
 
-#include "uart_nuc505_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
-#include "uart_api.h"
-#include "src/_uart_nuc505_prerequirements_check.h" // should be after {uart_nuc505_config.h,dev_managment_api.h}
+#include "src/_uart_nuc505_prerequirements_check.h"
 
 /*****************  defines  **************/
 
-
+#define UART_NUC505_API_BASE_ADDRESS_UART0	(size_t)UART0
+#define UART_NUC505_API_BASE_ADDRESS_UART1	(size_t)UART1
+#define UART_NUC505_API_BASE_ADDRESS_UART2	(size_t)UART2
 /**********  define API  types ************/
 
 
 
 /**********  define API  functions  ************/
-
-uint8_t  uart_nuc505_api_init_dev_descriptor(pdev_descriptor aDevDescriptor);
-
-
-#include "src/_uart_nuc505_static_dev_macros.h"
-
-
-#define UART_NUC505_API_CREATE_STATIC_DEV(dev,dev_name ,uart_num, callback_dev) \
-			__UART_NUC505_API_CREATE_STATIC_DEV(dev,dev_name, uart_num, callback_dev)
-
 
 #endif

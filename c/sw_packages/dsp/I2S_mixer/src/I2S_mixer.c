@@ -12,22 +12,20 @@
 
 /********  includes *********************/
 
-#include "I2S_mixer_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
-#include "dsp_managment_api.h" // for device manager defines and typedefs
-#include "_I2S_mixer_prerequirements_check.h" // should be after {I2S_mixer_config.h,dev_managment_api.h}
+#include "_I2S_mixer_prerequirements_check.h"
 
 #include "I2S_mixer_api.h" //place first to test that header file is self-contained
 #include "I2S_mixer.h"
 #include "common_dsp_api.h"
 
+#include "auto_init_api.h"
 
 /********  defines *********************/
-#if (2==I2S_MIXER_CONFIG_NUM_OF_BYTES_PER_AUDIO_WORD)
+#if (2==NUM_OF_BYTES_PER_AUDIO_WORD)
 	#define	FLOAT_NORMALIZER	0x7fff
 	typedef int16_t	buffer_type_t	;
 #endif
-#if (4==I2S_MIXER_CONFIG_NUM_OF_BYTES_PER_AUDIO_WORD)
+#if (4==NUM_OF_BYTES_PER_AUDIO_WORD)
 	#define	FLOAT_NORMALIZER	0x7fffffff
 	typedef int32_t	buffer_type_t	;
 #endif
@@ -38,9 +36,9 @@
 /********  externals *********************/
 
 
-/********  local defs *********************/
+/********  exported variables *********************/
 
-#define INSTANCE(hndl)	((I2S_MIXER_Instance_t*)hndl)
+char I2S_mixer_module_name[] = "I2S_mixer";
 
 
 /**********   external variables    **************/
@@ -48,14 +46,6 @@
 
 
 /***********   local variables    **************/
-#if I2S_MIXER_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
-
-	static I2S_MIXER_Instance_t I2S_MIXER_InstanceParams[I2S_MIXER_CONFIG_NUM_OF_DYNAMIC_INSTANCES] = { {0} };
-	static uint16_t usedInstances =0 ;
-
-
-#endif // for I2S_MIXER_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
-
 
 
 /*---------------------------------------------------------------------------------------------------------*/
@@ -69,23 +59,27 @@
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-void I2S_mixer_dsp(const void * const aHandle ,
-		uint8_t num_of_inputs,uint8_t num_of_ouputs, size_t data_len ,
-		float *apCh1In , float *apCh2In,
-		float *apCh1Out , float *apCh2Out)
+void I2S_mixer_dsp(pdsp_descriptor aDspDescriptor , size_t data_len ,
+		dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] , dsp_pad_t  out_pads[MAX_NUM_OF_OUTPUT_PADS])
 {
+	float *apCh1In ,  *apCh2In;
+	float normalizer ;
+
 	buffer_type_t *pTxBuf;
-	pTxBuf = (buffer_type_t*)apCh1Out;
+	pTxBuf = (buffer_type_t*)out_pads[0].buff;
 
+	apCh1In = in_pads[0]->buff;
+	apCh2In = in_pads[1]->buff;
 
+	normalizer = FLOAT_NORMALIZER;
 	for( ; data_len ;data_len--)
 	{
-		*apCh1In = *apCh1In * FLOAT_NORMALIZER;
+		*apCh1In = *apCh1In * normalizer;
 		*pTxBuf = (buffer_type_t)(*apCh1In++)		;// pTxBuf[2*i]
 //					*pTxBuf = *pTxBuf & 0x00ffffff;
 		pTxBuf++;
 
-		*apCh2In = *apCh2In * FLOAT_NORMALIZER;
+		*apCh2In = *apCh2In * normalizer;
 		*pTxBuf = (buffer_type_t)(*apCh2In++); // pTxBuf[2*i + 1]
 //					*pTxBuf = *pTxBuf & 0x00ffffff;
 		pTxBuf++;
@@ -108,20 +102,12 @@ void I2S_mixer_dsp(const void * const aHandle ,
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t I2S_mixer_ioctl(void * const aHandle ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
+uint8_t I2S_mixer_ioctl(pdsp_descriptor aDspDescriptor ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
 {
 
 	switch(aIoctl_num)
 	{
-//#if I2S_MIXER_CONFIG_NUM_OF_DYNAMIC_INSTANCES > 0
-//		case IOCTL_GET_PARAMS_ARRAY_FUNC :
-//			*(const dev_param_t**)aIoctl_param1  = I2S_MIXER_Dev_Params;
-//			*(uint8_t*)aIoctl_param2 = sizeof(I2S_MIXER_Dev_Params)/sizeof(dev_param_t); //size
-//			break;
-//#endif // for I2S_MIXER_CONFIG_NUM_OF_DYNAMIC_INSTANCES > 0
-
-
-		case IOCTL_DEVICE_START :
+		case IOCTL_DSP_INIT :
 
 
 			break;
@@ -134,12 +120,8 @@ uint8_t I2S_mixer_ioctl(void * const aHandle ,const uint8_t aIoctl_num , void * 
 
 
 
-
-
-#if I2S_MIXER_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
-
 /*---------------------------------------------------------------------------------------------------------*/
-/* Function:        I2S_MIXER_API_Init_Dev_Descriptor                                                                          */
+/* Function:         I2S_mixer_init                                                                          */
 /*                                                                                                         */
 /* Parameters:                                                                                             */
 /*                                                                                         */
@@ -149,24 +131,9 @@ uint8_t I2S_mixer_ioctl(void * const aHandle ,const uint8_t aIoctl_num , void * 
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t  I2S_mixer_api_init_dsp_descriptor(pdsp_descriptor aDspDescriptor)
+void  I2S_mixer_init(void)
 {
-	I2S_MIXER_Instance_t *pInstance;
-	if(NULL == aDspDescriptor) return 1;
-	if (usedInstances >= I2S_MIXER_CONFIG_NUM_OF_DYNAMIC_INSTANCES) return 1;
-
-	pInstance = &I2S_MIXER_InstanceParams[usedInstances ];
-
-	aDspDescriptor->handle = pInstance;
-	aDspDescriptor->ioctl = I2S_mixer_ioctl;
-	aDspDescriptor->dsp_func = I2S_mixer_dsp;
-
-
-	usedInstances++;
-
-	return 0 ;
-
+	DSP_REGISTER_NEW_MODULE("I2S_mixer",I2S_mixer_ioctl , I2S_mixer_dsp , I2S_MIXER_Instance_t);
 }
-#endif  // for I2S_MIXER_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
 
-
+AUTO_INIT_FUNCTION(I2S_mixer_init);

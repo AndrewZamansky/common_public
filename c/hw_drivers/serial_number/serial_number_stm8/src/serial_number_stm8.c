@@ -8,9 +8,9 @@
 
 /***************   includes    *******************/
 #include "serial_number_stm8_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
+#include "dev_management_api.h" // for device manager defines and typedefs
 #include "serial_number_api.h"
-#include "src/_serial_number_stm8_prerequirements_check.h" // should be after {uart_stm8_config.h,dev_managment_api.h}
+#include "src/_serial_number_stm8_prerequirements_check.h" // should be after {uart_stm8_config.h,dev_management_api.h}
 
 #include "serial_number_stm8_api.h"
 #include "serial_number_stm8.h"
@@ -70,7 +70,7 @@ static void IntNumToCharNum (uint32_t value , uint8_t *pbuf )
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t serial_stm8_ioctl( void * const aHandle ,const uint8_t aIoctl_num
+uint8_t serial_stm8_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
 	uint32_t hashed_name_result;
@@ -86,7 +86,7 @@ uint8_t serial_stm8_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 			break;
 		case IOCTL_DEVICE_START :
 
-			hashed_name_result=hush32_function(PROJECT_NAME,sizeof(PROJECT_NAME));
+			hashed_name_result=hush32_function(CONFIG_PROJECT_NAME,sizeof(CONFIG_PROJECT_NAME));
 			memcpy(serial_number,&hashed_name_result,4);
 			memcpy(&serial_number[4],(uint8_t*)0x4865,12);
 			break;
@@ -108,7 +108,7 @@ uint8_t serial_stm8_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t  serial_number_stm8_api_init_dev_descriptor(pdev_descriptor aDevDescriptor)
+uint8_t  serial_number_stm8_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor)
 {
 	if(NULL == aDevDescriptor) return 1;
 

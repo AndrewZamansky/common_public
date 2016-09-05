@@ -1,6 +1,6 @@
 ;  
 
-LR_ROM      CONFIG_FLASH_START_ADDR  0x00200000  ; 2MB (SPI FLash)
+LR_ROM      FLASH_START_ADDR  0x00200000  ; 2MB (SPI FLash)
 {
 	ER_STARTUP +0
     {
@@ -13,7 +13,7 @@ LR_ROM      CONFIG_FLASH_START_ADDR  0x00200000  ; 2MB (SPI FLash)
 	}
 
     ; Relocate vector table in SRAM for fast interrupt handling.
-    ER_VECTOR2  CONFIG_RAM_START_ADDR  EMPTY   0x00000100
+    ER_VECTOR2  RAM_START_ADDR  EMPTY   0x00000100
     {
     }
 

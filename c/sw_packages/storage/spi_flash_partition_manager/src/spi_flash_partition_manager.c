@@ -12,8 +12,8 @@
 
 /********  includes *********************/
 #include "spi_flash_partition_manager_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
-#include "src/_spi_flash_partition_manager_prerequirements_check.h" // should be after {spi_stm8_config.h,dev_managment_api.h}
+#include "dev_management_api.h" // for device manager defines and typedefs
+#include "src/_spi_flash_partition_manager_prerequirements_check.h" // should be after {spi_stm8_config.h,dev_management_api.h}
 
 #include "spi_flash_api.h"
 
@@ -333,18 +333,7 @@ static void spi_flash_partition_manager_task( void *pvParameters )
 			SPI_FLASH_PARTITION_MANAGER_Copy_from_buffer_to_main_area(pvParameters);
 		}
 
-#if (1==INCLUDE_uxTaskGetStackHighWaterMark )
-		{
-			static  size_t stackLeft,minStackLeft=0xffffffff;
-
-			stackLeft = uxTaskGetStackHighWaterMark( NULL );
-			if(minStackLeft > stackLeft)
-			{
-				minStackLeft = stackLeft;
-				PRINTF_DBG("%s stack left = %d\r\n" , __FUNCTION__ ,minStackLeft);
-			}
-		}
-#endif
+		os_stack_test();
 
 	}
 
@@ -361,7 +350,7 @@ static void spi_flash_partition_manager_task( void *pvParameters )
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t  SPI_FLASH_PARTITION_MANAGER_start(void * const aHandle)
+uint8_t  SPI_FLASH_PARTITION_MANAGER_start(pdev_descriptor_t apdev)
 {
 	uint8_t mbr_signiture[2];
 //	uint32_t id;
@@ -399,7 +388,7 @@ uint8_t  SPI_FLASH_PARTITION_MANAGER_start(void * const aHandle)
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t spi_flash_partition_manager_ioctl( void * const aHandle ,const uint8_t aIoctl_num
+uint8_t spi_flash_partition_manager_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
 	switch(aIoctl_num)
@@ -450,7 +439,7 @@ uint8_t spi_flash_partition_manager_ioctl( void * const aHandle ,const uint8_t a
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t  spi_flash_partition_manager_api_init_dev_descriptor(pdev_descriptor aDevDescriptor)
+uint8_t  spi_flash_partition_manager_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor)
 {
 	if(NULL == aDevDescriptor) return 1;
 

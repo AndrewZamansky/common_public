@@ -1,0 +1,22 @@
+
+INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_NVIC)
+
+
+#INCLUDE_DIR =  
+
+#DEFINES = 
+
+#CFLAGS = 
+
+#ASMFLAGS =  
+
+
+
+SRC = nvic.c 
+VPATH = src
+
+ifdef CONFIG_CPU_SPECIFIC_FILES_ARE_SPEAD_CRITICAL 
+    SPEED_CRITICAL_FILES += nvic.c
+endif
+
+include $(COMMON_CC)

@@ -1,0 +1,20 @@
+
+INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_VERSION_MENAGMENT)
+
+
+#INCLUDE_DIR = 
+
+#DEFINES = 
+
+#CFLAGS = 
+
+#ASMFLAGS =  
+
+
+
+SRC = version_management.c
+
+
+VPATH = src
+
+include $(COMMON_CC)

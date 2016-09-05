@@ -1,0 +1,52 @@
+#
+
+menu "ancillary"
+
+
+menuconfig INCLUDE_ASYNC_TX_WRAPPER
+	bool   "async tx wrapper"
+	depends on INCLUDE_INTERNAL_UART || INCLUDE_USB_VIRTUAL_COM || INCLUDE_WIRELESS_UART || INCLUDE_SEMIHOSTING
+	default n
+
+if INCLUDE_ASYNC_TX_WRAPPER
+source "$COMMON_DIR_PATH/c/sw_packages/ancillary/async_tx_wrapper/Kconfig"
+endif
+
+menuconfig INCLUDE_ASYNC_RX_WRAPPER
+	bool   "async rx wrapper"
+	depends on INCLUDE_INTERNAL_UART || INCLUDE_USB_VIRTUAL_COM || INCLUDE_WIRELESS_UART || INCLUDE_SEMIHOSTING
+	default n
+
+if INCLUDE_ASYNC_RX_WRAPPER
+source "$COMMON_DIR_PATH/c/sw_packages/ancillary/async_rx_wrapper/Kconfig"
+endif
+
+config INCLUDE_TIMER_WRAPPER
+	bool   "timer wrapper"
+	depends on INCLUDE_CORTEXM_SYSTICK 
+	default n
+
+
+config INCLUDE_SW_GPIO_WRAPPER
+	bool   "sw gpio wrapper"
+	depends on INCLUDE_INTERNAL_GPIO
+	default n
+
+
+	
+config INCLUDE_BUTTON_MANAGER
+	bool   "button manager"
+	depends on INCLUDE_SW_GPIO_WRAPPER
+	default n
+
+menuconfig INCLUDE_MEMORY_POOL
+	bool   "memory pool"
+	default n
+
+config MEMORY_POOL_IS_SPEED_CRITICAL 
+	bool   "memory pool is speed critical"
+	depends on INCLUDE_MEMORY_POOL
+	default n
+	
+	
+endmenu

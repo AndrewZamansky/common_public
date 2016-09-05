@@ -1,0 +1,44 @@
+#
+	
+menu "devices management options"
+
+menuconfig DYNAMIC_DEVICE_TREE
+	bool   "dynamic device tree"
+	default y
+
+config DEVICE_TREE_LOCATION_ADDR
+	hex   "device tree location address"
+	depends on DYNAMIC_DEVICE_TREE
+	default 0x40000
+
+config DEVICE_TREE_MAXIMAL_SIZE
+	hex   "device tree maximal size"
+	depends on DYNAMIC_DEVICE_TREE
+	default 0x400
+
+menuconfig USE_DYNAMIC_DEVICES
+	bool   "use dynamic devices"
+	default y
+
+config MAX_NUM_OF_DYNAMIC_DEVICES
+	int   "maximal number of dynamic devices"
+	depends on USE_DYNAMIC_DEVICES
+	default 32
+
+#following delimiter used for ending USE_DYNAMIC_DEVICES menu
+config DEVICE_MANAGEMENT_DUMMY_DELIMITER
+	bool
+	default n
+
+config DONT_USE_DEVICE_NAME_STRINGS
+	bool   "dont use device name strings (reduce code size)"
+	depends on !DYNAMIC_DEVICE_TREE
+	default n
+
+
+config USE_SHELL_FOR_DEVICE_CONFIGURATION
+	bool   "use shell for device configuration"
+	depends on (DYNAMIC_DEVICE_TREE || USE_DYNAMIC_DEVICES)
+	default n 
+
+endmenu

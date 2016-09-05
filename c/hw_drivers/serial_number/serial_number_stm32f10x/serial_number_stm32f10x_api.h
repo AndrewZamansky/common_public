@@ -5,15 +5,15 @@
 /**********  define API  types ************/
 
 #include "serial_number_stm32f10x_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
+#include "dev_management_api.h" // for device manager defines and typedefs
 #include "serial_number_api.h"
-#include "src/_serial_number_stm32f10x_prerequirements_check.h" // should be after {uart_stm8_config.h,dev_managment_api.h}
+#include "src/_serial_number_stm32f10x_prerequirements_check.h" // should be after {uart_stm8_config.h,dev_management_api.h}
 
 /**********  define API  types ************/
 #define SERIAL_NUMBER_LEN  16
 
 
-uint8_t  serial_number_stm32f10x_api_init_dev_descriptor(pdev_descriptor aDevDescriptor);
+uint8_t  serial_number_stm32f10x_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor);
 
 #include "src/serial_number_stm32f10x_static_dev_macros.h"
 

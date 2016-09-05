@@ -10,14 +10,13 @@
 
 /********  includes *********************/
 
-#include "uart_stm8_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
 #include "uart_api.h"
-#include "src/_uart_stm8_prerequirements_check.h" // should be after {uart_stm8_config.h,dev_managment_api.h}
+#include "src/_uart_stm8_prerequirements_check.h"
 
 #include "uart_stm8.h"
 
 #include "stm8s.h"
+#include "STM8_api.h"
 
 //#include "atom.h"
 //#include "atommutex.h"
@@ -25,11 +24,12 @@
 #include "stm8s_uart1.h"
 #include "uart_stm8_api.h"
 
-#include "sw_uart_wrapper_api.h"
+//#include "sw_uart_wrapper_api.h"
+
+#include "uart_stm8_add_component.h"
 
 /********  defines *********************/
 
-#define INSTANCE(hndl)	((UART_STM8_Instance_t*)hndl)
 
 /********  types  *********************/
 
@@ -42,28 +42,26 @@
 
 
 /********  local defs *********************/
-#if UART_STM8_CONFIG_NUM_OF_DYNAMIC_INSTANCES > 0
-	UART_STM8_Instance_t UART_STM8_Instance;
-#endif
 
-static UART_STM8_Instance_t *pHw_uart_pointer_to_instance=NULL;
+static uart_stm8_instance_t *pHw_uart_pointer_to_instance=NULL;
 
 void tx_function(void)
 {
     /* In order to detect unexpected events during development,
    it is recommended to set a breakpoint on the following instruction.
 */
-    static uint8_t dummy;
+    pdev_descriptor_t   callback_tx_dev;
 
     if (UART1_GetFlagStatus(UART1_FLAG_TXE) == SET)
     {
-    	if(pHw_uart_pointer_to_instance->callback_dev)
-    		DEV_CALLBACK_1_PARAMS(pHw_uart_pointer_to_instance->callback_dev , CALLBACK_TX_DONE,(void*)1);
+    	callback_tx_dev = pHw_uart_pointer_to_instance->callback_tx_dev ;
+    	if(NULL != callback_tx_dev)
+    		DEV_CALLBACK_1_PARAMS(callback_tx_dev , CALLBACK_TX_DONE, 1);
     }
 
 }
 
-//pdev_descriptor   stm8_callback_dev;
+//pdev_descriptor_t   stm8_callback_dev;
 
 /**
   * @brief UART1 TX Interrupt routine.
@@ -94,16 +92,18 @@ void rx_function(void)
     /* In order to detect unexpected events during development,
    it is recommended to set a breakpoint on the following instruction.
 */
-    static uint8_t cChar;
+    uint8_t cChar;
+    pdev_descriptor_t   callback_rx_dev;
 
     if (UART1_GetFlagStatus(UART1_FLAG_RXNE) == SET)
     {
 		cChar = UART1_ReceiveData8();
-		if (NULL ==pHw_uart_pointer_to_instance->callback_dev )  return ;
+		callback_rx_dev = pHw_uart_pointer_to_instance->callback_rx_dev;
+		if (NULL == callback_rx_dev)  return ;
 
 
-		DEV_CALLBACK_2_PARAMS(pHw_uart_pointer_to_instance->callback_dev ,
-				CALLBACK_DATA_RECEIVED,  &cChar, (void*)1);
+		DEV_CALLBACK_2_PARAMS( callback_rx_dev ,
+				CALLBACK_DATA_RECEIVED,  &cChar,  1);
 
     }
 
@@ -160,24 +160,22 @@ void rx_function(void)
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t uart_stm8_ioctl( void * const aHandle ,const uint8_t aIoctl_num
+uint8_t uart_stm8_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
+	uart_stm8_instance_t *config_handle;
+
+	config_handle = DEV_GET_CONFIG_DATA_POINTER(apdev);
 	switch(aIoctl_num)
 	{
-		case IOCTL_GET_PARAMS_ARRAY_FUNC :
-			*(uint8_t*)aIoctl_param2 =   0; //size
-			break;
-
-
 		case IOCTL_UART_SET_BAUD_RATE :
-			INSTANCE(aHandle)->baud_rate = *(uint32_t*)aIoctl_param1;
+			config_handle->baud_rate = *(uint32_t*)aIoctl_param1;
 			break;
 		case IOCTL_DEVICE_START :
 			  UART1_DeInit();
-			  UART1_Init (INSTANCE(aHandle)->baud_rate, UART1_WORDLENGTH_8D, UART1_STOPBITS_1, UART1_PARITY_NO,
+			  UART1_Init (config_handle->baud_rate, UART1_WORDLENGTH_8D, UART1_STOPBITS_1, UART1_PARITY_NO,
 			              UART1_SYNCMODE_CLOCK_DISABLE, UART1_MODE_TXRX_ENABLE);
-			  pHw_uart_pointer_to_instance = INSTANCE(aHandle);
+			  pHw_uart_pointer_to_instance = config_handle;
 			  GPIO_Init(GPIOD,GPIO_PIN_6,GPIO_MODE_IN_PU_NO_IT);
 			  UART1_ITConfig( UART1_IT_RXNE, ENABLE );
 			break;
@@ -189,7 +187,7 @@ uint8_t uart_stm8_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 		    break;
 #if UART_STM8_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
 		case IOCTL_SET_ISR_CALLBACK_DEV:
-			stm8_callback_dev =(pdev_descriptor) aIoctl_param1;
+			stm8_callback_dev =(pdev_descriptor_t) aIoctl_param1;
 			break;
 #endif
 		default :
@@ -198,33 +196,7 @@ uint8_t uart_stm8_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 	return 0;
 }
 
-#if UART_STM8_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        uart_stm8_api_dev_descriptor                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-uint8_t  uart_stm8_api_init_dev_descriptor(pdev_descriptor aDevDescriptor)
-{
-	if(NULL == aDevDescriptor) return 1;
-
-
-	aDevDescriptor->handle = &UART_STM8_Instance;
-	aDevDescriptor->ioctl = uart_stm8_ioctl;
-	aDevDescriptor->pwrite = uart_stm8_pwrite;
-
-	return 0 ;
-
-}
-
-#endif
 
 /* COSMIC: Requires putchar() routine to override stdio */
 #if defined(__CSMC__)

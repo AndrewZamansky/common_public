@@ -16,7 +16,7 @@ OUTPUT_BIN := $(OUTPUT_BIN).bin
 
 GLOBAL_CFLAGS := $(GLOBAL_CFLAGS) -c --apcs=interwork --split_sections --gnu --c99
 
-ifeq ($(findstring YES,$(CONFIG_INCLUDE_FPU)),YES)
+ifdef CONFIG_INCLUDE_CORTEX_M_FPU
    GLOBAL_CFLAGS += --cpu=$(CONFIG_CPU_TYPE).fp
 else 	 
    GLOBAL_CFLAGS += --cpu=$(CONFIG_CPU_TYPE) 
@@ -33,7 +33,7 @@ GLOBAL_CFLAGS := $(GLOBAL_CFLAGS) -$(CONFIG_OPTIMIZE_LEVEL) -g
 
 #caclulating assembler flags
 
-ifeq ($(findstring YES,$(CONFIG_INCLUDE_FPU)),YES)
+ifdef CONFIG_INCLUDE_CORTEX_M_FPU
    GLOBAL_ASMFLAGS += --cpu=$(CONFIG_CPU_TYPE).fp
 else 	 
    GLOBAL_ASMFLAGS += --cpu=$(CONFIG_CPU_TYPE) 
@@ -44,19 +44,13 @@ GLOBAL_ASMFLAGS := $(GLOBAL_ASMFLAGS) #add this line to stop calculate GLOBAL_AS
 
 #caclulating linker flags
 
-ifeq ($(findstring YES,$(CONFIG_INCLUDE_FPU)),YES)
+ifdef CONFIG_INCLUDE_CORTEX_M_FPU
    GLOBAL_LDFLAGS += --cpu=$(CONFIG_CPU_TYPE).fp
 else 	 
    GLOBAL_LDFLAGS += --cpu=$(CONFIG_CPU_TYPE) 
 endif
 
-#ifeq ($(findstring flash,$(CONFIG_CODE_LOCATION)),flash)
-#	GLOBAL_LDFLAGS += --ro_base=$(CONFIG_FLASH_START_ADDR)
-#	GLOBAL_LDFLAGS += --entry=$(CONFIG_FLASH_START_ADDR)
-#else
-#	GLOBAL_LDFLAGS += --ro_base=$(CONFIG_RAM_START_ADDR)
-#	GLOBAL_LDFLAGS += --entry=$(CONFIG_RAM_START_ADDR)
-#endif
+
 
 GLOBAL_LDFLAGS += --library_type=microlib --strict 
 GLOBAL_LDFLAGS += --map --datacompressor=off --info=inline --entry do_startup 
@@ -68,14 +62,13 @@ GLOBAL_LDFLAGS := $(GLOBAL_LDFLAGS) #add this line to stop calculate GLOBAL_LDFL
 
 #end of flags definitions
 
-GLOBAL_DEFINES := $(GLOBAL_DEFINES) ARMCC
 
 
 ############   PREPROCESSOR FLAGS FOR LINKER SCRIPT #############
-LDS_PREPROCESSOR_DEFINES += CONFIG_RAM_START_ADDR=$(CONFIG_RAM_START_ADDR) CONFIG_RAM_SIZE=$(CONFIG_RAM_SIZE)
-LDS_PREPROCESSOR_DEFINES += CONFIG_FLASH_START_ADDR=$(CONFIG_FLASH_START_ADDR) CONFIG_FLASH_SIZE=$(CONFIG_FLASH_SIZE)
+LDS_PREPROCESSOR_DEFINES += RAM_START_ADDR=$(RAM_START_ADDR) RAM_SIZE=$(RAM_SIZE)
+LDS_PREPROCESSOR_DEFINES += ROM_START_ADDR=$(ROM_START_ADDR) ROM_SIZE=$(ROM_SIZE)
 LDS_PREPROCESSOR_DEFINES += DEBUG_SECTIONS_INCLUDE_FILE="\"$(BUILD_TOOLS_ROOT_DIR)/scatter_files/gcc/debug_sections.lds\""
-ifeq ($(findstring flash,$(CONFIG_CODE_LOCATION)),flash)
+ifdef CONFIG_CODE_LOCATION_FLASH
 	LDS_PREPROCESSOR_DEFINES += RUN_FROM_FLASH
 endif
 ifeq ($(findstring cortex-m,$(CONFIG_CPU_TYPE)),cortex-m)

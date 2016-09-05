@@ -7,19 +7,34 @@
 
 
 /***************   includes    *******************/
-#include "cortexM_systick_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
-#include "src/_cortexM_systick_prerequirements_check.h" // should be after {cortexM_systick_config.h,dev_managment_api.h}
+#include "src/_cortexM_systick_prerequirements_check.h"
 
-#include "hw_timer_api.h"
 #include "cortexM_systick_api.h"
 #include "cortexM_systick.h"
-#include "NVIC_api.h"
+#include "irq_api.h"
+#include "clock_control_api.h"
 
+#include "cortexM_systick_add_component.h"
 
-#if CORTEX_M_TYPE == 4
+//locally disable IRQn_Type defined in soc
+#define IRQn_Type IRQn_Type_local
+
+typedef enum IRQn_local {
+    /******  Cortex-M4 Processor Exceptions Numbers ***************************************************/
+    NonMaskableInt_IRQn_local           = -14,      /*!<  2 Non Maskable Interrupt                        */
+    MemoryManagement_IRQn_local         = -12,      /*!<  4 Memory Management Interrupt                   */
+    BusFault_IRQn_local                 = -11,      /*!<  5 Bus Fault Interrupt                           */
+    UsageFault_IRQn_local               = -10,      /*!<  6 Usage Fault Interrupt                         */
+    SVCall_IRQn_local                   = -5,       /*!< 11 SV Call Interrupt                             */
+    DebugMonitor_IRQn_local             = -4,       /*!< 12 Debug Monitor Interrupt                       */
+    PendSV_IRQn_local                   = -2,       /*!< 14 Pend SV Interrupt                             */
+    SysTick_IRQn_local                  = -1,       /*!< 15 System Tick Interrupt                         */
+
+} IRQn_Type_local;
+
+#if 1 == CONFIG_CORTEX_M4
  #include "core_cm4.h"
-#elif CORTEX_M_TYPE == 3
+#elif 1 == CONFIG_CORTEX_M3
  #include "core_cm3.h"
 #else
  #error unknown cortex-m type
@@ -41,34 +56,22 @@
 
 
 /***********   local variables    **************/
-#if I2S_NUC505_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
- static CORTEXM_SYSTICK_Instance_t CORTEXM_SYSTICK_InstanceParams;
 
-
-static const dev_param_t CORTEXM_SYSTICK_Dev_Params[]=
-{
-		{IOCTL_CORTEXM_SYSTICK_SET_PORT_PARAM , IOCTL_VOID , (uint8_t*)CORTEXM_SYSTICK_API_PORT_STR, NOT_FOR_SAVE},
-		{IOCTL_CORTEXM_SYSTICK_SET_PIN_PARAM , IOCTL_VOID , (uint8_t*)CORTEXM_SYSTICK_API_PIN_STR, NOT_FOR_SAVE},
-		{IOCTL_CORTEXM_SYSTICK_SET_MODE_PARAM , IOCTL_VOID , (uint8_t*)CORTEXM_SYSTICK_API_MODE_STR, NOT_FOR_SAVE},
-};
-
-#endif
-
-#define INSTANCE(hndl)	((CORTEXM_SYSTICK_Instance_t*)hndl)
-
-static CORTEXM_SYSTICK_Instance_t *pCORTEXM_SYSTICK_InstanceParams;
+static cortexM_systick_instance_t *pcortexM_systick_instanceParams;
 
 static volatile uint64_t currentTick=0;
 
 /*---------------------------------------------------------------------------------------------------------*/
-/* ISR to handle systick                                                        */
+/* ISR to config_handle systick                                                        */
 /*---------------------------------------------------------------------------------------------------------*/
 void __attribute__((interrupt("IRQ"))) SysTick_IRQHandler(void)
 {
+	timer_callback_func_t timer_callback;
 	currentTick++;
-	if(NULL != 	pCORTEXM_SYSTICK_InstanceParams->timer_callback)
+	timer_callback = pcortexM_systick_instanceParams->timer_callback;
+	if(NULL != 	timer_callback)
 	{
-		pCORTEXM_SYSTICK_InstanceParams->timer_callback();
+		timer_callback();
 	}
 }
 
@@ -85,54 +88,47 @@ void __attribute__((interrupt("IRQ"))) SysTick_IRQHandler(void)
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t cortexM_systick_ioctl( void * const aHandle ,const uint8_t aIoctl_num
+uint8_t cortexM_systick_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
+	cortexM_systick_instance_t *config_handle;
 
+	config_handle = DEV_GET_CONFIG_DATA_POINTER(apdev);
 	switch(aIoctl_num)
 	{
-#if I2S_NUC505_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
-		case IOCTL_GET_PARAMS_ARRAY_FUNC :
-			*(const dev_param_t**)aIoctl_param1  = CORTEXM_SYSTICK_Dev_Params;
-			*(uint8_t*)aIoctl_param2 =  sizeof(CORTEXM_SYSTICK_Dev_Params)/sizeof(dev_param_t); //size
-			break;
-
-		case IOCTL_TIMER_INPUT_CLOCK_HZ_SET :
-			{
-				INSTANCE(aHandle)-> input_clock = ((timer_callback_func_t)aIoctl_param1);
-			}
-			break;
-#endif
 		case IOCTL_TIMER_RATE_HZ_SET :
 			{
-				INSTANCE(aHandle)->rate = ((uint32_t)aIoctl_param1);
+				config_handle->rate = ((uint32_t)aIoctl_param1);
 			}
 			break;
 
 		case IOCTL_TIMER_CALLBACK_SET :
 			{
-				INSTANCE(aHandle)->timer_callback = ((timer_callback_func_t)aIoctl_param1);
+				config_handle->timer_callback = ((timer_callback_func_t)aIoctl_param1);
 			}
 			break;
 
 		case IOCTL_TIMER_MODE_SET :
 			{
-				INSTANCE(aHandle)->mode = ((size_t)aIoctl_param1);
+				config_handle->mode = ((size_t)aIoctl_param1);
 			}
 			break;
 
 		case IOCTL_DEVICE_START :
-			pCORTEXM_SYSTICK_InstanceParams = aHandle;
-			/* Configure SysTick to interrupt at the requested rate. */
-			  SysTick->LOAD  = ((INSTANCE(aHandle)->input_clock/INSTANCE(aHandle)->rate) & SysTick_LOAD_RELOAD_Msk) - 1;      /* set reload register */
-			  SysTick->VAL   = 0;                                          /* Load the SysTick Counter Value */
-			  SysTick->CTRL  = SysTick_CTRL_CLKSOURCE_Msk |
+			{
+				uint32_t core_clock_rate;
+				DEV_IOCTL_2_PARAMS(config_handle->clock_dev , IOCTL_CLOCK_CONTROL_GET_RATE , config_handle->clock_index , &core_clock_rate );
+				pcortexM_systick_instanceParams = config_handle;
+				/* Configure SysTick to interrupt at the requested rate. */
+				SysTick->LOAD  = ((core_clock_rate/config_handle->rate) & SysTick_LOAD_RELOAD_Msk) - 1;      /* set reload register */
+				SysTick->VAL   = 0;                                          /* Load the SysTick Counter Value */
+				SysTick->CTRL  = SysTick_CTRL_CLKSOURCE_Msk |
 			                   SysTick_CTRL_TICKINT_Msk   |
 			                   SysTick_CTRL_ENABLE_Msk;                    /* Enable SysTick IRQ and SysTick Timer */
 
-			NVIC_API_RegisterInt(SysTick_IRQn , SysTick_IRQHandler);
-			//	NVIC_API_EnableInt(SysTick_IRQn);// no need to enable systick interrupt
-
+				irq_register_interrupt(SysTick_IRQn_local , SysTick_IRQHandler);
+				//	irq_enable_interrupt(SysTick_IRQn);// no need to enable systick interrupt
+			}
 			break;
 
 		case IOCTL_TIMER_STOP :
@@ -149,30 +145,3 @@ uint8_t cortexM_systick_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 	}
 	return 0;
 }
-
-#if I2S_NUC505_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
-
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        cortexM_systick_api_dev_descriptor                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-uint8_t  cortexM_systick_api_init_dev_descriptor(pdev_descriptor aDevDescriptor)
-{
-	if(NULL == aDevDescriptor) return 1;
-
-
-	aDevDescriptor->handle = &CORTEXM_SYSTICK_InstanceParams ;
-	aDevDescriptor->ioctl = cortexM_systick_ioctl;
-
-	return 0 ;
-
-}
-#endif
-

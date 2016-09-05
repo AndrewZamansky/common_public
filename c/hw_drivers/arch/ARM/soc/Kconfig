@@ -1,0 +1,63 @@
+
+
+choice
+	prompt "SOC"
+	default GENERIC_SOC
+
+config NUC505
+	bool "nuc505"
+
+config POLEG
+	bool "poleg"
+
+config STM32F103RC
+	bool "stm32f103rc"
+
+config NPCE586
+	bool "npce586"
+
+config GENERIC_SOC
+	bool "generic SOC"
+
+endchoice
+
+config CORTEX_M4
+    bool
+    default n
+
+config CORTEX_M3
+    bool
+    default n
+
+config CORTEX_A9
+    bool
+    default n
+
+config ARM_926EJ_S
+    bool
+    default n
+
+config SOC_HAS_DSP
+    bool
+    default n
+
+if NPCE586
+source "$COMMON_DIR_PATH/c/hw_drivers/arch/ARM/soc/npce586/Kconfig"
+endif
+
+
+if STM32F103RC
+source "$COMMON_DIR_PATH/c/hw_drivers/arch/ARM/soc/stm32/stm32f103rc/Kconfig"
+endif
+
+if NUC505
+source "$COMMON_DIR_PATH/c/hw_drivers/arch/ARM/soc/nuc505/Kconfig"
+endif
+
+if POLEG
+source "$COMMON_DIR_PATH/c/hw_drivers/arch/ARM/soc/poleg/Kconfig"
+endif
+
+if GENERIC_SOC
+source "$COMMON_DIR_PATH/c/hw_drivers/arch/ARM/soc/generic_board/Kconfig"
+endif

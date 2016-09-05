@@ -15,7 +15,7 @@
 #include "_project_defines.h"
 #include "_project_func_declarations.h"
 
-#include "dev_managment_api.h" // for device manager defines and typedefs
+#include "dev_management_api.h" // for device manager defines and typedefs
 #include "PRINTF_api.h"
 
 #include "timer_api.h"
@@ -96,18 +96,8 @@ static void USB_Task( void *pvParameters )
 //		if (a7 > 100) {a7=0 ; PRINTF_DBG(" a7 > 100\n");}
 
 
-#if (1==INCLUDE_uxTaskGetStackHighWaterMark )
-		{
-			static  uint32_t stackLeft,minStackLeft=0xffffffff;
+		os_stack_test();
 
-			stackLeft = uxTaskGetStackHighWaterMark( NULL );
-			if(minStackLeft > stackLeft)
-			{
-				minStackLeft = stackLeft;
-				PRINTF_DBG("%s stack left = %d\r\n" , __FUNCTION__ ,minStackLeft);
-			}
-		}
-#endif
 
 	}
 }

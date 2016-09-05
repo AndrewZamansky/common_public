@@ -1,0 +1,144 @@
+#
+
+config INCLUDE_INTERNAL_CLOCK_CONTROL
+	bool   "internal clock control"
+	depends on NUC505 || STM32F103RC || NPCE586
+	default n
+
+config INCLUDE_CORTEXM_SYSTICK
+	bool   "cortex-m systick"
+	depends on CORTEX_M3 || CORTEX_M4
+	default n
+
+config INCLUDE_NVIC
+	bool   "nvic"
+	depends on CORTEX_M3 || CORTEX_M4
+	default n
+
+config INCLUDE_GIC
+	bool   "gic"
+	depends on CORTEX_A9
+	default n
+
+######## semihosting configurations #########
+menuconfig INCLUDE_SEMIHOSTING
+	bool   "semihosting"
+	depends on ARM
+	select INCLUDE_PRINTF
+	default n
+
+config ARM_SEMIHOSTING_CONFIG_ENABLE_RX
+	bool   "enable rx of semihosting"
+	depends on INCLUDE_SEMIHOSTING
+	select INCLUDE_PRINTF
+	default n
+	
+config ARM_SEMIHOSTING_RX_BUFFER
+	int   "semihostint rx buffer size"
+	depends on INCLUDE_SEMIHOSTING
+	default 32	
+######## end of semihosting configurations #########	
+
+config INCLUDE_INTERNAL_UART
+	bool   "internal uart"
+	depends on NUC505 || STM32F103RC || NPCE586 || STM8S103F
+	default n
+
+config INCLUDE_INTERNAL_SPI
+	bool   "internal spi"
+	depends on NUC505 || STM32F103RC || NPCE586 || STM8S103F
+	default n
+
+config INCLUDE_INTERNAL_TIMER
+	bool   "internal timer"
+	depends on NUC505 || STM32F103RC || NPCE586 || STM8S103F
+	default n
+
+config INCLUDE_INTERNAL_FLASH
+	bool   "internal flash"
+	depends on STM32F10x
+	default n
+
+config INCLUDE_INTERNAL_GPIO
+	bool   "internal gpio"
+	depends on NUC505 || STM32F103RC || NPCE586 || STM8S103F || PIC32MX575
+	default n
+
+config INCLUDE_INTERNAL_SERIAL_NUMBER
+	bool   "internal serial number"
+	depends on STM32F10x
+	default n
+	
+menuconfig INCLUDE_INTERNAL_I2S
+	bool   "internal i2s"
+	depends on NUC505
+	default n
+	
+if INCLUDE_INTERNAL_I2S
+source "$COMMON_DIR_PATH/c/hw_drivers/I2S/Kconfig"
+endif
+
+config INCLUDE_USB_VIRTUAL_COM
+	bool   "usb virtual com"
+	depends on STM32F10x
+	default n
+	
+config INCLUDE_ESP8266
+	bool   "ESP8266"
+	default n
+
+	
+config INCLUDE_USB_MASS_STORAGE
+	bool   "usb mass storage"
+	depends on STM32F10x
+	default n
+
+
+config INCLUDE_LM35
+	bool   "lm35 thermal sensor"
+	default n
+
+config INCLUDE_INTERNAL_ADC
+	bool   "internal adc"
+	depends on STM32F10x
+	default n
+
+config INCLUDE_GPIO_REMOTE
+	bool   "remote gpio"
+	default n
+
+config INCLUDE_WIRELESS_UART
+	bool   "wireless uart"
+	default n
+
+
+menuconfig INCLUDE_SPI_FLASH
+	bool   "spi flash"
+	depends on INCLUDE_INTERNAL_SPI
+	default n
+
+if INCLUDE_SPI_FLASH
+source "$COMMON_DIR_PATH/c/hw_drivers/storage/spi_flash/Kconfig"
+endif
+
+######## automatically selected configurations #########
+config INCLUDE_SERIAL_NUMBER
+	def_bool  y
+	depends on INCLUDE_INTERNAL_SERIAL_NUMBER
+
+config INCLUDE_CLOCK_CONTROL
+	def_bool  y
+	depends on INCLUDE_INTERNAL_CLOCK_CONTROL
+
+config INCLUDE_UART
+	def_bool  y
+	depends on CONFIG_INCLUDE_SEMIHOSTING || INCLUDE_INTERNAL_UART || INCLUDE_USB_VIRTUAL_COM  || INCLUDE_SEMIHOSTING
+
+config INCLUDE_HW_TIMER
+	def_bool  y
+	depends on INCLUDE_CORTEXM_SYSTICK || INCLUDE_INTERNAL_TIMER
+
+config INCLUDE_GPIO
+	def_bool  y
+	depends on INCLUDE_INTERNAL_GPIO 
+######## end of automatically selected configurations #########	

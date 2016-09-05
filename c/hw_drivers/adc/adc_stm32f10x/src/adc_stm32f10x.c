@@ -11,7 +11,7 @@
 #include "_project_defines.h"
 #include "_project_func_declarations.h"
 
-#include "dev_managment_api.h" // for device manager defines and typedefs
+#include "dev_management_api.h" // for device manager defines and typedefs
 
 #include "adc_api.h"
 #include "adc_stm32f10x_api.h"
@@ -55,7 +55,7 @@ static uint16_t usedInstances =0 ;
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-static uint8_t adc_ioctl( void * const aHandle ,const uint8_t aIoctl_num
+static uint8_t adc_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
 	ADC_InitTypeDef lADC_InitStruct;
@@ -127,7 +127,7 @@ static uint8_t adc_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t  adc_stm32f10x_api_init_dev_descriptor(pdev_descriptor aDevDescriptor)
+uint8_t  adc_stm32f10x_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor)
 {
 	if(NULL == aDevDescriptor) return 1;
 	if (usedInstances >= ADC_HAL_MAX_NUM_OF_ADCS) return 1;

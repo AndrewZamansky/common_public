@@ -1,0 +1,20 @@
+
+INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_GIC)
+
+
+#INCLUDE_DIR = 
+
+#DEFINES += 
+
+#CFLAGS += 
+
+#ASMFLAGS +=  
+
+
+
+SRC = gic.c 
+
+
+VPATH = src 
+
+include $(COMMON_CC)

@@ -12,15 +12,14 @@
 
 /********  includes *********************/
 
-#include "equalizer_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
-#include "dsp_managment_api.h" // for device manager defines and typedefs
-#include "_equalizer_prerequirements_check.h" // should be after {equalizer_config.h,dev_managment_api.h}
+#include "_equalizer_prerequirements_check.h"
+
+#include "PRINTF_api.h"
 
 #include "equalizer_api.h" //place first to test that header file is self-contained
 #include "equalizer.h"
-#include "common_dsp_api.h"
 
+#include "auto_init_api.h"
 
 /********  defines *********************/
 
@@ -30,9 +29,9 @@
 /********  externals *********************/
 
 
-/********  local defs *********************/
+/********  exported variables *********************/
 
-#define INSTANCE(hndl)	((EQUALIZER_Instance_t*)hndl)
+char equalizer_module_name[] = "equalizer";
 
 
 /**********   external variables    **************/
@@ -40,13 +39,6 @@
 
 
 /***********   local variables    **************/
-#if EQUALIZER_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
-
-	static EQUALIZER_Instance_t EQUALIZER_InstanceParams[EQUALIZER_CONFIG_NUM_OF_DYNAMIC_INSTANCES] = { {0} };
-	static uint16_t usedInstances =0 ;
-
-
-#endif // for EQUALIZER_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
 
 
 #if 0
@@ -114,13 +106,24 @@
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-void equalizer_dsp(const void * const aHandle ,
-		uint8_t num_of_inputs,uint8_t num_of_ouputs, size_t data_len ,
-		float *apCh1In , float *apCh2In,
-		float *apCh1Out , float *apCh2Out)
+void equalizer_dsp(pdsp_descriptor apdsp , size_t data_len ,
+		dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] , dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])
 {
+	float *apCh1In  ;
+	float *apCh1Out ;
+	EQUALIZER_Instance_t *handle;
 
-	biquads_cascading_filter(INSTANCE(aHandle)->pBiquadFilter , apCh1In , apCh1Out , data_len);
+	handle = apdsp->handle;
+
+	if(0 == handle->num_of_bands)
+	{
+		return;
+	}
+
+	apCh1In = in_pads[0]->buff;
+	apCh1Out = out_pads[0].buff;
+
+	biquads_cascading_filter(handle->pBiquadFilter , apCh1In , apCh1Out , data_len);
 
 }
 
@@ -213,37 +216,31 @@ void av_log_ucprojects_callback(void* ptr, int level, const char* fmt, va_list v
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t equalizer_ioctl(void * const aHandle ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
+uint8_t equalizer_ioctl(pdsp_descriptor apdsp ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
 {
 	uint8_t i;
 	size_t num_of_bands;
+	uint8_t band_num;
 	BandCoeffs_t *pCoeffs;
+	equalizer_api_band_set_params_t *p_band_set_params;
+	EQUALIZER_Instance_t *handle;
 
+	handle = apdsp->handle;
 	switch(aIoctl_num)
 	{
-//#if EQUALIZER_CONFIG_NUM_OF_DYNAMIC_INSTANCES > 0
-//		case IOCTL_GET_PARAMS_ARRAY_FUNC :
-//			*(const dev_param_t**)aIoctl_param1  = EQUALIZER_Dev_Params;
-//			*(uint8_t*)aIoctl_param2 = sizeof(EQUALIZER_Dev_Params)/sizeof(dev_param_t); //size
-//			break;
-//#endif // for EQUALIZER_CONFIG_NUM_OF_DYNAMIC_INSTANCES > 0
+		case IOCTL_DSP_INIT :
 
-
-		case IOCTL_DEVICE_START :
-
-			pCoeffs = INSTANCE(aHandle)->pCoeffs;
-			INSTANCE(aHandle)->pBiquadFilter = biquads_alloc(INSTANCE(aHandle)->num_of_bands , (float *)pCoeffs );
+			handle->num_of_bands =0;
+			handle->pCoeffs = NULL ;
 
 			break;
 		case IOCTL_EQUALIZER_SET_NUM_OF_BANDS :
 			num_of_bands = ((size_t)aIoctl_param1);
-			INSTANCE(aHandle)->num_of_bands = num_of_bands;
-			free(INSTANCE(aHandle)->pCoeffs);
-			{
-				int tmp=sizeof(BandCoeffs_t) * num_of_bands;
-				pCoeffs=(BandCoeffs_t *)malloc(tmp);
-			}
-			INSTANCE(aHandle)->pCoeffs = pCoeffs;
+			handle->num_of_bands = num_of_bands;
+			free(handle->pCoeffs);
+
+			pCoeffs=(BandCoeffs_t *)malloc(sizeof(BandCoeffs_t) * num_of_bands);
+			handle->pCoeffs = pCoeffs;
 			for(i=0 ; i<num_of_bands ; i++)
 			{
 				pCoeffs[i].a1 = 0;
@@ -252,6 +249,8 @@ uint8_t equalizer_ioctl(void * const aHandle ,const uint8_t aIoctl_num , void * 
 				pCoeffs[i].b1 = 0;
 				pCoeffs[i].b2 = 0;
 			}
+
+			handle->pBiquadFilter = biquads_alloc(handle->num_of_bands , (float *)pCoeffs );
 
 			break;
 		case IOCTL_EQUALIZER_SET_BAND_BIQUADS :
@@ -337,15 +336,19 @@ uint8_t equalizer_ioctl(void * const aHandle ,const uint8_t aIoctl_num , void * 
 		}
 
 #else
-		num_of_bands = INSTANCE(aHandle)->num_of_bands;
-		if(num_of_bands > ((set_band_biquads_t*)aIoctl_param1)->band_num)
+		num_of_bands = handle->num_of_bands;
+		band_num = ((equalizer_api_band_set_t*)aIoctl_param1)->band_num ;
+		if(num_of_bands > band_num )
 		{
-			pCoeffs = &INSTANCE(aHandle)->pCoeffs[((set_band_biquads_t*)aIoctl_param1)->band_num];
+			p_band_set_params = &(((equalizer_api_band_set_t*)aIoctl_param1)->band_set_params);
+			memcpy(&handle->band_set_params,
+					p_band_set_params,sizeof(equalizer_api_band_set_params_t));
+			pCoeffs = &handle->pCoeffs[band_num];
 			biquads_calculation(
-					((set_band_biquads_t*)aIoctl_param1)->filter_mode,
-					((set_band_biquads_t*)aIoctl_param1)->Fc,
-					((set_band_biquads_t*)aIoctl_param1)->QValue,
-					((set_band_biquads_t*)aIoctl_param1)->Gain,
+					p_band_set_params->filter_mode,
+					p_band_set_params->Fc,
+					p_band_set_params->QValue,
+					p_band_set_params->Gain,
 					48000,
 					(float*)pCoeffs
 					);
@@ -358,6 +361,11 @@ uint8_t equalizer_ioctl(void * const aHandle ,const uint8_t aIoctl_num , void * 
 //			PRINTF_DBG( "a1 = %f  \n",coeffs[0].a1);
 //			PRINTF_DBG( "a2 = %f  \n",coeffs[0].a2);
 			break;
+		case IOCTL_EQUALIZER_GET_BAND_BIQUADS :
+			p_band_set_params = &(((equalizer_api_band_set_t*)aIoctl_param1)->band_set_params);
+			memcpy(p_band_set_params,
+					&handle->band_set_params, sizeof(equalizer_api_band_set_params_t));
+			break;
 		default :
 			return 1;
 	}
@@ -365,13 +373,8 @@ uint8_t equalizer_ioctl(void * const aHandle ,const uint8_t aIoctl_num , void * 
 }
 
 
-
-
-
-#if EQUALIZER_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
-
 /*---------------------------------------------------------------------------------------------------------*/
-/* Function:        EQUALIZER_API_Init_Dev_Descriptor                                                                          */
+/* Function:         equalizer_init                                                                          */
 /*                                                                                                         */
 /* Parameters:                                                                                             */
 /*                                                                                         */
@@ -381,26 +384,9 @@ uint8_t equalizer_ioctl(void * const aHandle ,const uint8_t aIoctl_num , void * 
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t  equalizer_api_init_dsp_descriptor(pdsp_descriptor aDspDescriptor)
+void  equalizer_init(void)
 {
-	EQUALIZER_Instance_t *pInstance;
-	if(NULL == aDspDescriptor) return 1;
-	if (usedInstances >= EQUALIZER_CONFIG_NUM_OF_DYNAMIC_INSTANCES) return 1;
-
-	pInstance = &EQUALIZER_InstanceParams[usedInstances ];
-
-	aDspDescriptor->handle = pInstance;
-	aDspDescriptor->ioctl = equalizer_ioctl;
-	aDspDescriptor->dsp_func = equalizer_dsp;
-
-	pInstance->num_of_bands =0;
-	pInstance->pCoeffs=NULL;
-
-	usedInstances++;
-
-	return 0 ;
-
+	DSP_REGISTER_NEW_MODULE("equalizer",equalizer_ioctl , equalizer_dsp , EQUALIZER_Instance_t);
 }
-#endif  // for EQUALIZER_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
 
-
+AUTO_INIT_FUNCTION(equalizer_init);

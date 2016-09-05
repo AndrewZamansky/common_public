@@ -2,8 +2,8 @@
 #ifndef _common_dsp_API_H_
 #define _common_dsp_API_H_
 
-#include "common_dsp_config.h"
-#include "src/_common_dsp_prerequirements_check.h" // should be after {equalizer_config.h,dev_managment_api.h}
+#include "_project.h"
+#include "src/_common_dsp_prerequirements_check.h" // should be after {equalizer_config.h,dev_management_api.h}
 
 /*****************  defines  **************/
 
@@ -45,5 +45,8 @@ void biquads_cascading_filter(void *pFilter,float *pin,float *pOut,size_t buff_l
 void biquads_calculation(biquads_filter_mode_t filter_mode,
 		float FreqC,float QValue,float Gain_dB,
 		float SamplingRate, float *pCoeffs );
+
+
+float fast_pow(float a, float b);
 
 #endif

@@ -1,0 +1,22 @@
+
+ifeq ($(findstring YES,$(CONFIG_INCLUDE_JSMN)),YES) 	 
+	INCLUDE_THIS_COMPONENT := YES   # must be here !!
+    DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(EXTERNAL_SOURCE_ROOT_DIR)/JSMN )
+endif  
+
+
+#INCLUDE_DIR = 
+
+#DEFINES = 
+
+#CFLAGS = 
+
+#ASMFLAGS =  
+
+
+
+SRC = jsmn.c
+
+VPATH =  $(EXTERNAL_SOURCE_ROOT_DIR)/JSMN
+
+include $(COMMON_CC)

@@ -1,0 +1,26 @@
+menu "`--->  nuc505 board configurations"
+
+choice
+	prompt "Board"
+	default NUC505_EB
+
+config NUC505_EB
+	bool "nuc505 evaluation board"
+
+endchoice
+
+if NUC505_EB
+source "$COMMON_DIR_PATH/c/hw_drivers/arch/ARM/soc/nuc505/Kconfig.eb505.dt"
+endif
+
+
+
+endmenu
+
+=======
+config NUC505_BOARD
+	def_bool y
+	select INTERNAL_SRAM 
+	select INTERNAL_FLASH 
+	select CORTEX_M4 
+	select SOC_HAS_DSP

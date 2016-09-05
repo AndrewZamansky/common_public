@@ -1,0 +1,24 @@
+
+INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_COMPRESSOR)
+
+#INCLUDE_DIR 
+
+#DEFINES = 
+
+#CFLAGS = 
+
+#ASMFLAGS =  
+
+
+
+
+SRC = compressor.c
+
+ifdef CONFIG_COMPRESSOR_IS_SPEED_CRITICAL
+    SPEED_CRITICAL_FILES += compressor.c
+endif
+
+VPATH = src
+
+
+include $(COMMON_CC)

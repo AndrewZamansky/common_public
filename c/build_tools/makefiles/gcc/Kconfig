@@ -1,0 +1,109 @@
+menu "GCC options"
+
+
+
+##### ARM  #########
+if ARM
+
+config ARM_GCC_VERSION
+    string "gcc version in form : xx.xx[.xx]"
+    default "4.9.3"
+
+
+config GCC_VENDOR_NAME
+    string "gcc vendor name"
+    default ""
+
+choice
+	prompt "OS on target(part of gcc naming convention)"
+	default GCC_TARGET_OS_NONE
+
+config GCC_TARGET_OS_LINUX
+	bool "linux"
+
+config GCC_TARGET_OS_NONE
+    bool "none"
+endchoice
+
+choice
+	prompt "ABI Type"
+	default EABI
+
+config EABI
+	bool "eabi"
+
+config GNUEABI
+    bool "gnueabi"
+endchoice
+
+
+
+config USE_NANO_STD_LIBS
+	bool   "use nano std libs to reduce code size "
+	default n
+
+config USED_FOR_SEMIHOSTING_UPLOADING
+	bool   "used for semihosting uploading"
+	default n
+
+endif
+
+##### HOST  #########
+if HOST
+
+config MINGW_GCC_VERSION
+    string "MinGW  version in form : xx.xx[.xx]"
+    default "4.8.1"
+
+endif
+
+##### PIC32  #########
+if PIC32
+
+choice
+	prompt "compiler location"
+	default PIC32_COMPILER_LOCATION_WINDOWS_DEFAULT
+
+config PIC32_COMPILER_LOCATION_WINDOWS_DEFAULT
+	bool "pic32 compiler located in windows default location"
+
+config PIC32_COMPILER_LOCATION_WORKSPACE_TOOLS_DIRECTORY
+    bool "pic32 compiler located in workspace tool directory"
+endchoice
+
+config PIC32_C32_VERSION
+    string "PIC32 C32  version in form : xx.xx"
+    depends on PIC32_COMPILER_LOCATION_WORKSPACE_TOOLS_DIRECTORY
+    default "2.01"
+
+
+endif
+
+
+
+choice
+	prompt "Optimisation Level"
+	default GCC_OPTIMISE_NONE
+
+config GCC_OPTIMISE_NONE
+	bool "-O0 : No Optimisations"
+
+config GCC_OPTIMISE_WITH_DEBUG
+	bool "-Og  : Optimise without loss in debug info "
+	depends on GCC || GPP
+
+config GCC_OPTIMISE_SIZE
+    bool "-Os : Optimise for size "
+
+config GCC_OPTIMISE_SPEED
+	bool "-O2 : Optimise for speed "
+
+config GCC_OPTIMISE_ULTRA_SPEED
+	bool "-O3 : Optimise for ultra-speed but can increase code-size "
+
+endchoice
+
+
+
+
+endmenu

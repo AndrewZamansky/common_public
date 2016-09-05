@@ -1,0 +1,25 @@
+menu "`--->  pic32mx575 board configurations"
+
+choice
+	prompt "Board"
+	default BARAK_SVB_REV_B
+
+config BARAK_SVB_REV_B
+	bool "barak svb rev.B"
+
+endchoice
+
+if BARAK_SVB_REV_B
+source "$COMMON_DIR_PATH/c/hw_drivers/arch/PIC32/soc/pic32mx575/Kconfig.barak_svb.dt"
+endif
+
+
+
+endmenu
+
+=======
+config PIC32MX575_BOARD
+	def_bool y
+	select INTERNAL_SRAM 
+	select INTERNAL_FLASH 
+	

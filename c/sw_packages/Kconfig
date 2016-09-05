@@ -1,0 +1,15 @@
+#
+
+source "$COMMON_DIR_PATH/c/sw_packages/core/Kconfig"
+
+source "$COMMON_DIR_PATH/c/sw_packages/ancillary/Kconfig"
+
+source "$COMMON_DIR_PATH/c/sw_packages/management/Kconfig"
+
+source "$COMMON_DIR_PATH/c/sw_packages/utilities/Kconfig"
+
+source "$COMMON_DIR_PATH/c/sw_packages/storage/Kconfig"
+
+source "$COMMON_DIR_PATH/c/sw_packages/dsp/Kconfig"
+
+source "$COMMON_DIR_PATH/c/sw_packages/staging/Kconfig"

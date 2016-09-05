@@ -1,0 +1,56 @@
+
+config SYS_MAXARGS
+	int   "maximal number of arguments"
+	default 8
+
+config  UBOOT_SHELL_USE_RUNTIME_CONFIGURATION
+	bool   "use runtime configuration for u-boot shell"
+	default n
+
+menu "common uboot shell commands"
+
+config UBOOT_CMD_GET_VERSION
+	bool   "get version"
+	depends on INCLUDE_VERSION_MENAGMENT
+	default y
+
+config UBOOT_CMD_GET_SERIAL
+	bool   "get serial"
+	depends on INCLUDE_SERIAL_NUMBER
+	default n
+	
+config UBOOT_CMD_HEAP_TEST
+	bool   "heap test"
+	default n
+	
+config UBOOT_CMD_BOARD_IP
+	bool   "board ip"
+	depends on INCLUDE_ESP8266
+	default n
+	
+config UBOOT_CMD_BOARD_NAME
+	bool   "board name"
+	default n
+	
+config UBOOT_CMD_GET_DEV_PARAM
+	bool   "get device parameter"
+	depends on INCLUDE_DEV_MENAGMENT
+	default n
+	
+config UBOOT_CMD_SET_DEV_PARAM
+	bool   "save device parameter"
+	depends on INCLUDE_DEV_MENAGMENT
+	default n
+	
+config UBOOT_CMD_PRINTF_DEV
+	bool   "manage printf devices"
+	depends on INCLUDE_PRINTF
+	default n	
+	
+config UBOOT_CMD_SPI_FORMAT
+	bool   "spi flash format"
+	depends on INCLUDE_SPI_FLASH_PARTITION_MANAGER
+	default n		
+							
+endmenu
+

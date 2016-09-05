@@ -13,17 +13,16 @@
 
 /********  includes *********************/
 
-#include "cortexM_systick_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
-#include "src/_cortexM_systick_prerequirements_check.h" // should be after {cortexM_systick_config.h,dev_managment_api.h}
-#include "hw_timer_api.h"
+#include "src/_cortexM_systick_prerequirements_check.h"
+
 /********  types  *********************/
 
 typedef struct {
-	uint32_t input_clock;
 	uint32_t rate;
+	pdev_descriptor_t   clock_dev;
+	size_t	clock_index;
 	timer_callback_func_t timer_callback;
 	uint8_t mode;
-} CORTEXM_SYSTICK_Instance_t;
+} cortexM_systick_instance_t;
 
 #endif

@@ -1,0 +1,25 @@
+
+INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_VOICE_3D)
+
+
+#INCLUDE_DIR 
+
+#DEFINES = 
+
+#CFLAGS = 
+
+#ASMFLAGS =  
+
+
+
+
+SRC = voice_3D.c
+
+ifdef CONFIG_VOICE_3D_IS_SPEED_CRITICAL
+    SPEED_CRITICAL_FILES += voice_3D.c
+endif
+
+VPATH = src
+
+
+include $(COMMON_CC)

@@ -12,23 +12,21 @@
 
 /********  includes *********************/
 
-#include "I2S_splitter_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
-#include "dsp_managment_api.h" // for device manager defines and typedefs
-#include "_I2S_splitter_prerequirements_check.h" // should be after {I2S_splitter_config.h,dev_managment_api.h}
+#include "_I2S_splitter_prerequirements_check.h"
 
 #include "I2S_splitter_api.h" //place first to test that header file is self-contained
 #include "I2S_splitter.h"
 #include "common_dsp_api.h"
 
+#include "auto_init_api.h"
 
 /********  defines *********************/
 
-#if (2==I2S_SPLITTER_CONFIG_NUM_OF_BYTES_PER_AUDIO_WORD)
+#if (2==NUM_OF_BYTES_PER_AUDIO_WORD)
 	#define	FLOAT_NORMALIZER	0x7fff
 	typedef int16_t	buffer_type_t	;
 #endif
-#if (4==I2S_SPLITTER_CONFIG_NUM_OF_BYTES_PER_AUDIO_WORD)
+#if (4==NUM_OF_BYTES_PER_AUDIO_WORD)
 	#define	FLOAT_NORMALIZER	0x7fffffff
 	typedef int32_t	buffer_type_t	;
 #endif
@@ -38,9 +36,9 @@
 /********  externals *********************/
 
 
-/********  local defs *********************/
+/********  exported variables *********************/
 
-#define INSTANCE(hndl)	((I2S_SPLITTER_Instance_t*)hndl)
+char I2S_splitter_module_name[] = "I2S_splitter";
 
 
 /**********   external variables    **************/
@@ -48,14 +46,6 @@
 
 
 /***********   local variables    **************/
-#if I2S_SPLITTER_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
-
-	static I2S_SPLITTER_Instance_t I2S_SPLITTER_InstanceParams[I2S_SPLITTER_CONFIG_NUM_OF_DYNAMIC_INSTANCES] = { {0} };
-	static uint16_t usedInstances =0 ;
-
-
-#endif // for I2S_SPLITTER_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
-
 
 
 /*---------------------------------------------------------------------------------------------------------*/
@@ -69,17 +59,21 @@
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-void I2S_splitter_dsp(const void * const aHandle ,
-		uint8_t num_of_inputs,uint8_t num_of_ouputs, size_t data_len ,
-		float *apCh1In , float *apCh2In,
-		float *apCh1Out , float *apCh2Out)
+void I2S_splitter_dsp(pdsp_descriptor aDspDescriptor , size_t data_len ,
+		dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] , dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])
 {
+	float *apCh1Out ,  *apCh2Out;
+
+
+	apCh1Out = out_pads[0].buff;
+	apCh2Out = out_pads[1].buff;
+	float normalizer = 1.0/((float)(FLOAT_NORMALIZER));
 	buffer_type_t *pRxBuf;
-	pRxBuf = (buffer_type_t *)apCh1In;
+	pRxBuf = (buffer_type_t *)in_pads[0]->buff;
 	for( ; data_len ;data_len--)
 	{
-		*apCh1Out++ = ((float) (*pRxBuf++)) / FLOAT_NORMALIZER;//  pRxBuf[2*j ];
-		*apCh2Out++ = ((float) (*pRxBuf++)) / FLOAT_NORMALIZER;//  pRxBuf[2*j + 1];
+		*apCh1Out++ = ((float) (*pRxBuf++)) * normalizer;//  pRxBuf[2*j ];
+		*apCh2Out++ = ((float) (*pRxBuf++)) * normalizer;//  pRxBuf[2*j + 1];
 	}
 
 }
@@ -99,19 +93,11 @@ void I2S_splitter_dsp(const void * const aHandle ,
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t I2S_splitter_ioctl(void * const aHandle ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
+uint8_t I2S_splitter_ioctl(pdsp_descriptor aDspDescriptor ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
 {
 	switch(aIoctl_num)
 	{
-//#if I2S_SPLITTER_CONFIG_NUM_OF_DYNAMIC_INSTANCES > 0
-//		case IOCTL_GET_PARAMS_ARRAY_FUNC :
-//			*(const dev_param_t**)aIoctl_param1  = I2S_SPLITTER_Dev_Params;
-//			*(uint8_t*)aIoctl_param2 = sizeof(I2S_SPLITTER_Dev_Params)/sizeof(dev_param_t); //size
-//			break;
-//#endif // for I2S_SPLITTER_CONFIG_NUM_OF_DYNAMIC_INSTANCES > 0
-
-
-		case IOCTL_DEVICE_START :
+		case IOCTL_DSP_INIT :
 
 
 			break;
@@ -123,13 +109,8 @@ uint8_t I2S_splitter_ioctl(void * const aHandle ,const uint8_t aIoctl_num , void
 }
 
 
-
-
-
-#if I2S_SPLITTER_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
-
 /*---------------------------------------------------------------------------------------------------------*/
-/* Function:        I2S_SPLITTER_API_Init_Dev_Descriptor                                                                          */
+/* Function:         I2S_splitter_init                                                                          */
 /*                                                                                                         */
 /* Parameters:                                                                                             */
 /*                                                                                         */
@@ -139,24 +120,9 @@ uint8_t I2S_splitter_ioctl(void * const aHandle ,const uint8_t aIoctl_num , void
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t  I2S_splitter_api_init_dsp_descriptor(pdsp_descriptor aDspDescriptor)
+void  I2S_splitter_init(void)
 {
-	I2S_SPLITTER_Instance_t *pInstance;
-	if(NULL == aDspDescriptor) return 1;
-	if (usedInstances >= I2S_SPLITTER_CONFIG_NUM_OF_DYNAMIC_INSTANCES) return 1;
-
-	pInstance = &I2S_SPLITTER_InstanceParams[usedInstances ];
-
-	aDspDescriptor->handle = pInstance;
-	aDspDescriptor->ioctl = I2S_splitter_ioctl;
-	aDspDescriptor->dsp_func = I2S_splitter_dsp;
-
-
-	usedInstances++;
-
-	return 0 ;
-
+	DSP_REGISTER_NEW_MODULE("I2S_splitter",I2S_splitter_ioctl , I2S_splitter_dsp , I2S_SPLITTER_Instance_t);
 }
-#endif  // for I2S_SPLITTER_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
 
-
+AUTO_INIT_FUNCTION(I2S_splitter_init);

@@ -12,10 +12,8 @@
 
 /********  includes *********************/
 
-#include "common_dsp_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
-#include "dsp_managment_api.h" // for device manager defines and typedefs
-#include "_common_dsp_prerequirements_check.h" // should be after {equalizer_config.h,dev_managment_api.h}
+#include "_project.h"
+#include "_common_dsp_prerequirements_check.h"
 
 
 #include "common_dsp_api.h"
@@ -39,8 +37,9 @@ typedef struct
 }sw_biquads_params_t;
 
 
-#ifdef _USE_DSP_
-  #include "arm_math.h"
+#ifdef CONFIG_USE_HW_DSP
+    #include "cpu_config.h"
+    #include "arm_math.h"
 	#define NUM_OF_STATES_PER_STAGE	2
 #else
 	#define NUM_OF_STATES_PER_STAGE	4
@@ -59,7 +58,7 @@ typedef struct
 
 void biquads_cascading_filter(void *pFilter,float *apIn,float *apOut,size_t buff_len)
 {
-#ifdef _USE_DSP_
+#ifdef CONFIG_USE_HW_DSP
 	arm_biquad_cascade_df2T_instance_f32 *filter_params;
 	filter_params = ((arm_biquad_cascade_df2T_instance_f32*)(((biquads_cascading_filter_t *)pFilter)->pFilterParams));
 	arm_biquad_cascade_df2T_f32(filter_params,apIn,apOut ,buff_len );
@@ -148,19 +147,20 @@ void biquads_cascading_filter(void *pFilter,float *apIn,float *apOut,size_t buff
 void *biquads_alloc(uint8_t num_of_stages, float *  	pCoeffs )
 {
 	void *tmp;
-	int tmp1;
 	biquads_cascading_filter_t *p_biquads_cascading_filter;
 	p_biquads_cascading_filter=(biquads_cascading_filter_t *)malloc(sizeof(biquads_cascading_filter_t));
-#ifdef _USE_DSP_
-	tmp1 = sizeof(arm_biquad_cascade_df2T_instance_f32);
-	tmp = malloc(tmp1);
-	p_biquads_cascading_filter->pFilterParams = (arm_biquad_cascade_df2T_instance_f32*) tmp;
-//	tmp = malloc(sizeof(arm_biquad_casd_df1_inst_f32));
-//	p_biquads_cascading_filter->pFilterParams = (arm_biquad_casd_df1_inst_f32*) tmp;
-	tmp =malloc(	NUM_OF_STATES_PER_STAGE * num_of_stages * sizeof(float));
-//	memset(tmp , 0 , NUM_OF_STATES_PER_STAGE * num_of_stages * sizeof(float));
-	arm_biquad_cascade_df2T_init_f32(p_biquads_cascading_filter->pFilterParams,num_of_stages,
-			pCoeffs , (float *) tmp );
+#ifdef CONFIG_USE_HW_DSP
+	{
+		arm_biquad_cascade_df2T_instance_f32* p_filter_instance;
+		p_filter_instance =(arm_biquad_cascade_df2T_instance_f32*) malloc(sizeof(arm_biquad_cascade_df2T_instance_f32));
+		p_biquads_cascading_filter->pFilterParams = p_filter_instance;
+	//	tmp = malloc(sizeof(arm_biquad_casd_df1_inst_f32));
+	//	p_biquads_cascading_filter->pFilterParams = (arm_biquad_casd_df1_inst_f32*) tmp;
+		tmp =malloc(	NUM_OF_STATES_PER_STAGE * num_of_stages * sizeof(float));
+	//	memset(tmp , 0 , NUM_OF_STATES_PER_STAGE * num_of_stages * sizeof(float));
+		arm_biquad_cascade_df2T_init_f32(p_filter_instance ,num_of_stages,
+				pCoeffs , (float *) tmp );
+	}
 //	arm_biquad_cascade_df1_init_f32(p_biquads_cascading_filter->pFilterParams,num_of_stages,
 //			pCoeffs , (float *) tmp );
 #else
@@ -181,7 +181,7 @@ void *biquads_alloc(uint8_t num_of_stages, float *  	pCoeffs )
  */
 void biquads_free(void *pFilter,uint8_t num_of_stages, float *  	pCoeffs )
 {
-#ifdef _USE_DSP_
+#ifdef CONFIG_USE_HW_DSP
 	free(  (   (arm_biquad_cascade_df2T_instance_f32*)((biquads_cascading_filter_t *)pFilter)->pFilterParams)->pState  );
 #else
 	free(  (   (sw_biquads_params_t*)((biquads_cascading_filter_t *)pFilter)->pFilterParams)->pStates  );
@@ -204,17 +204,19 @@ void biquads_calculation(biquads_filter_mode_t filter_mode,
 		float SamplingRate, float *pCoeffs )
 {
 	float norm,V,K	;
-	float ftem	;
+	float ftem , G_abs	;
 	float b0,b1,b2,a1,a2,w0;
+	float K_div_Q;
 
 	b0 = 1.0	;
 
 	ftem = FreqC/SamplingRate	;
     w0 = 2 * 3.1415962 * ftem;
 	K = tan(3.1415962 * ftem)	;
-	ftem = (Gain_dB >= 0) ? Gain_dB : -Gain_dB	;
-	V = pow(10,ftem/20)	;
+	G_abs = (Gain_dB >= 0) ? Gain_dB : -Gain_dB	;
+	V = pow(10,G_abs/20)	;
 
+	K_div_Q = K/QValue;
 
 	switch(filter_mode)
 	{
@@ -232,12 +234,12 @@ void biquads_calculation(biquads_filter_mode_t filter_mode,
 			break;
 
 		case BIQUADS_LOWPASS_MODE_2_POLES :
-			norm = 1/(1 + K/QValue + K * K)	;
+			norm = 1/(1 + K_div_Q + K * K)	;
 			b0 = K * K * norm	;
 			b1 = 2 * b0	;
 			b2 = b0	;
 			a1 = 2 * (K * K - 1) * norm	;
-			a2 = (1 - K/QValue + K * K) * norm	;
+			a2 = (1 - K_div_Q + K * K) * norm	;
 			break;
 
 		case BIQUADS_HIGHPASS_MODE_1_POLE :
@@ -249,39 +251,39 @@ void biquads_calculation(biquads_filter_mode_t filter_mode,
 			break;
 
 		case BIQUADS_HIGHPASS_MODE_2_POLES :
-			norm = 1/(1 + K/QValue + K * K)	;
+			norm = 1/(1 + K_div_Q + K * K)	;
 			b0 = norm	;
 			b1 = -2 * b0	;
 			b2 = b0	;
 			a1 = 2 * (K * K - 1) * norm	;
-			a2 = (1 - K/QValue + K * K) * norm	;
+			a2 = (1 - K_div_Q + K * K) * norm	;
 			break;
 
 		case BIQUADS_BANDPASS_MODE :
-			norm = 1/(1 + K/QValue + K * K)	;
-			b0 = K/QValue *	norm;
+			norm = 1/(1 + K_div_Q + K * K)	;
+			b0 = K_div_Q *	norm;
 			b1 = 0	;
 			b2 = -b0	;
 			a1 = 2 * (K * K - 1) * norm	;
-			a2 = (1 - K/QValue + K * K) * norm	;
+			a2 = (1 - K_div_Q + K * K) * norm	;
 			break;
 
 		case BIQUADS_PEAK_MODE :
 			if(Gain_dB >= 0)
 			{
-				norm = 1/(1 + K/QValue + K * K)	;
+				norm = 1/(1 + K_div_Q + K * K)	;
 				b0 = (1 + V/QValue * K + K * K) * norm	;
 				b1 = 2 * (K * K - 1) * norm	;
 				b2 = (1 - V/QValue * K + K * K) * norm	;
 				a1 = b1	;
-				a2 = (1 - K/QValue + K * K) * norm	;
+				a2 = (1 - K_div_Q + K * K) * norm	;
 			}
 			else
 			{
 				norm = 1/(1 + V/QValue * K + K * K)	;
-				b0 = (1 + K/QValue + K * K) * norm	;
+				b0 = (1 + K_div_Q + K * K) * norm	;
 				b1 = 2 * (K * K - 1) * norm	;
-				b2 = (1 - K/QValue + K * K) * norm	;
+				b2 = (1 - K_div_Q + K * K) * norm	;
 				a1 = b1	;
 				a2 = (1 - V/QValue * K + K * K) * norm	;
 			}
@@ -290,46 +292,46 @@ void biquads_calculation(biquads_filter_mode_t filter_mode,
 		case BIQUADS_LOWSHELF_MODE :
 			if(Gain_dB >= 0)
 			{
-				norm = 1/(1 + sqrt(2) * K + K * K)	;
-				b0 = (1 + sqrt(2*V) * K + V * K * K) * norm	;
+				norm = 1/(1 + K_div_Q + K * K)	;
+				b0 = (1 + sqrt(V) * K_div_Q + V * K * K) * norm	;
 				b1 = 2 * (V * K * K - 1) * norm	;
-				b2 = (1 - sqrt(2*V) * K + V * K * K) * norm	;
+				b2 = (1 - sqrt(V) * K_div_Q + V * K * K) * norm	;
 				a1 = 2 * (K * K - 1) * norm	;
-				a2 = (1 - sqrt(2) * K + K * K) * norm	;
+				a2 = (1 - K_div_Q + K * K) * norm	;
 			}
 			else
 			{
-				norm = 1/(1 + sqrt(2*V) * K + V * K * K)	;
-				b0 = (1 + sqrt(2) * K + K * K) * norm	;
+				norm = 1/(1 + sqrt(V) * K_div_Q + V * K * K)	;
+				b0 = (1 + K_div_Q + K * K) * norm	;
 				b1 = 2 * (K * K - 1) * norm	;
-				b2 = (1 - sqrt(2) * K + K * K) * norm	;
+				b2 = (1 - K_div_Q + K * K) * norm	;
 				a1 = 2 * (V * K * K - 1) * norm	;
-				a2 = (1 - sqrt(2*V) * K + V * K * K) * norm	;
+				a2 = (1 - sqrt(V) * K_div_Q + V * K * K) * norm	;
 			}
 			break;
 
 		case BIQUADS_HIGHSHELF_MODE :
 			if(Gain_dB >= 0)
 			{
-				norm = 1/(1 + sqrt(2) * K + K * K)	;
-				b0 = (V + sqrt(2*V) * K + K * K) * norm	;
+				norm = 1/(1 + K_div_Q + K * K)	;
+				b0 = (V + sqrt(V) * K_div_Q + K * K) * norm	;
 				b1 = 2 * (K * K - V) * norm	;
-				b2 = (V - sqrt(2*V) * K + K * K) * norm	;
+				b2 = (V - sqrt(V) * K_div_Q + K * K) * norm	;
 				a1 = 2 * (K * K - 1) * norm	;
-				a2 = (1 - sqrt(2) * K + K * K) * norm	;
+				a2 = (1 - K_div_Q + K * K) * norm	;
 			}
 			else
 			{
-				norm = 1/(V + sqrt(2*V) * K + K * K)	;
-				b0 = (1 + sqrt(2) * K + K * K) * norm	;
+				norm = 1/(V + sqrt(V) * K_div_Q + K * K)	;
+				b0 = (1 + K_div_Q + K * K) * norm	;
 				b1 = 2 * (K * K - 1) * norm	;
-				b2 = (1 - sqrt(2) * K + K * K) * norm	;
+				b2 = (1 - K_div_Q + K * K) * norm	;
 				a1 = 2 * (K * K - V) * norm	;
-				a2 = (V - sqrt(2*V) * K + K * K) * norm	;
+				a2 = (V - sqrt(V) * K_div_Q + K * K) * norm	;
 			}
 			break;
 	}
-#ifdef _USE_DSP_
+#ifdef CONFIG_USE_HW_DSP
 	a1 = -a1;
 	a2 = -a2;
 #endif

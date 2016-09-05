@@ -1,0 +1,18 @@
+
+INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_SEMIHOSTING)
+
+#INCLUDE_DIR =  
+
+#DEFINES :=
+
+#CFLAGS = 
+
+#ASMFLAGS =  
+
+SRC = semihosting.c
+
+
+VPATH = src
+
+
+include $(COMMON_CC)

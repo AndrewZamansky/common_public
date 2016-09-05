@@ -1,8 +1,6 @@
 
 ifeq ($(findstring YES,$(CONFIG_INCLUDE_USB_VIRTUAL_COM)),YES) 	 
 	_INCLUDE_USB := YES
-	_INCLUDE_UART := YES
-	DYNAMIC_COMPONENT := YES
 	INCLUDE_THIS_COMPONENT := YES   # must be here !!
 endif  
 

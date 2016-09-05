@@ -1,0 +1,23 @@
+
+INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_MEMORY_POOL)
+
+
+#INCLUDE_DIR = 
+
+#DEFINES = 
+
+#CFLAGS = 
+
+#ASMFLAGS =  
+
+
+
+SRC = memory_pool.c
+
+ifdef CONFIG_MEMORY_POOL_IS_SPEED_CRITICAL 
+    SPEED_CRITICAL_FILES += memory_pool.c
+endif
+
+VPATH = src
+
+include $(COMMON_CC)

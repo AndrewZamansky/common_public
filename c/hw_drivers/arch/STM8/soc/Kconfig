@@ -1,0 +1,21 @@
+
+
+choice
+	prompt "SOC"
+	default GENERIC_STM8_SOC
+
+config STM8S103F
+	bool "STM8S103F"
+
+config STM8_GENERIC_STM8_SOC
+	bool "generic SOC"
+
+endchoice
+
+if STM8S103F
+source "$COMMON_DIR_PATH/c/hw_drivers/arch/STM8/soc/stm8s103f/Kconfig"
+endif
+
+if STM8_GENERIC_STM8_SOC
+source "$COMMON_DIR_PATH/c/hw_drivers/arch/STM8/soc/generic_board_Kconfig"
+endif

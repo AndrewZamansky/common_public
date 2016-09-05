@@ -1,0 +1,9 @@
+config POLEG_BOARD
+	def_bool y
+	select INTERNAL_SRAM 
+	select INTERNAL_ROM 
+	select DDR 
+	select EXTERNAL_FLASH
+	select CORTEX_A9
+
+

@@ -11,8 +11,8 @@
 /********  includes *********************/
 
 #include "spi_stm32f10x_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
-#include "src/_spi_stm32f10x_prerequirements_check.h" // should be after {spi_stm32f10x_config.h,dev_managment_api.h}
+#include "dev_management_api.h" // for device manager defines and typedefs
+#include "src/_spi_stm32f10x_prerequirements_check.h" // should be after {spi_stm32f10x_config.h,dev_management_api.h}
 
 #include "spi_stm32f10x.h"
 
@@ -128,7 +128,7 @@ size_t spi_stm32f10x_pwrite(const void *aHandle ,const uint8_t *apData , size_t 
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t spi_stm32f10x_ioctl( void * const aHandle ,const uint8_t aIoctl_num
+uint8_t spi_stm32f10x_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
 	SPI_InitTypeDef  SPI_InitStructure;
@@ -187,7 +187,7 @@ uint8_t spi_stm32f10x_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t  spi_stm32f10x_api_init_dev_descriptor(pdev_descriptor aDevDescriptor)
+uint8_t  spi_stm32f10x_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor)
 {
 	if(NULL == aDevDescriptor) return 1;
 

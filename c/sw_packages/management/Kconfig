@@ -1,0 +1,46 @@
+#
+
+menu "management"
+
+menuconfig INCLUDE_PRINTF
+	bool   "printf"
+	default n
+
+if INCLUDE_PRINTF
+source "$COMMON_DIR_PATH/c/sw_packages/management/PRINTF/Kconfig"
+endif
+
+
+config INCLUDE_HTTP
+	bool   "http"
+	default n
+
+config INCLUDE_LOADED_CONFIG
+	bool   "loaded configuration"
+	depends on INCLUDE_FAT_FS
+	default n
+
+menuconfig INCLUDE_SHELL
+	bool   "shell"
+	depends on INCLUDE_ASYNC_RX_WRAPPER
+	select INCLUDE_PRINTF
+	default n
+	
+if INCLUDE_SHELL
+source "$COMMON_DIR_PATH/c/sw_packages/management/shell/Kconfig"
+endif
+
+if INCLUDE_SHELL || ARM_SEMIHOSTING_CONFIG_ENABLE_RX
+
+menuconfig INCLUDE_UBOOT_SHELL
+	bool   "uboot shell"
+	default n
+
+if INCLUDE_UBOOT_SHELL
+source "$COMMON_DIR_PATH/c/sw_packages/management/u_boot_shell/Kconfig"
+endif
+
+endif
+	
+	
+endmenu

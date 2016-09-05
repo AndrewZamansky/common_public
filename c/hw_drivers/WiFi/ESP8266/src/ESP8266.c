@@ -15,7 +15,8 @@
 #include "_project_defines.h"
 #include "_project_func_declarations.h"
 
-#include "dev_managment_api.h" // for device manager defines and typedefs
+#include "dev_management_api.h" // for device manager defines and typedefs
+#define DEBUG
 #include "PRINTF_api.h"
 
 #include "ESP8266_api.h"
@@ -103,7 +104,7 @@ typedef struct
 
 typedef struct
 {
-	pdev_descriptor *socket;
+	pdev_descriptor_t *socket;
 	uint8_t *ip_strs;
 	uint8_t *port;
 } Msg_open_socket_t;
@@ -169,8 +170,8 @@ static uint8_t ssid_pswrd[MAX_SSID_PSWRD_LEN+1];
 static uint8_t ssid_name_redandency[MAX_SSID_NAME_LEN+1];
 static uint8_t ssid_pswrd_redandency[MAX_SSID_PSWRD_LEN+1];
 
-static pdev_descriptor  server_device;
-static pdev_descriptor  client_device;
+static pdev_descriptor_t  server_device;
+static pdev_descriptor_t  client_device;
 
 
 //ESP8266_Instance_t ESP8266_InstanceParams= {0} ;
@@ -191,7 +192,7 @@ static uint8_t lCurrError=0;
 static uint8_t sendBuffer[SEND_BUFFER_LEN+1];// +1 for '\0'
 //size_t lastTotSize,lastStartPos;
 static uint32_t initDone=0;
-static pdev_descriptor this_dev;
+static pdev_descriptor_t this_dev;
 
 /*---------------------------------------------------------------------------------------------------------*/
 /* Function:        send_to_chip                                                                          */
@@ -238,7 +239,7 @@ static void   send_str_to_chip	(const uint8_t *data)
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t ESP8266_callback(void * const aHandle ,const uint8_t aCallback_num
+uint8_t ESP8266_callback(pdev_descriptor_t apdev ,const uint8_t aCallback_num
 		, void * aCallback_param1, void * aCallback_param2)
 {
 	xMessage_t  queueMsg;
@@ -867,18 +868,8 @@ static void ESP8266_Task( void *pvParameters )
 			}
 #endif
 		}// end of while(data_left_in_buffer)
-#if (1==INCLUDE_uxTaskGetStackHighWaterMark )
-		{
-			static  size_t stackLeft,minStackLeft=0xffffffff;
 
-			stackLeft = uxTaskGetStackHighWaterMark( NULL );
-			if(minStackLeft > stackLeft)
-			{
-				minStackLeft = stackLeft;
-				PRINTF_DBG("%s stack left = %d\r\n" , __FUNCTION__ ,minStackLeft);
-			}
-		}
-#endif
+		os_stack_test();
 
 	}
 
@@ -935,7 +926,7 @@ static uint32_t  ESP8266_Start( )
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-static uint8_t ESP8266_ioctl(void * const aHandle ,const uint8_t aIoctl_num
+static uint8_t ESP8266_ioctl(pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
 	xMessage_t  queueMsg;
@@ -950,7 +941,7 @@ static uint8_t ESP8266_ioctl(void * const aHandle ,const uint8_t aIoctl_num
 			*(uint8_t*)aIoctl_param2 =  sizeof(ESP8266_Dev_Params)/sizeof(dev_param_t); //size
 			break;
 		case IOCTL_SET_ISR_CALLBACK_DEV :
-			client_device = (pdev_descriptor)aIoctl_param1;
+			client_device = (pdev_descriptor_t)aIoctl_param1;
 			break;
 		case IOCTL_ESP8266_SET_SERVER_DEVICE :
 			server_device = DEV_OPEN((uint8_t*)aIoctl_param1);
@@ -986,7 +977,7 @@ static uint8_t ESP8266_ioctl(void * const aHandle ,const uint8_t aIoctl_num
 
 		case IOCTL_ESP8266_SOCKET_CLOSE :
 			queueMsg.type = CLOSE_SOCKET;
-			queueMsg.msg_data.Msg_close_socket.socket = ((pdev_descriptor)aIoctl_param1)->handle;
+			queueMsg.msg_data.Msg_close_socket.socket = ((pdev_descriptor_t)aIoctl_param1)->handle;
 			retVal = send_message_and_wait(&queueMsg);
 			break;
 
@@ -1029,7 +1020,7 @@ static uint8_t ESP8266_ioctl(void * const aHandle ,const uint8_t aIoctl_num
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t  ESP8266_api_init_dev_descriptor(pdev_descriptor aDevDescriptor)
+uint8_t  ESP8266_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor)
 {
 
 	if(NULL == aDevDescriptor) return 1;

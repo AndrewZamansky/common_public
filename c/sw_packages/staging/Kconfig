@@ -1,0 +1,11 @@
+#
+
+menu "staging"
+
+
+config INCLUDE_UGFX
+	bool   "ugfx"
+	depends on !GCC_TARGET_OS_LINUX && !HOST
+	default n
+	
+endmenu

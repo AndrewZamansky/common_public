@@ -1,6 +1,5 @@
 
 ifeq ($(findstring YES,$(CONFIG_INCLUDE_ESP8266)),YES) 	 
-	DYNAMIC_COMPONENT := YES
 	INCLUDE_THIS_COMPONENT := YES   # must be here !!
 endif  
 

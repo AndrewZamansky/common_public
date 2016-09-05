@@ -8,9 +8,9 @@
 
 /***************   includes    *******************/
 #include "serial_number_atmega_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
+#include "dev_management_api.h" // for device manager defines and typedefs
 #include "serial_number_api.h"
-#include "src/_serial_number_atmega_prerequirements_check.h" // should be after {uart_atmega_config.h,dev_managment_api.h}
+#include "src/_serial_number_atmega_prerequirements_check.h" // should be after {uart_atmega_config.h,dev_management_api.h}
 
 #include "serial_number_atmega_api.h"
 #include "serial_number_atmega.h"
@@ -43,7 +43,7 @@ static const uint8_t valid_serial_present_stamp[SIZE_OF_STAMP]={0x1A,0xB2,0x3C,0
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t serial_atmega_ioctl( void * const aHandle ,const uint8_t aIoctl_num
+uint8_t serial_atmega_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
 	uint8_t i,val;
@@ -94,7 +94,7 @@ uint8_t serial_atmega_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 					}
 				}
 			}
-			hashed_name_result=hush32_function(PROJECT_NAME,sizeof(PROJECT_NAME));
+			hashed_name_result=hush32_function(CONFIG_PROJECT_NAME,sizeof(CONFIG_PROJECT_NAME));
 			memcpy(serial_number,&hashed_name_result,4);
 			for(i=4;i<SERIAL_NUMBER_LEN;i++)
 			{
@@ -119,7 +119,7 @@ uint8_t serial_atmega_ioctl( void * const aHandle ,const uint8_t aIoctl_num
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t  serial_number_atmega_api_init_dev_descriptor(pdev_descriptor aDevDescriptor)
+uint8_t  serial_number_atmega_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor)
 {
 	if(NULL == aDevDescriptor) return 1;
 

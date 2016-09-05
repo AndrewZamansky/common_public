@@ -1,0 +1,7 @@
+#
+	
+
+config  SPI_FLASH_SIZE
+	hex   "spi flash size"
+	default 0x100000
+

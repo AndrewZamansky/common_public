@@ -13,14 +13,15 @@
 
 /********  includes *********************/
 
-#include "I2S_nuc505_config.h"
-#include "dev_managment_api.h" // for device manager defines and typedefs
-#include "src/_I2S_nuc505_prerequirements_check.h" // should be after {I2S_nuc505_config.h,dev_managment_api.h}
+#include "src/_I2S_nuc505_prerequirements_check.h"
 
 /********  types  *********************/
 
-typedef struct {
-	pdev_descriptor_const   callback_dev;
-} I2S_NUC505_Instance_t;
+typedef struct
+{
+	pdev_descriptor_t   callback_dev;
+	uint16_t num_of_words_in_buffer_per_chenel ;
+	uint8_t	num_of_bytes_in_word;
+} I2S_nuc505_instance_t;
 
 #endif

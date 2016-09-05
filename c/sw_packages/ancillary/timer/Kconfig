@@ -1,0 +1,5 @@
+#
+	
+config  TIMER_MAX_NUM_OF_DYNAMIC_INSTANCES
+	int   "maximal number of dynamic instances"
+	default 0
