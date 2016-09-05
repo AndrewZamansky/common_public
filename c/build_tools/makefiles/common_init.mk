@@ -223,7 +223,7 @@ ifneq ($(findstring ambiguous argument 'HEAD',$(CURR_GIT_BRANCH)),)      # if no
     $(error )
 endif
 ifeq ($(findstring $(PROJECT_NAME),$(CURR_GIT_BRANCH)),)      # if not found $(PROJECT_NAME) in $(CURR_GIT_BRANCH)
-    $(info !--- error : branch names must be of type $(PROJECT_NAME) or $(PROJECT_NAME)_<branch_name>)
+    $(info !--- error : branch names must be of type $(PROJECT_NAME) or $(PROJECT_NAME)<_vVersion>)
     $(info !--- but current branch name is $(CURR_GIT_BRANCH))
     $(info !--- in case that this git is just created run following comand  :)
     $(info !--- $(CD) $(APP_ROOT_DIR) $(SHELL_CMD_DELIMITER) git branch -m $(PROJECT_NAME))
