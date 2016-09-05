@@ -3,26 +3,27 @@
 ifndef COMMON_INIT_SECTION_THAT_SHOULD_RUN_ONCE
 
 ifdef REDEFINE_CXSTM8_ROOT_DIR
-    $(info  cxstm8 dir  redefined to $(REDEFINE_ARM_GCC_ROOT_DIR) )
+    $(info  cxstm8 dir  redefined to $(REDEFINE_CXSTM8_ROOT_DIR) )
+    ifeq ("$(wildcard $(REDEFINE_CXSTM8_ROOT_DIR))","")
+        $(info !--- cxstm8 path $(REDEFINE_CXSTM8_ROOT_DIR) dont exists)
+        $(info !--- to use default cxstm8 location remove/comment REDEFINE_CXSTM8_ROOT_DIR variable in  $(WORKSPACE_ROOT_DIR)/workspace_config.mk )
+        $(info !--- you can set customized cxstm8 path in REDEFINE_CXSTM8_ROOT_DIR variable in $(WORKSPACE_ROOT_DIR)/workspace_config.mk )
+        $(error )
+    endif
     CXSTM8_ROOT_DIR 	:= 	$(REDEFINE_ARM_GCC_ROOT_DIR)
 else
     $(info  looking for cxstm8 in default location)
 #    CXSTM8_ROOT_DIR 	:=C:\Program\ Files (x86)\COSMIC\CXSTM8_EVAL
-   TEST_CXSTM8_ROOT_DIR 	:=C:\Program\ Files\ (x86)\COSMIC\FSE_Compilers\CXSTM8
+    TEST_CXSTM8_ROOT_DIR 	:=C:\Program\ Files\ (x86)\COSMIC\FSE_Compilers\CXSTM8
     ifeq ("$(wildcard $(TEST_CXSTM8_ROOT_DIR))","")
-        $(info cxstm8 path $(TEST_CXSTM8_ROOT_DIR) dont exists )
-        $(info download cxstm8 and install it to C:\Program Files (x86)\COSMIC\FSE_Compilers  )
-        $(info make sure that Hstm8  folder is located in $(TEST_CXSTM8_ROOT_DIR)/  after installing   )
+        $(info !--- cxstm8 path $(TEST_CXSTM8_ROOT_DIR) dont exists )
+        $(info !--- download cxstm8 and install it to C:\Program Files (x86)\COSMIC\FSE_Compilers  )
+        $(info !--- make sure that Hstm8  folder is located in $(TEST_CXSTM8_ROOT_DIR)/  after installing   )
         $(error )
     endif
    CXSTM8_ROOT_DIR 	:=C:\Program Files (x86)\COSMIC\FSE_Compilers\CXSTM8
 endif
 
-ifeq ("$(wildcard $(CXSTM8_ROOT_DIR))","")
-    $(info cxstm8 path $(CXSTM8_ROOT_DIR) dont exists)
-    $(info you can set make path in REDEFINE_CXSTM8_ROOT_DIR variable in $(WORKSPACE_ROOT_DIR)/workspace_config.mk )
-    $(error )
-endif
 
 
 # replce "\ " with " "
@@ -31,7 +32,7 @@ SPACE:= $(EMPTY) $(EMPTY)
 CXSTM8_ROOT_DIR :=$(subst \$(SPACE),$(SPACE),$(CXSTM8_ROOT_DIR))
 
 
-PREPROCESSOR =	"$(CXSTM8_ROOT_DIR)"\cpstm8
+PREPROCESSOR =	"$(CXSTM8_ROOT_DIR)\cpstm8"
 CC			=	"$(CXSTM8_ROOT_DIR)\cxstm8"
 ASM			=	"$(CXSTM8_ROOT_DIR)\castm8" 
 
