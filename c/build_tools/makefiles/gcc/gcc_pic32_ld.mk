@@ -35,9 +35,11 @@ LDFLAGS :=
 #LDFLAGS += -fno-builtin-printf
 
 
+ifdef CONFIG_GCC_OPTIMISE_SIZE
+    LDFLAGS += -Wl,--gc-sections #-nostartfiles
+	GLOBAL_CFLAGS +=  -mips16
+endif
 
-
-#LDFLAGS += -Wl,--gc-sections #-nostartfiles
 LDFLAGS += -Wl,-Map=$(OUT_DIR)/$(OUTPUT_APP_NAME).map   # -msoft-float -mfloat-abi=soft
 LDFLAGS += -Wl,--defsym=__MPLAB_BUILD=1
 

@@ -96,6 +96,7 @@ GLOBAL_CFLAGS += -Wall -fdata-sections
 
 ifdef CONFIG_GCC_OPTIMISE_SIZE
 	GLOBAL_CFLAGS +=  -ffunction-sections
+	GLOBAL_CFLAGS +=  -mips16
 endif
 
 GLOBAL_CFLAGS += -$(CONFIG_OPTIMIZE_LEVEL) -g -MMD
