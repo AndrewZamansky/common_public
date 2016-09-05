@@ -35,11 +35,11 @@ else
     ifndef GCC_NOT_FOUND
        TEST_GCC_ROOT_DIR 	:= 	$(TOOLS_ROOT_DIR)/gcc/arm-$(VENDOR_NAME)
        ifeq ("$(wildcard $(TEST_GCC_ROOT_DIR)*)","")
-           $(info !--- $(TEST_GCC_ROOT_DIR)xxx dont exists )
+           $(info !--- gcc with vendor name $(VENDOR_NAME) dont exists )
            $(info !--- (if needed you can change vendor name using menuconfig in GCC_VENDOR_NAME variable ))
            GCC_NOT_FOUND :=1
        endif
-	endif
+    endif
 
     OS_PREFIX :=none-
     ifdef CONFIG_GCC_TARGET_OS_LINUX
@@ -48,11 +48,11 @@ else
     ifndef GCC_NOT_FOUND
        TEST_GCC_ROOT_DIR 	:= 	$(TOOLS_ROOT_DIR)/gcc/arm-$(VENDOR_NAME)$(OS_PREFIX)
        ifeq ("$(wildcard $(TEST_GCC_ROOT_DIR)*)","")
-           $(info !--- $(TEST_GCC_ROOT_DIR)xxx dont exists )
+           $(info !--- gcc for '$(OS_PREFIX)' OS dont exists )
            $(info !--- (if needed you can change target OS using menuconfig in "Building System" menu ))
            GCC_NOT_FOUND :=1
        endif
-	endif
+    endif
 
     ABI_PREFIX :=
     ifdef CONFIG_EABI
@@ -64,22 +64,22 @@ else
     ifndef GCC_NOT_FOUND
        TEST_GCC_ROOT_DIR 	:= 	$(TOOLS_ROOT_DIR)/gcc/arm-$(VENDOR_NAME)$(OS_PREFIX)$(ABI_PREFIX)
        ifeq ("$(wildcard $(TEST_GCC_ROOT_DIR)*)","")
-           $(info !--- $(TEST_GCC_ROOT_DIR)-xxx dont exists )
+           $(info !--- gcc for '$(ABI_PREFIX)' ABI dont exists )
            $(info !--- (if needed you can change ABI type using menuconfig in "Building System" menu ))
            GCC_NOT_FOUND :=1
        endif
-	endif
+    endif
 
 
     GCC_VERSION :=$(patsubst "%",%,$(CONFIG_ARM_GCC_VERSION))
     ifndef GCC_NOT_FOUND
        TEST_GCC_ROOT_DIR 	:= 	$(TOOLS_ROOT_DIR)/gcc/arm-$(VENDOR_NAME)$(OS_PREFIX)$(ABI_PREFIX)-$(GCC_VERSION)
        ifeq ("$(wildcard $(TEST_GCC_ROOT_DIR))","")
-           $(info !--- $(TEST_GCC_ROOT_DIR) dont exists )
+           $(info !--- gcc with '$(GCC_VERSION)' version dont exists )
            $(info !--- (if needed you can change gcc version using menuconfig in "Building System" menu ))
            GCC_NOT_FOUND :=1
        endif
-	endif
+    endif
 
 
     ifdef GCC_NOT_FOUND
