@@ -16,4 +16,8 @@ typedef struct
 	pdev_descriptor_const  adc_server_device;
 } LM35_Instance_t;
 
+typedef struct {
+	uint8_t run_state ;
+} LM35_runtime_instance_t;
+
 #endif /* */

@@ -5,9 +5,10 @@
 
 uint8_t LM35_ioctl( void * const aHandle ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2);
 
-#define	MODULE_NAME					LM35
-#define	MODULE_IOCTL_FUNCTION		LM35_ioctl
+#define	MODULE_NAME							LM35
+#define	MODULE_IOCTL_FUNCTION				LM35_ioctl
 #define MODULE_CONFIG_DATA_STRUCT_TYPE		LM35_Instance_t
+#define MODULE_RUNTIME_DATA_STRUCT_TYPE		LM35_runtime_instance_t
 
 #ifdef DT_DEV_MODULE
 

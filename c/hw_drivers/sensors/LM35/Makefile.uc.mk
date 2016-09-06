@@ -1,22 +1,18 @@
 
-ifeq ($(findstring YES,$(CONFIG_INCLUDE_LM35)),YES) 	 
-	INCLUDE_THIS_COMPONENT := YES   # must be here !!
-endif  
+INCLUDE_THIS_COMPONENT :=$(CONFIG_INCLUDE_LM35)
 
+#INCLUDE_DIR =
 
-#INCLUDE_DIR =  
+#DEFINES =
 
-#DEFINES = 
+#CFLAGS =
 
-#CFLAGS = 
-
-#ASMFLAGS =  
+#ASMFLAGS =
 
 
 
-SRC = LM35.c 
+SRC = LM35.c
 
 VPATH = src
 
 include $(COMMON_CC)
-

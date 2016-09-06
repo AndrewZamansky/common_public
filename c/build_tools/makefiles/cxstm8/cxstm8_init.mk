@@ -13,15 +13,16 @@ ifdef REDEFINE_CXSTM8_ROOT_DIR
     CXSTM8_ROOT_DIR 	:= 	$(REDEFINE_ARM_GCC_ROOT_DIR)
 else
     $(info  looking for cxstm8 in default location)
-#    CXSTM8_ROOT_DIR 	:=C:\Program\ Files (x86)\COSMIC\CXSTM8_EVAL
-    TEST_CXSTM8_ROOT_DIR 	:=C:\Program\ Files\ (x86)\COSMIC\FSE_Compilers\CXSTM8
+    TEST_CXSTM8_ROOT_DIR 	:=C:\Program\ Files\ (x86)\COSMIC\CXSTM8_EVAL
+#    TEST_CXSTM8_ROOT_DIR 	:=C:\Program\ Files\ (x86)\COSMIC\FSE_Compilers\CXSTM8
     ifeq ("$(wildcard $(TEST_CXSTM8_ROOT_DIR))","")
         $(info !--- cxstm8 path $(TEST_CXSTM8_ROOT_DIR) dont exists )
         $(info !--- download cxstm8 and install it to C:\Program Files (x86)\COSMIC\FSE_Compilers  )
         $(info !--- make sure that Hstm8  folder is located in $(TEST_CXSTM8_ROOT_DIR)/  after installing   )
         $(error )
     endif
-   CXSTM8_ROOT_DIR 	:=C:\Program Files (x86)\COSMIC\FSE_Compilers\CXSTM8
+ #  CXSTM8_ROOT_DIR 	:=C:\Program Files (x86)\COSMIC\FSE_Compilers\CXSTM8
+   CXSTM8_ROOT_DIR 	:=C:\Program Files (x86)\COSMIC\CXSTM8_EVAL
 endif
 
 

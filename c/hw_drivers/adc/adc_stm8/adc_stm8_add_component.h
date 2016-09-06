@@ -5,9 +5,9 @@
 
 uint8_t adc_stm8_ioctl( void * const aHandle ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2);
 
-#define	MODULE_NAME					adc_stm8
-#define	MODULE_IOCTL_FUNCTION		adc_stm8_ioctl
-#define MODULE_CONFIG_DATA_STRUCT_TYPE		ADC_STM8_Instance_t
+#define	MODULE_NAME							adc_stm8
+#define	MODULE_IOCTL_FUNCTION				adc_stm8_ioctl
+#define MODULE_CONFIG_DATA_STRUCT_TYPE		adc_stm8_instance_t
 
 #ifdef DT_DEV_MODULE
 
@@ -23,9 +23,6 @@ uint8_t adc_stm8_ioctl( void * const aHandle ,const uint8_t aIoctl_num , void * 
 
 #include "add_component.h"
 
-#define MODULE_CONFIGURABLE_PARAMS_ARRAY	{	\
-		{IOCTL_adc_stm8_SET_SERVER_DEVICE , IOCTL_VOID , adc_stm8_API_SERVER_DEVICE_STR, NOT_FOR_SAVE},	\
-	}
 
 /* device specific defines should be undefined after calling #include "add_component.h" */
-#undef adc_stm8_ADC_SERVER_PDEV
+#undef ADC_STM8_CHANNEL
