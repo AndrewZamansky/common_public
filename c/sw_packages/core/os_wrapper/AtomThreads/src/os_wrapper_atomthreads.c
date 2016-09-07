@@ -67,7 +67,7 @@ os_queue_t os_create_queue_atomthreads(uint8_t num_of_elements ,uint8_t size_of_
 	curr_storage_pointer += queueSize;
 
 	// trap if storage of queues exceed then defined
-	while(ATOMTHREADS_CONFIG_QUEUES_STORAGE_SIZE <= curr_storage_pointer );
+	while(ATOMTHREADS_CONFIG_QUEUES_STORAGE_SIZE < curr_storage_pointer );
 
 
 	return curAtomQueue;
