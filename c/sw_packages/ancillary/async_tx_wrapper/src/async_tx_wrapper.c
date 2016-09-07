@@ -91,6 +91,7 @@ uint8_t async_tx_wrapper_callback(pdev_descriptor_t apdev ,const uint8_t aCallba
 	    	os_queue_t xTX_WaitQueue  ;
 	    	DEV_IOCTL_0_PARAMS(server_dev,IOCTL_UART_DISABLE_TX);
 	    	xTX_WaitQueue = runtime_handle->xTX_WaitQueue;
+		    runtime_handle->data_length = 0; // need to be here to avoid additional loop on stuck check
 	   		os_queue_send_immediate( xTX_WaitQueue, ( void * ) &dummy_msg);
 
 	//	    queueMsg = TRANSMIT_DONE;
@@ -111,33 +112,59 @@ uint8_t async_tx_wrapper_callback(pdev_descriptor_t apdev ,const uint8_t aCallba
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-static void sw_uart_send_and_wait_for_end(async_tx_wrapper_instance_t *config_handle,
+static void sw_uart_send_and_wait_for_end(pdev_descriptor_t apdev,
 			async_tx_wrapper_runtime_instance_t *runtime_handle ,
-		const uint8_t *apData , tx_int_size_t aLength , uint8_t called_from_task)
+			xMessage_t *xMessage , uint8_t called_from_task)
 {
+
+	async_tx_wrapper_instance_t *config_handle;
 
 	os_queue_t xTX_WaitQueue ;
 	pdev_descriptor_t   server_dev ;
+	uint8_t const *pData ;
+	tx_int_size_t length ;
+	tx_int_size_t last_checked_length ;
+
+	config_handle = DEV_GET_CONFIG_DATA_POINTER(apdev);
+
+	pData = xMessage->pData;
+	length = xMessage->len;
 
 	xTX_WaitQueue = runtime_handle->xTX_WaitQueue;
 	server_dev = config_handle->server_dev;
 
-//	uint8_t	xRx_TX_Wait_Message;
-	runtime_handle->data_length=aLength;
-	runtime_handle->sendData=apData;
+	runtime_handle->data_length = length;
+	runtime_handle->sendData = pData;
 
 	DEV_IOCTL_0_PARAMS(server_dev ,IOCTL_UART_ENABLE_TX);
-	DEV_WRITE(server_dev , apData, aLength);
-	if(called_from_task)
+	DEV_WRITE(server_dev , pData, length);
+	while (length)
 	{
-		os_queue_receive_with_timeout( xTX_WaitQueue , &( dummy_msg ) , aLength);
-	}
-	else
-	{
-		busy_delay(aLength);
+		last_checked_length = length;
+		if(called_from_task)
+		{
+			/* when setting timeout = length then for baud rate <8k we should get only message only after
+				transmision ends */
+			os_queue_receive_with_timeout( xTX_WaitQueue , &( dummy_msg ) , length );
+		}
+		else
+		{
+			volatile uint16_t wait;
+			wait = 10000 ;
+			while (wait--);
+		}
+		length = runtime_handle->data_length;
+		if(length == last_checked_length) /* check if transmition is stucked */
+		{
+			break ;
+		}
 	}
 	DEV_IOCTL_0_PARAMS(server_dev ,IOCTL_UART_DISABLE_TX);
 	runtime_handle->data_length=0;
+
+#ifdef CONFIG_ASYNC_TX_WRAPPER_USE_MALLOC
+	free( pData );
+#endif
 
 }
 
@@ -156,13 +183,9 @@ size_t async_tx_wrapper_pwrite(pdev_descriptor_t apdev ,const uint8_t *apData , 
 {
 	tx_int_size_t dataLen= (tx_int_size_t)aLength;
 	tx_int_size_t curr_transmit_len;
-	async_tx_wrapper_instance_t *config_handle;
 	async_tx_wrapper_runtime_instance_t *runtime_handle;
-
-
 	uint8_t *pSendData;
 
-	config_handle = DEV_GET_CONFIG_DATA_POINTER(apdev);
 	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(apdev);
 
 	while(dataLen)
@@ -202,7 +225,7 @@ size_t async_tx_wrapper_pwrite(pdev_descriptor_t apdev ,const uint8_t *apData , 
 		}
 		else
 		{
-			sw_uart_send_and_wait_for_end(config_handle , runtime_handle ,pSendData,curr_transmit_len,0);
+			sw_uart_send_and_wait_for_end(apdev , runtime_handle , &xMessage ,0);
 		}
 
 		dataLen-=curr_transmit_len;
@@ -232,12 +255,10 @@ static void ASYNC_TX_WRAPPER_Send_Task( void *apdev )
 
 	uint8_t *pData;
 	xMessage_t xRxMessage;
-	async_tx_wrapper_instance_t *config_handle;
 	async_tx_wrapper_runtime_instance_t *runtime_handle;
 
 	os_queue_t xQueue ;
 
-	config_handle = DEV_GET_CONFIG_DATA_POINTER(apdev);
 	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(apdev);
 
 	xQueue = os_create_queue( CONFIG_ASYNC_TX_WRAPPER_MAX_QUEUE_LEN , sizeof(xMessage_t ) );
@@ -248,14 +269,9 @@ static void ASYNC_TX_WRAPPER_Send_Task( void *apdev )
 
 	for( ;; )
 	{
-		if( OS_QUEUE_RECEIVE_SUCCESS == os_queue_receive_infinite_wait( xQueue , &( xRxMessage )) )
+		if( OS_QUEUE_RECEIVE_SUCCESS == os_queue_receive_infinite_wait( xQueue , &xRxMessage ) )
 		{
-			pData = xRxMessage.pData;
-			sw_uart_send_and_wait_for_end(config_handle , runtime_handle ,pData,xRxMessage.len,1);
-
-#ifdef CONFIG_ASYNC_TX_WRAPPER_USE_MALLOC
-			free( pData );
-#endif
+			sw_uart_send_and_wait_for_end(apdev , runtime_handle , &xRxMessage , 1);
 		}
 
 		os_stack_test();
