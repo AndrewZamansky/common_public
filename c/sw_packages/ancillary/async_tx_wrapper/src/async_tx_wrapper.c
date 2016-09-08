@@ -121,7 +121,7 @@ static void sw_uart_send_and_wait_for_end(pdev_descriptor_t apdev,
 
 	os_queue_t xTX_WaitQueue ;
 	pdev_descriptor_t   server_dev ;
-	uint8_t const *pData ;
+	uint8_t *pData ;
 	tx_int_size_t length ;
 	tx_int_size_t last_checked_length ;
 
@@ -253,7 +253,6 @@ size_t async_tx_wrapper_pwrite(pdev_descriptor_t apdev ,const uint8_t *apData , 
 static void ASYNC_TX_WRAPPER_Send_Task( void *apdev )
 {
 
-	uint8_t *pData;
 	xMessage_t xRxMessage;
 	async_tx_wrapper_runtime_instance_t *runtime_handle;
 
