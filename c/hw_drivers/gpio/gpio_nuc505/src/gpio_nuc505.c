@@ -118,7 +118,7 @@ uint8_t gpio_nuc505_ioctl( pdev_descriptor_t apdev , const uint8_t aIoctl_num
 			break;
 
 		case IOCTL_GPIO_PIN_SET :
-			MEM_ADDR(GPIOx + 0x08) = pin_num_mask;
+			MEM_ADDR(GPIOx + 0x08)  |= pin_num_mask;
 
 			break;
 
