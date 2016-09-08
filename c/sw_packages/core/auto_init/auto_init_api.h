@@ -18,7 +18,7 @@ typedef struct
 }auto_init_struct_t;
 
 #define AUTO_INIT_FUNCTION(func)  \
-		AUTO_INIT_FUNCTION_PLACEMENT auto_init_struct_t auto_init_##func = { AUTO_INIT_MAGIC_NUMBER , func}
+		auto_init_struct_t AUTO_INIT_FUNCTION_PLACEMENT auto_init_##func = { AUTO_INIT_MAGIC_NUMBER , func}
 
 
 /**********  define API  types ************/

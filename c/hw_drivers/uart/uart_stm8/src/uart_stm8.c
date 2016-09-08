@@ -18,13 +18,9 @@
 #include "stm8s.h"
 #include "STM8_api.h"
 
-//#include "atom.h"
-//#include "atommutex.h"
-//#include "uart.h"
 #include "stm8s_uart1.h"
 #include "uart_stm8_api.h"
 
-//#include "sw_uart_wrapper_api.h"
 
 #include "uart_stm8_add_component.h"
 

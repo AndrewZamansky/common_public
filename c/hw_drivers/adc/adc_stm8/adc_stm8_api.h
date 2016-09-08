@@ -2,10 +2,8 @@
 #ifndef _adc_stm8_API_H_
 #define _adc_stm8_API_H_
 
-#include "adc_stm8_config.h"
-#include "dev_management_api.h" // for device manager defines and typedefs
+#include "src/_adc_stm8_prerequirements_check.h"
 #include "adc_api.h"
-#include "src/_adc_stm8_prerequirements_check.h" // should be after {uart_stm8_config.h,dev_management_api.h}
 
 /**********  define API  types ************/
 
@@ -28,13 +26,5 @@ typedef enum
 
 /**********  define API  functions  ************/
 
-
-uint8_t  adc_stm8_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor);
-
-
-#include "src/adc_stm8_static_dev_macros.h"
-
-#define ADC_STM8_API_CREATE_STATIC_DEV(dev,dev_name ,channel) \
-			__ADC_STM8_API_CREATE_STATIC_DEV(dev,dev_name ,channel)
 
 #endif

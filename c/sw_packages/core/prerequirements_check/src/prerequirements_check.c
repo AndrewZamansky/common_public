@@ -13,7 +13,9 @@
 /********  includes *********************/
 #include "_project.h"
 #include "dev_management_api.h"
-#include "os_wrapper.h"
+#if !defined(CONFIG_HOST)
+    #include "os_wrapper.h"
+#endif
 #include "global_prerequirements_check.h"
 
 
@@ -35,9 +37,10 @@ enum
 #endif
 
 
-
-#ifndef os_stack_test
-	os_stack_test___not_declared_in_shell_config_h=sizeof((int)os_stack_test),
+#if !defined(CONFIG_HOST)
+	#ifndef os_stack_test
+		os_stack_test___not_declared_in_shell_config_h=sizeof((int)os_stack_test),
+	#endif
 #endif
 
 #ifdef GLOBAL_CONFIG_USE_MALLOC

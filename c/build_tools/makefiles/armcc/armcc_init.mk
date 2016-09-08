@@ -16,7 +16,7 @@ OUTPUT_BIN := $(OUTPUT_BIN).bin
 
 GLOBAL_CFLAGS := $(GLOBAL_CFLAGS) -c --apcs=interwork --split_sections --gnu --c99
 
-ifdef CONFIG_INCLUDE_FPU
+ifdef CONFIG_INCLUDE_CORTEX_M_FPU
    GLOBAL_CFLAGS += --cpu=$(CONFIG_CPU_TYPE).fp
 else 	 
    GLOBAL_CFLAGS += --cpu=$(CONFIG_CPU_TYPE) 
@@ -33,7 +33,7 @@ GLOBAL_CFLAGS := $(GLOBAL_CFLAGS) -$(CONFIG_OPTIMIZE_LEVEL) -g
 
 #caclulating assembler flags
 
-ifdef CONFIG_INCLUDE_FPU
+ifdef CONFIG_INCLUDE_CORTEX_M_FPU
    GLOBAL_ASMFLAGS += --cpu=$(CONFIG_CPU_TYPE).fp
 else 	 
    GLOBAL_ASMFLAGS += --cpu=$(CONFIG_CPU_TYPE) 
@@ -44,7 +44,7 @@ GLOBAL_ASMFLAGS := $(GLOBAL_ASMFLAGS) #add this line to stop calculate GLOBAL_AS
 
 #caclulating linker flags
 
-ifdef CONFIG_INCLUDE_FPU
+ifdef CONFIG_INCLUDE_CORTEX_M_FPU
    GLOBAL_LDFLAGS += --cpu=$(CONFIG_CPU_TYPE).fp
 else 	 
    GLOBAL_LDFLAGS += --cpu=$(CONFIG_CPU_TYPE) 

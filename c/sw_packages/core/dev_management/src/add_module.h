@@ -30,6 +30,10 @@
 		#define MODULE_CONFIG_DATA_STRUCT_TYPE			uint8_t
 	#endif
 
+	#ifndef	MODULE_RUNTIME_DATA_STRUCT_TYPE
+		#define MODULE_RUNTIME_DATA_STRUCT_TYPE			uint8_t
+	#endif
+
 	#define MODULE_INST2(module)	module_inst_##module
 	#define MODULE_INST(module)		MODULE_INST2(module)
 

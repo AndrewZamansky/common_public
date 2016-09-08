@@ -27,7 +27,7 @@ else ifneq ($(wildcard $(APP_ROOT_DIR)/../../../common/c),)
 else ifneq ($(wildcard $(APP_ROOT_DIR)/../../../../common/c),) 
     COMMON_ROOT_DIR    :=    $(APP_ROOT_DIR)/../../../../common/c
 else
-    $(error ---- COMMON C \(common/c\) DIR NOT FOUND ----)
+    $(error !---- COMMON C \(common/c\) DIR NOT FOUND ----)
 endif
 
 #find root project directory  :
@@ -38,7 +38,7 @@ else ifneq ($(wildcard $(APP_ROOT_DIR)/../../../apps),)
 else ifneq ($(wildcard $(APP_ROOT_DIR)/../../../../apps),) 
     RELATIVE_PROJECT_ROOT_PATH    :=../..
 else
-   $(error ---- apps  DIR NOT FOUND ----)
+   $(error !---- apps  DIR NOT FOUND ----)
 endif
 
 WORKSPACE_ROOT_DIR := $(patsubst $(APP_ROOT_DIR)/%,%,$(realpath $(COMMON_ROOT_DIR)/../..))
@@ -46,15 +46,15 @@ WORKSPACE_NAME := $(notdir $(WORKSPACE_ROOT_DIR))
 
 EXTERNAL_SOURCE_ROOT_DIR := $(patsubst %/,%,$(dir $(WORKSPACE_ROOT_DIR)))/external_source
 ifeq ("$(wildcard $(EXTERNAL_SOURCE_ROOT_DIR))","")
-    $(info directory $(EXTERNAL_SOURCE_ROOT_DIR) dont exists . create it .)
+    $(info !--- directory $(EXTERNAL_SOURCE_ROOT_DIR) dont exists . create it .)
     $(error )
 endif
 TOOLS_ROOT_DIR := $(patsubst %/,%,$(dir $(WORKSPACE_ROOT_DIR)))/tools
 ifeq ("$(wildcard $(TOOLS_ROOT_DIR))","")
-    $(info directory $(TOOLS_ROOT_DIR) dont exists . create it .)
+    $(info !--- directory $(TOOLS_ROOT_DIR) dont exists . create it .)
     $(error )
 endif
-        
+
 include $(WORKSPACE_ROOT_DIR)/workspace_config.mk
 
 DRIVERS_ROOT_DIR := $(COMMON_ROOT_DIR)/hw_drivers
@@ -65,6 +65,8 @@ AUTO_GENERATED_FILES_DIR := $(APP_ROOT_DIR)/z_auto_generated_files
 OBJ_DIR    := $(APP_ROOT_DIR)/zOBJ
 OUT_DIR    :=    $(APP_ROOT_DIR)/zOUT
 OUT_DIR_HISTORY    :=    $(APP_ROOT_DIR)/zOUT_history
+DEFAULT_GIT_IGNORE_FILE    :=    $(COMMON_ROOT_DIR)/build_tools/default.project.gitignore
+CURRENT_GIT_IGNORE_FILE    :=    $(APP_ROOT_DIR)/.gitignore
 
 MKDIR=mkdir    
 
@@ -84,15 +86,17 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
     TOOLS_ROOT_DIR := $(subst /,\,$(TOOLS_ROOT_DIR))
     TOOLS_ROOT_DIR := $(TOOLS_ROOT_DIR)\windows
     COMMON_DIR := $(subst /,\,$(COMMON_DIR))
-    
+    DEFAULT_GIT_IGNORE_FILE := $(subst /,\,$(DEFAULT_GIT_IGNORE_FILE))
+    CURRENT_GIT_IGNORE_FILE := $(subst /,\,$(CURRENT_GIT_IGNORE_FILE))
+
     CRC32CALC    =    $(TOOLS_ROOT_DIR)\crc32\crc32.exe
 
     ifdef REDEFINE_MAKE_PROGRAM_DIR
         $(info  make  redefined to $(REDEFINE_MAKE_PROGRAM_DIR)\make)
         ifeq ("$(wildcard $(REDEFINE_MAKE_PROGRAM_DIR))","")
-            $(info make path $(REDEFINE_MAKE_PROGRAM_DIR) dont exists)
-            $(info to use default make location remove/comment REDEFINE_MAKE_PROGRAM_DIR variable in  $(REDEFINE_MAKE_PROGRAM_DIR)/workspace_config.mk )
-            $(info you can set customized make utility path in REDEFINE_MAKE_PROGRAM_DIR variable in $(REDEFINE_MAKE_PROGRAM_DIR)/workspace_config.mk )
+            $(info !--- make path $(REDEFINE_MAKE_PROGRAM_DIR) dont exists)
+            $(info !--- to use default make location remove/comment REDEFINE_MAKE_PROGRAM_DIR variable in  $(REDEFINE_MAKE_PROGRAM_DIR)/workspace_config.mk )
+            $(info !--- you can set customized make utility path in REDEFINE_MAKE_PROGRAM_DIR variable in $(REDEFINE_MAKE_PROGRAM_DIR)/workspace_config.mk )
             $(error )
         else
             MAKE_DIR  :=$(REDEFINE_MAKE_PROGRAM_DIR)
@@ -110,19 +114,19 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
         MAKE_DIR := $(MAKE_DIR)/bin
     endif
 
-    
+
     MAKE :=$(MAKE_DIR)\make
-    
+
     CONFIG_SEMIHOSTING_UPLOADING_DIR :=c:\Temp
     ifeq ($(wildcard $(CONFIG_SEMIHOSTING_UPLOADING_DIR)),)         #if $(CONFIG_SEMIHOSTING_UPLOADING_DIR) dont exists then $(wildcard $(CONFIG_SEMIHOSTING_UPLOADING_DIR)) will produce empty string 
        DUMMY:=$(shell $(MKDIR)  $(CONFIG_SEMIHOSTING_UPLOADING_DIR)) # create   $(CONFIG_SEMIHOSTING_UPLOADING_DIR)
     endif
-    
+
     COMMON_PARTITION := $(firstword $(subst :, ,$(COMMON_DIR))):
     SHELL_GO_TO_COMMON_GIT_DIR :=cd $(COMMON_DIR) & $(COMMON_PARTITION) & 
     RM        :=rmdir /S /Q
     CP        :=copy /Y
-    
+
     SHELL_OUTPUT :=$(shell WMIC Path Win32_LocalTime Get Year /value)
     YEAR := $(word 2,$(subst =,$(SPACE),$(strip $(SHELL_OUTPUT))))
     SHELL_OUTPUT :=$(shell WMIC Path Win32_LocalTime Get Month /value)
@@ -160,7 +164,9 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
     SHELL_OUTPUT :=$(shell WMIC Path Win32_LocalTime Get Minute /value)
     Minute := $(word 2,$(subst =,$(SPACE),$(strip $(SHELL_OUTPUT))))
     TIME    :=$(HOUR):$(Minute)
-    
+    SHELL_CMD_DELIMITER = &
+    CD :=  $(COMMON_PARTITION) & cd
+
 else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX) 
 
     CONFIG_SEMIHOSTING_UPLOADING_DIR :=/tmp
@@ -174,11 +180,18 @@ else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX)
     CP        :=cp -f
     DATE    :=$(shell date "+%Y-%m-%d") 
     TIME    :=$(shell date "+%H:%M") 
-    
+    SHELL_CMD_DELIMITER = ;
+    CD :=  cd
+
 endif
 
-
+#dont proceed if we are bulding .config file now
 ifeq ($(findstring menuconfig,$(MAKECMDGOALS)),) 
+
+ifeq ("$(wildcard .config)","")
+    $(info !--- .config file dont exists . run 'make menuconfig')
+    $(error )
+endif
 
 include .config
 
@@ -195,7 +208,9 @@ $(info ---- project name as declared in .config : $(PROJECT_NAME) ---- )
 
 GIT_DIR := $(firstword $(wildcard ./.git))
 ifeq ($(findstring ./.git,$(GIT_DIR)),)      # if not found ./.git in $(GIT_DIR)
-    $(error  error : create git repository of project (run "git init" in project directory) )
+    $(info !--- error : create git repository of project . for example by running following command : )
+    $(info !--- $(CD) $(APP_ROOT_DIR) $(SHELL_CMD_DELIMITER) git init $(SHELL_CMD_DELIMITER) $(CP) $(DEFAULT_GIT_IGNORE_FILE) $(CURRENT_GIT_IGNORE_FILE))
+    $(error )
 endif
 
 CURR_GIT_BRANCH := $(shell git rev-parse --abbrev-ref HEAD 2>&1)
@@ -203,16 +218,15 @@ CURR_GIT_BRANCH := $(patsubst heads/%,%,$(CURR_GIT_BRANCH))#removing heads/ if e
 ifneq ($(findstring ambiguous argument 'HEAD',$(CURR_GIT_BRANCH)),)      # if not found $(PROJECT_NAME) in $(CURR_GIT_BRANCH)
     $(info !--- git error  :   $(CURR_GIT_BRANCH))
     $(info !--- maybe branch was not created after git initialization )
-    $(info !--- in this case create branch running following comands in project directory:)
-    $(info !--- git add .)
-    $(info !--- git commit -m "initial commit")
+    $(info !--- in this case create branch you can run following comands to add all files in ):)
+    $(info !--- $(CD) $(APP_ROOT_DIR) $(SHELL_CMD_DELIMITER) git add . & git commit -m "initial commit")
     $(error )
 endif
 ifeq ($(findstring $(PROJECT_NAME),$(CURR_GIT_BRANCH)),)      # if not found $(PROJECT_NAME) in $(CURR_GIT_BRANCH)
-    $(info !--- error : branch names must be of type $(PROJECT_NAME) or $(PROJECT_NAME)_<branch_name>)
+    $(info !--- error : branch names must be of type $(PROJECT_NAME) or $(PROJECT_NAME)<_vVersion>)
     $(info !--- but current branch name is $(CURR_GIT_BRANCH))
-    $(info !--- in case that this git is just created run following comand in project directory:)
-    $(info !--- git branch -m $(PROJECT_NAME))
+    $(info !--- in case that this git is just created run following comand  :)
+    $(info !--- $(CD) $(APP_ROOT_DIR) $(SHELL_CMD_DELIMITER) git branch -m $(PROJECT_NAME))
     $(error )
 endif
 
@@ -221,14 +235,14 @@ CURR_COMMON_GIT_BRANCH := $(patsubst heads/%,%,$(CURR_COMMON_GIT_BRANCH))#removi
 ifneq ($(sort $(filter $(CURR_GIT_BRANCH),$(CURR_COMMON_GIT_BRANCH))),$(CURR_GIT_BRANCH))#if  $(CURR_GIT_BRANCH) is in $(SHELL_OUTPUT)
     SHELL_OUTPUT := $(shell $(SHELL_GO_TO_COMMON_GIT_DIR) git status --porcelain 2>&1)
     ERROR_MESSAGE := M 
-    ifeq ($(findstring $(ERROR_MESSAGE),$(SHELL_OUTPUT)),$(ERROR_MESSAGE))      
+    ifeq ($(findstring $(ERROR_MESSAGE),$(SHELL_OUTPUT)),$(ERROR_MESSAGE))
         $(info  !--- git error : commit all changes to common git($(COMMON_DIR)) before changing branch or project)
         $(info  !--- current application git branch :   $(CURR_GIT_BRANCH) )
         $(info  !--- current common git branch :   $(CURR_COMMON_GIT_BRANCH) )
         $(error  )
     endif
     ERROR_MESSAGE := D #??
-    ifeq ($(findstring $(ERROR_MESSAGE),$(SHELL_OUTPUT)),$(ERROR_MESSAGE))      
+    ifeq ($(findstring $(ERROR_MESSAGE),$(SHELL_OUTPUT)),$(ERROR_MESSAGE))
         $(info  !--- git error : commit all changes to common git)
         $(error  )
     endif
@@ -242,7 +256,7 @@ ifneq ($(sort $(filter $(CURR_GIT_BRANCH),$(CURR_COMMON_GIT_BRANCH))),$(CURR_GIT
         $(info !--- $(SHELL_GO_TO_COMMON_GIT_DIR) git branch $(PROJECT_NAME))
         $(error  )
     else
-        $(info !--- checkout $(CURR_GIT_BRANCH) manually in common git)      
+        $(info !--- checkout $(CURR_GIT_BRANCH) manually in common git)
         $(info !--- you can run following comand in common directory:)
         $(info !--- $(SHELL_GO_TO_COMMON_GIT_DIR) git checkout $(CURR_GIT_BRANCH))
         $(error  )
@@ -292,11 +306,11 @@ GLOBAL_LDFLAGS := $(GLOBAL_PROJECT_SPECIFIC_LDFLAGS)
 
 ARCHIVE_OUTPUT := $(WORKSPACE_NAME).$(PROJECT_NAME).$(DATE_STR).7z
 
-#####   global compiler and linker flags :  #####   
- 
+#####   global compiler and linker flags :  #####
+
 ifdef CONFIG_DATA_LOCATION_INTERNAL_SRAM
-    RAM_START_ADDR:=$(CONFIG_INTERNAL_SRAM_START_ADDR)
-    RAM_SIZE:=$(CONFIG_INTERNAL_SRAM_SIZE)
+    RAM_START_ADDR:=$(CONFIG_DT_SOC_RAM_START_ADDR)
+    RAM_SIZE:=$(CONFIG_DT_SOC_RAM_SIZE)
 endif
 ifdef CONFIG_DATA_LOCATION_DDR
     RAM_START_ADDR:=$(CONFIG_DDR_START_ADDR)
@@ -304,8 +318,8 @@ ifdef CONFIG_DATA_LOCATION_DDR
 endif
 
 ifdef CONFIG_CODE_LOCATION_INTERNAL_SRAM
-    ROM_START_ADDR:=$(CONFIG_INTERNAL_SRAM_START_ADDR)
-    ROM_SIZE:=$(CONFIG_INTERNAL_SRAM_SIZE)
+    ROM_START_ADDR:=$(CONFIG_DT_SOC_RAM_START_ADDR)
+    ROM_SIZE:=$(CONFIG_DT_SOC_RAM_SIZE)
 endif
 ifdef CONFIG_CODE_LOCATION_DDR
     ROM_START_ADDR:=$(CONFIG_DDR_START_ADDR)
@@ -316,8 +330,8 @@ ifdef CONFIG_CODE_LOCATION_INTERNAL_ROM
     ROM_SIZE:=$(CONFIG_INTERNAL_ROM_SIZE)
 endif
 ifdef CONFIG_CODE_LOCATION_INTERNAL_FLASH
-    ROM_START_ADDR:=$(CONFIG_INTERNAL_FLASH_START_ADDR)
-    ROM_SIZE:=$(CONFIG_INTERNAL_FLASH_SIZE)
+    ROM_START_ADDR:=$(CONFIG_DT_SOC_FLASH_START_ADDR)
+    ROM_SIZE:=$(CONFIG_DT_SOC_FLASH_SIZE)
 endif
 ifdef CONFIG_CODE_LOCATION_EXTERNAL_FLASH
     ROM_START_ADDR:=$(CONFIG_EXTERNAL_FLASH_START_ADDR)
@@ -328,7 +342,7 @@ GLOBAL_DEFINES += RAM_START_ADDR=$(RAM_START_ADDR)
 
 caclulate_component_dir = $(patsubst  %/,%, $(dir $(patsubst $(APP_ROOT_DIR)/%,%,$(realpath $1 ))))
 
-ifeq ($(findstring menuconfig,$(MAKECMDGOALS)),) 
+ifeq ($(findstring menuconfig,$(MAKECMDGOALS)),)
 
 ifdef CONFIG_ARM
     ifdef CONFIG_GCC
@@ -338,6 +352,8 @@ ifdef CONFIG_ARM
     else ifdef CONFIG_ARMCC
         include $(MAKEFILE_DEFS_ROOT_DIR)/armcc/armcc_init.mk
     endif
+else ifdef CONFIG_PIC32
+    include $(MAKEFILE_DEFS_ROOT_DIR)/gcc/gcc_pic32_init.mk
 else ifdef CONFIG_AVR
     include $(MAKEFILE_DEFS_ROOT_DIR)/gcc/gcc_avr_init.mk
 else ifdef CONFIG_STM8
@@ -359,7 +375,7 @@ GLOBAL_INCLUDE_DIR := $(GLOBAL_INCLUDE_DIR) $(APP_ROOT_DIR)/z_auto_generated_fil
 
 COMMON_INIT_SECTION_THAT_SHOULD_RUN_ONCE = dummy_value
 
-export 
+export
 
 endif####
 ### end of section that run just one time per build

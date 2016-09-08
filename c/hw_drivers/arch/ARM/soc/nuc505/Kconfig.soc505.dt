@@ -1,6 +1,9 @@
 menu "nuc505 soc configuration"
 
 
+config NUC505_BSP_VERSION
+    string "nuc bsp version in form : xx.xx[.xx]"
+    default "3.00.003"
 
 ##################################################
 ##############  memories on soc ##################
