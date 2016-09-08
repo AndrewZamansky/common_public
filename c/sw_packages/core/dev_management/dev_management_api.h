@@ -18,15 +18,15 @@
 #define STRINGIFY(X) STRINGIFY2(X)
 #define STRINGIFY2(X) #X
 
-#define STATIC_DEVICE_INCLUDE_NAME(module_name)	STATIC_DEVICE_INCLUDE_NAME2(module_name)
+#define STATIC_DEVICE_INCLUDE_NAME(module_name)		STATIC_DEVICE_INCLUDE_NAME2(module_name)
 #define STATIC_DEVICE_INCLUDE_NAME2(module_name)	module_name##_add_component.h
 #define ADD_CURRENT_DEV  		STRINGIFY(STATIC_DEVICE_INCLUDE_NAME(DT_DEV_MODULE))
 
 #define EXTERN_DECLARATION_TO_STATIC_DEVICE_INST(pdev)	EXTERN_DECLARATION_TO_STATIC_DEVICE_INST2(pdev)
-#define EXTERN_DECLARATION_TO_STATIC_DEVICE_INST2(pdev)	extern dev_descriptor_t inst_##pdev
+#define EXTERN_DECLARATION_TO_STATIC_DEVICE_INST2(pdev)	extern DEVICE_PLACEMENT dev_descriptor_t inst_##pdev
 
-#define STATIC_DEVICE_INST(pdev)	STATIC_DEVICE_INST2(pdev)
-#define STATIC_DEVICE_INST2(pdev)	inst_##pdev
+#define STATIC_DEVICE_INST(pdev)		STATIC_DEVICE_INST2(pdev)
+#define STATIC_DEVICE_INST2(pdev)		inst_##pdev
 #define P_TO_STATIC_DEVICE_INST(pdev)	&STATIC_DEVICE_INST(pdev)
 
 

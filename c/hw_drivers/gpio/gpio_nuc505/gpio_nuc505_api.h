@@ -3,7 +3,7 @@
 #define _GPIO_NUC505_API_H_
 
 
-#include "src/_gpio_NUC505_prerequirements_check.h"
+#include "src/_gpio_nuc505_prerequirements_check.h"
 #include "gpio_api.h"
 
 
@@ -28,10 +28,10 @@ typedef enum
 
 #include "gpio.h"
 
-#define GPIO_NUC505_API_PORT_A	PA
-#define GPIO_NUC505_API_PORT_B	PB
-#define GPIO_NUC505_API_PORT_C	PC
-#define GPIO_NUC505_API_PORT_D	PD
+#define GPIO_NUC505_API_PORT_A		GPIOA_BASE
+#define GPIO_NUC505_API_PORT_B		GPIOB_BASE
+#define GPIO_NUC505_API_PORT_C		GPIOC_BASE
+#define GPIO_NUC505_API_PORT_D		GPIOD_BASE
 
 typedef enum
 {

@@ -24,6 +24,14 @@
 
 /***************   typedefs    *******************/
 
+typedef struct
+{
+    __IO uint32_t MODE;
+    __IO uint32_t PUEN;
+    __IO uint32_t DOUT;
+    __I  uint32_t PIN;
+} GPIO_PX_T;
+
 /**********   external variables    **************/
 
 
@@ -33,20 +41,6 @@ static void  *ports[]={PA,PB,PC,PD};
 //static void  *ports[]={NULL,NULL,NULL,NULL};
 
 
-/*
- * function : GPIO_NUC505_Init()
- *
- *
- */
-uint8_t GPIO_NUC505_Init(gpio_nuc505_instance_t *pInstance)
-{
-//	void* GPIOx = ports[pInstance->port_num];
-
-
-	GPIO_SetMode(pInstance->port_num, pInstance->pin_num_mask  , pInstance->mode);
-
-	return 0;
-}
 
 
 /*---------------------------------------------------------------------------------------------------------*/
@@ -64,20 +58,23 @@ uint8_t gpio_nuc505_ioctl( pdev_descriptor_t apdev , const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
 	gpio_nuc505_instance_t *config_handle;
-	void* GPIOx;
-	uint32_t pin_num_mask;
+	GPIO_PX_T* GPIOx;
+	uint32_t volatile * pDOUT;
+	uint16_t pin_num_mask;
 
 	config_handle = DEV_GET_CONFIG_DATA_POINTER(apdev);
-	GPIOx = config_handle->port_num;
+	GPIOx = (GPIO_PX_T*)config_handle->port_num;
 	pin_num_mask = config_handle->pin_num_mask;
+	pDOUT = &GPIOx->DOUT;
 
 	switch(aIoctl_num)
 	{
 		case IOCTL_GPIO_NUC505_SET_PORT_PARAM :
 			{
-				config_handle->port_num = ports[((char*)aIoctl_param1)[0]-'a'];
+				config_handle->port_num = (uint32_t)ports[((char*)aIoctl_param1)[0]-'a'];
 			}
 			break;
+
 		case IOCTL_GPIO_NUC505_SET_PIN_PARAM :
 			{
 				uint8_t pin_num;
@@ -85,6 +82,7 @@ uint8_t gpio_nuc505_ioctl( pdev_descriptor_t apdev , const uint8_t aIoctl_num
 				config_handle->pin_num_mask = 1 << pin_num;
 			}
 			break;
+
 		case IOCTL_GPIO_NUC505_SET_MODE_PARAM :
 			if (0 == memcmp((uint8_t*) aIoctl_param1 , "output" , sizeof("output") ))
 			{
@@ -114,20 +112,20 @@ uint8_t gpio_nuc505_ioctl( pdev_descriptor_t apdev , const uint8_t aIoctl_num
 			break;
 
 		case IOCTL_DEVICE_START :
-			GPIO_NUC505_Init(config_handle);
+			GPIO_SetMode(GPIOx , pin_num_mask  , config_handle->mode);
 			break;
 
 		case IOCTL_GPIO_PIN_SET :
-			MEM_ADDR(GPIOx + 0x08) |= pin_num_mask;
+			*pDOUT |= pin_num_mask;
 
 			break;
 
 		case IOCTL_GPIO_PIN_CLEAR :
-			MEM_ADDR(GPIOx + 0x08) = MEM_ADDR(GPIOx + 0x08) & (~pin_num_mask);
+			*pDOUT &= (~pin_num_mask);
 			break;
 
 		case IOCTL_GPIO_PIN_READ :
-			*((uint8_t*)aIoctl_param1) = MEM_ADDR(GPIOx + 0x0C) &   pin_num_mask ;
+			*((uint8_t*)aIoctl_param1) = GPIOx->PIN &  pin_num_mask ;
 			break;
 
 		default :

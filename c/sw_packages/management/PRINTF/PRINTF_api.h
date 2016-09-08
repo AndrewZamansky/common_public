@@ -37,7 +37,7 @@ void PRINTF_print_data(PRINTF_TYPE_t aPrntType , const uint8_t* data,  uint32_t 
 
  extern pdev_descriptor_const  print_dev;
 
- #define PRINTF_API_SET_DEV(dev)				pdev_descriptor_t  print_dev = dev
+ #define PRINTF_API_SET_DEV(dev)				print_dev = dev
  #define PRINT_DATA_DBG(data,len) 				DEV_WRITE(print_dev,data , len) // to avoid printf code
  #define PRINT_STR_DBG(str) 					DEV_WRITE(print_dev,(uint8_t*)str, strlen((char*)str)) // to avoid printf code
 

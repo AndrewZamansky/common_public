@@ -7,12 +7,12 @@ menuconfig DYNAMIC_DEVICE_TREE
 	default y
 
 config DEVICE_TREE_LOCATION_ADDR
-	int   "device tree location address"
+	hex   "device tree location address"
 	depends on DYNAMIC_DEVICE_TREE
 	default 0x40000
 
 config DEVICE_TREE_MAXIMAL_SIZE
-	int   "device tree maximal size"
+	hex   "device tree maximal size"
 	depends on DYNAMIC_DEVICE_TREE
 	default 0x400
 

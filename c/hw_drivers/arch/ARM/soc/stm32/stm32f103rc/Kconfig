@@ -18,7 +18,7 @@ endif
 endmenu
 
 =======
-config EUSE_TAOBAO_BOARD
+config STM32F103RC_BOARD
 	def_bool y
 	select INTERNAL_SRAM
 	select INTERNAL_FLASH
