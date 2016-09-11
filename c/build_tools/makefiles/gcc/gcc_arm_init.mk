@@ -141,15 +141,18 @@ else
 endif
 
 
-
 ifdef CONFIG_CORTEX_M3
     GLOBAL_CFLAGS += -mfloat-abi=soft
 else ifdef CONFIG_CORTEX_M4
-    GLOBAL_CFLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16
+    ifdef CONFIG_INCLUDE_CORTEX_M_FPU
+        GLOBAL_CFLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16
+    else
+        GLOBAL_CFLAGS += -mfloat-abi=soft
+    endif
 endif
 
  ifdef CONFIG_GCC_OPTIMISE_SIZE
-	GLOBAL_CFLAGS +=  -ffunction-sections
+    GLOBAL_CFLAGS +=  -ffunction-sections
 endif
 
 GLOBAL_CFLAGS += -$(CONFIG_OPTIMIZE_LEVEL) -g -g3 -ggdb3 #-gstabs3
@@ -164,9 +167,6 @@ ifeq ($(findstring cortex-m,$(CONFIG_CPU_TYPE)),cortex-m)
 else	
 endif
 
-ifdef CONFIG_CORTEX_M4
-	GLOBAL_ASMFLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16
-endif
 
 GLOBAL_ASMFLAGS += -x assembler-with-cpp
 

@@ -49,7 +49,7 @@ ifdef CONFIG_CORTEX_M4
     ifdef CONFIG_INCLUDE_CORTEX_M_FPU
         LDFLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16
     else
-        LDFLAGS += -mfloat-abi=soft -mfpu=soft
+        LDFLAGS += -mfloat-abi=soft
     endif
 endif
 

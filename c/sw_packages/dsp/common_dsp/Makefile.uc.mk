@@ -1,13 +1,13 @@
 
 INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_COMMON_DSP) $(CONFIG_AUTO_INCLUDE_COMMON_DSP)
 
-#INCLUDE_DIR 
+#INCLUDE_DIR =
 
-#DEFINES = 
+#DEFINES =
 
-#CFLAGS = -O3
+#CFLAGS =
 
-#ASMFLAGS =  
+#ASMFLAGS =
 
 INCLUDE_DIR += $(EXTERNAL_SOURCE_ROOT_DIR)/ffmpeg
 INCLUDE_DIR += $(EXTERNAL_SOURCE_ROOT_DIR)/ffmpeg/libavfilter
@@ -15,7 +15,9 @@ INCLUDE_DIR += $(SW_PACKAGES_ROOT_DIR)/dsp/ffmpeg
 
 ifneq ($(strip $(INCLUDE_THIS_COMPONENT)),)
 
+ifdef CONFIG_INCLUDE_CORTEX_M_FPU
     GLOBAL_LIBS += libarm_cortexM4lf_math.a
+endif
 	ARM_CMSIS_PATH :=$(EXTERNAL_SOURCE_ROOT_DIR)/ARM-CMSIS
     ifeq ("$(wildcard $(ARM_CMSIS_PATH))","")
         $(info ARM CMSIS path $(ARM_CMSIS_PATH) dont exists )
@@ -31,6 +33,16 @@ endif
 SRC = biquads.c
 SRC += math_functions.c
 VPATH = src
+
+ifndef CONFIG_INCLUDE_CORTEX_M_FPU
+    DEFINES = ARM_MATH_CM4=1  __FPU_PRESENT=1
+    INCLUDE_DIR = $(EXTERNAL_SOURCE_ROOT_DIR)/ARM-CMSIS/Device/ARM/ARMCM4/Include
+    SRC += arm_biquad_cascade_df2T_f32.c
+    SRC += arm_biquad_cascade_df2T_init_f32.c
+    SRC += arm_abs_f32.c
+    VPATH += | $(EXTERNAL_SOURCE_ROOT_DIR)/ARM-CMSIS/CMSIS/DSP_Lib/Source/FilteringFunctions
+    VPATH += | $(EXTERNAL_SOURCE_ROOT_DIR)/ARM-CMSIS/CMSIS/DSP_Lib/Source/BasicMathFunctions
+endif
 
 #DEFINES = ARM_MATH_CM4=1  __FPU_PRESENT=1  __FPU_USED=1
 #INCLUDE_DIR += $(EXTERNAL_SOURCE_ROOT_DIR)/ARM-CMSIS/Device/ARM/ARMCM4/Include
