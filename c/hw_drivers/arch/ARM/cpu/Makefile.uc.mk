@@ -2,7 +2,16 @@
 INCLUDE_THIS_COMPONENT := $(CONFIG_CORTEX_M3) $(CONFIG_CORTEX_M4) $(CONFIG_CORTEX_A9)
 
 ifneq ($(strip $(INCLUDE_THIS_COMPONENT) ),)
-    DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(EXTERNAL_SOURCE_ROOT_DIR)/ARM-CMSIS/CMSIS/Include)
+
+    ARM_CMSIS_PATH :=$(EXTERNAL_SOURCE_ROOT_DIR)/ARM-CMSIS_v3.01
+    ifeq ("$(wildcard $(ARM_CMSIS_PATH))","")
+        $(info !--- ARM CMSIS path $(ARM_CMSIS_PATH) dont exists )
+        $(info !--- download ARM CMSIS version 3.01 and unpack it to $(ARM_CMSIS_PATH)  )
+        $(info !--- make sure that file Version 3.01 is located in $(ARM_CMSIS_PATH)/  after unpacking   )
+        $(error )
+    endif
+
+    DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(ARM_CMSIS_PATH)/CMSIS/Include)
 endif
 
 
