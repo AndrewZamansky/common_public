@@ -167,6 +167,12 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
     SHELL_CMD_DELIMITER = &
     CD :=  $(COMMON_PARTITION) & cd
 
+    GIT_EXISTANCE_CHECK := $(shell git 2>&1)
+    ifneq ($(findstring 'git' is not recognized as,$(GIT_EXISTANCE_CHECK)),)
+        $(info !--- git is not installed on your system)
+        $(error )
+    endif
+
 else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX) 
 
     CONFIG_SEMIHOSTING_UPLOADING_DIR :=/tmp
@@ -182,6 +188,12 @@ else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX)
     TIME    :=$(shell date "+%H:%M") 
     SHELL_CMD_DELIMITER = ;
     CD :=  cd
+
+    GIT_EXISTANCE_CHECK := $(shell git 2>&1)
+    ifneq ($(findstring command not found,$(GIT_EXISTANCE_CHECK)),)
+        $(info !--- git is not installed on your system)
+        $(error )
+    endif
 
 endif
 
@@ -206,6 +218,7 @@ $(info ---- project name as declared in .config : $(PROJECT_NAME) ---- )
 
 ####################     configuring git  ######################
 
+
 GIT_DIR := $(firstword $(wildcard ./.git))
 ifeq ($(findstring ./.git,$(GIT_DIR)),)      # if not found ./.git in $(GIT_DIR)
     $(info !--- error : create git repository of project . for example by running following command : )
@@ -215,7 +228,7 @@ endif
 
 CURR_GIT_BRANCH := $(shell git rev-parse --abbrev-ref HEAD 2>&1)
 CURR_GIT_BRANCH := $(patsubst heads/%,%,$(CURR_GIT_BRANCH))#removing heads/ if exists
-ifneq ($(findstring ambiguous argument 'HEAD',$(CURR_GIT_BRANCH)),)      # if not found $(PROJECT_NAME) in $(CURR_GIT_BRANCH)
+ifneq ($(findstring ambiguous argument 'HEAD',$(CURR_GIT_BRANCH)),)
     $(info !--- git error  :   $(CURR_GIT_BRANCH))
     $(info !--- maybe branch was not created after git initialization )
     $(info !--- in this case create branch you can run following comands to add all files in ):)
