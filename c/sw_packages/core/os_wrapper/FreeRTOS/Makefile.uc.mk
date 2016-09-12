@@ -60,22 +60,33 @@ endif
 
 ifdef CONFIG_GCC	
     ifdef CONFIG_CORTEX_M3
-        VPATH += :$(FREE_RTOS_PATH)/FreeRTOS/Source/portable/GCC/ARM_CM3 
+        VPATH += :$(FREE_RTOS_PATH)/FreeRTOS/Source/portable/GCC/ARM_CM3
     else ifdef CONFIG_CORTEX_M4
-        VPATH += :$(FREE_RTOS_PATH)/FreeRTOS/Source/portable/GCC/ARM_CM4F 
+        ifdef CONFIG_INCLUDE_CORTEX_M_FPU
+            VPATH += :$(FREE_RTOS_PATH)/FreeRTOS/Source/portable/GCC/ARM_CM4F
+        else
+            VPATH += :$(FREE_RTOS_PATH)/FreeRTOS/Source/portable/GCC/ARM_CM3
+        endif 
     endif
 else ifdef CONFIG_GPP	
     ifdef CONFIG_CORTEX_M3
-        VPATH += :$(FREE_RTOS_PATH)/FreeRTOS/Source/portable/GCC/ARM_CM3 
+        VPATH += :$(FREE_RTOS_PATH)/FreeRTOS/Source/portable/GCC/ARM_CM3
     else ifdef CONFIG_CORTEX_M4
-        VPATH += :$(FREE_RTOS_PATH)/FreeRTOS/Source/portable/GCC/ARM_CM4F 
+        ifdef CONFIG_INCLUDE_CORTEX_M_FPU
+            VPATH += :$(FREE_RTOS_PATH)/FreeRTOS/Source/portable/GCC/ARM_CM4F
+        else
+            VPATH += :$(FREE_RTOS_PATH)/FreeRTOS/Source/portable/GCC/ARM_CM3
+        endif 
     endif
 else ifdef CONFIG_ARMCC 
     ifdef CONFIG_CORTEX_M3
-        VPATH += :$(FREE_RTOS_PATH)/FreeRTOS/Source/portable/RVDS/ARM_CM3 
+        VPATH += :$(FREE_RTOS_PATH)/FreeRTOS/Source/portable/RVDS/ARM_CM3
     else ifdef CONFIG_CORTEX_M4
-        VPATH += :$(FREE_RTOS_PATH)/FreeRTOS/Source/portable/RVDS/ARM_CM4F 
-        
+        ifdef CONFIG_INCLUDE_CORTEX_M_FPU
+            VPATH += :$(FREE_RTOS_PATH)/FreeRTOS/Source/portable/RVDS/ARM_CM4F
+        else
+            VPATH += :$(FREE_RTOS_PATH)/FreeRTOS/Source/portable/RVDS/ARM_CM3
+        endif         
     endif     
 endif
 

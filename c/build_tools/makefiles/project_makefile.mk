@@ -88,7 +88,7 @@ endif
 
 
 
-all: $(COMPONENTS_MK)
+all: $(COMPONENTS_MK) $(PROJECT_CONFIG_H_FILE)
 	$(eval MAKEFILE_WAS_GENERATED := YES)
 	$(eval export MAKEFILE_WAS_GENERATED)
 	$(MAKE) -f $(MAKEFILE_DEFS_ROOT_DIR)/prebuild_check.mk
@@ -118,8 +118,10 @@ $(SUBDIRS):
 	$(MAKE) -C $@ -f Makefile.uc.mk $(TARGET)
 
 $(COMPONENTS_MK) : $(APP_ROOT_DIR)/.config
-	$(MAKE) -f $(MAKEFILE_DEFS_ROOT_DIR)/generate_project_files.mk
+	$(MAKE) -f $(MAKEFILE_DEFS_ROOT_DIR)/generate_include_components_mk_file.mk
 
+$(PROJECT_CONFIG_H_FILE) : $(APP_ROOT_DIR)/.config
+	$(MAKE) -f $(MAKEFILE_DEFS_ROOT_DIR)/generate_project_config_h_file.mk
 
 build_outputs :  $(SUBDIRS)
 	$(MAKE) -f $(MAKEFILE_DEFS_ROOT_DIR)/build_final_outputs.mk

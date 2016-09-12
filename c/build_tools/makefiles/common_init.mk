@@ -75,7 +75,7 @@ COMMON_DIR = $(WORKSPACE_ROOT_DIR)/common
 EMPTY:=
 SPACE:= $(EMPTY) $(EMPTY)
 
-ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)      
+ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
 
     #replace backslash for slash
     APP_ROOT_DIR_WINDOWS := $(subst /,\,$(APP_ROOT_DIR))
@@ -167,7 +167,7 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
     SHELL_CMD_DELIMITER = &
     CD :=  $(COMMON_PARTITION) & cd
 
-else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX) 
+else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX)
 
     CONFIG_SEMIHOSTING_UPLOADING_DIR :=/tmp
     TOOLS_ROOT_DIR := $(TOOLS_ROOT_DIR)/linux
@@ -185,90 +185,31 @@ else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX)
 
 endif
 
-#dont proceed if we are bulding .config file now
-ifeq ($(findstring menuconfig,$(MAKECMDGOALS)),) 
+#dont enter if we are bulding .config file now
+ifeq ($(findstring menuconfig,$(MAKECMDGOALS)),)  #dont enter if we are bulding .config file now
 
-ifeq ("$(wildcard .config)","")
-    $(info !--- .config file dont exists . run 'make menuconfig')
-    $(error )
-endif
-
-include .config
-
-PROJECT_NAME :=$(patsubst "%",%,$(CONFIG_PROJECT_NAME))
-ifeq ($(PROJECT_NAME),)      # if $(PROJECT_NAME) is empty
-    $(info error : project have to be named set CONFIG_PROJECT_NAME in .config or using menuconfig)
-    $(error )
-endif
-$(info ---- project directory : $(APP_ROOT_DIR) ---- )
-$(info ---- project name as declared in .config : $(PROJECT_NAME) ---- )
-
-
-####################     configuring git  ######################
-
-GIT_DIR := $(firstword $(wildcard ./.git))
-ifeq ($(findstring ./.git,$(GIT_DIR)),)      # if not found ./.git in $(GIT_DIR)
-    $(info !--- error : create git repository of project . for example by running following command : )
-    $(info !--- $(CD) $(APP_ROOT_DIR) $(SHELL_CMD_DELIMITER) git init $(SHELL_CMD_DELIMITER) $(CP) $(DEFAULT_GIT_IGNORE_FILE) $(CURRENT_GIT_IGNORE_FILE))
-    $(error )
-endif
-
-CURR_GIT_BRANCH := $(shell git rev-parse --abbrev-ref HEAD 2>&1)
-CURR_GIT_BRANCH := $(patsubst heads/%,%,$(CURR_GIT_BRANCH))#removing heads/ if exists
-ifneq ($(findstring ambiguous argument 'HEAD',$(CURR_GIT_BRANCH)),)      # if not found $(PROJECT_NAME) in $(CURR_GIT_BRANCH)
-    $(info !--- git error  :   $(CURR_GIT_BRANCH))
-    $(info !--- maybe branch was not created after git initialization )
-    $(info !--- in this case create branch you can run following comands to add all files in ):)
-    $(info !--- $(CD) $(APP_ROOT_DIR) $(SHELL_CMD_DELIMITER) git add . & git commit -m "initial commit")
-    $(error )
-endif
-ifeq ($(findstring $(PROJECT_NAME),$(CURR_GIT_BRANCH)),)      # if not found $(PROJECT_NAME) in $(CURR_GIT_BRANCH)
-    $(info !--- error : branch names must be of type $(PROJECT_NAME) or $(PROJECT_NAME)<_vVersion>)
-    $(info !--- but current branch name is $(CURR_GIT_BRANCH))
-    $(info !--- in case that this git is just created run following comand  :)
-    $(info !--- $(CD) $(APP_ROOT_DIR) $(SHELL_CMD_DELIMITER) git branch -m $(PROJECT_NAME))
-    $(error )
-endif
-
-CURR_COMMON_GIT_BRANCH := $(shell $(SHELL_GO_TO_COMMON_GIT_DIR) git rev-parse --abbrev-ref HEAD)
-CURR_COMMON_GIT_BRANCH := $(patsubst heads/%,%,$(CURR_COMMON_GIT_BRANCH))#removing heads/ if exists
-ifneq ($(sort $(filter $(CURR_GIT_BRANCH),$(CURR_COMMON_GIT_BRANCH))),$(CURR_GIT_BRANCH))#if  $(CURR_GIT_BRANCH) is in $(SHELL_OUTPUT)
-    SHELL_OUTPUT := $(shell $(SHELL_GO_TO_COMMON_GIT_DIR) git status --porcelain 2>&1)
-    ERROR_MESSAGE := M 
-    ifeq ($(findstring $(ERROR_MESSAGE),$(SHELL_OUTPUT)),$(ERROR_MESSAGE))
-        $(info  !--- git error : commit all changes to common git($(COMMON_DIR)) before changing branch or project)
-        $(info  !--- current application git branch :   $(CURR_GIT_BRANCH) )
-        $(info  !--- current common git branch :   $(CURR_COMMON_GIT_BRANCH) )
-        $(error  )
+    ifeq ("$(wildcard .config)","")
+        $(info !--- .config file dont exists . run 'make menuconfig')
+        $(error )
     endif
-    ERROR_MESSAGE := D #??
-    ifeq ($(findstring $(ERROR_MESSAGE),$(SHELL_OUTPUT)),$(ERROR_MESSAGE))
-        $(info  !--- git error : commit all changes to common git)
-        $(error  )
-    endif
-   #for now we are doing manual checkout
-   #SHELL_OUTPUT := $(shell $(SHELL_GO_TO_COMMON_GIT_DIR) git checkout $(CURR_GIT_BRANCH) 2>&1)
-    SHELL_OUTPUT := $(shell $(SHELL_GO_TO_COMMON_GIT_DIR) git branch 2>&1)
-    CURR_GIT_BRANCH:=$(patsubst heads/%,%,$(CURR_GIT_BRANCH))
-    ifneq ($(sort $(filter $(CURR_GIT_BRANCH),$(SHELL_OUTPUT))),$(CURR_GIT_BRANCH))#if  $(CURR_GIT_BRANCH) is in $(SHELL_OUTPUT)
-        $(info !--- git error : branch $(CURR_GIT_BRANCH) not found in common git . create it)
-        $(info !--- in case that this git is just created run following comand in common directory:)
-        $(info !--- $(SHELL_GO_TO_COMMON_GIT_DIR) git branch $(PROJECT_NAME))
-        $(error  )
-    else
-        $(info !--- checkout $(CURR_GIT_BRANCH) manually in common git)
-        $(info !--- you can run following comand in common directory:)
-        $(info !--- $(SHELL_GO_TO_COMMON_GIT_DIR) git checkout $(CURR_GIT_BRANCH))
-        $(error  )
-    endif
-endif
 
-####################   end of  configuring git  ######################
+    include .config
+
+    PROJECT_NAME :=$(patsubst "%",%,$(CONFIG_PROJECT_NAME))
+    ifeq ($(PROJECT_NAME),)      # if $(PROJECT_NAME) is empty
+        $(info error : project have to be named set CONFIG_PROJECT_NAME in .config or using menuconfig)
+        $(error )
+    endif
+    $(info ---- project directory : $(APP_ROOT_DIR) ---- )
+    $(info ---- project name as declared in .config : $(PROJECT_NAME) ---- )
+
+    include $(MAKEFILE_DEFS_ROOT_DIR)/git_prebuild_routines.mk
 
 endif
 
 
 COMPONENTS_MK := $(AUTO_GENERATED_FILES_DIR)/include_components.mk
+PROJECT_CONFIG_H_FILE := $(AUTO_GENERATED_FILES_DIR)/project_config.h
 GENERATED_KCONFIG := $(AUTO_GENERATED_FILES_DIR)/Kconfig
 
 OUTPUT_APP_NAME := out
@@ -342,27 +283,27 @@ GLOBAL_DEFINES += RAM_START_ADDR=$(RAM_START_ADDR)
 
 caclulate_component_dir = $(patsubst  %/,%, $(dir $(patsubst $(APP_ROOT_DIR)/%,%,$(realpath $1 ))))
 
-ifeq ($(findstring menuconfig,$(MAKECMDGOALS)),)
+ifeq ($(findstring menuconfig,$(MAKECMDGOALS)),) #dont enter if we are bulding .config file now
 
-ifdef CONFIG_ARM
-    ifdef CONFIG_GCC
-        include $(MAKEFILE_DEFS_ROOT_DIR)/gcc/gcc_arm_init.mk
-    else ifdef CONFIG_GPP
-        include $(MAKEFILE_DEFS_ROOT_DIR)/gcc/gcc_arm_init.mk
-    else ifdef CONFIG_ARMCC
-        include $(MAKEFILE_DEFS_ROOT_DIR)/armcc/armcc_init.mk
+    ifdef CONFIG_ARM
+        ifdef CONFIG_GCC
+            include $(MAKEFILE_DEFS_ROOT_DIR)/gcc/gcc_arm_init.mk
+        else ifdef CONFIG_GPP
+            include $(MAKEFILE_DEFS_ROOT_DIR)/gcc/gcc_arm_init.mk
+        else ifdef CONFIG_ARMCC
+            include $(MAKEFILE_DEFS_ROOT_DIR)/armcc/armcc_init.mk
+        endif
+    else ifdef CONFIG_PIC32
+        include $(MAKEFILE_DEFS_ROOT_DIR)/gcc/gcc_pic32_init.mk
+    else ifdef CONFIG_AVR
+        include $(MAKEFILE_DEFS_ROOT_DIR)/gcc/gcc_avr_init.mk
+    else ifdef CONFIG_STM8
+        include $(MAKEFILE_DEFS_ROOT_DIR)/cxstm8/cxstm8_init.mk
+    else ifdef CONFIG_HOST
+        include $(MAKEFILE_DEFS_ROOT_DIR)/gcc/gcc_host_init.mk
+    else
+        $(error ---- unknown compiler ----)
     endif
-else ifdef CONFIG_PIC32
-    include $(MAKEFILE_DEFS_ROOT_DIR)/gcc/gcc_pic32_init.mk
-else ifdef CONFIG_AVR
-    include $(MAKEFILE_DEFS_ROOT_DIR)/gcc/gcc_avr_init.mk
-else ifdef CONFIG_STM8
-    include $(MAKEFILE_DEFS_ROOT_DIR)/cxstm8/cxstm8_init.mk
-else ifdef CONFIG_HOST
-    include $(MAKEFILE_DEFS_ROOT_DIR)/gcc/gcc_host_init.mk
-else
-    $(error ---- unknown compiler ----)
-endif
 
 endif
 
