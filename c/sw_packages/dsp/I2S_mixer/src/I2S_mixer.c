@@ -30,7 +30,9 @@
 	typedef int32_t	buffer_type_t	;
 #endif
 
-
+#ifndef ABS
+#define ABS(x)  (x > 0 ? x : -x)
+#endif
 /********  types  *********************/
 
 /********  externals *********************/
@@ -46,7 +48,7 @@ char I2S_mixer_module_name[] = "I2S_mixer";
 
 
 /***********   local variables    **************/
-
+float g_max_out_val = 0;
 
 /*---------------------------------------------------------------------------------------------------------*/
 /* Function:        I2S_mixer_dsp                                                                          */
@@ -64,6 +66,7 @@ void I2S_mixer_dsp(pdsp_descriptor aDspDescriptor , size_t data_len ,
 {
 	float *apCh1In ,  *apCh2In;
 	float normalizer ;
+	float tmp1, tmp2;
 
 	buffer_type_t *pTxBuf;
 	pTxBuf = (buffer_type_t*)out_pads[0].buff;
@@ -74,6 +77,19 @@ void I2S_mixer_dsp(pdsp_descriptor aDspDescriptor , size_t data_len ,
 	normalizer = FLOAT_NORMALIZER;
 	for( ; data_len ;data_len--)
 	{
+#if 1
+		tmp1 = ABS(*apCh1In);
+		tmp2 = ABS(*apCh2In);
+		if (tmp1 >= g_max_out_val)
+		{
+			g_max_out_val = tmp1;
+		}
+
+		if (tmp2>= g_max_out_val)
+		{
+			g_max_out_val = tmp2;
+		}
+#endif
 		*apCh1In = *apCh1In * normalizer;
 		*pTxBuf = (buffer_type_t)(*apCh1In++)		;// pTxBuf[2*i]
 //					*pTxBuf = *pTxBuf & 0x00ffffff;
