@@ -3,7 +3,3 @@
 config  SHELL_MAX_QUEUE_LEN
 	int   "internal queue length"
 	default 3
-
-config  SHELL_USE_RUNTIME_CONFIGURATION
-	bool   "use runtime configuration for shell"
-	default n

@@ -31,11 +31,11 @@ extern size_t async_tx_wrapper_pwrite(pdev_descriptor_t apdev ,const uint8_t *ap
 
 #endif
 
-
 #define MODULE_CONFIGURABLE_PARAMS_ARRAY	{	\
-				{IOCTL_ASYNC_TX_WRAPPER_SET_BUFF_SIZE, IOCTL_VOID , ASYNC_TX_WRAPPER_API_RX_BUFF_SIZE_STR , NOT_FOR_SAVE},\
-				{IOCTL_SET_SERVER_DEVICE_BY_NAME 	, IOCTL_VOID , ASYNC_TX_WRAPPER_API_SERVER_DEVICE_STR, NOT_FOR_SAVE},\
+			{"async_tx_server" 	, IOCTL_SET_SERVER_DEVICE 	, IOCTL_VOID , \
+				DEV_PARAM_TYPE_PDEVICE , MAPPED_SET_DUMMY_PARAM() },\
 		}
+
 
 #include "add_component.h"
 

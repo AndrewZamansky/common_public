@@ -10,9 +10,9 @@
 /**********  define API  types ************/
 
 
-#define GPIO_NUC505_API_PORT_STR   	"port"
-#define GPIO_NUC505_API_PIN_STR   	"pin"
-#define GPIO_NUC505_API_MODE_STR   	"mode"
+#define GPIO_NUC505_API_PORT_STR   			"port"
+#define GPIO_NUC505_API_SINGLE_PIN_STR   	"single_pin"
+#define GPIO_NUC505_API_MODE_STR   			"mode"
 
 typedef enum
 {
@@ -36,12 +36,13 @@ typedef enum
 typedef enum
 {
 	IOCTL_GPIO_NUC505_SET_PORT_PARAM = IOCTL_LAST_COMMON_GPIO_IOCTL+1,
-	IOCTL_GPIO_NUC505_SET_PIN_PARAM,
+	IOCTL_GPIO_NUC505_SET_SINGLE_PIN_NUMBER_PARAM,
 	IOCTL_GPIO_NUC505_SET_MODE_PARAM
 }GPIO_NUC505_API_ioctl_t;
 
 
 #define GPIO_NUC505_API_MODE_OUT_PP 	GPIO_MODE_OUTPUT
+#define GPIO_NUC505_API_MODE_IN		 	GPIO_MODE_INPUT
 
 
 /**********  define API  functions  ************/

@@ -338,22 +338,23 @@ uint8_t shell_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num , void * 
 
 	switch(aIoctl_num)
 	{
-#ifdef CONFIG_SHELL_USE_RUNTIME_CONFIGURATION
-		case IOCTL_SET_SERVER_DEVICE_BY_NAME :
+#ifdef CONFIG_USE_RUNTIME_DEVICE_CONFIGURATION
+		case IOCTL_SET_SERVER_DEVICE :
 			{
-				server_dev = DEV_OPEN((uint8_t*)aIoctl_param1);
+				server_dev = (pdev_descriptor_t)aIoctl_param1;
 				if(NULL != server_dev)
 				{
 					DEV_IOCTL(server_dev, IOCTL_SET_ISR_CALLBACK_DEV ,  (void*)apdev);
 				}
 
-				config_handle->server_dev=server_dev;
+				config_handle->server_tx_dev=server_dev;
+				config_handle->server_rx_dev=server_dev;
 			}
 			break;
-#endif
 		case IOCTL_SET_CALLBACK_DEV:
 			config_handle->callback_dev =(pdev_descriptor_t) aIoctl_param1;
 			break;
+#endif
 		case IOCTL_DEVICE_START :
 			if(0==task_is_running)
 			{

@@ -14,6 +14,7 @@
 
 /**********  define API  types ************/
 
+
 // Macro for adding quotes
 #define STRINGIFY(X) STRINGIFY2(X)
 #define STRINGIFY2(X) #X
@@ -31,15 +32,36 @@
 
 
 
+typedef enum
+{
+	DEV_PARAM_TYPE_PDEVICE ,
+	DEV_PARAM_TYPE_UINT8	  ,
+	DEV_PARAM_TYPE_UINT16	  ,
+	DEV_PARAM_TYPE_INT	  ,
+	DEV_PARAM_TYPE_UINT32	  ,
+	DEV_PARAM_TYPE_STRING ,
+	DEV_PARAM_TYPE_MAPPED_SET_TO_SIZE
+}dev_param_types_t;
+
 
 typedef struct
 {
-	uint8_t paramSetIoctl;
-	uint8_t paramGetIoctl;
-	char *paramStr;
-	uint8_t usedForSave;
+	char 			*nameStr;
+	size_t		 	val;
+}mapped_set_to_size_param_t;
+
+typedef struct
+{
+	char 					*paramNameStr;
+	uint8_t 				paramSetIoctl;
+	uint8_t 				paramGetIoctl;
+	dev_param_types_t 		param_type;
+	void					*p_mapped_set_type_param;
+	uint8_t					mapped_set_size;
 }dev_param_t;
 
+#define MAPPED_SET_TO_SIZE_PARAM(mapped_set_array)	&mapped_set_array , (sizeof(mapped_set_array)/sizeof(mapped_set_to_size_param_t))
+#define MAPPED_SET_DUMMY_PARAM()	NULL , 0
 
 typedef struct
 {
@@ -47,7 +69,6 @@ typedef struct
 	size_t TotalLength;
 	uint8_t bufferWasOverflowed;
 }ioctl_get_data_buffer_t;
-
 
 
 typedef struct
@@ -80,7 +101,6 @@ typedef enum
 {
 	IOCTL_VOID ,
 	IOCTL_SET_SERVER_DEVICE,
-	IOCTL_SET_SERVER_DEVICE_BY_NAME,
 	IOCTL_SET_CALLBACK_DEV,
 	IOCTL_SET_ISR_CALLBACK_DEV,
 	IOCTL_ADD_ISR_CALLBACK_DEV,
@@ -115,7 +135,8 @@ struct _dev_descriptor_t
 {
 	void*    				p_config_data;
 	void*    				p_runtime_data;
-#if defined(CONFIG_DYNAMIC_DEVICE_TREE) || (CONFIG_MAX_NUM_OF_DYNAMIC_DEVICES>0)
+#if (defined(CONFIG_DYNAMIC_DEVICE_TREE) ||  \
+		defined(CONFIG_USE_RUNTIME_DEVICE_CONFIGURATION_BY_PARAMETER_NAMES) || (CONFIG_MAX_NUM_OF_DYNAMIC_DEVICES>0))
 	char	*module_name;
 #endif
 #if !defined(CONFIG_DONT_USE_DEVICE_NAME_STRINGS)
@@ -138,8 +159,9 @@ typedef struct
 	dev_pwrite_func_t  		pwrite;
 	dev_pread_func_t  		pread;
 	dev_callback_func_t  	callback;
-#ifdef CONFIG_USE_SHELL_FOR_DEVICE_CONFIGURATION
-	dev_param_t  			*config_params_arr;
+#ifdef CONFIG_USE_RUNTIME_DEVICE_CONFIGURATION_BY_PARAMETER_NAMES
+	dev_param_t  const		*config_params_arr;
+	uint8_t					size_of_config_params_arr;
 #endif
 	uint8_t					module_config_struct_size;
 	uint8_t					module_runtime_struct_size;

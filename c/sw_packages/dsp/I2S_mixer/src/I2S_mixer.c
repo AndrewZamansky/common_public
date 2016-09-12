@@ -66,7 +66,6 @@ void I2S_mixer_dsp(pdsp_descriptor aDspDescriptor , size_t data_len ,
 {
 	float *apCh1In ,  *apCh2In;
 	float normalizer ;
-	float tmp1, tmp2;
 
 	buffer_type_t *pTxBuf;
 	pTxBuf = (buffer_type_t*)out_pads[0].buff;
@@ -77,7 +76,8 @@ void I2S_mixer_dsp(pdsp_descriptor aDspDescriptor , size_t data_len ,
 	normalizer = FLOAT_NORMALIZER;
 	for( ; data_len ;data_len--)
 	{
-#if 1
+#if 0
+		float tmp1, tmp2;
 		tmp1 = ABS(*apCh1In);
 		tmp2 = ABS(*apCh2In);
 		if (tmp1 >= g_max_out_val)

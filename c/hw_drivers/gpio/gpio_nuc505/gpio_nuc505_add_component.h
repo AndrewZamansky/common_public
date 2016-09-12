@@ -32,13 +32,35 @@ uint8_t gpio_nuc505_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num , v
 			GPIO_NUC505_DT_MODE		\
 		}
 
+#else /*for module */
+
+/* add this #ifdef block to avoid unused variable warning*/
+#ifdef CONFIG_USE_RUNTIME_DEVICE_CONFIGURATION_BY_PARAMETER_NAMES
+	static mapped_set_to_size_param_t  gpio_nuc505_port_mapped_set[] = {
+			{"a" , GPIO_NUC505_API_PORT_A},
+			{"b" , GPIO_NUC505_API_PORT_B},
+			{"c" , GPIO_NUC505_API_PORT_C},
+			{"d" , GPIO_NUC505_API_PORT_D}
+		};
+
+	static mapped_set_to_size_param_t  gpio_nuc505_mode_mapped_set[] = {
+			{"out" , GPIO_NUC505_API_MODE_OUT_PP},
+			{"in"  , GPIO_NUC505_API_MODE_IN}
+		};
 #endif
 
 #define MODULE_CONFIGURABLE_PARAMS_ARRAY	{	\
-		{IOCTL_GPIO_NUC505_SET_PORT_PARAM , IOCTL_VOID ,GPIO_NUC505_API_PORT_STR, NOT_FOR_SAVE},\
-		{IOCTL_GPIO_NUC505_SET_PIN_PARAM , IOCTL_VOID , GPIO_NUC505_API_PIN_STR, NOT_FOR_SAVE},	\
-		{IOCTL_GPIO_NUC505_SET_MODE_PARAM , IOCTL_VOID ,GPIO_NUC505_API_MODE_STR, NOT_FOR_SAVE},\
+		{GPIO_NUC505_API_PORT_STR 		 ,IOCTL_GPIO_NUC505_SET_PORT_PARAM , IOCTL_VOID , 	\
+			DEV_PARAM_TYPE_MAPPED_SET_TO_SIZE , MAPPED_SET_TO_SIZE_PARAM(gpio_nuc505_port_mapped_set) },	\
+																							\
+		{GPIO_NUC505_API_SINGLE_PIN_STR  ,IOCTL_GPIO_NUC505_SET_SINGLE_PIN_NUMBER_PARAM  , \
+			IOCTL_VOID , DEV_PARAM_TYPE_UINT8,  MAPPED_SET_DUMMY_PARAM() },					\
+																							\
+		{GPIO_NUC505_API_MODE_STR 		 ,IOCTL_GPIO_NUC505_SET_MODE_PARAM , IOCTL_VOID , 	\
+				DEV_PARAM_TYPE_MAPPED_SET_TO_SIZE , MAPPED_SET_TO_SIZE_PARAM(gpio_nuc505_mode_mapped_set)}		\
 	}
+
+#endif
 
 #include "add_component.h"
 

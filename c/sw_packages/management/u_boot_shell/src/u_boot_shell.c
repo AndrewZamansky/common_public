@@ -114,10 +114,10 @@ uint8_t u_boot_shell_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num , 
 
 	switch(aIoctl_num)
 	{
-#ifdef CONFIG_UBOOT_SHELL_USE_RUNTIME_CONFIGURATION
-		case IOCTL_SET_SERVER_DEVICE_BY_NAME :
+#ifdef CONFIG_USE_RUNTIME_DEVICE_CONFIGURATION
+		case IOCTL_SET_SERVER_DEVICE :
 			{
-				server_dev = DEV_OPEN((uint8_t*)aIoctl_param1);
+				server_dev = (pdev_descriptor_t)aIoctl_param1;
 				if(NULL != server_dev)
 				{
 					DEV_IOCTL(server_dev, IOCTL_SET_ISR_CALLBACK_DEV ,  (void*)apdev);

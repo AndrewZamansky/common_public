@@ -28,7 +28,7 @@ ifeq ($(findstring y,$(SYSTEM_GIT_NOT_EXISTS)),y)
         GIT_DIR =$(TOOLS_ROOT_DIR)/linux/PortableGit    
         GIT =$(GIT_DIR)/bin/git
     endif
-    
+
     ifeq ("$(wildcard $(GIT_DIR))","")
         $(info !--- portable git does not exist also)
         $(info !--- install git on your system )
@@ -36,7 +36,7 @@ ifeq ($(findstring y,$(SYSTEM_GIT_NOT_EXISTS)),y)
         $(info !--- make sure that git-cmd.exe file is located in $(GIT_DIR)/  after unpacking   )
         $(error )
     endif
-    
+
     $(info --- portable git found)
 
 else

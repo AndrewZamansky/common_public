@@ -12,7 +12,3 @@ config  ASYNC_TX_WRAPPER_MAX_TX_BUFFER_SIZE
 	int   "maximal allowed tx buffer size"
 	default 255
 	depends on !ASYNC_TX_WRAPPER_USE_MALLOC
-	
-config  ASYNC_TX_WRAPPER_USE_RUNTIME_CONFIGURATION
-	bool   "use runtime configuration for async tx wrapper"
-	default n

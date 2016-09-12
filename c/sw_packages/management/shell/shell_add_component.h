@@ -38,8 +38,11 @@ extern uint8_t shell_callback(pdev_descriptor_t apdev ,
 #endif
 
 #define MODULE_CONFIGURABLE_PARAMS_ARRAY	{	\
-		{IOCTL_SET_SERVER_DEVICE_BY_NAME , IOCTL_VOID , SHELL_API_SERVER_DEVICE_STR, NOT_FOR_SAVE},\
-	}
+			{"shell_server" 	, IOCTL_SET_SERVER_DEVICE 	, IOCTL_VOID , \
+				DEV_PARAM_TYPE_PDEVICE , MAPPED_SET_DUMMY_PARAM() }			\
+		}
+
+
 
 #include "add_component.h"
 

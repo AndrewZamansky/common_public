@@ -37,8 +37,6 @@ typedef struct
 
 
 /***********   local variables    **************/
-static void  *ports[]={PA,PB,PC,PD};
-//static void  *ports[]={NULL,NULL,NULL,NULL};
 
 
 
@@ -69,47 +67,21 @@ uint8_t gpio_nuc505_ioctl( pdev_descriptor_t apdev , const uint8_t aIoctl_num
 
 	switch(aIoctl_num)
 	{
+#ifdef CONFIG_USE_RUNTIME_DEVICE_CONFIGURATION
 		case IOCTL_GPIO_NUC505_SET_PORT_PARAM :
-			{
-				config_handle->port_num = (uint32_t)ports[((char*)aIoctl_param1)[0]-'a'];
-			}
+			config_handle->port_num =  *(uint32_t*)aIoctl_param1 ;
 			break;
-
-		case IOCTL_GPIO_NUC505_SET_PIN_PARAM :
+		case IOCTL_GPIO_NUC505_SET_SINGLE_PIN_NUMBER_PARAM :
 			{
 				uint8_t pin_num;
-				pin_num = atoi((char*)aIoctl_param1);
+				pin_num = *(uint8_t*)aIoctl_param1 ;
 				config_handle->pin_num_mask = 1 << pin_num;
 			}
 			break;
-
 		case IOCTL_GPIO_NUC505_SET_MODE_PARAM :
-			if (0 == memcmp((uint8_t*) aIoctl_param1 , "output" , sizeof("output") ))
-			{
-				config_handle->mode = GPIO_MODE_OUTPUT;
-			}
-			else // other modes will be added later
-			{
-//				switch(pInstance->mode)
-//				{
-//					case GPIO_API_IN_FLOATING:
-//						GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
-//						break;
-//					case GPIO_API_IN_PULL_DOWN:
-//						GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPD;
-//						break;
-//					case GPIO_API_IN_PULL_UP:
-//						GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;
-//						break;
-//					case GPIO_API_OUT:
-//						GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
-//						break;
-//					default :
-//						return 1;
-//				}
-				return 1;
-			}
+			config_handle->mode = *(uint32_t*)aIoctl_param1 ;
 			break;
+#endif
 
 		case IOCTL_DEVICE_START :
 			GPIO_SetMode(GPIOx , pin_num_mask  , config_handle->mode);

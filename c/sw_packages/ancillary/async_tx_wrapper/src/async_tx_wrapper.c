@@ -304,9 +304,9 @@ uint8_t async_tx_wrapper_ioctl(pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 
 	switch(aIoctl_num)
 	{
-#ifdef CONFIG_ASYNC_TX_WRAPPER_USE_RUNTIME_CONFIGURATION
-		case IOCTL_SET_SERVER_DEVICE_BY_NAME :
-			server_dev = DEV_OPEN((uint8_t*)aIoctl_param1);
+#ifdef CONFIG_USE_RUNTIME_DEVICE_CONFIGURATION
+		case IOCTL_SET_SERVER_DEVICE :
+			server_dev = (pdev_descriptor_t)aIoctl_param1;
 			config_handle->server_dev = server_dev;
 			if (NULL != server_dev)
 			{
