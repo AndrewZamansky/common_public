@@ -495,6 +495,7 @@ uint8_t compressor_ioctl(pdsp_descriptor apdsp ,const uint8_t aIoctl_num , void 
 		case IOCTL_DSP_INIT :
 			handle->reverse_ratio = 0;//0.5;
 			handle->prev_ratio = 0;
+			handle->prev_calculated_ratio = 0.5;
 			handle->usePreviousRatio = RELEASE_CHUNK_NUM;
 			handle->look_ahead_length_buffer_Ch1 = NULL;
 			handle->look_ahead_length_buffer_Ch2 = NULL;

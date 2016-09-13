@@ -12,7 +12,7 @@ ENTER_PROJECT_DIR += cd $(APP_ROOT_DIR)
 
 ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
 
-    ERROR_LOG = $(AUTO_GENERATED_FILES_DIR)\kconfig.out
+    ERROR_LOG =  $(OUT_DIR)\kconfig.out
 
     ifdef REDEFINE_KCONFIG_DIR
         $(info  kconfig dir  redefined to $(REDEFINE_KCONFIG_DIR) )
@@ -47,7 +47,7 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
 
 else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX)
 
-    ERROR_LOG = $(AUTO_GENERATED_FILES_DIR)/kconfig.out
+    ERROR_LOG =  $(OUT_DIR)/kconfig.out
 
     SHELL_OUTPUT :=$(shell kconfig-mconf)
 

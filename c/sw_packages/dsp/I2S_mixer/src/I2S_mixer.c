@@ -69,10 +69,11 @@ void I2S_mixer_dsp(pdsp_descriptor apdsp , size_t data_len ,
 	uint8_t enable_test_clipping;
 	volatile float max_out_val ;
 
+	handle = apdsp->handle;
+
 	max_out_val = handle->max_out_val;
 	enable_test_clipping = handle->enable_test_clipping;
 
-	handle = apdsp->handle;
 
 	buffer_type_t *pTxBuf;
 	pTxBuf = (buffer_type_t*)out_pads[0].buff;

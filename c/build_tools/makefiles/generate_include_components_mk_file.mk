@@ -43,53 +43,5 @@ FILE_CONTENT :=$(patsubst %, echo COMPONENT_CONFIG_FILE := %>>$(COMPONENTS_MK) $
 DUMMY:=$(shell $(FILE_CONTENT))
 
 
-
-
-CREATE_CONFIG_ENTRY1 :=
-CREATE_CONFIG_ENTRY2 :=
-CREATE_CONFIG_ENTRY_PRELIMINARY1 :=
-
-# initializing "included_modules.c"  file 
-HASH=\#
-ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
-    $(shell echo  /* */> $(AUTO_GENERATED_FILES_DIR)/included_modules.h)
-    FILE_CONTENT := echo \#include "dev_management_api.h">$(AUTO_GENERATED_FILES_DIR)/included_modules.c &
-    FILE_CONTENT := $(FILE_CONTENT) echo \#include "included_modules.h">>$(AUTO_GENERATED_FILES_DIR)/included_modules.c &
-    FILE_CONTENT := $(FILE_CONTENT) echo const included_module_t included_modules[]={  >>$(AUTO_GENERATED_FILES_DIR)/included_modules.c
-else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX) 
-    $(shell echo  '/* */'> $(AUTO_GENERATED_FILES_DIR)/included_modules.h)
-    FILE_CONTENT := echo '$(HASH)include "dev_management_api.h"'>$(AUTO_GENERATED_FILES_DIR)/included_modules.c ;
-    FILE_CONTENT := $(FILE_CONTENT) echo '$(HASH)include "included_modules.h"'>>$(AUTO_GENERATED_FILES_DIR)/included_modules.c ;
-    FILE_CONTENT := $(FILE_CONTENT) echo 'const included_module_t included_modules[]={  '>>$(AUTO_GENERATED_FILES_DIR)/included_modules.c
-endif
-DUMMY:=$(shell $(FILE_CONTENT))
-
-
-# filling "included_modules.c"  and "included_modules.h" files 
-DO_GENERATE_FILES := 1
-FILE_CONTENT_H:=
-FILE_CONTENT_C:=
-include $(COMPONENTS_MK)
-DUMMY:=$(shell $(FILE_CONTENT_H))
-DUMMY:=$(shell $(FILE_CONTENT_C))
-
-
-
-# finish to build include components file :
-ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS) 	 
- $(shell echo     {"non-existent-dev" , NULL} >> $(AUTO_GENERATED_FILES_DIR)/included_modules.c)
- $(shell echo };  >> $(AUTO_GENERATED_FILES_DIR)/included_modules.c)
-else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX) 
- $(shell echo '    {"non-existent-dev" , NULL} '>> $(AUTO_GENERATED_FILES_DIR)/included_modules.c)
- $(shell echo '};  '>> $(AUTO_GENERATED_FILES_DIR)/included_modules.c)
-endif
-
-
-EQUAL_SIGN := =
-CONFIG_CONTENT := $(subst $(EQUAL_SIGN)y,$(SPACE)  $(SPACE)1,$(CONFIG_CONTENT))
-CONFIG_CONTENT := $(subst $(EQUAL_SIGN),$(SPACE)  $(SPACE),$(CONFIG_CONTENT))
-DUMMY:=$(shell $(CONFIG_CONTENT))
-
-
 all :
-	$(info auto generated include_components.mk created)
+	$(info ---- auto generated include_components.mk created)

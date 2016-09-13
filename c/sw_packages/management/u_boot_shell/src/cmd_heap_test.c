@@ -43,7 +43,7 @@
 
 #include <u-boot/include/command.h>
 #include "shell_api.h"
-#include "included_modules.h"
+
 
 extern void* __HEAP_END;
 extern unsigned char *global_heap;

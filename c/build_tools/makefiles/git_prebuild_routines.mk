@@ -20,7 +20,7 @@ endif
 
 ifeq ($(findstring y,$(SYSTEM_GIT_NOT_EXISTS)),y)
 
-    $(info --- system git does not exist .  trying portable git)
+    $(info ---- system git does not exist .  trying portable git)
     ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
         GIT_DIR =$(TOOLS_ROOT_DIR)\PortableGit
         GIT =$(GIT_DIR)\bin\git
@@ -37,10 +37,10 @@ ifeq ($(findstring y,$(SYSTEM_GIT_NOT_EXISTS)),y)
         $(error )
     endif
 
-    $(info --- portable git found)
+    $(info ---- portable git found)
 
 else
-    $(info --- system git found)
+    $(info ---- system git found)
     GIT =git
 endif
 
