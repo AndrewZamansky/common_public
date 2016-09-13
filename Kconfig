@@ -1,4 +1,8 @@
 #
 mainmenu "uCProjects Configuration"
-source "z_auto_generated_files/Kconfig"
+config COMMON_DIR_PATH
+	string
+	option env="COMMON_DIR_PATH"
+
+
 source "$COMMON_DIR_PATH/c/Kconfig"

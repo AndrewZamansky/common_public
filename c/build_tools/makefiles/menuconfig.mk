@@ -36,17 +36,19 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
         endif
     endif
 
-    KCONFIG_CMD :=$(KCONFIG_ROOT_DIR)/kconfig-mconf.exe $(COMMON_DIR)/Kconfig 2>$(ERROR_LOG)
-    KCONFIG_CMD_FOR_WARNING_CHECK :=$(KCONFIG_ROOT_DIR)/kconfig-mconf.exe $(COMMON_DIR)/Kconfig 1>$(ERROR_LOG)
-    MANUAL_KCONFIG_CMD :=cd $(APP_ROOT_DIR) & $(COMMON_PARTITION) & $(KCONFIG_CMD)
-    MANUAL_KCONFIG_CMD_FOR_WARNING_CHECK :=cd $(APP_ROOT_DIR) & $(COMMON_PARTITION) & $(KCONFIG_CMD_FOR_WARNING_CHECK)
-    NEW_WIN_KCONFIG_CMD :=start /I $(KCONFIG_CMD)
+
+    KCONFIG_BASIC_CMD :=$(KCONFIG_ROOT_DIR)/kconfig-mconf.exe $(COMMON_DIR)/Kconfig
+    KCONFIG_CMD :=$(KCONFIG_BASIC_CMD) 2>$(ERROR_LOG)
+    KCONFIG_CMD_FOR_WARNING_CHECK :=$(KCONFIG_BASIC_CMD) 1>$(ERROR_LOG)
+    MANUAL_KCONFIG_CMD :=set "COMMON_DIR_PATH=$(WORKSPACE_ROOT_DIR)/common" & cd \D $(APP_ROOT_DIR) & $(KCONFIG_CMD)
+    MANUAL_KCONFIG_CMD_FOR_WARNING_CHECK :=set "COMMON_DIR_PATH=$(WORKSPACE_ROOT_DIR)/common" & cd \D $(APP_ROOT_DIR) & $(KCONFIG_CMD_FOR_WARNING_CHECK)
+    NEW_WIN_KCONFIG_CMD :=set "COMMON_DIR_PATH=$(WORKSPACE_ROOT_DIR)/common" & start $(KCONFIG_CMD)
     KCONFIG_PRINT_ERRORS_CMD :=type $(ERROR_LOG)
 
 else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX)
 
     ERROR_LOG = $(AUTO_GENERATED_FILES_DIR)/kconfig.out
-   
+
     SHELL_OUTPUT :=$(shell kconfig-mconf)
 
     $(shell sleep 1)
@@ -68,7 +70,9 @@ else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX)
         $(info        )
         $(error )
     endif
-    
+
+	$(info !--- TODO : add COMMON_DIR_PATH=$(WORKSPACE_ROOT_DIR)/common to shell environment)
+	$(error )
     KCONFIG_CMD :=kconfig-mconf $(COMMON_DIR)/Kconfig 2>$(ERROR_LOG)
     KCONFIG_CMD_FOR_WARNING_CHECK :=kconfig-mconf $(COMMON_DIR)/Kconfig 1>$(ERROR_LOG)
     MANUAL_KCONFIG_CMD :=cd $(APP_ROOT_DIR) ; $(KCONFIG_CMD)
@@ -78,10 +82,6 @@ else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX)
 
 endif
 
-FILE_CONTENT := echo config COMMON_DIR_PATH>$(GENERATED_KCONFIG) $(SHELL_CMD_DELIMITER)
-FILE_CONTENT += echo     string>>$(GENERATED_KCONFIG) $(SHELL_CMD_DELIMITER)
-FILE_CONTENT += echo     default "$(WORKSPACE_ROOT_DIR)/common">>$(GENERATED_KCONFIG) $(SHELL_CMD_DELIMITER)
-DUMMY:=$(shell $(FILE_CONTENT))
 
 
 $(info running : $(NEW_WIN_KCONFIG_CMD))
