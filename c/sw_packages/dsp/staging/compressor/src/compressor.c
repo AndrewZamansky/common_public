@@ -137,14 +137,14 @@ void _compressor_buffered_2in_2out(pdsp_descriptor apdsp ,size_t data_len ,
 		float curr_ratio = 1;
 	//	uint32_t accomulator=0;
 		uint8_t usePreviousRatio;
-		uint16_t i;//,j;//,k;
+		uint16_t i ,j;//,k;
 		float threshold  ;
 		float ratio_change_per_chunk  ;
 		float reverse_ratio ;
 		float *look_ahead_length_buffer_Ch1 = handle->look_ahead_length_buffer_Ch1;
 		float *look_ahead_length_buffer_Ch2 = handle->look_ahead_length_buffer_Ch2;
 		//float release ;
-		static float release_ratio_change_per_chunk = 0;
+		float release_ratio_change_per_chunk ;
 		uint32_t hit_counter;
 		uint32_t chunk_size ;
 	//	uint32_t look_ahead_length = handle->look_ahead_length;
@@ -162,6 +162,7 @@ void _compressor_buffered_2in_2out(pdsp_descriptor apdsp ,size_t data_len ,
 		//release = handle->release;
 		prev_calculated_ratio = handle->prev_calculated_ratio;
 		hit_counter = handle->hit_counter;
+		release_ratio_change_per_chunk = handle->release_ratio_change_per_chunk ;
 
 //		arm_abs_f32( apCh1In , apCh1Out , data_len);
 //		arm_abs_f32( apCh2In , apCh2Out , data_len);
@@ -212,12 +213,9 @@ void _compressor_buffered_2in_2out(pdsp_descriptor apdsp ,size_t data_len ,
 			{
 				usePreviousRatio = RELEASE_CHUNK_NUM;
 				ratio_change_per_chunk = curr_ratio - prev_ratio;
-
-//				prev_calculated_ratio = prev_ratio;
 			}
 			else
 			{
-
 #if 1
 				if (RELEASE_CHUNK_NUM == usePreviousRatio)
 				{
@@ -232,12 +230,19 @@ void _compressor_buffered_2in_2out(pdsp_descriptor apdsp ,size_t data_len ,
 				}
 				else
 				{
-						tmp = (curr_ratio - prev_ratio);
-						if(tmp < release_ratio_change_per_chunk)
-						{
-							release_ratio_change_per_chunk = tmp;
-						}
-						ratio_change_per_chunk = release_ratio_change_per_chunk;
+					float target_ratio;
+					target_ratio = prev_ratio + release_ratio_change_per_chunk;
+					if(prev_calculated_ratio < target_ratio)
+					{
+						target_ratio = prev_calculated_ratio;
+					}
+					if(curr_ratio < target_ratio)
+					{
+						target_ratio = curr_ratio;
+					}
+					//release_ratio_change_per_chunk = target_ratio - prev_ratio;
+
+					ratio_change_per_chunk = target_ratio - prev_ratio;
 
 //						curr_ratio = ((float)(RELEASE_CHUNK_NUM - usePreviousRatio)) * curr_ratio ;
 //						curr_ratio += prev_calculated_ratio;
@@ -259,7 +264,6 @@ void _compressor_buffered_2in_2out(pdsp_descriptor apdsp ,size_t data_len ,
 				//				}
 #endif
 			}
-			prev_calculated_ratio = tmp_ratio;
 
 //			ratio_change_per_chunk = curr_ratio - prev_ratio;
 			step_ratio = ratio_change_per_chunk/chunk_size;
@@ -269,6 +273,14 @@ void _compressor_buffered_2in_2out(pdsp_descriptor apdsp ,size_t data_len ,
 			{
 				float_memcpy_with_ratio_2_buffers(&apCh1Out[0], &look_ahead_length_buffer_Ch1[0 ] ,
 						&apCh2Out[0], &look_ahead_length_buffer_Ch2[0 ]  , chunk_size,prev_ratio,step_ratio);
+				for(j=0;j<chunk_size;j++)
+				{
+					if(apCh1Out[j]>1.0f)
+					{
+						j++;
+					}
+
+				}
 			}
 			else
 			{
@@ -276,7 +288,16 @@ void _compressor_buffered_2in_2out(pdsp_descriptor apdsp ,size_t data_len ,
 						&apCh1In[i - chunk_size  ] ,
 						&apCh2Out[i],
 						&apCh2In[i -  chunk_size]  ,chunk_size, prev_ratio,step_ratio);
+				for(j=0;j<chunk_size;j++)
+				{
+					if(apCh1Out[j+i]>1.0f)
+					{
+						j++;
+					}
+
+				}
 			}
+			prev_calculated_ratio = tmp_ratio;
 
 
 //			if(curr_ratio < prev_ratio)
@@ -298,6 +319,7 @@ void _compressor_buffered_2in_2out(pdsp_descriptor apdsp ,size_t data_len ,
 		handle->usePreviousRatio = usePreviousRatio ;
 		handle->hit_counter = hit_counter;
 		handle->prev_calculated_ratio = prev_calculated_ratio;
+		handle->release_ratio_change_per_chunk = release_ratio_change_per_chunk;
 
 	//	if(print_count > 100)
 	//	{
@@ -472,10 +494,11 @@ uint8_t compressor_ioctl(pdsp_descriptor apdsp ,const uint8_t aIoctl_num , void 
 	{
 		case IOCTL_DSP_INIT :
 			handle->reverse_ratio = 0;//0.5;
-			handle->prev_ratio = 1;
-			handle->usePreviousRatio = 1;
+			handle->prev_ratio = 0;
+			handle->usePreviousRatio = RELEASE_CHUNK_NUM;
 			handle->look_ahead_length_buffer_Ch1 = NULL;
 			handle->look_ahead_length_buffer_Ch2 = NULL;
+			handle->release_ratio_change_per_chunk = 0 ;
 			handle->look_ahead_length = CONFIG_COMPRESSOR_DEFAULT_CHUNK_SIZE;
 			handle->release = 64;
 			switch(handle->type)

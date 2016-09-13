@@ -12,6 +12,12 @@
 /**********  define API  types ************/
 
 
+typedef enum
+{
+	IOCTL_I2S_MIXER_SET_OUT_LEVEL = IOCTL_DSP_LAST_COMMON_IOCTL+1,
+	IOCTL_I2S_MIXER_ENABLE_TEST_CLIPPING,
+	IOCTL_I2S_MIXER_GET_MAX_OUTPUT_VALUE
+}I2S_MIXER_API_ioctl_t;
 
 
 /**********  define API  functions  ************/

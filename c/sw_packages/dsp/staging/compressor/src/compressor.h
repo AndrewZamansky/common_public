@@ -32,6 +32,7 @@ typedef struct {
 	float release;
 	float prev_calculated_ratio;
 	uint32_t hit_counter;
+	float release_ratio_change_per_chunk;
 } COMPRESSOR_Instance_t;
 
 

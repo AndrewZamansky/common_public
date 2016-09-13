@@ -17,9 +17,11 @@
 /***************   typedefs    *******************/
 
 
-typedef struct {
-
-	uint8_t dummy ;
+typedef struct
+{
+	float max_out_val ;
+	float output_level ;
+	uint8_t enable_test_clipping;
 
 } I2S_MIXER_Instance_t;
 
