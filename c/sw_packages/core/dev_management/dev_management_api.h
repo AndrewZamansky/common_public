@@ -4,6 +4,7 @@
 
 
 #include "src/_dev_management_prerequirements_check.h"
+#include "dev_common_ioctl_and_types.h"
 
 #define NOT_FOR_SAVE 	0
 #define FOR_SAVE 		1
@@ -63,32 +64,6 @@ typedef struct
 #define MAPPED_SET_TO_SIZE_PARAM(mapped_set_array)	&mapped_set_array , (sizeof(mapped_set_array)/sizeof(mapped_set_to_size_param_t))
 #define MAPPED_SET_DUMMY_PARAM()	NULL , 0
 
-typedef struct
-{
-	uint8_t *pBufferStart;
-	size_t TotalLength;
-	uint8_t bufferWasOverflowed;
-}ioctl_get_data_buffer_t;
-
-
-typedef struct
-{
-	uint8_t *pData;
-	size_t DataLen;
-}callback_new_data_from_socket_t;
-
-
-typedef enum
-{
-	CALLBACK_VOID ,
-	CALLBACK_INTERRUPT_ARRIVED ,
-	CALLBACK_TX_DONE,
-	CALLBACK_DATA_RECEIVED,
-	CALLBACK_NEW_DATA_ARRIVED,
-	CALLBACK_NEW_DATA_FROM_SOCKET_ARRIVED,
-	CALLBACK_BTN_STATE_CHANGED,
-	CALLBACK_LAST_COMMON_IOCTL
-}common_callback_t;
 
 typedef enum
 {
@@ -97,20 +72,6 @@ typedef enum
 	PARAMS_STATUS_NO_CHANGED_AFTER_LAST_TEST
 }params_status_t;
 
-typedef enum
-{
-	IOCTL_VOID ,
-	IOCTL_SET_SERVER_DEVICE,
-	IOCTL_SET_CALLBACK_DEV,
-	IOCTL_SET_ISR_CALLBACK_DEV,
-	IOCTL_ADD_ISR_CALLBACK_DEV,
-	IOCTL_GET_AND_LOCK_DATA_BUFFER,
-	IOCTL_SET_BYTES_CONSUMED_IN_DATA_BUFFER,
-	IOCTL_SET_UNLOCK_DATA_BUFFER,
-	IOCTL_DEVICE_START,
-	IOCTL_TEST_PARAMS_STATUS,
-	IOCTL_LAST_COMMON_IOCTL
-}common_ioctl_t;
 
 typedef struct _dev_descriptor_t	dev_descriptor_t;
 typedef dev_descriptor_t * pdev_descriptor_t;

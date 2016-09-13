@@ -68,6 +68,7 @@ void I2S_mixer_dsp(pdsp_descriptor apdsp , size_t data_len ,
 	I2S_MIXER_Instance_t *handle;
 	uint8_t enable_test_clipping;
 	volatile float max_out_val ;
+	volatile float out_val ;
 
 	handle = apdsp->handle;
 
@@ -86,14 +87,6 @@ void I2S_mixer_dsp(pdsp_descriptor apdsp , size_t data_len ,
 
 	for( ; data_len ;data_len--)
 	{
-		*apCh1In = *apCh1In * normalizer;
-		*pTxBuf = (buffer_type_t)(*apCh1In++);
-		pTxBuf++;
-
-		*apCh2In = *apCh2In * normalizer;
-		*pTxBuf = (buffer_type_t)(*apCh2In++);
-		pTxBuf++;
-
 		if(enable_test_clipping)
 		{
 			volatile float tmp1, tmp2;
@@ -109,6 +102,16 @@ void I2S_mixer_dsp(pdsp_descriptor apdsp , size_t data_len ,
 				max_out_val = tmp2;
 			}
 		}
+
+		out_val = (*apCh1In++) * normalizer;
+		*pTxBuf = (buffer_type_t)(out_val);
+		pTxBuf++;
+
+		out_val = (*apCh2In++) * normalizer;
+		*pTxBuf = (buffer_type_t)(out_val);
+		pTxBuf++;
+
+
 	}
 
 	handle->max_out_val = max_out_val;
@@ -151,6 +154,10 @@ uint8_t I2S_mixer_ioctl(pdsp_descriptor apdsp ,const uint8_t aIoctl_num , void *
 
 		case IOCTL_I2S_MIXER_ENABLE_TEST_CLIPPING :
 			handle->enable_test_clipping = 1;
+			break;
+
+		case IOCTL_I2S_MIXER_DISABLE_TEST_CLIPPING :
+			handle->enable_test_clipping = 0;
 			break;
 
 		case IOCTL_I2S_MIXER_GET_MAX_OUTPUT_VALUE :
