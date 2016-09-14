@@ -52,7 +52,7 @@ static UART_STM32F103x_Instance_t *pHw_uart_pointer_to_instance[3];
  *
  *
  */
-static void Common_UART_Isr(volatile UART_STM32F103x_Instance_t *pHandle)
+static void Common_UART_Isr(UART_STM32F103x_Instance_t *pHandle)
 {
     USART_TypeDef* USARTx;
     uint8_t cChar;

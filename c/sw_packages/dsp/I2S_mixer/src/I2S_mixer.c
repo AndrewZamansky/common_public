@@ -63,12 +63,11 @@ char I2S_mixer_module_name[] = "I2S_mixer";
 void I2S_mixer_dsp(pdsp_descriptor apdsp , size_t data_len ,
 		dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] , dsp_pad_t  out_pads[MAX_NUM_OF_OUTPUT_PADS])
 {
-	volatile float *apCh1In ,  *apCh2In;
-	volatile float normalizer ;
+	float *apCh1In ,  *apCh2In;
 	I2S_MIXER_Instance_t *handle;
 	uint8_t enable_test_clipping;
-	volatile float max_out_val ;
-	volatile float out_val ;
+	float max_out_val ;
+	float out_val ;
 
 	handle = apdsp->handle;
 
@@ -82,13 +81,12 @@ void I2S_mixer_dsp(pdsp_descriptor apdsp , size_t data_len ,
 	apCh1In = in_pads[0]->buff;
 	apCh2In = in_pads[1]->buff;
 
-	normalizer = FLOAT_NORMALIZER;
 
 	for( ; data_len ;data_len--)
 	{
 		if(enable_test_clipping)
 		{
-			volatile float tmp1, tmp2;
+			float tmp1, tmp2;
 			tmp1 = ABS(*apCh1In);
 			tmp2 = ABS(*apCh2In);
 			if (tmp1 >= max_out_val)
@@ -102,11 +100,11 @@ void I2S_mixer_dsp(pdsp_descriptor apdsp , size_t data_len ,
 			}
 		}
 
-		out_val = (*apCh1In++) * normalizer;
+		out_val = (*apCh1In++) * FLOAT_NORMALIZER;
 		*pTxBuf = (buffer_type_t)(out_val);
 		pTxBuf++;
 
-		out_val = (*apCh2In++) * normalizer;
+		out_val = (*apCh2In++) * FLOAT_NORMALIZER;
 		*pTxBuf = (buffer_type_t)(out_val);
 		pTxBuf++;
 
@@ -135,7 +133,7 @@ void I2S_mixer_dsp(pdsp_descriptor apdsp , size_t data_len ,
 /*---------------------------------------------------------------------------------------------------------*/
 uint8_t I2S_mixer_ioctl(pdsp_descriptor apdsp ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
 {
-	volatile I2S_MIXER_Instance_t *handle;
+	I2S_MIXER_Instance_t *handle;
 
 	handle = apdsp->handle;
 

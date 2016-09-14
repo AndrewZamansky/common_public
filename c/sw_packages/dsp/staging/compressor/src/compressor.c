@@ -137,7 +137,7 @@ void _compressor_buffered_2in_2out(pdsp_descriptor apdsp ,size_t data_len ,
 		float curr_ratio = 1;
 	//	uint32_t accomulator=0;
 		uint8_t usePreviousRatio;
-		uint16_t i ,j;//,k;
+		uint16_t i ;//,j;//,k;
 		float threshold  ;
 		float ratio_change_per_chunk  ;
 		float reverse_ratio ;
@@ -273,14 +273,6 @@ void _compressor_buffered_2in_2out(pdsp_descriptor apdsp ,size_t data_len ,
 			{
 				float_memcpy_with_ratio_2_buffers(&apCh1Out[0], &look_ahead_length_buffer_Ch1[0 ] ,
 						&apCh2Out[0], &look_ahead_length_buffer_Ch2[0 ]  , chunk_size,prev_ratio,step_ratio);
-				for(j=0;j<chunk_size;j++)
-				{
-					if(apCh1Out[j]>1.0f)
-					{
-						j++;
-					}
-
-				}
 			}
 			else
 			{
@@ -288,14 +280,6 @@ void _compressor_buffered_2in_2out(pdsp_descriptor apdsp ,size_t data_len ,
 						&apCh1In[i - chunk_size  ] ,
 						&apCh2Out[i],
 						&apCh2In[i -  chunk_size]  ,chunk_size, prev_ratio,step_ratio);
-				for(j=0;j<chunk_size;j++)
-				{
-					if(apCh1Out[j+i]>1.0f)
-					{
-						j++;
-					}
-
-				}
 			}
 			prev_calculated_ratio = tmp_ratio;
 
