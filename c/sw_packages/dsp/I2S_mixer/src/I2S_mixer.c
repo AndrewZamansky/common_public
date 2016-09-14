@@ -83,7 +83,6 @@ void I2S_mixer_dsp(pdsp_descriptor apdsp , size_t data_len ,
 	apCh2In = in_pads[1]->buff;
 
 	normalizer = FLOAT_NORMALIZER;
-	normalizer *= handle->output_level;
 
 	for( ; data_len ;data_len--)
 	{
@@ -143,13 +142,8 @@ uint8_t I2S_mixer_ioctl(pdsp_descriptor apdsp ,const uint8_t aIoctl_num , void *
 	switch(aIoctl_num)
 	{
 		case IOCTL_DSP_INIT :
-			handle->output_level = 1;
 			handle->enable_test_clipping = 0;
 			handle->max_out_val = 0;
-			break;
-
-		case IOCTL_I2S_MIXER_SET_OUT_LEVEL :
-			handle->output_level = *(float*)aIoctl_param1;
 			break;
 
 		case IOCTL_I2S_MIXER_ENABLE_TEST_CLIPPING :

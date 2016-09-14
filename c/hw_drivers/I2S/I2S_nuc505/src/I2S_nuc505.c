@@ -50,9 +50,6 @@ int32_t *PcmTxBuff;//[2][I2S_BUFF_LEN*2] = {{0}};
 uint8_t start_flag;
 
 
-
-float volume=1;
-
 uint8_t i2s_loopback = 0;
 
 
@@ -291,7 +288,6 @@ uint8_t I2S_nuc505_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
 	I2S_nuc505_instance_t *config_handle;
-	float tmp;
 
 	config_handle = DEV_GET_CONFIG_DATA_POINTER(apdev);
 
@@ -314,18 +310,21 @@ uint8_t I2S_nuc505_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 
 			break;
 
-		case I2S_SET_VOLUME_IOCTL:
-			tmp = atof((char*)aIoctl_param1);
-//			if(1 >= tmp)
-			{
-				volume = tmp;
-			}
-			break;
-
 		case I2S_ENABLE_OUTPUT_IOCTL:
 			start_flag = 1;
-
 			break;
+
+		case I2S_SET_OUT_VOLUME_LEVEL_DB :
+			{
+				int8_t volume_in_db;
+				uint8_t volume_in_db_uint8;
+				volume_in_db = *(int8_t*)aIoctl_param1;
+				volume_in_db_uint8 = (-volume_in_db)/2;
+
+				I2S_SET_INTERNAL_CODEC(I2S, 0x08, volume_in_db_uint8);
+				I2S_SET_INTERNAL_CODEC(I2S, 0x09, volume_in_db_uint8);
+			}
+			break ;
 
 		default :
 			return 1;
