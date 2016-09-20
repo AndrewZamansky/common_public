@@ -29,19 +29,7 @@
 #include "auto_init_api.h"
 
 /********  defines *********************/
-#define THRESHOLD_LIMITER_0db000265			0x0002
-#define THRESHOLD_LIMITER_0db000795			0x0004
-#define THRESHOLD_LIMITER_0db001855			0x0008
-#define THRESHOLD_LIMITER_0db003977			0x0010
-#define THRESHOLD_LIMITER_0db008221			0x0020
-#define THRESHOLD_LIMITER_0db016716			0x0040
-#define THRESHOLD_LIMITER_0db033730			0x0080
-#define THRESHOLD_LIMITER_0db067859			0x0100/*0.99221*/
-#define THRESHOLD_LIMITER_0db136523			0x0200/*0.98440*/
-#define THRESHOLD_LIMITER_0db275500			0x0400/*0.96877*/
-#define THRESHOLD_LIMITER_0db560309			0x0800/*0.93752*/
-#define THRESHOLD_LIMITER_1db159573			0x1000/*0.87502*/
-#define THRESHOLD_LIMITER_2db498509			0x2000/*0.75002*/
+
 
 
 
@@ -117,7 +105,6 @@ static float get_max_abs_value_2_buffers(float *buf1 ,float *buf2 , size_t len ,
 	return max_val;
 }
 
-#define RELEASE_CHUNK_NUM	16.0f
 /*---------------------------------------------------------------------------------------------------------*/
 /* Function:         _compressor_buffered_2in_2out                                                                          */
 /*---------------------------------------------------------------------------------------------------------*/
@@ -125,186 +112,147 @@ void _compressor_buffered_2in_2out(pdsp_descriptor apdsp ,size_t data_len ,
 		dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] , dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS] )
 {
 	COMPRESSOR_Instance_t *handle=apdsp->handle;
-		float *apCh1In ,  *apCh2In;
-		float *apCh1Out ,  *apCh2Out;
-		//	static int print_count=0;
-	//	int threshold_detectd = 0;
-		float max_val ;
-		float prev_ratio ,tmp_ratio;
-		float prev_calculated_ratio ;
-		float step_ratio ;
-		float reverse_curr_ratio ;
-		float curr_ratio = 1;
-	//	uint32_t accomulator=0;
-		uint8_t usePreviousRatio;
-		uint16_t i ;//,j;//,k;
-		float threshold  ;
-		float ratio_change_per_chunk  ;
-		float reverse_ratio ;
-		float *look_ahead_length_buffer_Ch1 = handle->look_ahead_length_buffer_Ch1;
-		float *look_ahead_length_buffer_Ch2 = handle->look_ahead_length_buffer_Ch2;
-		//float release ;
-		float release_ratio_change_per_chunk ;
-		uint32_t hit_counter;
-		uint32_t chunk_size ;
-	//	uint32_t look_ahead_length = handle->look_ahead_length;
+	float *apCh1In ,  *apCh2In;
+	float *apCh1Out ,  *apCh2Out;
+	float max_val ;
+	float prev_ratio ,tmp_ratio;
+	float prev_calculated_ratio ;
+	float step_ratio ;
+	float curr_ratio = 1;
+	float usePreviousRatio;
+	uint16_t i ;
+	float threshold  ;
+	float ratio_change_per_chunk  ;
+	float reverse_ratio ;
+	float *look_ahead_length_buffer_Ch1 = handle->look_ahead_length_buffer_Ch1;
+	float *look_ahead_length_buffer_Ch2 = handle->look_ahead_length_buffer_Ch2;
+	float release ;
+	float attack ;
+	float release_ratio_change_per_chunk ;
+	uint32_t hit_counter;
+	uint32_t chunk_size ;
 
-		apCh1In = in_pads[0]->buff;
-		apCh2In = in_pads[1]->buff;
-		apCh1Out = out_pads[0].buff;
-		apCh2Out = out_pads[1].buff;
+	apCh1In = in_pads[0]->buff;
+	apCh2In = in_pads[1]->buff;
+	apCh1Out = out_pads[0].buff;
+	apCh2Out = out_pads[1].buff;
 
-		threshold = handle->threshold;
+	if (COMPRESSOR_API_TYPE_LIMITER == handle->type )
+	{
+		reverse_ratio = 0;
+		attack = 1;
+	}
+	else
+	{
 		reverse_ratio = handle->reverse_ratio;
-		prev_ratio = handle->prev_ratio ;
-		usePreviousRatio = handle->usePreviousRatio ;
-		chunk_size =  handle->look_ahead_length ;
-		//release = handle->release;
-		prev_calculated_ratio = handle->prev_calculated_ratio;
-		hit_counter = handle->hit_counter;
-		release_ratio_change_per_chunk = handle->release_ratio_change_per_chunk ;
+		attack = handle->attack;
+	}
 
-//		arm_abs_f32( apCh1In , apCh1Out , data_len);
-//		arm_abs_f32( apCh2In , apCh2Out , data_len);
+	threshold = handle->threshold;
+	prev_ratio = handle->prev_ratio ;
+	usePreviousRatio = handle->usePreviousRatio ;
+	chunk_size =  handle->look_ahead_length ;
+	release = handle->release;
+	prev_calculated_ratio = handle->prev_calculated_ratio;
+	hit_counter = handle->hit_counter;
+	release_ratio_change_per_chunk = handle->release_ratio_change_per_chunk ;
 
-		for(i = 0 ; i < data_len ; i+=chunk_size)
+	if(0 == chunk_size)
+		return;
+
+	for(i = 0 ; i < data_len ; i+=chunk_size)
+	{
+		float tmp;
+
+		max_val = get_max_abs_value_2_buffers(&apCh1In[i],&apCh2In[i],chunk_size,threshold);
+
+
+		if(max_val > threshold)
 		{
-			float tmp;//,tmp2;
-			//uint32_t dummy_index;
-
-			max_val = get_max_abs_value_2_buffers(&apCh1In[i],&apCh2In[i],chunk_size,threshold);
-
-//			arm_max_f32(&apCh1Out[i],chunk_size,&tmp,&dummy_index);
-//			arm_max_f32(&apCh2Out[i],chunk_size,&tmp2,&dummy_index);
-//
-//			max_val = threshold;
-//
-//			if(tmp > max_val)
-//			{
-//				max_val =  tmp;
-//			}
-//
-//			if (tmp2 > max_val)
-//			{
-//				max_val = tmp2;
-//			}
-
-
-			if(max_val > threshold)
-			{
-				hit_counter++;
-				curr_ratio = threshold/max_val ;
-				reverse_curr_ratio = 1.0f/curr_ratio;
-				tmp = fast_pow(reverse_curr_ratio , reverse_ratio);
-				curr_ratio = curr_ratio * tmp;
-
-				//usePreviousRatio = 1;
-
-
-			}
-			else
-			{
-				curr_ratio = 1.0f;
-			}
-
-			tmp_ratio = curr_ratio;
-
-			if(curr_ratio <= prev_ratio)
-			{
-				usePreviousRatio = RELEASE_CHUNK_NUM;
-				ratio_change_per_chunk = curr_ratio - prev_ratio;
-			}
-			else
-			{
-#if 1
-				if (RELEASE_CHUNK_NUM == usePreviousRatio)
-				{
-					//					curr_ratio = (RELEASE_CHUNK_NUM - usePreviousRatio) * curr_ratio ;
-					//					curr_ratio += prev_ratio;
-					//					curr_ratio /= ((1 + RELEASE_CHUNK_NUM ) - usePreviousRatio);
-					//					curr_ratio = prev_ratio;
-										ratio_change_per_chunk = 0;
-										usePreviousRatio=0;
-										release_ratio_change_per_chunk = (1.0f - prev_calculated_ratio)/RELEASE_CHUNK_NUM;
-
-				}
-				else
-				{
-					float target_ratio;
-					target_ratio = prev_ratio + release_ratio_change_per_chunk;
-					if(prev_calculated_ratio < target_ratio)
-					{
-						target_ratio = prev_calculated_ratio;
-					}
-					if(curr_ratio < target_ratio)
-					{
-						target_ratio = curr_ratio;
-					}
-					//release_ratio_change_per_chunk = target_ratio - prev_ratio;
-
-					ratio_change_per_chunk = target_ratio - prev_ratio;
-
-//						curr_ratio = ((float)(RELEASE_CHUNK_NUM - usePreviousRatio)) * curr_ratio ;
-//						curr_ratio += prev_calculated_ratio;
-//						curr_ratio /= ((float)((1 + RELEASE_CHUNK_NUM ) - usePreviousRatio));
-//						usePreviousRatio--;
-//						curr_ratio = prev_calculated_ratio;
-//						usePreviousRatio = 1;
-				}
-#else
-				//				if( usePreviousRatio)
-				//				{
-									ratio_change_per_chunk = (curr_ratio - prev_ratio)/16;
-									prev_calculated_ratio = prev_ratio + ratio_change_per_chunk;
-				//					if(1 < prev_calculated_ratio)
-				//					{
-				//						prev_calculated_ratio = 1;
-				//						ratio_change_per_chunk = (1 - prev_ratio)/128;
-				//					}
-				//				}
-#endif
-			}
-
-//			ratio_change_per_chunk = curr_ratio - prev_ratio;
-			step_ratio = ratio_change_per_chunk/chunk_size;
-
-
-			if(0 == i)
-			{
-				float_memcpy_with_ratio_2_buffers(&apCh1Out[0], &look_ahead_length_buffer_Ch1[0 ] ,
-						&apCh2Out[0], &look_ahead_length_buffer_Ch2[0 ]  , chunk_size,prev_ratio,step_ratio);
-			}
-			else
-			{
-				float_memcpy_with_ratio_2_buffers(&apCh1Out[i],
-						&apCh1In[i - chunk_size  ] ,
-						&apCh2Out[i],
-						&apCh2In[i -  chunk_size]  ,chunk_size, prev_ratio,step_ratio);
-			}
-			prev_calculated_ratio = tmp_ratio;
-
-
-//			if(curr_ratio < prev_ratio)
-//			{
-//				chunk_size = COMPRESSOR_CONFIG_CHUNK_SIZE;
-//			}
-//			else
-//			{
-//				chunk_size = COMPRESSOR_CONFIG_CHUNK_SIZE/4;
-//			}
-			prev_ratio += ratio_change_per_chunk;
-
+			hit_counter++;
+			curr_ratio = threshold/max_val ;
+			tmp = fast_pow(curr_ratio , reverse_ratio);
+			curr_ratio = curr_ratio / tmp;
+		}
+		else
+		{
+			curr_ratio = 1.0f;
 		}
 
-		float_memcpy_with_ratio_2_buffers(look_ahead_length_buffer_Ch1, &apCh1In[data_len - chunk_size ] ,
-				look_ahead_length_buffer_Ch2, &apCh2In[data_len - chunk_size ]  ,chunk_size, 1,0);
+		tmp_ratio = curr_ratio;
 
-		handle->prev_ratio = prev_ratio;
-		handle->usePreviousRatio = usePreviousRatio ;
-		handle->hit_counter = hit_counter;
-		handle->prev_calculated_ratio = prev_calculated_ratio;
-		handle->release_ratio_change_per_chunk = release_ratio_change_per_chunk;
+		if(curr_ratio <= prev_ratio)
+		{
+			usePreviousRatio = release;
+			ratio_change_per_chunk = (curr_ratio - prev_ratio)/attack;
+		}
+		else
+		{
+			if (release == usePreviousRatio)
+			{
+				ratio_change_per_chunk = 0;
+				usePreviousRatio=0;
+				release_ratio_change_per_chunk = (1.0f - prev_calculated_ratio)/release;
 
+			}
+			else
+			{
+				float target_ratio;
+				target_ratio = prev_ratio + release_ratio_change_per_chunk;
+				if(prev_calculated_ratio < target_ratio)
+				{
+					target_ratio = prev_calculated_ratio;
+				}
+				if(curr_ratio < target_ratio)
+				{
+					target_ratio = curr_ratio;
+				}
+
+				ratio_change_per_chunk = target_ratio - prev_ratio;
+
+			}
+		}
+		
+		if ((ratio_change_per_chunk < 0.000001) &&
+			(ratio_change_per_chunk > -0.000001))
+		{
+			ratio_change_per_chunk = 0;
+		}
+		step_ratio = ratio_change_per_chunk/chunk_size;
+
+
+		if(0 == i)
+		{
+			float_memcpy_with_ratio_2_buffers(&apCh1Out[0], &look_ahead_length_buffer_Ch1[0 ] ,
+					&apCh2Out[0], &look_ahead_length_buffer_Ch2[0 ]  , chunk_size,prev_ratio,step_ratio);
+		}
+		else
+		{
+			float_memcpy_with_ratio_2_buffers(&apCh1Out[i],
+					&apCh1In[i - chunk_size  ] ,
+					&apCh2Out[i],
+					&apCh2In[i -  chunk_size]  ,chunk_size, prev_ratio,step_ratio);
+		}
+		prev_calculated_ratio = tmp_ratio;
+
+
+		prev_ratio += ratio_change_per_chunk;
+
+	}
+
+	float_memcpy_with_ratio_2_buffers(look_ahead_length_buffer_Ch1, &apCh1In[data_len - chunk_size ] ,
+			look_ahead_length_buffer_Ch2, &apCh2In[data_len - chunk_size ]  ,chunk_size, 1,0);
+
+	handle->prev_ratio = prev_ratio;
+	handle->usePreviousRatio = usePreviousRatio ;
+	handle->hit_counter = hit_counter;
+	handle->prev_calculated_ratio = prev_calculated_ratio;
+	handle->release_ratio_change_per_chunk = release_ratio_change_per_chunk;
+
+	//{
+	//	static int print_count=0;
+	//	int threshold_detectd = 0;
+	//
 	//	if(print_count > 100)
 	//	{
 	////		PRINTF_DBG("max_val = %d  \r\n" , max_val);
@@ -316,6 +264,7 @@ void _compressor_buffered_2in_2out(pdsp_descriptor apdsp ,size_t data_len ,
 	//		print_count = 0;
 	//	}
 	//	print_count++;
+	//}
 }
 
 
@@ -333,7 +282,6 @@ void _compressor_2in_2out(pdsp_descriptor apdsp , size_t data_len ,
 	float curr_ratio = 1;
 	float threshold  ;
 	float reverse_ratio ;
-	float reverse_curr_ratio ;
 	float attack ;
 	float release ;
 	float release_neg ;
@@ -387,9 +335,8 @@ void _compressor_2in_2out(pdsp_descriptor apdsp , size_t data_len ,
 		if(env_follower_ch1 > threshold)
 		{
 			curr_ratio = threshold/env_follower_ch1 ;
-			reverse_curr_ratio = 1/curr_ratio;
-			tmp = fast_pow(reverse_curr_ratio , reverse_ratio);
-			curr_ratio = curr_ratio * tmp;
+			tmp = fast_pow(curr_ratio , reverse_ratio);
+			curr_ratio = curr_ratio / tmp;
 		}
 
 		*apCh1Out++ = (curr_ratio * (*apCh1In++));
@@ -420,11 +367,12 @@ void compressor_dsp(pdsp_descriptor apdsp , size_t data_len ,
 
 	switch(handle->type)
 	{
-		case COMPRESSOR_API_TYPE_LOOKAHEAD:
+		case COMPRESSOR_API_TYPE_LIMITER:
+		case COMPRESSOR_API_TYPE_COMPRESSOR_LOOKAHEAD:
 				_compressor_buffered_2in_2out(apdsp , data_len ,
 						in_pads , out_pads);
 			break ;
-		case COMPRESSOR_API_TYPE_REGULAR:
+		case COMPRESSOR_API_TYPE_COMPRESSOR_REGULAR:
 				_compressor_2in_2out(apdsp , data_len ,
 						in_pads , out_pads);
 			break ;
@@ -480,20 +428,19 @@ uint8_t compressor_ioctl(pdsp_descriptor apdsp ,const uint8_t aIoctl_num , void 
 			handle->reverse_ratio = 0;//0.5;
 			handle->prev_ratio = 0;
 			handle->prev_calculated_ratio = 0.5;
-			handle->usePreviousRatio = RELEASE_CHUNK_NUM;
+			handle->usePreviousRatio = 16;
 			handle->look_ahead_length_buffer_Ch1 = NULL;
 			handle->look_ahead_length_buffer_Ch2 = NULL;
 			handle->release_ratio_change_per_chunk = 0 ;
-			handle->look_ahead_length = CONFIG_COMPRESSOR_DEFAULT_CHUNK_SIZE;
-			handle->release = 64;
+			handle->look_ahead_length = 0;
+			handle->release = 16;
+			handle->attack = 1;
 			switch(handle->type)
 			{
-				case COMPRESSOR_API_TYPE_LOOKAHEAD:
-					look_ahead_length = handle->look_ahead_length ;
-					compressor_set_buffers(handle , look_ahead_length);
-					handle->release = 64;
+				case COMPRESSOR_API_TYPE_LIMITER:
+				case COMPRESSOR_API_TYPE_COMPRESSOR_LOOKAHEAD:
 					break ;
-				case COMPRESSOR_API_TYPE_REGULAR:
+				case COMPRESSOR_API_TYPE_COMPRESSOR_REGULAR:
 					compressor_set_buffers(handle , 1);
 					break ;
 			}
