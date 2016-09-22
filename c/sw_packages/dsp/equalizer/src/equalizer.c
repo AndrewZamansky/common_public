@@ -127,9 +127,9 @@ uint8_t equalizer_ioctl(pdsp_descriptor apdsp ,const uint8_t aIoctl_num , void *
 		case IOCTL_EQUALIZER_SET_BAND_BIQUADS :
 			num_of_bands = handle->num_of_bands;
 			band_num = ((equalizer_api_band_set_t*)aIoctl_param1)->band_num ;
-			if(num_of_bands > band_num )
+			p_band_set_params = &(((equalizer_api_band_set_t*)aIoctl_param1)->band_set_params);
+			if((num_of_bands > band_num )&&(p_band_set_params->Fc > 0.01))
 			{
-				p_band_set_params = &(((equalizer_api_band_set_t*)aIoctl_param1)->band_set_params);
 				memcpy(&handle->band_set_params,
 						p_band_set_params,sizeof(equalizer_api_band_set_params_t));
 				pCoeffs = &handle->pCoeffs[band_num];

@@ -213,11 +213,14 @@ void _compressor_buffered_2in_2out(pdsp_descriptor apdsp ,size_t data_len ,
 			}
 		}
 		
+		// TODO : test if following needed
+#if 0		
 		if ((ratio_change_per_chunk < 0.000001) &&
 			(ratio_change_per_chunk > -0.000001))
 		{
 			ratio_change_per_chunk = 0;
 		}
+#endif		
 		step_ratio = ratio_change_per_chunk/chunk_size;
 
 
