@@ -59,7 +59,7 @@ typedef enum
 	DSP_MANAGEMENT_API_MODULE_CONTROL_ON  =0,
 	DSP_MANAGEMENT_API_MODULE_CONTROL_BYPASS ,
 	DSP_MANAGEMENT_API_MODULE_CONTROL_MUTE ,
-}DSP_MANAGEMENT_API_module_control_t;
+}dsp_management_api_module_control_t;
 
 typedef struct _dsp_out_pad_t
 {
@@ -96,17 +96,19 @@ struct _dsp_descriptor_t
 	void*    			handle;
 	dsp_ioctl_func_t  	ioctl;
 	dsp_func_t  		dsp_func;
-	DSP_MANAGEMENT_API_module_control_t				ctl;
-	dsp_pad_t	    *in_pads[MAX_NUM_OF_OUTPUT_PADS];
-	dsp_pad_t		out_pads[MAX_NUM_OF_OUTPUT_PADS];
+	dsp_management_api_module_control_t				ctl;
+	dsp_pad_t	    	*in_pads[MAX_NUM_OF_OUTPUT_PADS];
+	dsp_pad_t			out_pads[MAX_NUM_OF_OUTPUT_PADS];
 };
 
 typedef const dsp_descriptor_t * pdsp_descriptor_const;
 typedef struct
 {
-	pdsp_descriptor* dsp_chain;
-	size_t occupied_dsp_modules;
-	size_t max_num_of_dsp_modules;
+	pdsp_descriptor* 	dsp_chain;
+	size_t 				occupied_dsp_modules;
+	size_t 				max_num_of_dsp_modules;
+	dsp_pad_t	    	chain_in_pads[MAX_NUM_OF_OUTPUT_PADS];
+	dsp_pad_t*			chain_out_pads[MAX_NUM_OF_OUTPUT_PADS];
 }dsp_chain_t;
 
 /**********  define API  functions  ************/
@@ -120,25 +122,27 @@ typedef struct
 
 
 
-//void DSP_FUNC_1CH_IN_1CH_OUT(pdsp_descriptor dsp,void *ch1In,size_t	len);
-//void DSP_FUNC_2CH_IN_2CH_OUT(pdsp_descriptor dsp,void *ch1In,void *ch2In,size_t	len);
-//void DSP_FUNC_2CH_IN_1CH_OUT(pdsp_descriptor dsp,void *ch1In,void *ch2In,size_t	len);
-//void DSP_FUNC_2CH_IN_1CH_OUT_NO_OUTPUT_ALLOCATION(pdsp_descriptor dsp,void *ch1In,void *ch2In,void *ch1Out,size_t	len);
-//void DSP_FUNC_1CH_IN_2CH_OUT(pdsp_descriptor dsp,void *ch1In,size_t	len);
+
 
 void dsp_management_api_set_buffers_pool(void *adsp_buffers_pool);
-void dsp_management_api_set_module_control(pdsp_descriptor dsp , DSP_MANAGEMENT_API_module_control_t ctl);
+void dsp_management_api_set_module_control(pdsp_descriptor dsp , dsp_management_api_module_control_t ctl);
 
 void _DSP_REGISTER_NEW_MODULE(char *a_module_name, dsp_ioctl_func_t a_ioctle_func
 		, dsp_func_t a_dsp_func , uint16_t a_module_data_size);
 #define DSP_REGISTER_NEW_MODULE(a_module_name, a_ioctle_func , a_dsp_func , a_module_data_size)	\
 		_DSP_REGISTER_NEW_MODULE(a_module_name, a_ioctle_func , a_dsp_func , sizeof(a_module_data_size))
 
-uint8_t DSP_CREATE_LINK(pdsp_descriptor source_dsp,DSP_OUTPUT_PADS_t source_dsp_pad,
+uint8_t DSP_CREATE_INTER_MODULES_LINK(pdsp_descriptor source_dsp,DSP_OUTPUT_PADS_t source_dsp_pad,
 		pdsp_descriptor sink_dsp,DSP_INPUT_PADS_t sink_dsp_pad);
 
-void DSP_SET_SOURCE_BUFFER(pdsp_descriptor source_dsp,DSP_INPUT_PADS_t source_dsp_pad, void *buffer);
-void DSP_SET_SINK_BUFFER(pdsp_descriptor dsp,DSP_OUTPUT_PADS_t dsp_output_pad, void *buffer);
+uint8_t DSP_CREATE_CHAIN_INPUT_TO_MODULE_LINK(dsp_chain_t *ap_chain,DSP_INPUT_PADS_t source_dsp_pad,
+		pdsp_descriptor sink_dsp,DSP_INPUT_PADS_t sink_dsp_pad);
+
+uint8_t DSP_CREATE_MODULE_TO_CHAIN_OUTPUT_LINK(dsp_chain_t *ap_chain,DSP_OUTPUT_PADS_t sink_dsp_pad,
+		pdsp_descriptor source_dsp,DSP_OUTPUT_PADS_t source_dsp_pad);
+
+void DSP_SET_CHAIN_INPUT_BUFFER(dsp_chain_t *ap_chain,DSP_INPUT_PADS_t sink_dsp_pad, void *buffer);
+void DSP_SET_CHAIN_OUTPUT_BUFFER(dsp_chain_t *ap_chain,DSP_OUTPUT_PADS_t source_dsp_pad, void *buffer);
 
 dsp_chain_t *DSP_CREATE_CHAIN(size_t max_num_of_dsp_modules);
 void DSP_ADD_MODULE_TO_CHAIN(dsp_chain_t *ap_chain, char *a_module_name,  pdsp_descriptor dsp_module);

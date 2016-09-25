@@ -184,7 +184,7 @@ void DSP_ADD_MODULE_TO_CHAIN(dsp_chain_t *ap_chain, char *a_module_name,  pdsp_d
 /*---------------------------------------------------------------------------------------------------------*/
 void DSP_PROCESS(pdsp_descriptor dsp , size_t	len)
 {
-	DSP_MANAGEMENT_API_module_control_t ctl;
+	dsp_management_api_module_control_t ctl;
 	dsp_pad_t *curr_out_pad ;
 	dsp_pad_t **in_pads ;
 	dsp_pad_t *out_pads ;
@@ -278,7 +278,7 @@ void DSP_PROCESS_CHAIN(dsp_chain_t *ap_chain , size_t	len )
 }
 
 /*---------------------------------------------------------------------------------------------------------*/
-/* Function:        DSP_CREATE_LINK                                                                          */
+/* Function:        DSP_CREATE_INTER_MODULES_LINK                                                                          */
 /*                                                                                                         */
 /* Parameters:                                                                                             */
 /*                                                                                         */
@@ -288,7 +288,7 @@ void DSP_PROCESS_CHAIN(dsp_chain_t *ap_chain , size_t	len )
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t DSP_CREATE_LINK(pdsp_descriptor source_dsp,DSP_OUTPUT_PADS_t source_dsp_pad,
+uint8_t DSP_CREATE_INTER_MODULES_LINK(pdsp_descriptor source_dsp,DSP_OUTPUT_PADS_t source_dsp_pad,
 		pdsp_descriptor sink_dsp,DSP_INPUT_PADS_t sink_dsp_pad)
 {
 	dsp_pad_t *p_curr_out_pad_of_source = &(source_dsp->out_pads[source_dsp_pad]) ;
@@ -300,9 +300,8 @@ uint8_t DSP_CREATE_LINK(pdsp_descriptor source_dsp,DSP_OUTPUT_PADS_t source_dsp_
 	return 0;
 }
 
-
 /*---------------------------------------------------------------------------------------------------------*/
-/* Function:        DSP_SET_SOURCE_BUFFER                                                                          */
+/* Function:        DSP_CREATE_CHAIN_INPUT_TO_MODULE_LINK                                                                          */
 /*                                                                                                         */
 /* Parameters:                                                                                             */
 /*                                                                                         */
@@ -312,13 +311,76 @@ uint8_t DSP_CREATE_LINK(pdsp_descriptor source_dsp,DSP_OUTPUT_PADS_t source_dsp_
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-void DSP_SET_SOURCE_BUFFER(pdsp_descriptor source_dsp,DSP_INPUT_PADS_t source_dsp_pad, void *buffer)
+uint8_t DSP_CREATE_CHAIN_INPUT_TO_MODULE_LINK(dsp_chain_t *ap_chain,DSP_INPUT_PADS_t source_dsp_pad,
+		pdsp_descriptor sink_dsp,DSP_INPUT_PADS_t sink_dsp_pad)
 {
-	dsp_pad_t *p_curr_out_pad_of_source = &(source_dsp->out_pads[source_dsp_pad]) ;
+	dsp_pad_t *p_curr_out_pad_of_source = &(ap_chain->chain_in_pads[source_dsp_pad]) ;
+
+	sink_dsp->in_pads[sink_dsp_pad] = p_curr_out_pad_of_source;
 
 	p_curr_out_pad_of_source->pad_type = DSP_PAD_TYPE_NOT_ALLOCATED_BUFFER;
+	p_curr_out_pad_of_source->total_registered_sinks++;
+	return 0;
+
+}
+
+/*---------------------------------------------------------------------------------------------------------*/
+/* Function:        DSP_CREATE_MODULE_TO_CHAIN_OUTPUT_LINK                                                                          */
+/*                                                                                                         */
+/* Parameters:                                                                                             */
+/*                                                                                         */
+/*                                                                                                  */
+/* Returns:                                                                                      */
+/* Side effects:                                                                                           */
+/* Description:                                                                                            */
+/*                                                            						 */
+/*---------------------------------------------------------------------------------------------------------*/
+uint8_t DSP_CREATE_MODULE_TO_CHAIN_OUTPUT_LINK(dsp_chain_t *ap_chain,DSP_OUTPUT_PADS_t sink_dsp_pad,
+		pdsp_descriptor source_dsp,DSP_OUTPUT_PADS_t source_dsp_pad)
+{
+	dsp_pad_t *p_curr_out_pad = &(source_dsp->out_pads[source_dsp_pad]) ;
+
+	p_curr_out_pad->pad_type = DSP_PAD_TYPE_NOT_ALLOCATED_BUFFER;
+	ap_chain->chain_out_pads[sink_dsp_pad] = p_curr_out_pad;
+
+}
+
+/*---------------------------------------------------------------------------------------------------------*/
+/* Function:        DSP_SET_CHAIN_INPUT_BUFFER                                                                          */
+/*                                                                                                         */
+/* Parameters:                                                                                             */
+/*                                                                                         */
+/*                                                                                                  */
+/* Returns:                                                                                      */
+/* Side effects:                                                                                           */
+/* Description:                                                                                            */
+/*                                                            						 */
+/*---------------------------------------------------------------------------------------------------------*/
+void DSP_SET_CHAIN_INPUT_BUFFER(dsp_chain_t *ap_chain,DSP_INPUT_PADS_t sink_dsp_pad, void *buffer)
+{
+	dsp_pad_t *p_curr_out_pad_of_source = &(ap_chain->chain_in_pads[sink_dsp_pad]) ;
+
 	p_curr_out_pad_of_source->buff = (float*)buffer;
 
+}
+
+/*---------------------------------------------------------------------------------------------------------*/
+/* Function:        DSP_SET_CHAIN_INPUT_BUFFER                                                                          */
+/*                                                                                                         */
+/* Parameters:                                                                                             */
+/*                                                                                         */
+/*                                                                                                  */
+/* Returns:                                                                                      */
+/* Side effects:                                                                                           */
+/* Description:                                                                                            */
+/*                                                            						 */
+/*---------------------------------------------------------------------------------------------------------*/
+void DSP_SET_CHAIN_OUTPUT_BUFFER(dsp_chain_t *ap_chain,DSP_OUTPUT_PADS_t output_dsp_pad, void *buffer)
+{
+	dsp_pad_t *p_curr_out_pad;
+
+	p_curr_out_pad = ap_chain->chain_out_pads[output_dsp_pad];
+	p_curr_out_pad->buff = (float*)buffer;
 }
 
 /*---------------------------------------------------------------------------------------------------------*/
@@ -370,7 +432,7 @@ void dsp_management_api_set_buffers_pool(void *adsp_buffers_pool)
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-void dsp_management_api_set_module_control(pdsp_descriptor dsp , DSP_MANAGEMENT_API_module_control_t ctl)
+void dsp_management_api_set_module_control(pdsp_descriptor dsp , dsp_management_api_module_control_t ctl)
 {
 	dsp->ctl = ctl ;
 }
