@@ -342,7 +342,7 @@ uint8_t DSP_CREATE_MODULE_TO_CHAIN_OUTPUT_LINK(dsp_chain_t *ap_chain,DSP_OUTPUT_
 
 	p_curr_out_pad->pad_type = DSP_PAD_TYPE_NOT_ALLOCATED_BUFFER;
 	ap_chain->chain_out_pads[sink_dsp_pad] = p_curr_out_pad;
-
+	return 0;
 }
 
 /*---------------------------------------------------------------------------------------------------------*/

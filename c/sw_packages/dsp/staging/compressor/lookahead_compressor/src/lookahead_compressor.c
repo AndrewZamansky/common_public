@@ -1,6 +1,6 @@
 /*
  *
- * file :   compressor.c
+ * file :   lookahead_compressor.c
  *
  *
  *
@@ -12,10 +12,10 @@
 
 /********  includes *********************/
 
-#include "_compressor_prerequirements_check.h" // should be after {compressor_config.h,dev_management_api.h}
+#include "_lookahead_compressor_prerequirements_check.h" // should be after {lookahead_compressor_config.h,dev_management_api.h}
 
-#include "compressor_api.h" //place first to test that header file is self-contained
-#include "compressor.h"
+#include "lookahead_compressor_api.h" //place first to test that header file is self-contained
+#include "lookahead_compressor.h"
 
 #include "math.h"
 
@@ -41,7 +41,7 @@
 
 /********  exported variables *********************/
 
-char compressor_module_name[] = "compressor";
+char lookahead_compressor_module_name[] = "lookahead_compressor";
 
 
 /**********   external variables    **************/
@@ -105,13 +105,24 @@ static float get_max_abs_value_2_buffers(float *buf1 ,float *buf2 , size_t len ,
 	return max_val;
 }
 
+
+
+
 /*---------------------------------------------------------------------------------------------------------*/
-/* Function:         _compressor_buffered_2in_2out                                                                          */
+/* Function:        lookahead_compressor_dsp                                                                          */
+/*                                                                                                         */
+/* Parameters:                                                                                             */
+/*                                                                                         */
+/*                                                                                                  */
+/* Returns:                                                                                      */
+/* Side effects:                                                                                           */
+/* Description:                                                                                            */
+/*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-void _compressor_buffered_2in_2out(pdsp_descriptor apdsp ,size_t data_len ,
-		dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] , dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS] )
+void lookahead_compressor_dsp(pdsp_descriptor apdsp , size_t data_len ,
+		dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] , dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])
 {
-	COMPRESSOR_Instance_t *handle=apdsp->handle;
+	LOOKAHEAD_COMPRESSOR_Instance_t *handle ;
 	float *apCh1In ,  *apCh2In;
 	float *apCh1Out ,  *apCh2Out;
 	float max_val ;
@@ -124,20 +135,24 @@ void _compressor_buffered_2in_2out(pdsp_descriptor apdsp ,size_t data_len ,
 	float threshold  ;
 	float ratio_change_per_chunk  ;
 	float reverse_ratio ;
-	float *look_ahead_length_buffer_Ch1 = handle->look_ahead_length_buffer_Ch1;
-	float *look_ahead_length_buffer_Ch2 = handle->look_ahead_length_buffer_Ch2;
+	float *look_ahead_length_buffer_Ch1;
+	float *look_ahead_length_buffer_Ch2;
 	float release ;
 	float attack ;
 	float release_ratio_change_per_chunk ;
 	uint32_t hit_counter;
 	uint32_t chunk_size ;
 
+	handle=apdsp->handle;
+	look_ahead_length_buffer_Ch1 = handle->look_ahead_length_buffer_Ch1;
+	look_ahead_length_buffer_Ch2 = handle->look_ahead_length_buffer_Ch2;
+
 	apCh1In = in_pads[0]->buff;
 	apCh2In = in_pads[1]->buff;
 	apCh1Out = out_pads[0].buff;
 	apCh2Out = out_pads[1].buff;
 
-	if (COMPRESSOR_API_TYPE_LIMITER == handle->type )
+	if (LOOKAHEAD_COMPRESSOR_API_TYPE_LIMITER == handle->type )
 	{
 		reverse_ratio = 0;
 		attack = 1;
@@ -271,88 +286,9 @@ void _compressor_buffered_2in_2out(pdsp_descriptor apdsp ,size_t data_len ,
 }
 
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:         _compressor_2in_2out                                                                          */
-/*---------------------------------------------------------------------------------------------------------*/
-void _compressor_2in_2out(pdsp_descriptor apdsp , size_t data_len ,
-		dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] , dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])
-{
-	COMPRESSOR_Instance_t *handle = apdsp->handle;;
-	float *apCh1In ,  *apCh2In;
-	float *apCh1Out ,  *apCh2Out;
-
-	float env_follower_ch1 ;
-	float curr_ratio = 1;
-	float threshold  ;
-	float reverse_ratio ;
-	float attack ;
-	float release ;
-	float release_neg ;
-	float attack_neg ;
-	float *look_ahead_length_buffer_Ch1 = handle->look_ahead_length_buffer_Ch1;
-
-
-	apCh1In = in_pads[0]->buff;
-	apCh2In = in_pads[1]->buff;
-	apCh1Out = out_pads[0].buff;
-	apCh2Out = out_pads[1].buff;
-
-	attack = handle->attack;
-	attack_neg = 1 - attack;
-	release = handle->release;
-	release_neg =  1 - release ;
-	threshold = handle->threshold;
-	reverse_ratio = handle->reverse_ratio;
-
-	env_follower_ch1 = *look_ahead_length_buffer_Ch1;
-
-	arm_abs_f32( apCh1In , apCh1Out , data_len);
-	arm_abs_f32( apCh2In , apCh2Out , data_len);
-
-	while( data_len-- )
-	{
-		float tmp;
-
-		tmp = *apCh1Out;
-		if(tmp < *apCh2Out)
-		{
-			tmp =  *apCh2Out;
-		}
-
-		if (tmp > env_follower_ch1)
-		{
-			tmp *=attack;
-			env_follower_ch1 *= attack_neg;
-		}
-		else
-		{
-			tmp *=release;
-			env_follower_ch1 *= release_neg;
-		}
-		env_follower_ch1 += tmp;
-
-
-
-
-		curr_ratio = 1;
-		if(env_follower_ch1 > threshold)
-		{
-			curr_ratio = threshold/env_follower_ch1 ;
-			tmp = fast_pow(curr_ratio , reverse_ratio);
-			curr_ratio = curr_ratio / tmp;
-		}
-
-		*apCh1Out++ = (curr_ratio * (*apCh1In++));
-		*apCh2Out++ = (curr_ratio * (*apCh2In++));
-	}
-
-	*look_ahead_length_buffer_Ch1 = env_follower_ch1 ;
-
-
-}
 
 /*---------------------------------------------------------------------------------------------------------*/
-/* Function:        compressor_dsp                                                                          */
+/* Function:        lookahead_compressor_set_buffers                                                                          */
 /*                                                                                                         */
 /* Parameters:                                                                                             */
 /*                                                                                         */
@@ -362,43 +298,7 @@ void _compressor_2in_2out(pdsp_descriptor apdsp , size_t data_len ,
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-void compressor_dsp(pdsp_descriptor apdsp , size_t data_len ,
-		dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] , dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])
-{
-
-	COMPRESSOR_Instance_t *handle=apdsp->handle;
-
-	switch(handle->type)
-	{
-		case COMPRESSOR_API_TYPE_LIMITER:
-		case COMPRESSOR_API_TYPE_COMPRESSOR_LOOKAHEAD:
-				_compressor_buffered_2in_2out(apdsp , data_len ,
-						in_pads , out_pads);
-			break ;
-		case COMPRESSOR_API_TYPE_COMPRESSOR_REGULAR:
-				_compressor_2in_2out(apdsp , data_len ,
-						in_pads , out_pads);
-			break ;
-	}
-
-
-
-}
-
-
-
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        compressor_set_buffers                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-void compressor_set_buffers(COMPRESSOR_Instance_t *pInstance,uint32_t buffer_size)
+void lookahead_compressor_set_buffers(LOOKAHEAD_COMPRESSOR_Instance_t *pInstance,uint32_t buffer_size)
 {
 	pInstance->look_ahead_length_buffer_Ch1 =
 			(float*)realloc(pInstance->look_ahead_length_buffer_Ch1, buffer_size*sizeof(float));
@@ -409,7 +309,7 @@ void compressor_set_buffers(COMPRESSOR_Instance_t *pInstance,uint32_t buffer_siz
 
 
 /*---------------------------------------------------------------------------------------------------------*/
-/* Function:        compressor_ioctl                                                                          */
+/* Function:        lookahead_compressor_ioctl                                                                          */
 /*                                                                                                         */
 /* Parameters:                                                                                             */
 /*                                                                                         */
@@ -419,57 +319,50 @@ void compressor_set_buffers(COMPRESSOR_Instance_t *pInstance,uint32_t buffer_siz
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t compressor_ioctl(pdsp_descriptor apdsp ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
+uint8_t lookahead_compressor_ioctl(pdsp_descriptor apdsp ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
 {
-	COMPRESSOR_Instance_t *handle;
+	LOOKAHEAD_COMPRESSOR_Instance_t *handle;
 	uint32_t look_ahead_length;
 
 	handle = apdsp->handle;
 	switch(aIoctl_num)
 	{
 		case IOCTL_DSP_INIT :
-			handle->reverse_ratio = 0;//0.5;
-			handle->prev_ratio = 0;
-			handle->prev_calculated_ratio = 0.5;
-			handle->usePreviousRatio = 16;
+			handle->reverse_ratio = 0.0f;//0.5;
+			handle->prev_ratio = 0.0f;
+			handle->prev_calculated_ratio = 0.5f;
+			handle->usePreviousRatio = 16.0f;
 			handle->look_ahead_length_buffer_Ch1 = NULL;
 			handle->look_ahead_length_buffer_Ch2 = NULL;
-			handle->release_ratio_change_per_chunk = 0 ;
-			handle->look_ahead_length = 0;
-			handle->release = 16;
-			handle->attack = 1;
-			switch(handle->type)
-			{
-				case COMPRESSOR_API_TYPE_LIMITER:
-				case COMPRESSOR_API_TYPE_COMPRESSOR_LOOKAHEAD:
-					break ;
-				case COMPRESSOR_API_TYPE_COMPRESSOR_REGULAR:
-					compressor_set_buffers(handle , 1);
-					break ;
-			}
+			handle->release_ratio_change_per_chunk = 0.0f ;
+			handle->look_ahead_length = 0.0f;
+			handle->release = 16.0f;
+			handle->attack = 1.0f;
+			handle->threshold = 0.99999f;
+
 
 			break;
-		case IOCTL_COMPRESSOR_SET_HIGH_THRESHOLD :
+		case IOCTL_LOOKAHEAD_COMPRESSOR_SET_HIGH_THRESHOLD :
 			handle->threshold = *((float*)aIoctl_param1);
 			break;
-		case IOCTL_COMPRESSOR_SET_LOOK_AHEAD_SIZE :
+		case IOCTL_LOOKAHEAD_COMPRESSOR_SET_LOOK_AHEAD_SIZE :
 			look_ahead_length = (uint32_t)((size_t)aIoctl_param1);
 			handle->look_ahead_length = look_ahead_length;
-			compressor_set_buffers(handle , look_ahead_length);
+			lookahead_compressor_set_buffers(handle , look_ahead_length);
 			break;
-		case IOCTL_COMPRESSOR_SET_RATIO :
+		case IOCTL_LOOKAHEAD_COMPRESSOR_SET_RATIO :
 			handle->reverse_ratio = 1/(*((float*)aIoctl_param1));
 			break;
-		case IOCTL_COMPRESSOR_SET_TYPE :
+		case IOCTL_LOOKAHEAD_COMPRESSOR_SET_TYPE :
 			handle->type = (uint8_t)((size_t)aIoctl_param1);
 			break;
-		case IOCTL_COMPRESSOR_SET_ATTACK :
+		case IOCTL_LOOKAHEAD_COMPRESSOR_SET_ATTACK :
 			handle->attack = *((float*)aIoctl_param1);
 			break;
-		case IOCTL_COMPRESSOR_SET_RELEASE :
+		case IOCTL_LOOKAHEAD_COMPRESSOR_SET_RELEASE :
 			handle->release = *((float*)aIoctl_param1);
 			break;
-		case IOCTL_COMPRESSOR_GET_HIT_COUNTER :
+		case IOCTL_LOOKAHEAD_COMPRESSOR_GET_HIT_COUNTER :
 			*((uint32_t*)aIoctl_param1) = handle->hit_counter;
 			handle->hit_counter = 0;
 			break;
@@ -481,7 +374,7 @@ uint8_t compressor_ioctl(pdsp_descriptor apdsp ,const uint8_t aIoctl_num , void 
 
 
 /*---------------------------------------------------------------------------------------------------------*/
-/* Function:        compressor_init                                                                          */
+/* Function:        lookahead_compressor_init                                                                          */
 /*                                                                                                         */
 /* Parameters:                                                                                             */
 /*                                                                                         */
@@ -491,10 +384,10 @@ uint8_t compressor_ioctl(pdsp_descriptor apdsp ,const uint8_t aIoctl_num , void 
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-void  compressor_init(void)
+void  lookahead_compressor_init(void)
 {
-	DSP_REGISTER_NEW_MODULE(COMPRESSOR_API_MODULE_NAME ,compressor_ioctl , compressor_dsp , COMPRESSOR_Instance_t);
+	DSP_REGISTER_NEW_MODULE(LOOKAHEAD_COMPRESSOR_API_MODULE_NAME ,lookahead_compressor_ioctl , lookahead_compressor_dsp , LOOKAHEAD_COMPRESSOR_Instance_t);
 }
 
-AUTO_INIT_FUNCTION(compressor_init);
+AUTO_INIT_FUNCTION(lookahead_compressor_init);
 

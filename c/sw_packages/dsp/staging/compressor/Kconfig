@@ -1,9 +1,16 @@
 #
 	
+config INCLUDE_STANDARD_COMPRESSOR
+	bool   "standard audio compressor"
+	default n
 
+menuconfig INCLUDE_LOOKAHEAD_COMPRESSOR
+	bool   "look ahead audio compressor"
+	default n
 
 config COMPRESSOR_DEFAULT_CHUNK_SIZE
 	int   "default chunk size"
+	depends on INCLUDE_LOOKAHEAD_COMPRESSOR
 	default 64
 
 config COMPRESSOR_IS_SPEED_CRITICAL

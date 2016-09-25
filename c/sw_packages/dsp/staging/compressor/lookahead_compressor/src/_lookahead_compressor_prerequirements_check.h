@@ -1,5 +1,5 @@
 /*
- * file : compressor_prerequirements_check.h
+ * file : lookahead_compressor_prerequirements_check.h
  *
  *
  *
@@ -8,8 +8,8 @@
  *
  */
 
-#ifndef _compressor_prerequirements_check_H
-#define _compressor_prerequirements_check_H
+#ifndef _lookahead_compressor_prerequirements_check_H
+#define _lookahead_compressor_prerequirements_check_H
 
 
 #include "_project.h"
@@ -40,14 +40,14 @@
 enum
 {
 #ifndef IOCTL_DSP_LAST_COMMON_IOCTL
-	IOCTL_LAST_COMMON_IOCTL_not_declared_in_compressor_config_h=sizeof((int)IOCTL_DSP_LAST_COMMON_IOCTL),
+	IOCTL_LAST_COMMON_IOCTL_not_declared_in_lookahead_compressor_config_h=sizeof((int)IOCTL_DSP_LAST_COMMON_IOCTL),
 #endif
 
 
 
-	memcpy___not_declared_in_compressor_config_h=sizeof((int)memcpy),
-	malloc___not_declared_in_compressor_config_h=sizeof((int)malloc),
-	free___not_declared_in_compressor_config_h=sizeof((int)free)
+	memcpy___not_declared_in_lookahead_compressor_config_h=sizeof((int)memcpy),
+	malloc___not_declared_in_lookahead_compressor_config_h=sizeof((int)malloc),
+	free___not_declared_in_lookahead_compressor_config_h=sizeof((int)free)
 
 
 

@@ -1,5 +1,5 @@
 /*
- * file : COMPRESSOR.h
+ * file : LOOKAHEAD_COMPRESSOR.h
  *
  *
  *
@@ -8,10 +8,10 @@
  *
  */
 
-#ifndef _COMPRESSOR_H
-#define _COMPRESSOR_H
+#ifndef _LOOKAHEAD_COMPRESSOR_H
+#define _LOOKAHEAD_COMPRESSOR_H
 
-#include "src/_compressor_prerequirements_check.h"
+#include "src/_lookahead_compressor_prerequirements_check.h"
 
 
 /***************   typedefs    *******************/
@@ -33,7 +33,7 @@ typedef struct {
 	float prev_calculated_ratio;
 	uint32_t hit_counter;
 	float release_ratio_change_per_chunk;
-} COMPRESSOR_Instance_t;
+} LOOKAHEAD_COMPRESSOR_Instance_t;
 
 
 
