@@ -1,5 +1,5 @@
 /*
- * file : mixer_prerequirements_check.h
+ * file : mixer2x1_prerequirements_check.h
  *
  *
  *
@@ -8,8 +8,8 @@
  *
  */
 
-#ifndef _mixer_prerequirements_check_H
-#define _mixer_prerequirements_check_H
+#ifndef _mixer2x1_prerequirements_check_H
+#define _mixer2x1_prerequirements_check_H
 
 #include "_project.h"
 #include "dsp_management_api.h"

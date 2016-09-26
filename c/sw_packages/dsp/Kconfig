@@ -29,13 +29,12 @@ config EQUALIZER_IS_SPEED_CRITICAL
 
 
 menuconfig INCLUDE_MIXER
-	bool   "audio mixer"
+	bool   "mixer"
 	default n
 
-config MIXER_IS_SPEED_CRITICAL
-	bool   "mixer is speed critical"
-	depends on INCLUDE_MIXER
-	default y
+if INCLUDE_MIXER
+source "$COMMON_DIR_PATH/c/sw_packages/dsp/mixer/Kconfig"
+endif
 
 
 menuconfig INCLUDE_I2S_SPLITTER

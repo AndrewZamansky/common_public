@@ -1,27 +1,18 @@
 
-#ifndef _mixer_API_H_
-#define _mixer_API_H_
+#ifndef _MIXER_API_H_
+#define _MIXER_API_H_
 
-#include "src/_mixer_prerequirements_check.h"
-
-#include "common_dsp_api.h"
+#include "dsp_management_api.h"
 
 /*****************  defines  **************/
 
 
 /**********  define API  types ************/
 
-
-
 typedef enum
 {
 	IOCTL_MIXER_SET_CHANNEL_WEIGHT = IOCTL_DSP_LAST_COMMON_IOCTL+1,
-	IOCTL_MIXER_SET_NUM_OF_CHANNELS,
 }MIXER_API_ioctl_t;
-
-
-
-/**********  define API  functions  ************/
 
 
 typedef struct _set_channel_weight_t
@@ -31,7 +22,8 @@ typedef struct _set_channel_weight_t
 } set_channel_weight_t;
 
 
-extern char mixer_module_name[] ;
-#define MIXER_API_MODULE_NAME	mixer_module_name
+
+/**********  define API  functions  ************/
+
 
 #endif

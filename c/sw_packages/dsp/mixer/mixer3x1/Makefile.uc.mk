@@ -1,0 +1,20 @@
+
+INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_3X1_MIXER)
+  
+
+#DEFINES = 
+
+#CFLAGS = 
+
+#ASMFLAGS =  
+
+ifdef CONFIG_MIXER_IS_SPEED_CRITICAL
+    SPEED_CRITICAL_FILES += mixer3x1.c
+endif
+
+SRC = mixer3x1.c
+
+VPATH = src
+
+
+include $(COMMON_CC)
