@@ -54,9 +54,9 @@ void mixer_dsp(pdsp_descriptor apdsp , size_t data_len ,
 {
 	MIXER_Instance_t *handle;
 	uint8_t	num_of_input_channels;
-	float *apCh1In ,  *apCh2In;
+	float *apCh1In ,  *apCh2In,  *apCh3In;
 	float *apCh1Out  ;
-	float channels_weights_0,channels_weights_1  ;
+	float channels_weights_0,channels_weights_1,channels_weights_2  ;
 
 	handle = apdsp->handle;
 	apCh1In = in_pads[0]->buff;
@@ -78,6 +78,17 @@ void mixer_dsp(pdsp_descriptor apdsp , size_t data_len ,
 			{
 				curr_val = (*apCh1In++) * channels_weights_0;
 				curr_val += (*apCh2In++) * channels_weights_1;
+				*apCh1Out++ = curr_val;
+			}
+			break;
+		case 3:
+			apCh3In = in_pads[2]->buff;
+			channels_weights_2 =  channels_weights[2];
+			for( ; data_len ;data_len--)
+			{
+				curr_val = (*apCh1In++) * channels_weights_0;
+				curr_val += (*apCh2In++) * channels_weights_1;
+				curr_val += (*apCh3In++) * channels_weights_2;
 				*apCh1Out++ = curr_val;
 			}
 			break;

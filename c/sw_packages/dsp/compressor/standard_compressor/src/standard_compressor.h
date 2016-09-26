@@ -21,10 +21,12 @@
 typedef struct {
 
 	float env_follower;
+	float rms;
 	float threshold;
 	float reverse_ratio;
 	float attack;
 	float release;
+	float gain;
 } STANDARD_COMPRESSOR_Instance_t;
 
 

@@ -9,7 +9,7 @@
 #define FOR_SAVE 		1
 
 
-#define	MAX_NUM_OF_OUTPUT_PADS	2
+#define	MAX_NUM_OF_OUTPUT_PADS	3
 
 
 /**********  define API  types ************/
@@ -38,13 +38,15 @@ typedef enum
 typedef enum
 {
 	DSP_OUTPUT_PAD_0  =0,
-	DSP_OUTPUT_PAD_1
+	DSP_OUTPUT_PAD_1,
+	DSP_OUTPUT_PAD_2
 }DSP_OUTPUT_PADS_t;
 
 typedef enum
 {
 	DSP_INPUT_PAD_0  =0,
-	DSP_INPUT_PAD_1
+	DSP_INPUT_PAD_1,
+	DSP_INPUT_PAD_2
 }DSP_INPUT_PADS_t;
 
 typedef enum

@@ -70,15 +70,18 @@ config VOICE_3D_IS_SPEED_CRITICAL
 	default y
 
 
-menu "staging"
-
 menuconfig INCLUDE_COMPRESSOR
 	bool   "audio compressor"
 	default n
 
 if INCLUDE_COMPRESSOR
-source "$COMMON_DIR_PATH/c/sw_packages/dsp/staging/compressor/Kconfig"
+source "$COMMON_DIR_PATH/c/sw_packages/dsp/compressor/Kconfig"
 endif
+
+
+
+menu "staging"
+
 
 menuconfig INCLUDE_FFMPEG
 	bool   "ffmpeg"

@@ -21,10 +21,6 @@
 
 #include "PRINTF_api.h"
 
-#ifdef CONFIG_USE_HW_DSP
-  #include "cpu_config.h"
-  #include "arm_math.h"
-#endif
 
 #include "auto_init_api.h"
 
@@ -42,7 +38,8 @@ char standard_compressor_module_name[] = "standard_compressor";
 /**********   external variables    **************/
 
 /***********   local variables    **************/
-
+#define ALPHA				0.96f
+#define ONE_MINUS_ALPHA		(1.0f - ALPHA)
 
 /*---------------------------------------------------------------------------------------------------------*/
 /* Function:        standard_compressor_dsp                                                                          */
@@ -64,6 +61,7 @@ void standard_compressor_dsp(pdsp_descriptor apdsp , size_t data_len ,
 	float *apCh1Out ,  *apCh2Out;
 
 	float env_follower ;
+	float rms ;
 	float curr_ratio = 1;
 	float threshold  ;
 	float reverse_ratio ;
@@ -71,6 +69,10 @@ void standard_compressor_dsp(pdsp_descriptor apdsp , size_t data_len ,
 	float release ;
 	float release_neg ;
 	float attack_neg ;
+	float curr_x1, curr_x2;
+	float tmp;
+	float mono_x;
+	float gain;
 
 	handle = apdsp->handle;
 	apCh1In = in_pads[0]->buff;
@@ -84,50 +86,58 @@ void standard_compressor_dsp(pdsp_descriptor apdsp , size_t data_len ,
 	release_neg =  1 - release ;
 	threshold = handle->threshold;
 	reverse_ratio = handle->reverse_ratio;
+	gain = handle->gain;
 
 	env_follower = handle->env_follower;
+	rms = handle->rms;
 
-	arm_abs_f32( apCh1In , apCh1Out , data_len);
-	arm_abs_f32( apCh2In , apCh2Out , data_len);
 
 	while( data_len-- )
 	{
-		float tmp;
 
-		tmp = *apCh1Out;
-		if(tmp < *apCh2Out)
-		{
-			tmp =  *apCh2Out;
-		}
+		curr_x1 = *apCh1In++;
+		curr_x2 = *apCh2In++;
 
-		if (tmp > env_follower)
-		{
-			tmp *=attack;
-			env_follower *= attack_neg;
-		}
-		else
-		{
-			tmp *=release;
-			env_follower *= release_neg;
-		}
-		env_follower += tmp;
+		mono_x = curr_x1 + curr_x2;
+		mono_x = mono_x/2 ;
+		mono_x = fabsf(mono_x);
 
-
-
-
+		mono_x = mono_x * mono_x;
+		mono_x *= ONE_MINUS_ALPHA ;
+		rms = rms*rms;
+		rms *= ALPHA;
+		rms +=mono_x;
+		rms = fast_pow(rms , 0.5);
 		curr_ratio = 1;
-		if(env_follower > threshold)
+		if(rms > threshold)
 		{
-			curr_ratio = threshold/env_follower ;
+			curr_ratio = threshold/rms ;
 			tmp = fast_pow(curr_ratio , reverse_ratio);
 			curr_ratio = curr_ratio / tmp;
 		}
 
-		*apCh1Out++ = (curr_ratio * (*apCh1In++));
-		*apCh2Out++ = (curr_ratio * (*apCh2In++));
+		
+		if (curr_ratio < env_follower)
+		{
+			curr_ratio *=attack;
+			env_follower *= attack_neg;
+		}
+		else
+		{
+			curr_ratio *=release;
+			env_follower *= release_neg;
+		}
+		env_follower += curr_ratio;
+
+
+		curr_x1 *=gain;
+		*apCh1Out++ = (env_follower * curr_x1);
+		curr_x2 *=gain;
+		*apCh2Out++ = (env_follower * curr_x2);
 	}
 
 	handle->env_follower = env_follower;
+	handle->rms = rms;
 
 }
 
@@ -152,10 +162,12 @@ uint8_t standard_compressor_ioctl(pdsp_descriptor apdsp ,const uint8_t aIoctl_nu
 	{
 		case IOCTL_DSP_INIT :
 			handle->reverse_ratio = 1.0f;//0.5;
-			handle->env_follower = 0.0f;
+			handle->env_follower = 1.0f;
+			handle->rms = 0.0f;
 			handle->release = 16.0f;
 			handle->attack = 1.0f;
 			handle->threshold = 0.99999f;
+			handle->gain =1.0f;
 
 			break;
 		case IOCTL_STANDARD_COMPRESSOR_SET_HIGH_THRESHOLD :
