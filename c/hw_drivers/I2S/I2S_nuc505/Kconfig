@@ -6,7 +6,7 @@ config  I2S_NUC505_USE_EXTERNAL_CODEC
 	default 0
 
 config  I2S_NUC505_USE_MASTER_MODE
-	bool   "use external codec"
+	bool   "I2S in master mode"
 	depends on I2S_NUC505_USE_EXTERNAL_CODEC
 	default 1
 

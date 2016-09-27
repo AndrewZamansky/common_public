@@ -187,7 +187,7 @@ void __attribute__((section(".critical_text"))) I2S_IRQHandler(void)
  		// CLK_SET_APLL(CLK_APLL_45158425);
  		// I2S = 45158425Hz / (0+1) for 11025, 22050, and 44100 sampling rate
 
-#if 	1 == I2S_NUC505_CONFIG_USE_EXTERNAL_CODEC
+#if 	1 == CONFIG_I2S_NUC505_USE_EXTERNAL_CODEC
  		CLK_SetModuleClock(I2S_MODULE, CLK_I2S_SRC_APLL, 3);//3
 #else
  		CLK_SetModuleClock(I2S_MODULE, CLK_I2S_SRC_APLL, 0);
@@ -206,7 +206,7 @@ void __attribute__((section(".critical_text"))) I2S_IRQHandler(void)
  		SYS->GPC_MFPH  = (SYS->GPC_MFPH & (~SYS_GPC_MFPH_PC8MFP_Msk) ) | SYS_GPC_MFPH_PC8MFP_I2S_MCLK;
  		SYS->GPC_MFPH  = (SYS->GPC_MFPH & (~SYS_GPC_MFPH_PC9MFP_Msk) ) | SYS_GPC_MFPH_PC9MFP_I2S_DIN;
  		SYS->GPC_MFPH  = (SYS->GPC_MFPH & (~SYS_GPC_MFPH_PC10MFP_Msk) ) | SYS_GPC_MFPH_PC10MFP_I2S_DOUT;
-#if 	1 == I2S_NUC505_CONFIG_USE_EXTERNAL_CODEC
+#if 	1 == CONFIG_I2S_NUC505_USE_EXTERNAL_CODEC
  		SYS->GPA_MFPH  = (SYS->GPA_MFPH & (~SYS_GPA_MFPH_PA8MFP_Msk) ) | SYS_GPA_MFPH_PA8MFP_I2S_LRCLK;
  		SYS->GPA_MFPH  = (SYS->GPA_MFPH & (~SYS_GPA_MFPH_PA9MFP_Msk) ) | SYS_GPA_MFPH_PA9MFP_I2S_BCLK;
 #else
@@ -214,8 +214,8 @@ void __attribute__((section(".critical_text"))) I2S_IRQHandler(void)
  		SYS->GPC_MFPH  = (SYS->GPC_MFPH & (~SYS_GPC_MFPH_PC12MFP_Msk) ) | SYS_GPC_MFPH_PC12MFP_I2S_BCLK;
 #endif
 
-#if 	1 == I2S_NUC505_CONFIG_USE_EXTERNAL_CODEC
-	#if 	1 == I2S_NUC505_CONFIG_USE_MASTER_MODE
+#if 	1 == CONFIG_I2S_NUC505_USE_EXTERNAL_CODEC
+	#if 	1 == CONFIG_I2S_NUC505_USE_MASTER_MODE
  	    /* Master mode, 16-bit word width, stereo mode, I2S format. Set TX and RX FIFO threshold to middle value. */
  	    I2S_Open(I2S, I2S_MODE_MASTER, 48000,  (num_of_bytes_in_word-1)<<I2S_CTL_WDWIDTH_Pos,
  	    		I2S_STEREO, I2S_FORMAT_I2S, 0);
@@ -252,7 +252,7 @@ void __attribute__((section(".critical_text"))) I2S_IRQHandler(void)
 		// Open Rx Dma Enable
 		I2S_ENABLE_RXDMA(I2S);
 
-#if 	1 == I2S_NUC505_CONFIG_USE_EXTERNAL_CODEC
+#if 	1 == CONFIG_I2S_NUC505_USE_EXTERNAL_CODEC
 #else
 		demo_LineIn();
 //		demo_MIC0();
