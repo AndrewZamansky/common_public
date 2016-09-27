@@ -21,6 +21,12 @@
 
 #include "PRINTF_api.h"
 
+#ifdef CONFIG_USE_HW_DSP
+    #include "cpu_config.h"
+    #include "arm_math.h"
+#endif
+
+
 
 #include "auto_init_api.h"
 
@@ -39,7 +45,7 @@ char standard_compressor_module_name[] = "standard_compressor";
 
 /***********   local variables    **************/
 #define ALPHA				0.96f
-#define ONE_MINUS_ALPHA		(1.0f - ALPHA)
+#define ONE_MINUS_ALPHA		((1.0f - ALPHA)/4) /* division by 4 put here instead of division by 2 in mono->stereo converter*/
 
 /*---------------------------------------------------------------------------------------------------------*/
 /* Function:        standard_compressor_dsp                                                                          */
@@ -73,6 +79,7 @@ void standard_compressor_dsp(pdsp_descriptor apdsp , size_t data_len ,
 	float tmp;
 	float mono_x;
 	float gain;
+	float alpha , one_minus_alpha;//
 
 	handle = apdsp->handle;
 	apCh1In = in_pads[0]->buff;
@@ -91,6 +98,8 @@ void standard_compressor_dsp(pdsp_descriptor apdsp , size_t data_len ,
 	env_follower = handle->env_follower;
 	rms = handle->rms;
 
+	alpha = handle->alpha;
+	one_minus_alpha = handle->one_minus_alpha;
 
 	while( data_len-- )
 	{
@@ -99,15 +108,18 @@ void standard_compressor_dsp(pdsp_descriptor apdsp , size_t data_len ,
 		curr_x2 = *apCh2In++;
 
 		mono_x = curr_x1 + curr_x2;
-		mono_x = mono_x/2 ;
-		mono_x = fabsf(mono_x);
+				/*mono_x = mono_x/2 ;*/ /* division by 2 is inserted in ONE_MINUS_ALPHA*/
 
 		mono_x = mono_x * mono_x;
-		mono_x *= ONE_MINUS_ALPHA ;
+		mono_x *= one_minus_alpha ;
 		rms = rms*rms;
-		rms *= ALPHA;
+		rms *= alpha;
 		rms +=mono_x;
+#ifdef CONFIG_USE_HW_DSP
+		arm_sqrt_f32(rms , &rms);
+#else
 		rms = fast_pow(rms , 0.5);
+#endif
 		curr_ratio = 1;
 		if(rms > threshold)
 		{
@@ -168,6 +180,8 @@ uint8_t standard_compressor_ioctl(pdsp_descriptor apdsp ,const uint8_t aIoctl_nu
 			handle->attack = 1.0f;
 			handle->threshold = 0.99999f;
 			handle->gain =1.0f;
+			handle->alpha = ALPHA;
+			handle->one_minus_alpha = ONE_MINUS_ALPHA;
 
 			break;
 		case IOCTL_STANDARD_COMPRESSOR_SET_HIGH_THRESHOLD :

@@ -27,6 +27,9 @@ typedef struct {
 	float attack;
 	float release;
 	float gain;
+	float alpha ;
+	float one_minus_alpha;
+
 } STANDARD_COMPRESSOR_Instance_t;
 
 

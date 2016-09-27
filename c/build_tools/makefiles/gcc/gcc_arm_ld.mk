@@ -1,7 +1,7 @@
 
 
 ELF_TO_BIN		:=	$(FULL_GCC_PREFIX)objcopy -O binary
-DISASSEMBLER	:=	$(FULL_GCC_PREFIX)objdump -d
+DISASSEMBLER	:=	$(FULL_GCC_PREFIX)objdump -d -S
 ELF_TO_HEX		:=	$(FULL_GCC_PREFIX)objcopy -O ihex
 
 
