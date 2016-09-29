@@ -147,6 +147,9 @@ void DSP_ADD_MODULE_TO_CHAIN(dsp_chain_t *ap_chain, char *a_module_name,  pdsp_d
 	size_t occupied_dsp_modules;
 	dsp_module_t* p_dsp_module;
 	uint8_t retVal;
+	dsp_pad_t **in_pads;
+	dsp_pad_t *out_pads;
+	dsp_pad_t *curr_out_pad;
 
 	occupied_dsp_modules = ap_chain->occupied_dsp_modules;
 	while ( occupied_dsp_modules  == ap_chain->max_num_of_dsp_modules) ; // error trap
@@ -156,6 +159,19 @@ void DSP_ADD_MODULE_TO_CHAIN(dsp_chain_t *ap_chain, char *a_module_name,  pdsp_d
 		p_dsp_module = &dsp_module_array[i];
 		if(0==strcmp(a_module_name,p_dsp_module->name))
 		{
+			in_pads = dsp_module->in_pads;
+			out_pads = dsp_module->out_pads;
+			for (i = 0; i<MAX_NUM_OF_OUTPUT_PADS; i++)
+			{
+				in_pads[i] = NULL;
+				curr_out_pad = &out_pads[i];
+				curr_out_pad->pad_type = DSP_PAD_TYPE_NOT_USED;
+				curr_out_pad->total_registered_sinks = 0;
+				curr_out_pad->sinks_processed_counter = 0;
+				curr_out_pad->buff = NULL;
+			}
+
+			dsp_module->ctl = DSP_MANAGEMENT_API_MODULE_CONTROL_ON;
 			dsp_module->ioctl = p_dsp_module->ioctl;
 			dsp_module->dsp_func = p_dsp_module->dsp_func;
 			dsp_module->handle =malloc( p_dsp_module->module_data_size );
@@ -214,7 +230,7 @@ void DSP_PROCESS(pdsp_descriptor dsp , size_t	len)
 		for(i=0; i<MAX_NUM_OF_OUTPUT_PADS ;i++)
 		{
 			curr_out_pad = &out_pads[i];
-			if(DSP_PAD_TYPE_NORMAL == curr_out_pad->pad_type)
+			if (DSP_PAD_TYPE_NOT_USED != curr_out_pad->pad_type)
 			{
 				my_float_memcpy(curr_out_pad->buff , in_pads[0]->buff,   len);
 			}
@@ -225,7 +241,7 @@ void DSP_PROCESS(pdsp_descriptor dsp , size_t	len)
 		for(i=0; i<MAX_NUM_OF_OUTPUT_PADS ;i++)
 		{
 			curr_out_pad = &out_pads[i];
-			if(DSP_PAD_TYPE_NORMAL == curr_out_pad->pad_type)
+			if (DSP_PAD_TYPE_NOT_USED != curr_out_pad->pad_type)
 			{
 				my_float_memset(curr_out_pad->buff ,0,   len);
 			}
@@ -237,7 +253,7 @@ void DSP_PROCESS(pdsp_descriptor dsp , size_t	len)
 	{
 		curr_source_out_pad = in_pads[i];
 
-		if(DSP_PAD_TYPE_NORMAL == curr_source_out_pad->pad_type)
+		if ((NULL != curr_source_out_pad) && (DSP_PAD_TYPE_NORMAL == curr_source_out_pad->pad_type) )
 		{
 			while( 0 == curr_source_out_pad->sinks_processed_counter ) ; // debug trap
 			curr_source_out_pad->sinks_processed_counter--;

@@ -38,7 +38,7 @@
 /*---------------------------------------------------------------------------------------------------------*/
 void *memory_pool_malloc(void *memory_pool_handle)
 {
-	uint16_t	i = INSTANCE(memory_pool_handle)->num_of_chunks;
+	size_t	i = INSTANCE(memory_pool_handle)->num_of_chunks;
 	xMemPool_t *pMemPool = INSTANCE(memory_pool_handle)->pool_chunks;
 	while( i--)
 	{
@@ -67,7 +67,7 @@ void *memory_pool_malloc(void *memory_pool_handle)
 /*---------------------------------------------------------------------------------------------------------*/
 void memory_pool_free(void *memory_pool_handle , void *mem)
 {
-	uint16_t	i = INSTANCE(memory_pool_handle)->num_of_chunks;
+	size_t	i = INSTANCE(memory_pool_handle)->num_of_chunks;
 	xMemPool_t *pMemPool = INSTANCE(memory_pool_handle)->pool_chunks;
 	while( i--)
 	{

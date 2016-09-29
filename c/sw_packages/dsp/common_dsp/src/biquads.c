@@ -18,7 +18,14 @@
 
 #include "common_dsp_api.h"
 
-
+#ifdef CONFIG_USE_HW_DSP
+    #include "cpu_config.h"
+    #include "arm_math.h"
+	#define NUM_OF_STATES_PER_STAGE	2
+#else
+    #include "math.h"
+	#define NUM_OF_STATES_PER_STAGE	2
+#endif
 /********  defines *********************/
 
 
@@ -37,13 +44,7 @@ typedef struct
 }sw_biquads_params_t;
 
 
-#ifdef CONFIG_USE_HW_DSP
-    #include "cpu_config.h"
-    #include "arm_math.h"
-	#define NUM_OF_STATES_PER_STAGE	2
-#else
-	#define NUM_OF_STATES_PER_STAGE	4
-#endif
+
 /********  externals *********************/
 
 
@@ -62,9 +63,6 @@ void biquads_cascading_filter(void *pFilter,float *apIn,float *apOut,size_t buff
 	arm_biquad_cascade_df2T_instance_f32 *filter_params;
 	filter_params = ((arm_biquad_cascade_df2T_instance_f32*)(((biquads_cascading_filter_t *)pFilter)->pFilterParams));
 	arm_biquad_cascade_df2T_f32(filter_params,apIn,apOut ,buff_len );
-//	arm_biquad_casd_df1_inst_f32 *filter_params;
-//	filter_params = ((arm_biquad_casd_df1_inst_f32*)(((biquads_cascading_filter_t *)pFilter)->pFilterParams));
-//	arm_biquad_cascade_df1_f32(filter_params,apIn,apOut ,buff_len );
 #else
 
 	sw_biquads_params_t *filter_params;
@@ -74,62 +72,50 @@ void biquads_cascading_filter(void *pFilter,float *apIn,float *apOut,size_t buff
 	float *currStageCoeffs;
 
 	short count	;
-	float state0,state1,state2;
+	float state1,state2;
 	float pAi1,pAi2,pBi0,pBi1,pBi2;
 	float pOutTmp;
-	float *pIn;
-	float *pOut;
+	float curr_x;
+	float tmp;
 
 
 	filter_params = (sw_biquads_params_t*)((biquads_cascading_filter_t *)pFilter)->pFilterParams;
 	pCoeffs = filter_params->pCoeffs;
 	numOfStages = filter_params->numOfStages;
 	pStates = filter_params->pStates;
-
-	state0=0;
-	for (currStage = 0 ; currStage < numOfStages ; currStage++)
+	pOutTmp=0;
+	for(count = 0 ; count < buff_len; count++)
 	{
-		pIn=apIn;
-		pOut=apOut;
-		pState = &pStates[currStage * NUM_OF_STATES_PER_STAGE];
-		currStageCoeffs = &pCoeffs[5*currStage];
-
-		state1 = pState[1];
-		state2 = pState[2];
-
-		pBi0 = currStageCoeffs[0];
-		pBi1 = currStageCoeffs[1];
-		pBi2 = currStageCoeffs[2];
-		pAi1 = currStageCoeffs[3];
-		pAi2 = currStageCoeffs[4];
-	//			for(ChanCount = 0 ; ChanCount < u16ChannelNum; ChanCount++)
-	//		*pState  = *pAi * in	;
-		for(count = 0 ; count < buff_len; count++)
+		curr_x = *apIn++;
+		for (currStage = 0 ; currStage < numOfStages ; currStage++)
 		{
-	#if 1
-			state0  = *pIn	; // due to *pAi must be "1" always
-			state0 -= pAi1 * (state1)		;
-			state0 -= pAi2 * (state2)		;
-			pOutTmp = pBi0 * state0;
-			pOutTmp += pBi1 * (state1)	;
-			pOutTmp += pBi2 * (state2)	;
-	#else
-			//pOutTmp = pBi0 * (*pin);
-			pOutTmp = (*pIn);
+			pState = &pStates[currStage * NUM_OF_STATES_PER_STAGE];
+			currStageCoeffs = &pCoeffs[5*currStage];
 
-	#endif
+			state1 = pState[0];
+			state2 = pState[1];
 
-			state2 = state1	;
-			state1 = state0	;
-			*pOut = pOutTmp;
-			pIn++;
-			pOut++;
+			pBi0 = currStageCoeffs[0];
+			pBi1 = currStageCoeffs[1];
+			pBi2 = currStageCoeffs[2];
+			pAi1 = currStageCoeffs[3];
+			pAi2 = currStageCoeffs[4];
+
+			pOutTmp = pBi0 * curr_x ;
+			pOutTmp +=state1;
+			state1 = pBi1 * curr_x;
+			tmp	=  pAi1 * pOutTmp;
+			state1 -=tmp;
+			state1 +=state2;
+			state2 = pBi2 * curr_x;
+			tmp =  pAi2 * pOutTmp;
+			state2 -=tmp;
+
+			pState[0] = state1;
+			pState[1] = state2;
+			curr_x = pOutTmp;
 		}
-
-		pState[0] = state0;
-		pState[1] = state1;
-		pState[2] = state2;
-
+		*apOut++ = pOutTmp;
 	}
 #endif
 }

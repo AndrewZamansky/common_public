@@ -50,7 +50,7 @@ uint8_t	DEV_IOCTL_0_PARAMS(pdev_descriptor_t dev,uint8_t ioctl_num)
 //	(dev)->ioctl(dev ,ioctl_num,ioctl_param1 , ioctl_param2);
 //}
 
-uint8_t	DEV_WRITE(const pdev_descriptor_t apdev ,const uint8_t *apData , size_t aLength )
+size_t	DEV_WRITE(const pdev_descriptor_t apdev ,const uint8_t *apData , size_t aLength )
 {
 	return ((dev_write_func_t)(apdev)->pwrite)(apdev ,apData , aLength);
 }
