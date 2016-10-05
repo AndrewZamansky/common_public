@@ -17,25 +17,25 @@ LIBS :=
 LIBRARIES_DIRS :=
 LDS_PREPROCESSOR_FLAGS :=
 
-#find "common/c" directory path :
-ifneq ($(wildcard $(APP_ROOT_DIR)/../common/c),) 
-    COMMON_ROOT_DIR    :=    $(APP_ROOT_DIR)/../common/c
-else ifneq ($(wildcard $(APP_ROOT_DIR)/../../common/c),) 
-    COMMON_ROOT_DIR    :=    $(APP_ROOT_DIR)/../../common/c
-else ifneq ($(wildcard $(APP_ROOT_DIR)/../../../common/c),) 
-    COMMON_ROOT_DIR    :=    $(APP_ROOT_DIR)/../../../common/c
-else ifneq ($(wildcard $(APP_ROOT_DIR)/../../../../common/c),) 
-    COMMON_ROOT_DIR    :=    $(APP_ROOT_DIR)/../../../../common/c
+#find "common_public/c" directory path :
+ifneq ($(wildcard $(APP_ROOT_DIR)/../common_public/c),)
+    COMMON_ROOT_DIR    :=    $(APP_ROOT_DIR)/../common_public/c
+else ifneq ($(wildcard $(APP_ROOT_DIR)/../../common_public/c),)
+    COMMON_ROOT_DIR    :=    $(APP_ROOT_DIR)/../../common_public/c
+else ifneq ($(wildcard $(APP_ROOT_DIR)/../../../common_public/c),)
+    COMMON_ROOT_DIR    :=    $(APP_ROOT_DIR)/../../../common_public/c
+else ifneq ($(wildcard $(APP_ROOT_DIR)/../../../../common_public/c),)
+    COMMON_ROOT_DIR    :=    $(APP_ROOT_DIR)/../../../../common_public/c
 else
-    $(error !---- COMMON C \(common/c\) DIR NOT FOUND ----)
+    $(error !---- COMMON C \(common_public/c\) DIR NOT FOUND ----)
 endif
 
 #find root project directory  :
-ifneq ($(wildcard $(APP_ROOT_DIR)/../../apps),) 
+ifneq ($(wildcard $(APP_ROOT_DIR)/../../apps),)
     #RELATIVE_PROJECT_ROOT_PATH    :=    
-else ifneq ($(wildcard $(APP_ROOT_DIR)/../../../apps),) 
+else ifneq ($(wildcard $(APP_ROOT_DIR)/../../../apps),)
     RELATIVE_PROJECT_ROOT_PATH    :=..
-else ifneq ($(wildcard $(APP_ROOT_DIR)/../../../../apps),) 
+else ifneq ($(wildcard $(APP_ROOT_DIR)/../../../../apps),)
     RELATIVE_PROJECT_ROOT_PATH    :=../..
 else
    $(error !---- apps  DIR NOT FOUND ----)
@@ -70,7 +70,8 @@ CURRENT_GIT_IGNORE_FILE    :=    $(APP_ROOT_DIR)/.gitignore
 
 MKDIR=mkdir    
 
-COMMON_DIR = $(WORKSPACE_ROOT_DIR)/common
+COMMON_DIR = $(WORKSPACE_ROOT_DIR)/common_public
+COMMON_PRIVATE_DIR = $(WORKSPACE_ROOT_DIR)/common_private
 
 EMPTY:=
 SPACE:= $(EMPTY) $(EMPTY)
@@ -125,6 +126,7 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
     COMMON_PARTITION := $(firstword $(subst :, ,$(COMMON_DIR))):
     APP_PARTITION := $(firstword $(subst :, ,$(APP_ROOT_DIR))):
     SHELL_GO_TO_COMMON_GIT_DIR :=cd $(COMMON_DIR) & $(COMMON_PARTITION) & 
+    SHELL_GO_TO_COMMON_PRIVATE_GIT_DIR :=cd $(COMMON_PRIVATE_DIR) & $(COMMON_PARTITION) & 
     RM        :=rmdir /S /Q
     CP        :=copy /Y
 
@@ -176,6 +178,7 @@ else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX)
     CRC32CALC    =    cksum 
 
     SHELL_GO_TO_COMMON_GIT_DIR :=cd $(COMMON_DIR) ;
+    SHELL_GO_TO_COMMON_PRIVATE_GIT_DIR :=cd $(COMMON_PRIVATE_DIR) ;
     MAKE     :=     make
     RM        :=rm -rf
     CP        :=cp -f

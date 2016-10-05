@@ -6,6 +6,7 @@ rwildcard=$(wildcard $1$2) $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2))
 ALL_CONFIG_FILES := $(call rwildcard,$(APP_ROOT_DIR)/app,Makefile.uc.mk)
 ALL_CONFIG_FILES := $(ALL_CONFIG_FILES) $(call rwildcard,$(SW_PACKAGES_ROOT_DIR)/,Makefile.uc.mk)
 ALL_CONFIG_FILES := $(ALL_CONFIG_FILES) $(call rwildcard,$(DRIVERS_ROOT_DIR)/,Makefile.uc.mk)
+ALL_CONFIG_FILES := $(ALL_CONFIG_FILES) $(call rwildcard,$(COMMON_PRIVATE_DIR)/,Makefile.uc.mk)
 $(info scan for uconfig.mk done )
 
 

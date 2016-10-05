@@ -58,7 +58,7 @@ ifdef MAKEFILE_WAS_GENERATED
         DEFINES :=
 
         # move global prerequirements_check compilation to first place
-        SUBDIRS := $(filter %prerequirements_check,$(SUBDIRS))  $(filter-out %prerequirements_check,$(SUBDIRS))
+        SUBDIRS := $(filter %prerequirements_check,$(SUBDIRS))  $(sort $(filter-out %prerequirements_check,$(SUBDIRS)))
 
         GLOBAL_HEADER_FILES_DEPS := $(patsubst %,%/*.h,$(GLOBAL_INCLUDE_DIR)) 
 
@@ -115,6 +115,7 @@ $(SUBDIRS):
 	$(eval COMMON_CC := $(MAKEFILE_DEFS_ROOT_DIR)/common_cc.mk)
 	$(eval export COMMON_CC)
 	$(eval export TARGET)
+	@echo - $(patsubst $(WORKSPACE_ROOT_DIR)/%,%,$@)
 	$(MAKE) -C $@ -f Makefile.uc.mk $(TARGET)
 
 $(COMPONENTS_MK) : $(APP_ROOT_DIR)/.config

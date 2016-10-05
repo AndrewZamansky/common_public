@@ -75,14 +75,14 @@ ifneq ($(sort $(filter $(CURR_GIT_BRANCH),$(CURR_COMMON_GIT_BRANCH))),$(CURR_GIT
     SHELL_OUTPUT := $(shell $(SHELL_GO_TO_COMMON_GIT_DIR) git status --porcelain 2>&1)
     ERROR_MESSAGE := M 
     ifeq ($(findstring $(ERROR_MESSAGE),$(SHELL_OUTPUT)),$(ERROR_MESSAGE))
-        $(info  !--- git error : commit all changes to common git($(COMMON_DIR)) before changing branch or project)
+        $(info  !--- git error : commit all changes to common_public git($(COMMON_DIR)) before changing branch or project)
         $(info  !--- current application git branch :   $(CURR_GIT_BRANCH) )
-        $(info  !--- current common git branch :   $(CURR_COMMON_GIT_BRANCH) )
+        $(info  !--- current common_public git branch :   $(CURR_COMMON_GIT_BRANCH) )
         $(error  )
     endif
     ERROR_MESSAGE := D #??
     ifeq ($(findstring $(ERROR_MESSAGE),$(SHELL_OUTPUT)),$(ERROR_MESSAGE))
-        $(info  !--- git error : commit all changes to common git)
+        $(info  !--- git error : commit all changes to common_public git)
         $(error  )
     endif
    #for now we are doing manual checkout
@@ -90,14 +90,47 @@ ifneq ($(sort $(filter $(CURR_GIT_BRANCH),$(CURR_COMMON_GIT_BRANCH))),$(CURR_GIT
     SHELL_OUTPUT := $(shell $(SHELL_GO_TO_COMMON_GIT_DIR) git branch 2>&1)
     CURR_GIT_BRANCH:=$(patsubst heads/%,%,$(CURR_GIT_BRANCH))
     ifneq ($(sort $(filter $(CURR_GIT_BRANCH),$(SHELL_OUTPUT))),$(CURR_GIT_BRANCH))#if  $(CURR_GIT_BRANCH) is in $(SHELL_OUTPUT)
-        $(info !--- git error : branch $(CURR_GIT_BRANCH) not found in common git . create it)
-        $(info !--- in case that this git is just created run following comand in common directory:)
+        $(info !--- git error : branch $(CURR_GIT_BRANCH) not found in common_public git . create it)
+        $(info !--- in case that this git is just created run following comand in common_public directory:)
         $(info !--- $(SHELL_GO_TO_COMMON_GIT_DIR) git branch $(PROJECT_NAME))
         $(error  )
     else
-        $(info !--- checkout $(CURR_GIT_BRANCH) manually in common git)
-        $(info !--- you can run following comand in common directory:)
+        $(info !--- checkout $(CURR_GIT_BRANCH) manually in common_public git)
+        $(info !--- you can run following comand in common_public directory:)
         $(info !--- $(SHELL_GO_TO_COMMON_GIT_DIR) git checkout $(CURR_GIT_BRANCH))
+        $(error  )
+    endif
+endif
+
+CURR_COMMON_PRIVATE_GIT_BRANCH := $(shell $(SHELL_GO_TO_COMMON_PRIVATE_GIT_DIR) git rev-parse --abbrev-ref HEAD)
+CURR_COMMON_PRIVATE_GIT_BRANCH := $(patsubst heads/%,%,$(CURR_COMMON_PRIVATE_GIT_BRANCH))#removing heads/ if exists
+ifneq ($(sort $(filter $(CURR_GIT_BRANCH),$(CURR_COMMON_PRIVATE_GIT_BRANCH))),$(CURR_GIT_BRANCH))#if  $(CURR_GIT_BRANCH) is in $(SHELL_OUTPUT)
+    SHELL_OUTPUT := $(shell $(SHELL_GO_TO_COMMON_PRIVATE_GIT_DIR) git status --porcelain 2>&1)
+    ERROR_MESSAGE := M 
+    ifeq ($(findstring $(ERROR_MESSAGE),$(SHELL_OUTPUT)),$(ERROR_MESSAGE))
+        $(info  !--- git error : commit all changes to common_private git($(COMMON_PRIVATE_DIR)) before changing branch or project)
+        $(info  !--- current application git branch :   $(CURR_GIT_BRANCH) )
+        $(info  !--- current common_private git branch :   $(CURR_COMMON_PRIVATE_GIT_BRANCH) )
+        $(error  )
+    endif
+    ERROR_MESSAGE := D #??
+    ifeq ($(findstring $(ERROR_MESSAGE),$(SHELL_OUTPUT)),$(ERROR_MESSAGE))
+        $(info  !--- git error : commit all changes to common_private git)
+        $(error  )
+    endif
+   #for now we are doing manual checkout
+   #SHELL_OUTPUT := $(shell $(SHELL_GO_TO_COMMON_PRIVATE_GIT_DIR) git checkout $(CURR_GIT_BRANCH) 2>&1)
+    SHELL_OUTPUT := $(shell $(SHELL_GO_TO_COMMON_PRIVATE_GIT_DIR) git branch 2>&1)
+    CURR_GIT_BRANCH:=$(patsubst heads/%,%,$(CURR_GIT_BRANCH))
+    ifneq ($(sort $(filter $(CURR_GIT_BRANCH),$(SHELL_OUTPUT))),$(CURR_GIT_BRANCH))#if  $(CURR_GIT_BRANCH) is in $(SHELL_OUTPUT)
+        $(info !--- git error : branch $(CURR_GIT_BRANCH) not found in common_private git . create it)
+        $(info !--- in case that this git is just created run following comand in common_private directory:)
+        $(info !--- $(SHELL_GO_TO_COMMON_PRIVATE_GIT_DIR) git branch $(PROJECT_NAME))
+        $(error  )
+    else
+        $(info !--- checkout $(CURR_GIT_BRANCH) manually in common_private git)
+        $(info !--- you can run following comand in common_private directory:)
+        $(info !--- $(SHELL_GO_TO_COMMON_PRIVATE_GIT_DIR) git checkout $(CURR_GIT_BRANCH))
         $(error  )
     endif
 endif
