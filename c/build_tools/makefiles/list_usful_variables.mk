@@ -22,7 +22,7 @@ $(info OS_ROOT_DIR := $(OS_ROOT_DIR))
 $(info EXTERNAL_SOURCE_ROOT_DIR := $(EXTERNAL_SOURCE_ROOT_DIR))
 $(info TOOLS_ROOT_DIR := $(TOOLS_ROOT_DIR))
 $(info COMMON_PARTITION := $(COMMON_PARTITION))
-
+$(info APP_PARTITION := $(APP_PARTITION))
 
 $(info  )
 $(info usefull makefile calls :)

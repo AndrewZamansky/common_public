@@ -21,7 +21,15 @@ else ifdef CONFIG_PIC32
 else ifdef CONFIG_STM8
     include $(MAKEFILE_DEFS_ROOT_DIR)/cxstm8/cxstm8_ld.mk
 else ifdef CONFIG_HOST
-    include $(MAKEFILE_DEFS_ROOT_DIR)/gcc/gcc_host_ld.mk
+    ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
+        ifdef CONFIG_MIN_GW_GCC
+            include $(MAKEFILE_DEFS_ROOT_DIR)/gcc/gcc_host_ld.mk
+        else ifdef CONFIG_MICROSOFT_COMPILER
+            include $(MAKEFILE_DEFS_ROOT_DIR)/microsoft_compiler/mcc_host_ld.mk
+        endif
+    else
+        include $(MAKEFILE_DEFS_ROOT_DIR)/gcc/gcc_host_ld.mk
+    endif
 else
     $(error ---- unknown compiler ----)
 endif

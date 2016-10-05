@@ -23,15 +23,16 @@ SRC = biquads.c
 SRC += math_functions.c
 VPATH = src
 
-ifndef CONFIG_INCLUDE_CORTEX_M_FPU
-    DEFINES = ARM_MATH_CM4=1  __FPU_PRESENT=1
-    SRC += arm_biquad_cascade_df2T_f32.c
-    SRC += arm_biquad_cascade_df2T_init_f32.c
-    SRC += arm_abs_f32.c
-    VPATH += | $(ARM_CMSIS_PATH)/CMSIS/DSP_Lib/Source/FilteringFunctions
-    VPATH += | $(ARM_CMSIS_PATH)/CMSIS/DSP_Lib/Source/BasicMathFunctions
+ifdef CONFIG_USE_HW_DSP
+    ifndef CONFIG_INCLUDE_CORTEX_M_FPU
+        DEFINES = ARM_MATH_CM4=1  __FPU_PRESENT=1
+        SRC += arm_biquad_cascade_df2T_f32.c
+        SRC += arm_biquad_cascade_df2T_init_f32.c
+        SRC += arm_abs_f32.c
+        VPATH += | $(ARM_CMSIS_PATH)/CMSIS/DSP_Lib/Source/FilteringFunctions
+        VPATH += | $(ARM_CMSIS_PATH)/CMSIS/DSP_Lib/Source/BasicMathFunctions
+    endif
 endif
-
 
 ifdef CONFIG_COMMON_DSP_IS_SPEED_CRITICAL
     _COMMON_DSP_IS_SPEED_CRITICAL:=YES

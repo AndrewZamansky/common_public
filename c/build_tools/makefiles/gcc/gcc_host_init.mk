@@ -82,6 +82,8 @@ else # for 'ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)'
 
 endif #end of 'ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)'
 
+### GLOBAL_CFLAGS calculation
+
 
 
 # define flags for asm compiler :

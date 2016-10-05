@@ -2,6 +2,11 @@
 
 menu "staging"
 
+config INCLUDE_JUCE
+	bool   "juce"
+	depends on HOST
+	default n
+
 
 config INCLUDE_UGFX
 	bool   "ugfx"

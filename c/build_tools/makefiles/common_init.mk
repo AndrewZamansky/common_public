@@ -123,6 +123,7 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
     endif
 
     COMMON_PARTITION := $(firstword $(subst :, ,$(COMMON_DIR))):
+    APP_PARTITION := $(firstword $(subst :, ,$(APP_ROOT_DIR))):
     SHELL_GO_TO_COMMON_GIT_DIR :=cd $(COMMON_DIR) & $(COMMON_PARTITION) & 
     RM        :=rmdir /S /Q
     CP        :=copy /Y
@@ -300,7 +301,15 @@ ifeq ($(findstring menuconfig,$(MAKECMDGOALS)),) #dont enter if we are bulding .
     else ifdef CONFIG_STM8
         include $(MAKEFILE_DEFS_ROOT_DIR)/cxstm8/cxstm8_init.mk
     else ifdef CONFIG_HOST
-        include $(MAKEFILE_DEFS_ROOT_DIR)/gcc/gcc_host_init.mk
+        ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
+            ifdef CONFIG_MIN_GW_GCC
+                include $(MAKEFILE_DEFS_ROOT_DIR)/gcc/gcc_host_init.mk
+            else ifdef CONFIG_MICROSOFT_COMPILER
+                include $(MAKEFILE_DEFS_ROOT_DIR)/microsoft_compiler/mcc_host_init.mk
+            endif
+        else
+            include $(MAKEFILE_DEFS_ROOT_DIR)/gcc/gcc_host_init.mk
+        endif
     else
         $(error ---- unknown compiler ----)
     endif

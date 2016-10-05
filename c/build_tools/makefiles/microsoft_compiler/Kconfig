@@ -1,0 +1,77 @@
+menu "Microsoft compiler options"
+
+
+choice
+	prompt "compiler location"
+	default MCC_COMPILER_LOCATION_WINDOWS_DEFAULT
+
+config MCC_COMPILER_LOCATION_WINDOWS_DEFAULT
+	bool "microsoft compiler located in windows default location"
+
+config MCC_COMPILER_LOCATION_WORKSPACE_TOOLS_DIRECTORY
+    bool "microsoft compiler located in workspace tool directory"
+endchoice
+
+
+
+choice
+	prompt "compiler arch"
+	default MCC_COMPILER_32
+
+config MCC_COMPILER_32
+	bool "x86_32"
+
+config MCC_COMPILER_64
+	bool "x86_64"
+endchoice
+
+choice
+	prompt "visual studio version"
+	default MCC_VISUAL_STUDIO_VERSION_2013
+
+config MCC_VISUAL_STUDIO_VERSION_2012
+	bool "2012"
+
+config MCC_VISUAL_STUDIO_VERSION_2013
+	bool "2013"
+endchoice
+
+
+ 
+choice
+	prompt "Optimisation Level"
+	default MCC_OPTIMISE_PREFER_SPEED
+
+config MCC_OPTIMISE_NONE
+	bool "/Od : No Optimisations"
+
+config MCC_OPTIMISE_GLOBAL
+	bool "/Og  : enable global optimization "
+
+config MCC_OPTIMISE_SIZE
+    bool "/O1 : Optimise for size "
+
+config MCC_OPTIMISE_SPEED
+	bool "/O2 : Optimise for speed "
+
+config MCC_OPTIMISE_PREFER_SIZE
+	bool "/Os : favor optimizations for size over optimizations for speed "
+
+config MCC_OPTIMISE_PREFER_SPEED
+	bool "/Ot : favor optimizations for speed over optimizations for size "
+
+config MCC_OPTIMISE_FULL
+	bool "/Ox : full optimization "
+
+endchoice
+
+
+menuconfig USE_WINDOWS_KITS
+    bool "use windows kits"
+
+config WINDOWS_KIT_VERSION
+    string "windows kit version"
+    depends on USE_WINDOWS_KITS
+    default "8.1"
+
+endmenu

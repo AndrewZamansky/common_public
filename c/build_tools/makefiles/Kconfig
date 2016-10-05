@@ -76,6 +76,10 @@ config MIN_GW_GCC
 config MIN_GW_GPP
     bool "MinGW g++"
 
+config MICROSOFT_COMPILER
+    bool "Microsoft Compiler"
+
+
 endchoice
 
 choice
@@ -95,6 +99,10 @@ endif
 
 if GCC || GPP || MIN_GW_GCC || MIN_GW_GPP || PIC_C32 || PIC_XC32
 source "$COMMON_DIR_PATH/c/build_tools/makefiles/gcc/Kconfig"
+endif
+
+if MICROSOFT_COMPILER
+source "$COMMON_DIR_PATH/c/build_tools/makefiles/microsoft_compiler/Kconfig"
 endif
 
 

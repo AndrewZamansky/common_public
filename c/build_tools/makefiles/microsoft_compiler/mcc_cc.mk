@@ -1,4 +1,3 @@
-
 ##################################################################
 #### the following section we need to run just one time per build
 #ifndef SKIP_SECTION_THAT_SHOULD_RUN_ONCE_AFTER_AUTO_FILE_GENERATIONS
@@ -8,13 +7,15 @@
 FMT_GLOBAL_INCLUDE_DIR	:= 	$(patsubst %,/I%,$(GLOBAL_INCLUDE_DIR))
 FMT_GLOBAL_DEFINES	:= 	$(patsubst %,/D%,$(GLOBAL_DEFINES))
 
-
+FMT_COMPILER_INCLUDE_DIR := /I"$(COMPILER_INCLUDE_DIR)"
+FMT_COMPILER_INCLUDE_DIR += /I"C:\PROGRAM FILES (X86)\WINDOWS KITS\8.1\INCLUDE\UM"
+FMT_COMPILER_INCLUDE_DIR += /I"C:\PROGRAM FILES (X86)\WINDOWS KITS\8.1\INCLUDE\SHARED"
 #endif
 #### end of section that run just one time per build
 ######################################################
 
 define CALCULATE_ALL_INCLUDE_DIRS
-    ALL_INCLUDE_DIRS = $(FMT_GLOBAL_INCLUDE_DIR) $(patsubst %,/I%,$(INCLUDE_DIR) $(COMPILER_INCLUDE_DIR))
+    ALL_INCLUDE_DIRS = $(FMT_COMPILER_INCLUDE_DIR) $(FMT_GLOBAL_INCLUDE_DIR) $(patsubst %,/I%,$(INCLUDE_DIR))
 endef
 
 define CALCULATE_ALL_DEFINES
