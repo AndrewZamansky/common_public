@@ -5,8 +5,8 @@
 #
 
 
-FMT_GLOBAL_INCLUDE_DIR	:= 	$(patsubst %,/I%,$(GLOBAL_INCLUDE_DIR))
-FMT_GLOBAL_DEFINES	:= 	$(patsubst %,/D%,$(GLOBAL_DEFINES))
+FMT_GLOBAL_INCLUDE_DIR	:= 	$(patsubst %,-I%,$(GLOBAL_INCLUDE_DIR))
+FMT_GLOBAL_DEFINES	:= 	$(patsubst %,-D%,$(GLOBAL_DEFINES))
 
 
 #endif
@@ -14,21 +14,21 @@ FMT_GLOBAL_DEFINES	:= 	$(patsubst %,/D%,$(GLOBAL_DEFINES))
 ######################################################
 
 define CALCULATE_ALL_INCLUDE_DIRS
-    ALL_INCLUDE_DIRS = $(FMT_GLOBAL_INCLUDE_DIR) $(patsubst %,/I%,$(INCLUDE_DIR) $(COMPILER_INCLUDE_DIR))
+    ALL_INCLUDE_DIRS = $(FMT_GLOBAL_INCLUDE_DIR) $(patsubst %,-I%,$(INCLUDE_DIR) $(COMPILER_INCLUDE_DIR))
 endef
 
 define CALCULATE_ALL_DEFINES
-	ALL_DEFINES	=  $(subst ",\", $(FMT_GLOBAL_DEFINES) $(patsubst %,/D%,$(DEFINES)) )#substitute " to \" for string defines
+	ALL_DEFINES	=  $(subst ",\", $(FMT_GLOBAL_DEFINES) $(patsubst %,-D%,$(DEFINES)) )#substitute " to \" for string defines
 endef
 
 define CALCULATE_ALL_ASM_DEFINES
-    ALL_ASM_DEFINES	=$(subst ",\", $(FMT_GLOBAL_DEFINES) $(patsubst %,/D%,$(DEFINES)) )#substitute " to \" for string defines
+    ALL_ASM_DEFINES	=$(subst ",\", $(FMT_GLOBAL_DEFINES) $(patsubst %,-D%,$(DEFINES)) )#substitute " to \" for string defines
 endef
 
 define CALCULATE_CC_OUTPUT_FLAG_AND_FILE
-    CC_OUTPUT_FLAG_AND_FILE = /Fo$$@#this will transform to $@ in make rule
+    CC_OUTPUT_FLAG_AND_FILE = -o $$@#this will transform to $@ in make rule
 endef
 
 define CALCULATE_ASM_OUTPUT_FLAG_AND_FILE
-    ASM_OUTPUT_FLAG_AND_FILE = /Fo$$@#this will transform to $@ in make rule
+    ASM_OUTPUT_FLAG_AND_FILE = -o $$@#this will transform to $@ in make rule
 endef
