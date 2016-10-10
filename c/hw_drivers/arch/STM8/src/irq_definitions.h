@@ -73,7 +73,7 @@
 	INTERRUPT void SPI_IRQHandler(void);
 #endif
 
-#ifndef TIM1_UPD_OVF_TRG_BRK_IRQHandler
+#ifndef CONFIG_INCLUDE_INTERNAL_TIMER
 	#define TIM1_UPD_OVF_TRG_BRK_IRQHandler NonHandledInterrupt
 #else
 	INTERRUPT void TIM1_UPD_OVF_TRG_BRK_IRQHandler(void);

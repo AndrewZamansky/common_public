@@ -17,7 +17,6 @@ struct interrupt_vector {
 };
 
 extern @far @interrupt void NonHandledInterrupt (void) ;
-INTERRUPT void TIM1_SystemTickISR(void); /* TIM1 UPD/OVF/TRG/BRK */
 
 
 struct interrupt_vector const _vectab[] = {
@@ -43,8 +42,8 @@ struct interrupt_vector const _vectab[] = {
 	{0x82, (interrupt_handler_t)NonHandledInterrupt}, /* irq9 - Reserved */
 #endif /*STM8S208*/
 	{0x82, (interrupt_handler_t)SPI_IRQHandler}, /* irq10 - SPI End of transfer interrupt */
-//	{0x82, (interrupt_handler_t)TIM1_UPD_OVF_TRG_BRK_IRQHandler}, /* irq11 - TIM1 Update/Overflow/Trigger/Break interrupt */
-	{0x82, (interrupt_handler_t)TIM1_SystemTickISR}, /* irq11 - TIM1 Update/Overflow/Trigger/Break interrupt */
+	{0x82, (interrupt_handler_t)TIM1_UPD_OVF_TRG_BRK_IRQHandler}, /* irq11 - TIM1 Update/Overflow/Trigger/Break interrupt */
+//	{0x82, (interrupt_handler_t)TIM1_SystemTickISR}, /* irq11 - TIM1 Update/Overflow/Trigger/Break interrupt */
 	{0x82, (interrupt_handler_t)TIM1_CAP_COM_IRQHandler}, /* irq12 - TIM1 Capture/Compare interrupt */
 
 #ifdef STM8S903

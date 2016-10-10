@@ -181,7 +181,7 @@ uint8_t uart_stm8_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 		case IOCTL_UART_ENABLE_TX :
 		    //UART1_ITConfig( UART1_IT_TXE, ENABLE );
 		    break;
-#if UART_STM8_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
+#ifdef CONFIG_USE_RUNTIME_DEVICE_CONFIGURATION
 		case IOCTL_SET_ISR_CALLBACK_DEV:
 			stm8_callback_dev =(pdev_descriptor_t) aIoctl_param1;
 			break;

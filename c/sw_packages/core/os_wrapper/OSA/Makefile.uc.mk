@@ -41,13 +41,6 @@ SRC += osa.c
 VPATH += |$(OSA_RTOS_PATH)
 
 
-# memory management
 
-ifdef CONFIG_STM8
-
-     SRC += stm8s_tim1.c 
-     VPATH += |$(STM8S_SRC_DIR)
-
-endif
 
 include $(COMMON_CC)
