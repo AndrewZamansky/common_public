@@ -20,7 +20,11 @@ GLOBAL_LDFLAGS := $(GLOBAL_LDFLAGS) #add this line to stop calculate GLOBAL_LDFL
 
 
 ############   PREPROCESSOR FLAGS FOR LINKER SCRIPT #############
-LDS_PREPROCESSOR_DEFINES +=
+
+LDS_PREPROCESSOR_DEFINES :=
+ifdef CONFIG_ATOM_THREADS
+    LDS_PREPROCESSOR_DEFINES += CONFIG_ATOM_THREADS
+endif
 LDS_PREPROCESSOR_DEFINES_FRMT 	= $(patsubst %,-d%,$(LDS_PREPROCESSOR_DEFINES))
 ##########################################################
 

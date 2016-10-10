@@ -8,6 +8,9 @@ config FREE_RTOS
 config ATOM_THREADS
 	bool "atomthreads"
 
+config OSA
+	bool "osa (co-operative os)"
+
 config NONE_RT_OS
 	bool "none"
 
@@ -17,7 +20,7 @@ if FREE_RTOS
 source "$COMMON_DIR_PATH/c/sw_packages/core/os_wrapper/FreeRTOS/Kconfig"
 endif
 
-if FREE_RTOS || ATOM_THREADS
+if FREE_RTOS || ATOM_THREADS || OSA
 config RT_OS_IS_SPEED_CRITICAL
 	bool   "RT OS is speed critical"
 	default n

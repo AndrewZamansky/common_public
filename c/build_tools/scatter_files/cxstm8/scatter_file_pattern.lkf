@@ -3,6 +3,13 @@
 
 ## Segment configuration
 
+#if defined(CONFIG_ATOM_THREADS)
+	#define BSCT_AND_UBSCT_SIZE	0x1e
+	#define END_OF_UBSCT		0x20
+#else defined(CONFIG_OSA)
+	#define BSCT_AND_UBSCT_SIZE	0x2e
+	#define END_OF_UBSCT		0x30
+#endif
 
 ## Segment Code,Constants:
 +seg .const -b 0x8000 -n .vecttable -k
@@ -14,22 +21,22 @@ zOBJ/STM8/stm8_interrupt_vector.o
 
 ## Segment Eeprom:
 +seg .eeprom -b 0x4000 -m 0x280 -n .eeprom
+
 ## Segment Zero Page (this deliberately avoids 0x0 to avoid
 ## NULL pointers to real data):
-##+seg .bsct -b 0x2 -m 0xfe -n .bsct
-+seg .bsct -b 0x2 -m 0x1e -n .bsct
++seg .bsct -b 0x2 -m BSCT_AND_UBSCT_SIZE -n .bsct
 +seg .ubsct -a .bsct -n .ubsct
 +seg .bit -a .ubsct -n .bit -id
 +seg .share -a .bit -n .share -is
 ## Segment Ram (allow up to RAMTOP-64 to be used for data
 ## sections, leaving 64 bytes for the startup stack):
 
-##+seg .data -b 0x100 -m 0x250 -n .data
-##+seg .data -b 0x100 -m 0x240 -n .data
-+seg .ram -b 0x20 -m 0x340 -n .ram
++seg .ram -b END_OF_UBSCT -m 0x340 -n .ram
 
 +seg .bss -a .ram -n .stacks_bss
+#ifdef CONFIG_ATOM_THREADS 
 OBJ_DIR/AtomThreads/atomthreads_stacks.o
+#endif
 
 +seg .data -a .stacks_bss -n .data
 +seg .bss -a .data -n .bss

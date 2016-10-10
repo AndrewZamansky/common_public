@@ -4,9 +4,9 @@ ifdef CONFIG_ATOM_THREADS
     ATOMTHREADS_RTOS_PATH :=$(EXTERNAL_SOURCE_ROOT_DIR)/atomthreads-1.3
     ifeq ("$(wildcard $(ATOMTHREADS_RTOS_PATH))","")
         $(info  )
-        $(info --- atomthreads path $(ATOMTHREADS_RTOS_PATH) dont exists )
-        $(info --- download atomthreads version 1.3 and unpack it to $(ATOMTHREADS_RTOS_PATH)  )
-        $(info --- make sure that kernel and ports folders are located in $(ATOMTHREADS_RTOS_PATH)/  after unpacking   )
+        $(info !--- atomthreads path $(ATOMTHREADS_RTOS_PATH) dont exists )
+        $(info !--- download atomthreads version 1.3 and unpack it to $(ATOMTHREADS_RTOS_PATH)  )
+        $(info !--- make sure that kernel and ports folders are located in $(ATOMTHREADS_RTOS_PATH)/  after unpacking   )
         $(info  )
         $(error )
     endif

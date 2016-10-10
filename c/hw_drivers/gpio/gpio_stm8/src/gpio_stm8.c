@@ -15,7 +15,7 @@
 
 #include "stm8s.h"
 
-#include "uart_stm8_add_component.h"
+#include "gpio_stm8_add_component.h"
 
 /***************   defines    *******************/
 
