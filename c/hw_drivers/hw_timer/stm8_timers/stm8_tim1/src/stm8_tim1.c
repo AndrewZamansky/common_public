@@ -103,7 +103,7 @@ uint8_t stm8_tim1_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 			    /* Reset TIM1 */
 			    TIM1_DeInit();
 
-			    TIM1_TimeBaseInit(1, TIM1_COUNTERMODE_UP, calculated_period_rate, 0);
+			    TIM1_TimeBaseInit(15, TIM1_COUNTERMODE_UP, calculated_period_rate, 0);
 
 			    /* Generate an interrupt on timer count overflow */
 			    TIM1_ITConfig(TIM1_IT_UPDATE, ENABLE);

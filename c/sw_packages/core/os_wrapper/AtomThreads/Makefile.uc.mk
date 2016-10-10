@@ -50,11 +50,9 @@ VPATH += $(ATOMTHREADS_RTOS_PATH)/kernel
 ifdef CONFIG_STM8
 
     # stm8 porting
-    SRC += stm8s_tim1.c 
     SRC += atomport.c 
     SRC += atomport-asm-cosmic.s
     VPATH += :$(ATOMTHREADS_RTOS_PATH)/ports/stm8
-    VPATH += :$(STM8S_SRC_DIR)
 
 endif
 

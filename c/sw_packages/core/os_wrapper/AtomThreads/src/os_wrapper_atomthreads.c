@@ -12,6 +12,7 @@
 #include "_project.h"
 
 #include "os_wrapper.h"
+#include "arch.h"
 
 extern uint8_t stack_storage_area[];
 static uint16_t curr_stack_storage_pointer = ATOMTHREADS_CONFIG_IDLE_STACK_SIZE_BYTES;
@@ -115,4 +116,16 @@ void *os_create_task_atomthreads( void *taskFunction,
 void os_delay_ms_atomthreads(uint32_t ms)
 {
 	atomTimerDelay(ms);
+}
+
+
+void atomthreads_timer_tick(void)
+{
+	 arch_enter_interrupt();
+
+   /* Call the OS system tick handler */
+   atomTimerTick();
+
+
+	 arch_exit_interrupt(FALSE);
 }

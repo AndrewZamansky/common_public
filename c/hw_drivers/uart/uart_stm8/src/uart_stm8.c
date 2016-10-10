@@ -16,7 +16,7 @@
 #include "uart_stm8.h"
 
 #include "stm8s.h"
-#include "STM8_api.h"
+#include "arch.h"
 
 #include "stm8s_uart1.h"
 #include "uart_stm8_api.h"
