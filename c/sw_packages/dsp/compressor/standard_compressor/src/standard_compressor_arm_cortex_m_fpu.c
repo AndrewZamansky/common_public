@@ -1,6 +1,6 @@
 /*
  *
- * file :   equalizer.c
+ * file :   standard_compressor.c
  *
  *
  *
@@ -12,38 +12,39 @@
 
 /********  includes *********************/
 
-#include "_equalizer_prerequirements_check.h"
+#include "_standard_compressor_prerequirements_check.h" // should be after {standard_compressor_config.h,dev_management_api.h}
+
+#include "standard_compressor_api.h" //place first to test that header file is self-contained
+#include "standard_compressor.h"
+
+#include "math.h"
+#include "cpu_config.h"
+#include "arm_math.h"
 
 #include "PRINTF_api.h"
 
-#include "equalizer_api.h" //place first to test that header file is self-contained
-#include "equalizer.h"
 
 #include "auto_init_api.h"
 
 /********  defines *********************/
 
-
 /********  types  *********************/
 
 /********  externals *********************/
 
-
 /********  exported variables *********************/
 
-char equalizer_module_name[] = "equalizer";
+char standard_compressor_module_name[] = "standard_compressor";
 
 
 /**********   external variables    **************/
 
-
-
 /***********   local variables    **************/
-
-
+#define ALPHA				0.96f
+#define ONE_MINUS_ALPHA		((1.0f - ALPHA)/4) /* division by 4 put here instead of division by 2 in mono->stereo converter*/
 
 /*---------------------------------------------------------------------------------------------------------*/
-/* Function:        equalizer_dsp                                                                          */
+/* Function:        standard_compressor_dsp                                                                          */
 /*                                                                                                         */
 /* Parameters:                                                                                             */
 /*                                                                                         */
@@ -53,30 +54,102 @@ char equalizer_module_name[] = "equalizer";
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-void equalizer_dsp(pdsp_descriptor apdsp , size_t data_len ,
+void standard_compressor_dsp(pdsp_descriptor apdsp , size_t data_len ,
 		dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] , dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])
 {
-	float *apCh1In  ;
-	float *apCh1Out ;
-	EQUALIZER_Instance_t *handle;
+
+	STANDARD_COMPRESSOR_Instance_t *handle;
+	float *apCh1In ,  *apCh2In;
+	float *apCh1Out ,  *apCh2Out;
+
+	float env_follower ;
+	float rms ;
+	float curr_ratio = 1;
+	float threshold  ;
+	float reverse_ratio ;
+	float attack ;
+	float release ;
+	float release_neg ;
+	float attack_neg ;
+	float curr_x1, curr_x2;
+	float tmp;
+	float mono_x;
+	float gain;
+	float alpha , one_minus_alpha;//
 
 	handle = apdsp->handle;
+	apCh1In = in_pads[0]->buff;
+	apCh2In = in_pads[1]->buff;
+	apCh1Out = out_pads[0].buff;
+	apCh2Out = out_pads[1].buff;
 
-	if(0 == handle->num_of_bands)
+	attack = handle->attack;
+	attack_neg = 1 - attack;
+	release = handle->release;
+	release_neg =  1 - release ;
+	threshold = handle->threshold;
+	reverse_ratio = handle->reverse_ratio;
+	gain = handle->gain;
+
+	env_follower = handle->env_follower;
+	rms = handle->rms;
+
+	alpha = handle->alpha;
+	one_minus_alpha = handle->one_minus_alpha;
+
+	while( data_len-- )
 	{
-		return;
+
+		curr_x1 = *apCh1In++;
+		curr_x2 = *apCh2In++;
+
+		mono_x = curr_x1 + curr_x2;
+				/*mono_x = mono_x/2 ;*/ /* division by 2 is inserted in ONE_MINUS_ALPHA*/
+
+		mono_x = mono_x * mono_x;
+		mono_x *= one_minus_alpha ;
+		rms = rms*rms;
+		rms *= alpha;
+		rms +=mono_x;
+
+		arm_sqrt_f32(rms , &rms);
+
+		curr_ratio = 1;
+		if(rms > threshold)
+		{
+			curr_ratio = threshold/rms ;
+			tmp = fast_pow(curr_ratio , reverse_ratio);
+			curr_ratio = curr_ratio / tmp;
+		}
+
+		
+		if (curr_ratio < env_follower)
+		{
+			curr_ratio *=attack;
+			env_follower *= attack_neg;
+		}
+		else
+		{
+			curr_ratio *=release;
+			env_follower *= release_neg;
+		}
+		env_follower += curr_ratio;
+
+
+		curr_x1 *=gain;
+		*apCh1Out++ = (env_follower * curr_x1);
+		curr_x2 *=gain;
+		*apCh2Out++ = (env_follower * curr_x2);
 	}
 
-	apCh1In = in_pads[0]->buff;
-	apCh1Out = out_pads[0].buff;
-
-	biquads_cascading_filter(handle->pBiquadFilter , apCh1In , apCh1Out , data_len);
+	handle->env_follower = env_follower;
+	handle->rms = rms;
 
 }
 
 
 /*---------------------------------------------------------------------------------------------------------*/
-/* Function:        equalizer_ioctl                                                                          */
+/* Function:        standard_compressor_ioctl                                                                          */
 /*                                                                                                         */
 /* Parameters:                                                                                             */
 /*                                                                                         */
@@ -86,70 +159,37 @@ void equalizer_dsp(pdsp_descriptor apdsp , size_t data_len ,
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t equalizer_ioctl(pdsp_descriptor apdsp ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
+uint8_t standard_compressor_ioctl(pdsp_descriptor apdsp ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
 {
-	uint8_t i;
-	size_t num_of_bands;
-	uint8_t band_num;
-	BandCoeffs_t *pCoeffs;
-	equalizer_api_band_set_params_t *p_band_set_params;
-	EQUALIZER_Instance_t *handle;
+	STANDARD_COMPRESSOR_Instance_t *handle;
 
 	handle = apdsp->handle;
 	switch(aIoctl_num)
 	{
 		case IOCTL_DSP_INIT :
-			handle->num_of_bands =0;
-			handle->pCoeffs = NULL ;
+			handle->reverse_ratio = 1.0f;//0.5;
+			handle->env_follower = 1.0f;
+			handle->rms = 0.0f;
+			handle->release = 16.0f;
+			handle->attack = 1.0f;
+			handle->threshold = 0.99999f;
+			handle->gain =1.0f;
+			handle->alpha = ALPHA;
+			handle->one_minus_alpha = ONE_MINUS_ALPHA;
 
 			break;
-
-		case IOCTL_EQUALIZER_SET_NUM_OF_BANDS :
-			num_of_bands = ((size_t)aIoctl_param1);
-			handle->num_of_bands = num_of_bands;
-			free(handle->pCoeffs);
-
-			pCoeffs=(BandCoeffs_t *)malloc(sizeof(BandCoeffs_t) * num_of_bands);
-			handle->pCoeffs = pCoeffs;
-			for(i=0 ; i<num_of_bands ; i++)
-			{
-				pCoeffs[i].a1 = 0;
-				pCoeffs[i].a2 = 0;
-				pCoeffs[i].b0 = 1;
-				pCoeffs[i].b1 = 0;
-				pCoeffs[i].b2 = 0;
-			}
-
-			handle->pBiquadFilter = biquads_alloc(handle->num_of_bands , (float *)pCoeffs );
-
+		case IOCTL_STANDARD_COMPRESSOR_SET_HIGH_THRESHOLD :
+			handle->threshold = *((float*)aIoctl_param1);
 			break;
-
-		case IOCTL_EQUALIZER_SET_BAND_BIQUADS :
-			num_of_bands = handle->num_of_bands;
-			band_num = ((equalizer_api_band_set_t*)aIoctl_param1)->band_num ;
-			p_band_set_params = &(((equalizer_api_band_set_t*)aIoctl_param1)->band_set_params);
-			if((num_of_bands > band_num )&&(p_band_set_params->Fc > 0.01))
-			{
-				memcpy(&handle->band_set_params,
-						p_band_set_params,sizeof(equalizer_api_band_set_params_t));
-				pCoeffs = &handle->pCoeffs[band_num];
-				biquads_calculation(
-						p_band_set_params->filter_mode,
-						p_band_set_params->Fc,
-						p_band_set_params->QValue,
-						p_band_set_params->Gain,
-						48000,
-						(float*)pCoeffs
-						);
-			}
+		case IOCTL_STANDARD_COMPRESSOR_SET_RATIO :
+			handle->reverse_ratio = 1/(*((float*)aIoctl_param1));
 			break;
-
-		case IOCTL_EQUALIZER_GET_BAND_BIQUADS :
-			p_band_set_params = &(((equalizer_api_band_set_t*)aIoctl_param1)->band_set_params);
-			memcpy(p_band_set_params,
-					&handle->band_set_params, sizeof(equalizer_api_band_set_params_t));
+		case IOCTL_STANDARD_COMPRESSOR_SET_ATTACK :
+			handle->attack = *((float*)aIoctl_param1);
 			break;
-
+		case IOCTL_STANDARD_COMPRESSOR_SET_RELEASE :
+			handle->release = *((float*)aIoctl_param1);
+			break;
 		default :
 			return 1;
 	}
@@ -158,7 +198,7 @@ uint8_t equalizer_ioctl(pdsp_descriptor apdsp ,const uint8_t aIoctl_num , void *
 
 
 /*---------------------------------------------------------------------------------------------------------*/
-/* Function:         equalizer_init                                                                          */
+/* Function:        standard_compressor_init                                                                          */
 /*                                                                                                         */
 /* Parameters:                                                                                             */
 /*                                                                                         */
@@ -168,9 +208,10 @@ uint8_t equalizer_ioctl(pdsp_descriptor apdsp ,const uint8_t aIoctl_num , void *
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-void  equalizer_init(void)
+void  standard_compressor_init(void)
 {
-	DSP_REGISTER_NEW_MODULE("equalizer",equalizer_ioctl , equalizer_dsp , EQUALIZER_Instance_t);
+	DSP_REGISTER_NEW_MODULE(STANDARD_COMPRESSOR_API_MODULE_NAME ,standard_compressor_ioctl , standard_compressor_dsp , STANDARD_COMPRESSOR_Instance_t);
 }
 
-AUTO_INIT_FUNCTION(equalizer_init);
+AUTO_INIT_FUNCTION(standard_compressor_init);
+

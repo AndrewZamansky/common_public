@@ -9,22 +9,18 @@ config INCLUDE_COMMON_DSP
 
 if INCLUDE_COMMON_DSP
 
-config USE_HW_DSP
-    bool "use hardware dsp"
-    depends on SOC_HAS_DSP
-    default y
 
 config COMMON_DSP_IS_SPEED_CRITICAL
 	bool   "common dsp is speed critical"
 	default y
 
-menuconfig INCLUDE_EQUALIZER
-	bool   "equalizer"
+menuconfig INCLUDE_BIQUAD_FILTER
+	bool   "biquad_filter"
 	default n
 
-config EQUALIZER_IS_SPEED_CRITICAL
-	bool   "equalizer is speed critical"
-	depends on INCLUDE_EQUALIZER
+config BIQUAD_FILTER_IS_SPEED_CRITICAL
+	bool   "biquad_filter is speed critical"
+	depends on INCLUDE_BIQUAD_FILTER
 	default y
 
 
@@ -115,19 +111,19 @@ endmenu
 ######## automatically selected configurations #########
 config AUTO_INCLUDE_COMMON_DSP
 	def_bool  y
-	depends on INCLUDE_EQUALIZER || INCLUDE_COMPRESSOR
+	depends on  INCLUDE_COMPRESSOR
 
 config AUTO_COMMON_DSP_IS_SPEED_CRITICAL
 	def_bool  y
-	depends on EQUALIZER_IS_SPEED_CRITICAL || COMPRESSOR_IS_SPEED_CRITICAL
+	depends on COMPRESSOR_IS_SPEED_CRITICAL
 
 config INCLUDE_DSP_MANAGEMENT
 	def_bool  y
-	depends on  (INCLUDE_EQUALIZER || INCLUDE_COMPRESSOR || INCLUDE_MIXER   || INCLUDE_I2S_SPLITTER || INCLUDE_I2S_MIXER || INCLUDE_VOICE_3D )
+	depends on  (INCLUDE_BIQUAD_FILTER || INCLUDE_COMPRESSOR || INCLUDE_MIXER   || INCLUDE_I2S_SPLITTER || INCLUDE_I2S_MIXER || INCLUDE_VOICE_3D )
 
 config DSP_MANAGEMENT_IS_SPEED_CRITICAL
 	def_bool  y
-	depends on  EQUALIZER_IS_SPEED_CRITICAL || COMPRESSOR_IS_SPEED_CRITICAL || MIXER_IS_SPEED_CRITICAL ||  I2S_SPLITTER_IS_SPEED_CRITICAL || I2S_MIXER_IS_SPEED_CRITICAL || VOICE_3D_IS_SPEED_CRITICAL 
+	depends on  BIQUAD_FILTER_IS_SPEED_CRITICAL || COMPRESSOR_IS_SPEED_CRITICAL || MIXER_IS_SPEED_CRITICAL ||  I2S_SPLITTER_IS_SPEED_CRITICAL || I2S_MIXER_IS_SPEED_CRITICAL || VOICE_3D_IS_SPEED_CRITICAL 
 
 
 ######## end of automatically selected configurations #########	

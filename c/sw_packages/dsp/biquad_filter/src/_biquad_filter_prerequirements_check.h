@@ -1,5 +1,5 @@
 /*
- * file : equalizer_prerequirements_check.h
+ * file : biquad_filter_prerequirements_check.h
  *
  *
  *
@@ -8,8 +8,8 @@
  *
  */
 
-#ifndef _equalizer_prerequirements_check_H
-#define _equalizer_prerequirements_check_H
+#ifndef _biquad_filter_prerequirements_check_H
+#define _biquad_filter_prerequirements_check_H
 
 #include "_project.h"
 #include "dsp_management_api.h"

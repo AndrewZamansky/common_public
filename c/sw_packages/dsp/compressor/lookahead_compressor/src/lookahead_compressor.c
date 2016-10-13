@@ -21,11 +21,6 @@
 
 #include "PRINTF_api.h"
 
-#ifdef CONFIG_USE_HW_DSP
-  #include "cpu_config.h"
-  #include "arm_math.h"
-#endif
-
 #include "auto_init_api.h"
 
 /********  defines *********************/

@@ -20,10 +20,9 @@
 
 #include "math.h"
 
-#ifdef CONFIG_USE_HW_DSP
-  #include "cpu_config.h"
-  #include "arm_math.h"
-#endif
+#include "cpu_config.h"
+#include "arm_math.h"
+
 
 /********  defines *********************/
 

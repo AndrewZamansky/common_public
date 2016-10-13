@@ -21,12 +21,6 @@
 
 #include "PRINTF_api.h"
 
-#ifdef CONFIG_USE_HW_DSP
-    #include "cpu_config.h"
-    #include "arm_math.h"
-#endif
-
-
 
 #include "auto_init_api.h"
 
@@ -115,11 +109,9 @@ void standard_compressor_dsp(pdsp_descriptor apdsp , size_t data_len ,
 		rms = rms*rms;
 		rms *= alpha;
 		rms +=mono_x;
-#ifdef CONFIG_USE_HW_DSP
-		arm_sqrt_f32(rms , &rms);
-#else
+
 		rms = fast_pow(rms , 0.5);
-#endif
+
 		curr_ratio = 1;
 		if(rms > threshold)
 		{

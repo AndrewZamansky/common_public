@@ -16,7 +16,7 @@ INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_FFT)
 SRC = fft.c
 
 ifdef CONFIG_FFT_IS_SPEED_CRITICAL
-    SPEED_CRITICAL_FILES += fft.c
+    SPEED_CRITICAL_FILES += fft_arm_cortex_m_fpu.c
 endif
 
 VPATH = src

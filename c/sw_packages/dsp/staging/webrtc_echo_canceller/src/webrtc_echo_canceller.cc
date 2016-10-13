@@ -23,10 +23,6 @@
 //#include "webrtc/webrtc_echo.h"
 //#include "webrtc/webrtc_preprocess.h"
 //
-//#ifdef CONFIG_USE_HW_DSP
-//  #include "cpu_config.h"
-//  #include "arm_math.h"
-//#endif
 
 #include "webrtc/base/checks.h"
 #include "webrtc/base/platform_file.h"

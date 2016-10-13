@@ -1,6 +1,6 @@
 /*
  *
- * file :   voice_3D.c
+ * file :   biquad_filter.c
  *
  *
  *
@@ -12,14 +12,12 @@
 
 /********  includes *********************/
 
-#include "_voice_3D_prerequirements_check.h" // should be after {voice_3D_config.h,dev_management_api.h}
+#include "_biquad_filter_prerequirements_check.h"
 
-#include "voice_3D_api.h" //place first to test that header file is self-contained
-#include "voice_3D.h"
-#include "common_dsp_api.h"
+#include "PRINTF_api.h"
 
-#include "math.h"
-
+#include "biquad_filter_api.h" //place first to test that header file is self-contained
+#include "biquad_filter.h"
 
 #include "auto_init_api.h"
 
@@ -33,7 +31,7 @@
 
 /********  exported variables *********************/
 
-char voice_3D_module_name[] = "voice_3D";
+char biquad_filter_module_name[] = "biquad_filter";
 
 
 /**********   external variables    **************/
@@ -43,8 +41,9 @@ char voice_3D_module_name[] = "voice_3D";
 /***********   local variables    **************/
 
 
+
 /*---------------------------------------------------------------------------------------------------------*/
-/* Function:        voice_3D_dsp                                                                          */
+/* Function:        biquad_filter_dsp                                                                          */
 /*                                                                                                         */
 /* Parameters:                                                                                             */
 /*                                                                                         */
@@ -54,62 +53,30 @@ char voice_3D_module_name[] = "voice_3D";
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-void voice_3D_dsp(pdsp_descriptor apdsp, size_t data_len ,
+void biquad_filter_dsp(pdsp_descriptor apdsp , size_t data_len ,
 		dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] , dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])
 {
-
-	VOICE_3D_Instance_t *handle;
-	float *apCh1In ,  *apCh2In;
-	float *apCh1Out ,  *apCh2Out;
-
-	float main_ch_gain;
-	float second_ch_gain;
-
-	float medium_gain;
-	float side_gain;
-	float _3D_gain;
+	float *apCh1In  ;
+	float *apCh1Out ;
+	BIQUAD_FILTER_Instance_t *handle;
 
 	handle = apdsp->handle;
-	apCh1In = in_pads[0]->buff;
-	apCh2In = in_pads[1]->buff;
-	apCh1Out = out_pads[0].buff;
-	apCh2Out = out_pads[1].buff;
 
-	medium_gain = handle->medium_gain ;
-	side_gain = handle->side_gain ;
-	_3D_gain = handle->_3D_gain ;
-
-	main_ch_gain = medium_gain + side_gain ;
-	second_ch_gain = medium_gain + side_gain + _3D_gain ;
-
-	while(data_len--)
+	if(0 == handle->num_of_bands)
 	{
-		float curr_ch_1;
-		float curr_ch_2;
-		float tmp;
-		float tmp1;
-
-		curr_ch_1 = *apCh1In++;
-		curr_ch_2 = *apCh2In++;
-
-		tmp = main_ch_gain * curr_ch_1;
-		tmp1 = curr_ch_2 * second_ch_gain;
-		tmp +=tmp1;
-		*apCh1Out++ = tmp;
-
-		tmp = main_ch_gain * curr_ch_2;
-		tmp1 = curr_ch_1 * second_ch_gain;
-		tmp +=tmp1;
-		*apCh2Out++ = tmp;
+		return;
 	}
+
+	apCh1In = in_pads[0]->buff;
+	apCh1Out = out_pads[0].buff;
+
+	biquads_cascading_filter(handle->pBiquadFilter , apCh1In , apCh1Out , data_len);
 
 }
 
 
-
-
 /*---------------------------------------------------------------------------------------------------------*/
-/* Function:        voice_3D_ioctl                                                                          */
+/* Function:        biquad_filter_ioctl                                                                          */
 /*                                                                                                         */
 /* Parameters:                                                                                             */
 /*                                                                                         */
@@ -119,27 +86,70 @@ void voice_3D_dsp(pdsp_descriptor apdsp, size_t data_len ,
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t voice_3D_ioctl(pdsp_descriptor apdsp ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
+uint8_t biquad_filter_ioctl(pdsp_descriptor apdsp ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
 {
-	VOICE_3D_Instance_t *handle;
+	uint8_t i;
+	size_t num_of_bands;
+	uint8_t band_num;
+	BandCoeffs_t *pCoeffs;
+	biquad_filter_api_band_set_params_t *p_band_set_params;
+	BIQUAD_FILTER_Instance_t *handle;
 
 	handle = apdsp->handle;
 	switch(aIoctl_num)
 	{
 		case IOCTL_DSP_INIT :
-			handle->medium_gain = 0.5;
-			handle->side_gain =  0.5;
-			handle->_3D_gain = 0;
+			handle->num_of_bands =0;
+			handle->pCoeffs = NULL ;
+
 			break;
-		case IOCTL_VOICE_3D_SET_MEDIUM_GAIN :
-			handle->medium_gain = (*((float*)aIoctl_param1))/2;
+
+		case IOCTL_BIQUAD_FILTER_SET_NUM_OF_BANDS :
+			num_of_bands = ((size_t)aIoctl_param1);
+			handle->num_of_bands = num_of_bands;
+			free(handle->pCoeffs);
+
+			pCoeffs=(BandCoeffs_t *)malloc(sizeof(BandCoeffs_t) * num_of_bands);
+			handle->pCoeffs = pCoeffs;
+			for(i=0 ; i<num_of_bands ; i++)
+			{
+				pCoeffs[i].a1 = 0;
+				pCoeffs[i].a2 = 0;
+				pCoeffs[i].b0 = 1;
+				pCoeffs[i].b1 = 0;
+				pCoeffs[i].b2 = 0;
+			}
+
+			handle->pBiquadFilter = biquads_alloc(handle->num_of_bands , (float *)pCoeffs );
+
 			break;
-		case IOCTL_VOICE_3D_SET_SIDE_GAIN :
-			handle->side_gain = (*((float*)aIoctl_param1))/2;
+
+		case IOCTL_BIQUAD_FILTER_SET_BAND_BIQUADS :
+			num_of_bands = handle->num_of_bands;
+			band_num = ((biquad_filter_api_band_set_t*)aIoctl_param1)->band_num ;
+			p_band_set_params = &(((biquad_filter_api_band_set_t*)aIoctl_param1)->band_set_params);
+			if((num_of_bands > band_num )&&(p_band_set_params->Fc > 0.01))
+			{
+				memcpy(&handle->band_set_params,
+						p_band_set_params,sizeof(biquad_filter_api_band_set_params_t));
+				pCoeffs = &handle->pCoeffs[band_num];
+				biquads_calculation(
+						p_band_set_params->filter_mode,
+						p_band_set_params->Fc,
+						p_band_set_params->QValue,
+						p_band_set_params->Gain,
+						48000,
+						(float*)pCoeffs
+						);
+			}
 			break;
-		case IOCTL_VOICE_3D_SET_3D_GAIN :
-			handle->_3D_gain = *((float*)aIoctl_param1);
+
+		case IOCTL_BIQUAD_FILTER_GET_BAND_BIQUADS :
+			p_band_set_params = &(((biquad_filter_api_band_set_t*)aIoctl_param1)->band_set_params);
+			memcpy(p_band_set_params,
+					&handle->band_set_params, sizeof(biquad_filter_api_band_set_params_t));
 			break;
+
 		default :
 			return 1;
 	}
@@ -147,10 +157,8 @@ uint8_t voice_3D_ioctl(pdsp_descriptor apdsp ,const uint8_t aIoctl_num , void * 
 }
 
 
-
-
 /*---------------------------------------------------------------------------------------------------------*/
-/* Function:        voice_3D_init                                                                          */
+/* Function:         biquad_filter_init                                                                          */
 /*                                                                                                         */
 /* Parameters:                                                                                             */
 /*                                                                                         */
@@ -160,9 +168,9 @@ uint8_t voice_3D_ioctl(pdsp_descriptor apdsp ,const uint8_t aIoctl_num , void * 
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-void  voice_3D_init(void)
+void  biquad_filter_init(void)
 {
-	DSP_REGISTER_NEW_MODULE("voice_3D",voice_3D_ioctl , voice_3D_dsp , VOICE_3D_Instance_t);
+	DSP_REGISTER_NEW_MODULE("biquad_filter",biquad_filter_ioctl , biquad_filter_dsp , BIQUAD_FILTER_Instance_t);
 }
 
-AUTO_INIT_FUNCTION(voice_3D_init);
+AUTO_INIT_FUNCTION(biquad_filter_init);
