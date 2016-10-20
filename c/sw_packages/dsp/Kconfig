@@ -24,6 +24,16 @@ config BIQUAD_FILTER_IS_SPEED_CRITICAL
 	default y
 
 
+menuconfig INCLUDE_FIR_FILTER
+	bool   "fir_filter"
+	default n
+
+config FIR_FILTER_IS_SPEED_CRITICAL
+	bool   "fir_filter is speed critical"
+	depends on INCLUDE_FIR_FILTER
+	default y
+
+
 menuconfig INCLUDE_MIXER
 	bool   "mixer"
 	default n

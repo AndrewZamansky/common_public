@@ -129,6 +129,7 @@ build_outputs :  $(SUBDIRS)
 
 
 clean:
+	$(MAKE) -f $(MAKEFILE_DEFS_ROOT_DIR)/prebuild_check_unique_project_name.mk
 	$(RM) $(OBJ_DIR)
 	$(RM) $(OUT_DIR)
 	$(RM) $(AUTO_GENERATED_FILES_DIR)
