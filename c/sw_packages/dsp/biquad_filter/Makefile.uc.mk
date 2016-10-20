@@ -15,6 +15,7 @@ INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_BIQUAD_FILTER)
 
 
 SRC = biquad_filter.c
+SRC += biquad_coefficients.c
 
 ifdef CONFIG_CORTEX_M4
     ifdef CONFIG_INCLUDE_CORTEX_M_FPU

@@ -91,7 +91,7 @@ endif
 all: $(COMPONENTS_MK) $(PROJECT_CONFIG_H_FILE)
 	$(eval MAKEFILE_WAS_GENERATED := YES)
 	$(eval export MAKEFILE_WAS_GENERATED)
-	$(MAKE) -f $(MAKEFILE_DEFS_ROOT_DIR)/prebuild_check.mk
+	$(MAKE) -f $(MAKEFILE_DEFS_ROOT_DIR)/prebuild_check_unique_project_name.mk
 	$(MAKE) all_after_makefile_generated
 
 all_after_makefile_generated : build_outputs

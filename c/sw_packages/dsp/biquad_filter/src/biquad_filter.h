@@ -12,6 +12,7 @@
 #define _BIQUAD_FILTER_H
 
 #include "src/_biquad_filter_prerequirements_check.h"
+#include "biquad_filter_api.h"
 
 
 /***************   typedefs    *******************/
@@ -46,7 +47,11 @@ void biquads_free(void *pFilter,uint8_t num_of_stages, float *  	pCoeffs );
 
 void biquads_cascading_filter(void *pFilter,float *pin,float *pOut,size_t buff_len);
 
-void biquads_calculation(biquads_filter_mode_t filter_mode,
+void biquads_coefficients_calculation_common(biquads_filter_mode_t filter_mode,
+		float FreqC,float QValue,float Gain_dB,
+		float SamplingRate, float *pCoeffs );
+
+void biquads_coefficients_calculation(biquads_filter_mode_t filter_mode,
 		float FreqC,float QValue,float Gain_dB,
 		float SamplingRate, float *pCoeffs );
 

@@ -20,6 +20,7 @@
 #include "biquad_filter.h"
 
 #include "auto_init_api.h"
+#include "math.h"
 
 /********  defines *********************/
 
@@ -133,7 +134,7 @@ uint8_t biquad_filter_ioctl(pdsp_descriptor apdsp ,const uint8_t aIoctl_num , vo
 				memcpy(&handle->band_set_params,
 						p_band_set_params,sizeof(biquad_filter_api_band_set_params_t));
 				pCoeffs = &handle->pCoeffs[band_num];
-				biquads_calculation(
+				biquads_coefficients_calculation(
 						p_band_set_params->filter_mode,
 						p_band_set_params->Fc,
 						p_band_set_params->QValue,
