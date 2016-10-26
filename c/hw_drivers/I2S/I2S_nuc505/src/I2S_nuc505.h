@@ -19,9 +19,11 @@
 
 typedef struct
 {
+	uint8_t   	clock_mode;
+	uint8_t		num_of_bytes_in_word;
 	pdev_descriptor_t   callback_dev;
-	uint16_t num_of_words_in_buffer_per_chenel ;
-	uint8_t	num_of_bytes_in_word;
+	uint32_t	sample_rate;
+	uint16_t 	num_of_words_in_buffer_per_chenel ;
 } I2S_nuc505_instance_t;
 
 #endif

@@ -6,6 +6,8 @@
 
 /*****************  defines  **************/
 
+#define I2S_NUC505_API_MASTER_MODE		1
+#define I2S_NUC505_API_SLAVE_MODE		0
 
 /**********  define API  types ************/
 

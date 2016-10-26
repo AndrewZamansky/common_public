@@ -15,6 +15,16 @@ uint8_t I2S_nuc505_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num , vo
 		#error "I2S_NUC505_DT_NUM_OF_WORDS_IN_BUFFER should be defined"
 	#endif
 
+	#ifndef I2S_NUC505_DT_MASTER_OR_SLAVE_MODE
+		#error "I2S_NUC505_DT_MASTER_OR_SLAVE_MODE should be defined"
+	#endif
+
+	#if	(I2S_NUC505_DT_MASTER_OR_SLAVE_MODE == I2S_NUC505_API_MASTER_MODE)
+		#ifndef I2S_NUC505_DT_SAMPLE_RATE
+			#error "I2S_NUC505_DT_SAMPLE_RATE should be defined"
+		#endif
+	#endif
+
 	#ifndef I2S_NUC505_DT_NUM_OF_BYTES_IN_WORD
 		#error "I2S_NUC505_DT_NUM_OF_BYTES_IN_WORD should be defined"
 	#endif
@@ -28,9 +38,11 @@ uint8_t I2S_nuc505_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num , vo
 	EXTERN_DECLARATION_TO_STATIC_DEVICE_INST(I2S_NUC505_DT_CALLBACK_PDEV) ;
 	#define STATIC_DEV_DATA_STRUCT									\
 		{															\
+			I2S_NUC505_DT_MASTER_OR_SLAVE_MODE	,					\
+			I2S_NUC505_DT_NUM_OF_BYTES_IN_WORD	,					\
 			P_TO_STATIC_DEVICE_INST(I2S_NUC505_DT_CALLBACK_PDEV),	\
-			I2S_NUC505_DT_NUM_OF_WORDS_IN_BUFFER,					\
-			I2S_NUC505_DT_NUM_OF_BYTES_IN_WORD						\
+			I2S_NUC505_DT_SAMPLE_RATE ,								\
+			I2S_NUC505_DT_NUM_OF_WORDS_IN_BUFFER					\
 		}
 
 #endif

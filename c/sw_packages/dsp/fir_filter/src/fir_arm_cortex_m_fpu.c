@@ -85,7 +85,7 @@ void *fir_alloc(size_t number_of_filter_coefficients, float *p_coefficients ,siz
 
 /*  func : firs_free()
  */
-void firs_free(void *pFilter,uint8_t num_of_stages, float *  	pCoeffs )
+void firs_free(void *pFilter )
 {
 	free(((fir_filter_t *)pFilter)->p_fir_filter_state);
 	free(((fir_filter_t *)pFilter)->p_filter_instance);

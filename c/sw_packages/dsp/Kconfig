@@ -33,6 +33,24 @@ config FIR_FILTER_IS_SPEED_CRITICAL
 	depends on INCLUDE_FIR_FILTER
 	default y
 
+menuconfig INCLUDE_UPSAMPLING_BY_INT
+	bool   "upsampling by integer"
+	default n
+
+config UPSAMPLING_BY_INT_IS_SPEED_CRITICAL
+	bool   "upsampling by integer is speed critical"
+	depends on INCLUDE_UPSAMPLING_BY_INT
+	default y
+
+menuconfig INCLUDE_DOWNSAMPLING_BY_INT
+	bool   "downsampling by integer"
+	default n
+
+config DOWNSAMPLING_BY_INT_IS_SPEED_CRITICAL
+	bool   "downsampling by integer is speed critical"
+	depends on INCLUDE_DOWNSAMPLING_BY_INT
+	default y
+
 
 menuconfig INCLUDE_MIXER
 	bool   "mixer"

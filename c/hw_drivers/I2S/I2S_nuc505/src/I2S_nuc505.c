@@ -167,7 +167,7 @@ void __attribute__((section(".critical_text"))) I2S_IRQHandler(void)
 
 
 
- void I2S_Init(void)
+ void I2S_Init(I2S_nuc505_instance_t *config_handle)
  {
 	 uint16_t buffer_size;
 	 uint16_t buff_threshold_pos;
@@ -180,13 +180,15 @@ void __attribute__((section(".critical_text"))) I2S_IRQHandler(void)
      CLK_EnableModuleClock(I2S_MODULE);
  		/* I2S module clock from APLL */
  		// APLL = 49152031Hz
- 		CLK_SET_APLL(CLK_APLL_49152031);
- 		// I2S = 49152031Hz / (0+1) for 8k, 12k, 16k, 24k, 32k, 48k, and 96k sampling rate
-
+     if(config_handle->sample_rate >= 8000)
+     {
+ 		CLK_SET_APLL(CLK_APLL_49152031);	// I2S = 49152031Hz / (0+1) for 8k, 12k, 16k, 24k, 32k, 48k, and 96k sampling rate
+     }
+     else
+     {
  		// APLL = 45158425Hz
- 		// CLK_SET_APLL(CLK_APLL_45158425);
- 		// I2S = 45158425Hz / (0+1) for 11025, 22050, and 44100 sampling rate
-
+ 		 CLK_SET_APLL(CLK_APLL_45158425); 		// I2S = 45158425Hz / (0+1) for 11025, 22050, and 44100 sampling rate
+     }
 #if 	1 == CONFIG_I2S_NUC505_USE_EXTERNAL_CODEC
  		CLK_SetModuleClock(I2S_MODULE, CLK_I2S_SRC_APLL, 3);//3
 #else
@@ -215,25 +217,28 @@ void __attribute__((section(".critical_text"))) I2S_IRQHandler(void)
 #endif
 
 #if 	1 == CONFIG_I2S_NUC505_USE_EXTERNAL_CODEC
-	#if 	1 == CONFIG_I2S_NUC505_USE_MASTER_MODE
- 	    /* Master mode, 16-bit word width, stereo mode, I2S format. Set TX and RX FIFO threshold to middle value. */
- 	    I2S_Open(I2S, I2S_MODE_MASTER, 48000,  (num_of_bytes_in_word-1)<<I2S_CTL_WDWIDTH_Pos,
- 	    		I2S_STEREO, I2S_FORMAT_I2S, 0);
-	#else
-  	   /* Slave mode, 16-bit word width, stereo mode, I2S format. Set TX and RX FIFO threshold to middle value. */
-  	    /* I2S peripheral clock rate is equal to PCLK1 clock rate. */
-  	    I2S_Open(I2S, I2S_MODE_SLAVE, 0,  (num_of_bytes_in_word-1)<<I2S_CTL_WDWIDTH_Pos,
-  	    		I2S_STEREO, I2S_FORMAT_I2S, 0);
-	#endif
+		if (I2S_NUC505_API_MASTER_MODE == config_handle->clock_mode)
+		{
+			/* Master mode, 16-bit word width, stereo mode, I2S format. Set TX and RX FIFO threshold to middle value. */
+			I2S_Open(I2S, I2S_MODE_MASTER, config_handle->sample_rate,  (num_of_bytes_in_word-1)<<I2S_CTL_WDWIDTH_Pos,
+					I2S_STEREO, I2S_FORMAT_I2S, 0);
+		}
+		else
+		{
+		   /* Slave mode, 16-bit word width, stereo mode, I2S format. Set TX and RX FIFO threshold to middle value. */
+			/* I2S peripheral clock rate is equal to PCLK1 clock rate. */
+			I2S_Open(I2S, I2S_MODE_SLAVE, 0,  (num_of_bytes_in_word-1)<<I2S_CTL_WDWIDTH_Pos,
+					I2S_STEREO, I2S_FORMAT_I2S, 0);
+		}
 #else
 		/* Master mode, 16-bit word width, stereo mode, I2S format. Set TX and RX FIFO threshold to middle value. */
 		/* Other sampling rate please change APLL clock setting in I2S_Init() */
-		I2S_Open(I2S, I2S_MODE_MASTER, 48000, (num_of_bytes_in_word-1)<<I2S_CTL_WDWIDTH_Pos,
+		I2S_Open(I2S, I2S_MODE_MASTER, config_handle->sample_rate, (num_of_bytes_in_word-1)<<I2S_CTL_WDWIDTH_Pos,
 				I2S_STEREO, I2S_FORMAT_I2S, I2S_ENABLE_INTERNAL_CODEC);
 
 		// Open MCLK
 #endif
-		I2S_EnableMCLK(I2S, 48000*256);
+		I2S_EnableMCLK(I2S, config_handle->sample_rate*256);
 
 		I2S_SET_TX_TH_LEVEL(I2S, I2S_FIFO_TX_LEVEL_WORD_15);
 		I2S_SET_RX_TH_LEVEL(I2S, I2S_FIFO_RX_LEVEL_WORD_16);
@@ -306,7 +311,7 @@ uint8_t I2S_nuc505_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 
 			pI2SHandle = config_handle;
 
-			I2S_Init();
+			I2S_Init(config_handle);
 
 			break;
 

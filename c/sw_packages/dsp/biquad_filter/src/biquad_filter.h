@@ -43,7 +43,7 @@ void *biquads_alloc(uint8_t num_of_stages, float *  	pCoeffs );
 
 /*  func : biquads_free()
  */
-void biquads_free(void *pFilter,uint8_t num_of_stages, float *  	pCoeffs );
+void biquads_free(void *pFilter );
 
 void biquads_cascading_filter(void *pFilter,float *pin,float *pOut,size_t buff_len);
 
