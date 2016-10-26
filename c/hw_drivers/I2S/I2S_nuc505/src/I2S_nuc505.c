@@ -15,6 +15,7 @@
 #include "I2S_nuc505_api.h"
 #include "I2S_nuc505.h"
 #include "irq_api.h"
+#include "timer_api.h"
 
 
 #include "NUC505Series.h"
@@ -44,15 +45,17 @@ uint16_t num_of_uint32_in_buffer_per_chenel;
 uint8_t	num_of_bytes_in_word;
 
 int32_t *PcmRxBuff;//[2][I2S_BUFF_LEN*2] = {{0}};
-//int16_t test[2][I2S_BUFF_LEN*2] = {{0}};
 int32_t *PcmTxBuff;//[2][I2S_BUFF_LEN*2] = {{0}};
 
 uint8_t start_flag;
 
-
 uint8_t i2s_loopback = 0;
 
-
+#define ACCUMULATION_TIMES	10
+uint32_t relax=3;
+volatile uint32_t accumultor_timer = 0;
+volatile uint32_t saved_accumultor_timer = 0;
+volatile uint32_t accumultor_counter = 0;
 
 void __attribute__((section(".critical_text"))) I2S_IRQHandler(void)
 {
@@ -60,6 +63,30 @@ void __attribute__((section(".critical_text"))) I2S_IRQHandler(void)
 	int32_t *pRxBuf=NULL;
 	int32_t *pTxBuf=NULL;
 	uint16_t i;
+	uint64_t	timer_counter;
+
+	
+	DEV_IOCTL(pI2SHandle->timer_dev, IOCTL_TIMER_API_GET_COUNTER, (void*)&timer_counter);
+	DEV_IOCTL_0_PARAMS(pI2SHandle->timer_dev, IOCTL_TIMER_API_RESTART_COUNTER);
+
+	if(relax == 0)
+	{
+		if(ACCUMULATION_TIMES == accumultor_counter )
+		{
+			saved_accumultor_timer = accumultor_timer;
+			accumultor_timer = 0;
+			accumultor_counter = 0;
+		}
+		else
+		{
+			accumultor_timer += timer_counter;
+			accumultor_counter++;
+		}
+	}
+	else
+	{
+		relax--;
+	}
 
 	u32I2SIntFlag = I2S_GET_INT_FLAG(I2S, (I2S_STATUS_RDMATIF_Msk | I2S_STATUS_RDMAEIF_Msk));
 
@@ -180,11 +207,11 @@ void __attribute__((section(".critical_text"))) I2S_IRQHandler(void)
      CLK_EnableModuleClock(I2S_MODULE);
  		/* I2S module clock from APLL */
  		// APLL = 49152031Hz
-     if(config_handle->sample_rate >= 8000)
+     if( (48000 == config_handle->sample_rate) || (96000 == config_handle->sample_rate))
      {
  		CLK_SET_APLL(CLK_APLL_49152031);	// I2S = 49152031Hz / (0+1) for 8k, 12k, 16k, 24k, 32k, 48k, and 96k sampling rate
      }
-     else
+     else if (44100 == config_handle->sample_rate)
      {
  		// APLL = 45158425Hz
  		 CLK_SET_APLL(CLK_APLL_45158425); 		// I2S = 45158425Hz / (0+1) for 11025, 22050, and 44100 sampling rate
@@ -276,6 +303,8 @@ void __attribute__((section(".critical_text"))) I2S_IRQHandler(void)
 //		NVIC_EnableIRQ(I2S_IRQn);
 		I2S_EnableInt(I2S, (I2S_IEN_RDMATIEN_Msk|I2S_IEN_RDMAEIEN_Msk));
 
+		DEV_IOCTL_0_PARAMS(pI2SHandle->timer_dev, IOCTL_TIMER_API_RESTART_COUNTER);
+
  }
 
 /*---------------------------------------------------------------------------------------------------------*/
@@ -317,6 +346,18 @@ uint8_t I2S_nuc505_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 
 		case I2S_ENABLE_OUTPUT_IOCTL:
 			start_flag = 1;
+			break;
+
+		case I2S_GET_MEASURED_SAMPLE_RATE:
+			{
+				float measured_sample_rate;
+				uint32_t timer_rate;
+
+				DEV_IOCTL_1_PARAMS(pI2SHandle->timer_dev, IOCTL_TIMER_API_GET_RATE_HZ, &timer_rate);
+				measured_sample_rate = ( timer_rate * num_of_words_in_buffer_per_chenel
+						* ACCUMULATION_TIMES ) / saved_accumultor_timer ;
+				*(uint32_t*)aIoctl_param1 = measured_sample_rate;
+			}
 			break;
 
 		case I2S_SET_OUT_VOLUME_LEVEL_DB :

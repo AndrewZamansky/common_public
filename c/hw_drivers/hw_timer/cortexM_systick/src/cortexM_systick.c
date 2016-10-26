@@ -55,7 +55,8 @@ typedef enum IRQn_local {
 
 static cortexM_systick_instance_t *pcortexM_systick_instanceParams;
 
-static volatile uint64_t currentTick=0;
+//static volatile uint64_t currentTick=0;
+volatile uint64_t currentTick=0;
 
 /*---------------------------------------------------------------------------------------------------------*/
 /* ISR to config_handle systick                                                        */
@@ -95,6 +96,11 @@ uint8_t cortexM_systick_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 		case IOCTL_TIMER_RATE_HZ_SET :
 			{
 				config_handle->rate = ((uint32_t)aIoctl_param1);
+			}
+			break;
+		case IOCTL_TIMER_GET_RATE_HZ :
+			{
+				*(uint32_t*)aIoctl_param1 = config_handle->rate;
 			}
 			break;
 

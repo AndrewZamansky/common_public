@@ -13,7 +13,7 @@ extern uint8_t timer_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num , 
 #ifdef DT_DEV_MODULE
 
 	#ifndef TIMER_DT_HW_TIMER_PDEV
-	#error "TIMER_DT_HW_TIMER_PDEV should be defined"
+		#error "TIMER_DT_HW_TIMER_PDEV should be defined"
 	#endif
 
 	EXTERN_DECLARATION_TO_STATIC_DEVICE_INST(TIMER_DT_HW_TIMER_PDEV) ;
@@ -23,8 +23,7 @@ extern uint8_t timer_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num , 
 		}
 #endif
 
-#include "add_static_dev.h"
+#include "add_component.h"
 
 /* device specific defines should be undefined after calling #include "add_component.h" */
 #undef TIMER_DT_HW_TIMER_PDEV
-

@@ -55,18 +55,34 @@ uint8_t timer_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num , void * 
 
 	switch(aIoctl_num)
 	{
-		case IOCTL_SET_CALLBACK_DEV :
+		case IOCTL_SET_SERVER_DEVICE :
 			config_handle->hw_timer =  (pdev_descriptor_t)aIoctl_param1;
 			break;
 
-		case TIMER_API_SET_COUNTDOWN_VALUE_AND_RESET :
+		case IOCTL_TIMER_API_GET_RATE_HZ :
+			DEV_IOCTL(config_handle->hw_timer, IOCTL_TIMER_GET_RATE_HZ, aIoctl_param1);
+			break;
+
+		case IOCTL_TIMER_API_RESTART_COUNTER :
+			DEV_IOCTL(config_handle->hw_timer,
+					IOCTL_GET_CURRENT_TIMER_VALUE, (void*)&curr_timer_val);
+			runtime_handle->timer_value_on_start = curr_timer_val;
+			break;
+
+		case IOCTL_TIMER_API_GET_COUNTER :
+			DEV_IOCTL(config_handle->hw_timer,
+					IOCTL_GET_CURRENT_TIMER_VALUE, (void*)&curr_timer_val);
+			*(uint64_t*)aIoctl_param1 = curr_timer_val - runtime_handle->timer_value_on_start ;
+			break;
+
+		case IOCTL_TIMER_API_SET_COUNTDOWN_VALUE_AND_RESET :
 			DEV_IOCTL(config_handle->hw_timer,
 					IOCTL_GET_CURRENT_TIMER_VALUE, (void*)&curr_timer_val);
 			runtime_handle->timer_value_on_start = curr_timer_val;
 			runtime_handle->countdown_value = curr_timer_val + *(uint64_t*)aIoctl_param1 ;
 			break;
 
-		case TIMER_API_CHECK_IF_COUNTDOWN_ELAPSED :
+		case IOCTL_TIMER_API_CHECK_IF_COUNTDOWN_ELAPSED :
 			DEV_IOCTL(config_handle->hw_timer,
 					IOCTL_GET_CURRENT_TIMER_VALUE, (void*)&curr_timer_val);
 			if(curr_timer_val > runtime_handle->countdown_value)
