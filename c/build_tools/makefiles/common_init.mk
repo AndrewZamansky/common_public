@@ -189,6 +189,7 @@ else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX)
 
 endif
 
+
 #dont enter if we are bulding .config file now
 ifeq ($(findstring menuconfig,$(MAKECMDGOALS)),)  #dont enter if we are bulding .config file now
 
@@ -206,6 +207,19 @@ ifeq ($(findstring menuconfig,$(MAKECMDGOALS)),)  #dont enter if we are bulding 
     endif
     $(info ---- project directory : $(APP_ROOT_DIR) ---- )
     $(info ---- project name as declared in .config : $(PROJECT_NAME) ---- )
+
+    $(info ---- running unique project name test ---- )
+    PASS_VARIABLES := MAKEFILE_DEFS_ROOT_DIR=$(MAKEFILE_DEFS_ROOT_DIR)
+    PASS_VARIABLES += WORKSPACE_ROOT_DIR=$(WORKSPACE_ROOT_DIR)
+    PASS_VARIABLES += APP_ROOT_DIR=$(APP_ROOT_DIR)
+    SHELL_OUT := $(shell $(MAKE) -f $(MAKEFILE_DEFS_ROOT_DIR)/prebuild_check_unique_project_name.mk $(PASS_VARIABLES)  2>&1)
+    ifneq ($(findstring name is not unique,$(SHELL_OUT)),)#enter if name is not unique
+        $(info )
+        $(info !--- current PROJECT_NAME=$(PROJECT_NAME) , this name is already found as project name in other project)
+        $(info !--- all project names , assigned to PROJECT_NAME in .config files should be unique)
+        $(error )
+    endif
+    $(info ---- unique project name test passed ---- )
 
     include $(MAKEFILE_DEFS_ROOT_DIR)/git_prebuild_routines.mk
 

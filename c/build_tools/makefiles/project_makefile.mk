@@ -91,7 +91,6 @@ endif
 all: $(COMPONENTS_MK) $(PROJECT_CONFIG_H_FILE)
 	$(eval MAKEFILE_WAS_GENERATED := YES)
 	$(eval export MAKEFILE_WAS_GENERATED)
-	$(MAKE) -f $(MAKEFILE_DEFS_ROOT_DIR)/prebuild_check_unique_project_name.mk
 	$(MAKE) all_after_makefile_generated
 
 all_after_makefile_generated : build_outputs
@@ -129,7 +128,6 @@ build_outputs :  $(SUBDIRS)
 
 
 clean:
-	$(MAKE) -f $(MAKEFILE_DEFS_ROOT_DIR)/prebuild_check_unique_project_name.mk
 	$(RM) $(OBJ_DIR)
 	$(RM) $(OUT_DIR)
 	$(RM) $(AUTO_GENERATED_FILES_DIR)
