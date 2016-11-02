@@ -60,6 +60,13 @@ if INCLUDE_MIXER
 source "$COMMON_DIR_PATH/c/sw_packages/dsp/mixer/Kconfig"
 endif
 
+menuconfig INCLUDE_MULTIPLIER
+	bool   "multiplier"
+	default n
+
+if INCLUDE_MULTIPLIER
+source "$COMMON_DIR_PATH/c/sw_packages/dsp/multiplier/Kconfig"
+endif
 
 menuconfig INCLUDE_I2S_SPLITTER
 	bool   "i2s splitter"

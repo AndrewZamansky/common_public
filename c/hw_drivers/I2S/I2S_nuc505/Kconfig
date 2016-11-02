@@ -5,6 +5,9 @@ config  I2S_NUC505_USE_EXTERNAL_CODEC
 	bool   "use external codec"
 	default 0
 
+config  I2S_NUC505_USE_SAMPLE_RATE_DETECTION
+	bool   "use sample rate detection"
+	default 0
 
 config INTERNAL_I2S_SPEED_CRITICAL
 	bool   "internal i2s is speed critical"

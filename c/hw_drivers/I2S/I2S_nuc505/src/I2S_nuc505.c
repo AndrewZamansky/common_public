@@ -41,52 +41,61 @@ static I2S_nuc505_instance_t *pI2SHandle;
 
 
 uint16_t num_of_words_in_buffer_per_chenel = 0;
-uint16_t num_of_uint32_in_buffer_per_chenel;
 uint8_t	num_of_bytes_in_word;
 
-int32_t *PcmRxBuff;//[2][I2S_BUFF_LEN*2] = {{0}};
-int32_t *PcmTxBuff;//[2][I2S_BUFF_LEN*2] = {{0}};
+uint8_t *PcmRxBuff;//[2][I2S_BUFF_LEN*2] = {{0}};
+uint8_t *PcmTxBuff;//[2][I2S_BUFF_LEN*2] = {{0}};
+uint8_t *PcmRxThrBuff;
+uint8_t *PcmTxThrBuff;
 
 uint8_t start_flag;
 
 uint8_t i2s_loopback = 0;
+float i2s_nuc505_dbg_gain = 1.0f;
 
 #define ACCUMULATION_TIMES	10
 uint32_t relax=3;
 volatile uint32_t accumultor_timer = 0;
 volatile uint32_t saved_accumultor_timer = 0;
 volatile uint32_t accumultor_counter = 0;
+uint8_t   	clock_mode;
 
 void __attribute__((section(".critical_text"))) I2S_IRQHandler(void)
 {
 	uint32_t u32I2SIntFlag;
-	int32_t *pRxBuf=NULL;
-	int32_t *pTxBuf=NULL;
+	uint8_t *pRxBuf=NULL;
+	uint8_t *pTxBuf=NULL;
 	uint16_t i;
-	uint64_t	timer_counter;
 
+#if	CONFIG_I2S_NUC505_USE_SAMPLE_RATE_DETECTION
 	
-	DEV_IOCTL(pI2SHandle->timer_dev, IOCTL_TIMER_API_GET_COUNTER, (void*)&timer_counter);
-	DEV_IOCTL_0_PARAMS(pI2SHandle->timer_dev, IOCTL_TIMER_API_RESTART_COUNTER);
-
-	if(relax == 0)
+	if (I2S_NUC505_API_MASTER_MODE != clock_mode)
 	{
-		if(ACCUMULATION_TIMES == accumultor_counter )
+		uint64_t	timer_counter;
+
+		DEV_IOCTL(pI2SHandle->timer_dev, IOCTL_TIMER_API_GET_COUNTER, (void*)&timer_counter);
+		DEV_IOCTL_0_PARAMS(pI2SHandle->timer_dev, IOCTL_TIMER_API_RESTART_COUNTER);
+
+		if(relax == 0)
 		{
-			saved_accumultor_timer = accumultor_timer;
-			accumultor_timer = 0;
-			accumultor_counter = 0;
+			if(ACCUMULATION_TIMES == accumultor_counter )
+			{
+				saved_accumultor_timer = accumultor_timer;
+				accumultor_timer = 0;
+				accumultor_counter = 0;
+			}
+			else
+			{
+				accumultor_timer += timer_counter;
+				accumultor_counter++;
+			}
 		}
 		else
 		{
-			accumultor_timer += timer_counter;
-			accumultor_counter++;
+			relax--;
 		}
 	}
-	else
-	{
-		relax--;
-	}
+#endif
 
 	u32I2SIntFlag = I2S_GET_INT_FLAG(I2S, (I2S_STATUS_RDMATIF_Msk | I2S_STATUS_RDMAEIF_Msk));
 
@@ -99,8 +108,8 @@ void __attribute__((section(".critical_text"))) I2S_IRQHandler(void)
 	}
 	else if (u32I2SIntFlag & I2S_STATUS_RDMAEIF_Msk)
 	{
-		pRxBuf = PcmRxBuff +  (num_of_uint32_in_buffer_per_chenel*2);
-		pTxBuf = PcmTxBuff +  (num_of_uint32_in_buffer_per_chenel*2);
+		pRxBuf = PcmRxThrBuff;
+		pTxBuf = PcmTxThrBuff;
 		I2S_CLR_INT_FLAG(I2S, I2S_STATUS_RDMAEIF_Msk);
 
 		if ( start_flag == 1 )
@@ -123,11 +132,25 @@ void __attribute__((section(".critical_text"))) I2S_IRQHandler(void)
 		}
 		else
 		{
-			for(i = 0 ; i < num_of_uint32_in_buffer_per_chenel ; i++)
+			if(2 == num_of_bytes_in_word)
 			{
-				pTxBuf[2*i] =  pRxBuf[2*i ];
-				pTxBuf[2*i + 1] =  pRxBuf[2*i + 1];
-
+				int16_t *pCurrRxBuf = (int16_t *)pRxBuf;
+				int16_t *pCurrTxBuf = (int16_t *)pTxBuf;
+				for(i = 0 ; i < num_of_words_in_buffer_per_chenel ; i++)
+				{
+					*pCurrTxBuf++ =  (int16_t)(i2s_nuc505_dbg_gain *  (float)(*pCurrRxBuf++));
+					*pCurrTxBuf++ =  (int16_t)(i2s_nuc505_dbg_gain *  (float)(*pCurrRxBuf++));
+				}
+			}
+			else if(4 == num_of_bytes_in_word)
+			{
+				int32_t *pCurrRxBuf = (int32_t *)pRxBuf;
+				int32_t *pCurrTxBuf = (int32_t *)pTxBuf;
+				for(i = 0 ; i < num_of_words_in_buffer_per_chenel ; i++)
+				{
+					*pCurrTxBuf++ =  (int32_t)(i2s_nuc505_dbg_gain *  (float)(*pCurrRxBuf++));
+					*pCurrTxBuf++ =  (int32_t)(i2s_nuc505_dbg_gain *  (float)(*pCurrRxBuf++));
+				}
 			}
 		}
 	}
@@ -198,10 +221,9 @@ void __attribute__((section(".critical_text"))) I2S_IRQHandler(void)
  {
 	 uint16_t buffer_size;
 	 uint16_t buff_threshold_pos;
-	 num_of_uint32_in_buffer_per_chenel = num_of_words_in_buffer_per_chenel * num_of_bytes_in_word / 4 ;
 	 buffer_size = num_of_words_in_buffer_per_chenel * num_of_bytes_in_word * 2 ;//2 for L/R
-	 PcmRxBuff = (int32_t*)malloc(buffer_size * 2);// 2 for double buffering
-	 PcmTxBuff = (int32_t*)malloc(buffer_size * 2);// 2 for double buffering
+	 PcmRxBuff = (uint8_t*)malloc(buffer_size * 2);// 2 for double buffering
+	 PcmTxBuff = (uint8_t*)malloc(buffer_size * 2);// 2 for double buffering
 
  		/* Enable I2S Module clock */
      CLK_EnableModuleClock(I2S_MODULE);
@@ -270,16 +292,17 @@ void __attribute__((section(".critical_text"))) I2S_IRQHandler(void)
 		I2S_SET_TX_TH_LEVEL(I2S, I2S_FIFO_TX_LEVEL_WORD_15);
 		I2S_SET_RX_TH_LEVEL(I2S, I2S_FIFO_RX_LEVEL_WORD_16);
 
-
-		buff_threshold_pos = num_of_uint32_in_buffer_per_chenel*2   ;// *2 for L/R
+		buff_threshold_pos = buffer_size   ;
+		PcmRxThrBuff = PcmRxBuff + buff_threshold_pos;
+		PcmTxThrBuff = PcmTxBuff + buff_threshold_pos;
 
 		I2S_SET_TXDMA_STADDR(I2S, (uint32_t) PcmTxBuff );								// Tx Start Address
-		I2S_SET_TXDMA_THADDR(I2S, (uint32_t) (PcmTxBuff + buff_threshold_pos - 1) );	// Tx Threshold Address
-		I2S_SET_TXDMA_EADDR( I2S, (uint32_t) (PcmTxBuff + 2*buff_threshold_pos - 1));	// Tx End Address
+		I2S_SET_TXDMA_THADDR(I2S, (uint32_t) (PcmTxThrBuff - 4) );	// Tx Threshold Address
+		I2S_SET_TXDMA_EADDR( I2S, (uint32_t) (PcmTxBuff + 2*buff_threshold_pos - 4));	// Tx End Address
 
 		I2S_SET_RXDMA_STADDR(I2S, (uint32_t) PcmRxBuff );								// Rx Start Address
-		I2S_SET_RXDMA_THADDR(I2S, (uint32_t) (PcmRxBuff + buff_threshold_pos -1) );	// Rx Threshold Address
-		I2S_SET_RXDMA_EADDR( I2S, (uint32_t) (PcmRxBuff + 2*buff_threshold_pos - 1));	// Rx End Address
+		I2S_SET_RXDMA_THADDR(I2S, (uint32_t) (PcmRxThrBuff -4) );	// Rx Threshold Address
+		I2S_SET_RXDMA_EADDR( I2S, (uint32_t) (PcmRxBuff + 2*buff_threshold_pos - 4));	// Rx End Address
 
 		// Open Rx Dma Enable
 		I2S_ENABLE_RXDMA(I2S);
@@ -334,6 +357,7 @@ uint8_t I2S_nuc505_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 
 		case IOCTL_DEVICE_START :
 
+			clock_mode = config_handle->clock_mode;
 			num_of_words_in_buffer_per_chenel = config_handle->num_of_words_in_buffer_per_chenel;
 			num_of_bytes_in_word = config_handle->num_of_bytes_in_word;
 			if(0 == num_of_words_in_buffer_per_chenel) return 2;
@@ -350,13 +374,20 @@ uint8_t I2S_nuc505_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 
 		case I2S_GET_MEASURED_SAMPLE_RATE:
 			{
-				float measured_sample_rate;
-				uint32_t timer_rate;
+				if (I2S_NUC505_API_MASTER_MODE == config_handle->clock_mode)
+				{
+					float measured_sample_rate;
+					uint32_t timer_rate;
 
-				DEV_IOCTL_1_PARAMS(pI2SHandle->timer_dev, IOCTL_TIMER_API_GET_RATE_HZ, &timer_rate);
-				measured_sample_rate = ( timer_rate * num_of_words_in_buffer_per_chenel
-						* ACCUMULATION_TIMES ) / saved_accumultor_timer ;
-				*(uint32_t*)aIoctl_param1 = measured_sample_rate;
+					DEV_IOCTL_1_PARAMS(pI2SHandle->timer_dev, IOCTL_TIMER_API_GET_RATE_HZ, &timer_rate);
+					measured_sample_rate = ( timer_rate * num_of_words_in_buffer_per_chenel
+							* ACCUMULATION_TIMES ) / saved_accumultor_timer ;
+					*(uint32_t*)aIoctl_param1 = measured_sample_rate;
+				}
+				else
+				{
+					*(uint32_t*)aIoctl_param1 = config_handle->sample_rate;
+				}
 			}
 			break;
 
