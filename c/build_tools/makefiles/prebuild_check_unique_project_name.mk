@@ -1,6 +1,8 @@
 
 include $(MAKEFILE_DEFS_ROOT_DIR)/common.mk
 
+include .config
+
 #testing for unique project name
 ifeq ($(strip $(CONFIG_PROJECT_NAME)),)
     $(error PROJECT_NAME not found or is empty)

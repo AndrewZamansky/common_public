@@ -61,6 +61,12 @@ build_outputs :
 	$(HEX_TO_BIN) $(OUTPUT_HEX) 
 	$(CP)  $(OUTPUT_BIN) $(OUTPUT_HISTORY_BIN) 
 	$(CP)  $(LINKER_OUTPUT) $(LINKER_HISTORY_OUTPUT)
+	@echo ----
+	@echo ---- for debuging in STVD do the following :
+	@echo ---- 1: remove {some_path}/stvd  entry from   project settings/Debug/Source directories
+	@echo ---- 2: add $(COMMON_DIR)/hw_drivers/arch/STM8/src/stm8_interrupt_vector.c  to Project/Source Files
+	@echo ---- 3: add $(COMMON_DIR)/hw_drivers/arch/STM8/src/stm8_interrupt_vector.c  to  project settings/Linker/Input/Vector file name
+	@echo ----
 ifeq ($(findstring YES,$(CONFIG_CALCULATE_CRC32)),YES) 	 
 	$(CRC32CALC) $(OUTPUT_BIN) > $(OUTPUT_CRC32) 
-endif	
+endif
