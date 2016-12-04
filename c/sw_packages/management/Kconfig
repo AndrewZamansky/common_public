@@ -30,7 +30,7 @@ if INCLUDE_SHELL
 source "$COMMON_DIR_PATH/c/sw_packages/management/shell/Kconfig"
 endif
 
-if INCLUDE_SHELL || ARM_SEMIHOSTING_CONFIG_ENABLE_RX
+#if INCLUDE_SHELL || ARM_SEMIHOSTING_CONFIG_ENABLE_RX
 
 menuconfig INCLUDE_UBOOT_SHELL
 	bool   "uboot shell"
@@ -40,7 +40,7 @@ if INCLUDE_UBOOT_SHELL
 source "$COMMON_DIR_PATH/c/sw_packages/management/u_boot_shell/Kconfig"
 endif
 
-endif
+#endif
 	
 	
 endmenu

@@ -92,7 +92,9 @@ extern pdev_descriptor_t gCurrReplyDev;
 
 #define DECLARE_GLOBAL_DATA_PTR
 
-#pragma GCC diagnostic ignored "-Wchar-subscripts"
+#if !defined(_WIN32) && !defined(_WIN64)
+	#pragma GCC diagnostic ignored "-Wchar-subscripts"
+#endif
 
 
 #define __bitwise
@@ -138,6 +140,9 @@ typedef unsigned long phys_size_t;
 #define CONFIG_SYS_CBSIZE 128
 #define CONFIG_SYS_PROMPT ">"
 
+#if defined(_WIN32) || defined(_WIN64)
+	#undef _DEBUG
+#endif
 
 #ifdef DEBUG
 #define _DEBUG	1
@@ -145,19 +150,24 @@ typedef unsigned long phys_size_t;
 #define _DEBUG	0
 #endif
 
-#define debug_cond(cond, fmt, args...)			\
-	do {						\
-		if (cond)				\
-			printf(pr_fmt(fmt), ##args);	\
-	} while (0)
+#if !defined(_WIN32) && !defined(_WIN64)
 
-#ifndef pr_fmt
-#define pr_fmt(fmt) fmt
+	#define debug_cond(cond, fmt, args...)			\
+		do {						\
+			if (cond)				\
+				printf(pr_fmt(fmt), ##args);	\
+		} while (0)
+
+	#ifndef pr_fmt
+	#define pr_fmt(fmt) fmt
+	#endif
+
+	#define debug(fmt, args...)			\
+		debug_cond(_DEBUG, fmt, ##args)
+#else
+	#define debug(fmt, args, ...)
+	typedef unsigned long ulong;
 #endif
-
-#define debug(fmt, args...)			\
-	debug_cond(_DEBUG, fmt, ##args)
-
 
 extern char console_buffer[1];
 void clear_ctrlc (void);
@@ -169,7 +179,9 @@ int cli_readline(const char *const prompt);
 #define CMD_FLAG_REPEAT		0x0001	/* repeat last command		*/
 
 #ifndef __COMMAND_H
-#pragma GCC diagnostic ignored "-Wimplicit-function-declaration"
+	#if !defined(_WIN32) && !defined(_WIN64)
+		#pragma GCC diagnostic ignored "-Wimplicit-function-declaration"
+	#endif
 #endif
 
 int run_command_repeatable(const char *cmd, int flag);
