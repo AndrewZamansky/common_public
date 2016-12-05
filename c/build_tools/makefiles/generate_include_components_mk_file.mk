@@ -40,9 +40,19 @@ $(shell echo INCLUDE_THIS_FOR_H_FILES_PATH := NO>> $(COMPONENTS_MK))
 # adding following lines to include_components.mk 
 # "include $(MAKEFILE_DEFS_ROOT_DIR)/add_component_uconfig.mk "
 # "COMPONENT_CONFIG_FILE := {PATH}/Makefile.uc.mk "
-FILE_CONTENT :=$(patsubst %, echo COMPONENT_CONFIG_FILE := %>>$(COMPONENTS_MK) $(SHELL_CMD_DELIMITER) $(ADD_COMPONENT_UCONFIG),$(ALL_CONFIG_FILES))
-DUMMY:=$(shell $(FILE_CONTENT))
 
+ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
+    #fixing bug in windows that limit shell command length
+    ALL_CONFIG_FILES1 :=$(wordlist 1, 10,$(ALL_CONFIG_FILES))
+    ALL_CONFIG_FILES2 :=$(wordlist 11, 100000,$(ALL_CONFIG_FILES))
+    FILE_CONTENT :=$(patsubst %, echo COMPONENT_CONFIG_FILE := %>>$(COMPONENTS_MK) $(SHELL_CMD_DELIMITER) $(ADD_COMPONENT_UCONFIG),$(ALL_CONFIG_FILES1))
+    DUMMY:=$(shell $(FILE_CONTENT))
+    FILE_CONTENT :=$(patsubst %, echo COMPONENT_CONFIG_FILE := %>>$(COMPONENTS_MK) $(SHELL_CMD_DELIMITER) $(ADD_COMPONENT_UCONFIG),$(ALL_CONFIG_FILES2))
+    DUMMY:=$(shell $(FILE_CONTENT))
+else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX)
+    FILE_CONTENT :=$(patsubst %, echo COMPONENT_CONFIG_FILE := %>>$(COMPONENTS_MK) $(SHELL_CMD_DELIMITER) $(ADD_COMPONENT_UCONFIG),$(ALL_CONFIG_FILES))
+    DUMMY:=$(shell $(FILE_CONTENT))
+endif
 
 all :
 	$(info ---- auto generated include_components.mk created)
