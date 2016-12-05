@@ -133,7 +133,11 @@ config FFT_IS_SPEED_CRITICAL
 
 
 config INCLUDE_WEBRTC_AEC
-	bool   "webrtc echo canxeller"
+	bool   "webrtc echo canceller"
+	default n
+
+config INCLUDE_WEBRTC_VAD
+	bool   "webrtc voice activity detection"
 	default n
 
 endmenu
