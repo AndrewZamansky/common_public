@@ -105,6 +105,7 @@ uint8_t webrtc_voice_activity_detection_ioctl(pdsp_descriptor apdsp ,const uint8
 	{
 		case IOCTL_DSP_INIT :
 			vad_handle = WebRtcVad_Create();
+			handle->vad_handle = vad_handle;
 			WebRtcVad_Init(vad_handle);
 			WebRtcVad_set_mode(vad_handle , 3);
 			break;

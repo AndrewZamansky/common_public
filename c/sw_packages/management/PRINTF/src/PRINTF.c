@@ -158,7 +158,7 @@ uint32_t PRINTF_API_RemoveNoteOutput(pdev_descriptor_t aDevHandle )
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-static void sendDebugOrNote(const PRINTF_params_t  *PRINTF_params_array,const uint8_t* pBuffer,uint16_t aLen)
+static void sendDebugOrNote(const PRINTF_params_t  *PRINTF_params_array,const uint8_t* pBuffer,uint32_t aLen)
 {
 	uint8_t i;
 
@@ -183,7 +183,7 @@ static void sendDebugOrNote(const PRINTF_params_t  *PRINTF_params_array,const ui
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-static void common_sendData(PRINTF_TYPE_t aPrntType , const uint8_t* pBuffer,uint16_t aLen)
+static void common_sendData(PRINTF_TYPE_t aPrntType , const uint8_t* pBuffer,uint32_t aLen)
 {
 	switch(aPrntType)
 	{

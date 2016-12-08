@@ -156,6 +156,7 @@ MCC_LIB_ROOT_DIR  		:= $(MCC_ROOT_DIR)/lib
 GLOBAL_CFLAGS += /MP /GS /analyze- /W4 /Zc:wchar_t /ZI /Gm- /Od /Fd"$(OUT_DIR)\\" /fp:precise 
 GLOBAL_CFLAGS += /errorReport:prompt /WX- /Zc:forScope /GR /Gd /Oy- /MTd 
 GLOBAL_CFLAGS += /EHsc /nologo /Fp"$(OUT_DIR)\out.pch" /FS
+GLOBAL_CFLAGS += /wd4100 #disable unused parameter warning
 #GLOBAL_CFLAGS += /Fa"Debug\\"
 
 # define flags for asm compiler :

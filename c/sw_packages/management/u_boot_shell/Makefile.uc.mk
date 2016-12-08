@@ -23,10 +23,19 @@ ifdef CONFIG_INCLUDE_UBOOT_SHELL
     DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH ,  $(SW_PACKAGES_ROOT_DIR)/management/u_boot_shell/include )
     DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(EXTERNAL_SOURCE_ROOT_DIR)/)
 endif
-#DEFINES =
+
+DEFINES =
+CFLAGS =
 
 ifdef CONFIG_GPP
     CFLAGS = -fpermissive
+endif
+
+ifdef CONFIG_MICROSOFT_COMPILER
+    CFLAGS += /wd4189
+    CFLAGS += /wd4127
+    CFLAGS += /wd4200
+	DEFINES += _CRT_SECURE_NO_WARNINGS # to disable deprecation in windows compiler
 endif
 
 #ASMFLAGS =
