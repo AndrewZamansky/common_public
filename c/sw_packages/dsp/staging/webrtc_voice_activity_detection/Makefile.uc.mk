@@ -41,7 +41,26 @@ SRC += get_scaling_square.c
 VPATH += | $(EXTERNAL_SOURCE_ROOT_DIR)/webrtc/webrtc/common_audio/signal_processing
 
 ifdef CONFIG_WEBRTC_IS_SPEED_CRITICAL
-    SPEED_CRITICAL_FILES = $(SRC)
+    SPEED_CRITICAL_FILES +=  webrtc_voice_activity_detection.c
+
+    SPEED_CRITICAL_FILES += webrtc_vad.c
+    SPEED_CRITICAL_FILES += vad_core.c
+    SPEED_CRITICAL_FILES += vad_filterbank.c
+    SPEED_CRITICAL_FILES += vad_gmm.c
+    SPEED_CRITICAL_FILES += vad_sp.c
+
+    SPEED_CRITICAL_FILES += spl_init.c
+    SPEED_CRITICAL_FILES += min_max_operations.c
+    SPEED_CRITICAL_FILES += vector_scaling_operations.c
+    SPEED_CRITICAL_FILES += cross_correlation.c
+    SPEED_CRITICAL_FILES += downsample_fast.c
+    SPEED_CRITICAL_FILES += division_operations.c
+    SPEED_CRITICAL_FILES += resample_48khz.c
+    SPEED_CRITICAL_FILES += spl_inl.c
+    SPEED_CRITICAL_FILES += resample_fractional.c
+    SPEED_CRITICAL_FILES += resample_by_2_internal.c
+    SPEED_CRITICAL_FILES += energy.c
+    SPEED_CRITICAL_FILES += get_scaling_square.c
 endif
 
 

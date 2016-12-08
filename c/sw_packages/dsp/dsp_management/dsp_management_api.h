@@ -109,7 +109,7 @@ typedef struct
 	pdsp_descriptor* 	dsp_chain;
 	size_t 				occupied_dsp_modules;
 	size_t 				max_num_of_dsp_modules;
-	dsp_pad_t	    	chain_in_pads[MAX_NUM_OF_OUTPUT_PADS];
+	dsp_pad_t	    	chain_in_pads[MAX_NUM_OF_OUTPUT_PADS + 1];// +1 for dummy zero's input for unconnected inputs of modules
 	dsp_pad_t*			chain_out_pads[MAX_NUM_OF_OUTPUT_PADS];
 }dsp_chain_t;
 
@@ -126,7 +126,6 @@ typedef struct
 
 
 
-void dsp_management_api_set_buffers_pool(void *adsp_buffers_pool);
 void dsp_management_api_set_module_control(pdsp_descriptor dsp , dsp_management_api_module_control_t ctl);
 
 void _DSP_REGISTER_NEW_MODULE(char *a_module_name, dsp_ioctl_func_t a_ioctle_func
@@ -146,7 +145,7 @@ uint8_t DSP_CREATE_MODULE_TO_CHAIN_OUTPUT_LINK(dsp_chain_t *ap_chain,DSP_OUTPUT_
 void DSP_SET_CHAIN_INPUT_BUFFER(dsp_chain_t *ap_chain,DSP_INPUT_PADS_t sink_dsp_pad, void *buffer);
 void DSP_SET_CHAIN_OUTPUT_BUFFER(dsp_chain_t *ap_chain,DSP_OUTPUT_PADS_t source_dsp_pad, void *buffer);
 
-dsp_chain_t *DSP_CREATE_CHAIN(size_t max_num_of_dsp_modules);
+dsp_chain_t *DSP_CREATE_CHAIN(size_t max_num_of_dsp_modules , void *adsp_buffers_pool);
 void DSP_ADD_MODULE_TO_CHAIN(dsp_chain_t *ap_chain, char *a_module_name,  pdsp_descriptor dsp_module);
 
 void DSP_PROCESS(pdsp_descriptor dsp , size_t	len);

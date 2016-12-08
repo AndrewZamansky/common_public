@@ -140,6 +140,10 @@ config INCLUDE_WEBRTC_VAD
 	bool   "webrtc voice activity detection"
 	default n
 
+config WEBRTC_IS_SPEED_CRITICAL
+	bool   "webrtc is speed critical"
+	depends on INCLUDE_WEBRTC_AEC || INCLUDE_WEBRTC_VAD
+	default y
 endmenu
 
 endif

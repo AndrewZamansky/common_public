@@ -21,6 +21,8 @@
 typedef struct
 {
 	VadInst* vad_handle;
+	uint8_t voice_was_detected;
+	int	agressivness;
 } WEBRTC_VOICE_ACTIVITY_DETECTION_Instance_t;
 
 

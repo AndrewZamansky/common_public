@@ -65,9 +65,33 @@ VPATH += | $(EXTERNAL_SOURCE_ROOT_DIR)/webrtc/webrtc/common_audio/resampler
 VPATH += | $(EXTERNAL_SOURCE_ROOT_DIR)/webrtc/webrtc/system_wrappers/source
 
 ifdef CONFIG_WEBRTC_IS_SPEED_CRITICAL
-    SPEED_CRITICAL_FILES = $(SRC)
-endif
+    SPEED_CRITICAL_FILES +=  webrtc_echo_canceller.cc
 
+    SPEED_CRITICAL_FILES += audio_processing_impl.cc
+    SPEED_CRITICAL_FILES += echo_cancellation_impl.cc
+    SPEED_CRITICAL_FILES += echo_cancellation.cc
+    SPEED_CRITICAL_FILES += echo_cancellation.cc
+    SPEED_CRITICAL_FILES += aec_core.cc
+    SPEED_CRITICAL_FILES += aec_rdft.cc
+    SPEED_CRITICAL_FILES += block_mean_calculator.cc
+    SPEED_CRITICAL_FILES += delay_estimator_wrapper.cc
+    SPEED_CRITICAL_FILES += ring_buffer.c
+    SPEED_CRITICAL_FILES += randomization_functions.c
+    SPEED_CRITICAL_FILES += metrics_default.cc
+    SPEED_CRITICAL_FILES += delay_estimator.cc
+    SPEED_CRITICAL_FILES += aec_resampler.cc
+    SPEED_CRITICAL_FILES += audio_buffer.cc
+    SPEED_CRITICAL_FILES += audio_util.cc
+    SPEED_CRITICAL_FILES += channel_buffer.cc
+    SPEED_CRITICAL_FILES += push_sinc_resampler.cc
+    SPEED_CRITICAL_FILES += push_resampler.cc
+    SPEED_CRITICAL_FILES += sinc_resampler.cc
+    SPEED_CRITICAL_FILES += splitting_filter.cc
+    SPEED_CRITICAL_FILES += splitting_filter.c
+    SPEED_CRITICAL_FILES += aligned_malloc.cc
+    SPEED_CRITICAL_FILES += three_band_filter_bank.cc
+    SPEED_CRITICAL_FILES += sparse_fir_filter.ccendif
+endif
 
 
 include $(COMMON_CC)

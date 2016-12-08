@@ -115,13 +115,16 @@ void _DSP_REGISTER_NEW_MODULE(char *a_module_name, dsp_ioctl_func_t a_ioctle_fun
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-dsp_chain_t *DSP_CREATE_CHAIN(size_t max_num_of_dsp_modules)
+dsp_chain_t *DSP_CREATE_CHAIN(size_t max_num_of_dsp_modules , void *adsp_buffers_pool)
 {
 	dsp_chain_t *pdsp_chain;
+
+	dsp_buffers_pool = adsp_buffers_pool ;
 	pdsp_chain =  (dsp_chain_t*)malloc( sizeof(dsp_chain_t));
 	pdsp_chain->dsp_chain =  (pdsp_descriptor*)malloc(max_num_of_dsp_modules * sizeof(pdsp_descriptor));
 	pdsp_chain->max_num_of_dsp_modules = max_num_of_dsp_modules;
 	pdsp_chain->occupied_dsp_modules = 0 ;
+	pdsp_chain->chain_in_pads[MAX_NUM_OF_OUTPUT_PADS].pad_type = DSP_PAD_TYPE_NOT_ALLOCATED_BUFFER;
 	return pdsp_chain;
 }
 
@@ -158,7 +161,7 @@ void DSP_ADD_MODULE_TO_CHAIN(dsp_chain_t *ap_chain, char *a_module_name,  pdsp_d
 			out_pads = dsp_module->out_pads;
 			for (i = 0; i<MAX_NUM_OF_OUTPUT_PADS; i++)
 			{
-				in_pads[i] = NULL;
+				in_pads[i] = &ap_chain->chain_in_pads[MAX_NUM_OF_OUTPUT_PADS];// set to default zero's input buffer
 				curr_out_pad = &out_pads[i];
 				curr_out_pad->pad_type = DSP_PAD_TYPE_NOT_USED;
 				curr_out_pad->total_registered_sinks = 0;
@@ -201,6 +204,8 @@ void DSP_PROCESS(pdsp_descriptor dsp , size_t	len)
 	dsp_pad_t *out_pads ;
 	dsp_pad_t *curr_source_out_pad ;
 	uint8_t i;
+	float *dummy_output_buff = NULL;
+	uint8_t dummy_output_buff_allocated = 0;
 
 	ctl = dsp->ctl;
 	in_pads = dsp->in_pads;
@@ -208,11 +213,23 @@ void DSP_PROCESS(pdsp_descriptor dsp , size_t	len)
 
 	for(i=0; i<MAX_NUM_OF_OUTPUT_PADS ;i++)
 	{
+		uint8_t pad_type;
+
 		curr_out_pad = &out_pads[i];
-		if(DSP_PAD_TYPE_NORMAL == curr_out_pad->pad_type)
+		pad_type = curr_out_pad->pad_type;
+		if(DSP_PAD_TYPE_NORMAL == pad_type)
 		{
 			curr_out_pad->buff = (float*)memory_pool_malloc(dsp_buffers_pool);
 			curr_out_pad->sinks_processed_counter = curr_out_pad->total_registered_sinks;
+		}
+		else if(DSP_PAD_TYPE_NOT_USED == pad_type)
+		{
+			if( 0 == dummy_output_buff_allocated)
+			{
+				dummy_output_buff = (float*)memory_pool_malloc(dsp_buffers_pool);
+				dummy_output_buff_allocated = 1;
+			}
+			curr_out_pad->buff = dummy_output_buff;
 		}
 	}
 
@@ -248,15 +265,20 @@ void DSP_PROCESS(pdsp_descriptor dsp , size_t	len)
 	{
 		curr_source_out_pad = in_pads[i];
 
-		if ((NULL != curr_source_out_pad) && (DSP_PAD_TYPE_NORMAL == curr_source_out_pad->pad_type) )
+		if  (DSP_PAD_TYPE_NORMAL == curr_source_out_pad->pad_type)
 		{
 			while( 0 == curr_source_out_pad->sinks_processed_counter ) ; // debug trap
 			curr_source_out_pad->sinks_processed_counter--;
 			if(0 == curr_source_out_pad->sinks_processed_counter)
 			{
-				memory_pool_free(dsp_buffers_pool,curr_source_out_pad->buff );
+				memory_pool_free(dsp_buffers_pool , curr_source_out_pad->buff );
 			}
 		}
+	}
+
+	if( 1 == dummy_output_buff_allocated)
+	{
+		memory_pool_free(dsp_buffers_pool , dummy_output_buff);
 	}
 
 }
@@ -276,15 +298,22 @@ void DSP_PROCESS_CHAIN(dsp_chain_t *ap_chain , size_t	len )
 {
 	size_t i;
 	pdsp_descriptor* dsp_chain;
-
+	float *zeros_buff;
 	dsp_chain = ap_chain->dsp_chain;
 	i = ap_chain->occupied_dsp_modules;
+
+	zeros_buff = (float*)memory_pool_malloc(dsp_buffers_pool);
+	my_float_memset(zeros_buff , 0 , len);
+	ap_chain->chain_in_pads[MAX_NUM_OF_OUTPUT_PADS].buff = zeros_buff;
+
+
 	while(i--)
 	{
 		DSP_PROCESS( *dsp_chain , len);
 		dsp_chain++;
 	}
 
+	memory_pool_free(dsp_buffers_pool,zeros_buff );
 
 }
 
@@ -414,22 +443,6 @@ void DSP_SET_SINK_BUFFER(pdsp_descriptor dsp,DSP_OUTPUT_PADS_t dsp_output_pad, v
 
 }
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        dsp_management_api_set_buffers_pool                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-void dsp_management_api_set_buffers_pool(void *adsp_buffers_pool)
-{
-
-	dsp_buffers_pool = adsp_buffers_pool ;
-}
 
 
 /*---------------------------------------------------------------------------------------------------------*/
