@@ -99,7 +99,7 @@ uint8_t webrtc_voice_activity_detection_ioctl(pdsp_descriptor apdsp ,const uint8
 	VadInst* vad_handle;
 
 	handle = apdsp->handle;
-	handle->vad_handle = vad_handle;
+	vad_handle = handle->vad_handle;
 
 	switch(aIoctl_num)
 	{

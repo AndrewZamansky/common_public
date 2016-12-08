@@ -2,10 +2,19 @@
 INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_WEBRTC_AEC)
 
 ifdef CONFIG_INCLUDE_WEBRTC_AEC
+    WEBRTC_PATH :=$(EXTERNAL_SOURCE_ROOT_DIR)/webrtc
+    ifeq ("$(wildcard $(WEBRTC_PATH))","")
+        $(info   )
+        $(info --- webrtc path $(WEBRTC_PATH) dont exists )
+        $(info --- get webrtc ported to uCProjects from Andrew Zamansky and unpack it to $(WEBRTC_PATH)  )
+        $(info --- make sure that infra directory is located in $(WEBRTC_PATH)/  after unpacking   )
+        $(info ---    )
+        $(error )
+    endif
     GLOBAL_LIBS += libstdc++.a
 endif
 
-INCLUDE_DIR +=$(EXTERNAL_SOURCE_ROOT_DIR)/webrtc
+INCLUDE_DIR +=$(WEBRTC_PATH)
 
 #DEFINES = FLOATING_POINT USE_KISS_FFT
 DEFINES = WEBRTC_POSIX pthread_t=int pthread_mutex_t=int pthread_cond_t=int 
@@ -55,14 +64,14 @@ SRC += splitting_filter.c
 SRC += aligned_malloc.cc
 SRC += three_band_filter_bank.cc
 SRC += sparse_fir_filter.cc
-VPATH += | $(EXTERNAL_SOURCE_ROOT_DIR)/webrtc/webrtc/modules/audio_processing
-VPATH += | $(EXTERNAL_SOURCE_ROOT_DIR)/webrtc/webrtc/base
-VPATH += | $(EXTERNAL_SOURCE_ROOT_DIR)/webrtc/webrtc/modules/audio_processing/aec
-VPATH += | $(EXTERNAL_SOURCE_ROOT_DIR)/webrtc/webrtc/modules/audio_processing/utility
-VPATH += | $(EXTERNAL_SOURCE_ROOT_DIR)/webrtc/webrtc/common_audio
-VPATH += | $(EXTERNAL_SOURCE_ROOT_DIR)/webrtc/webrtc/common_audio/signal_processing
-VPATH += | $(EXTERNAL_SOURCE_ROOT_DIR)/webrtc/webrtc/common_audio/resampler
-VPATH += | $(EXTERNAL_SOURCE_ROOT_DIR)/webrtc/webrtc/system_wrappers/source
+VPATH += | $(WEBRTC_PATH)/webrtc/modules/audio_processing
+VPATH += | $(WEBRTC_PATH)/webrtc/base
+VPATH += | $(WEBRTC_PATH)/webrtc/modules/audio_processing/aec
+VPATH += | $(WEBRTC_PATH)/webrtc/modules/audio_processing/utility
+VPATH += | $(WEBRTC_PATH)/webrtc/common_audio
+VPATH += | $(WEBRTC_PATH)/webrtc/common_audio/signal_processing
+VPATH += | $(WEBRTC_PATH)/webrtc/common_audio/resampler
+VPATH += | $(WEBRTC_PATH)/webrtc/system_wrappers/source
 
 ifdef CONFIG_WEBRTC_IS_SPEED_CRITICAL
     SPEED_CRITICAL_FILES +=  webrtc_echo_canceller.cc

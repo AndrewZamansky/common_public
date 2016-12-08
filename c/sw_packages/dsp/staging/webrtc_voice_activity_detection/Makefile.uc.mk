@@ -2,10 +2,18 @@
 INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_WEBRTC_VAD)
 
 ifdef CONFIG_INCLUDE_WEBRTC_VAD
-    #GLOBAL_LIBS += libstdc++.a
+    WEBRTC_PATH :=$(EXTERNAL_SOURCE_ROOT_DIR)/webrtc
+    ifeq ("$(wildcard $(WEBRTC_PATH))","")
+        $(info   )
+        $(info --- webrtc path $(WEBRTC_PATH) dont exists )
+        $(info --- get webrtc ported to uCProjects from Andrew Zamansky and unpack it to $(WEBRTC_PATH)  )
+        $(info --- make sure that infra directory is located in $(WEBRTC_PATH)/  after unpacking   )
+        $(info ---    )
+        $(error )
+    endif
 endif
 
-INCLUDE_DIR +=$(EXTERNAL_SOURCE_ROOT_DIR)/webrtc
+INCLUDE_DIR +=$(WEBRTC_PATH)
 
 #DEFINES = FLOATING_POINT USE_KISS_FFT
 DEFINES = 
@@ -24,7 +32,7 @@ SRC += vad_core.c
 SRC += vad_filterbank.c
 SRC += vad_gmm.c
 SRC += vad_sp.c
-VPATH += | $(EXTERNAL_SOURCE_ROOT_DIR)/webrtc/webrtc/common_audio/vad
+VPATH += | $(WEBRTC_PATH)/webrtc/common_audio/vad
 
 SRC += spl_init.c
 SRC += min_max_operations.c
@@ -38,7 +46,7 @@ SRC += resample_fractional.c
 SRC += resample_by_2_internal.c
 SRC += energy.c
 SRC += get_scaling_square.c
-VPATH += | $(EXTERNAL_SOURCE_ROOT_DIR)/webrtc/webrtc/common_audio/signal_processing
+VPATH += | $(WEBRTC_PATH)/webrtc/common_audio/signal_processing
 
 ifdef CONFIG_WEBRTC_IS_SPEED_CRITICAL
     SPEED_CRITICAL_FILES +=  webrtc_voice_activity_detection.c
