@@ -111,6 +111,7 @@ typedef struct
 	size_t 				max_num_of_dsp_modules;
 	dsp_pad_t	    	chain_in_pads[MAX_NUM_OF_OUTPUT_PADS + 1];// +1 for dummy zero's input for unconnected inputs of modules
 	dsp_pad_t*			chain_out_pads[MAX_NUM_OF_OUTPUT_PADS];
+	float *				out_buffers[MAX_NUM_OF_OUTPUT_PADS];
 }dsp_chain_t;
 
 /**********  define API  functions  ************/
