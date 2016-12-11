@@ -21,7 +21,7 @@
 
 
 
-static	void *dsp_buffers_pool;
+static	void *dsp_buffers_pool = NULL;
 
 /********  defines *********************/
 #define NOT_ALLOCATED_BUFFER	255
@@ -120,7 +120,10 @@ dsp_chain_t *DSP_CREATE_CHAIN(size_t max_num_of_dsp_modules , void *adsp_buffers
 	dsp_chain_t *pdsp_chain;
 	uint8_t i;
 
-	dsp_buffers_pool = adsp_buffers_pool ;
+	if(NULL == dsp_buffers_pool)
+	{
+		dsp_buffers_pool = adsp_buffers_pool ;
+	}
 	pdsp_chain =  (dsp_chain_t*)malloc( sizeof(dsp_chain_t));
 	pdsp_chain->dsp_chain =  (pdsp_descriptor*)malloc(max_num_of_dsp_modules * sizeof(pdsp_descriptor));
 	pdsp_chain->max_num_of_dsp_modules = max_num_of_dsp_modules;
