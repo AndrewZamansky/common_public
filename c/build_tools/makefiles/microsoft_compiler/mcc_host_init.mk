@@ -163,7 +163,11 @@ GLOBAL_CFLAGS += /wd4100 #disable unused parameter warning
 #GLOBAL_ASMFLAGS := $(GLOBAL_ASMFLAGS)
 
 
-
+ifdef CONFIG_MCC_OUTPUT_TYPE_DLL
+    DUMMY := $(call ADD_TO_GLOBAL_DEFINES , _WINDLL )
+    DUMMY := $(call ADD_TO_GLOBAL_DEFINES , WIN32 )
+    DUMMY := $(call ADD_TO_GLOBAL_DEFINES , _WINDOWS )
+endif
 
 #end of flags definitions
 

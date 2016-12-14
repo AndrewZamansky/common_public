@@ -1,0 +1,17 @@
+#
+
+menu "juce configuration"
+
+choice
+	prompt "juce project type"
+	default JUCE_STANDALONE_APPLICATION
+
+config JUCE_STANDALONE_APPLICATION
+	bool "standalone application"
+
+config JUCE_VST_PLUGIN
+    bool "vst plugin"
+
+endchoice
+	
+endmenu

@@ -20,8 +20,11 @@ endif
 
 #ASMFLAGS =
 
-#INCLUDE_DIR = $(JUCE_PATH)/include#  $(JUCE_PATH)/arch/arm/include/asm/
+#INCLUDE_DIR =
 
+ifdef    CONFIG_JUCE_VST_PLUGIN
+    DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(EXTERNAL_SOURCE_ROOT_DIR)/VST3_SDK)
+endif
 
 SRC = juce_audio_basics.cpp
 VPATH += | $(JUCE_PATH)/modules/juce_audio_basics
@@ -31,8 +34,16 @@ SRC += juce_audio_formats.cpp
 VPATH += | $(JUCE_PATH)/modules/juce_audio_formats
 SRC += juce_audio_processors.cpp
 VPATH += | $(JUCE_PATH)/modules/juce_audio_processors
-SRC += juce_audio_utils.cpp
-VPATH += | $(JUCE_PATH)/modules/juce_audio_utils
+ifdef    CONFIG_JUCE_STANDALONE_APPLICATION
+    SRC += juce_audio_utils.cpp
+    VPATH += | $(JUCE_PATH)/modules/juce_audio_utils
+endif
+ifdef    CONFIG_JUCE_VST_PLUGIN
+    SRC += juce_PluginUtilities.cpp
+    VPATH += | $(JUCE_PATH)/modules/juce_audio_plugin_client/utility
+    SRC += juce_VST_Wrapper.cpp
+    VPATH += | $(JUCE_PATH)/modules/juce_audio_plugin_client/VST
+endif
 SRC += juce_core.cpp
 VPATH += | $(JUCE_PATH)/modules/juce_core
 SRC += juce_cryptography.cpp

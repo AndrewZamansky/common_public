@@ -7,6 +7,9 @@ config INCLUDE_JUCE
 	depends on HOST
 	default n
 
+if INCLUDE_JUCE
+source "$COMMON_DIR_PATH/c/sw_packages/staging/juce/Kconfig"
+endif
 
 config INCLUDE_UGFX
 	bool   "ugfx"
