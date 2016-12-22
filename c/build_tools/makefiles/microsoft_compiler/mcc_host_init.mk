@@ -23,21 +23,6 @@ else #for 'ifdef REDEFINE_MICROSOFT_COMPILER_ROOT_DIR'
 
     ifdef  CONFIG_MCC_COMPILER_LOCATION_WINDOWS_DEFAULT
 
-        ifdef CONFIG_MCC_COMPILER_32
-            MCC_ARCH=\ (x86)
-        else ifdef CONFIG_MCC_COMPILER_64
-            MCC_ARCH=
-        else
-            $(info !--- microsoft compiler architecture not defined)
-            $(error )
-        endif
-        
-        TEST_MCC_ROOT_DIR 	:= C:\Program\ Files$(MCC_ARCH)
-        ifeq ("$(wildcard $(TEST_MCC_ROOT_DIR))","")
-            $(info !--- $(TEST_MCC_ROOT_DIR) does not exists )
-            MCC_NOT_FOUND :=1
-        endif
-
         ifdef CONFIG_MCC_VISUAL_STUDIO_VERSION_2012
             MCC_VS_VERSION=12.0
             MCC_VS_VERSION_NAME=2012
@@ -49,7 +34,7 @@ else #for 'ifdef REDEFINE_MICROSOFT_COMPILER_ROOT_DIR'
             $(error )
         endif
         ifndef MCC_NOT_FOUND
-           TEST_MCC_ROOT_DIR 	:= C:\Program\ Files$(MCC_ARCH)\Microsoft\ Visual\ Studio\ $(MCC_VS_VERSION)\VC
+           TEST_MCC_ROOT_DIR 	:= C:\Program\ Files\ (x86)\Microsoft\ Visual\ Studio\ $(MCC_VS_VERSION)\VC
            ifeq ("$(wildcard $(TEST_MCC_ROOT_DIR))","")
                $(info !--- $(TEST_MCC_ROOT_DIR) does not exists )
                #$(info !--- (if needed you can change microsoft compiler version using menuconfig in "Building System" menu ))
@@ -65,7 +50,8 @@ else #for 'ifdef REDEFINE_MICROSOFT_COMPILER_ROOT_DIR'
         endif
 
         MCC_ARCH := $(subst \,,$(MCC_ARCH))
-        MCC_ROOT_DIR :=C:\Program Files$(MCC_ARCH)\Microsoft Visual Studio $(MCC_VS_VERSION)\VC
+        MCC_ROOT_DIR :=C:\Program Files (x86)\Microsoft Visual Studio $(MCC_VS_VERSION)\VC
+        MCC_ROOT_DIR_wESCAPED_CHAR :=$(TEST_MCC_ROOT_DIR)
 
     else
 
@@ -121,6 +107,7 @@ else #for 'ifdef REDEFINE_MICROSOFT_COMPILER_ROOT_DIR'
         endif
 
         MCC_ROOT_DIR :=  $(TOOLS_ROOT_DIR)/mcc_$(MCC_ARCH)_$(MCC_VS_VERSION_NAME)
+        MCC_ROOT_DIR_wESCAPED_CHAR :=$(TEST_MCC_ROOT_DIR)
 
     endif
 endif
@@ -145,19 +132,40 @@ ifdef CONFIG_USE_WINDOWS_KITS
 endif
 
 #clear PATH environment variable to get rid of different microsoft compiler conflicts
-FULL_MCC_PREFIX 		:= $(MCC_ROOT_DIR)/bin/
-FULL_MCC_PREFIX := $(subst /,\,$(FULL_MCC_PREFIX))
+MCC_BIN_DIR	:=$(MCC_ROOT_DIR)\bin
+MCC_BIN_DIR_wESCAPED_CHAR :=$(MCC_ROOT_DIR_wESCAPED_CHAR)
+MCC_BIN_DIR := $(subst /,\,$(MCC_BIN_DIR))
+MCC_BIN_DIR_wESCAPED_CHAR := $(subst /,\,$(MCC_BIN_DIR_wESCAPED_CHAR))
 COMPILER_INCLUDE_DIR 	:= $(MCC_ROOT_DIR)/include
 MCC_LIB_ROOT_DIR  		:= $(MCC_ROOT_DIR)/lib
 
 
 ### GLOBAL_CFLAGS calculation
 
-GLOBAL_CFLAGS += /MP /GS /analyze- /W4 /Zc:wchar_t /ZI /Gm- /Od /Fd"$(OUT_DIR)\\" /fp:precise 
-GLOBAL_CFLAGS += /errorReport:prompt /WX- /Zc:forScope /GR /Gd /Oy- /MTd 
+ifdef CONFIG_MCC_COMPILER_32
+    GLOBAL_CFLAGS += /ZI
+else ifdef CONFIG_MCC_COMPILER_64
+    GLOBAL_CFLAGS += /Zi
+endif
+
+GLOBAL_CFLAGS += /MP /GS /analyze- /W4 /Zc:wchar_t /Gm- /Od /Fd"$(OUT_DIR)\\" /fp:precise 
+GLOBAL_CFLAGS += /errorReport:prompt /WX- /Zc:forScope /GR /Gd /Oy-
 GLOBAL_CFLAGS += /EHsc /nologo /Fp"$(OUT_DIR)\out.pch" /FS
-GLOBAL_CFLAGS += /wd4100 #disable unused parameter warning
 #GLOBAL_CFLAGS += /Fa"Debug\\"
+
+ifdef CONFIG_MCC_CRT_LIBRARIES_LINKED_DINAMICALLY
+    CRT_LIBRARIES_OPTION := /MD
+else
+    CRT_LIBRARIES_OPTION := /MD
+endif
+
+ifdef CONFIG_MCC_OPTIMISE_NONE
+    CRT_LIBRARIES_OPTION =$(CRT_LIBRARIES_OPTION)d
+endif
+GLOBAL_CFLAGS += $(CRT_LIBRARIES_OPTION)
+
+GLOBAL_CFLAGS += /wd4100 #disable unused parameter warning
+
 
 # define flags for asm compiler :
 #GLOBAL_ASMFLAGS := $(GLOBAL_ASMFLAGS)
@@ -172,9 +180,14 @@ endif
 #end of flags definitions
 
 
+ifdef CONFIG_MCC_COMPILER_32
+    CC   := set "PATH=$(MCC_BIN_DIR)\bin" & "$(MCC_BIN_DIR)\cl.exe" /c
+    ASM  := set "PATH=$(MCC_BIN_DIR)\bin" & "$(MCC_BIN_DIR)\cl.exe" /c
+else ifdef CONFIG_MCC_COMPILER_64
+    CC   := set "PATH=$(MCC_BIN_DIR)" & "$(MCC_BIN_DIR)\x86_amd64\cl.exe" /c
+    ASM  := set "PATH=$(MCC_BIN_DIR)" & "$(MCC_BIN_DIR)\x86_amd64\cl.exe" /c
+endif
 
-CC   :=	set "PATH=$(TEST_MCC_ROOT_DIR)/bin" & "$(FULL_MCC_PREFIX)cl.exe" /c
-ASM  :=	set "PATH=$(TEST_MCC_ROOT_DIR)/bin" & "$(FULL_MCC_PREFIX)cl.exe" /c
 
 
 

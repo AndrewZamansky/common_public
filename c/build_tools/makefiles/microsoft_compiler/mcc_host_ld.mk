@@ -1,6 +1,5 @@
 
-LD   :=	set "PATH=$(TEST_MCC_ROOT_DIR)/bin" & "$(FULL_MCC_PREFIX)link"
-DISASSEMBLER	:=	$(FULL_GCC_PREFIX)objdump -d
+LD   :=	set "PATH=$(MCC_BIN_DIR)" & "$(MCC_BIN_DIR)\x86_amd64\link"
 
 
 GLOBAL_LIBS := $(GLOBAL_LIBS)
@@ -41,12 +40,38 @@ LDFLAGS :=
 
 #LDFLAGS += -fno-builtin-printf
 
+ifdef CONFIG_MCC_COMPILER_32
+    LDFLAGS += /MACHINE:X86
+else
+    LDFLAGS += /MACHINE:X64
+endif
 
 LDFLAGS += /MANIFEST /NXCOMPAT /PDB:"$(OUT_DIR)\out.pdb" /DYNAMICBASE 
-LDFLAGS += /LARGEADDRESSAWARE /DEBUG /MACHINE:X86 /NODEFAULTLIB:"libcmt.lib" /NODEFAULTLIB:"msvcrt.lib"
+LDFLAGS += /LARGEADDRESSAWARE
 LDFLAGS += /SAFESEH:NO# /PGD:"$(OUT_DIR)\out.pgd"
+LDFLAGS += /OPT:REF#LINK removes unreferenced packaged functions and data
+LDFLAGS += /OPT:ICF#perform 2(default) interations to find unreferenced code or data
 LDFLAGS += /SUBSYSTEM:WINDOWS 
-LDFLAGS += /MANIFESTUAC:"level='asInvoker' uiAccess='false'" 
+LDFLAGS += /MANIFESTUAC:"level='asInvoker' uiAccess='false'"
+
+ifdef CONFIG_MCC_IGNORE_DEFAULT_LIBRARIES
+    ifdef CONFIG_MCC_IGNORE_ALL_DEFAULT_LIBRARIES
+        LDFLAGS += /NODEFAULTLIB
+    else
+        ifdef MCC_IGNORE_LIBCMT_LIBRARY
+            LDFLAGS += /NODEFAULTLIB:"libcmt.lib"
+        endif
+        ifdef MCC_IGNORE_MSVCRT_LIBRARY
+            LDFLAGS += /NODEFAULTLIB:"msvcrt.lib"
+        endif
+    endif
+endif
+
+ifndef CONFIG_MCC_OPTIMISE_NONE
+    #LDFLAGS += /LTCG
+    LDFLAGS += /DEBUG
+endif
+
 ifdef CONFIG_MCC_OUTPUT_TYPE_EXE
     LDFLAGS += /ManifestFile:"$(OUT_DIR)\$(PROJECT_NAME).exe.intermediate.manifest"
 endif
@@ -58,10 +83,15 @@ endif
 LDFLAGS += /ERRORREPORT:PROMPT /NOLOGO /TLBID:1
 
 ifdef CONFIG_USE_WINDOWS_KITS
-    LDFLAGS += /LIBPATH:"$(WINDOWS_KIT_ROOT_DIR)\LIB\WINV6.3\UM\X86"
+    ifdef CONFIG_MCC_COMPILER_32
+        LDFLAGS += /LIBPATH:"$(WINDOWS_KIT_ROOT_DIR)\LIB\WINV6.3\UM\X86"
+        LDFLAGS += /LIBPATH:"$(MCC_ROOT_DIR)\lib"
+    else
+        LDFLAGS += /LIBPATH:"$(WINDOWS_KIT_ROOT_DIR)\LIB\WINV6.3\UM\X64"
+        LDFLAGS += /LIBPATH:"$(MCC_ROOT_DIR)\lib\amd64"
+    endif
 endif
 
-LDFLAGS += /LIBPATH:"$(MCC_ROOT_DIR)\lib"
 LDFLAGS := $(GLOBAL_LDFLAGS) $(LDFLAGS)
 
 
@@ -97,7 +127,7 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
     LINKER_HISTORY_OUTPUT := $(subst /,\,$(LINKER_HISTORY_OUTPUT))
     OUTPUT_CRC32 := $(subst /,\,$(OUTPUT_CRC32))
 endif
-
+$(info $(LD) /OUT:"$(LINKER_OUTPUT)" $(LDFLAGS) $(LIBRARIES_DIRS) $(ALL_OBJ_FILES) $(LIBS) )
 #
 #	$(DISASSEMBLER) $(LINKER_OUTPUT) > $(OUT_DIR)/$(OUTPUT_APP_NAME).asm
 #	$(CP)  $(LINKER_OUTPUT) $(OUTPUT_BIN)
