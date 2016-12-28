@@ -55,7 +55,7 @@ choice
 	default MCC_OPTIMISE_PREFER_SPEED
 
 config MCC_OPTIMISE_NONE
-	bool "/Od : No Optimisations"
+	bool "/Od : No Optimisations (Debug)"
 
 config MCC_OPTIMISE_GLOBAL
 	bool "/Og  : enable global optimization "

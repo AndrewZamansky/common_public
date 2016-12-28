@@ -150,17 +150,20 @@ endif
 
 GLOBAL_CFLAGS += /MP /GS /analyze- /W4 /Zc:wchar_t /Gm- /Od /Fd"$(OUT_DIR)\\" /fp:precise 
 GLOBAL_CFLAGS += /errorReport:prompt /WX- /Zc:forScope /GR /Gd /Oy-
-GLOBAL_CFLAGS += /EHsc /nologo /Fp"$(OUT_DIR)\out.pch" /FS
+GLOBAL_CFLAGS += /EHsc#/EHsc
+GLOBAL_CFLAGS += /nologo /Fp"$(OUT_DIR)\out.pch" /FS
 #GLOBAL_CFLAGS += /Fa"Debug\\"
 
 ifdef CONFIG_MCC_CRT_LIBRARIES_LINKED_DINAMICALLY
     CRT_LIBRARIES_OPTION := /MD
 else
-    CRT_LIBRARIES_OPTION := /MD
+    CRT_LIBRARIES_OPTION := /MT
 endif
 
 ifdef CONFIG_MCC_OPTIMISE_NONE
-    CRT_LIBRARIES_OPTION =$(CRT_LIBRARIES_OPTION)d
+    #following line removed because on some PC cubase is not openning VST (dll) pluging
+    #when compile with debug runtime libraries (maybe debug runtime libraries are missing , TO CHECK !!)
+    #CRT_LIBRARIES_OPTION :=$(CRT_LIBRARIES_OPTION)d
 endif
 GLOBAL_CFLAGS += $(CRT_LIBRARIES_OPTION)
 

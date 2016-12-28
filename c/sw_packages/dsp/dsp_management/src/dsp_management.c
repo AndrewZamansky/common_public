@@ -183,7 +183,13 @@ void DSP_ADD_MODULE_TO_CHAIN(dsp_chain_t *ap_chain, char *a_module_name,  pdsp_d
 			dsp_module->dsp_func = p_dsp_module->dsp_func;
 			dsp_module->handle =malloc( p_dsp_module->module_data_size );
 			retVal = DSP_IOCTL_0_PARAMS(dsp_module , IOCTL_DSP_INIT );
-			if (retVal) while(1);// error trap in case dsp module failed to start
+
+			// error trap in case dsp module failed to start
+			if (retVal)
+			{
+				CRITICAL_ERROR("dsp module failed to start");
+			}
+
 
 			ap_chain->dsp_chain[occupied_dsp_modules++] = dsp_module;
 
@@ -191,7 +197,9 @@ void DSP_ADD_MODULE_TO_CHAIN(dsp_chain_t *ap_chain, char *a_module_name,  pdsp_d
 			return ;
 		}
 	}
-	while(1);// error trap in case module with a_module_name string was not found
+
+	// error trap in case module with a_module_name string was not found
+	CRITICAL_ERROR("module with a_module_name string was not found");
 }
 
 /*---------------------------------------------------------------------------------------------------------*/

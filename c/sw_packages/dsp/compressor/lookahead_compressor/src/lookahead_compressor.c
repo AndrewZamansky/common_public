@@ -125,8 +125,8 @@ void lookahead_compressor_dsp(pdsp_descriptor apdsp , size_t data_len ,
 	float prev_calculated_ratio ;
 	float step_ratio ;
 	float curr_ratio = 1;
-	float usePreviousRatio;
-	uint16_t i ;
+	uint8_t usePreviousRatio;
+	size_t i ;
 	float threshold  ;
 	float ratio_change_per_chunk  ;
 	float reverse_ratio ;
@@ -193,12 +193,12 @@ void lookahead_compressor_dsp(pdsp_descriptor apdsp , size_t data_len ,
 
 		if(curr_ratio <= prev_ratio)
 		{
-			usePreviousRatio = release;
+			usePreviousRatio = 1;
 			ratio_change_per_chunk = (curr_ratio - prev_ratio)/attack;
 		}
 		else
 		{
-			if (release == usePreviousRatio)
+			if (1 == usePreviousRatio)
 			{
 				ratio_change_per_chunk = 0;
 				usePreviousRatio=0;
@@ -326,11 +326,11 @@ uint8_t lookahead_compressor_ioctl(pdsp_descriptor apdsp ,const uint8_t aIoctl_n
 			handle->reverse_ratio = 0.0f;//0.5;
 			handle->prev_ratio = 0.0f;
 			handle->prev_calculated_ratio = 0.5f;
-			handle->usePreviousRatio = 16.0f;
+			handle->usePreviousRatio = 1;
 			handle->look_ahead_length_buffer_Ch1 = NULL;
 			handle->look_ahead_length_buffer_Ch2 = NULL;
 			handle->release_ratio_change_per_chunk = 0.0f ;
-			handle->look_ahead_length = 0.0f;
+			handle->look_ahead_length = 0;
 			handle->release = 16.0f;
 			handle->attack = 1.0f;
 			handle->threshold = 0.99999f;

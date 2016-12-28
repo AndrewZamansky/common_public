@@ -49,9 +49,11 @@ void *memory_pool_malloc(void *memory_pool_handle)
 		}
 		pMemPool++;
 	}
-	while (1); // debug trap
-}
 
+	//error if we got here
+	CRITICAL_ERROR("no free memory chunks");
+	return NULL;
+}
 
 
 /*---------------------------------------------------------------------------------------------------------*/
@@ -78,7 +80,9 @@ void memory_pool_free(void *memory_pool_handle , void *mem)
 		}
 		pMemPool++;
 	}
-	while (1); // debug trap
+
+	//error if we got here
+	CRITICAL_ERROR("bad memory chunk");
 }
 
 
