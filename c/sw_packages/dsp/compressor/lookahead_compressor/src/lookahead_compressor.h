@@ -22,7 +22,9 @@ typedef struct {
 
 	uint8_t type;
 	uint8_t usePreviousRatio;
+	uint8_t bChangeChunkSize;
 	uint32_t look_ahead_length;
+	uint32_t u32Errors;
 	float *look_ahead_length_buffer_Ch1;
 	float *look_ahead_length_buffer_Ch2;
 	float threshold;

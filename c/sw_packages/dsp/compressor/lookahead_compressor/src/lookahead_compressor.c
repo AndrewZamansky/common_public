@@ -141,6 +141,27 @@ void lookahead_compressor_dsp(pdsp_descriptor apdsp , size_t data_len ,
 	handle=apdsp->handle;
 	look_ahead_length_buffer_Ch1 = handle->look_ahead_length_buffer_Ch1;
 	look_ahead_length_buffer_Ch2 = handle->look_ahead_length_buffer_Ch2;
+	chunk_size =  handle->look_ahead_length ;
+
+	if(0 == chunk_size)
+		return;
+
+	if(0 != (data_len % chunk_size))/* data_len should be divisible by chunk_size*/
+	{
+		handle->u32Errors |= LOOKAHEAD_COMPRESSOR_ERR_DIVISIBILITY;
+		return;
+	}
+
+
+	if (handle->bChangeChunkSize)
+	{
+		look_ahead_length_buffer_Ch1 = (float*)realloc(look_ahead_length_buffer_Ch1 , chunk_size*sizeof(float));
+		handle->look_ahead_length_buffer_Ch1 = look_ahead_length_buffer_Ch1;
+		look_ahead_length_buffer_Ch2 = (float*)realloc(look_ahead_length_buffer_Ch2 , chunk_size*sizeof(float));
+		handle->look_ahead_length_buffer_Ch2 = look_ahead_length_buffer_Ch2;
+		handle->bChangeChunkSize = 0;
+	}
+
 
 	apCh1In = in_pads[0]->buff;
 	apCh2In = in_pads[1]->buff;
@@ -161,14 +182,11 @@ void lookahead_compressor_dsp(pdsp_descriptor apdsp , size_t data_len ,
 	threshold = handle->threshold;
 	prev_ratio = handle->prev_ratio ;
 	usePreviousRatio = handle->usePreviousRatio ;
-	chunk_size =  handle->look_ahead_length ;
 	release = handle->release;
 	prev_calculated_ratio = handle->prev_calculated_ratio;
 	hit_counter = handle->hit_counter;
 	release_ratio_change_per_chunk = handle->release_ratio_change_per_chunk ;
 
-	if(0 == chunk_size)
-		return;
 
 	for(i = 0 ; i < data_len ; i+=chunk_size)
 	{
@@ -282,26 +300,6 @@ void lookahead_compressor_dsp(pdsp_descriptor apdsp , size_t data_len ,
 
 
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        lookahead_compressor_set_buffers                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-void lookahead_compressor_set_buffers(LOOKAHEAD_COMPRESSOR_Instance_t *pInstance,uint32_t buffer_size)
-{
-	pInstance->look_ahead_length_buffer_Ch1 =
-			(float*)realloc(pInstance->look_ahead_length_buffer_Ch1, buffer_size*sizeof(float));
-	pInstance->look_ahead_length_buffer_Ch2 =
-			(float*)realloc(pInstance->look_ahead_length_buffer_Ch2, buffer_size*sizeof(float));
-
-}
-
 
 /*---------------------------------------------------------------------------------------------------------*/
 /* Function:        lookahead_compressor_ioctl                                                                          */
@@ -334,6 +332,7 @@ uint8_t lookahead_compressor_ioctl(pdsp_descriptor apdsp ,const uint8_t aIoctl_n
 			handle->release = 16.0f;
 			handle->attack = 1.0f;
 			handle->threshold = 0.99999f;
+			handle->bChangeChunkSize = 1;
 
 
 			break;
@@ -343,7 +342,7 @@ uint8_t lookahead_compressor_ioctl(pdsp_descriptor apdsp ,const uint8_t aIoctl_n
 		case IOCTL_LOOKAHEAD_COMPRESSOR_SET_LOOK_AHEAD_SIZE :
 			look_ahead_length = (uint32_t)((size_t)aIoctl_param1);
 			handle->look_ahead_length = look_ahead_length;
-			lookahead_compressor_set_buffers(handle , look_ahead_length);
+			handle->bChangeChunkSize = 1;
 			break;
 		case IOCTL_LOOKAHEAD_COMPRESSOR_SET_RATIO :
 			handle->reverse_ratio = 1/(*((float*)aIoctl_param1));
@@ -360,6 +359,10 @@ uint8_t lookahead_compressor_ioctl(pdsp_descriptor apdsp ,const uint8_t aIoctl_n
 		case IOCTL_LOOKAHEAD_COMPRESSOR_GET_HIT_COUNTER :
 			*((uint32_t*)aIoctl_param1) = handle->hit_counter;
 			handle->hit_counter = 0;
+			break;
+		case IOCTL_LOOKAHEAD_COMPRESSOR_GET_ERRORS :
+			*((uint32_t*)aIoctl_param1) = handle->u32Errors;
+			handle->u32Errors = 0;
 			break;
 		default :
 			return 1;
