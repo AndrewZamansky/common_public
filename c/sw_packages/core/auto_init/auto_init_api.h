@@ -13,12 +13,12 @@ typedef void (*auto_init_func_t)(void)  ;
 
 typedef struct
 {
-	uint16_t 			magic_number;
+	int 				*magic_number;/* define field of pointer size */
 	auto_init_func_t 	auto_init_func;
 }auto_init_struct_t;
 
 #define AUTO_INIT_FUNCTION(func)  \
-		auto_init_struct_t AUTO_INIT_FUNCTION_PLACEMENT auto_init_##func = { AUTO_INIT_MAGIC_NUMBER , func}
+		auto_init_struct_t AUTO_INIT_FUNCTION_PLACEMENT auto_init_##func = { (int*)AUTO_INIT_MAGIC_NUMBER , func}
 
 
 /**********  define API  types ************/
