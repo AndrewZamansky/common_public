@@ -17,10 +17,6 @@
 
 	#define DEVICE_DATA_PLACEMENT
 
-
-	#pragma section("init_function_object_section", read)
-	#define AUTO_INIT_FUNCTION_PLACEMENT		__declspec(allocate("init_function_object_section"))
-
 #else
 
 	#define START_OF_MODULES_PLACEMENT	 		const

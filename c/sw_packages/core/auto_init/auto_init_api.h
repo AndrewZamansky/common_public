@@ -8,6 +8,18 @@
 
 /**********  defines ************/
 
+#ifdef _MSC_VER/* in case we are using microsoft compiler*/
+	#pragma section("init_function_object_section$b", read)/* $a will be begining $c will be end of auto init functions*/
+	#define AUTO_INIT_FUNCTION_PLACEMENT	 __declspec(dllexport) __declspec(align(8)) __declspec(allocate("init_function_object_section$b"))
+#else
+
+
+//	#define AUTO_INIT_FUNCTION_PLACEMENT	const
+//	#define DEVICE_DATA_PLACEMENT
+
+#endif
+
+
 #define AUTO_INIT_MAGIC_NUMBER	0x1A3C
 typedef void (*auto_init_func_t)(void)  ;
 

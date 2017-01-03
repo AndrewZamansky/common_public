@@ -4,56 +4,43 @@
  *
  */
 
-
-
 /***************   includes    *******************/
-
-
 #include "_auto_init_prerequirements_check.h"
 #include "auto_init_api.h"
-
-
 
 /***************   defines    *******************/
 
 /***************   typedefs    *******************/
 
-
-
 /**********   external variables    **************/
-
 
 /***********   global variables    **************/
 
 /***********   local variables    **************/
-extern  auto_init_struct_t AUTO_INIT_FUNCTION_PLACEMENT auto_init_dummy_auto_init;
+extern int *init_functions_section_start ;
+extern int *init_functions_section_end ;
 
-static void _auto_init(int16_t struct_size)
-{
-	auto_init_struct_t const *p_curr_auto_init;
-	auto_init_func_t init_function ;
 
-	p_curr_auto_init = &auto_init_dummy_auto_init;
-	while((int*)AUTO_INIT_MAGIC_NUMBER == p_curr_auto_init->magic_number)
-	{
-		init_function = p_curr_auto_init->auto_init_func ;
-		init_function();
-		p_curr_auto_init = (auto_init_struct_t *)( ((uint8_t*)p_curr_auto_init) + struct_size) ;
-	}
-}
-
-/*
- * function : auto_init_api()
- *
- *
- */
 void auto_init_api(void)
 {
-	_auto_init( (uint8_t)sizeof(auto_init_struct_t));
-	_auto_init(- (uint8_t)sizeof(auto_init_struct_t));
+	auto_init_struct_t *p_curr_auto_init;
+
+	p_curr_auto_init = &init_functions_section_start;
+	while(p_curr_auto_init < &init_functions_section_end)
+	{
+		uint8_t increment_value;
+		if((int*)AUTO_INIT_MAGIC_NUMBER == p_curr_auto_init->magic_number)
+		{
+			auto_init_func_t init_function ;
+
+			init_function = p_curr_auto_init->auto_init_func ;
+			init_function();
+			increment_value = sizeof(auto_init_struct_t);
+		}
+		else
+		{
+			increment_value = sizeof(int*);
+		}
+		p_curr_auto_init = (auto_init_struct_t *)( ((uint8_t*)p_curr_auto_init) + increment_value) ;
+	}
 }
-
-void dummy_auto_init(void){}
-
-AUTO_INIT_FUNCTION(dummy_auto_init)  ;
-
