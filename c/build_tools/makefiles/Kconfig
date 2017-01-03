@@ -115,4 +115,9 @@ config TOOLCHAIN_LIBRARIES_ARE_SPEED_CRUCIAL
 	depends on INCLUDE_TOOLCHAIN_LIBRARIES
 	default n
 
+config COMPILE_FOR_DEBUG
+	bool   "compile for debugging(include debug info)"
+	default y
+
+
 endmenu

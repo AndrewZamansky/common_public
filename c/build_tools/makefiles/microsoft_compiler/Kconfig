@@ -52,25 +52,16 @@ endchoice
  
 choice
 	prompt "Optimisation Level"
-	default MCC_OPTIMISE_PREFER_SPEED
+	default MCC_OPTIMISE_NONE
 
 config MCC_OPTIMISE_NONE
 	bool "/Od : No Optimisations (Debug)"
-
-config MCC_OPTIMISE_GLOBAL
-	bool "/Og  : enable global optimization "
 
 config MCC_OPTIMISE_SIZE
     bool "/O1 : Optimise for size "
 
 config MCC_OPTIMISE_SPEED
 	bool "/O2 : Optimise for speed "
-
-config MCC_OPTIMISE_PREFER_SIZE
-	bool "/Os : favor optimizations for size over optimizations for speed "
-
-config MCC_OPTIMISE_PREFER_SPEED
-	bool "/Ot : favor optimizations for speed over optimizations for size "
 
 config MCC_OPTIMISE_FULL
 	bool "/Ox : full optimization "

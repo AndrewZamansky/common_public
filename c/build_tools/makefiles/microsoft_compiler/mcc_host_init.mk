@@ -142,17 +142,18 @@ MCC_LIB_ROOT_DIR  		:= $(MCC_ROOT_DIR)/lib
 
 ### GLOBAL_CFLAGS calculation
 
-ifdef CONFIG_MCC_COMPILER_32
-    GLOBAL_CFLAGS += /ZI
-else ifdef CONFIG_MCC_COMPILER_64
-    GLOBAL_CFLAGS += /Zi
-endif
+#ifdef CONFIG_MCC_COMPILER_32
+#    GLOBAL_CFLAGS += /ZI
+#else ifdef CONFIG_MCC_COMPILER_64
+#    GLOBAL_CFLAGS += /Zi
+#endif
+GLOBAL_CFLAGS += /Zi
 
-GLOBAL_CFLAGS += /MP /GS /analyze- /W4 /Zc:wchar_t /Gm- /Od /Fd"$(OUT_DIR)\\" /fp:precise 
+GLOBAL_CFLAGS += /MP /GS /analyze- /W4 /Zc:wchar_t /Gm- /Fd"$(OUT_DIR)\\" /fp:precise
 GLOBAL_CFLAGS += /errorReport:prompt /WX- /Zc:forScope /GR /Gd /Oy-
 GLOBAL_CFLAGS += /EHsc#/EHsc
 GLOBAL_CFLAGS += /nologo /Fp"$(OUT_DIR)\out.pch" /FS
-#GLOBAL_CFLAGS += /Fa"Debug\\"
+#GLOBAL_CFLAGS += /Fa"Debug\\"#folder should be on local disk
 
 ifdef CONFIG_MCC_CRT_LIBRARIES_LINKED_DINAMICALLY
     CRT_LIBRARIES_OPTION := /MD
@@ -160,12 +161,29 @@ else
     CRT_LIBRARIES_OPTION := /MT
 endif
 
-ifdef CONFIG_MCC_OPTIMISE_NONE
-    #following line removed because on some PC cubase is not openning VST (dll) pluging
+ifdef CONFIG_COMPILE_FOR_DEBUG
+    DUMMY := $$(call ADD_TO_GLOBAL_DEFINES , DEBUG)
+    DUMMY := $$(call ADD_TO_GLOBAL_DEFINES , _DEBUG)
+    #following can cause executables not to open .
+    #for example some PC cubase is not openning VST (dll) pluging
     #when compile with debug runtime libraries (maybe debug runtime libraries are missing , TO CHECK !!)
-    #CRT_LIBRARIES_OPTION :=$(CRT_LIBRARIES_OPTION)d
+    CRT_LIBRARIES_OPTION :=$(CRT_LIBRARIES_OPTION)d
+else
+    DUMMY := $$(call ADD_TO_GLOBAL_DEFINES , NDEBUG)
+    GLOBAL_CFLAGS += /GL
 endif
 GLOBAL_CFLAGS += $(CRT_LIBRARIES_OPTION)
+
+ifdef CONFIG_MCC_OPTIMISE_NONE
+    GLOBAL_CFLAGS += /Od
+else ifdef CONFIG_MCC_OPTIMISE_SIZE
+    GLOBAL_CFLAGS += /O1
+else ifdef CONFIG_MCC_OPTIMISE_SPEED
+    GLOBAL_CFLAGS += /O2
+else ifdef CONFIG_MCC_OPTIMISE_FULL
+    GLOBAL_CFLAGS += /Ox
+endif
+
 
 GLOBAL_CFLAGS += /wd4100 #disable unused parameter warning
 
