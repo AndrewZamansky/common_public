@@ -142,13 +142,7 @@ MCC_LIB_ROOT_DIR  		:= $(MCC_ROOT_DIR)/lib
 
 ### GLOBAL_CFLAGS calculation
 
-#ifdef CONFIG_MCC_COMPILER_32
-#    GLOBAL_CFLAGS += /ZI
-#else ifdef CONFIG_MCC_COMPILER_64
-#    GLOBAL_CFLAGS += /Zi
-#endif
 GLOBAL_CFLAGS += /Zi
-
 GLOBAL_CFLAGS += /MP /GS /analyze- /W4 /Zc:wchar_t /Gm- /Fd"$(OUT_DIR)\\" /fp:precise
 GLOBAL_CFLAGS += /errorReport:prompt /WX- /Zc:forScope /GR /Gd /Oy-
 GLOBAL_CFLAGS += /EHsc#/EHsc

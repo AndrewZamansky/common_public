@@ -39,6 +39,12 @@ ifdef    CONFIG_JUCE_STANDALONE_APPLICATION
     VPATH += | $(JUCE_PATH)/modules/juce_audio_utils
 endif
 
+ifdef CONFIG_COMPILE_FOR_DEBUG
+    DBG_NAME :=.dbg
+else
+    DBG_NAME :=
+endif
+
 ifdef CONFIG_MCC_COMPILER_32
     ARCH_NAME :=x86_32
 else
@@ -50,11 +56,11 @@ ifdef    CONFIG_JUCE_VST_PLUGIN
     VPATH += | $(JUCE_PATH)/modules/juce_audio_plugin_client/utility
     SRC += juce_VST_Wrapper.cpp
     VPATH += | $(JUCE_PATH)/modules/juce_audio_plugin_client/VST
-    ifeq ($(wildcard $(OUT_DIR)\$(PROJECT_NAME).$(ARCH_NAME).exe),) 		#if VST tester dont exists then copy it tou output directory
+    ifeq ($(wildcard $(OUT_DIR)\$(PROJECT_NAME).$(ARCH_NAME)$(DBG_NAME).exe),) 		#if VST tester dont exists then copy it tou output directory
         ifdef CONFIG_MCC_COMPILER_32
-            DUMMY:=$(shell $(CP) $(TOOLS_ROOT_DIR)\saviHost_VST_tester\x32\savihost.exe $(OUT_DIR)\$(PROJECT_NAME).$(ARCH_NAME).exe )
+            DUMMY:=$(shell $(CP) $(TOOLS_ROOT_DIR)\saviHost_VST_tester\x32\savihost.exe $(OUT_DIR)\$(PROJECT_NAME).$(ARCH_NAME)$(DBG_NAME).exe )
         else ifdef CONFIG_MCC_COMPILER_64
-            DUMMY:=$(shell $(CP) $(TOOLS_ROOT_DIR)\saviHost_VST_tester\x64\savihost.exe $(OUT_DIR)\$(PROJECT_NAME).$(ARCH_NAME).exe )
+            DUMMY:=$(shell $(CP) $(TOOLS_ROOT_DIR)\saviHost_VST_tester\x64\savihost.exe $(OUT_DIR)\$(PROJECT_NAME).$(ARCH_NAME)$(DBG_NAME).exe )
         endif
     endif
 
