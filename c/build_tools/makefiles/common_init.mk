@@ -65,8 +65,6 @@ AUTO_GENERATED_FILES_DIR := $(APP_ROOT_DIR)/z_auto_generated_files
 OBJ_DIR    := $(APP_ROOT_DIR)/zOBJ
 OUT_DIR    :=    $(APP_ROOT_DIR)/zOUT
 OUT_DIR_HISTORY    :=    $(APP_ROOT_DIR)/zOUT_history
-DEFAULT_GIT_IGNORE_FILE    :=    $(COMMON_ROOT_DIR)/build_tools/default.project.gitignore
-CURRENT_GIT_IGNORE_FILE    :=    $(APP_ROOT_DIR)/.gitignore
 
 MKDIR=mkdir    
 
@@ -87,8 +85,6 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
     TOOLS_ROOT_DIR := $(subst /,\,$(TOOLS_ROOT_DIR))
     TOOLS_ROOT_DIR := $(TOOLS_ROOT_DIR)\windows
     COMMON_DIR := $(subst /,\,$(COMMON_DIR))
-    DEFAULT_GIT_IGNORE_FILE := $(subst /,\,$(DEFAULT_GIT_IGNORE_FILE))
-    CURRENT_GIT_IGNORE_FILE := $(subst /,\,$(CURRENT_GIT_IGNORE_FILE))
 
     CRC32CALC    =    $(TOOLS_ROOT_DIR)\crc32\crc32.exe
 
@@ -125,8 +121,6 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
 
     COMMON_PARTITION := $(firstword $(subst :, ,$(COMMON_DIR))):
     APP_PARTITION := $(firstword $(subst :, ,$(APP_ROOT_DIR))):
-    SHELL_GO_TO_COMMON_GIT_DIR :=cd $(COMMON_DIR) & $(COMMON_PARTITION) & 
-    SHELL_GO_TO_COMMON_PRIVATE_GIT_DIR :=cd $(COMMON_PRIVATE_DIR) & $(COMMON_PARTITION) & 
     RM        :=rmdir /S /Q
     CP        :=copy /Y
 
@@ -177,8 +171,6 @@ else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX)
 
     CRC32CALC    =    cksum 
 
-    SHELL_GO_TO_COMMON_GIT_DIR :=cd $(COMMON_DIR) ;
-    SHELL_GO_TO_COMMON_PRIVATE_GIT_DIR :=cd $(COMMON_PRIVATE_DIR) ;
     MAKE     :=     make
     RM        :=rm -rf
     CP        :=cp -f

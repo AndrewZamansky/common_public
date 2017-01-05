@@ -41,9 +41,14 @@ menu "Software Packages"
 source "$COMMON_DIR_PATH/c/sw_packages/Kconfig"
 endmenu
 
-menu "Private Packages"
+menuconfig USE_COMMON_PRIVATE_PACKAGES
+	bool   "use common private packages"
+	default n
+
+if 	USE_COMMON_PRIVATE_PACKAGES
 source "$COMMON_DIR_PATH/../common_private/Kconfig"
-endmenu
+endif
+
 
 config CPU_CALCULATE_CRC32
 	bool   "calculate crc32 of output binary"
