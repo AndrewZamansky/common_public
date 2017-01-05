@@ -25,8 +25,8 @@ void auto_init_api(void)
 {
 	auto_init_struct_t *p_curr_auto_init;
 
-	p_curr_auto_init = &init_functions_section_start;
-	while(p_curr_auto_init < &init_functions_section_end)
+	p_curr_auto_init = (auto_init_struct_t *)&init_functions_section_start;
+	while(p_curr_auto_init < (auto_init_struct_t *)&init_functions_section_end)
 	{
 		uint8_t increment_value;
 		if((int*)AUTO_INIT_MAGIC_NUMBER == p_curr_auto_init->magic_number)
