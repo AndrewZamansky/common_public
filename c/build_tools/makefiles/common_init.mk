@@ -30,16 +30,6 @@ else
     $(error !---- COMMON C \(common_public/c\) DIR NOT FOUND ----)
 endif
 
-#find root project directory  :
-ifneq ($(wildcard $(APP_ROOT_DIR)/../../apps),)
-    #RELATIVE_PROJECT_ROOT_PATH    :=    
-else ifneq ($(wildcard $(APP_ROOT_DIR)/../../../apps),)
-    RELATIVE_PROJECT_ROOT_PATH    :=..
-else ifneq ($(wildcard $(APP_ROOT_DIR)/../../../../apps),)
-    RELATIVE_PROJECT_ROOT_PATH    :=../..
-else
-   $(error !---- apps  DIR NOT FOUND ----)
-endif
 
 WORKSPACE_ROOT_DIR := $(patsubst $(APP_ROOT_DIR)/%,%,$(realpath $(COMMON_ROOT_DIR)/../..))
 WORKSPACE_NAME := $(notdir $(WORKSPACE_ROOT_DIR))
@@ -85,6 +75,7 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
     TOOLS_ROOT_DIR := $(subst /,\,$(TOOLS_ROOT_DIR))
     TOOLS_ROOT_DIR := $(TOOLS_ROOT_DIR)\windows
     COMMON_DIR := $(subst /,\,$(COMMON_DIR))
+    COMMON_PRIVATE_DIR := $(subst /,\,$(COMMON_PRIVATE_DIR))
 
     CRC32CALC    =    $(TOOLS_ROOT_DIR)\crc32\crc32.exe
 
@@ -181,6 +172,10 @@ else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX)
 
 endif
 
+ifeq ("$(wildcard $(COMMON_PRIVATE_DIR))","")#if common_private directory dont exists then create a dummy one
+    DUMMY:=$(shell $(MKDIR)  $(COMMON_PRIVATE_DIR)) # create   $(COMMON_PRIVATE_DIR)
+    DUMMY:=$(shell config PRIVATE_DUMMY>$(COMMON_PRIVATE_DIR)/Kconfig) # create   $(COMMON_PRIVATE_DIR)
+endif
 
 #dont enter if we are bulding .config file now
 ifeq ($(findstring menuconfig,$(MAKECMDGOALS)),)  #dont enter if we are bulding .config file now
