@@ -39,7 +39,7 @@ static	void *dsp_buffers_pool = NULL;
 /***********   local variables    **************/
 
 uint8_t size_of_module_array = 0;
-dsp_module_t *dsp_module_array;
+dsp_module_t *dsp_module_array = NULL;
 
 /*---------------------------------------------------------------------------------------------------------*/
 /* Function:        my_float_memcpy                                                                          */
@@ -105,6 +105,23 @@ void _DSP_REGISTER_NEW_MODULE(char *a_module_name, dsp_ioctl_func_t a_ioctle_fun
 
 
 /*---------------------------------------------------------------------------------------------------------*/
+/* Function:        DSP_DELETE_MODULES                                                                          */
+/*                                                                                                         */
+/* Parameters:                                                                                             */
+/*                                                                                         */
+/*                                                                                                  */
+/* Returns:                                                                                      */
+/* Side effects:                                                                                           */
+/* Description:                                                                                            */
+/*                                                            						 */
+/*---------------------------------------------------------------------------------------------------------*/
+void DSP_DELETE_MODULES()
+{
+	free(dsp_module_array);
+	dsp_module_array = NULL;
+}
+
+/*---------------------------------------------------------------------------------------------------------*/
 /* Function:        DSP_CREATE_CHAIN                                                                          */
 /*                                                                                                         */
 /* Parameters:                                                                                             */
@@ -137,6 +154,34 @@ dsp_chain_t *DSP_CREATE_CHAIN(size_t max_num_of_dsp_modules , void *adsp_buffers
 	return pdsp_chain;
 }
 
+/*---------------------------------------------------------------------------------------------------------*/
+/* Function:        DSP_DELETE_CHAIN                                                                          */
+/*                                                                                                         */
+/* Parameters:                                                                                             */
+/*                                                                                         */
+/*                                                                                                  */
+/* Returns:                                                                                      */
+/* Side effects:                                                                                           */
+/* Description:                                                                                            */
+/*                                                            						 */
+/*---------------------------------------------------------------------------------------------------------*/
+void DSP_DELETE_CHAIN(dsp_chain_t * ap_chain)
+{
+	size_t i;
+	size_t occupied_dsp_modules;
+	pdsp_descriptor *dsp_module;
+
+	occupied_dsp_modules = ap_chain->occupied_dsp_modules;
+	dsp_module = ap_chain->dsp_chain;
+	for(i=0 ; i < occupied_dsp_modules ; i++)
+	{
+		DSP_IOCTL_0_PARAMS(*dsp_module , IOCTL_DSP_DELETE );
+		free((*dsp_module)->handle);
+		dsp_module++;
+	}
+	free(ap_chain->dsp_chain);
+	free(ap_chain);
+}
 /*---------------------------------------------------------------------------------------------------------*/
 /* Function:        DSP_ADD_MODULE_TO_CHAIN                                                                          */
 /*                                                                                                         */

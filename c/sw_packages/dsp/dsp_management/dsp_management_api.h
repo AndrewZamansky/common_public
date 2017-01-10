@@ -29,6 +29,7 @@ typedef struct
 typedef enum
 {
 	IOCTL_DSP_INIT,
+	IOCTL_DSP_DELETE,
 	IOCTL_DSP_LAST_COMMON_IOCTL
 }common_dsp_ioctl_t;
 
@@ -134,6 +135,8 @@ void _DSP_REGISTER_NEW_MODULE(char *a_module_name, dsp_ioctl_func_t a_ioctle_fun
 #define DSP_REGISTER_NEW_MODULE(a_module_name, a_ioctle_func , a_dsp_func , a_module_data_size)	\
 		_DSP_REGISTER_NEW_MODULE(a_module_name, a_ioctle_func , a_dsp_func , sizeof(a_module_data_size))
 
+void DSP_DELETE_MODULES();
+
 uint8_t DSP_CREATE_INTER_MODULES_LINK(pdsp_descriptor source_dsp,DSP_OUTPUT_PADS_t source_dsp_pad,
 		pdsp_descriptor sink_dsp,DSP_INPUT_PADS_t sink_dsp_pad);
 
@@ -147,6 +150,7 @@ void DSP_SET_CHAIN_INPUT_BUFFER(dsp_chain_t *ap_chain,DSP_INPUT_PADS_t sink_dsp_
 void DSP_SET_CHAIN_OUTPUT_BUFFER(dsp_chain_t *ap_chain,DSP_OUTPUT_PADS_t source_dsp_pad, void *buffer);
 
 dsp_chain_t *DSP_CREATE_CHAIN(size_t max_num_of_dsp_modules , void *adsp_buffers_pool);
+void DSP_DELETE_CHAIN(dsp_chain_t * ap_chain);
 void DSP_ADD_MODULE_TO_CHAIN(dsp_chain_t *ap_chain, char *a_module_name,  pdsp_descriptor dsp_module);
 
 void DSP_PROCESS(pdsp_descriptor dsp , size_t	len);

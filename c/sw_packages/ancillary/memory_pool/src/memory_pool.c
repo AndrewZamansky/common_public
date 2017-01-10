@@ -69,9 +69,9 @@ void *memory_pool_malloc(void *memory_pool_handle)
 /*---------------------------------------------------------------------------------------------------------*/
 void memory_pool_free(void *memory_pool_handle , void *mem)
 {
-	size_t	i = INSTANCE(memory_pool_handle)->num_of_chunks;
+	size_t	num_of_chunks = INSTANCE(memory_pool_handle)->num_of_chunks;
 	xMemPool_t *pMemPool = INSTANCE(memory_pool_handle)->pool_chunks;
-	while( i--)
+	while( num_of_chunks--)
 	{
 		if(mem == pMemPool->mem)
 		{
@@ -119,4 +119,34 @@ void *memory_pool_init(size_t num_of_chunks,size_t size_of_chunk)
 	}
 
 	return pInstance ;
+}
+
+
+/*---------------------------------------------------------------------------------------------------------*/
+/* Function:        memory_pool_delete                                                                          */
+/*                                                                                                         */
+/* Parameters:                                                                                             */
+/*                                                                                         */
+/*                                                                                                  */
+/* Returns:                                                                                      */
+/* Side effects:                                                                                           */
+/* Description:                                                                                            */
+/*                                                            						 */
+/*---------------------------------------------------------------------------------------------------------*/
+void memory_pool_delete(void *memory_pool_handle)
+{
+	xMemPool_t *pool_chunk;
+	size_t	num_of_chunks;
+	xMemPool_t *pMemPool;
+
+	num_of_chunks = INSTANCE(memory_pool_handle)->num_of_chunks;
+	pool_chunk = INSTANCE(memory_pool_handle)->pool_chunks;
+	pMemPool = pool_chunk;
+	while( num_of_chunks--)
+	{
+		free(pMemPool->mem);
+		pMemPool++;
+	}
+	free(pool_chunk);
+	free(memory_pool_handle);
 }
