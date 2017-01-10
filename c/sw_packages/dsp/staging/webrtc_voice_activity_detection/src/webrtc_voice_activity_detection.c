@@ -122,7 +122,7 @@ uint8_t webrtc_voice_activity_detection_ioctl(pdsp_descriptor apdsp ,const uint8
 				int agressivness;
 				agressivness = *(int*)aIoctl_param1;
 				handle->agressivness = agressivness;
-				if ((0 < agressivness) && (3 > agressivness))
+				if ((0 <= agressivness) && (3 >= agressivness))
 				{
 					WebRtcVad_set_mode(vad_handle , agressivness);
 				}
