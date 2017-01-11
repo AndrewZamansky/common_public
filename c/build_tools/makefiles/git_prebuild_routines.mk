@@ -83,6 +83,12 @@ ifeq ($(findstring $(PROJECT_NAME),$(CURR_GIT_BRANCH)),)      # if not found $(P
     $(error )
 endif
 
+
+
+
+
+
+ifdef USE_OLD_GIT_TEST
 #test if current branch of common_public is the same as current branch of application 
 CURR_COMMON_PUBLIC_GIT_BRANCH := $(shell $(SHELL_GO_TO_COMMON_PUBLIC_GIT_DIR) git rev-parse --abbrev-ref HEAD)
 CURR_COMMON_PUBLIC_GIT_BRANCH := $(patsubst heads/%,%,$(CURR_COMMON_PUBLIC_GIT_BRANCH))#removing heads/ if exists
@@ -118,6 +124,10 @@ ifneq ($(sort $(filter $(CURR_GIT_BRANCH),$(CURR_COMMON_PUBLIC_GIT_BRANCH))),$(C
         $(error  )
     endif
 endif
+endif
+
+
+
 
 ifdef CONFIG_USE_COMMON_PRIVATE_PACKAGES
     #test if current branch of common_private is the same as current branch of application 
