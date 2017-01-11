@@ -50,3 +50,6 @@ config UBOOT_CMD_SPI_FORMAT
 							
 endmenu
 
+config UBOOT_GIT_COMMIT_HASH
+	string "uboot git commit hash"
+	default ""

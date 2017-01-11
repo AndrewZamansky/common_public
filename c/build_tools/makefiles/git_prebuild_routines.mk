@@ -79,29 +79,17 @@ endif
 
 
 
-ifeq ("",$(CONFIG_COMMON_PUBLIC_GIT_COMMIT_HASH))
-    $(info !--- CONFIG_COMMON_PUBLIC_GIT_COMMIT_HASH should contain valid git hash)
-    $(error  )
-endif
-
-#test if current branch of common_public is the same as current branch of application
+#test if current commit and branch of common_public is the same as required by application
 CURR_GIT_REPOSITORY_DIR :=$(COMMON_DIR)
-CURR_GIT_REQUESTED_COMMIT :=$(CONFIG_COMMON_PUBLIC_GIT_COMMIT_HASH)
+CURR_GIT_COMMIT_HASH_VARIABLE :=CONFIG_COMMON_PUBLIC_GIT_COMMIT_HASH
 include $(MAKEFILE_DEFS_ROOT_DIR)/git_prebuild_repo_check.mk
 
 
-
 ifdef CONFIG_USE_COMMON_PRIVATE_PACKAGES
-
-    ifeq ("",$(CONFIG_COMMON_PRIVATE_GIT_COMMIT_HASH))
-        $(info !--- CONFIG_COMMON_PRIVATE_GIT_COMMIT_HASH should contain valid git hash)
-        $(error  )
-    endif
-    #test if current branch of common_private is the same as current branch of application 
+    #test if current commit and branch of common_private is the same as required by application
     CURR_GIT_REPOSITORY_DIR :=$(COMMON_PRIVATE_DIR)
-    CURR_GIT_REQUESTED_COMMIT :=$(CONFIG_COMMON_PRIVATE_GIT_COMMIT_HASH)
+    CURR_GIT_COMMIT_HASH_VARIABLE :=CONFIG_COMMON_PRIVATE_GIT_COMMIT_HASH
     include $(MAKEFILE_DEFS_ROOT_DIR)/git_prebuild_repo_check.mk
-    
 else
     $(info ---- common private packages not in use)
 endif
