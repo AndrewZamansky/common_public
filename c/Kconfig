@@ -1,8 +1,8 @@
 #
 
 config PROJECT_NAME
-    string "Project Name"
-    default ""
+	string "Project Name"
+	default ""
     
 choice
 	prompt "Architecture"
@@ -54,4 +54,6 @@ config CPU_CALCULATE_CRC32
 	bool   "calculate crc32 of output binary"
 	default n
 
-    		
+config COMMON_PUBLIC_GIT_COMMIT_HASH
+	string "common public git commit hash"
+	default ""

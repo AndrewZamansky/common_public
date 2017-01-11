@@ -22,7 +22,6 @@ else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX)
     SHELL_GO_TO_COMMON_PUBLIC_GIT_DIR :=cd $(COMMON_DIR) ;
     SHELL_GO_TO_COMMON_PRIVATE_GIT_DIR :=cd $(COMMON_PRIVATE_DIR) ;
 
-    GIT_EXISTANCE_CHECK := $(shell git 2>&1)
     ifneq ($(findstring command not found,$(GIT_EXISTANCE_CHECK)),)
         SYSTEM_GIT_NOT_EXISTS := y
     endif
@@ -43,8 +42,11 @@ ifeq ($(findstring y,$(SYSTEM_GIT_NOT_EXISTS)),y)
 
     ifeq ("$(wildcard $(GIT_DIR))","")
         $(info !--- portable git does not exist also)
-        $(info !--- install git on your system )
-        $(info !--- or download portable git and put it to $(GIT_DIR))
+        $(info !--- install git on your system)
+        ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
+            $(info !--- and make sure that system PATH contain <GIT_PATH>\Git\cmd and <GIT_PATH>\Git\bin)
+        endif
+        $(info !--- OR download portable git and put it to $(GIT_DIR))
         $(info !--- make sure that git-cmd.exe file is located in $(GIT_DIR)/  after unpacking   )
         $(error )
     endif
