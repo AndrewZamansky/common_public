@@ -9,18 +9,12 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
 
     DEFAULT_GIT_IGNORE_FILE := $(subst /,\,$(DEFAULT_GIT_IGNORE_FILE))
     CURRENT_GIT_IGNORE_FILE := $(subst /,\,$(CURRENT_GIT_IGNORE_FILE))
-    SHELL_GO_TO_COMMON_PUBLIC_GIT_DIR :=cd $(COMMON_DIR) & $(COMMON_PARTITION) & 
-    SHELL_GO_TO_COMMON_PRIVATE_GIT_DIR :=cd $(COMMON_PRIVATE_DIR) & $(COMMON_PARTITION) & 
-
 
     ifneq ($(findstring 'git' is not recognized as,$(GIT_EXISTANCE_CHECK)),)
         SYSTEM_GIT_NOT_EXISTS := y
     endif
 
 else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX)
-
-    SHELL_GO_TO_COMMON_PUBLIC_GIT_DIR :=cd $(COMMON_DIR) ;
-    SHELL_GO_TO_COMMON_PRIVATE_GIT_DIR :=cd $(COMMON_PRIVATE_DIR) ;
 
     ifneq ($(findstring command not found,$(GIT_EXISTANCE_CHECK)),)
         SYSTEM_GIT_NOT_EXISTS := y
@@ -71,7 +65,7 @@ CURR_APPLICATION_GIT_BRANCH := $(patsubst heads/%,%,$(CURR_APPLICATION_GIT_BRANC
 ifneq ($(findstring ambiguous argument 'HEAD',$(CURR_APPLICATION_GIT_BRANCH)),)
     $(info !--- git error  :   $(CURR_APPLICATION_GIT_BRANCH))
     $(info !--- maybe branch was not created after git initialization )
-    $(info !--- in this case create branch you can run following comands to add all files in ):)
+    $(info !--- in this case create branch by running following command [ it will add all files in directory ] :)
     $(info !--- $(CD) $(APP_ROOT_DIR) $(SHELL_CMD_DELIMITER) git add . & git commit -m "initial commit")
     $(error )
 endif
@@ -85,6 +79,10 @@ endif
 
 
 
+ifeq ("",$(CONFIG_COMMON_PUBLIC_GIT_COMMIT_HASH))
+    $(info !--- CONFIG_COMMON_PUBLIC_GIT_COMMIT_HASH should contain valid git hash)
+    $(error  )
+endif
 
 #test if current branch of common_public is the same as current branch of application
 CURR_GIT_REPOSITORY_DIR :=$(COMMON_DIR)
@@ -92,83 +90,18 @@ CURR_GIT_REQUESTED_COMMIT :=$(CONFIG_COMMON_PUBLIC_GIT_COMMIT_HASH)
 include $(MAKEFILE_DEFS_ROOT_DIR)/git_prebuild_repo_check.mk
 
 
-ifdef USE_OLD_GIT_TEST
-CURR_COMMON_PUBLIC_GIT_BRANCH := $(shell $(SHELL_GO_TO_COMMON_PUBLIC_GIT_DIR) git rev-parse --abbrev-ref HEAD)
-CURR_COMMON_PUBLIC_GIT_BRANCH := $(patsubst heads/%,%,$(CURR_COMMON_PUBLIC_GIT_BRANCH))#removing heads/ if exists
-ifneq ($(sort $(filter $(CURR_APPLICATION_GIT_BRANCH),$(CURR_COMMON_PUBLIC_GIT_BRANCH))),$(CURR_APPLICATION_GIT_BRANCH))#if  $(CURR_APPLICATION_GIT_BRANCH) is not in $(SHELL_OUTPUT)
-    SHELL_OUTPUT := $(shell $(SHELL_GO_TO_COMMON_PUBLIC_GIT_DIR) git status --porcelain 2>&1)
-    ERROR_MESSAGE := M 
-    ifeq ($(findstring $(ERROR_MESSAGE),$(SHELL_OUTPUT)),$(ERROR_MESSAGE))
-        $(info  !--- git error : commit all changes to common_public git($(COMMON_DIR)) before changing branch or project)
-        $(info  !--- current application git branch :   $(CURR_APPLICATION_GIT_BRANCH) )
-        $(info  !--- current common_public git branch :   $(CURR_COMMON_PUBLIC_GIT_BRANCH) )
-        $(error  )
-    endif
-    ERROR_MESSAGE := D #??
-    ifeq ($(findstring $(ERROR_MESSAGE),$(SHELL_OUTPUT)),$(ERROR_MESSAGE))
-        $(info  !--- git error : commit all changes to common_public git)
-        $(error  )
-    endif
-
-    #test if current application branch name exists in common_public
-    SHELL_OUTPUT := $(shell $(SHELL_GO_TO_COMMON_PUBLIC_GIT_DIR) git branch 2>&1)
-    CURR_APPLICATION_GIT_BRANCH:=$(patsubst heads/%,%,$(CURR_APPLICATION_GIT_BRANCH))
-    ifneq ($(sort $(filter $(CURR_APPLICATION_GIT_BRANCH),$(SHELL_OUTPUT))),$(CURR_APPLICATION_GIT_BRANCH))#if  $(CURR_APPLICATION_GIT_BRANCH) is in $(SHELL_OUTPUT)
-        $(info !--- git error : branch $(CURR_APPLICATION_GIT_BRANCH) not found in common_public git . create it)
-        $(info !--- in case that this git is just created run following comand in common_public directory:)
-        $(info !--- $(SHELL_GO_TO_COMMON_PUBLIC_GIT_DIR) git branch $(CURR_APPLICATION_GIT_BRANCH))
-        $(error  )
-    else
-       #for now we are doing manual checkout
-       #SHELL_OUTPUT := $(shell $(SHELL_GO_TO_COMMON_PUBLIC_GIT_DIR) git checkout $(CURR_APPLICATION_GIT_BRANCH) 2>&1)
-        $(info !--- checkout $(CURR_APPLICATION_GIT_BRANCH) manually in common_public git)
-        $(info !--- you can run following comand in common_public directory:)
-        $(info !--- $(SHELL_GO_TO_COMMON_PUBLIC_GIT_DIR) git checkout $(CURR_APPLICATION_GIT_BRANCH))
-        $(error  )
-    endif
-endif
-endif
-
-
-
 
 ifdef CONFIG_USE_COMMON_PRIVATE_PACKAGES
-    #test if current branch of common_private is the same as current branch of application 
-    CURR_COMMON_PRIVATE_GIT_BRANCH := $(shell $(SHELL_GO_TO_COMMON_PRIVATE_GIT_DIR) git rev-parse --abbrev-ref HEAD)
-    CURR_COMMON_PRIVATE_GIT_BRANCH := $(patsubst heads/%,%,$(CURR_COMMON_PRIVATE_GIT_BRANCH))#removing heads/ if exists
-    ifneq ($(sort $(filter $(CURR_APPLICATION_GIT_BRANCH),$(CURR_COMMON_PRIVATE_GIT_BRANCH))),$(CURR_APPLICATION_GIT_BRANCH))#if  $(CURR_APPLICATION_GIT_BRANCH) is not in $(SHELL_OUTPUT)
-        SHELL_OUTPUT := $(shell $(SHELL_GO_TO_COMMON_PRIVATE_GIT_DIR) git status --porcelain 2>&1)
-        ERROR_MESSAGE := M 
-        ifeq ($(findstring $(ERROR_MESSAGE),$(SHELL_OUTPUT)),$(ERROR_MESSAGE))
-            $(info  !--- git error : commit all changes to common_private git($(COMMON_PRIVATE_DIR)) before changing branch or project)
-            $(info  !--- current application git branch :   $(CURR_APPLICATION_GIT_BRANCH) )
-            $(info  !--- current common_private git branch :   $(CURR_COMMON_PRIVATE_GIT_BRANCH) )
-            $(error  )
-        endif
-        ERROR_MESSAGE := D #??
-        ifeq ($(findstring $(ERROR_MESSAGE),$(SHELL_OUTPUT)),$(ERROR_MESSAGE))
-            $(info  !--- git error : commit all changes to common_private git)
-            $(error  )
-        endif
 
-        #test if current application branch name exists in common_private
-        SHELL_OUTPUT := $(shell $(SHELL_GO_TO_COMMON_PRIVATE_GIT_DIR) git branch 2>&1)
-        CURR_APPLICATION_GIT_BRANCH:=$(patsubst heads/%,%,$(CURR_APPLICATION_GIT_BRANCH))
-        ifneq ($(sort $(filter $(CURR_APPLICATION_GIT_BRANCH),$(SHELL_OUTPUT))),$(CURR_APPLICATION_GIT_BRANCH))#if  $(CURR_APPLICATION_GIT_BRANCH) is in $(SHELL_OUTPUT)
-            $(info !--- git error : branch $(CURR_APPLICATION_GIT_BRANCH) not found in common_private git . create it)
-            $(info !--- in case that this git is just created run following comand in common_private directory:)
-            $(info !--- $(SHELL_GO_TO_COMMON_PRIVATE_GIT_DIR) git branch $(CURR_APPLICATION_GIT_BRANCH))
-            $(error  )
-        else
-           #for now we are doing manual checkout
-           #SHELL_OUTPUT := $(shell $(SHELL_GO_TO_COMMON_PRIVATE_GIT_DIR) git checkout $(CURR_APPLICATION_GIT_BRANCH) 2>&1)
-            $(info !--- checkout $(CURR_APPLICATION_GIT_BRANCH) manually in common_private git)
-            $(info !--- you can run following comand in common_private directory:)
-            $(info !--- $(SHELL_GO_TO_COMMON_PRIVATE_GIT_DIR) git checkout $(CURR_APPLICATION_GIT_BRANCH))
-            $(error  )
-        endif
+    ifeq ("",$(CONFIG_COMMON_PRIVATE_GIT_COMMIT_HASH))
+        $(info !--- CONFIG_COMMON_PRIVATE_GIT_COMMIT_HASH should contain valid git hash)
+        $(error  )
     endif
-
+    #test if current branch of common_private is the same as current branch of application 
+    CURR_GIT_REPOSITORY_DIR :=$(COMMON_PRIVATE_DIR)
+    CURR_GIT_REQUESTED_COMMIT :=$(CONFIG_COMMON_PRIVATE_GIT_COMMIT_HASH)
+    include $(MAKEFILE_DEFS_ROOT_DIR)/git_prebuild_repo_check.mk
+    
 else
     $(info ---- common private packages not in use)
 endif
