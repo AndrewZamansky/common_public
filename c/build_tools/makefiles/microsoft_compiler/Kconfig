@@ -2,11 +2,15 @@ menu "Microsoft compiler options"
 
 choice
 	prompt "output type"
-	default MCC_OUTPUT_TYPE_EXE
+	default MCC_OUTPUT_TYPE_CONSOLE_APPLICATION
 
-config MCC_OUTPUT_TYPE_EXE
+config MCC_OUTPUT_TYPE_WINDOWS_APPLICATION
 	depends on !JUCE_VST_PLUGIN
-	bool "exe"
+	bool "windows application"
+
+config MCC_OUTPUT_TYPE_CONSOLE_APPLICATION
+	depends on !JUCE_VST_PLUGIN
+	bool "console application"
 
 config MCC_OUTPUT_TYPE_DLL
 	bool "dll"

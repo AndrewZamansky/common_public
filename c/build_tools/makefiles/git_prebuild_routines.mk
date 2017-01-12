@@ -63,6 +63,7 @@ endif
 CURR_APPLICATION_GIT_BRANCH := $(shell git rev-parse --abbrev-ref HEAD 2>&1)
 CURR_APPLICATION_GIT_BRANCH := $(patsubst heads/%,%,$(CURR_APPLICATION_GIT_BRANCH))#removing heads/ if exists
 ifneq ($(findstring ambiguous argument 'HEAD',$(CURR_APPLICATION_GIT_BRANCH)),)
+    $(info !--- git repository test failed : $(APP_ROOT_DIR))
     $(info !--- git error  :   $(CURR_APPLICATION_GIT_BRANCH))
     $(info !--- maybe branch was not created after git initialization )
     $(info !--- in this case create branch by running following command [ it will add all files in directory ] :)
@@ -70,6 +71,7 @@ ifneq ($(findstring ambiguous argument 'HEAD',$(CURR_APPLICATION_GIT_BRANCH)),)
     $(error )
 endif
 ifeq ($(findstring $(PROJECT_NAME),$(CURR_APPLICATION_GIT_BRANCH)),)      # if not found $(PROJECT_NAME) in $(CURR_APPLICATION_GIT_BRANCH)
+    $(info !--- git repository test failed : $(APP_ROOT_DIR))
     $(info !--- error : branch names must be of type $(PROJECT_NAME) or $(PROJECT_NAME)<_vVersion>)
     $(info !--- but current branch name is $(CURR_APPLICATION_GIT_BRANCH))
     $(info !--- in case that this git is just created run following comand  :)
