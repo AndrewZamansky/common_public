@@ -2,72 +2,40 @@
 DEFAULT_GIT_IGNORE_FILE    :=    $(COMMON_ROOT_DIR)/build_tools/default.project.gitignore
 CURRENT_GIT_IGNORE_FILE    :=    $(APP_ROOT_DIR)/.gitignore
 
+GIT_ROOT_DIR:=
 
-GIT_EXISTANCE_CHECK := $(shell git 2>&1)
-SYSTEM_GIT_NOT_EXISTS :=n
+####### test for existence of git and put its directory name in GIT_ROOT_DIR #####
+SEARCHED_TOOL:=git
+SEARCHED_DIR_VARIABLE:=GIT_ROOT_DIR
+MANUALLY_DEFINED_DIR_VARIABLE:=REDEFINE_GIT_ROOT_DIR
 ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
-
-    DEFAULT_GIT_IGNORE_FILE := $(subst /,\,$(DEFAULT_GIT_IGNORE_FILE))
-    CURRENT_GIT_IGNORE_FILE := $(subst /,\,$(CURRENT_GIT_IGNORE_FILE))
-
-    ifneq ($(findstring 'git' is not recognized as,$(GIT_EXISTANCE_CHECK)),)
-        SYSTEM_GIT_NOT_EXISTS := y
-    endif
-
+    TEST_FILE_IN_SEARCHED_DIR:=bin\git.exe
 else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX)
-
-    ifneq ($(findstring command not found,$(GIT_EXISTANCE_CHECK)),)
-        SYSTEM_GIT_NOT_EXISTS := y
-    endif
-
+    TEST_FILE_IN_SEARCHED_DIR:=bin/git
 endif
+include $(MAKEFILE_DEFS_ROOT_DIR)/tool_existence_check.mk
+####### end of git existence test #####
+
+        
+GIT ="$(GIT_ROOT_DIR)\bin\git.exe"
 
 
-ifeq ($(findstring y,$(SYSTEM_GIT_NOT_EXISTS)),y)
-
-    $(info ---- system git does not exist .  trying portable git)
-    ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
-        GIT_DIR =$(TOOLS_ROOT_DIR)\PortableGit
-        GIT =$(GIT_DIR)\bin\git
-    else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX)
-        GIT_DIR =$(TOOLS_ROOT_DIR)/linux/PortableGit    
-        GIT =$(GIT_DIR)/bin/git
-    endif
-
-    ifeq ("$(wildcard $(GIT_DIR))","")
-        $(info !--- portable git does not exist also)
-        $(info !--- install git on your system)
-        ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
-            $(info !--- and make sure that system PATH contain <GIT_PATH>\Git\cmd and <GIT_PATH>\Git\bin)
-        endif
-        $(info !--- OR download portable git and put it to $(GIT_DIR))
-        $(info !--- make sure that git-cmd.exe file is located in $(GIT_DIR)/  after unpacking   )
-        $(error )
-    endif
-
-    $(info ---- portable git found)
-
-else
-    $(info ---- system git found)
-    GIT =git
-endif
-
-
+## test for validity of application git repository
 GIT_DIR := $(firstword $(wildcard ./.git))
 ifeq ($(findstring ./.git,$(GIT_DIR)),)      # if not found ./.git in $(GIT_DIR)
     $(info !--- error : create git repository of project . for example by running following command : )
-    $(info !--- $(CD) $(APP_ROOT_DIR) $(SHELL_CMD_DELIMITER) git init $(SHELL_CMD_DELIMITER) $(CP) $(DEFAULT_GIT_IGNORE_FILE) $(CURRENT_GIT_IGNORE_FILE))
+    $(info !--- $(CD) $(APP_ROOT_DIR) $(SHELL_CMD_DELIMITER) $(GIT) init $(SHELL_CMD_DELIMITER) $(CP) $(DEFAULT_GIT_IGNORE_FILE) $(CURRENT_GIT_IGNORE_FILE))
     $(error )
 endif
 
-CURR_APPLICATION_GIT_BRANCH := $(shell git rev-parse --abbrev-ref HEAD 2>&1)
+CURR_APPLICATION_GIT_BRANCH := $(shell $(GIT) rev-parse --abbrev-ref HEAD 2>&1)
 CURR_APPLICATION_GIT_BRANCH := $(patsubst heads/%,%,$(CURR_APPLICATION_GIT_BRANCH))#removing heads/ if exists
 ifneq ($(findstring ambiguous argument 'HEAD',$(CURR_APPLICATION_GIT_BRANCH)),)
     $(info !--- git repository test failed : $(APP_ROOT_DIR))
     $(info !--- git error  :   $(CURR_APPLICATION_GIT_BRANCH))
     $(info !--- maybe branch was not created after git initialization )
     $(info !--- in this case create branch by running following command [ it will add all files in directory ] :)
-    $(info !--- $(CD) $(APP_ROOT_DIR) $(SHELL_CMD_DELIMITER) git add . & git commit -m "initial commit")
+    $(info !--- $(CD) $(APP_ROOT_DIR) $(SHELL_CMD_DELIMITER) $(GIT) add . & $(GIT) commit -m "initial commit")
     $(error )
 endif
 ifeq ($(findstring $(PROJECT_NAME),$(CURR_APPLICATION_GIT_BRANCH)),)      # if not found $(PROJECT_NAME) in $(CURR_APPLICATION_GIT_BRANCH)
@@ -75,9 +43,10 @@ ifeq ($(findstring $(PROJECT_NAME),$(CURR_APPLICATION_GIT_BRANCH)),)      # if n
     $(info !--- error : branch names must be of type $(PROJECT_NAME) or $(PROJECT_NAME)<_vVersion>)
     $(info !--- but current branch name is $(CURR_APPLICATION_GIT_BRANCH))
     $(info !--- in case that this git is just created run following comand  :)
-    $(info !--- $(CD) $(APP_ROOT_DIR) $(SHELL_CMD_DELIMITER) git branch -m $(PROJECT_NAME))
+    $(info !--- $(CD) $(APP_ROOT_DIR) $(SHELL_CMD_DELIMITER) $(GIT) branch -m $(PROJECT_NAME))
     $(error )
 endif
+## end of test for validity of application git repository
 
 
 

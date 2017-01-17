@@ -39,17 +39,12 @@ ifeq ("$(wildcard $(EXTERNAL_SOURCE_ROOT_DIR))","")
     $(info !--- directory $(EXTERNAL_SOURCE_ROOT_DIR) dont exists . create it .)
     $(error )
 endif
-TOOLS_ROOT_DIR := $(patsubst %/,%,$(dir $(WORKSPACE_ROOT_DIR)))/tools
-ifeq ("$(wildcard $(TOOLS_ROOT_DIR))","")
-    $(info !--- directory $(TOOLS_ROOT_DIR) dont exists . create it .)
-    $(error )
-endif
+
 
 include $(WORKSPACE_ROOT_DIR)/workspace_config.mk
 
 DRIVERS_ROOT_DIR := $(COMMON_ROOT_DIR)/hw_drivers
 SW_PACKAGES_ROOT_DIR    :=    $(COMMON_ROOT_DIR)/sw_packages
-OS_ROOT_DIR    :=    $(COMMON_ROOT_DIR)/os
 
 AUTO_GENERATED_FILES_DIR := $(APP_ROOT_DIR)/z_auto_generated_files
 OBJ_DIR    := $(APP_ROOT_DIR)/zOBJ
@@ -64,6 +59,20 @@ COMMON_PRIVATE_DIR = $(WORKSPACE_ROOT_DIR)/common_private
 EMPTY:=
 SPACE:= $(EMPTY) $(EMPTY)
 
+####### test for existence of make and put its directory name in MAKE_DIR #####
+SEARCHED_TOOL:=make
+SEARCHED_DIR_VARIABLE:=MAKE_DIR
+MANUALLY_DEFINED_DIR_VARIABLE:=REDEFINE_MAKE_PROGRAM_DIR
+ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
+    TEST_FILE_IN_SEARCHED_DIR:=bin\make.exe
+else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX)
+    TEST_FILE_IN_SEARCHED_DIR:=bin/make
+endif
+include $(MAKEFILE_DEFS_ROOT_DIR)/tool_existence_check.mk
+####### end of make existence test #####
+
+MAKE :="$(MAKE_DIR)/bin/make"
+
 ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
 
     #replace backslash for slash
@@ -72,38 +81,12 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
     OUT_DIR := $(subst /,\,$(OUT_DIR))
     AUTO_GENERATED_FILES_DIR := $(subst /,\,$(AUTO_GENERATED_FILES_DIR))
     OUT_DIR_HISTORY := $(subst /,\,$(OUT_DIR_HISTORY))
-    TOOLS_ROOT_DIR := $(subst /,\,$(TOOLS_ROOT_DIR))
-    TOOLS_ROOT_DIR := $(TOOLS_ROOT_DIR)\windows
     COMMON_DIR := $(subst /,\,$(COMMON_DIR))
     COMMON_PRIVATE_DIR := $(subst /,\,$(COMMON_PRIVATE_DIR))
 
-    CRC32CALC    =    $(TOOLS_ROOT_DIR)\crc32\crc32.exe
-
-    ifdef REDEFINE_MAKE_PROGRAM_DIR
-        $(info  make  redefined to $(REDEFINE_MAKE_PROGRAM_DIR)\make)
-        ifeq ("$(wildcard $(REDEFINE_MAKE_PROGRAM_DIR))","")
-            $(info !--- make path $(REDEFINE_MAKE_PROGRAM_DIR) dont exists)
-            $(info !--- to use default make location remove/comment REDEFINE_MAKE_PROGRAM_DIR variable in  $(REDEFINE_MAKE_PROGRAM_DIR)/workspace_config.mk )
-            $(info !--- you can set customized make utility path in REDEFINE_MAKE_PROGRAM_DIR variable in $(REDEFINE_MAKE_PROGRAM_DIR)/workspace_config.mk )
-            $(error )
-        else
-            MAKE_DIR  :=$(REDEFINE_MAKE_PROGRAM_DIR)
-        endif
-    else
-        $(info  looking for GNU make in default location)
-        MAKE_DIR     :=$(TOOLS_ROOT_DIR)\make\make4.1
-        ifeq ("$(wildcard $(MAKE_DIR))","")
-            $(info !--- make path $(MAKE_DIR) dont exists )
-            $(info !--- download GNU make version 4.1 and unpack it to $(MAKE_DIR)  )
-            $(info !--- make sure that bin directory is located in $(MAKE_DIR)\  after unpacking  .  )
-            $(info !--- you can set customized make utility path in REDEFINE_MAKE_PROGRAM_DIR variable in $(REDEFINE_MAKE_PROGRAM_DIR)/workspace_config.mk )
-            $(error )
-        endif
-        MAKE_DIR := $(MAKE_DIR)/bin
-    endif
+#    CRC32CALC    =    $(TOOLS_ROOT_DIR)\crc32\crc32.exe
 
 
-    MAKE :=$(MAKE_DIR)\make
 
     CONFIG_SEMIHOSTING_UPLOADING_DIR :=c:\Temp
     ifeq ($(wildcard $(CONFIG_SEMIHOSTING_UPLOADING_DIR)),)         #if $(CONFIG_SEMIHOSTING_UPLOADING_DIR) dont exists then $(wildcard $(CONFIG_SEMIHOSTING_UPLOADING_DIR)) will produce empty string 
@@ -158,7 +141,6 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
 else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX)
 
     CONFIG_SEMIHOSTING_UPLOADING_DIR :=/tmp
-    TOOLS_ROOT_DIR := $(TOOLS_ROOT_DIR)/linux
 
     CRC32CALC    =    cksum 
 

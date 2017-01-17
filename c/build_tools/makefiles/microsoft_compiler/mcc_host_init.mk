@@ -5,112 +5,16 @@ ifndef COMMON_INIT_SECTION_THAT_SHOULD_RUN_ONCE
 
 MCC_ROOT_DIR :=
 
+####### test for existence of microsoft compiler and put its directory name in MCC_ROOT_DIR #####
+SEARCHED_TOOL:=visual studio
+SEARCHED_DIR_VARIABLE:=MCC_ROOT_DIR
+MANUALLY_DEFINED_DIR_VARIABLE:=REDEFINE_VISUAL_STUDIO_DIR
+TEST_FILE_IN_SEARCHED_DIR:=bin\cl.exe
+include $(MAKEFILE_DEFS_ROOT_DIR)/tool_existence_check.mk
+####### end of make existence test #####
 
+MCC_ROOT_DIR_wESCAPED_CHAR :=$(TEST_MCC_ROOT_DIR)
 
-ifdef REDEFINE_MICROSOFT_COMPILER_ROOT_DIR
-
-    $(info  microsoft compiler dir  redefined to $(REDEFINE_MICROSOFT_COMPILER_ROOT_DIR) )
-    ifeq ("$(wildcard $(REDEFINE_MICROSOFT_COMPILER_ROOT_DIR))","")
-        $(info !--- microsoft compiler path $(REDEFINE_MICROSOFT_COMPILER_ROOT_DIR) does not exists)
-        $(info !--- to use default microsoft compiler location remove/comment REDEFINE_MICROSOFT_COMPILER_ROOT_DIR variable in  $(WORKSPACE_ROOT_DIR)/workspace_config.mk )
-        $(info !--- you can set customized microsoft compiler path in REDEFINE_MICROSOFT_COMPILER_ROOT_DIR variable in $(WORKSPACE_ROOT_DIR)/workspace_config.mk )
-        $(error )
-    else
-        MCC_ROOT_DIR 	:= 	$(REDEFINE_MICROSOFT_COMPILER_ROOT_DIR)
-    endif
-
-else #for 'ifdef REDEFINE_MICROSOFT_COMPILER_ROOT_DIR'
-
-    ifdef  CONFIG_MCC_COMPILER_LOCATION_WINDOWS_DEFAULT
-
-        ifdef CONFIG_MCC_VISUAL_STUDIO_VERSION_2012
-            MCC_VS_VERSION=12.0
-            MCC_VS_VERSION_NAME=2012
-        else ifdef CONFIG_MCC_VISUAL_STUDIO_VERSION_2013
-            MCC_VS_VERSION=13.0
-            MCC_VS_VERSION_NAME=2013
-        else
-            $(info !--- microsoft visual studio version isn not defined)
-            $(error )
-        endif
-        ifndef MCC_NOT_FOUND
-           TEST_MCC_ROOT_DIR 	:= C:\Program\ Files\ (x86)\Microsoft\ Visual\ Studio\ $(MCC_VS_VERSION)\VC
-           ifeq ("$(wildcard $(TEST_MCC_ROOT_DIR))","")
-               $(info !--- $(TEST_MCC_ROOT_DIR) does not exists )
-               #$(info !--- (if needed you can change microsoft compiler version using menuconfig in "Building System" menu ))
-               MCC_NOT_FOUND :=1
-           endif
-        endif
-
-
-        ifdef MCC_NOT_FOUND
-            $(info !--- microsoft compiler does not exists )
-            $(info !--- download visual studio  $(MCC_VS_VERSION_NAME) and install to default location)
-            $(error )
-        endif
-
-        MCC_ARCH := $(subst \,,$(MCC_ARCH))
-        MCC_ROOT_DIR :=C:\Program Files (x86)\Microsoft Visual Studio $(MCC_VS_VERSION)\VC
-        MCC_ROOT_DIR_wESCAPED_CHAR :=$(TEST_MCC_ROOT_DIR)
-
-    else
-
-        TEST_MCC_ROOT_DIR 	:= $(TOOLS_ROOT_DIR)/mcc
-        ifeq ("$(wildcard $(TEST_MCC_ROOT_DIR)*)","")
-            $(info !--- $(TEST_MCC_ROOT_DIR) does not exists )
-            MCC_NOT_FOUND :=1
-        endif
-        
-        ifdef CONFIG_MCC_COMPILER_32
-            MCC_ARCH=x86_32_
-        else ifdef CONFIG_MCC_COMPILER_64
-            MCC_ARCH=x86_64_
-        else
-            $(info !--- microsoft compiler architecture not defined)
-            $(error )
-        endif
-
-
-        TEST_MCC_ROOT_DIR 	:= $(TOOLS_ROOT_DIR)/mcc_$(MCC_ARCH)
-        ifeq ("$(wildcard $(TEST_MCC_ROOT_DIR)*)","")
-            $(info !--- $(TEST_MCC_ROOT_DIR) does not exists )
-            $(info !--- microsoft compiler with specified architecture does not exists )
-            MCC_NOT_FOUND :=1
-        endif
-
-        ifdef CONFIG_MCC_VISUAL_STUDIO_VERSION_2012
-            MCC_VS_VERSION_NAME=2012
-        else ifdef CONFIG_MCC_VISUAL_STUDIO_VERSION_2013
-            MCC_VS_VERSION_NAME=2013
-        else
-            $(info !--- microsoft visual studio version isn not defined)
-            $(error )
-        endif
-        ifndef MCC_NOT_FOUND
-           TEST_MCC_ROOT_DIR 	:= $(TOOLS_ROOT_DIR)/mcc_$(MCC_ARCH)_$(MCC_VS_VERSION_NAME)
-           ifeq ("$(wildcard $(TEST_MCC_ROOT_DIR))","")
-               $(info !--- $(TEST_MCC_ROOT_DIR) does not exists )
-               $(info !--- microsoft compiler with specified version does not exists )
-               MCC_NOT_FOUND :=1
-           endif
-        endif
-
-
-        ifdef MCC_NOT_FOUND
-            TEST_MCC_ROOT_DIR 	:=  $(TOOLS_ROOT_DIR)/mcc_$(MCC_ARCH)_$(MCC_VS_VERSION_NAME)
-            $(info !--- mcc path $(TEST_MCC_ROOT_DIR) dont exists )
-            $(info !--- download microsoft compiler  $(MCC_VS_VERSION_NAME) and install to $(TEST_MCC_ROOT_DIR))
-            $(info !--- make sure bin and lib  folders is located in $(TEST_MCC_ROOT_DIR)/  after unpacking   )
-            $(info !--- or use set CONFIG_MCC_COMPILER_LOCATION_WINDOWS_DEFAULT in menuconfig   )
-            $(info !--- you can also set customized MCC path in REDEFINE_MICROSOFT_COMPILER_ROOT_DIR variable in $(WORKSPACE_ROOT_DIR)/workspace_config.mk )
-            $(error )
-        endif
-
-        MCC_ROOT_DIR :=  $(TOOLS_ROOT_DIR)/mcc_$(MCC_ARCH)_$(MCC_VS_VERSION_NAME)
-        MCC_ROOT_DIR_wESCAPED_CHAR :=$(TEST_MCC_ROOT_DIR)
-
-    endif
-endif
 
 ifdef CONFIG_USE_WINDOWS_KITS
 
@@ -133,9 +37,7 @@ endif
 
 #clear PATH environment variable to get rid of different microsoft compiler conflicts
 MCC_BIN_DIR	:=$(MCC_ROOT_DIR)\bin
-MCC_BIN_DIR_wESCAPED_CHAR :=$(MCC_ROOT_DIR_wESCAPED_CHAR)
 MCC_BIN_DIR := $(subst /,\,$(MCC_BIN_DIR))
-MCC_BIN_DIR_wESCAPED_CHAR := $(subst /,\,$(MCC_BIN_DIR_wESCAPED_CHAR))
 COMPILER_INCLUDE_DIR 	:= $(MCC_ROOT_DIR)/include
 MCC_LIB_ROOT_DIR  		:= $(MCC_ROOT_DIR)/lib
 
