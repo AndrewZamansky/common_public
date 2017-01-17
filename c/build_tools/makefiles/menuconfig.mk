@@ -10,31 +10,23 @@ endif
 ENTER_PROJECT_DIR += cd $(APP_ROOT_DIR)
 
 
+####### test for existence of kconfig and put its directory name in GIT_ROOT_DIR #####
+SEARCHED_TOOL:=kconfig
+SEARCHED_DIR_VARIABLE:=KCONFIG_ROOT_DIR
+MANUALLY_DEFINED_DIR_VARIABLE:=REDEFINE_KCONFIG_DIR
+ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
+    TEST_FILE_IN_SEARCHED_DIR:=kconfig-mconf.exe
+else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX)
+    TEST_FILE_IN_SEARCHED_DIR:=kconfig-mconf.exe
+endif
+include $(MAKEFILE_DEFS_ROOT_DIR)/tool_existence_check.mk
+####### end of tool existence test #####
+
+
+
 ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
 
     ERROR_LOG =  $(OUT_DIR)\kconfig.out
-
-    ifdef REDEFINE_KCONFIG_DIR
-        $(info  kconfig dir  redefined to $(REDEFINE_KCONFIG_DIR) )
-        ifeq ("$(wildcard $(REDEFINE_KCONFIG_DIR))","")
-            $(info !--- kconfig path $(KCONFIG_ROOT_DIR) dont exists)
-            $(info !--- to use default kconfig location remove/comment REDEFINE_KCONFIG_DIR variable in  $(WORKSPACE_ROOT_DIR)/workspace_config.mk )
-            $(info !--- you can set customized kconfig utility path in REDEFINE_KCONFIG_DIR variable in $(WORKSPACE_ROOT_DIR)/workspace_config.mk )
-            $(error )
-        else
-            KCONFIG_ROOT_DIR 	:= 	$(REDEFINE_KCONFIG_DIR)
-        endif
-    else
-        $(info  looking for kconfig in default location)
-        KCONFIG_ROOT_DIR 	:= 	$(TOOLS_ROOT_DIR)/kconfig/kconfig3.12.0
-        ifeq ("$(wildcard $(KCONFIG_ROOT_DIR))","")
-            $(info !--- kconfig path $(KCONFIG_ROOT_DIR) dont exists )
-            $(info !--- download kconfig version 3.12.0 and unpack it to $(KCONFIG_ROOT_DIR)  )
-            $(info !--- make sure that file kconfig-mconf.exe is located in $(KCONFIG_ROOT_DIR)/  after unpacking   )
-            $(info !--- you can set customized kconfig utility path in REDEFINE_KCONFIG_DIR variable in $(WORKSPACE_ROOT_DIR)/workspace_config.mk )
-            $(error )
-        endif
-    endif
 
 
     KCONFIG_BASIC_CMD :=$(KCONFIG_ROOT_DIR)/kconfig-mconf.exe $(COMMON_DIR)/Kconfig
@@ -49,27 +41,20 @@ else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX)
 
     ERROR_LOG =  $(OUT_DIR)/kconfig.out
 
-    SHELL_OUTPUT :=$(shell kconfig-mconf)
 
-    $(shell sleep 1)
-    ifeq ($(findstring can't find file,$(SHELL_OUTPUT)),can't find file)
-        $(info kconfig-mconf found)
-    else
-        $(info !--- $(SHELL_OUTPUT))
-        $(info !--- you need to install kconfig frontends)
-        $(info !--- example of installing in ubuntu  :)
-        $(info !--- ----------------------------------)
-        $(info !--- sudo apt-get install gperf libncurses5-dev)
-        $(info !--- cd ~;git clone https://patacongo@bitbucket.org/nuttx/tools.git tools)
-        $(info !--- cd tools/kconfig-frontends/)
-        $(info !--- ./configure --enable-mconf --disable-shared --enable-static)
-        $(info !--- make)
-        $(info !--- sudo make install )
-        $(info !--- ----------------------------------)
-        $(info !--- after installing run kconfig-mconf in shell and check that you get "can't find file ..." output only)
-        $(info        )
-        $(error )
-    endif
+##        $(info !--- $(SHELL_OUTPUT))
+##        $(info !--- you need to install kconfig frontends)
+##        $(info !--- example of installing in ubuntu  :)
+##        $(info !--- ----------------------------------)
+##        $(info !--- sudo apt-get install gperf libncurses5-dev)
+##        $(info !--- cd ~;git clone https://patacongo@bitbucket.org/nuttx/tools.git tools)
+##        $(info !--- cd tools/kconfig-frontends/)
+##        $(info !--- ./configure --enable-mconf --disable-shared --enable-static)
+##        $(info !--- make)
+##        $(info !--- sudo make install )
+##        $(info !--- ----------------------------------)
+##        $(info !--- after installing run kconfig-mconf in shell and check that you get "can't find file ..." output only)
+
 
 	$(info !--- TODO : add COMMON_DIR_PATH=$(COMMON_DIR) to shell environment)
 	$(error )

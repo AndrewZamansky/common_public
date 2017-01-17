@@ -69,7 +69,7 @@ else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX)
     TEST_FILE_IN_SEARCHED_DIR:=bin/make
 endif
 include $(MAKEFILE_DEFS_ROOT_DIR)/tool_existence_check.mk
-####### end of make existence test #####
+####### end of tool existence test #####
 
 MAKE :="$(MAKE_DIR)/bin/make"
 

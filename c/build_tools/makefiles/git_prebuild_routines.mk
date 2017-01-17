@@ -14,7 +14,7 @@ else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX)
     TEST_FILE_IN_SEARCHED_DIR:=bin/git
 endif
 include $(MAKEFILE_DEFS_ROOT_DIR)/tool_existence_check.mk
-####### end of git existence test #####
+####### end of tool existence test #####
 
         
 GIT ="$(GIT_ROOT_DIR)\bin\git.exe"
