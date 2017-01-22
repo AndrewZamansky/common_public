@@ -33,3 +33,15 @@ endef
 #usage :
 #    DUMMY := $(call ADD_TO_GLOBAL_DEFINES , var )
 #    DUMMY := $(call ADD_TO_GLOBAL_DEFINES , var=val )
+
+define ADD_TO_GLOBAL_LIBRARIES =
+    $(eval GLOBAL_LIBS := $(GLOBAL_LIBS) $(1))
+endef
+#usage :
+#    DUMMY := $(call ADD_TO_GLOBAL_LIBRARIES , var )
+
+define ADD_TO_GLOBAL_LIBRARIES_PATH =
+    $(eval GLOBAL_LIBS_PATH := $(GLOBAL_LIBS_PATH) $(1))
+endef
+#usage :
+#    DUMMY := $(call ADD_TO_GLOBAL_LIBRARIES_PATH , var )

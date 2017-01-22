@@ -5,21 +5,14 @@ else ifdef CONFIG_MCC_COMPILER_64
     LD := set "PATH=$(MCC_BIN_DIR)" & "$(MCC_BIN_DIR)\x86_amd64\link"
 endif
 
-GLOBAL_LIBS := $(GLOBAL_LIBS)
+LIBS := $(sort $(GLOBAL_LIBS))
 
 ifdef CONFIG_INCLUDE_TOOLCHAIN_LIBRARIES
    STD_LIBRARIES :=
-   GLOBAL_LIBS := $(GLOBAL_LIBS) $(STD_LIBRARIES)
+   LIBS += $(STD_LIBRARIES)
 endif
 
-ifdef CONFIG_USE_WINDOWS_KITS
-   WINDOWS_KITS_LIBRARIES := kernel32.lib user32.lib gdi32.lib winspool.lib
-   WINDOWS_KITS_LIBRARIES += comdlg32.lib advapi32.lib shell32.lib ole32.lib
-   WINDOWS_KITS_LIBRARIES += oleaut32.lib uuid.lib odbc32.lib odbccp32.lib 
-   GLOBAL_LIBS := $(GLOBAL_LIBS) $(WINDOWS_KITS_LIBRARIES)
-endif
 
-LIBS := $(patsubst lib%,"%",$(GLOBAL_LIBS))
 
 ifdef CONFIG_MCC_COMPILER_32
     ARCH_NAME :=x86_32
@@ -122,6 +115,11 @@ ifdef CONFIG_INCLUDE_TOOLCHAIN_LIBRARIES
 endif
 
 ifdef CONFIG_USE_WINDOWS_KITS
+    WINDOWS_KITS_LIBRARIES := kernel32.lib user32.lib gdi32.lib winspool.lib
+    WINDOWS_KITS_LIBRARIES += comdlg32.lib advapi32.lib shell32.lib ole32.lib
+    WINDOWS_KITS_LIBRARIES += oleaut32.lib uuid.lib odbc32.lib odbccp32.lib 
+    LIBS += $(WINDOWS_KITS_LIBRARIES)
+
     ifdef CONFIG_MCC_COMPILER_32
         LDFLAGS += /LIBPATH:"$(WINDOWS_KIT_ROOT_DIR)\LIB\WINV6.3\UM\X86"
     else
@@ -129,6 +127,11 @@ ifdef CONFIG_USE_WINDOWS_KITS
     endif
 endif
 
+ifneq ($(strip $(GLOBAL_LIBS_PATH)),)
+    GLOBAL_LIBS_PATH :=$(sort $(GLOBAL_LIBS_PATH)) 
+    GLOBAL_LIBS_PATH := $(patsubst %,/LIBPATH:"%",$(GLOBAL_LIBS_PATH))
+    LDFLAGS += $(GLOBAL_LIBS_PATH)
+endif
 
 LDFLAGS += /MAP:"$(OUT_DIR)\$(PROJECT_NAME).map" /MAPINFO:EXPORTS
 
