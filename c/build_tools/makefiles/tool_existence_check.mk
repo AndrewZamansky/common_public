@@ -41,7 +41,6 @@ ifeq ($(FOUND_ROOT_DIR),)
     $(info ---- trying system $(SEARCHED_TOOL) ...)
     ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
         TOOL_EXISTANCE_CHECK :=$(shell where /f $(SEARCHED_TOOL))
-        TOOL_EXISTANCE_CHECK :="c:\program files\Git\bin\git.exe" "C:\Program Files\Git\cmd\git.exe"
         ### remove " mark and replace space in directory names by ? sign ##
         TOOL_EXISTANCE_CHECK_FMT :=$(subst "$(SPACE),"*,$(TOOL_EXISTANCE_CHECK))
         TOOL_EXISTANCE_CHECK_FMT :=$(subst $(SPACE),?,$(TOOL_EXISTANCE_CHECK_FMT))
