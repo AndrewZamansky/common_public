@@ -2,6 +2,8 @@
 
 source "$COMMON_DIR_PATH/c/sw_packages/core/Kconfig"
 
+source "$COMMON_DIR_PATH/c/sw_packages/application_framework/Kconfig"
+
 source "$COMMON_DIR_PATH/c/sw_packages/ancillary/Kconfig"
 
 source "$COMMON_DIR_PATH/c/sw_packages/management/Kconfig"

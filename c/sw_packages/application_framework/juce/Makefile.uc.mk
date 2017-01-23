@@ -3,17 +3,28 @@ INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_JUCE)
 
 ifdef CONFIG_INCLUDE_JUCE
 
-    JUCE_PATH :=$(EXTERNAL_SOURCE_ROOT_DIR)/juce-grapefruit-windows
+    JUCE_PATH :=$(EXTERNAL_SOURCE_ROOT_DIR)/JUCE
     ifeq ("$(wildcard $(JUCE_PATH))","")
         $(info   )
-        $(info --- juce-grapefruit-windows path $(JUCE_PATH) dont exists )
-        $(info --- get juce-grapefruit-windows  and unpack it to $(JUCE_PATH)  )
-        $(info --- make sure that modules directory is located in $(JUCE_PATH)/  after unpacking   )
+        $(info --- JUCE path $(JUCE_PATH) dont exists )
+        $(info --- get repo from andew zamansky or from https://github.com/julianstorer/JUCE  )
+        $(info --- make sure that .git directory is located in $(JUCE_PATH)/  after unpacking   )
         $(error )
     endif
 
+    ifeq ($(MAKECMDGOALS),all_after_makefile_generated)
+        ifndef JUCE_GIT_TEST_ALREADY_PERFORMED
+            JUCE_GIT_TEST_ALREADY_PERFORMED:=1
+            #test if current commit and branch of uboot git is the same as required by application
+            CURR_GIT_REPOSITORY_DIR :=$(JUCE_PATH)
+            CURR_GIT_COMMIT_HASH_VARIABLE :=CONFIG_JUCE_GIT_COMMIT_HASH
+            include $(MAKEFILE_DEFS_ROOT_DIR)/git_prebuild_repo_check.mk
+        endif
+    endif
+    
+    CURR_JUCE_COMPONENT_LOCATION := $(patsubst %/Makefile.uc.mk,%,$(realpath $(filter %juce/Makefile.uc.mk,$(MAKEFILE_LIST))))
     DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(JUCE_PATH))
-    DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(SW_PACKAGES_ROOT_DIR)/staging/juce/JuceLibraryCode)
+    DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(CURR_JUCE_COMPONENT_LOCATION)/JuceLibraryCode)
 endif
 #DEFINES =
 

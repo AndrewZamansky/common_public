@@ -13,5 +13,9 @@ config JUCE_VST_PLUGIN
     bool "vst plugin"
 
 endchoice
-	
+
+config JUCE_GIT_COMMIT_HASH
+	string "juce git commit hash"
+	default ""
+
 endmenu

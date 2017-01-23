@@ -2,15 +2,6 @@
 
 menu "staging"
 
-config INCLUDE_JUCE
-	bool   "juce"
-	depends on HOST
-	default n
-
-if INCLUDE_JUCE
-source "$COMMON_DIR_PATH/c/sw_packages/staging/juce/Kconfig"
-endif
-
 config INCLUDE_UGFX
 	bool   "ugfx"
 	depends on !GCC_TARGET_OS_LINUX && !HOST
