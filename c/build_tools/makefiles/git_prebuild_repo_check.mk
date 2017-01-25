@@ -28,12 +28,12 @@ ifneq ("$(CURR_GIT_COMMIT)",$(CURR_GIT_REQUESTED_COMMIT))
     SHELL_OUTPUT := $(shell $(SHELL_GO_TO_GIT_DIR) $(GIT) status --porcelain 2>&1)
     ERROR_MESSAGE := M 
     ifeq ($(findstring $(ERROR_MESSAGE),$(SHELL_OUTPUT)),$(ERROR_MESSAGE))
-        $(info !--- git error : commit all changes to $(CURR_GIT_REPOSITORY_DIR) checkout another commit)
+        $(info !--- git error : commit/stash all changes to $(CURR_GIT_REPOSITORY_DIR) before checkout another commit)
         $(error  )
     endif
     ERROR_MESSAGE := D #??
     ifeq ($(findstring $(ERROR_MESSAGE),$(SHELL_OUTPUT)),$(ERROR_MESSAGE))
-        $(info !--- git error : commit all changes to $(CURR_GIT_REPOSITORY_DIR) checkout another commit)
+        $(info !--- git error : commit/stash all changes to $(CURR_GIT_REPOSITORY_DIR) before checkout another commit)
         $(error  )
     endif
 

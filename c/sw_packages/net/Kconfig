@@ -1,0 +1,21 @@
+#
+
+menu "net"
+
+menuconfig INCLUDE_CURL
+	bool   "curl"
+	default n
+
+if INCLUDE_CURL
+source "$COMMON_DIR_PATH/c/sw_packages/net/curl/Kconfig"
+endif
+
+menuconfig INCLUDE_OPENSSL
+	bool   "OpenSSL"
+	default n
+
+if INCLUDE_OPENSSL
+source "$COMMON_DIR_PATH/c/sw_packages/net/openssl/Kconfig"
+endif
+
+endmenu

@@ -14,4 +14,6 @@ source "$COMMON_DIR_PATH/c/sw_packages/storage/Kconfig"
 
 source "$COMMON_DIR_PATH/c/sw_packages/dsp/Kconfig"
 
+source "$COMMON_DIR_PATH/c/sw_packages/net/Kconfig"
+
 source "$COMMON_DIR_PATH/c/sw_packages/staging/Kconfig"

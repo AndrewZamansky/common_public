@@ -2,7 +2,7 @@
 
 menu "application_framework"
 
-config INCLUDE_JUCE
+menuconfig INCLUDE_JUCE
 	bool   "juce"
 	depends on HOST
 	default n

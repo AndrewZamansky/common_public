@@ -119,6 +119,7 @@ ifdef CONFIG_USE_WINDOWS_KITS
     WINDOWS_KITS_LIBRARIES += comdlg32.lib advapi32.lib shell32.lib ole32.lib
     WINDOWS_KITS_LIBRARIES += oleaut32.lib uuid.lib odbc32.lib odbccp32.lib 
     LIBS += $(WINDOWS_KITS_LIBRARIES)
+    LIBS := $(sort $(LIBS))
 
     ifdef CONFIG_MCC_COMPILER_32
         LDFLAGS += /LIBPATH:"$(WINDOWS_KIT_ROOT_DIR)\LIB\WINV6.3\UM\X86"

@@ -1,0 +1,5 @@
+#
+
+config OPENSSL_GIT_COMMIT_HASH
+	string "OpenSSL git commit hash"
+	default ""

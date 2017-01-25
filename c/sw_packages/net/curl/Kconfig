@@ -1,0 +1,76 @@
+#
+
+config  CURL_HTTP_PROTOCOL_SUPPORT
+	bool   "http protocol"
+	default n
+
+config  CURL_FTP_PROTOCOL_SUPPORT
+	bool   "ftp protocol"
+	default n
+
+config  CURL_TELNET_PROTOCOL_SUPPORT
+	bool   "telnet protocol"
+	default n
+
+config  CURL_DICT_PROTOCOL_SUPPORT
+	bool   "dict protocol"
+	default n
+
+config  CURL_TFTP_PROTOCOL_SUPPORT
+	bool   "tftp protocol"
+	default n
+
+config  CURL_FILE_PROTOCOL_SUPPORT
+	bool   "file protocol"
+	default n
+
+config  CURL_LDAP_PROTOCOL_SUPPORT
+	bool   "ldap protocol"
+	default n
+
+config  CURL_IMAP_PROTOCOL_SUPPORT
+	bool   "imap protocol"
+	default n
+
+config  CURL_SMTP_PROTOCOL_SUPPORT
+	bool   "smtp protocol"
+	default n
+
+config  CURL_RTSP_PROTOCOL_SUPPORT
+	bool   "rtsp protocol"
+	default n
+
+config  CURL_GOPHER_PROTOCOL_SUPPORT
+	bool   "gopher protocol"
+	default n
+
+config  CURL_SMB_PROTOCOL_SUPPORT
+	bool   "smb protocol"
+	default n
+
+config  CURL_POP3_PROTOCOL_SUPPORT
+	bool   "pop3 protocol"
+	default n
+
+config  CURL_ENABLE_PROXY
+	bool   "enable proxy"
+	default n
+
+config  CURL_ENABLE_COOKIES
+	bool   "enable cookies"
+	default n
+
+config  CURL_ENABLE_VERBOSE_STRINGS
+	bool   "enable verbose strings"
+	default n
+
+
+config  CURL_USE_OPENSSL
+	bool   "use OpenSSL"
+	select INCLUDE_OPENSSL
+	default n
+
+
+config CURL_GIT_COMMIT_HASH
+	string "curl git commit hash"
+	default ""
