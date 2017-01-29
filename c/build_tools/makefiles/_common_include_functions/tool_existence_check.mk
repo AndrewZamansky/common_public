@@ -1,3 +1,23 @@
+
+#test that arguments are set correctly 
+ifeq ($(SEARCHED_TOOL),)
+    $(info !--- SEARCHED_TOOL (= utility name) should be set before including this file)
+    $(error )
+endif
+ifeq ($(SEARCHED_DIR_VARIABLE),)
+    $(info !--- SEARCHED_DIR_VARIABLE (= name of variable that will contain found directory) should be set before including this file)
+    $(error )
+endif
+ifeq ($(MANUALLY_DEFINED_DIR_VARIABLE),)
+    $(info !--- MANUALLY_DEFINED_DIR_VARIABLE (= name of variable that may contains user defined tool directory) should be set before including this file)
+    $(error )
+endif
+ifeq ($(TEST_FILE_IN_SEARCHED_DIR),)
+    $(info !--- TEST_FILE_IN_SEARCHED_DIR (= test file that will verify directory structure) should be set before including this file)
+    $(error )
+endif
+
+
 FOUND_ROOT_DIR:=
 MANUALLY_DEFINED_DIR_VARIABLE:=$(strip $(MANUALLY_DEFINED_DIR_VARIABLE))
 REDEFINED_ROOT_DIR:=$($(MANUALLY_DEFINED_DIR_VARIABLE))
@@ -75,3 +95,9 @@ ifeq ($(FOUND_ROOT_DIR),)
 endif
 
 $(SEARCHED_DIR_VARIABLE):=$(FOUND_ROOT_DIR)
+
+#clear arguments for next function usage
+SEARCHED_TOOL:=
+SEARCHED_DIR_VARIABLE:=
+MANUALLY_DEFINED_DIR_VARIABLE:=
+TEST_FILE_IN_SEARCHED_DIR:=

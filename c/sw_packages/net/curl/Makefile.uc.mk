@@ -18,7 +18,7 @@ ifdef CONFIG_INCLUDE_CURL
             #test if current commit and branch of uboot git is the same as required by application
             CURR_GIT_REPOSITORY_DIR :=$(CURL_PATH)
             CURR_GIT_COMMIT_HASH_VARIABLE :=CONFIG_CURL_GIT_COMMIT_HASH
-            include $(MAKEFILE_DEFS_ROOT_DIR)/git_prebuild_repo_check.mk
+            include $(MAKEFILE_DEFS_ROOT_DIR)/_common_include_functions/git_prebuild_repo_check.mk
         endif
     endif
     
@@ -171,7 +171,12 @@ ifeq ($(strip $(CONFIG_CURL_HTTP_PROTOCOL_SUPPORT)),y)
 endif
 VPATH += | $(CURL_PATH)/lib
 
+    
 INCLUDE_DIR +=$(CURL_PATH)/lib
+ifeq ($(strip $(CONFIG_CURL_USE_OPENSSL)),y)
+    SRC += openssl.c
+    SRC += hostcheck.c
+endif
 SRC += vtls.c
 VPATH += | $(CURL_PATH)/lib/vtls
 

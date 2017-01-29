@@ -4,6 +4,8 @@
 ### the following section we need to run just one time per build
 ifndef COMMON_INIT_SECTION_THAT_SHOULD_RUN_ONCE
 
+MAKEFILE_DEFS_ROOT_DIR :=$(abspath $(MAKEFILE_DEFS_ROOT_DIR))
+
 include $(MAKEFILE_DEFS_ROOT_DIR)/common_init_environment.mk
 
 
@@ -29,6 +31,7 @@ else ifneq ($(wildcard $(APP_ROOT_DIR)/../../../../common_public/c),)
 else
     $(error !---- COMMON C \(common_public/c\) DIR NOT FOUND ----)
 endif
+COMMON_ROOT_DIR :=$(abspath $(COMMON_ROOT_DIR))
 
 
 WORKSPACE_ROOT_DIR := $(patsubst $(APP_ROOT_DIR)/%,%,$(realpath $(COMMON_ROOT_DIR)/../..))
@@ -68,7 +71,7 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
 else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX)
     TEST_FILE_IN_SEARCHED_DIR:=bin/make
 endif
-include $(MAKEFILE_DEFS_ROOT_DIR)/tool_existence_check.mk
+include $(MAKEFILE_DEFS_ROOT_DIR)/_common_include_functions/tool_existence_check.mk
 ####### end of tool existence test #####
 
 MAKE :="$(MAKE_DIR)/bin/make"

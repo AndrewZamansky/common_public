@@ -1,4 +1,15 @@
 
+#test that arguments are set correctly 
+ifeq ($(CURR_GIT_REPOSITORY_DIR),)
+    $(info !--- CURR_GIT_REPOSITORY_DIR (= git directory to test) should be set before including this file)
+    $(error )
+endif
+ifeq ($(CURR_GIT_COMMIT_HASH_VARIABLE),)
+    $(info !--- CURR_GIT_COMMIT_HASH_VARIABLE (= name of variable that contain requested hash) should be set before including this file)
+    $(error )
+endif
+
+
 CURR_GIT_REQUESTED_COMMIT :=$($(CURR_GIT_COMMIT_HASH_VARIABLE))
 ifeq (,$(CURR_GIT_REQUESTED_COMMIT))
     $(info !--- $(CURR_GIT_COMMIT_HASH_VARIABLE) variable doesn't exist or is empty)
@@ -60,3 +71,7 @@ else
     endif
 endif
 $(info ---- git repository $(CURR_GIT_REPOSITORY_DIR) is synchronized)
+
+#clear arguments for next function usage
+CURR_GIT_REPOSITORY_DIR:=
+CURR_GIT_COMMIT_HASH_VARIABLE:=

@@ -68,6 +68,12 @@ config  CURL_ENABLE_VERBOSE_STRINGS
 config  CURL_USE_OPENSSL
 	bool   "use OpenSSL"
 	select INCLUDE_OPENSSL
+	select OPENSSL_MD5
+	select OPENSSL_DES
+	select OPENSSL_RSA
+	select OPENSSL_DSA
+	select OPENSSL_DH
+	select OPENSSL_SOCKET
 	default n
 
 

@@ -13,7 +13,7 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
 else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX)
     TEST_FILE_IN_SEARCHED_DIR:=bin/git
 endif
-include $(MAKEFILE_DEFS_ROOT_DIR)/tool_existence_check.mk
+include $(MAKEFILE_DEFS_ROOT_DIR)/_common_include_functions/tool_existence_check.mk
 ####### end of tool existence test #####
 
         
@@ -53,14 +53,14 @@ endif
 #test if current commit and branch of common_public is the same as required by application
 CURR_GIT_REPOSITORY_DIR :=$(COMMON_DIR)
 CURR_GIT_COMMIT_HASH_VARIABLE :=CONFIG_COMMON_PUBLIC_GIT_COMMIT_HASH
-include $(MAKEFILE_DEFS_ROOT_DIR)/git_prebuild_repo_check.mk
+include $(MAKEFILE_DEFS_ROOT_DIR)/_common_include_functions/git_prebuild_repo_check.mk
 
 
 ifdef CONFIG_USE_COMMON_PRIVATE_PACKAGES
     #test if current commit and branch of common_private is the same as required by application
     CURR_GIT_REPOSITORY_DIR :=$(COMMON_PRIVATE_DIR)
     CURR_GIT_COMMIT_HASH_VARIABLE :=CONFIG_COMMON_PRIVATE_GIT_COMMIT_HASH
-    include $(MAKEFILE_DEFS_ROOT_DIR)/git_prebuild_repo_check.mk
+    include $(MAKEFILE_DEFS_ROOT_DIR)/_common_include_functions/git_prebuild_repo_check.mk
 else
     $(info ---- common private packages not in use)
 endif

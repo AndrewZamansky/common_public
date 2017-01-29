@@ -18,7 +18,7 @@ ifdef CONFIG_INCLUDE_UBOOT_SHELL
             #test if current commit and branch of uboot git is the same as required by application
             CURR_GIT_REPOSITORY_DIR :=$(U_BOOT_PATH)
             CURR_GIT_COMMIT_HASH_VARIABLE :=CONFIG_UBOOT_GIT_COMMIT_HASH
-            include $(MAKEFILE_DEFS_ROOT_DIR)/git_prebuild_repo_check.mk
+            include $(MAKEFILE_DEFS_ROOT_DIR)/_common_include_functions/git_prebuild_repo_check.mk
         endif
     endif
 

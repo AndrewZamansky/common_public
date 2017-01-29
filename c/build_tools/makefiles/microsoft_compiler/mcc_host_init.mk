@@ -10,7 +10,7 @@ SEARCHED_TOOL:=visual studio
 SEARCHED_DIR_VARIABLE:=MCC_ROOT_DIR
 MANUALLY_DEFINED_DIR_VARIABLE:=REDEFINE_VISUAL_STUDIO_DIR
 TEST_FILE_IN_SEARCHED_DIR:=bin\cl.exe
-include $(MAKEFILE_DEFS_ROOT_DIR)/tool_existence_check.mk
+include $(MAKEFILE_DEFS_ROOT_DIR)/_common_include_functions/tool_existence_check.mk
 ####### end of tool existence test #####
 
 MCC_ROOT_DIR_wESCAPED_CHAR :=$(TEST_MCC_ROOT_DIR)

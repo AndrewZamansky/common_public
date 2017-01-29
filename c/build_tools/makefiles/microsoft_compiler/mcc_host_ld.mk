@@ -172,9 +172,18 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
     OUTPUT_CRC32 := $(subst /,\,$(OUTPUT_CRC32))
 endif
 
+ALL_OBJECTS_LIST_FILE:=$(OUT_DIR)\objects.txt
+
+#create file with list of objects
+LIST_FILE_NAME_TRUNCATE :=$(ALL_OBJECTS_LIST_FILE)
+PREFIX_FOR_EACH_ITEM :=
+SUFFIX_LINE_FOR_EACH_ITEM :=
+ITEMS := $(ALL_OBJ_FILES)
+include $(MAKEFILE_DEFS_ROOT_DIR)/_common_include_functions/add_item_list_to_file.mk
+#end of file creation
 
 build_outputs :
-	$(LD) /OUT:"$(LINKER_OUTPUT)" $(LDFLAGS) $(LIBRARIES_DIRS) $(ALL_OBJ_FILES) $(LIBS) 
+	$(LD) /OUT:"$(LINKER_OUTPUT)" $(LDFLAGS) $(LIBRARIES_DIRS) @$(ALL_OBJECTS_LIST_FILE) $(LIBS) 
 	$(CP)  $(LINKER_OUTPUT) $(LINKER_OUTPUT_NAMED)
 	$(CP)  $(LINKER_OUTPUT) $(LINKER_HISTORY_OUTPUT)
 ifeq ($(findstring y,$(CONFIG_CALCULATE_CRC32)),y)
