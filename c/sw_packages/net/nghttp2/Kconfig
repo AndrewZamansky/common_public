@@ -1,0 +1,4 @@
+#
+config NGHTTP2_GIT_COMMIT_HASH
+	string "nghttp2 git commit hash"
+	default ""

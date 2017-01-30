@@ -5,6 +5,7 @@ ifeq ($(CURR_GIT_REPOSITORY_DIR),)
     $(error )
 endif
 ifeq ($(CURR_GIT_COMMIT_HASH_VARIABLE),)
+    $(info !--- git repository test failed : $(CURR_GIT_REPOSITORY_DIR))
     $(info !--- CURR_GIT_COMMIT_HASH_VARIABLE (= name of variable that contain requested hash) should be set before including this file)
     $(error )
 endif
@@ -12,11 +13,13 @@ endif
 
 CURR_GIT_REQUESTED_COMMIT :=$($(CURR_GIT_COMMIT_HASH_VARIABLE))
 ifeq (,$(CURR_GIT_REQUESTED_COMMIT))
+    $(info !--- git repository test failed : $(CURR_GIT_REPOSITORY_DIR))
     $(info !--- $(CURR_GIT_COMMIT_HASH_VARIABLE) variable doesn't exist or is empty)
     $(error  )
 endif
 
 ifeq ("",$(CURR_GIT_REQUESTED_COMMIT))
+    $(info !--- git repository test failed : $(CURR_GIT_REPOSITORY_DIR))
     $(info !--- CURR_GIT_COMMIT_HASH_VARIABLE = $(CURR_GIT_REQUESTED_COMMIT))
     $(info !--- CURR_GIT_COMMIT_HASH_VARIABLE should contain valid git hash)
     $(error  )
@@ -39,11 +42,13 @@ ifneq ("$(CURR_GIT_COMMIT)",$(CURR_GIT_REQUESTED_COMMIT))
     SHELL_OUTPUT := $(shell $(SHELL_GO_TO_GIT_DIR) $(GIT) status --porcelain 2>&1)
     ERROR_MESSAGE := M 
     ifeq ($(findstring $(ERROR_MESSAGE),$(SHELL_OUTPUT)),$(ERROR_MESSAGE))
+        $(info !--- git repository test failed : $(CURR_GIT_REPOSITORY_DIR))
         $(info !--- git error : commit/stash all changes to $(CURR_GIT_REPOSITORY_DIR) before checkout another commit)
         $(error  )
     endif
     ERROR_MESSAGE := D #??
     ifeq ($(findstring $(ERROR_MESSAGE),$(SHELL_OUTPUT)),$(ERROR_MESSAGE))
+        $(info !--- git repository test failed : $(CURR_GIT_REPOSITORY_DIR))
         $(info !--- git error : commit/stash all changes to $(CURR_GIT_REPOSITORY_DIR) before checkout another commit)
         $(error  )
     endif

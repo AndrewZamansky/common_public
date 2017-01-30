@@ -76,12 +76,16 @@ ifdef CONFIG_INCLUDE_CURL
         DUMMY := $(call ADD_TO_GLOBAL_DEFINES , CURL_DISABLE_COOKIES )
     endif
 
-   ifneq ($(strip $(CONFIG_CURL_CURL_ENABLE_VERBOSE_STRINGS)),y)
+    ifneq ($(strip $(CONFIG_CURL_CURL_ENABLE_VERBOSE_STRINGS)),y)
         DUMMY := $(call ADD_TO_GLOBAL_DEFINES , CURL_DISABLE_VERBOSE_STRINGS )
     endif
 
-   ifeq ($(strip $(CONFIG_CURL_USE_OPENSSL)),y)
+    ifeq ($(strip $(CONFIG_CURL_USE_OPENSSL)),y)
         DUMMY := $(call ADD_TO_GLOBAL_DEFINES , USE_OPENSSL )
+    endif
+
+    ifeq ($(strip $(CONFIG_CURL_USE_NGHTTP2)),y)
+        DUMMY := $(call ADD_TO_GLOBAL_DEFINES , USE_NGHTTP2 )
     endif
 
     DUMMY := $(call ADD_TO_GLOBAL_DEFINES , CURL_STRICTER )
@@ -177,6 +181,11 @@ ifeq ($(strip $(CONFIG_CURL_USE_OPENSSL)),y)
     SRC += openssl.c
     SRC += hostcheck.c
 endif
+
+ifeq ($(strip $(CONFIG_CURL_USE_NGHTTP2)),y)
+    SRC += http2.c
+endif
+
 SRC += vtls.c
 VPATH += | $(CURL_PATH)/lib/vtls
 

@@ -76,6 +76,10 @@ config  CURL_USE_OPENSSL
 	select OPENSSL_SOCKET
 	default n
 
+config  CURL_USE_NGHTTP2
+	bool   "use nghttp2"
+	select INCLUDE_NGHTTP2
+	default n
 
 config CURL_GIT_COMMIT_HASH
 	string "curl git commit hash"
