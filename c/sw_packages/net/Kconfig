@@ -18,6 +18,14 @@ if INCLUDE_OPENSSL
 source "$COMMON_DIR_PATH/c/sw_packages/net/openssl/Kconfig"
 endif
 
+menuconfig INCLUDE_WOLFSSL
+	bool   "wolfSSL"
+	default n
+
+if INCLUDE_WOLFSSL
+source "$COMMON_DIR_PATH/c/sw_packages/net/wolfssl/Kconfig"
+endif
+
 menuconfig INCLUDE_NGHTTP2
 	bool   "nghttp2"
 	default n

@@ -64,6 +64,12 @@ config  CURL_ENABLE_VERBOSE_STRINGS
 	bool   "enable verbose strings"
 	default n
 
+choice
+	prompt "ssl library"
+	default CURL_NO_SSL
+
+config  CURL_NO_SSL
+	bool   "no ssl"
 
 config  CURL_USE_OPENSSL
 	bool   "use OpenSSL"
@@ -74,7 +80,15 @@ config  CURL_USE_OPENSSL
 	select OPENSSL_DSA
 	select OPENSSL_DH
 	select OPENSSL_SOCKET
-	default n
+
+config  CURL_USE_WOLFSSL
+	bool   "use wolfSSL"
+	select WOLFSSL_SHA256
+	select WOLFSSL_TLS
+	select WOLFSSL_MD5
+	select INCLUDE_WOLFSSL
+
+endchoice
 
 config  CURL_USE_NGHTTP2
 	bool   "use nghttp2"

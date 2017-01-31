@@ -1,0 +1,18 @@
+#
+
+config  WOLFSSL_SHA256
+	bool   "sha256"
+	default n
+
+config  WOLFSSL_MD5
+	bool   "md5"
+	default n
+
+config  WOLFSSL_TLS
+	bool   "tls"
+	default n
+
+
+config WOLFSSL_GIT_COMMIT_HASH
+	string "wolfSSL git commit hash"
+	default ""

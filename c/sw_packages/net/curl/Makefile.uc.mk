@@ -84,6 +84,10 @@ ifdef CONFIG_INCLUDE_CURL
         DUMMY := $(call ADD_TO_GLOBAL_DEFINES , USE_OPENSSL )
     endif
 
+    ifeq ($(strip $(CONFIG_CURL_USE_WOLFSSL)),y)
+        DUMMY := $(call ADD_TO_GLOBAL_DEFINES , USE_CYASSL )
+    endif
+
     ifeq ($(strip $(CONFIG_CURL_USE_NGHTTP2)),y)
         DUMMY := $(call ADD_TO_GLOBAL_DEFINES , USE_NGHTTP2 )
     endif
@@ -98,7 +102,7 @@ ifdef CONFIG_INCLUDE_CURL
     endif
    
 endif
-#DEFINES =
+DEFINES :=
 
 
 #ASMFLAGS =
@@ -180,6 +184,11 @@ INCLUDE_DIR +=$(CURL_PATH)/lib
 ifeq ($(strip $(CONFIG_CURL_USE_OPENSSL)),y)
     SRC += openssl.c
     SRC += hostcheck.c
+endif
+
+ifeq ($(strip $(CONFIG_CURL_USE_WOLFSSL)),y)
+    DEFINES += HAVE_CYASSL_ERROR_SSL_H
+    SRC += cyassl.c
 endif
 
 ifeq ($(strip $(CONFIG_CURL_USE_NGHTTP2)),y)
