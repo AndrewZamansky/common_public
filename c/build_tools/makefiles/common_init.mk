@@ -7,6 +7,7 @@ ifndef COMMON_INIT_SECTION_THAT_SHOULD_RUN_ONCE
 MAKEFILE_DEFS_ROOT_DIR :=$(abspath $(MAKEFILE_DEFS_ROOT_DIR))
 
 include $(MAKEFILE_DEFS_ROOT_DIR)/common_init_environment.mk
+include $(MAKEFILE_DEFS_ROOT_DIR)/common.mk
 
 
 GLOBAL_PROJECT_SPECIFIC_CFLAGS :=
@@ -294,7 +295,7 @@ ifeq ($(findstring menuconfig,$(MAKECMDGOALS)),) #dont enter if we are bulding .
             ifdef CONFIG_MIN_GW_GCC
                 include $(MAKEFILE_DEFS_ROOT_DIR)/gcc/gcc_host_init.mk
             else ifdef CONFIG_MICROSOFT_COMPILER
-                include $(MAKEFILE_DEFS_ROOT_DIR)/microsoft_compiler/mcc_host_init.mk
+                include $(MAKEFILE_DEFS_ROOT_DIR)/microsoft_compiler/msvc_host_init.mk
             endif
         else
             include $(MAKEFILE_DEFS_ROOT_DIR)/gcc/gcc_host_init.mk

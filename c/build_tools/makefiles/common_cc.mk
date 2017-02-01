@@ -20,7 +20,7 @@ else ifdef CONFIG_HOST
         ifdef CONFIG_MIN_GW_GCC
             include $(MAKEFILE_DEFS_ROOT_DIR)/gcc/gcc_cc.mk
         else ifdef CONFIG_MICROSOFT_COMPILER
-            include $(MAKEFILE_DEFS_ROOT_DIR)/microsoft_compiler/mcc_cc.mk
+            include $(MAKEFILE_DEFS_ROOT_DIR)/microsoft_compiler/msvc_cc.mk
         endif
     else
         include $(MAKEFILE_DEFS_ROOT_DIR)/gcc/gcc_cc.mk

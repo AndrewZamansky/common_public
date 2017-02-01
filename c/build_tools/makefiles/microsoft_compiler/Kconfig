@@ -2,29 +2,29 @@ menu "Microsoft compiler options"
 
 choice
 	prompt "output type"
-	default MCC_OUTPUT_TYPE_CONSOLE_APPLICATION
+	default MSVC_OUTPUT_TYPE_CONSOLE_APPLICATION
 
-config MCC_OUTPUT_TYPE_WINDOWS_APPLICATION
+config MSVC_OUTPUT_TYPE_WINDOWS_APPLICATION
 	depends on !JUCE_VST_PLUGIN
 	bool "windows application"
 
-config MCC_OUTPUT_TYPE_CONSOLE_APPLICATION
+config MSVC_OUTPUT_TYPE_CONSOLE_APPLICATION
 	depends on !JUCE_VST_PLUGIN
 	bool "console application"
 
-config MCC_OUTPUT_TYPE_DLL
+config MSVC_OUTPUT_TYPE_DLL
 	bool "dll"
 endchoice
 
 
 choice
 	prompt "compiler location"
-	default MCC_COMPILER_LOCATION_WINDOWS_DEFAULT
+	default MSVC_COMPILER_LOCATION_WINDOWS_DEFAULT
 
-config MCC_COMPILER_LOCATION_WINDOWS_DEFAULT
+config MSVC_COMPILER_LOCATION_WINDOWS_DEFAULT
 	bool "microsoft compiler located in windows default location"
 
-config MCC_COMPILER_LOCATION_WORKSPACE_TOOLS_DIRECTORY
+config MSVC_COMPILER_LOCATION_WORKSPACE_TOOLS_DIRECTORY
     bool "microsoft compiler located in workspace tool directory"
 endchoice
 
@@ -32,80 +32,63 @@ endchoice
 
 choice
 	prompt "compiler arch"
-	default MCC_COMPILER_32
+	default MSVC_COMPILER_32
 
-config MCC_COMPILER_32
+config MSVC_COMPILER_32
 	bool "x86_32"
 
-config MCC_COMPILER_64
+config MSVC_COMPILER_64
 	bool "x86_64"
 endchoice
-
-choice
-	prompt "visual studio version"
-	default MCC_VISUAL_STUDIO_VERSION_2013
-
-config MCC_VISUAL_STUDIO_VERSION_2012
-	bool "2012"
-
-config MCC_VISUAL_STUDIO_VERSION_2013
-	bool "2013"
-endchoice
-
 
  
 choice
 	prompt "Optimisation Level"
-	default MCC_OPTIMISE_NONE
+	default MSVC_OPTIMISE_NONE
 
-config MCC_OPTIMISE_NONE
+config MSVC_OPTIMISE_NONE
 	bool "/Od : No Optimisations (Debug)"
 
-config MCC_OPTIMISE_SIZE
+config MSVC_OPTIMISE_SIZE
     bool "/O1 : Optimise for size "
 
-config MCC_OPTIMISE_SPEED
+config MSVC_OPTIMISE_SPEED
 	bool "/O2 : Optimise for speed "
 
-config MCC_OPTIMISE_FULL
+config MSVC_OPTIMISE_FULL
 	bool "/Ox : full optimization "
 
 endchoice
 
 choice
 	prompt "crt libraries usage"
-	default MCC_CRT_LIBRARIES_LINKED_DINAMICALLY
+	default MSVC_CRT_LIBRARIES_LINKED_DINAMICALLY
 
-config MCC_CRT_LIBRARIES_LINKED_DINAMICALLY
+config MSVC_CRT_LIBRARIES_LINKED_DINAMICALLY
 	bool "crt libraries linked dynamically /MD"
 
-config MCC_CRT_LIBRARIES_LINKED_STATICALLY
+config MSVC_CRT_LIBRARIES_LINKED_STATICALLY
 	bool "crt libraries linked statically /MT"
 endchoice
 
-menuconfig USE_WINDOWS_KITS
-    bool "use windows kits"
-
-config WINDOWS_KIT_VERSION
-    string "windows kit version"
-    depends on USE_WINDOWS_KITS
-    default "8.1"
+config USE_WINDOWS_KITS
+    bool "use windows kit (WDK)"
+    default y
 
 
-
-menuconfig MCC_IGNORE_DEFAULT_LIBRARIES
+menuconfig MSVC_IGNORE_DEFAULT_LIBRARIES
     bool "ignore default libraries"
 
-config MCC_IGNORE_ALL_DEFAULT_LIBRARIES
+config MSVC_IGNORE_ALL_DEFAULT_LIBRARIES
     bool "ignore all default libraries"
-    depends on MCC_IGNORE_DEFAULT_LIBRARIES
+    depends on MSVC_IGNORE_DEFAULT_LIBRARIES
 
-config MCC_IGNORE_LIBCMT_LIBRARY
+config MSVC_IGNORE_LIBCMT_LIBRARY
     bool "ignore libcmt.lib"
-    depends on MCC_IGNORE_DEFAULT_LIBRARIES && !MCC_IGNORE_ALL_DEFAULT_LIBRARIES
+    depends on MSVC_IGNORE_DEFAULT_LIBRARIES && !MSVC_IGNORE_ALL_DEFAULT_LIBRARIES
 
-config MCC_IGNORE_MSVCRT_LIBRARY
+config MSVC_IGNORE_MSVCRT_LIBRARY
     bool "ignore msvcrt.lib"
-    depends on MCC_IGNORE_DEFAULT_LIBRARIES && !MCC_IGNORE_ALL_DEFAULT_LIBRARIES
+    depends on MSVC_IGNORE_DEFAULT_LIBRARIES && !MSVC_IGNORE_ALL_DEFAULT_LIBRARIES
 
 endmenu

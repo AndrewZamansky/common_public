@@ -7,9 +7,6 @@
 FMT_GLOBAL_INCLUDE_DIR	:= 	$(patsubst %,/I%,$(GLOBAL_INCLUDE_DIR))
 FMT_GLOBAL_DEFINES	:= 	$(patsubst %,/D%,$(GLOBAL_DEFINES))
 
-FMT_COMPILER_INCLUDE_DIR := /I"$(COMPILER_INCLUDE_DIR)"
-FMT_COMPILER_INCLUDE_DIR += /I"C:\PROGRAM FILES (X86)\WINDOWS KITS\8.1\INCLUDE\UM"
-FMT_COMPILER_INCLUDE_DIR += /I"C:\PROGRAM FILES (X86)\WINDOWS KITS\8.1\INCLUDE\SHARED"
 #endif
 #### end of section that run just one time per build
 ######################################################
