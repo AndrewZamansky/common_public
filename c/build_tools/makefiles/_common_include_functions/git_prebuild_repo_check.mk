@@ -37,20 +37,28 @@ else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX)
 endif
 
 
+CURR_GIT_BRANCH := $(shell $(SHELL_GO_TO_GIT_DIR) $(GIT) rev-parse --abbrev-ref HEAD)
+CURR_GIT_BRANCH := $(patsubst heads/%,%,$(CURR_GIT_BRANCH))#removing heads/ if exists
 CURR_GIT_COMMIT := $(shell $(SHELL_GO_TO_GIT_DIR) $(GIT) rev-parse HEAD)
 ifneq ("$(CURR_GIT_COMMIT)",$(CURR_GIT_REQUESTED_COMMIT))
     SHELL_OUTPUT := $(shell $(SHELL_GO_TO_GIT_DIR) $(GIT) status --porcelain 2>&1)
     ERROR_MESSAGE := M 
-    ifeq ($(findstring $(ERROR_MESSAGE),$(SHELL_OUTPUT)),$(ERROR_MESSAGE))
-        $(info !--- git repository test failed : $(CURR_GIT_REPOSITORY_DIR))
-        $(info !--- git error : commit/stash all changes to $(CURR_GIT_REPOSITORY_DIR) before checkout another commit)
-        $(error  )
-    endif
-    ERROR_MESSAGE := D #??
-    ifeq ($(findstring $(ERROR_MESSAGE),$(SHELL_OUTPUT)),$(ERROR_MESSAGE))
-        $(info !--- git repository test failed : $(CURR_GIT_REPOSITORY_DIR))
-        $(info !--- git error : commit/stash all changes to $(CURR_GIT_REPOSITORY_DIR) before checkout another commit)
-        $(error  )
+    ifneq ($(sort $(filter $(CURR_APPLICATION_GIT_BRANCH),$(CURR_GIT_BRANCH))),$(CURR_APPLICATION_GIT_BRANCH))#if  $(CURR_APPLICATION_GIT_BRANCH) is not in $(CURR_GIT_BRANCH) list
+        ifeq ($(findstring $(ERROR_MESSAGE),$(SHELL_OUTPUT)),$(ERROR_MESSAGE))
+            $(info !--- git repository test failed : $(CURR_GIT_REPOSITORY_DIR))
+            $(info !--- git error : commit/stash all changes to $(CURR_GIT_REPOSITORY_DIR) before checkout another commit)
+            $(info !--- tested git branch is : $(CURR_GIT_BRANCH))
+            $(info !--- application git branch is : $(CURR_APPLICATION_GIT_BRANCH))
+            $(error  )
+        endif
+        ERROR_MESSAGE := D #??
+        ifeq ($(findstring $(ERROR_MESSAGE),$(SHELL_OUTPUT)),$(ERROR_MESSAGE))
+            $(info !--- git repository test failed : $(CURR_GIT_REPOSITORY_DIR))
+            $(info !--- git error : commit/stash all changes to $(CURR_GIT_REPOSITORY_DIR) before checkout another commit)
+            $(info !--- tested git branch is : $(CURR_GIT_BRANCH))
+            $(info !--- application git branch is : $(CURR_APPLICATION_GIT_BRANCH))
+            $(error  )
+        endif
     endif
 
     $(info !--- git repository test failed : $(CURR_GIT_REPOSITORY_DIR))
@@ -61,8 +69,6 @@ ifneq ("$(CURR_GIT_COMMIT)",$(CURR_GIT_REQUESTED_COMMIT))
     $(info !--- $(SHELL_GO_TO_GIT_DIR) $(GIT) checkout $(CURR_GIT_REQUESTED_COMMIT) -B $(CURR_APPLICATION_GIT_BRANCH))
     $(error  )
 else
-    CURR_GIT_BRANCH := $(shell $(SHELL_GO_TO_GIT_DIR) $(GIT) rev-parse --abbrev-ref HEAD)
-    CURR_GIT_BRANCH := $(patsubst heads/%,%,$(CURR_GIT_BRANCH))#removing heads/ if exists
     ifneq ($(sort $(filter $(CURR_APPLICATION_GIT_BRANCH),$(CURR_GIT_BRANCH))),$(CURR_APPLICATION_GIT_BRANCH))#if  $(CURR_APPLICATION_GIT_BRANCH) is not in $(CURR_GIT_BRANCH) list
         #for now we are doing manual checkout
         #SHELL_OUTPUT := $(shell $(SHELL_GO_TO_GIT_DIR) git checkout $(CURR_GIT_REQUESTED_COMMIT) -B $(CURR_APPLICATION_GIT_BRANCH) 2>&1)
