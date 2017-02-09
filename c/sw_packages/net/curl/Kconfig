@@ -64,6 +64,11 @@ config  CURL_ENABLE_VERBOSE_STRINGS
 	bool   "enable verbose strings"
 	default n
 
+config  CURL_ENABLE_DEBUG
+	bool   "enable debug"
+	depends on CURL_ENABLE_VERBOSE_STRINGS
+	default n
+
 choice
 	prompt "ssl library"
 	default CURL_NO_SSL

@@ -76,13 +76,20 @@ ifdef CONFIG_INCLUDE_CURL
         DUMMY := $(call ADD_TO_GLOBAL_DEFINES , CURL_DISABLE_COOKIES )
     endif
 
-    ifneq ($(strip $(CONFIG_CURL_CURL_ENABLE_VERBOSE_STRINGS)),y)
+    ifneq ($(strip $(CONFIG_CURL_ENABLE_VERBOSE_STRINGS)),y)
         DUMMY := $(call ADD_TO_GLOBAL_DEFINES , CURL_DISABLE_VERBOSE_STRINGS )
+    else
+        DUMMY := $(call ADD_TO_GLOBAL_DEFINES , Curl_nop_stmt=printf )
+    endif
+
+    ifeq ($(strip $(CONFIG_CURL_ENABLE_DEBUG)),y)
+        DUMMY := $(call ADD_TO_GLOBAL_DEFINES , DEBUGBUILD )
     endif
 
     ifeq ($(strip $(CONFIG_CURL_USE_OPENSSL)),y)
         DUMMY := $(call ADD_TO_GLOBAL_DEFINES , USE_OPENSSL )
     endif
+
 
     ifeq ($(strip $(CONFIG_CURL_USE_WOLFSSL)),y)
         DUMMY := $(call ADD_TO_GLOBAL_DEFINES , USE_CYASSL )
@@ -171,10 +178,16 @@ ifeq ($(strip $(CONFIG_CURL_HTTP_PROTOCOL_SUPPORT)),y)
     SRC += curl_ntlm_core.c
     SRC += curl_des.c
     SRC += curl_gethostname.c
+
     
     SRC += digest.c
     SRC += vauth.c
     SRC += ntlm.c
+   # SRC += rawstr.c
+    #SRC += curl_sasl.c
+   # SRC += curl_ntlm.c
+   # SRC += curl_ntlm_msgs.c
+  #  SRC += strequal.c
     VPATH += | $(CURL_PATH)/lib/vauth
 endif
 VPATH += | $(CURL_PATH)/lib

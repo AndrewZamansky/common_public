@@ -55,6 +55,9 @@ SRC += nghttp2_http.c
 SRC += nghttp2_rcbuf.c
 SRC += nghttp2_hd_huffman.c
 SRC += nghttp2_hd_huffman_data.c
+
+SRC += nghttp2_debug.c
+
 VPATH += | $(NGHTTP2_PATH)/lib
 
 include $(COMMON_CC)
