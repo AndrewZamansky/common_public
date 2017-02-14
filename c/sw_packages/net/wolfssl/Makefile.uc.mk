@@ -23,9 +23,6 @@ ifeq ($(strip $(CONFIG_INCLUDE_WOLFSSL)),y)
     endif
 
     CURR_WOLFSSL_COMPONENT_LOCATION := $(patsubst %/Makefile.uc.mk,%,$(realpath $(filter %wolfssl/Makefile.uc.mk,$(MAKEFILE_LIST))))
-#    DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(CURR_WOLFSSL_COMPONENT_LOCATION)/include)
-#    DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(CURR_WOLFSSL_COMPONENT_LOCATION)/include/openssl)
-#    DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(WOLFSSL_PATH)/include)
     DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(WOLFSSL_PATH))
 #    DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(WOLFSSL_PATH)/crypto/modes)
 
@@ -33,52 +30,48 @@ ifeq ($(strip $(CONFIG_INCLUDE_WOLFSSL)),y)
 #        DUMMY := $(call ADD_TO_GLOBAL_DEFINES , WOLFSSL_NO_MD5 )
 #    endif
 
-    DUMMY := $(call ADD_TO_GLOBAL_DEFINES ,NO_WOLFSSL_SERVER )
 
 
 endif
 
-DEFINES = NO_DSA NO_ERROR_STRINGS NO_MD4 NO_PSK  WC_NO_RSA_OAEP
-DEFINES += NO_PWDBASED NO_RC4 NO_RABBIT NO_HC128  SMALL_SESSION_CACHE
+DEFINES = NO_DSA  NO_MD4 NO_PSK  WC_NO_RSA_OAEP NO_WOLFSSL_SERVER NO_ERROR_STRINGS
+DEFINES +=  NO_RC4 NO_RABBIT NO_HC128  SMALL_SESSION_CACHE  WOLFSSL_SMALL_STACK
+
+
+DEFINES += WOLFSSL_STATIC_RSA
+DEFINES += NO_DES3
+
+#DEFINES += MAX_CHAIN_DEPTH=16
+SRC :=
+SRC += ssl.c
 
 ifneq ($(strip $(CONFIG_WOLFSSL_TLS)),y)
     DEFINES += NO_TLS
+else
+    SRC += tls.c
 endif
 
-ifneq ($(strip $(CONFIG_WOLFSSL_SHA256)),y)
-    DEFINES += NO_SHA256
+ifneq ($(strip $(CONFIG_WOLFSSL_RSA)),y)
+    DEFINES += NO_RSA
+else
+    SRC += rsa.c
 endif
 
 
+ifeq ($(strip $(CONFIG_WOLFSSL_ECC)),y)
+    DEFINES += HAVE_ECC
+    SRC += ecc.c
+endif
 
-#ASMFLAGS =
+ifeq ($(strip $(CONFIG_WOLFSSL_AES)),y)
+    SRC += aes.c
+endif
 
-INCLUDE_DIR :=
-INCLUDE_DIR +=
+ifeq ($(strip $(CONFIG_WOLFSSL_DHE_RSA_WITH_AES_128_GCM_SHA256)),y)
+    DEFINES += BUILD_TLS_DHE_RSA_WITH_AES_128_GCM_SHA256  HAVE_AESGCM
+endif
 
-SRC :=
-SRC += tls.c
-SRC += ssl.c
-SRC += internal.c
-SRC += keys.c
-VPATH += | $(WOLFSSL_PATH)/src
 
-SRC += sha256.c
-SRC += random.c
-SRC += memory.c
-SRC += wc_port.c
-SRC += rsa.c
-SRC += asn.c
-SRC += integer.c
-SRC += io.c
-SRC += des3.c
-SRC += sha.c
-SRC += dh.c
-SRC += hash.c
-SRC += aes.c
-SRC += coding.c
-SRC += hmac.c
-VPATH += | $(WOLFSSL_PATH)/wolfcrypt/src
 
 ifneq ($(strip $(CONFIG_WOLFSSL_MD5)),y)
     DEFINES += NO_MD5
@@ -88,7 +81,38 @@ endif
 
 ifneq ($(strip $(CONFIG_WOLFSSL_SHA256)),y)
     DEFINES += NO_SHA256
+else
+    SRC += sha256.c
 endif
+
+#SRC += pwd.c
+
+#ASMFLAGS =
+
+INCLUDE_DIR :=
+INCLUDE_DIR +=
+
+SRC += internal.c
+SRC += keys.c
+VPATH += | $(WOLFSSL_PATH)/src
+
+SRC += random.c
+SRC += memory.c
+SRC += wc_port.c
+SRC += asn.c
+SRC += integer.c
+SRC += io.c
+SRC += sha.c
+SRC += dh.c
+SRC += hash.c
+SRC += coding.c
+SRC += hmac.c
+SRC += pwdbased.c
+VPATH += | $(WOLFSSL_PATH)/wolfcrypt/src
+
+SRC += wolfmath.c
+
+
 
 
 include $(COMMON_CC)

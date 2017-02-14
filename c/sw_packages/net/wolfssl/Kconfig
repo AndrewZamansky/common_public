@@ -12,6 +12,29 @@ config  WOLFSSL_TLS
 	bool   "tls"
 	default n
 
+config  WOLFSSL_ECC
+	bool   "ecc"
+	default n
+
+config  WOLFSSL_AES
+	bool   "aes"
+	default n
+
+config  WOLFSSL_RSA
+	bool   "rsa"
+	default n
+
+
+menu "wolf cipher suites"
+
+config  WOLFSSL_DHE_RSA_WITH_AES_128_GCM_SHA256
+	bool   "DHE_RSA_WITH_AES_128_GCM_SHA256"
+	select WOLFSSL_AES
+	select WOLFSSL_SHA256
+	default n
+
+endmenu
+
 
 config WOLFSSL_GIT_COMMIT_HASH
 	string "wolfSSL git commit hash"
