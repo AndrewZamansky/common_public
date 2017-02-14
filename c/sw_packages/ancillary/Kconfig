@@ -2,6 +2,10 @@
 
 menu "ancillary"
 
+config INCLUDE_CJSON
+	bool   "cJSON"
+	default n
+
 
 menuconfig INCLUDE_ASYNC_TX_WRAPPER
 	bool   "async tx wrapper"

@@ -24,6 +24,14 @@ config  WOLFSSL_RSA
 	bool   "rsa"
 	default n
 
+config  WOLFSSL_DH
+	bool   "dh"
+	default n
+
+config  WOLFSSL_HMAC
+	bool   "hmac"
+	default n
+
 
 menu "wolf cipher suites"
 

@@ -28,78 +28,6 @@ ifdef CONFIG_INCLUDE_CURL
     DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(CURL_PATH)/include)
     
     
-    ifneq ($(strip $(CONFIG_CURL_HTTP_PROTOCOL_SUPPORT)),y)
-        DUMMY := $(call ADD_TO_GLOBAL_DEFINES , CURL_DISABLE_HTTP )
-    endif
-    ifneq ($(strip $(CONFIG_CURL_FTP_PROTOCOL_SUPPORT)),y)
-        DUMMY := $(call ADD_TO_GLOBAL_DEFINES , CURL_DISABLE_FTP )
-    endif
-    ifneq ($(strip $(CONFIG_CURL_TELNET_PROTOCOL_SUPPORT)),y)
-        DUMMY := $(call ADD_TO_GLOBAL_DEFINES , CURL_DISABLE_TELNET )
-    endif
-    ifneq ($(strip $(CONFIG_CURL_DICT_PROTOCOL_SUPPORT)),y)
-        DUMMY := $(call ADD_TO_GLOBAL_DEFINES , CURL_DISABLE_DICT )
-    endif
-    ifneq ($(strip $(CONFIG_CURL_TFTP_PROTOCOL_SUPPORT)),y)
-        DUMMY := $(call ADD_TO_GLOBAL_DEFINES , CURL_DISABLE_TFTP )
-    endif
-    ifneq ($(strip $(CONFIG_CURL_FILE_PROTOCOL_SUPPORT)),y)
-        DUMMY := $(call ADD_TO_GLOBAL_DEFINES , CURL_DISABLE_FILE )
-    endif
-    ifneq ($(strip $(CONFIG_CURL_LDAP_PROTOCOL_SUPPORT)),y)
-        DUMMY := $(call ADD_TO_GLOBAL_DEFINES , CURL_DISABLE_LDAP )
-    endif
-    ifneq ($(strip $(CONFIG_CURL_IMAP_PROTOCOL_SUPPORT)),y)
-        DUMMY := $(call ADD_TO_GLOBAL_DEFINES , CURL_DISABLE_IMAP )
-    endif
-    ifneq ($(strip $(CONFIG_CURL_SMTP_PROTOCOL_SUPPORT)),y)
-        DUMMY := $(call ADD_TO_GLOBAL_DEFINES , CURL_DISABLE_SMTP )
-    endif
-    ifneq ($(strip $(CONFIG_GOPHER_PROTOCOL_SUPPORT)),y)
-        DUMMY := $(call ADD_TO_GLOBAL_DEFINES , CURL_DISABLE_GOPHER )
-    endif
-    ifneq ($(strip $(CONFIG_CURL_SMB_PROTOCOL_SUPPORT)),y)
-        DUMMY := $(call ADD_TO_GLOBAL_DEFINES , CURL_DISABLE_SMB )
-    endif
-    ifneq ($(strip $(CONFIG_CURL_POP3_PROTOCOL_SUPPORT)),y)
-        DUMMY := $(call ADD_TO_GLOBAL_DEFINES , CURL_DISABLE_POP3 )
-    endif
-    ifneq ($(strip $(CONFIG_CURL_RTSP_PROTOCOL_SUPPORT)),y)
-        DUMMY := $(call ADD_TO_GLOBAL_DEFINES , CURL_DISABLE_RTSP )
-    endif
-       
-    ifneq ($(strip $(CONFIG_CURL_ENABLE_PROXY)),y)
-        DUMMY := $(call ADD_TO_GLOBAL_DEFINES , CURL_DISABLE_PROXY )
-    endif
-
-    ifneq ($(strip $(CONFIG_CURL_ENABLE_COOKIES)),y)
-        DUMMY := $(call ADD_TO_GLOBAL_DEFINES , CURL_DISABLE_COOKIES )
-    endif
-
-    ifneq ($(strip $(CONFIG_CURL_ENABLE_VERBOSE_STRINGS)),y)
-        DUMMY := $(call ADD_TO_GLOBAL_DEFINES , CURL_DISABLE_VERBOSE_STRINGS )
-    else
-        DUMMY := $(call ADD_TO_GLOBAL_DEFINES , Curl_nop_stmt=printf )
-    endif
-
-    ifeq ($(strip $(CONFIG_CURL_ENABLE_DEBUG)),y)
-        DUMMY := $(call ADD_TO_GLOBAL_DEFINES , DEBUGBUILD )
-    endif
-
-    ifeq ($(strip $(CONFIG_CURL_USE_OPENSSL)),y)
-        DUMMY := $(call ADD_TO_GLOBAL_DEFINES , USE_OPENSSL )
-    endif
-
-
-    ifeq ($(strip $(CONFIG_CURL_USE_WOLFSSL)),y)
-        DUMMY := $(call ADD_TO_GLOBAL_DEFINES , USE_CYASSL )
-    endif
-
-    ifeq ($(strip $(CONFIG_CURL_USE_NGHTTP2)),y)
-        DUMMY := $(call ADD_TO_GLOBAL_DEFINES , USE_NGHTTP2 )
-    endif
-
-    DUMMY := $(call ADD_TO_GLOBAL_DEFINES , CURL_STRICTER )
 
     ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)    
         ifeq ($(strip $(CONFIG_MICROSOFT_COMPILER)),y)
@@ -107,11 +35,87 @@ ifdef CONFIG_INCLUDE_CURL
             DUMMY := $(call ADD_TO_GLOBAL_LIBRARIES_PATH , var )
         endif
     endif
-   
+    
+    DUMMY := $(call ADD_TO_GLOBAL_DEFINES , CURL_STATICLIB )
 endif
-DEFINES :=
 
 
+ifneq ($(strip $(CONFIG_CURL_HTTP_PROTOCOL_SUPPORT)),y)
+    DEFINES += CURL_DISABLE_HTTP
+endif
+ifneq ($(strip $(CONFIG_CURL_FTP_PROTOCOL_SUPPORT)),y)
+    DEFINES += CURL_DISABLE_FTP
+endif
+ifneq ($(strip $(CONFIG_CURL_TELNET_PROTOCOL_SUPPORT)),y)
+    DEFINES += CURL_DISABLE_TELNET
+endif
+ifneq ($(strip $(CONFIG_CURL_DICT_PROTOCOL_SUPPORT)),y)
+    DEFINES += CURL_DISABLE_DICT
+endif
+ifneq ($(strip $(CONFIG_CURL_TFTP_PROTOCOL_SUPPORT)),y)
+    DEFINES += CURL_DISABLE_TFTP
+endif
+ifneq ($(strip $(CONFIG_CURL_FILE_PROTOCOL_SUPPORT)),y)
+    DEFINES += CURL_DISABLE_FILE
+endif
+ifneq ($(strip $(CONFIG_CURL_LDAP_PROTOCOL_SUPPORT)),y)
+    DEFINES += CURL_DISABLE_LDAP
+endif
+ifneq ($(strip $(CONFIG_CURL_IMAP_PROTOCOL_SUPPORT)),y)
+    DEFINES += CURL_DISABLE_IMAP
+endif
+ifneq ($(strip $(CONFIG_CURL_SMTP_PROTOCOL_SUPPORT)),y)
+    DEFINES += CURL_DISABLE_SMTP
+endif
+ifneq ($(strip $(CONFIG_GOPHER_PROTOCOL_SUPPORT)),y)
+    DEFINES += CURL_DISABLE_GOPHER
+endif
+ifneq ($(strip $(CONFIG_CURL_SMB_PROTOCOL_SUPPORT)),y)
+    DEFINES += CURL_DISABLE_SMB
+endif
+ifneq ($(strip $(CONFIG_CURL_POP3_PROTOCOL_SUPPORT)),y)
+    DEFINES += CURL_DISABLE_POP3
+endif
+ifneq ($(strip $(CONFIG_CURL_RTSP_PROTOCOL_SUPPORT)),y)
+    DEFINES += CURL_DISABLE_RTSP
+endif
+   
+ifneq ($(strip $(CONFIG_CURL_ENABLE_PROXY)),y)
+    DEFINES += CURL_DISABLE_PROXY
+endif
+
+ifneq ($(strip $(CONFIG_CURL_ENABLE_COOKIES)),y)
+    DEFINES += CURL_DISABLE_COOKIES
+endif
+
+ifneq ($(strip $(CONFIG_CURL_ENABLE_VERBOSE_STRINGS)),y)
+    DEFINES += CURL_DISABLE_VERBOSE_STRINGS
+else
+    DEFINES += Curl_nop_stmt=printf
+endif
+
+ifeq ($(strip $(CONFIG_CURL_ENABLE_DEBUG)),y)
+    DEFINES += DEBUGBUILD
+endif
+
+ifeq ($(strip $(CONFIG_CURL_USE_OPENSSL)),y)
+    DEFINES += USE_OPENSSL
+endif
+
+
+ifeq ($(strip $(CONFIG_CURL_USE_WOLFSSL)),y)
+    DEFINES += USE_CYASSL
+endif
+
+ifeq ($(strip $(CONFIG_CURL_USE_NGHTTP2)),y)
+    DEFINES += USE_NGHTTP2
+endif
+
+DEFINES += CURL_STRICTER
+ifdef CONFIG_MICROSOFT_COMPILER
+    CFLAGS += /wd4127 #disable warning C4127: conditional expression is constant
+    DEFINES += _CRT_SECURE_NO_WARNINGS
+endif
 #ASMFLAGS =
 
 #INCLUDE_DIR =
@@ -183,11 +187,6 @@ ifeq ($(strip $(CONFIG_CURL_HTTP_PROTOCOL_SUPPORT)),y)
     SRC += digest.c
     SRC += vauth.c
     SRC += ntlm.c
-   # SRC += rawstr.c
-    #SRC += curl_sasl.c
-   # SRC += curl_ntlm.c
-   # SRC += curl_ntlm_msgs.c
-  #  SRC += strequal.c
     VPATH += | $(CURL_PATH)/lib/vauth
 endif
 VPATH += | $(CURL_PATH)/lib

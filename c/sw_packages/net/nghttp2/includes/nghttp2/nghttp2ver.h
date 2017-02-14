@@ -25,7 +25,18 @@
 #ifndef NGHTTP2VER_H
 #define NGHTTP2VER_H
 
-#define ssize_t	long
+#ifndef _SSIZE_T_DEFINED
+#  if (defined(__WATCOMC__) && (__WATCOMC__ >= 1240)) || \
+      defined(__POCC__) || \
+      defined(__MINGW32__)
+#  elif defined(_WIN64)
+#    define _SSIZE_T_DEFINED
+#    define ssize_t __int64
+#  else
+#    define _SSIZE_T_DEFINED
+#    define ssize_t int
+#  endif
+#endif
 #define NGHTTP2_STATICLIB
 
 #if defined(_WIN32) || defined(_WIN64)
