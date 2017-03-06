@@ -43,6 +43,14 @@ config  WOLFSSL_DHE_RSA_WITH_AES_128_GCM_SHA256
 
 endmenu
 
+config  WOLFSSL_DONT_USE_FILESYSTEM
+	bool   "don't use filesystem"
+	default n
+
+
+config  WOLFSSL_USE_CUSTOM_RANDOM_GENERATOR
+	bool   "use custom random generator"
+	default n
 
 config WOLFSSL_GIT_COMMIT_HASH
 	string "wolfSSL git commit hash"

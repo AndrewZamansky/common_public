@@ -90,10 +90,6 @@ config DATA_LOCATION_DDR
 endchoice
 
 
-config CPU_SPECIFIC_FILES_ARE_SPEAD_CRITICAL
-	bool   "put cpu specific files in ram to improve speed"
-	default n
-
 
 config PROJECT_IS_BOOTLOADER
     bool "this project is bootloader"
@@ -118,6 +114,10 @@ config CODE_SIZE_LIMIT
     
 endmenu
 
+config PUT_SPEED_CRITICAL_CODE_TO_RAM
+	bool "put speed critical code to ram"
+    depends on ARM
+    default n
 
 config EXCEPTION_STACKS_DEBUG
 	bool "fill system stacks with pattern (help to debug stack overflow)"

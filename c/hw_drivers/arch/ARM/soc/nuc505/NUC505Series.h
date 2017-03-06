@@ -14915,8 +14915,12 @@ typedef volatile unsigned long  vu32;       ///< Define 32-bit unsigned volatile
 #define NULL           (0)      ///< NULL pointer
 #endif
 
-#define TRUE           (1)      ///< Boolean true, define to use in API parameters or return value
-#define FALSE          (0)      ///< Boolean false, define to use in API parameters or return value
+#ifndef TRUE
+	#define TRUE           (1)      ///< Boolean true, define to use in API parameters or return value
+#endif
+#ifndef FALSE
+	#define FALSE          (0)      ///< Boolean false, define to use in API parameters or return value
+#endif
 
 #define ENABLE         (1)      ///< Enable, define to use in API parameters
 #define DISABLE        (0)      ///< Disable, define to use in API parameters

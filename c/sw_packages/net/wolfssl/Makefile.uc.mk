@@ -24,18 +24,23 @@ ifeq ($(strip $(CONFIG_INCLUDE_WOLFSSL)),y)
 
     CURR_WOLFSSL_COMPONENT_LOCATION := $(patsubst %/Makefile.uc.mk,%,$(realpath $(filter %wolfssl/Makefile.uc.mk,$(MAKEFILE_LIST))))
     DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(WOLFSSL_PATH))
-#    DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(WOLFSSL_PATH)/crypto/modes)
 
-#    ifneq ($(strip $(CONFIG_WOLFSSL_MD5)),y)
-#        DUMMY := $(call ADD_TO_GLOBAL_DEFINES , WOLFSSL_NO_MD5 )
-#    endif
+    ifneq ($(strip $(CONFIG_WOLFSSL_MD5)),y)
+        DUMMY := $(call ADD_TO_GLOBAL_DEFINES , WOLFSSL_NO_MD5 )
+    endif
 
-
+    ifneq ($(strip $(CONFIG_WOLFSSL_DONT_USE_FILESYSTEM)),y)
+        DUMMY := $(call ADD_TO_GLOBAL_DEFINES , NO_FILESYSTEM )
+    endif
 
 endif
 
 DEFINES :=
 CFLAGS :=
+
+ifeq ($(strip $(CONFIG_WOLFSSL_USE_CUSTOM_RANDOM_GENERATOR)),y)
+    DEFINES +=   CUSTOM_RAND_GENERATE=custom_rand_generate
+endif
 
 ifdef CONFIG_MICROSOFT_COMPILER
     CFLAGS += /wd4127 #disable warning C4127: conditional expression is constant
@@ -133,6 +138,7 @@ VPATH += | $(WOLFSSL_PATH)/wolfcrypt/src
 
 SRC += wolfmath.c
 
+SPEED_CRITICAL_FILES += integer.c memory.c sha.c rsa.c
 
 
 

@@ -42,7 +42,7 @@
 #if defined(_WIN32) || defined(_WIN64)
 	#define _U_
 #else
-	#define __attribute__((unused))
+	#define _U_ __attribute__((unused))
 #endif
 
 /**

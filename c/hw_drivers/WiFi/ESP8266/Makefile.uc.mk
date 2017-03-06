@@ -1,7 +1,6 @@
 
-ifeq ($(findstring YES,$(CONFIG_INCLUDE_ESP8266)),YES) 	 
-	INCLUDE_THIS_COMPONENT := YES   # must be here !!
-endif  
+INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_ESP8266)
+ 
 
 
 #INCLUDE_DIR = 
@@ -15,6 +14,7 @@ endif
 
 
 SRC = ESP8266.c
+SRC += ESP8266_socket_api.c
 VPATH = src
 
 

@@ -6,7 +6,7 @@ ifndef COMMON_INIT_SECTION_THAT_SHOULD_RUN_ONCE
 MSVC_ROOT_DIR :=
 
 ####### test for existence of microsoft compiler and put its directory name in MSVC_ROOT_DIR #####
-SEARCHED_TOOL:=visual studio
+SEARCHED_TOOL:=cl
 SEARCHED_DIR_VARIABLE:=MSVC_ROOT_DIR
 MANUALLY_DEFINED_DIR_VARIABLE:=REDEFINE_VISUAL_STUDIO_DIR
 TEST_FILE_IN_SEARCHED_DIR:=bin\cl.exe

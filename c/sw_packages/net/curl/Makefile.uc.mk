@@ -37,6 +37,10 @@ ifdef CONFIG_INCLUDE_CURL
     endif
     
     DUMMY := $(call ADD_TO_GLOBAL_DEFINES , CURL_STATICLIB )
+    ifeq ($(strip $(CONFIG_CURL_USE_CUSTOM_CURL_CONFIG_H)),y)
+        DUMMY := $(call ADD_TO_GLOBAL_DEFINES , HAVE_CONFIG_H )
+    endif
+
 endif
 
 
@@ -111,6 +115,14 @@ ifeq ($(strip $(CONFIG_CURL_USE_NGHTTP2)),y)
     DEFINES += USE_NGHTTP2
 endif
 
+ifneq ($(strip $(CONFIG_CURL_DEFAULT_RECIEVE_BUFFER_SIZE)),y)#if NOT define default buffer size
+    DEFINES += CURL_MAX_WRITE_SIZE=$(CONFIG_CURL_RECIEVE_BUFFER_SIZE)
+endif
+
+ifeq ($(strip $(CONFIG_GCC)),y)
+    DEFINES += HAVE_STRTOLL
+endif
+
 DEFINES += CURL_STRICTER
 ifdef CONFIG_MICROSOFT_COMPILER
     CFLAGS += /wd4127 #disable warning C4127: conditional expression is constant
@@ -130,7 +142,6 @@ SRC += slist.c
 SRC += llist.c
 SRC += hash.c
 SRC += timeval.c
-SRC += asyn-thread.c
 SRC += curl_addrinfo.c
 SRC += multi.c
 SRC += hostasyn.c
@@ -162,6 +173,12 @@ SRC += netrc.c
 SRC += dotdot.c
 SRC += fileinfo.c
 SRC += strtok.c
+
+# followin files compiled always but contets of each are used 
+# according to following defines :  CURLRES_ARES , CURLRES_THREADED , CURLRES_SYNCH
+SRC += hostsyn.c
+SRC += asyn-thread.c
+SRC += asyn-ares.c
 
 ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)    
     SRC += system_win32.c

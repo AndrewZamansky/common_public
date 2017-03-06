@@ -175,6 +175,16 @@ void *os_create_task_FreeRTOS(char *taskName , void (*taskFunction)(void *apPara
 #define os_delay_ms   vTaskDelay
 
 
+
+
+/*********** thread safe  malloc/free **********/
+/**	function :	[os_safe_malloc()]  **/
+#define os_safe_malloc   pvPortMalloc
+
+/**	function :	[os_safe_malloc()]  **/
+#define os_safe_free   vPortFree
+
+
 /********* stack debug ********/
 #ifdef CONFIG_TEST_TASK_STACK
 

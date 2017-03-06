@@ -148,13 +148,13 @@ SECTIONS
 	   KEEP(*(.end_of_modules ))
 	}  > CODE_LOCATION
 
-	__auto_init_functions_section_start_on_RAM__ = .;
+	init_functions_section_start = .;
 	.auto_init_functions . :
 	{
 		KEEP(*(.auto_init_functions)) ;
 		. = ALIGN(4);
 	}  > CODE_LOCATION
-	__auto_init_functions_section_end_on_RAM__ = .;
+	init_functions_section_end = .;
 
 	.rodata . :
 	{

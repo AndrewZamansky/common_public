@@ -53,7 +53,7 @@ void heartbeat_timer_callback()
 {
 	restart_counter++;
 }
-static volatile int tmp=0;
+
 /*---------------------------------------------------------------------------------------------------------*/
 /* Function:        heartbeat_ioctl                                                                          */
 /*                                                                                                         */
@@ -109,7 +109,6 @@ uint8_t heartbeat_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num , voi
 
 		case HEARTBEAT_API_EACH_1mS_CALL:
 			restart_counter++;
-			tmp++;
 			break;
 
 		case HEARTBEAT_API_CALL_FROM_IDLE_TASK :

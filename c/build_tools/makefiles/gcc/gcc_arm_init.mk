@@ -2,107 +2,44 @@
 ### the following section we need to run just one time per build
 ifndef COMMON_INIT_SECTION_THAT_SHOULD_RUN_ONCE
  
-
-
-ifdef REDEFINE_ARM_GCC_ROOT_DIR
-    $(info  arm gcc dir  redefined to $(REDEFINE_ARM_GCC_ROOT_DIR) )
-    ifeq ("$(wildcard $(REDEFINE_ARM_GCC_ROOT_DIR))","")
-        $(info !--- arm gcc path $(REDEFINE_ARM_GCC_ROOT_DIR) dont exists)
-        $(info !--- to use default gcc location remove/comment REDEFINE_ARM_GCC_ROOT_DIR variable in  $(WORKSPACE_ROOT_DIR)/workspace_config.mk )
-        $(info !--- you can set customized gcc path in REDEFINE_ARM_GCC_ROOT_DIR variable in $(WORKSPACE_ROOT_DIR)/workspace_config.mk )
-        $(error )
-    else
-        GCC_ROOT_DIR 	:= 	$(REDEFINE_ARM_GCC_ROOT_DIR)
-    endif
-else
-    $(info  looking for arm gcc in default location)
-    ifeq ("$(wildcard $(TOOLS_ROOT_DIR)/gcc)","")
-        $(info !--- path  $(TOOLS_ROOT_DIR)/gcc dont exists create it )
-        $(error )
-    endif
-
-    TEST_GCC_ROOT_DIR 	:= 	$(TOOLS_ROOT_DIR)/gcc/arm
-    ifeq ("$(wildcard $(TEST_GCC_ROOT_DIR)*)","")
-        $(info --- gcc for arm dont exists )
-        GCC_NOT_FOUND :=1
-    endif
-
-    VENDOR_NAME :=
-    ifneq ($(CONFIG_GCC_VENDOR_NAME),"")
-       VENDOR_NAME :=$(patsubst "%",%,$(CONFIG_GCC_VENDOR_NAME))
-       VENDOR_NAME :=$(VENDOR_NAME)-
-    endif
-    ifndef GCC_NOT_FOUND
-       TEST_GCC_ROOT_DIR 	:= 	$(TOOLS_ROOT_DIR)/gcc/arm-$(VENDOR_NAME)
-       ifeq ("$(wildcard $(TEST_GCC_ROOT_DIR)*)","")
-           $(info !--- gcc with vendor name $(VENDOR_NAME) dont exists )
-           $(info !--- (if needed you can change vendor name using menuconfig in GCC_VENDOR_NAME variable ))
-           GCC_NOT_FOUND :=1
-       endif
-    endif
-
-    OS_PREFIX :=none-
-    ifdef CONFIG_GCC_TARGET_OS_LINUX
-        OS_PREFIX:=linux-
-    endif
-    ifndef GCC_NOT_FOUND
-       TEST_GCC_ROOT_DIR 	:= 	$(TOOLS_ROOT_DIR)/gcc/arm-$(VENDOR_NAME)$(OS_PREFIX)
-       ifeq ("$(wildcard $(TEST_GCC_ROOT_DIR)*)","")
-           $(info !--- gcc for '$(OS_PREFIX)' OS dont exists )
-           $(info !--- (if needed you can change target OS using menuconfig in "Building System" menu ))
-           GCC_NOT_FOUND :=1
-       endif
-    endif
-
-    ABI_PREFIX :=
-    ifdef CONFIG_EABI
-        ABI_PREFIX:=eabi
-    endif
-    ifdef CONFIG_GNUEABI
-        ABI_PREFIX:=gnueabi
-    endif
-    ifndef GCC_NOT_FOUND
-       TEST_GCC_ROOT_DIR 	:= 	$(TOOLS_ROOT_DIR)/gcc/arm-$(VENDOR_NAME)$(OS_PREFIX)$(ABI_PREFIX)
-       ifeq ("$(wildcard $(TEST_GCC_ROOT_DIR)*)","")
-           $(info !--- gcc for '$(ABI_PREFIX)' ABI dont exists )
-           $(info !--- (if needed you can change ABI type using menuconfig in "Building System" menu ))
-           GCC_NOT_FOUND :=1
-       endif
-    endif
-
-
-    GCC_VERSION :=$(patsubst "%",%,$(CONFIG_ARM_GCC_VERSION))
-    ifndef GCC_NOT_FOUND
-       TEST_GCC_ROOT_DIR 	:= 	$(TOOLS_ROOT_DIR)/gcc/arm-$(VENDOR_NAME)$(OS_PREFIX)$(ABI_PREFIX)-$(GCC_VERSION)
-       ifeq ("$(wildcard $(TEST_GCC_ROOT_DIR))","")
-           $(info !--- gcc with '$(GCC_VERSION)' version dont exists )
-           $(info !--- (if needed you can change gcc version using menuconfig in "Building System" menu ))
-           GCC_NOT_FOUND :=1
-       endif
-    endif
-
-
-    ifdef GCC_NOT_FOUND
-       TEST_GCC_ROOT_DIR 	:= 	$(TOOLS_ROOT_DIR)/gcc/arm-$(VENDOR_NAME)$(OS_PREFIX)$(ABI_PREFIX)-$(GCC_VERSION)
-        $(info !--- gcc path $(TEST_GCC_ROOT_DIR) dont exists )
-        $(info !--- download gcc (tested version is $(CONFIG_GCC_VERSION)) )
-        $(info !--- unpack it to $(TEST_GCC_ROOT_DIR))
-        $(info !--- make sure that arm-none-eabi,bin and lib  folders is located in $(TEST_GCC_ROOT_DIR)/  after unpacking   )
-        $(info !--- you can also set customized gcc path in REDEFINE_ARM_GCC_ROOT_DIR variable in $(WORKSPACE_ROOT_DIR)/workspace_config.mk )
-        $(error )
-    endif
-
-    GCC_ROOT_DIR :=$(lastword $(wildcard $(TEST_GCC_ROOT_DIR)))#take the latest gcc version
-
+VENDOR_NAME :=
+ifneq ($(CONFIG_GCC_VENDOR_NAME),"")
+   VENDOR_NAME :=$(patsubst "%",%,$(CONFIG_GCC_VENDOR_NAME))
+   VENDOR_NAME :=$(VENDOR_NAME)-
+endif
+OS_PREFIX :=none-
+ifdef CONFIG_GCC_TARGET_OS_LINUX
+    OS_PREFIX:=linux-
+endif
+ABI_PREFIX :=
+ifdef CONFIG_EABI
+    ABI_PREFIX:=eabi
+endif
+ifdef CONFIG_GNUEABI
+    ABI_PREFIX:=gnueabi
 endif
 
+GNU_COMPILATION_PREFIX	:=arm-$(VENDOR_NAME)$(OS_PREFIX)$(ABI_PREFIX)
+
+GCC_ROOT_DIR :=
+
+####### test for existence of microsoft compiler and put its directory name in MSVC_ROOT_DIR #####
+SEARCHED_TOOL:=$(GNU_COMPILATION_PREFIX)-gcc
+SEARCHED_DIR_VARIABLE:=GCC_ROOT_DIR
+MANUALLY_DEFINED_DIR_VARIABLE:=REDEFINE_ARM_GCC_ROOT_DIR
+ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
+    TEST_FILE_IN_SEARCHED_DIR:=bin\$(GNU_COMPILATION_PREFIX)-gcc.exe
+else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX)
+    TEST_FILE_IN_SEARCHED_DIR:=bin/$(GNU_COMPILATION_PREFIX)-gcc
+endif
+include $(MAKEFILE_DEFS_ROOT_DIR)/_common_include_functions/tool_existence_check.mk
+####### end of tool existence test #####
 
 
 ifndef CONFIG_OPTIMIZE_LEVEL
     CONFIG_OPTIMIZE_LEVEL :=O0
 endif
 
-GNU_COMPILATION_PREFIX	:=arm-$(VENDOR_NAME)$(OS_PREFIX)$(ABI_PREFIX)
 
 
 ifdef CONFIG_GCC_OPTIMISE_NONE

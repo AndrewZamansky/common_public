@@ -20,8 +20,8 @@ endif
 
 ifeq ("",$(CURR_GIT_REQUESTED_COMMIT))
     $(info !--- git repository test failed : $(CURR_GIT_REPOSITORY_DIR))
-    $(info !--- CURR_GIT_COMMIT_HASH_VARIABLE = $(CURR_GIT_REQUESTED_COMMIT))
-    $(info !--- CURR_GIT_COMMIT_HASH_VARIABLE should contain valid git hash)
+    $(info !--- $(CURR_GIT_COMMIT_HASH_VARIABLE) = $(CURR_GIT_REQUESTED_COMMIT))
+    $(info !--- $(CURR_GIT_COMMIT_HASH_VARIABLE) should contain valid git hash)
     $(error  )
 endif
 

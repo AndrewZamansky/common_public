@@ -123,6 +123,7 @@ void __attribute__((weak)) OS_SWI_Handler(void)
 
 /**************  low level calls from libraries ******************/
 EXTERN_C_FUNCTION int _getpid(void) {
+	while(1) ;
   return 1;
 }
 
@@ -161,25 +162,24 @@ EXTERN_C_FUNCTION void __attribute__ ((noreturn)) _exit(int status)
 }
 
 EXTERN_C_FUNCTION int _write(int file, char *ptr, int len) {
-
+	while(1) ;
  return len;
  }
 
-EXTERN_C_FUNCTION int _close(int file) { return -1; }
+EXTERN_C_FUNCTION int _close(int file) {while(1) ; return -1; }
 
-EXTERN_C_FUNCTION int _fstat(int file, void *st) { return 0; }
+EXTERN_C_FUNCTION int _fstat(int file, void *st) {while(1) ; return 0; }
 
-EXTERN_C_FUNCTION int _isatty(int file) { return 1; }
+EXTERN_C_FUNCTION int _isatty(int file) { while(1) ;return 1; }
 
-EXTERN_C_FUNCTION int _lseek(int file, int ptr, int dir) { return 0; }
+EXTERN_C_FUNCTION int _lseek(int file, int ptr, int dir) {while(1) ; return 0; }
 
-EXTERN_C_FUNCTION int _open(const char *name, int flags, int mode) { return -1; }
+EXTERN_C_FUNCTION int _open(const char *name, int flags, int mode) {while(1) ; return -1; }
 
-EXTERN_C_FUNCTION int _read(int file, char *ptr, int len) { return 0; }
+EXTERN_C_FUNCTION int _read(int file, char *ptr, int len) {while(1) ; return 0; }
 
-EXTERN_C_FUNCTION time_t time (time_t *result) { return -1; }
 
-EXTERN_C_FUNCTION clock_t _times(clock_t * ptms) { return -1; }
+EXTERN_C_FUNCTION clock_t _times(clock_t * ptms) { while(1) ;return -1; }
 
 #endif
 /******************-------------------*****************************/

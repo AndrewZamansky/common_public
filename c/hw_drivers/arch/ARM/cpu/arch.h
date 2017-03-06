@@ -18,7 +18,8 @@
 	#define AUTO_INIT_FUNCTION_PLACEMENT	 	__attribute__((section(".auto_init_functions")))
 #endif
 
-
+//receive char string terminated by 0 and returns uint8_t ascii string
+#define char_to_uint8_t(str)	((uint8_t*)str)
 
 /**********  define   types ************/
 

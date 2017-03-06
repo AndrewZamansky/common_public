@@ -62,8 +62,6 @@ else ifdef CONFIG_CORTEX_A9
 	VPATH += src/Cortex_A9
 endif
 
-ifdef CONFIG_CPU_SPECIFIC_FILES_ARE_SPEAD_CRITICAL 
-    SPEED_CRITICAL_FILES += SWI.s #low_level_calls.c
-endif
+
 
 include $(COMMON_CC)

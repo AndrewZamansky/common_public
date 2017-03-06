@@ -25,7 +25,24 @@ extern void xPortSysTickHandler(void);
 static pdev_descriptor_t l_timer_dev = NULL;
 static pdev_descriptor_t l_heartbeat_dev = NULL;
 
+void *pvPortRealloc( void *p , size_t xWantedSize )
+{
+	void *pvReturn = pvPortMalloc(xWantedSize);
+	if( pvReturn != NULL )		memcpy(pvReturn,p,xWantedSize);
+	vPortFree(p);
 
+	#if( configUSE_MALLOC_FAILED_HOOK == 1 )
+	{
+		if( pvReturn == NULL )
+		{
+			extern void vApplicationMallocFailedHook( void );
+			vApplicationMallocFailedHook();
+		}
+	}
+	#endif
+
+	return pvReturn;
+}
 
 void *os_create_task_FreeRTOS(char *taskName , void (*taskFunction)(void *apParam),
 		void *taskFunctionParam , uint16_t stackSize , uint8_t priority)
@@ -43,6 +60,7 @@ uint8_t os_queue_send_immediate(os_queue_t queue ,  void * pData  )
 	uint8_t retVal;
 	BaseType_t xHigherPriorityTaskWoken ;
 
+	xHigherPriorityTaskWoken = pdFALSE ;
 	retVal = xQueueSendFromISR( queue, ( void * ) pData,  &xHigherPriorityTaskWoken );
 	portEND_SWITCHING_ISR( xHigherPriorityTaskWoken );
 	return retVal;

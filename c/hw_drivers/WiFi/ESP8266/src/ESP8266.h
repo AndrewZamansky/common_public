@@ -15,8 +15,11 @@
 /***************   typedefs    *******************/
 
 
+typedef struct {
+	pdev_descriptor_t   timer_dev;
+	pdev_descriptor_t   uart_rx_dev;
+	pdev_descriptor_t   uart_tx_dev;
+} esp8266_instance_t;
 
 
-#else
-#pragma message( "warning : this header file had already been included" )
 #endif /* */
