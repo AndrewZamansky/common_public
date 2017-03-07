@@ -1,6 +1,25 @@
 #ifndef HEADER_CURL_CONFIG_H
 #define HEADER_CURL_CONFIG_H
 
+#include "_project.h"
+#include "sys/socket.h"
+#include "sys/time.h"
+
+/* to remove warning*/
+extern uint16_t htons(uint16_t n);
+ssize_t send(int socket, const void *buffer, size_t length, int flags);
+size_t recv(int sockfd, void *buf, size_t len, int flags);
+int select(int nfds, fd_set *readfds, fd_set *writefds,
+                  fd_set *exceptfds, struct timeval *timeout);
+struct hostent*  gethostbyname( const char *name);
+int getpeername(int sockfd, struct sockaddr *addr, socklen_t *addrlen);
+int getsockname(int sockfd, struct sockaddr *local_addr, socklen_t *addrlen);
+int getsockopt(int sockfd, int level, int optname,
+                      void *optval, socklen_t *optlen);
+int connect(int sockfd, const struct sockaddr *addr, unsigned int addrlen);
+int socket(int socket_family, int socket_type, int protocol);
+uint16_t ntohs(uint16_t n);
+
 #define HAVE_ERRNO_H 1
 
 #define HAVE_SYS_STAT_H 1
@@ -78,5 +97,7 @@
 #define RECV_TYPE_RETV int
 
 #define HAVE_SOCKET	1
+
+#define HAVE_VARIADIC_MACROS_C99	1
 
 #endif /* HEADER_CURL_CONFIG_VXWORKS_H */

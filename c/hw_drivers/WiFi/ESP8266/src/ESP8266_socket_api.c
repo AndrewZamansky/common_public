@@ -1,5 +1,6 @@
 #include "_project.h"
 #include "sys/socket.h"
+#include "sys/time.h"
 
 #include "dev_management_api.h" // for device manager defines and typedefs
 #include "ESP8266_api.h" // for device manager defines and typedefs
@@ -173,7 +174,7 @@ size_t recv(int sockfd, void *buf, size_t len, int flags)
 }
 
 int getsockopt(int sockfd, int level, int optname,
-                      void *optval, int *optlen)
+                      void *optval, socklen_t *optlen)
 {
 	if(SOL_SOCKET != level) while(1);
 
@@ -202,7 +203,7 @@ void bind()
 	while(1);//temporary debug trap
 }
 
-int getsockname(int sockfd, struct sockaddr *local_addr, int *addrlen)
+int getsockname(int sockfd, struct sockaddr *local_addr, socklen_t *addrlen)
 {
 	struct sockaddr_in   *lp_sockaddr;
 	struct  in_addr *sin_addr;
@@ -215,7 +216,7 @@ int getsockname(int sockfd, struct sockaddr *local_addr, int *addrlen)
 	sin_addr = &(lp_sockaddr->sin_addr);
 
 
-	ESP8266_ioctl_socket_get_ip.strIP = (uint8_t*)ipAddr;
+	ESP8266_ioctl_socket_get_ip.strIP = ipAddr;
 	ESP8266_ioctl_socket_get_ip.strIPLen = sizeof(ipAddr) - 1 ;
 	retVal = DEV_IOCTL_1_PARAMS(esp8266_dev , IOCTL_ESP8266_GET_IP , &ESP8266_ioctl_socket_get_ip);
 	if (0 != retVal) return 1 ;
@@ -241,7 +242,7 @@ int getsockname(int sockfd, struct sockaddr *local_addr, int *addrlen)
 	return 0;
 }
 
-int getpeername(int sockfd, struct sockaddr *addr, int *addrlen)
+int getpeername(int sockfd, struct sockaddr *addr, socklen_t *addrlen)
 {
 	pdev_descriptor_t  socket_dev;
 	struct sockaddr_in   *lp_sockaddr;
@@ -256,7 +257,7 @@ int getpeername(int sockfd, struct sockaddr *addr, int *addrlen)
 	sin_addr = &(lp_sockaddr->sin_addr);
 
 	socket_dev = allocated_socket_dev[sockfd];
-	ioctl_socket_get_open_connection.strIP = (uint8_t*)ipAddr;
+	ioctl_socket_get_open_connection.strIP = ipAddr;
 	ioctl_socket_get_open_connection.strIPLen = sizeof(ipAddr) - 1 ;
 	ioctl_socket_get_open_connection.pPort = &port;
 	retVal = DEV_IOCTL_1_PARAMS(socket_dev , IOCTL_ESP8266_SOCKET_GET_OPEN_CONNECTION_STATUS , &ioctl_socket_get_open_connection);
@@ -286,6 +287,8 @@ int getpeername(int sockfd, struct sockaddr *addr, int *addrlen)
 struct hostent  curr_hostent = {0};
 struct in_addr curr_addr;
 char *h_addr_list[2] = {(char*)&curr_addr , NULL};
+#define MAX_HOST_NAME	32
+char curr_host_name[MAX_HOST_NAME] = {0};
 
 struct hostent*  gethostbyname( const char *name)
 {
@@ -298,22 +301,24 @@ struct hostent*  gethostbyname( const char *name)
 	char ipAddr[20] = {0};
 	uint8_t retVal;
 
+	strncpy(curr_host_name , name , MAX_HOST_NAME-1);
+
 	if (NULL == esp8266_dev) CRITICAL_ERROR("");
 	ioctl_socket_open.new_socket_descriptor = &socket_dev;
 	retVal = DEV_IOCTL_1_PARAMS(esp8266_dev , IOCTL_ESP8266_SOCKET_OPEN , &ioctl_socket_open);
 	if (0 != retVal) return NULL;
 
 	ioctl_socket_connect.strHostName = name;
-	ioctl_socket_connect.strPort = (uint8_t*)"80";
+	ioctl_socket_connect.strPort = "80";
 	retVal = DEV_IOCTL_1_PARAMS(socket_dev , IOCTL_ESP8266_SOCKET_CONNECT , &ioctl_socket_connect);
 	if (0 != retVal)
 	{
-		ioctl_socket_connect.strPort = (uint8_t*)"443";
+		ioctl_socket_connect.strPort = "443";
 		retVal = DEV_IOCTL_1_PARAMS(socket_dev , IOCTL_ESP8266_SOCKET_CONNECT , &ioctl_socket_connect);
 		if (0 != retVal) return NULL;
 	}
 
-	ioctl_socket_get_open_connection.strIP = (uint8_t*)ipAddr;
+	ioctl_socket_get_open_connection.strIP = ipAddr;
 	ioctl_socket_get_open_connection.strIPLen = sizeof(ipAddr) - 1 ;
 	ioctl_socket_get_open_connection.pPort = &port;
 	retVal = DEV_IOCTL_1_PARAMS(socket_dev , IOCTL_ESP8266_SOCKET_GET_OPEN_CONNECTION_STATUS , &ioctl_socket_get_open_connection);
@@ -334,7 +339,7 @@ struct hostent*  gethostbyname( const char *name)
 	ipAddrStr++;
 	curr_addr.S_un.S_un_b.s_b4 = atoi(ipAddrStr);
 
-	curr_hostent.h_name = name;
+	curr_hostent.h_name = curr_host_name;
 	curr_hostent.h_aliases = NULL;
 	curr_hostent.h_addrtype = AF_INET;
 	curr_hostent.h_length = sizeof(struct in_addr);
@@ -393,9 +398,8 @@ ssize_t send(int socket, const void *buffer, size_t length, int flags)
 	return ret_length;
 }
 
-int _stat(const char *path, struct _stat *buffer )
+void _stat()
 {
 	while(1);//temporary debug trap
-	return 0;
 }
 

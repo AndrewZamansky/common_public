@@ -215,7 +215,7 @@ EXTERN_C_FUNCTION void low_level_init(uint32_t curr_stack)
 
 #if  ( (1 == CONFIG_CORTEX_M3 ) || (1 == CONFIG_CORTEX_M4) )
     #if (1==CONFIG_EXCEPTION_STACKS_DEBUG)
-	    fill_mem32_with_pattern(&Buttom_Of_Stacks , curr_stack , 0xb1b1b1b1);
+	    fill_mem32_with_pattern(&Buttom_Of_Stacks , (uint32_t *)curr_stack , 0xb1b1b1b1);
     #endif
 #else /* cortex - a9 */
 	v7_outer_cache_inval_all();

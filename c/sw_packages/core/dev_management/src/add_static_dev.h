@@ -34,8 +34,18 @@
 	#define	HANDLE_TO_DEV_RUNTIME_DATA_STRUCT		NULL
 #else
 
+	#if (4 == __GNUC__)//because of  bug 53119 in gcc disable "-Wmissing-braces" warning
+		#pragma GCC diagnostic push
+		#pragma GCC diagnostic ignored "-Wmissing-braces"
+	#endif
+
 	MODULE_RUNTIME_DATA_STRUCT_TYPE	 DEVICE_DATA_PLACEMENT	DEV_RUNTIME_DATA_INST(DT_DEV_NAME) = {0};
 	#define	HANDLE_TO_DEV_RUNTIME_DATA_STRUCT		&DEV_RUNTIME_DATA_INST(DT_DEV_NAME)
+
+	#if (4 == __GNUC__)//because of  bug 53119 in gcc disable "-Wmissing-braces" warning
+		#pragma GCC diagnostic pop
+	#endif
+
 #endif
 
 #ifndef	MODULE_IOCTL_FUNCTION

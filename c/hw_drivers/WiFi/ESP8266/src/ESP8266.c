@@ -58,7 +58,7 @@ typedef struct
 
 typedef struct
 {
-	uint8_t *IPstr;
+	char *IPstr;
 	uint8_t strIPLen;
 } Msg_getIP_t;
 
@@ -72,8 +72,8 @@ typedef struct
 typedef struct
 {
 	pdev_descriptor_t socket_pdev;
-	uint8_t *strHostName;
-	uint8_t *port;
+	const char *strHostName;
+	char *port;
 } Msg_connect_socket_t;
 
 typedef struct
@@ -84,7 +84,7 @@ typedef struct
 typedef struct
 {
 	pdev_descriptor_t  socket_pdev;
-	uint8_t *strIP;
+	char *strIP;
 	uint8_t strIPLen;
 	uint16_t *pPort;
 } Msg_get_open_connection_t;
@@ -478,25 +478,25 @@ static  uint8_t parse_incoming_data(/*const uint8_t *str_to_seek,uint16_t str_to
 					{
 						uint8_t receivedSocketNumber;
 
-						start_of_requested_str = strchr(pBufferStart,',');
+						start_of_requested_str = (uint8_t*)strchr((char*)pBufferStart,',');
 						if(NULL == start_of_requested_str)
 						{
 							break;//of while(total_length)
 						}
 						start_of_requested_str++;
-						receivedSocketNumber = atoi((char*)(start_of_requested_str));
+						receivedSocketNumber = (uint8_t)strtoul((char*)start_of_requested_str,
+								(char**)&start_of_requested_str,10);
 						if(receivedSocketNumber >= MAX_NUM_OF_SOCKETS)
 						{
 							break;//of while(total_length)
 						}
 						currentSocketNumber = receivedSocketNumber;
-						start_of_requested_str = strchr(start_of_requested_str,',');
-						if(NULL == start_of_requested_str)
+						if(',' != *start_of_requested_str)
 						{
 							break;//of while(total_length)
 						}
 						start_of_requested_str++;
-						leftDataToReceive = atoi((char*)(start_of_requested_str));
+						leftDataToReceive = strtoul((char*)start_of_requested_str,NULL,10);
 						currentState = ESP8266_State_Receiving_Data;
 						DEV_IOCTL(timer_dev,IOCTL_TIMER_WRAPPER_API_SET_COUNTDOWN_VALUE_AND_RESET, &timeout);
 						break;//of while(total_length)
@@ -535,13 +535,13 @@ static  uint8_t parse_incoming_data(/*const uint8_t *str_to_seek,uint16_t str_to
 					total_length -= line_length;
 					pBufferStart[line_length] = 0;// create valid string
 					last_tested_length = 0;
-					receivedSocketNumber = atoi((char*)(start_of_requested_str));
+					receivedSocketNumber = (uint8_t)strtoul((char*)pBufferStart,
+							(char**)&start_of_requested_str,10);
 					if(receivedSocketNumber >= MAX_NUM_OF_SOCKETS)
 					{
 						break;//of while(total_length)
 					}
-					start_of_requested_str = strchr(start_of_requested_str,',');
-					if(NULL == start_of_requested_str)
+					if(',' != *start_of_requested_str)
 					{
 						break;//of while(total_length)
 					}
@@ -642,7 +642,7 @@ static  uint8_t parse_incoming_data(/*const uint8_t *str_to_seek,uint16_t str_to
 						end_of_requested_str = strchr(start_of_requested_str , '\"');
 						if(NULL == end_of_requested_str) break;
 						*end_of_requested_str = 0;
-						strncpy((char*)pendingMessage.msg_data.Msg_getIP.IPstr, start_of_requested_str ,
+						strncpy(pendingMessage.msg_data.Msg_getIP.IPstr, start_of_requested_str ,
 								pendingMessage.msg_data.Msg_getIP.strIPLen);
 						currentState = ESP8266_State_Wait_For_IP_Complete;
 					}
@@ -660,13 +660,15 @@ static  uint8_t parse_incoming_data(/*const uint8_t *str_to_seek,uint16_t str_to
 						uint8_t receivedSocketNumber;
 						if(line_length > 18)
 						{
-							receivedSocketNumber = atoi((char*)&pBufferStart[11]);
+							char *start_of_requested_str;
+
+							pBufferStart[line_length-1] = 0;
+							receivedSocketNumber = (uint8_t)strtoul((char*)&pBufferStart[11],
+									(char**)&start_of_requested_str,10);
 							if(currentSocketNumber == receivedSocketNumber)
 							{
-								char *start_of_requested_str;
 								char *end_of_requested_str;
-								pBufferStart[line_length-1] = 0;
-								start_of_requested_str = strchr((char*)pBufferStart , '\"');
+								start_of_requested_str = strchr((char*)start_of_requested_str , '\"');
 								if(NULL == start_of_requested_str) break;
 								start_of_requested_str = strchr(start_of_requested_str + 1 , '\"');
 								if(NULL == start_of_requested_str) break;
@@ -675,9 +677,10 @@ static  uint8_t parse_incoming_data(/*const uint8_t *str_to_seek,uint16_t str_to
 								end_of_requested_str = strchr(start_of_requested_str + 1 , '\"');
 								if(NULL == end_of_requested_str) break;
 								*end_of_requested_str = 0;
-								strncpy((char*)pendingMessage.msg_data.Msg_get_open_connection.strIP,start_of_requested_str + 1 ,
+								strncpy(pendingMessage.msg_data.Msg_get_open_connection.strIP,start_of_requested_str + 1 ,
 										pendingMessage.msg_data.Msg_get_open_connection.strIPLen);
-								*pendingMessage.msg_data.Msg_get_open_connection.pPort=atoi(end_of_requested_str + 1);
+								*pendingMessage.msg_data.Msg_get_open_connection.pPort =
+													strtoul((char*)(end_of_requested_str + 1),NULL,10);
 								currentState = ESP8266_State_Wait_For_Socket_Status_Complete;
 
 							}

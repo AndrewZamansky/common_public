@@ -111,7 +111,6 @@ uint8_t uart_nuc505_callback(pdev_descriptor_t apdev ,
 /*---------------------------------------------------------------------------------------------------------*/
  size_t uart_nuc505_pwrite(pdev_descriptor_t apdev ,const uint8_t *apData , size_t aLength, size_t aOffset)
 {
-  uint32_t u32IntSts ;
 	UART_T *uart_regs;
 	uart_nuc505_instance_t *config_handle;
 

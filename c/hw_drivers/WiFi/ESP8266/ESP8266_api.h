@@ -42,20 +42,20 @@ typedef struct
 
 typedef struct
 {
-	uint8_t *strHostName;
-	uint8_t *strPort;
+	const char *strHostName;
+	char *strPort;
 }ESP8266_ioctl_socket_connect_t;
 
 typedef struct
 {
-	uint8_t *strIP;
+	char *strIP;
 	uint8_t strIPLen;
 	uint16_t* pPort;
 }ESP8266_ioctl_socket_get_open_connection_t;
 
 typedef struct
 {
-	uint8_t *strIP;
+	char *strIP;
 	uint8_t strIPLen;
 }ESP8266_ioctl_socket_get_ip_t;
 
