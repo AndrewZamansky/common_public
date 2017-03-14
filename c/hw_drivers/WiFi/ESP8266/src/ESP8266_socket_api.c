@@ -100,7 +100,8 @@ int socket(int socket_family, int socket_type, int protocol)
 		{
 			ESP8266_ioctl_socket_open_t ioctl_socket_open;
 			ioctl_socket_open.new_socket_descriptor = &allocated_socket_dev[i];
-			retVal = DEV_IOCTL_1_PARAMS(esp8266_dev , IOCTL_ESP8266_SOCKET_OPEN , &ioctl_socket_open);
+			retVal = DEV_IOCTL_1_PARAMS(esp8266_dev ,
+					IOCTL_ESP8266_SOCKET_OPEN , &ioctl_socket_open);
 			if (0 == retVal)
 			{
 				return i;
@@ -137,7 +138,8 @@ int connect(int sockfd, const struct sockaddr *addr, unsigned int addrlen)
 	socket_dev = allocated_socket_dev[sockfd];
 	ioctl_socket_connect.strHostName = addr_str;
 	ioctl_socket_connect.strPort = port_str;
-	retVal = DEV_IOCTL_1_PARAMS(socket_dev , IOCTL_ESP8266_SOCKET_CONNECT , &ioctl_socket_connect);
+	retVal = DEV_IOCTL_1_PARAMS(socket_dev , IOCTL_ESP8266_SOCKET_CONNECT
+			, &ioctl_socket_connect);
 
 	if(0 != retVal) while(1);
 
@@ -158,7 +160,9 @@ size_t recv(int sockfd, void *buf, size_t len, int flags)
 	ESP8266_ioctl_data_received.max_size = len;
 	ESP8266_ioctl_data_received.size_received = &size_received;
 	socket_dev = allocated_socket_dev[sockfd];
-	retVal = DEV_IOCTL_1_PARAMS(socket_dev , IOCTL_ESP8266_SOCKET_GET_RECEIVED_DATA , &ESP8266_ioctl_data_received);
+	retVal = DEV_IOCTL_1_PARAMS(socket_dev ,
+			IOCTL_ESP8266_SOCKET_GET_RECEIVED_DATA ,
+			&ESP8266_ioctl_data_received);
 
 	if(0 != retVal)
 	{
@@ -218,7 +222,8 @@ int getsockname(int sockfd, struct sockaddr *local_addr, socklen_t *addrlen)
 
 	ESP8266_ioctl_socket_get_ip.strIP = ipAddr;
 	ESP8266_ioctl_socket_get_ip.strIPLen = sizeof(ipAddr) - 1 ;
-	retVal = DEV_IOCTL_1_PARAMS(esp8266_dev , IOCTL_ESP8266_GET_IP , &ESP8266_ioctl_socket_get_ip);
+	retVal = DEV_IOCTL_1_PARAMS(esp8266_dev ,
+			IOCTL_ESP8266_GET_IP , &ESP8266_ioctl_socket_get_ip);
 	if (0 != retVal) return 1 ;
 
 	ipAddrStr = ipAddr;
@@ -250,7 +255,7 @@ int getpeername(int sockfd, struct sockaddr *addr, socklen_t *addrlen)
 	char *ipAddrStr;
 	char ipAddr[20] = {0};
 	uint8_t retVal;
-	ESP8266_ioctl_socket_get_open_connection_t	ioctl_socket_get_open_connection;
+	ESP8266_ioctl_get_conn_status_t	ioctl_socket_get_open_connection;
 	uint16_t port;
 
 	lp_sockaddr = (struct sockaddr_in   *)addr;
@@ -260,7 +265,9 @@ int getpeername(int sockfd, struct sockaddr *addr, socklen_t *addrlen)
 	ioctl_socket_get_open_connection.strIP = ipAddr;
 	ioctl_socket_get_open_connection.strIPLen = sizeof(ipAddr) - 1 ;
 	ioctl_socket_get_open_connection.pPort = &port;
-	retVal = DEV_IOCTL_1_PARAMS(socket_dev , IOCTL_ESP8266_SOCKET_GET_OPEN_CONNECTION_STATUS , &ioctl_socket_get_open_connection);
+	retVal = DEV_IOCTL_1_PARAMS(socket_dev ,
+			IOCTL_ESP8266_SOCKET_GET_OPEN_CONNECTION_STATUS ,
+			&ioctl_socket_get_open_connection);
 	if (0 != retVal) return 1 ;
 
 	ipAddrStr = ipAddr;
@@ -295,7 +302,7 @@ struct hostent*  gethostbyname( const char *name)
 	pdev_descriptor_t  socket_dev;
 	ESP8266_ioctl_socket_open_t ioctl_socket_open;
 	ESP8266_ioctl_socket_connect_t	ioctl_socket_connect;
-	ESP8266_ioctl_socket_get_open_connection_t	ioctl_socket_get_open_connection;
+	ESP8266_ioctl_get_conn_status_t	ioctl_socket_get_open_connection;
 	uint16_t port;
 	char *ipAddrStr;
 	char ipAddr[20] = {0};
@@ -305,23 +312,28 @@ struct hostent*  gethostbyname( const char *name)
 
 	if (NULL == esp8266_dev) CRITICAL_ERROR("");
 	ioctl_socket_open.new_socket_descriptor = &socket_dev;
-	retVal = DEV_IOCTL_1_PARAMS(esp8266_dev , IOCTL_ESP8266_SOCKET_OPEN , &ioctl_socket_open);
+	retVal = DEV_IOCTL_1_PARAMS(esp8266_dev ,
+			IOCTL_ESP8266_SOCKET_OPEN , &ioctl_socket_open);
 	if (0 != retVal) return NULL;
 
 	ioctl_socket_connect.strHostName = name;
 	ioctl_socket_connect.strPort = "80";
-	retVal = DEV_IOCTL_1_PARAMS(socket_dev , IOCTL_ESP8266_SOCKET_CONNECT , &ioctl_socket_connect);
+	retVal = DEV_IOCTL_1_PARAMS(socket_dev ,
+			IOCTL_ESP8266_SOCKET_CONNECT , &ioctl_socket_connect);
 	if (0 != retVal)
 	{
 		ioctl_socket_connect.strPort = "443";
-		retVal = DEV_IOCTL_1_PARAMS(socket_dev , IOCTL_ESP8266_SOCKET_CONNECT , &ioctl_socket_connect);
+		retVal = DEV_IOCTL_1_PARAMS(socket_dev ,
+				IOCTL_ESP8266_SOCKET_CONNECT , &ioctl_socket_connect);
 		if (0 != retVal) return NULL;
 	}
 
 	ioctl_socket_get_open_connection.strIP = ipAddr;
 	ioctl_socket_get_open_connection.strIPLen = sizeof(ipAddr) - 1 ;
 	ioctl_socket_get_open_connection.pPort = &port;
-	retVal = DEV_IOCTL_1_PARAMS(socket_dev , IOCTL_ESP8266_SOCKET_GET_OPEN_CONNECTION_STATUS , &ioctl_socket_get_open_connection);
+	retVal = DEV_IOCTL_1_PARAMS(socket_dev ,
+			IOCTL_ESP8266_SOCKET_GET_OPEN_CONNECTION_STATUS ,
+			&ioctl_socket_get_open_connection);
 	if (0 != retVal) return NULL;
 
 	ipAddrStr = ipAddr;
@@ -365,7 +377,8 @@ int select(int nfds, fd_set *readfds, fd_set *writefds,
 		if ( 0 != FD_ISSET(i , readfds))
 		{
 			socket_dev = allocated_socket_dev[i];
-			retVal = DEV_IOCTL_1_PARAMS(socket_dev , IOCTL_ESP8266_SOCKET_IS_DATA_RECEIVED , &read_ready);
+			retVal = DEV_IOCTL_1_PARAMS(socket_dev ,
+					IOCTL_ESP8266_SOCKET_IS_DATA_RECEIVED , &read_ready);
 			if(0 != retVal)
 			{
 				FD_SET(i , exceptfds);

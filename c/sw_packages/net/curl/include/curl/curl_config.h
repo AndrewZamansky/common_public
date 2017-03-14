@@ -30,6 +30,8 @@ uint16_t ntohs(uint16_t n);
 
 #define HAVE_ASSERT_H	1
 
+#define HAVE_STRTOK_R	1
+
 #define HAVE_STRUCT_TIMEVAL 1
 #define HAVE_SYS_TIME_H 1
 #define HAVE_SYS_SOCKET_H 1
@@ -99,5 +101,13 @@ uint16_t ntohs(uint16_t n);
 #define HAVE_SOCKET	1
 
 #define HAVE_VARIADIC_MACROS_C99	1
+
+#define HAVE_STRING_H	1
+#define HAVE_MEMRCHR	1
+#define  HAVE_STRDUP	1
+#define HAVE_STRERROR_R	1
+#define HAVE_GLIBC_STRERROR_R 1
+
+#define CURL_SOCKET_HASH_TABLE_SIZE 97
 
 #endif /* HEADER_CURL_CONFIG_VXWORKS_H */

@@ -115,6 +115,10 @@ ifeq ($(strip $(CONFIG_CURL_USE_NGHTTP2)),y)
     DEFINES += USE_NGHTTP2
 endif
 
+ifneq ($(strip $(CONFIG_CURL_ENABLE_CRYPTO_AUTHENTICATION)),y)
+    DEFINES += CURL_DISABLE_CRYPTO_AUTH
+endif
+
 ifneq ($(strip $(CONFIG_CURL_DEFAULT_RECIEVE_BUFFER_SIZE)),y)#if NOT define default buffer size
     DEFINES += CURL_MAX_WRITE_SIZE=$(CONFIG_CURL_RECIEVE_BUFFER_SIZE)
 endif
@@ -172,7 +176,6 @@ SRC += pipeline.c
 SRC += netrc.c
 SRC += dotdot.c
 SRC += fileinfo.c
-SRC += strtok.c
 
 # followin files compiled always but contets of each are used 
 # according to following defines :  CURLRES_ARES , CURLRES_THREADED , CURLRES_SYNCH

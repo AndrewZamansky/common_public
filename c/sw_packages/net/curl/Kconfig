@@ -56,6 +56,11 @@ config  CURL_POP3_PROTOCOL_SUPPORT
 
 endmenu
 
+config  CURL_ENABLE_CRYPTO_AUTHENTICATION
+	bool   "enable cryptographic authentication"
+	default n
+
+
 config  CURL_USE_CUSTOM_CURL_CONFIG_H
 	bool   "use custom curl_config.h file"
 	default n

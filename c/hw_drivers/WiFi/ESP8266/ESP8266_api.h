@@ -51,7 +51,7 @@ typedef struct
 	char *strIP;
 	uint8_t strIPLen;
 	uint16_t* pPort;
-}ESP8266_ioctl_socket_get_open_connection_t;
+}ESP8266_ioctl_get_conn_status_t;
 
 typedef struct
 {

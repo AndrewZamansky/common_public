@@ -10,6 +10,7 @@ uint8_t ESP8266_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num , void 
 #define	MODULE_IOCTL_FUNCTION		ESP8266_ioctl
 #define	MODULE_CALLBACK_FUNCTION	ESP8266_callback
 #define MODULE_CONFIG_DATA_STRUCT_TYPE		esp8266_instance_t
+#define MODULE_RUNTIME_DATA_STRUCT_TYPE		esp8266_state_instance_t
 
 #ifdef DT_DEV_MODULE
 
