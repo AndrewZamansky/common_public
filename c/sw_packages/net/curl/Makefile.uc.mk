@@ -124,7 +124,7 @@ ifneq ($(strip $(CONFIG_CURL_DEFAULT_RECIEVE_BUFFER_SIZE)),y)#if NOT defined
 endif
 
 ifneq ($(strip $(CONFIG_CURL_DEFAULT_HTTP2_BUFFER_SIZE)),y)#if NOT defined
-    DEFINES += H2_BUFSIZE=$(CURL_HTTP2_BUFFER_SIZE)
+    DEFINES += H2_BUFSIZE=$(CONFIG_CURL_HTTP2_BUFFER_SIZE)
 endif
 
 ifeq ($(strip $(CONFIG_GCC)),y)
