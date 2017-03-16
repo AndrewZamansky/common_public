@@ -69,7 +69,7 @@ int socket(int socket_family, int socket_type, int protocol)
 	uint8_t i;
 	uint8_t retVal;
 
-	switch(socket_family)
+	switch (socket_family)
 	{
 		case AF_INET:
 			break;
@@ -77,7 +77,7 @@ int socket(int socket_family, int socket_type, int protocol)
 			while(1);
 	}
 
-	switch(socket_type)
+	switch (socket_type)
 	{
 		case SOCK_STREAM:
 			break;
@@ -85,7 +85,7 @@ int socket(int socket_family, int socket_type, int protocol)
 			while(1);
 	}
 
-	switch(protocol)
+	switch (protocol)
 	{
 		case IPPROTO_IP:
 		case IPPROTO_TCP:
@@ -114,6 +114,21 @@ int socket(int socket_family, int socket_type, int protocol)
 	}
 	return -1;
 }
+
+
+int _close(int file)
+{
+	pdev_descriptor_t  socket_dev;
+	uint8_t retVal;
+
+	socket_dev = allocated_socket_dev[file];
+	retVal = DEV_IOCTL_0_PARAMS(socket_dev , IOCTL_ESP8266_SOCKET_CLOSE);
+
+	if ( (0 != retVal) &&
+			(ESP8266_ERR_SOCKET_NOT_AVAILABLE != retVal)) while(1);
+	return 0;
+}
+
 
 int connect(int sockfd, const struct sockaddr *addr, unsigned int addrlen)
 {
@@ -154,7 +169,7 @@ size_t recv(int sockfd, void *buf, size_t len, int flags)
 	ESP8266_ioctl_data_received_t ESP8266_ioctl_data_received;
 	uint8_t retVal;
 
-	if(0 != flags) while(1);
+	if (0 != flags) while(1);
 
 	ESP8266_ioctl_data_received.buffer = buf;
 	ESP8266_ioctl_data_received.max_size = len;
@@ -164,7 +179,7 @@ size_t recv(int sockfd, void *buf, size_t len, int flags)
 			IOCTL_ESP8266_SOCKET_GET_RECEIVED_DATA ,
 			&ESP8266_ioctl_data_received);
 
-	if(0 != retVal)
+	if (0 != retVal)
 	{
 		errno = ENOTCONN;
 	}
@@ -322,10 +337,18 @@ struct hostent*  gethostbyname( const char *name)
 			IOCTL_ESP8266_SOCKET_CONNECT , &ioctl_socket_connect);
 	if (0 != retVal)
 	{
+		DEV_IOCTL_0_PARAMS(socket_dev , IOCTL_ESP8266_SOCKET_CLOSE);
+		retVal = DEV_IOCTL_1_PARAMS(esp8266_dev ,
+				IOCTL_ESP8266_SOCKET_OPEN , &ioctl_socket_open);
+		if (0 != retVal) return NULL;
 		ioctl_socket_connect.strPort = "443";
 		retVal = DEV_IOCTL_1_PARAMS(socket_dev ,
 				IOCTL_ESP8266_SOCKET_CONNECT , &ioctl_socket_connect);
-		if (0 != retVal) return NULL;
+		if (0 != retVal)
+		{
+			DEV_IOCTL_0_PARAMS(socket_dev , IOCTL_ESP8266_SOCKET_CLOSE);
+			return NULL;
+		}
 	}
 
 	ioctl_socket_get_open_connection.strIP = ipAddr;
@@ -334,6 +357,8 @@ struct hostent*  gethostbyname( const char *name)
 	retVal = DEV_IOCTL_1_PARAMS(socket_dev ,
 			IOCTL_ESP8266_SOCKET_GET_OPEN_CONNECTION_STATUS ,
 			&ioctl_socket_get_open_connection);
+	DEV_IOCTL_0_PARAMS(socket_dev , IOCTL_ESP8266_SOCKET_CLOSE );
+
 	if (0 != retVal) return NULL;
 
 	ipAddrStr = ipAddr;
@@ -357,9 +382,9 @@ struct hostent*  gethostbyname( const char *name)
 	curr_hostent.h_length = sizeof(struct in_addr);
 	curr_hostent.h_addr_list = h_addr_list;
 
-	retVal = DEV_IOCTL_0_PARAMS(socket_dev , IOCTL_ESP8266_SOCKET_CLOSE );
 
 	return &curr_hostent;
+
 }
 
 
@@ -386,10 +411,10 @@ int select(int nfds, fd_set *readfds, fd_set *writefds,
 			if (0 == read_ready)
 			{
 				FD_CLR(i , readfds);
-				os_delay_ms( 10 );
+				os_delay_ms( 1 );
 
 			}
-				//	os_delay_ms( 1000 );
+					//os_delay_ms( 1000 );
 
 		}
 	}
@@ -408,6 +433,7 @@ ssize_t send(int socket, const void *buffer, size_t length, int flags)
 
 	socket_dev = allocated_socket_dev[socket];
 	ret_length = DEV_WRITE(socket_dev , buffer , length) ;
+	if(0==ret_length) while(1);
 	return ret_length;
 }
 

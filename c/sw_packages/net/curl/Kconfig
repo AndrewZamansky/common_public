@@ -74,6 +74,16 @@ config  CURL_RECIEVE_BUFFER_SIZE
 	depends on !CURL_DEFAULT_RECIEVE_BUFFER_SIZE
 	default 4096
 
+config  CURL_DEFAULT_HTTP2_BUFFER_SIZE
+	bool   "default http2 buffer size"
+	default y
+
+config  CURL_HTTP2_BUFFER_SIZE
+	int   "http2 buffer size"
+	depends on !CURL_DEFAULT_HTTP2_BUFFER_SIZE
+	default 4096
+
+
 config  CURL_ENABLE_PROXY
 	bool   "enable proxy"
 	default n

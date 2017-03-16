@@ -119,8 +119,12 @@ ifneq ($(strip $(CONFIG_CURL_ENABLE_CRYPTO_AUTHENTICATION)),y)
     DEFINES += CURL_DISABLE_CRYPTO_AUTH
 endif
 
-ifneq ($(strip $(CONFIG_CURL_DEFAULT_RECIEVE_BUFFER_SIZE)),y)#if NOT define default buffer size
+ifneq ($(strip $(CONFIG_CURL_DEFAULT_RECIEVE_BUFFER_SIZE)),y)#if NOT defined
     DEFINES += CURL_MAX_WRITE_SIZE=$(CONFIG_CURL_RECIEVE_BUFFER_SIZE)
+endif
+
+ifneq ($(strip $(CONFIG_CURL_DEFAULT_HTTP2_BUFFER_SIZE)),y)#if NOT defined
+    DEFINES += H2_BUFSIZE=$(CURL_HTTP2_BUFFER_SIZE)
 endif
 
 ifeq ($(strip $(CONFIG_GCC)),y)

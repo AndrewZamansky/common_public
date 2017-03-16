@@ -12,6 +12,8 @@
 #include "auto_init_api.h"
 #include "dev_management_api.h"
 
+#define DEBUG
+#include "PRINTF_api.h"
 
 /***************   defines    *******************/
 
@@ -162,11 +164,14 @@ EXTERN_C_FUNCTION void __attribute__ ((noreturn)) _exit(int status)
 }
 
 EXTERN_C_FUNCTION int _write(int file, char *ptr, int len) {
+//	PRINT_DATA_DBG(ptr , len);
 	while(1) ;
  return len;
  }
 
+#ifndef	_CLOSE_ALREADY_DEFINED
 EXTERN_C_FUNCTION int _close(int file) {while(1) ; return -1; }
+#endif
 
 EXTERN_C_FUNCTION int _fstat(int file, void *st) {while(1) ; return 0; }
 

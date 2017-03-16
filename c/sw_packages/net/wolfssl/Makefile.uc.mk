@@ -104,6 +104,7 @@ endif
 ifneq ($(strip $(CONFIG_WOLFSSL_DH)),y)
     DEFINES += NO_DH
 else
+    DEFINES += HAVE_DH
     SRC += dh.c
 endif
 
@@ -138,7 +139,7 @@ VPATH += | $(WOLFSSL_PATH)/wolfcrypt/src
 
 SRC += wolfmath.c
 
-SPEED_CRITICAL_FILES += integer.c memory.c sha.c rsa.c
+SPEED_CRITICAL_FILES += integer.c# memory.c sha.c rsa.c
 
 
 

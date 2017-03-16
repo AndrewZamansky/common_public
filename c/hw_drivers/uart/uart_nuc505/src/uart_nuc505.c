@@ -62,13 +62,14 @@ uint8_t uart_nuc505_callback(pdev_descriptor_t apdev ,
 	numOfReceivedChars = 0;
 	while ((u32IntSts & UART_INTSTS_RDAINT_Msk) && (UART_NUC505_RCV_DATA_SIZE_BUFFER > numOfReceivedChars))
 	{
-	//	if(UART_NUC505_RCV_DATA_SIZE_BUFFER <= numOfReceivedChars) while(1);// debug trap
 
 		u8InChar = UART_READ(uart_regs);
 		buffer[numOfReceivedChars++] = u8InChar;
+	//	if(UART_NUC505_RCV_DATA_SIZE_BUFFER <= numOfReceivedChars) while(1);// debug trap
 
 		if(u32IntSts & UART_INTSTS_BUFERRIF_Msk)//clear buffer overflow interrupt
 		{
+	//		while(1);// debug trap
 			UART_ClearIntFlag(uart_regs,UART_INTSTS_BUFERRINT_Msk);
 		}
 			u32IntSts = uart_regs->INTSTS;
