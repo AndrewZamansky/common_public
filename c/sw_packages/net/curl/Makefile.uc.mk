@@ -189,6 +189,7 @@ SRC += asyn-ares.c
 
 ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)    
     SRC += system_win32.c
+    SRC += strtok.c
 endif
 
 ifeq ($(strip $(CONFIG_CURL_HTTP_PROTOCOL_SUPPORT)),y)
