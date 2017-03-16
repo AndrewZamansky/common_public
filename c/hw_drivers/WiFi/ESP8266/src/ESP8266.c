@@ -45,10 +45,10 @@ uint8_t dbg_arr[DBG_ARR_SIZE];
 
 void update_dbg(uint8_t dbg_param)
 {
-//	if((1==dbg_trigger) && ( dbg_cnt<DBG_ARR_SIZE))
-//	{
-//		dbg_arr[dbg_cnt++] = dbg_param;
-//	}
+	if((1==dbg_trigger) && ( dbg_cnt<DBG_ARR_SIZE))
+	{
+		dbg_arr[dbg_cnt++] = dbg_param;
+	}
 }
 
 /*
