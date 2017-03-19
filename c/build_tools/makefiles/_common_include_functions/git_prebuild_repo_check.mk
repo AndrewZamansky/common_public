@@ -61,6 +61,29 @@ ifneq ("$(CURR_GIT_COMMIT)",$(CURR_GIT_REQUESTED_COMMIT))
         endif
     endif
 
+    SHELL_OUTPUT := $(shell $(SHELL_GO_TO_GIT_DIR) $(GIT) bundle verify $(CURR_GIT_BUNDLE) 2>&1)
+    REQUIRED_COMMIT_FROM_BUNDLE :=$(word 13,$(SHELL_OUTPUT))
+    NEW_COMMIT_FROM_BUNDLE :=$(word 6,$(SHELL_OUTPUT))
+
+    ifneq ($(CURR_GIT_BUNDLE),)
+        SHELL_OUTPUT := $(shell $(SHELL_GO_TO_GIT_DIR) $(GIT) cat-file commit $(REQUIRED_COMMIT_FROM_BUNDLE) 2>&1)
+        ifeq ($(findstring fatal:,$(SHELL_OUTPUT)),fatal:)
+            $(info !--- git repository test failed : $(CURR_GIT_REPOSITORY_DIR))
+            $(info !--- commit $(REQUIRED_COMMIT_FROM_BUNDLE) , required by $(CURR_GIT_BUNDLE) , not found)
+            $(info !--- get git repository $(CURR_GIT_REPOSITORY_DIR) with required commit )
+            $(error  )
+        endif
+        SHELL_OUTPUT := $(shell $(SHELL_GO_TO_GIT_DIR) $(GIT) cat-file commit $(NEW_COMMIT_FROM_BUNDLE) 2>&1)
+        ifeq ($(findstring fatal:,$(SHELL_OUTPUT)),fatal:)
+            $(info !--- git repository test failed : $(CURR_GIT_REPOSITORY_DIR))
+            $(info !--- commit $(NEW_COMMIT_FROM_BUNDLE) not found)
+            $(info !--- apply bundle $(CURR_GIT_BUNDLE) )
+            $(info !--- you can use following command :)
+            $(info !--- $(SHELL_GO_TO_GIT_DIR) $(GIT) remote add uCProject_bundle $(CURR_GIT_BUNDLE) --fetch)
+            $(error  )
+        endif
+    endif
+
     $(info !--- git repository test failed : $(CURR_GIT_REPOSITORY_DIR))
     $(info !--- current commit   : "$(CURR_GIT_COMMIT)")
     $(info !--- requested commit : $(CURR_GIT_REQUESTED_COMMIT))
@@ -86,3 +109,4 @@ $(info ---- git repository $(CURR_GIT_REPOSITORY_DIR) is synchronized)
 #clear arguments for next function usage
 CURR_GIT_REPOSITORY_DIR:=
 CURR_GIT_COMMIT_HASH_VARIABLE:=
+CURR_GIT_BUNDLE:=

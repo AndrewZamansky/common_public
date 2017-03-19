@@ -3,6 +3,7 @@ INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_OPENSSL)
 
 ifeq ($(strip $(CONFIG_INCLUDE_OPENSSL)),y)
 
+    CURR_OPENSSL_COMPONENT_LOCATION := $(patsubst %/Makefile.uc.mk,%,$(realpath $(filter %openssl/Makefile.uc.mk,$(MAKEFILE_LIST))))
     OPENSSL_PATH :=$(EXTERNAL_SOURCE_ROOT_DIR)/openssl
     ifeq ("$(wildcard $(OPENSSL_PATH))","")
         $(info   )
@@ -18,11 +19,11 @@ ifeq ($(strip $(CONFIG_INCLUDE_OPENSSL)),y)
             #test if current commit and branch of uboot git is the same as required by application
             CURR_GIT_REPOSITORY_DIR :=$(OPENSSL_PATH)
             CURR_GIT_COMMIT_HASH_VARIABLE :=CONFIG_OPENSSL_GIT_COMMIT_HASH
+            CURR_GIT_BUNDLE :=$(CURR_OPENSSL_COMPONENT_LOCATION)/openssl.bundle
             include $(MAKEFILE_DEFS_ROOT_DIR)/_common_include_functions/git_prebuild_repo_check.mk
         endif
     endif
     
-    CURR_OPENSSL_COMPONENT_LOCATION := $(patsubst %/Makefile.uc.mk,%,$(realpath $(filter %openssl/Makefile.uc.mk,$(MAKEFILE_LIST))))
     DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(CURR_OPENSSL_COMPONENT_LOCATION)/include)
     DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(CURR_OPENSSL_COMPONENT_LOCATION)/include/openssl)
     DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(OPENSSL_PATH)/include)

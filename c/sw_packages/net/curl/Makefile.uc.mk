@@ -3,6 +3,7 @@ INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_CURL)
 
 ifdef CONFIG_INCLUDE_CURL
 
+    CURR_CURL_COMPONENT_LOCATION := $(patsubst %/Makefile.uc.mk,%,$(realpath $(filter %curl/Makefile.uc.mk,$(MAKEFILE_LIST))))
     CURL_PATH :=$(EXTERNAL_SOURCE_ROOT_DIR)/curl
     ifeq ("$(wildcard $(CURL_PATH))","")
         $(info   )
@@ -18,11 +19,11 @@ ifdef CONFIG_INCLUDE_CURL
             #test if current commit and branch of uboot git is the same as required by application
             CURR_GIT_REPOSITORY_DIR :=$(CURL_PATH)
             CURR_GIT_COMMIT_HASH_VARIABLE :=CONFIG_CURL_GIT_COMMIT_HASH
+            CURR_GIT_BUNDLE :=$(CURR_CURL_COMPONENT_LOCATION)/curl.bundle
             include $(MAKEFILE_DEFS_ROOT_DIR)/_common_include_functions/git_prebuild_repo_check.mk
         endif
     endif
     
-    CURR_CURL_COMPONENT_LOCATION := $(patsubst %/Makefile.uc.mk,%,$(realpath $(filter %curl/Makefile.uc.mk,$(MAKEFILE_LIST))))
     DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(CURR_CURL_COMPONENT_LOCATION)/include)
     DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(CURR_CURL_COMPONENT_LOCATION)/include/curl)
     DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(CURL_PATH)/include)
