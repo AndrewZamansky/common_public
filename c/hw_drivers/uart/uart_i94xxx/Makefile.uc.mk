@@ -1,5 +1,5 @@
 
-ifdef CONFIG_NUC505
+ifdef CONFIG_I94XXX
     INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_INTERNAL_UART)
 endif
 
@@ -14,12 +14,12 @@ endif
 
 
 
-SRC = uart_nuc505.c
+SRC = uart_i94xxx.c
 
 VPATH = src
 
 SRC += uart.c
 
-VPATH += | $(NUC505_SRC_DIR)
+VPATH += | $(I94XXX_SRC_DIR)
 
 include $(COMMON_CC)

@@ -16,6 +16,9 @@ config STM32F103RC
 config NPCE586
 	bool "npce586"
 
+config I94XXX
+	bool "I94XXX"
+
 config GENERIC_SOC
 	bool "generic SOC"
 
@@ -45,6 +48,9 @@ if NPCE586
 source "$COMMON_DIR_PATH/c/hw_drivers/arch/ARM/soc/npce586/Kconfig"
 endif
 
+if I94XXX
+source "$COMMON_DIR_PATH/c/hw_drivers/arch/ARM/soc/i94xxx/Kconfig"
+endif
 
 if STM32F103RC
 source "$COMMON_DIR_PATH/c/hw_drivers/arch/ARM/soc/stm32/stm32f103rc/Kconfig"

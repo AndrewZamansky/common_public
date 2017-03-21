@@ -1,0 +1,39 @@
+menu "I94XXX soc configuration"
+
+
+config I94XXX_BSP_VERSION
+    string "nuc bsp version in form : xx.xx[.xx]"
+    default "00.01"
+
+##################################################
+##############  memories on soc ##################
+
+menu "memories"
+
+comment "sram start : 0x20000000"
+config DT_SOC_RAM_START_ADDR
+    hex 
+    default 0x20000000
+
+comment "sram size : 0x20000"
+config DT_SOC_RAM_SIZE
+    hex
+    default 0x20000    
+
+comment "flash start : 0x0"
+config DT_SOC_FLASH_START_ADDR
+    hex
+    default 0x0
+
+comment "flash size : 0x40000"
+config DT_SOC_FLASH_SIZE
+    hex
+    default 0x40000   
+
+endmenu
+
+#############  end of memories on soc ###################
+#########################################################
+
+
+endmenu

@@ -16,7 +16,9 @@ ifdef CONFIG_NUC505
 endif
 
 SRC = board_init.c
-
 VPATH = src
+
+SRC += sys.c
+VPATH +=  | $(NUC505_SRC_DIR)
 
 include $(COMMON_CC)

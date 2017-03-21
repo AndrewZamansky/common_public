@@ -1,0 +1,12 @@
+menu "`---> I94XXX SVB board"
+
+
+config CRYSTAL_CLOCK
+    int "crystal clock in Hz"
+    default 12000000 
+    
+    
+source "$COMMON_DIR_PATH/c/hw_drivers/arch/ARM/soc/i94xxx/Kconfig.socI94XXX.dt"
+
+
+endmenu
