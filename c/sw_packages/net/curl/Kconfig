@@ -1,5 +1,7 @@
 #
 
+menu "curl protocols support selection"
+
 config  CURL_HTTP_PROTOCOL_SUPPORT
 	bool   "http protocol"
 	default n
@@ -52,6 +54,36 @@ config  CURL_POP3_PROTOCOL_SUPPORT
 	bool   "pop3 protocol"
 	default n
 
+endmenu
+
+config  CURL_ENABLE_CRYPTO_AUTHENTICATION
+	bool   "enable cryptographic authentication"
+	default n
+
+
+config  CURL_USE_CUSTOM_CURL_CONFIG_H
+	bool   "use custom curl_config.h file"
+	default n
+
+config  CURL_DEFAULT_RECIEVE_BUFFER_SIZE
+	bool   "default buffer size"
+	default y
+
+config  CURL_RECIEVE_BUFFER_SIZE
+	int   "receive buffer size"
+	depends on !CURL_DEFAULT_RECIEVE_BUFFER_SIZE
+	default 4096
+
+config  CURL_DEFAULT_HTTP2_BUFFER_SIZE
+	bool   "default http2 buffer size"
+	default y
+
+config  CURL_HTTP2_BUFFER_SIZE
+	int   "http2 buffer size"
+	depends on !CURL_DEFAULT_HTTP2_BUFFER_SIZE
+	default 4096
+
+
 config  CURL_ENABLE_PROXY
 	bool   "enable proxy"
 	default n
@@ -62,6 +94,11 @@ config  CURL_ENABLE_COOKIES
 
 config  CURL_ENABLE_VERBOSE_STRINGS
 	bool   "enable verbose strings"
+	default n
+
+config  CURL_ENABLE_DEBUG
+	bool   "enable debug"
+	depends on CURL_ENABLE_VERBOSE_STRINGS
 	default n
 
 choice

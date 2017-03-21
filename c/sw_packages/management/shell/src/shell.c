@@ -212,10 +212,6 @@ static void Shell_Task( void *pvParameters )
 								}
 								//shift buffer right before DEL
 								memmove(&pBufferStart[2],pBufferStart,curr_buff_pos-1);
-//								for(i=curr_buff_pos ; i>1 ; i--)
-//								{
-//									pBufferStart[i]=pBufferStart[i-2];
-//								}
 
 								curr_buff_pos-=1;
 								endOfLastPrintfPos=curr_buff_pos;
@@ -300,7 +296,6 @@ static void Shell_Task( void *pvParameters )
 					curr_buff_pos=0;
 					endOfLastPrintfPos=0;
 				}
-
 
 				runtime_handle->lastTestedBytePos = curr_buff_pos;
 				runtime_handle->lastEOLchar  =eol_char;

@@ -7,17 +7,6 @@ ELF_TO_HEX		:=	$(FULL_GCC_PREFIX)objcopy -O ihex
 
 GLOBAL_LIBS := $(GLOBAL_LIBS)
 
-ifdef CONFIG_INCLUDE_TOOLCHAIN_LIBRARIES
-   STD_LIBRARIES := libc.a libm.a libc_nano.a libgcc.a
-   GLOBAL_LIBS := $(GLOBAL_LIBS) $(STD_LIBRARIES)
-   ifdef CONFIG_TOOLCHAIN_LIBRARIES_ARE_SPEED_CRUCIAL
-       CRITICAL_SPEED_STD_LIBRARIES := $(STD_LIBRARIES)
-   endif
-endif
-
-LIBS := $(patsubst lib%,-l%,$(GLOBAL_LIBS))
-LIBS := $(patsubst %.a,%,$(LIBS))
-LIBRARIES_DIRS := $(patsubst %,-L%,$(GLOBAL_LIBS_PATH))
 
 
 #LINKER_OUTPUT := $(OUT_DIR)/$(OUTPUT_APP_NAME).axf
@@ -45,6 +34,24 @@ ifdef CONFIG_USE_NANO_STD_LIBS
     LDFLAGS += -specs=nano.specs
 endif
 
+ifdef CONFIG_INCLUDE_TOOLCHAIN_LIBRARIES
+    ifdef CONFIG_USE_NANO_STD_LIBS
+        STD_LIBRARIES := libc_nano.a
+    else
+        STD_LIBRARIES := libc.a
+    endif
+    STD_LIBRARIES += libm.a libgcc.a
+    GLOBAL_LIBS := $(GLOBAL_LIBS) $(STD_LIBRARIES)
+    ifdef CONFIG_TOOLCHAIN_LIBRARIES_ARE_SPEED_CRUCIAL
+        CRITICAL_SPEED_STD_LIBRARIES := $(STD_LIBRARIES)
+    endif
+endif
+
+LIBS := $(patsubst lib%,-l%,$(GLOBAL_LIBS))
+LIBS := $(patsubst %.a,%,$(LIBS))
+LIBRARIES_DIRS := $(patsubst %,-L%,$(GLOBAL_LIBS_PATH))
+
+
 ifdef CONFIG_CORTEX_M4
     ifdef CONFIG_INCLUDE_CORTEX_M_FPU
         LDFLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16
@@ -58,14 +65,17 @@ LDFLAGS += -g -g3 -ggdb3 #-gstabs3  #-O0
 
 LDFLAGS := $(GLOBAL_LDFLAGS) $(LDFLAGS)
 
-
-FILES_TO_FORCE_IN_RAM := $(SPEED_CRITICAL_FILES) $(CRITICAL_SPEED_STD_LIBRARIES)
-FILES_TO_FORCE_IN_RAM := $(sort $(FILES_TO_FORCE_IN_RAM)) 
-FILES_TO_FORCE_IN_RAM := $(patsubst %.c,%.o,$(FILES_TO_FORCE_IN_RAM))
-FILES_TO_FORCE_IN_RAM := $(patsubst %.s,%.o.asm,$(FILES_TO_FORCE_IN_RAM))
-FILES_TO_FORCE_IN_RAM := $(patsubst %.S,%.O.asm,$(FILES_TO_FORCE_IN_RAM))
-FILES_TO_FORCE_IN_RAM := $(patsubst %,*%,$(FILES_TO_FORCE_IN_RAM))# add * to deal with libraries pathes
-FILES_TO_FORCE_IN_RAM := $(FILES_TO_FORCE_IN_RAM) 123_DUMMY.X # add dummy file to create non-empy field in lds file for correct syntax
+ifdef CONFIG_PUT_SPEED_CRITICAL_CODE_TO_RAM
+    FILES_TO_FORCE_IN_RAM := $(SPEED_CRITICAL_FILES) $(CRITICAL_SPEED_STD_LIBRARIES)
+    FILES_TO_FORCE_IN_RAM := $(sort $(FILES_TO_FORCE_IN_RAM))
+    FILES_TO_FORCE_IN_RAM := $(patsubst %.c,%.o,$(FILES_TO_FORCE_IN_RAM))
+    FILES_TO_FORCE_IN_RAM := $(patsubst %.s,%.o.asm,$(FILES_TO_FORCE_IN_RAM))
+    FILES_TO_FORCE_IN_RAM := $(patsubst %.S,%.O.asm,$(FILES_TO_FORCE_IN_RAM))
+    FILES_TO_FORCE_IN_RAM := $(patsubst %,*%,$(FILES_TO_FORCE_IN_RAM))# add * to deal with libraries pathes
+else
+    FILES_TO_FORCE_IN_RAM :=
+endif
+FILES_TO_FORCE_IN_RAM += 123_DUMMY.X # add dummy file to create non-empy field in lds file for correct syntax
 ############   PREPROCESSOR FLAGS FOR LINKER SCRIPT #############
 
 
@@ -96,9 +106,18 @@ LINKER_HISTORY_OUTPUT := $(OUT_DIR_HISTORY)/$(PROJECT_NAME)_$(MAIN_VERSION_STR).
 rwildcard=$(wildcard $1$2) $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2))
 
 #some time on windows .O.asm and .o.asm will appear as same files . so $(sort) will eliminate duplication
-
-
 ALL_OBJ_FILES := $(sort $(call rwildcard,$(OBJ_DIR)/,*.o) $(call rwildcard,$(OBJ_DIR)/,*.oo) $(call rwildcard,$(OBJ_DIR)/,*.o.asm) $(call rwildcard,$(OBJ_DIR)/,*.O.asm))
+ALL_OBJ_FILES :=$(subst \,/,$(ALL_OBJ_FILES))
+
+ALL_OBJECTS_LIST_FILE:=$(OUT_DIR)\objects.txt
+
+#create file with list of objects
+LIST_FILE_NAME_TRUNCATE :=$(ALL_OBJECTS_LIST_FILE)
+PREFIX_FOR_EACH_ITEM :=
+ITEMS := $(ALL_OBJ_FILES)
+include $(MAKEFILE_DEFS_ROOT_DIR)/_common_include_functions/add_item_list_to_file_in_one_line.mk
+#end of file creation
+
 
 ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
     LINKER_OUTPUT := $(subst /,\,$(LINKER_OUTPUT))
@@ -114,7 +133,7 @@ endif
 
 build_outputs :
 	$(CC) -E -P -x c -I z_auto_generated_files $(LDS_PREPROCESSOR_DEFINES_FRMT)  $(BUILD_TOOLS_ROOT_DIR)/scatter_files/arm_gcc/arm_scatter_file_pattern.lds -o $(OUT_DIR)/$(OUTPUT_APP_NAME).lds
-	$(LD) $(LDFLAGS) -T $(OUT_DIR)/$(OUTPUT_APP_NAME).lds  $(LIBRARIES_DIRS) $(ALL_OBJ_FILES) $(LIBS) -o $(LINKER_OUTPUT)
+	$(LD) $(LDFLAGS) -T $(OUT_DIR)/$(OUTPUT_APP_NAME).lds  $(LIBRARIES_DIRS) @$(ALL_OBJECTS_LIST_FILE) $(LIBS) -o $(LINKER_OUTPUT)
 	$(DISASSEMBLER) $(LINKER_OUTPUT) > $(OUT_DIR)/$(OUTPUT_APP_NAME).asm
 	$(ELF_TO_BIN) $(LINKER_OUTPUT) $(OUTPUT_BIN)
 	$(ELF_TO_HEX) $(LINKER_OUTPUT) $(OUTPUT_HEX)

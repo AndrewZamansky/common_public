@@ -12,6 +12,8 @@
 #include "auto_init_api.h"
 #include "dev_management_api.h"
 
+#define DEBUG
+#include "PRINTF_api.h"
 
 /***************   defines    *******************/
 
@@ -123,6 +125,7 @@ void __attribute__((weak)) OS_SWI_Handler(void)
 
 /**************  low level calls from libraries ******************/
 EXTERN_C_FUNCTION int _getpid(void) {
+	while(1) ;
   return 1;
 }
 
@@ -161,25 +164,27 @@ EXTERN_C_FUNCTION void __attribute__ ((noreturn)) _exit(int status)
 }
 
 EXTERN_C_FUNCTION int _write(int file, char *ptr, int len) {
-
+//	PRINT_DATA_DBG(ptr , len);
+	while(1) ;
  return len;
  }
 
-EXTERN_C_FUNCTION int _close(int file) { return -1; }
+#ifndef	_CLOSE_ALREADY_DEFINED
+EXTERN_C_FUNCTION int _close(int file) {while(1) ; return -1; }
+#endif
 
-EXTERN_C_FUNCTION int _fstat(int file, void *st) { return 0; }
+EXTERN_C_FUNCTION int _fstat(int file, void *st) {while(1) ; return 0; }
 
-EXTERN_C_FUNCTION int _isatty(int file) { return 1; }
+EXTERN_C_FUNCTION int _isatty(int file) { while(1) ;return 1; }
 
-EXTERN_C_FUNCTION int _lseek(int file, int ptr, int dir) { return 0; }
+EXTERN_C_FUNCTION int _lseek(int file, int ptr, int dir) {while(1) ; return 0; }
 
-EXTERN_C_FUNCTION int _open(const char *name, int flags, int mode) { return -1; }
+EXTERN_C_FUNCTION int _open(const char *name, int flags, int mode) {while(1) ; return -1; }
 
-EXTERN_C_FUNCTION int _read(int file, char *ptr, int len) { return 0; }
+EXTERN_C_FUNCTION int _read(int file, char *ptr, int len) {while(1) ; return 0; }
 
-EXTERN_C_FUNCTION time_t time (time_t *result) { return -1; }
 
-EXTERN_C_FUNCTION clock_t _times(clock_t * ptms) { return -1; }
+EXTERN_C_FUNCTION clock_t _times(clock_t * ptms) { while(1) ;return -1; }
 
 #endif
 /******************-------------------*****************************/
@@ -215,7 +220,7 @@ EXTERN_C_FUNCTION void low_level_init(uint32_t curr_stack)
 
 #if  ( (1 == CONFIG_CORTEX_M3 ) || (1 == CONFIG_CORTEX_M4) )
     #if (1==CONFIG_EXCEPTION_STACKS_DEBUG)
-	    fill_mem32_with_pattern(&Buttom_Of_Stacks , curr_stack , 0xb1b1b1b1);
+	    fill_mem32_with_pattern(&Buttom_Of_Stacks , (uint32_t *)curr_stack , 0xb1b1b1b1);
     #endif
 #else /* cortex - a9 */
 	v7_outer_cache_inval_all();

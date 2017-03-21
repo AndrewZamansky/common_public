@@ -5,10 +5,6 @@ menu "GCC options"
 ##### ARM  #########
 if ARM
 
-config ARM_GCC_VERSION
-    string "gcc version in form : xx.xx[.xx]"
-    default "4.9.3"
-
 
 config GCC_VENDOR_NAME
     string "gcc vendor name"

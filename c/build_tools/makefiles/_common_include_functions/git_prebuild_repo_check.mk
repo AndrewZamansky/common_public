@@ -20,8 +20,8 @@ endif
 
 ifeq ("",$(CURR_GIT_REQUESTED_COMMIT))
     $(info !--- git repository test failed : $(CURR_GIT_REPOSITORY_DIR))
-    $(info !--- CURR_GIT_COMMIT_HASH_VARIABLE = $(CURR_GIT_REQUESTED_COMMIT))
-    $(info !--- CURR_GIT_COMMIT_HASH_VARIABLE should contain valid git hash)
+    $(info !--- $(CURR_GIT_COMMIT_HASH_VARIABLE) = $(CURR_GIT_REQUESTED_COMMIT))
+    $(info !--- $(CURR_GIT_COMMIT_HASH_VARIABLE) should contain valid git hash)
     $(error  )
 endif
 
@@ -37,20 +37,51 @@ else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX)
 endif
 
 
+CURR_GIT_BRANCH := $(shell $(SHELL_GO_TO_GIT_DIR) $(GIT) rev-parse --abbrev-ref HEAD)
+CURR_GIT_BRANCH := $(patsubst heads/%,%,$(CURR_GIT_BRANCH))#removing heads/ if exists
 CURR_GIT_COMMIT := $(shell $(SHELL_GO_TO_GIT_DIR) $(GIT) rev-parse HEAD)
 ifneq ("$(CURR_GIT_COMMIT)",$(CURR_GIT_REQUESTED_COMMIT))
     SHELL_OUTPUT := $(shell $(SHELL_GO_TO_GIT_DIR) $(GIT) status --porcelain 2>&1)
     ERROR_MESSAGE := M 
-    ifeq ($(findstring $(ERROR_MESSAGE),$(SHELL_OUTPUT)),$(ERROR_MESSAGE))
-        $(info !--- git repository test failed : $(CURR_GIT_REPOSITORY_DIR))
-        $(info !--- git error : commit/stash all changes to $(CURR_GIT_REPOSITORY_DIR) before checkout another commit)
-        $(error  )
+    ifneq ($(sort $(filter $(CURR_APPLICATION_GIT_BRANCH),$(CURR_GIT_BRANCH))),$(CURR_APPLICATION_GIT_BRANCH))#if  $(CURR_APPLICATION_GIT_BRANCH) is not in $(CURR_GIT_BRANCH) list
+        ifeq ($(findstring $(ERROR_MESSAGE),$(SHELL_OUTPUT)),$(ERROR_MESSAGE))
+            $(info !--- git repository test failed : $(CURR_GIT_REPOSITORY_DIR))
+            $(info !--- git error : commit/stash all changes to $(CURR_GIT_REPOSITORY_DIR) before checkout another commit)
+            $(info !--- tested git branch is : $(CURR_GIT_BRANCH))
+            $(info !--- application git branch is : $(CURR_APPLICATION_GIT_BRANCH))
+            $(error  )
+        endif
+        ERROR_MESSAGE := D #??
+        ifeq ($(findstring $(ERROR_MESSAGE),$(SHELL_OUTPUT)),$(ERROR_MESSAGE))
+            $(info !--- git repository test failed : $(CURR_GIT_REPOSITORY_DIR))
+            $(info !--- git error : commit/stash all changes to $(CURR_GIT_REPOSITORY_DIR) before checkout another commit)
+            $(info !--- tested git branch is : $(CURR_GIT_BRANCH))
+            $(info !--- application git branch is : $(CURR_APPLICATION_GIT_BRANCH))
+            $(error  )
+        endif
     endif
-    ERROR_MESSAGE := D #??
-    ifeq ($(findstring $(ERROR_MESSAGE),$(SHELL_OUTPUT)),$(ERROR_MESSAGE))
-        $(info !--- git repository test failed : $(CURR_GIT_REPOSITORY_DIR))
-        $(info !--- git error : commit/stash all changes to $(CURR_GIT_REPOSITORY_DIR) before checkout another commit)
-        $(error  )
+
+    SHELL_OUTPUT := $(shell $(SHELL_GO_TO_GIT_DIR) $(GIT) bundle verify $(CURR_GIT_BUNDLE) 2>&1)
+    REQUIRED_COMMIT_FROM_BUNDLE :=$(word 13,$(SHELL_OUTPUT))
+    NEW_COMMIT_FROM_BUNDLE :=$(word 6,$(SHELL_OUTPUT))
+
+    ifneq ($(CURR_GIT_BUNDLE),)
+        SHELL_OUTPUT := $(shell $(SHELL_GO_TO_GIT_DIR) $(GIT) cat-file commit $(REQUIRED_COMMIT_FROM_BUNDLE) 2>&1)
+        ifeq ($(findstring fatal:,$(SHELL_OUTPUT)),fatal:)
+            $(info !--- git repository test failed : $(CURR_GIT_REPOSITORY_DIR))
+            $(info !--- commit $(REQUIRED_COMMIT_FROM_BUNDLE) , required by $(CURR_GIT_BUNDLE) , not found)
+            $(info !--- get git repository $(CURR_GIT_REPOSITORY_DIR) with required commit )
+            $(error  )
+        endif
+        SHELL_OUTPUT := $(shell $(SHELL_GO_TO_GIT_DIR) $(GIT) cat-file commit $(NEW_COMMIT_FROM_BUNDLE) 2>&1)
+        ifeq ($(findstring fatal:,$(SHELL_OUTPUT)),fatal:)
+            $(info !--- git repository test failed : $(CURR_GIT_REPOSITORY_DIR))
+            $(info !--- commit $(NEW_COMMIT_FROM_BUNDLE) not found)
+            $(info !--- apply bundle $(CURR_GIT_BUNDLE) )
+            $(info !--- you can use following command :)
+            $(info !--- $(SHELL_GO_TO_GIT_DIR) $(GIT) remote add uCProject_bundle $(CURR_GIT_BUNDLE) --fetch)
+            $(error  )
+        endif
     endif
 
     $(info !--- git repository test failed : $(CURR_GIT_REPOSITORY_DIR))
@@ -61,8 +92,6 @@ ifneq ("$(CURR_GIT_COMMIT)",$(CURR_GIT_REQUESTED_COMMIT))
     $(info !--- $(SHELL_GO_TO_GIT_DIR) $(GIT) checkout $(CURR_GIT_REQUESTED_COMMIT) -B $(CURR_APPLICATION_GIT_BRANCH))
     $(error  )
 else
-    CURR_GIT_BRANCH := $(shell $(SHELL_GO_TO_GIT_DIR) $(GIT) rev-parse --abbrev-ref HEAD)
-    CURR_GIT_BRANCH := $(patsubst heads/%,%,$(CURR_GIT_BRANCH))#removing heads/ if exists
     ifneq ($(sort $(filter $(CURR_APPLICATION_GIT_BRANCH),$(CURR_GIT_BRANCH))),$(CURR_APPLICATION_GIT_BRANCH))#if  $(CURR_APPLICATION_GIT_BRANCH) is not in $(CURR_GIT_BRANCH) list
         #for now we are doing manual checkout
         #SHELL_OUTPUT := $(shell $(SHELL_GO_TO_GIT_DIR) git checkout $(CURR_GIT_REQUESTED_COMMIT) -B $(CURR_APPLICATION_GIT_BRANCH) 2>&1)
@@ -80,3 +109,4 @@ $(info ---- git repository $(CURR_GIT_REPOSITORY_DIR) is synchronized)
 #clear arguments for next function usage
 CURR_GIT_REPOSITORY_DIR:=
 CURR_GIT_COMMIT_HASH_VARIABLE:=
+CURR_GIT_BUNDLE:=

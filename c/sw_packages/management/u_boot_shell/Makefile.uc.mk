@@ -3,12 +3,13 @@ INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_UBOOT_SHELL)
 
 ifdef CONFIG_INCLUDE_UBOOT_SHELL
 
+    CURR_UBOOT_COMPONENT_LOCATION := $(patsubst %/Makefile.uc.mk,%,$(realpath $(filter %u_boot_shell/Makefile.uc.mk,$(MAKEFILE_LIST))))
     U_BOOT_PATH :=$(EXTERNAL_SOURCE_ROOT_DIR)/u-boot
     ifeq ("$(wildcard $(U_BOOT_PATH))","")
         $(info   )
-        $(info --- u-boot path $(U_BOOT_PATH) dont exists )
-        $(info --- get u-boot repository ported to uCProjects from Andrew Zamansky and put it to $(U_BOOT_PATH)  )
-        $(info --- make sure that .git directory is located in $(U_BOOT_PATH)/  after unpacking   )
+        $(info !--- u-boot path $(U_BOOT_PATH) dont exists )
+        $(info !--- get u-boot repository from git://git.denx.de/u-boot.git $(U_BOOT_PATH)  )
+        $(info !--- make sure that .git directory is located in $(U_BOOT_PATH)/  after unpacking   )
         $(error )
     endif
 
@@ -18,11 +19,11 @@ ifdef CONFIG_INCLUDE_UBOOT_SHELL
             #test if current commit and branch of uboot git is the same as required by application
             CURR_GIT_REPOSITORY_DIR :=$(U_BOOT_PATH)
             CURR_GIT_COMMIT_HASH_VARIABLE :=CONFIG_UBOOT_GIT_COMMIT_HASH
+            CURR_GIT_BUNDLE :=$(CURR_UBOOT_COMPONENT_LOCATION)/u-boot.bundle
             include $(MAKEFILE_DEFS_ROOT_DIR)/_common_include_functions/git_prebuild_repo_check.mk
         endif
     endif
 
-    CURR_UBOOT_COMPONENT_LOCATION := $(patsubst %/Makefile.uc.mk,%,$(realpath $(filter %u_boot_shell/Makefile.uc.mk,$(MAKEFILE_LIST))))
     DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH ,  $(CURR_UBOOT_COMPONENT_LOCATION)/include )
     DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(EXTERNAL_SOURCE_ROOT_DIR)/)
 endif

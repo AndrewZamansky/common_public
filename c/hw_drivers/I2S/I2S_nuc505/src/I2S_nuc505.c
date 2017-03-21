@@ -15,7 +15,7 @@
 #include "I2S_nuc505_api.h"
 #include "I2S_nuc505.h"
 #include "irq_api.h"
-#include "timer_api.h"
+#include "timer_wrapper_api.h"
 
 
 #include "NUC505Series.h"
@@ -73,8 +73,8 @@ void __attribute__((section(".critical_text"))) I2S_IRQHandler(void)
 	{
 		uint64_t	timer_counter;
 
-		DEV_IOCTL(pI2SHandle->timer_dev, IOCTL_TIMER_API_GET_COUNTER, (void*)&timer_counter);
-		DEV_IOCTL_0_PARAMS(pI2SHandle->timer_dev, IOCTL_TIMER_API_RESTART_COUNTER);
+		DEV_IOCTL(pI2SHandle->timer_dev, IOCTL_TIMER_WRAPPER_API_GET_COUNTER, (void*)&timer_counter);
+		DEV_IOCTL_0_PARAMS(pI2SHandle->timer_dev, IOCTL_TIMER_WRAPPER_API_RESTART_COUNTER);
 
 		if(relax == 0)
 		{
@@ -326,7 +326,7 @@ void __attribute__((section(".critical_text"))) I2S_IRQHandler(void)
 //		NVIC_EnableIRQ(I2S_IRQn);
 		I2S_EnableInt(I2S, (I2S_IEN_RDMATIEN_Msk|I2S_IEN_RDMAEIEN_Msk));
 
-		DEV_IOCTL_0_PARAMS(pI2SHandle->timer_dev, IOCTL_TIMER_API_RESTART_COUNTER);
+		DEV_IOCTL_0_PARAMS(pI2SHandle->timer_dev, IOCTL_TIMER_WRAPPER_API_RESTART_COUNTER);
 
  }
 
@@ -379,7 +379,7 @@ uint8_t I2S_nuc505_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 					float measured_sample_rate;
 					uint32_t timer_rate;
 
-					DEV_IOCTL_1_PARAMS(pI2SHandle->timer_dev, IOCTL_TIMER_API_GET_RATE_HZ, &timer_rate);
+					DEV_IOCTL_1_PARAMS(pI2SHandle->timer_dev, IOCTL_TIMER_WRAPPER_API_GET_RATE_HZ, &timer_rate);
 					measured_sample_rate = ( timer_rate * num_of_words_in_buffer_per_chenel
 							* ACCUMULATION_TIMES ) / saved_accumultor_timer ;
 					*(uint32_t*)aIoctl_param1 = measured_sample_rate;

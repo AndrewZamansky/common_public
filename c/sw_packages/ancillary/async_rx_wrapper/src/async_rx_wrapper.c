@@ -36,7 +36,6 @@
 
 /***********   local variables    **************/
 
-
 /*---------------------------------------------------------------------------------------------------------*/
 /* Function:        async_rx_wrapper_callback                                                                          */
 /*                                                                                                         */
@@ -53,7 +52,7 @@ uint8_t async_rx_wrapper_callback(pdev_descriptor_t apdev ,const uint8_t aCallba
 	async_rx_wrapper_instance_t *config_handle;
 	async_rx_wrapper_runtime_instance_t *runtime_handle;
     uint8_t *rx_buff;
-    rx_int_size_t WritePos,ReadPos;
+    rx_int_size_t WritePos;
     rx_int_size_t copy_len;
     rx_int_size_t rx_buff_size;
     uint8_t *rcvdData ;
@@ -67,7 +66,6 @@ uint8_t async_rx_wrapper_callback(pdev_descriptor_t apdev ,const uint8_t aCallba
 	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(apdev);
 
     client_dev = config_handle->client_dev;
-
     if (CALLBACK_DATA_RECEIVED == aCallback_num)
 	{
 		rx_buff=config_handle->rx_buff;
@@ -75,7 +73,6 @@ uint8_t async_rx_wrapper_callback(pdev_descriptor_t apdev ,const uint8_t aCallba
 		if(NULL == rx_buff) return 1;
 
 		WritePos = runtime_handle->WritePos;
-		ReadPos = runtime_handle->ReadPos;
 	#ifdef CONFIG_ASYNC_RX_WRAPPER_USE_MALLOC
 		rx_buff_size=config_handle->rx_buff_size;
 	#else
@@ -84,6 +81,8 @@ uint8_t async_rx_wrapper_callback(pdev_descriptor_t apdev ,const uint8_t aCallba
 
 		if( 0 == runtime_handle->isDataInUse)
 		{
+			rx_int_size_t ReadPos;
+			ReadPos = runtime_handle->ReadPos;
 			if(WritePos >= rx_buff_size)
 			{
 				WritePos=0;
@@ -103,23 +102,19 @@ uint8_t async_rx_wrapper_callback(pdev_descriptor_t apdev ,const uint8_t aCallba
 			copy_len=rcvdDataLen;
 		}
 
-
 		memcpy((uint8_t*)&rx_buff[WritePos],rcvdData,copy_len);
 		WritePos=WritePos+copy_len;
 		runtime_handle->WritePos=WritePos;
 
-		if(NULL !=client_dev)
+		if(NULL != client_dev)
 		{
 			return DEV_CALLBACK_0_PARAMS( client_dev,CALLBACK_NEW_DATA_ARRIVED  ) ;
 		}
 
 
 	}
-
 	return 0;
 }
-
-
 
 
 
@@ -144,9 +139,6 @@ uint8_t async_rx_wrapper_ioctl(pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 	config_handle = DEV_GET_CONFIG_DATA_POINTER(apdev);
 	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(apdev);
 
-	WritePos=runtime_handle->WritePos;
-	ReadPos=runtime_handle->ReadPos;
-
 	server_dev  = config_handle->server_dev;
 
 	switch(aIoctl_num)
@@ -165,13 +157,16 @@ uint8_t async_rx_wrapper_ioctl(pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 			config_handle->rx_buff_size = *(uint32_t*)aIoctl_param1;
 			break;
 #endif			//for CONFIG_ASYNC_RX_WRAPPER_ENABLE_RX
-		case IOCTL_SET_ISR_CALLBACK_DEV :
+#endif // for CONFIG_ASYNC_RX_WRAPPER_USE_RUNTIME_CONFIGURATION
+		case IOCTL_SET_ISR_CALLBACK_DEV ://can be used during runtime , not only during configuration
 			config_handle->client_dev = (pdev_descriptor_t)aIoctl_param1;
 			break;
-#endif // for CONFIG_ASYNC_RX_WRAPPER_USE_RUNTIME_CONFIGURATION
 
 		case IOCTL_GET_AND_LOCK_DATA_BUFFER :
 			runtime_handle->isDataInUse=1; // should be modified first
+
+			WritePos=runtime_handle->WritePos; // should be modified after isDataInUse=1 is set
+			ReadPos=runtime_handle->ReadPos; // should be modified after isDataInUse=1 is set
 
 			((ioctl_get_data_buffer_t *)aIoctl_param1)->bufferWasOverflowed = runtime_handle->bufferWasOverflowed ;
 			runtime_handle->bufferWasOverflowed = 0;
@@ -180,12 +175,15 @@ uint8_t async_rx_wrapper_ioctl(pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 			((ioctl_get_data_buffer_t *)aIoctl_param1)->pBufferStart = &config_handle->rx_buff[ReadPos];
 			break;
 		case IOCTL_SET_BYTES_CONSUMED_IN_DATA_BUFFER :
-			runtime_handle->ReadPos += (size_t)aIoctl_param1;
+			WritePos = runtime_handle->WritePos;
+			ReadPos = runtime_handle->ReadPos;
+			ReadPos += (size_t)aIoctl_param1;
 			if(  ReadPos >  WritePos)
 			{
 				// should not be reached :
-				runtime_handle->ReadPos =  WritePos;
+				ReadPos =  WritePos;
 			}
+			runtime_handle->ReadPos = ReadPos;
 			break;
 		case IOCTL_SET_UNLOCK_DATA_BUFFER :
 			runtime_handle->isDataInUse= 0 ; // should be modified last

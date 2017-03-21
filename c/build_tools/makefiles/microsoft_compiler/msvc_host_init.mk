@@ -6,7 +6,7 @@ ifndef COMMON_INIT_SECTION_THAT_SHOULD_RUN_ONCE
 MSVC_ROOT_DIR :=
 
 ####### test for existence of microsoft compiler and put its directory name in MSVC_ROOT_DIR #####
-SEARCHED_TOOL:=visual studio
+SEARCHED_TOOL:=cl
 SEARCHED_DIR_VARIABLE:=MSVC_ROOT_DIR
 MANUALLY_DEFINED_DIR_VARIABLE:=REDEFINE_VISUAL_STUDIO_DIR
 TEST_FILE_IN_SEARCHED_DIR:=bin\cl.exe
@@ -18,21 +18,34 @@ MSVC_BIN_DIR := $(subst /,\,$(MSVC_BIN_DIR))
 
 SHELL_OUT :=$(shell "$(MSVC_BIN_DIR)\cl.exe" 2>&1)
 ifneq ($(findstring Version 18,$(SHELL_OUT)),)
+    MSVC_SET_ADDITIONAL_PATHS :=set "PATH=$(MSVC_BIN_DIR)\bin" &
     VS_VERSION :=2013
     MSVC_VERSION :=18
 else ifneq ($(findstring Version 19,$(SHELL_OUT)),)
+    MSVC_SET_ADDITIONAL_PATHS :=set "PATH=$(MSVC_BIN_DIR)\bin" &
     VS_VERSION :=2015
     MSVC_VERSION :=19
 else
-    $(info !---- unsupported version of visual studio)
-    $(info !---- install one of following versions : VS2013 , VS2015)
-    $(error ) 
+    SHELL_OUT :=$(shell set "PATH=$(MSVC_ROOT_DIR)\..\Common7\IDE" & "$(MSVC_BIN_DIR)\cl.exe" 2>&1)
+    ifneq ($(findstring Version 17,$(SHELL_OUT)),)
+        MSVC_SET_ADDITIONAL_PATHS :=set "PATH=$(MSVC_ROOT_DIR)\..\Common7\IDE" &
+        VS_VERSION :=2012
+        MSVC_VERSION :=17
+    else
+        $(info !---- unsupported version of visual studio)
+        $(info !---- install one of following versions : VS2012 , VS2013 , VS2015)
+        $(error )
+    endif
 endif
 $(info ---- Visual studio version :  $(VS_VERSION))
 
 GLOBAL_CFLAGS += /I"$(MSVC_ROOT_DIR)/include"
 
 ifdef CONFIG_USE_WINDOWS_KITS
+
+    ifeq ($(VS_VERSION),2012)
+        WINDOWS_KIT_ROOT_DIR :=C:\Program Files (x86)\WINDOWS KITS\8.0
+    endif
 
     ifeq ($(VS_VERSION),2013)
         WINDOWS_KIT_ROOT_DIR :=C:\Program Files (x86)\WINDOWS KITS\8.1
@@ -51,6 +64,11 @@ ifdef CONFIG_USE_WINDOWS_KITS
     endif
 
     $(info ---- WDK :  $(WINDOWS_KIT_ROOT_DIR))
+
+    ifeq ($(VS_VERSION),2012)
+        GLOBAL_CFLAGS += /I"$(WINDOWS_KIT_ROOT_DIR)\INCLUDE\UM"#cannot use $(call ADD_TO_GLOBAL_INCLUDE_PATH) because of spaces in folder name
+        GLOBAL_CFLAGS += /I"$(WINDOWS_KIT_ROOT_DIR)\INCLUDE\SHARED"
+    endif
 
     ifeq ($(VS_VERSION),2013)
         GLOBAL_CFLAGS += /I"$(WINDOWS_KIT_ROOT_DIR)\INCLUDE\UM"#cannot use $(call ADD_TO_GLOBAL_INCLUDE_PATH) because of spaces in folder name
@@ -100,7 +118,10 @@ GLOBAL_CFLAGS += /Zi
 GLOBAL_CFLAGS += /MP /GS /analyze- /W4 /Zc:wchar_t /Gm- /Fd"$(OUT_DIR)\\" /fp:precise
 GLOBAL_CFLAGS += /errorReport:prompt /WX- /Zc:forScope /GR /Gd /Oy-
 GLOBAL_CFLAGS += /EHsc#/EHsc
-GLOBAL_CFLAGS += /nologo /Fp"$(OUT_DIR)\out.pch" /FS
+GLOBAL_CFLAGS += /nologo /Fp"$(OUT_DIR)\out.pch"
+ifneq ($(VS_VERSION),2012)
+    GLOBAL_CFLAGS += /FS
+endif
 #GLOBAL_CFLAGS += /Fa"Debug\\"#folder should be on local disk
 
 ifdef CONFIG_MSVC_CRT_LIBRARIES_LINKED_DINAMICALLY
@@ -150,11 +171,11 @@ endif
 
 
 ifdef CONFIG_MSVC_COMPILER_32
-    CC   := set "PATH=$(MSVC_BIN_DIR)\bin" & "$(MSVC_BIN_DIR)\cl.exe" /c
-    ASM  := set "PATH=$(MSVC_BIN_DIR)\bin" & "$(MSVC_BIN_DIR)\cl.exe" /c
+    CC   := $(MSVC_SET_ADDITIONAL_PATHS) "$(MSVC_BIN_DIR)\cl.exe" /c
+    ASM  := $(MSVC_SET_ADDITIONAL_PATHS) "$(MSVC_BIN_DIR)\cl.exe" /c
 else ifdef CONFIG_MSVC_COMPILER_64
-    CC   := set "PATH=$(MSVC_BIN_DIR)" & "$(MSVC_BIN_DIR)\x86_amd64\cl.exe" /c
-    ASM  := set "PATH=$(MSVC_BIN_DIR)" & "$(MSVC_BIN_DIR)\x86_amd64\cl.exe" /c
+    CC   := $(MSVC_SET_ADDITIONAL_PATHS) "$(MSVC_BIN_DIR)\x86_amd64\cl.exe" /c
+    ASM  := $(MSVC_SET_ADDITIONAL_PATHS) "$(MSVC_BIN_DIR)\x86_amd64\cl.exe" /c
 endif
 
 

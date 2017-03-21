@@ -17,8 +17,8 @@
 /***************   typedefs    *******************/
 #define CONFIG_ASYNC_RX_WRAPPER_RX_BUFFER_SIZE  64
 
-#ifdef CONFIG_ASYNC_RX_WRAPPER_USE_MALLOC
-		typedef uint32_t rx_int_size_t;
+#if defined(CONFIG_ASYNC_RX_WRAPPER_USE_MALLOC)
+	typedef size_t rx_int_size_t;
 #else
 	#if CONFIG_ASYNC_RX_WRAPPER_RX_BUFFER_SIZE <= (1<<8)
 		typedef uint8_t rx_int_size_t;
@@ -26,7 +26,7 @@
 		#if CONFIG_ASYNC_RX_WRAPPER_RX_BUFFER_SIZE <= (1<<16)
 			typedef uint16_t rx_int_size_t;
 		#else
-			typedef uint32_t rx_int_size_t;
+			typedef size_t rx_int_size_t;
 		#endif
 	#endif
 #endif

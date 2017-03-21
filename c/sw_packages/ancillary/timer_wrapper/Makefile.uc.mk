@@ -11,7 +11,7 @@ INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_TIMER_WRAPPER)
 
 
 
-SRC = timer.c
+SRC = timer_wrapper.c
 
 
 VPATH = src

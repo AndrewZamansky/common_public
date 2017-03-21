@@ -18,14 +18,17 @@
 
 
 
-
-#if CONFIG_ASYNC_TX_WRAPPER_MAX_TX_BUFFER_SIZE <= (1<<8)
-	typedef uint8_t tx_int_size_t;
+#if defined(CONFIG_ASYNC_TX_WRAPPER_USE_MALLOC)
+	typedef size_t tx_int_size_t;
 #else
-	#if CONFIG_ASYNC_TX_WRAPPER_MAX_TX_BUFFER_SIZE <= (1<<16)
-		typedef uint16_t tx_int_size_t;
+	#if CONFIG_ASYNC_TX_WRAPPER_MAX_TX_BUFFER_SIZE <= (1<<8)
+		typedef uint8_t tx_int_size_t;
 	#else
-		typedef uint32_t tx_int_size_t;
+		#if CONFIG_ASYNC_TX_WRAPPER_MAX_TX_BUFFER_SIZE <= (1<<16)
+			typedef uint16_t tx_int_size_t;
+		#else
+			typedef size_t tx_int_size_t;
+		#endif
 	#endif
 #endif
 

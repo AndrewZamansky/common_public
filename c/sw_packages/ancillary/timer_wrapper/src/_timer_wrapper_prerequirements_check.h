@@ -1,5 +1,5 @@
 /*
- * file : timer_prerequirements_check.h
+ * file : timer_wrapper_prerequirements_check.h
  *
  *
  *
@@ -8,8 +8,8 @@
  *
  */
 
-#ifndef _timer_prerequirements_check_H
-#define _timer_prerequirements_check_H
+#ifndef _timer_wrapper_prerequirements_check_H
+#define _timer_wrapper_prerequirements_check_H
 
 
 #include "_project.h"

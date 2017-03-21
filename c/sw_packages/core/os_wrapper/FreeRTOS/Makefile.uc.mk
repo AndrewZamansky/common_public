@@ -17,6 +17,8 @@ ifdef CONFIG_FREE_RTOS
     DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH ,  $(FREE_RTOS_PATH)/FreeRTOS/Source/include )
     DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH ,  $(FREE_RTOS_PATH)/FreeRTOS/Demo/Common/include )
     DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH ,  $(FREE_RTOS_PATH)/FreeRTOS/Source/portable/GCC/ARM_CM3 )
+    
+    DUMMY := $(call ADD_TO_GLOBAL_DEFINES , FREERTOS)#used in external sources like wolfssl, ...
 endif  
 
 
@@ -46,7 +48,8 @@ SRC += queue.c
 SRC += timers.c
 VPATH += $(FREE_RTOS_PATH)/FreeRTOS/Source 
 # memory management
-SRC += heap_3.c 
+SRC += heap_3.c
+#SRC += heap_4.c
 VPATH += : $(FREE_RTOS_PATH)/FreeRTOS/Source/portable/MemMang 
 
 

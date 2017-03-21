@@ -14,11 +14,6 @@ typedef struct
 }ioctl_get_data_buffer_t;
 
 
-typedef struct
-{
-	uint8_t *pData;
-	size_t DataLen;
-}callback_new_data_from_socket_t;
 
 
 typedef enum

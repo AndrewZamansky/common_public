@@ -1,8 +1,8 @@
 
 ifdef CONFIG_MSVC_COMPILER_32
-    LD := set "PATH=$(MSVC_BIN_DIR)" & "$(MSVC_BIN_DIR)\link"
+    LD := $(MSVC_SET_ADDITIONAL_PATHS) "$(MSVC_BIN_DIR)\link"
 else ifdef CONFIG_MSVC_COMPILER_64
-    LD := set "PATH=$(MSVC_BIN_DIR)" & "$(MSVC_BIN_DIR)\x86_amd64\link"
+    LD := $(MSVC_SET_ADDITIONAL_PATHS) "$(MSVC_BIN_DIR)\x86_amd64\link"
 endif
 
 LIBS := $(sort $(GLOBAL_LIBS))
@@ -120,6 +120,14 @@ ifdef CONFIG_USE_WINDOWS_KITS
     WINDOWS_KITS_LIBRARIES += oleaut32.lib uuid.lib odbc32.lib odbccp32.lib 
     LIBS += $(WINDOWS_KITS_LIBRARIES)
     LIBS := $(sort $(LIBS))
+
+    ifeq ($(VS_VERSION),2012)
+        ifdef CONFIG_MSVC_COMPILER_32
+            LDFLAGS += /LIBPATH:"$(WINDOWS_KIT_ROOT_DIR)\LIB\WIN8\UM\X86"
+        else
+            LDFLAGS += /LIBPATH:"$(WINDOWS_KIT_ROOT_DIR)\LIB\WIN8\UM\X64"
+        endif
+    endif
 
     ifeq ($(VS_VERSION),2013)
         ifdef CONFIG_MSVC_COMPILER_32

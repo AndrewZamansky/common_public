@@ -30,10 +30,19 @@ ifdef CONFIG_INCLUDE_NGHTTP2
     
     
 endif
-#DEFINES =
 
+DEFINES :=
+CFLAGS :=
 
 #ASMFLAGS =
+
+ifdef CONFIG_MICROSOFT_COMPILER
+    CFLAGS += /wd4127 #disable warning C4127: conditional expression is constant
+    CFLAGS += /wd4204 #disable warning C4204: nonstandard extension used : non-constant aggregate initializer
+    CFLAGS += /wd4214 #disable warning C4214: nonstandard extension used : bit field types other than int
+    DEFINES += _CRT_SECURE_NO_WARNINGS
+endif
+
 
 #INCLUDE_DIR =
 
@@ -55,6 +64,9 @@ SRC += nghttp2_http.c
 SRC += nghttp2_rcbuf.c
 SRC += nghttp2_hd_huffman.c
 SRC += nghttp2_hd_huffman_data.c
+
+#SRC += nghttp2_debug.c
+
 VPATH += | $(NGHTTP2_PATH)/lib
 
 include $(COMMON_CC)

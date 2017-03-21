@@ -59,8 +59,11 @@ endif
 
 ifeq ($(FOUND_ROOT_DIR),)
     $(info ---- trying system $(SEARCHED_TOOL) ...)
+    FOUND_TOOL_SYSTEM_DIR :=
     ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
-        TOOL_EXISTANCE_CHECK :=$(shell where /f $(SEARCHED_TOOL))
+        TOOL_EXISTANCE_CHECK :=$(shell where /f $(SEARCHED_TOOL) 2>&1)
+        #$(info dbg : where /f $(SEARCHED_TOOL))
+        #$(info dbg : $(TOOL_EXISTANCE_CHECK))
         ### remove " mark and replace space in directory names by ? sign ##
         TOOL_EXISTANCE_CHECK_FMT :=$(subst "$(SPACE),"*,$(TOOL_EXISTANCE_CHECK))
         TOOL_EXISTANCE_CHECK_FMT :=$(subst $(SPACE),?,$(TOOL_EXISTANCE_CHECK_FMT))
@@ -68,6 +71,7 @@ ifeq ($(FOUND_ROOT_DIR),)
         TOOL_EXISTANCE_CHECK_FMT :=$(subst ",,$(TOOL_EXISTANCE_CHECK_FMT))
         ### end of removal of # and replacing  space in directory names by ? sign ##
         FOUND_TOOL_CHECK_FMT :=$(filter %$(TEST_FILE_IN_SEARCHED_DIR),$(TOOL_EXISTANCE_CHECK_FMT))
+        #$(info dbg : FOUND_TOOL_CHECK_FMT = $(FOUND_TOOL_CHECK_FMT))
         ifneq ($(FOUND_TOOL_CHECK_FMT),)
             FOUND_TOOL_CHECK_FMT :=$(filter %$(FOUND_TOOL_CHECK_FMT),$(TOOL_EXISTANCE_CHECK_FMT))
             FOUND_TOOL_SYSTEM_DIR :=$(subst \$(TEST_FILE_IN_SEARCHED_DIR),,$(FOUND_TOOL_CHECK_FMT))
@@ -80,6 +84,7 @@ ifeq ($(FOUND_ROOT_DIR),)
         FOUND_TOOL_SYSTEM_DIR :=$(subst /$(TEST_FILE_IN_SEARCHED_DIR),,$(FOUND_TOOL_CHECK))
     endif
     
+    #$(info dbg : FOUND_TOOL_SYSTEM_DIR = $(FOUND_TOOL_SYSTEM_DIR))
     ifneq ($(FOUND_TOOL_SYSTEM_DIR),)
         FOUND_ROOT_DIR:=$(FOUND_TOOL_SYSTEM_DIR)
     else

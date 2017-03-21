@@ -50,7 +50,6 @@ typedef struct
 
 static uint8_t dummy_msg;
 
-
 /*---------------------------------------------------------------------------------------------------------*/
 /* Function:        async_tx_wrapper_callback                                                                          */
 /*                                                                                                         */
@@ -74,29 +73,33 @@ uint8_t async_tx_wrapper_callback(pdev_descriptor_t apdev ,const uint8_t aCallba
 
 	config_handle = DEV_GET_CONFIG_DATA_POINTER(apdev);
 	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(apdev);
-	if(CALLBACK_TX_DONE == aCallback_num)
+
+	data_length = (tx_int_size_t)runtime_handle->data_length;
+
+	if ((CALLBACK_TX_DONE == aCallback_num) && (data_length))
 	{
 		server_dev = config_handle->server_dev;
-		data_length = (tx_int_size_t)runtime_handle->data_length;
+
 		if(data_length > transmitedSize)
 	    {
 			runtime_handle->sendData += transmitedSize;
 			data_length -= transmitedSize;
 		    DEV_WRITE(server_dev, runtime_handle->sendData, data_length );
-		    runtime_handle->data_length = data_length;
-	//	    queueMsg = TRANSMIT_IN_PROGRESS;
 	    }
 	    else
 	    {
 	    	os_queue_t xTX_WaitQueue  ;
 	    	DEV_IOCTL_0_PARAMS(server_dev,IOCTL_UART_DISABLE_TX);
 	    	xTX_WaitQueue = runtime_handle->xTX_WaitQueue;
-		    runtime_handle->data_length = 0; // need to be here to avoid additional loop on stuck check
-	   		os_queue_send_immediate( xTX_WaitQueue, ( void * ) &dummy_msg);
-
-	//	    queueMsg = TRANSMIT_DONE;
+	    	data_length = 0; // need to be here to avoid additional loop on stuck check
+		    if(NULL != xTX_WaitQueue)
+		    {
+		        os_queue_send_immediate( xTX_WaitQueue, ( void * ) &dummy_msg);
+		    }
 	    }
+	    runtime_handle->data_length = data_length;
 	}
+
 	return 0;
 }
 
@@ -133,11 +136,10 @@ static void sw_uart_send_and_wait_for_end(pdev_descriptor_t apdev,
 	xTX_WaitQueue = runtime_handle->xTX_WaitQueue;
 	server_dev = config_handle->server_dev;
 
-	runtime_handle->data_length = length;
 	runtime_handle->sendData = pData;
-
-	DEV_IOCTL_0_PARAMS(server_dev ,IOCTL_UART_ENABLE_TX);
+	runtime_handle->data_length = length;
 	DEV_WRITE(server_dev , pData, length);
+
 	while (length)
 	{
 		last_checked_length = length;
@@ -159,11 +161,15 @@ static void sw_uart_send_and_wait_for_end(pdev_descriptor_t apdev,
 			break ;
 		}
 	}
-	DEV_IOCTL_0_PARAMS(server_dev ,IOCTL_UART_DISABLE_TX);
 	runtime_handle->data_length=0;
+	DEV_IOCTL_0_PARAMS(server_dev ,IOCTL_UART_DISABLE_TX);
+	if(called_from_task)
+	{
+		os_queue_receive_with_timeout( xTX_WaitQueue , &( dummy_msg ) , 0 );//cleanup queue
+	}
 
 #ifdef CONFIG_ASYNC_TX_WRAPPER_USE_MALLOC
-	free( pData );
+	os_safe_free( pData );
 #endif
 
 }
@@ -186,6 +192,7 @@ size_t async_tx_wrapper_pwrite(pdev_descriptor_t apdev ,const uint8_t *apData , 
 	async_tx_wrapper_runtime_instance_t *runtime_handle;
 	uint8_t *pSendData;
 
+
 	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(apdev);
 
 	while(dataLen)
@@ -198,7 +205,7 @@ size_t async_tx_wrapper_pwrite(pdev_descriptor_t apdev ,const uint8_t *apData , 
 
 
 #ifdef CONFIG_ASYNC_TX_WRAPPER_USE_MALLOC
-		xMessage.pData=(uint8_t*)malloc(curr_transmit_len * sizeof(uint8_t));
+		xMessage.pData=(uint8_t*)os_safe_malloc(curr_transmit_len * sizeof(uint8_t));
 #else
 		if ( CONFIG_ASYNC_TX_WRAPPER_MAX_TX_BUFFER_SIZE < curr_transmit_len )
 		{
@@ -207,7 +214,8 @@ size_t async_tx_wrapper_pwrite(pdev_descriptor_t apdev ,const uint8_t *apData , 
 #endif
 
 
-		pSendData=xMessage.pData;
+		pSendData = xMessage.pData;
+		if(NULL == pSendData) 	return 0;
 		memcpy(pSendData,(uint8_t*)apData,curr_transmit_len);
 
 
@@ -218,7 +226,7 @@ size_t async_tx_wrapper_pwrite(pdev_descriptor_t apdev ,const uint8_t *apData , 
 			if(OS_QUEUE_SEND_SUCCESS != os_queue_send_infinite_wait( xQueue, ( void * ) &xMessage ))
 			{
 #ifdef CONFIG_ASYNC_TX_WRAPPER_USE_MALLOC
-				free(pSendData);
+				os_safe_free(pSendData);
 #endif
 				return 0;
 			}
@@ -231,7 +239,6 @@ size_t async_tx_wrapper_pwrite(pdev_descriptor_t apdev ,const uint8_t *apData , 
 		dataLen-=curr_transmit_len;
 		apData += curr_transmit_len;
 	}
-
 
 	return aLength;
 

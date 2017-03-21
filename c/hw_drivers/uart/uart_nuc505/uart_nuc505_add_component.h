@@ -12,6 +12,7 @@ size_t uart_nuc505_pwrite(pdev_descriptor_t apdev ,const uint8_t *apData , size_
 #define	MODULE_CALLBACK_FUNCTION	uart_nuc505_callback
 #define	MODULE_PWRITE_FUNCTION		uart_nuc505_pwrite
 #define MODULE_CONFIG_DATA_STRUCT_TYPE		uart_nuc505_instance_t
+#define MODULE_RUNTIME_DATA_STRUCT_TYPE		uart_nuc505_runtime_instance_t
 
 #ifdef DT_DEV_MODULE
 
@@ -55,6 +56,7 @@ size_t uart_nuc505_pwrite(pdev_descriptor_t apdev ,const uint8_t *apData , size_
 #undef POINTER_TO_TX_CALLBACK_PDEV
 #undef POINTER_TO_RX_CALLBACK_PDEV
 #undef UART_NUC505_DT_UART_NUMBER
-#undef UART_NUC505_DT_CALLBACK_PDEV
 #undef UART_NUC505_DT_BAUD_RATE
-
+#undef UART_NUC505_DT_BASE_ADDRESS
+#undef UART_NUC505_DT_TX_CALLBACK_PDEV
+#undef UART_NUC505_DT_RX_CALLBACK_PDEV

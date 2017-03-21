@@ -24,10 +24,9 @@
 
 
 
-/**	defines :	[OS_QUEUE_SEND_SUCCESS]  **/
 #define OS_QUEUE_SEND_SUCCESS		pdTRUE
-/**	function :	[OS_QUEUE_RECEIVE_SUCCESS]  **/
 #define OS_QUEUE_RECEIVE_SUCCESS	pdTRUE
+#define OS_QUEUE_RECEIVE_FAILED		pdFALSE
 
 
 /*define maximal priority for interrupt that can call OS API */
@@ -102,7 +101,12 @@ void  os_start(void);
 
 /***********  queue receive **********/
 //infinite wait
-/**	function :	[os_queue_receive_with_timeout()]  **/
+/**
+ * os_queue_receive_with_timeout()
+ *
+ * retrun: OS_QUEUE_RECEIVE_SUCCESS if message received
+ * 		   OS_QUEUE_RECEIVE_FAILED  if exit on timeout
+ * */
 #define os_queue_receive_with_timeout(queue , pData ,timeout )	\
 		xQueueReceive(queue, pData, ( TickType_t ) timeout )
 
@@ -173,6 +177,16 @@ void *os_create_task_FreeRTOS(char *taskName , void (*taskFunction)(void *apPara
 /***********  delay **********/
 /**	function :	[os_delay_ms()]  **/
 #define os_delay_ms   vTaskDelay
+
+
+
+
+/*********** thread safe  malloc/free **********/
+/**	function :	[os_safe_malloc()]  **/
+#define os_safe_malloc   pvPortMalloc
+
+/**	function :	[os_safe_malloc()]  **/
+#define os_safe_free   vPortFree
 
 
 /********* stack debug ********/

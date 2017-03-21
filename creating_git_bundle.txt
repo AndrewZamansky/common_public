@@ -1,0 +1,1 @@
+git bundle create $(GIT_NAME).bundle $(OFFICIAL_PARENT_COMMIT_TAG_OR_BRANCH)..$(LAST_TAG_OR_BRANCH)
