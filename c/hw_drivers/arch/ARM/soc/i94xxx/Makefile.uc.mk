@@ -19,6 +19,6 @@ SRC = board_init.c
 VPATH = src
 
 SRC += sys.c
-VPATH +=  | $(NUC505_SRC_DIR)
+VPATH +=  | $(I94XXX_SRC_DIR)
 
 include $(COMMON_CC)

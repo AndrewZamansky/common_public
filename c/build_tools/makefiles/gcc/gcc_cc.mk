@@ -17,6 +17,10 @@ define CALCULATE_ALL_INCLUDE_DIRS
     ALL_INCLUDE_DIRS = $(FMT_GLOBAL_INCLUDE_DIR) $(patsubst %,-I%,$(INCLUDE_DIR) $(COMPILER_INCLUDE_DIR))
 endef
 
+define CALCULATE_ALL_ASM_INCLUDE_DIRS
+    ALL_ASM_INCLUDE_DIRS = $(FMT_GLOBAL_INCLUDE_DIR) $(patsubst %,-I%,$(INCLUDE_DIR) $(COMPILER_INCLUDE_DIR))
+endef
+
 define CALCULATE_ALL_DEFINES
 	ALL_DEFINES	=  $(subst ",\", $(FMT_GLOBAL_DEFINES) $(patsubst %,-D%,$(DEFINES)) )#substitute " to \" for string defines
 endef

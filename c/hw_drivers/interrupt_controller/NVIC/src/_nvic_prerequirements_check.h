@@ -21,10 +21,6 @@
 /******** test defines *****/
 
 
-#ifndef TOTAL_NUMBER_OF_EXTERNAL_INTERRUPS
-	#error  "TOTAL_NUMBER_OF_EXTERNAL_INTERRUPS should be defined in cpu description"
-#endif
-
 /***************************/
 
 

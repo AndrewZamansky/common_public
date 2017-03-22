@@ -89,7 +89,6 @@ typedef enum IRQn
 
 #endif
 
-#define TOTAL_NUMBER_OF_EXTERNAL_INTERRUPS	31
 #define INTERRUPT_LOWEST_PRIORITY    ((1<<__NVIC_PRIO_BITS)-1)
 
 #endif /* */

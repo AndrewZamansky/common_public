@@ -35,5 +35,9 @@ endmenu
 #############  end of memories on soc ###################
 #########################################################
 
+comment "maximal interrupt number core : 68"
+config DT_MAXIMAL_INTERRUPT_NUMBER
+    int
+    default 68
 
 endmenu

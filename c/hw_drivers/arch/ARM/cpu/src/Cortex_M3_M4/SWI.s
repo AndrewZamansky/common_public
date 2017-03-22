@@ -5,6 +5,8 @@
  .end
 #endif
 
+#include "project_config.h"
+
 .global do_software_interrupt_asm
 
 .syntax unified

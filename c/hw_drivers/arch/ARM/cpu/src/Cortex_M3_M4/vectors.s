@@ -1,3 +1,36 @@
+#ifdef NEVER_DEFINED
+ /* if preprosseing enabled should never enter here*/
+ .err
+ .print "!! add   \"-x assembler-with-cpp\"  as first argument to gcc to enable preprossesing  !!"
+ .end
+#endif
+
+#include "project_config.h"
+
+#ifndef CONFIG_DT_MAXIMAL_INTERRUPT_NUMBER
+ .err
+ .print "!! CONFIG_DT_MAXIMAL_INTERRUPT_NUMBER should be defined  !!"
+ .end
+#endif
+
+#if (CONFIG_DT_MAXIMAL_INTERRUPT_NUMBER < 32)
+	#define BYTES_TO_KEEP_FOR_VECTOR_SPACE	128
+#elif  (CONFIG_DT_MAXIMAL_INTERRUPT_NUMBER < 64)
+	#define BYTES_TO_KEEP_FOR_VECTOR_SPACE	256
+#elif  (CONFIG_DT_MAXIMAL_INTERRUPT_NUMBER < 96)
+	#define BYTES_TO_KEEP_FOR_VECTOR_SPACE	384
+#elif  (CONFIG_DT_MAXIMAL_INTERRUPT_NUMBER < 128)
+	#define BYTES_TO_KEEP_FOR_VECTOR_SPACE	512
+#elif  (CONFIG_DT_MAXIMAL_INTERRUPT_NUMBER < 160)
+	#define BYTES_TO_KEEP_FOR_VECTOR_SPACE	640
+#elif  (CONFIG_DT_MAXIMAL_INTERRUPT_NUMBER < 192)
+	#define BYTES_TO_KEEP_FOR_VECTOR_SPACE	768
+#elif  (CONFIG_DT_MAXIMAL_INTERRUPT_NUMBER < 224)
+	#define BYTES_TO_KEEP_FOR_VECTOR_SPACE	896
+#elif  (CONFIG_DT_MAXIMAL_INTERRUPT_NUMBER < 256)
+	#define BYTES_TO_KEEP_FOR_VECTOR_SPACE	1024
+#endif
+
 .cpu cortex-m3
 .thumb
 .section ._arm_vector_table,"ax"
@@ -17,7 +50,7 @@
 .word 	_dummy_trap 	/* 		 Populate if using SysTick */
 
 // external interrupts start here
-.space 128,0     /*  not used for now */
+.space BYTES_TO_KEEP_FOR_VECTOR_SPACE,0     /*  not used for now */
 
 
 /* default interrupts that are used before initialization of NIC */

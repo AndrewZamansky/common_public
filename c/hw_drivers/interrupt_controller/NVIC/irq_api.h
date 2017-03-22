@@ -11,17 +11,50 @@
 
 typedef void (*isr_t)(void)  ;
 
-/***************** register isr for interrupt **************/
+/**
+ * irq_register_interrupt()
+ * @int_num  : interrupt number RELETIVE to -16 .
+ *             for example if UART interrupt is next after sysTick interrupt
+ *             then   int_num = 0 ( and not 16)
+ *
+ * return:
+ */
 int irq_register_interrupt(int int_num , isr_t pIsr);
 
-/***************** register device on interrupt **************/
+
+/**
+ * irq_register_device_on_interrupt()
+ * @int_num  : interrupt number RELETIVE to -16 .
+ *             for example if UART interrupt is next after sysTick interrupt
+ *             then   int_num = 0 ( and not 16)
+ *
+ * return:
+ */
 int irq_register_device_on_interrupt(int int_num , pdev_descriptor_t pdev);
 
-/***************** enable interrupt **************/
+
+/**
+ * irq_enable_interrupt()
+ * @int_num  : interrupt number RELETIVE to -16 .
+ *             for example if UART interrupt is next after sysTick interrupt
+ *             then   int_num = 0 ( and not 16)
+ *
+ * return:
+ */
 #define irq_enable_interrupt(int_num)  		NVIC_EnableIRQ(int_num)
 
-/***************** disable interrupt **************/
+
+/**
+ * irq_disable_interrupt()
+ * @int_num  : interrupt number RELETIVE to -16 .
+ *             for example if UART interrupt is next after sysTick interrupt
+ *             then   int_num = 0 ( and not 16)
+ *
+ * return:
+ */
 int irq_disable_interrupt(int int_num);
+
+
 
 /***************** unblock interrupts reception **************/
 #define irq_unblock_all()	__asm__ __volatile__("cpsie i\n");
@@ -30,8 +63,15 @@ int irq_disable_interrupt(int int_num);
 #define irq_block_all()		__asm__ __volatile__("cpsid i\n");
 
 
-/***************** set interrupt priority **************/
-#define irq_set_priority(int_num,priority)  NVIC_SetPriority(int_num,priority)
+/**
+ * irq_set_priority()
+ * @int_num  : interrupt number RELETIVE to -16 .
+ *             for example if UART interrupt is next after sysTick interrupt
+ *             then   int_num = 0 ( and not 16)
+ *
+ * return:
+ */
+#define irq_set_priority(int_num, priority) NVIC_SetPriority(int_num, priority)
 
 
 
