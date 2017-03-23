@@ -123,6 +123,26 @@ static uint8_t core_set_clock(uint32_t rate)
 
     /* Update System Core Clock */
     SystemCoreClockUpdate();
+
+    if (160000000 < SystemCoreClock)
+    {
+    	CLK->PCLKDIV = (CLK->PCLKDIV & (~CLK_PCLKDIV_APB0DIV_Msk))
+    			| (2 << CLK_PCLKDIV_APB0DIV_Pos);
+    	CLK->PCLKDIV = (CLK->PCLKDIV & (~CLK_PCLKDIV_APB1DIV_Msk))
+    			| (2 << CLK_PCLKDIV_APB1DIV_Pos);
+    }
+    else if (8000000 < SystemCoreClock)
+    {
+    	CLK->PCLKDIV = (CLK->PCLKDIV & (~CLK_PCLKDIV_APB0DIV_Msk))
+    			| (1 << CLK_PCLKDIV_APB0DIV_Pos);
+    	CLK->PCLKDIV = (CLK->PCLKDIV & (~CLK_PCLKDIV_APB1DIV_Msk))
+    			| (1 << CLK_PCLKDIV_APB1DIV_Pos);
+    }
+    else
+    {
+    	CLK->PCLKDIV = (CLK->PCLKDIV & (~CLK_PCLKDIV_APB0DIV_Msk));
+    	CLK->PCLKDIV = (CLK->PCLKDIV & (~CLK_PCLKDIV_APB1DIV_Msk));
+    }
     return 0;
 }
 static uint32_t core_get_clock(void )
