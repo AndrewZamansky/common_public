@@ -1,0 +1,7 @@
+#
+	
+
+config INTERNAL_I2S_SPEED_CRITICAL
+	bool   "internal i2s is speed critical"
+	depends on INCLUDE_INTERNAL_I2S
+	default y

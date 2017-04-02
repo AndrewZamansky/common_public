@@ -20,7 +20,6 @@
 typedef struct {
 	uint32_t rate;
 	pdev_descriptor_t   clock_dev;
-	size_t	clock_index;
 	timer_callback_func_t timer_callback;
 	uint8_t mode;
 } cortexM_systick_instance_t;

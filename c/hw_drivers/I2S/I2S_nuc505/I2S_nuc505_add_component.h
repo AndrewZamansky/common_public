@@ -37,7 +37,6 @@ uint8_t I2S_nuc505_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num , vo
 		#error "I2S_NUC505_DT_TIMER_PDEV should be defined"
 	#endif
 
-
 	EXTERN_DECLARATION_TO_STATIC_DEVICE_INST(I2S_NUC505_DT_CALLBACK_PDEV) ;
 	EXTERN_DECLARATION_TO_STATIC_DEVICE_INST(I2S_NUC505_DT_TIMER_PDEV) ;
 	#define STATIC_DEV_DATA_STRUCT									\
@@ -54,6 +53,9 @@ uint8_t I2S_nuc505_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num , vo
 
 #include "add_component.h"
 
+#undef I2S_NUC505_DT_SAMPLE_RATE
+#undef I2S_NUC505_DT_MASTER_OR_SLAVE_MODE
+#undef I2S_NUC505_DT_TIMER_PDEV
 #undef I2S_NUC505_DT_NUM_OF_WORDS_IN_BUFFER
 #undef I2S_NUC505_DT_NUM_OF_BYTES_IN_WORD
 #undef I2S_NUC505_DT_CALLBACK_PDEV

@@ -69,6 +69,16 @@ config INCLUDE_INTERNAL_GPIO
 	depends on NUC505 || STM32F103RC || NPCE586 || STM8S103F || PIC32MX575 || I94XXX
 	default n
 
+menuconfig INCLUDE_INTERNAL_DMA
+	bool   "internal dma"
+	depends on I94XXX
+	default n
+
+config INTERNAL_DMA_IS_SPEED_CRITICAL
+	bool   "internal dma is speed critical"
+	depends on INCLUDE_INTERNAL_DMA
+	default n
+	
 config INCLUDE_INTERNAL_SERIAL_NUMBER
 	bool   "internal serial number"
 	depends on STM32F10x
@@ -76,7 +86,7 @@ config INCLUDE_INTERNAL_SERIAL_NUMBER
 	
 menuconfig INCLUDE_INTERNAL_I2S
 	bool   "internal i2s"
-	depends on NUC505
+	depends on NUC505 || I94XXX
 	default n
 	
 if INCLUDE_INTERNAL_I2S

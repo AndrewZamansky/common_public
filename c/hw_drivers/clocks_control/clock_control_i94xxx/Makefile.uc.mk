@@ -17,7 +17,8 @@ SRC = clock_control_i94xxx.c
 VPATH = src
 
 SRC += clk.c
-#SRC += spim.c
+VPATH +=  | $(NUC505_SRC_DIR)
+
 VPATH +=  | $(I94XXX_SRC_DIR)
 
 include $(COMMON_CC)

@@ -15,10 +15,6 @@ uint8_t cortexM_systick_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 		#error "CORTEXM_SYSTICK_DT_CLOCK_PDEV should be defined"
 	#endif
 
-	#ifndef CORTEXM_SYSTICK_DT_CLOCK_INDEX
-		#error "CORTEXM_SYSTICK_DT_CLOCK_INDEX should be defined"
-	#endif
-
 	#ifndef CORTEXM_SYSTICK_DT_INITIAL_RATE
 		#error "CORTEXM_SYSTICK_DT_INITIAL_RATE should be defined"
 	#endif
@@ -35,7 +31,6 @@ uint8_t cortexM_systick_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 	#define STATIC_DEV_DATA_STRUCT 	{	\
 		CORTEXM_SYSTICK_DT_INITIAL_RATE ,	\
 		P_TO_STATIC_DEVICE_INST(CORTEXM_SYSTICK_DT_CLOCK_PDEV) ,	\
-		CORTEXM_SYSTICK_DT_CLOCK_INDEX,		\
 		CORTEXM_SYSTICK_DT_CALLBACK ,		\
 		CORTEXM_SYSTICK_DT_MODE  }
 #endif

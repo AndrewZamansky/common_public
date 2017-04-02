@@ -17,8 +17,9 @@
 
 /********  types  *********************/
 
-typedef struct {
-	uint32_t initial_clock_rates[I94XXX_TOTAL_NUM_OF_CLOCKS];
-} clock_control_i94xxx_instance_t;
+struct clk_cntl_i94xxx_cfg_t {
+	uint32_t pll_rate;
+	uint32_t hclk_rate;
+} ;
 
 #endif

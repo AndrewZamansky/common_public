@@ -1,0 +1,30 @@
+
+ifdef CONFIG_I94XXX
+    INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_INTERNAL_I2S)
+endif
+
+
+
+#INCLUDE_DIR =  
+
+#DEFINES = 
+
+#CFLAGS = 
+
+#ASMFLAGS =  
+
+
+SRC = I2S_onSPI_i94xxx.c
+
+
+ifdef CONFIG_INTERNAL_I2S_SPEED_CRITICAL
+    SPEED_CRITICAL_FILES += I2S_onSPI_i94xxx.c
+endif
+
+
+VPATH = src
+
+SRC += spi.c
+VPATH += | $(I94XXX_SRC_DIR)
+
+include $(COMMON_CC)

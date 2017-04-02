@@ -19,6 +19,7 @@
 
 typedef struct
 {
+	struct dev_desc_t	*src_clock;
 	uint8_t   	clock_mode;
 	uint8_t		num_of_bytes_in_word;
 	pdev_descriptor_t   callback_dev;

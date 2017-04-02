@@ -1,0 +1,58 @@
+/* !! DONT PUT HEADER FILE PROTECTIONS IN THIS FILE !! */
+
+#include  "I2S_onSPI_i94xxx_api.h"
+#include "src/I2S_onSPI_i94xxx.h"
+
+#define	MODULE_NAME						I2S_onSPI_i94xxx
+#define	MODULE_IOCTL_FUNCTION			I2S_onSPI_i94xxx_ioctl
+#define MODULE_CONFIG_DATA_STRUCT_TYPE	struct I2S_onSPI_i94xxx_cfg_t
+
+#ifdef DT_DEV_MODULE
+
+	#ifndef I2S_onSPI_I94XXX_DT_MASTER_OR_SLAVE_MODE
+		#error "I2S_onSPI_I94XXX_DT_MASTER_OR_SLAVE_MODE should be defined"
+	#endif
+
+	#if	(I2S_onSPI_I94XXX_DT_MASTER_OR_SLAVE_MODE == I2S_onSPI_I94XXX_API_MASTER_MODE)
+		#ifndef I2S_onSPI_I94XXX_DT_SAMPLE_RATE
+			#error "I2S_onSPI_I94XXX_DT_SAMPLE_RATE should be defined"
+		#endif
+	#endif
+
+	#ifndef I2S_onSPI_I94XXX_DT_NUM_OF_BYTES_IN_WORD
+		#error "I2S_onSPI_I94XXX_DT_NUM_OF_BYTES_IN_WORD should be defined"
+	#endif
+
+	#ifndef I2S_onSPI_I94XXX_DT_BASE_ADDRESS
+		#error "I2S_onSPI_I94XXX_DT_BASE_ADDRESS should be defined"
+	#endif
+
+
+	#ifndef I2S_onSPI_I94XXX_DT_SRC_CLOCK_PDEV
+		#error "I2S_onSPI_I94XXX_DT_SRC_CLOCK_PDEV should be defined"
+	#endif
+	#define POINTER_TO_SRC_CLOCK_PDEV	 \
+			P_TO_STATIC_DEVICE_INST(I2S_onSPI_I94XXX_DT_SRC_CLOCK_PDEV)
+
+
+
+	#define STATIC_DEV_DATA_STRUCT						\
+		{												\
+			POINTER_TO_SRC_CLOCK_PDEV,					\
+			I2S_onSPI_I94XXX_DT_BASE_ADDRESS	,				\
+			I2S_onSPI_I94XXX_DT_MASTER_OR_SLAVE_MODE	,		\
+			I2S_onSPI_I94XXX_DT_SAMPLE_RATE ,					\
+			I2S_onSPI_I94XXX_DT_NUM_OF_BYTES_IN_WORD			\
+		}
+
+#endif
+
+#include "add_component.h"
+
+#undef POINTER_TO_SRC_CLOCK_PDEV
+#if	(I2S_onSPI_I94XXX_DT_MASTER_OR_SLAVE_MODE == I2S_onSPI_I94XXX_API_MASTER_MODE)
+    #undef I2S_onSPI_I94XXX_DT_SAMPLE_RATE
+#endif
+#undef I2S_onSPI_I94XXX_DT_MASTER_OR_SLAVE_MODE
+#undef I2S_onSPI_I94XXX_DT_NUM_OF_BYTES_IN_WORD
+#undef I2S_onSPI_I94XXX_DT_BASE_ADDRESS

@@ -4,13 +4,21 @@
 
 #include "dev_management_api.h" // for device manager defines and typedefs
 
-/*****************  defines  **************/
-
-
 /**********  define API  types ************/
 
+struct cfg_clk_t {
+	uint32_t	rate;
+	struct dev_desc_t   *parent_clk;
+};
 
-/**********  define API  functions  ************/
+
+enum clk_ioctl_t {
+	CLK_IOCTL_SET_FREQ = IOCTL_LAST_COMMON_IOCTL + 1,
+	CLK_IOCTL_GET_FREQ,
+	CLK_IOCTL_SET_PARENT,
+	CLK_IOCTL_ENABLE
+};
+
 typedef enum
 {
 	IOCTL_CLOCK_CONTROL_GET_RATE = IOCTL_LAST_COMMON_IOCTL+1,
@@ -18,5 +26,6 @@ typedef enum
 }CLOCK_CONTROL_COMMON_API_ioctl_t;
 
 
+/**********  define API  functions  ************/
 
 #endif

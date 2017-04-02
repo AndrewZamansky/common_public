@@ -142,9 +142,10 @@ typedef enum IRQn
 		EADC1_IRQn   		= 43,
 		EADC2_IRQn   		= 46,
 		EADC3_IRQn   		= 47,
+		  SPI2_INT       = 51,
 		DMIC_IRQn				= 52,
 		USBD_IRQn    		= 53,
-	  DPWM_IRQn       = 62,
+		  DPWM_IRQn       = 62,
 		I2S0_IRQn    		= 68,
 
 } IRQn_Type;
@@ -39205,7 +39206,7 @@ typedef struct
 #define TMR23_BASE           (APBPERIPH_BASE + 0x11000)
 //#define PWM1_BASE	         (APBPERIPH_BASE + 0x19000)
 #define SPI1_BASE	         (APBPERIPH_BASE + 0x21000)
-#define SPI2_BASE	         (APBPERIPH_BASE + 0x21000)
+#define SPI2_BASE	         (APBPERIPH_BASE + 0x22000)
 //#define UART1_BASE	         (APBPERIPH_BASE + 0x31000)
 //#define UART3_BASE	         (APBPERIPH_BASE + 0x33000)
 #define I2C1_BASE	         (APBPERIPH_BASE + 0x41000)
