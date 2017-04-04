@@ -87,6 +87,16 @@
 
 
 /***********************************/
+/********** i94xxx_i2s_clk_dev ********/
+#define DT_DEV_NAME				i94xxx_i2s_clk_dev
+#define DT_DEV_MODULE			clk_cntl
+
+#define CLK_DT_IOCTL			clock_i94xxx_i2s_ioctl
+
+#include ADD_CURRENT_DEV
+
+
+/***********************************/
 /********** i94xxx_spi2clk_dev ********/
 #define DT_DEV_NAME				i94xxx_systick_clk_dev
 #define DT_DEV_MODULE			clk_cntl

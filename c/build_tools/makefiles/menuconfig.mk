@@ -1,5 +1,5 @@
 
-include $(MAKEFILE_DEFS_ROOT_DIR)/common.mk
+include $(MAKEFILES_ROOT_DIR)/common.mk
 ENTER_PROJECT_DIR :=
 ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
     SHELL_CMD_DELIMITER = &
@@ -19,7 +19,7 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
 else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX)
     TEST_FILE_IN_SEARCHED_DIR:=kconfig-mconf.exe
 endif
-include $(MAKEFILE_DEFS_ROOT_DIR)/_common_include_functions/tool_existence_check.mk
+include $(MAKEFILES_ROOT_DIR)/_common_include_functions/tool_existence_check.mk
 ####### end of tool existence test #####
 
 

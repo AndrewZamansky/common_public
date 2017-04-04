@@ -50,7 +50,7 @@ GLOBAL_LDFLAGS := $(GLOBAL_LDFLAGS) -mmcu=$(CONFIG_CHIP_TYPE) -Wl,-Map=$(OUT_DIR
 
 
 
-include $(MAKEFILE_DEFS_ROOT_DIR)/gcc/gcc_common_init.mk
+include $(MAKEFILES_ROOT_DIR)/gcc/gcc_common_init.mk
 
 
 endif

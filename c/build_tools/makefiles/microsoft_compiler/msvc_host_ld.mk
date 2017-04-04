@@ -200,7 +200,7 @@ LIST_FILE_NAME_TRUNCATE :=$(ALL_OBJECTS_LIST_FILE)
 PREFIX_FOR_EACH_ITEM :=
 SUFFIX_LINE_FOR_EACH_ITEM :=
 ITEMS := $(ALL_OBJ_FILES)
-include $(MAKEFILE_DEFS_ROOT_DIR)/_common_include_functions/add_item_list_to_file.mk
+include $(MAKEFILES_ROOT_DIR)/_common_include_functions/add_item_list_to_file.mk
 #end of file creation
 
 build_outputs :

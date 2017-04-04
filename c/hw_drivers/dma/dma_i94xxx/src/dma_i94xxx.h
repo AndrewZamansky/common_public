@@ -21,6 +21,7 @@ typedef struct {
 	pdev_descriptor_t   callback_dev;
 	uint8_t   channel_num;
 	uint8_t   peripheral_type;
+	uint32_t   transfer_word_size;
 	uint32_t   buff_size;
 } dma_i94xxx_instance_t;
 
@@ -29,6 +30,7 @@ typedef struct {
 	uint8_t	*buff[2];
 	uint8_t	buff_status[2];
 	uint8_t   dma_peripheral_direction;
+	uint32_t   buff_size_in_transfer_words;
 } dma_i94xxx_runtime_instance_t;
 
 #endif

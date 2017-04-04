@@ -3,3 +3,8 @@
 if NUC505
 source "$COMMON_DIR_PATH/c/hw_drivers/I2S/I2S_nuc505/Kconfig"
 endif
+
+config INTERNAL_I2S_SPEED_CRITICAL
+	bool   "internal i2s is speed critical"
+	depends on INCLUDE_INTERNAL_I2S
+	default y

@@ -18,7 +18,7 @@ ifdef CONFIG_INCLUDE_JUCE
             #test if current commit and branch of uboot git is the same as required by application
             CURR_GIT_REPOSITORY_DIR :=$(JUCE_PATH)
             CURR_GIT_COMMIT_HASH_VARIABLE :=CONFIG_JUCE_GIT_COMMIT_HASH
-            include $(MAKEFILE_DEFS_ROOT_DIR)/_common_include_functions/git_prebuild_repo_check.mk
+            include $(MAKEFILES_ROOT_DIR)/_common_include_functions/git_prebuild_repo_check.mk
         endif
     endif
     

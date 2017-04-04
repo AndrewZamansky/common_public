@@ -1,5 +1,5 @@
 
-include $(MAKEFILE_DEFS_ROOT_DIR)/common.mk
+include $(MAKEFILES_ROOT_DIR)/common.mk
 
 # creating "project_config.h file" :
 ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS) 

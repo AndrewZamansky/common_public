@@ -25,9 +25,9 @@ else # valid target :
 
 COMMON_CC :=
 
-include $(MAKEFILE_DEFS_ROOT_DIR)/common_init.mk
+include $(MAKEFILES_ROOT_DIR)/common_init.mk
 
-include $(MAKEFILE_DEFS_ROOT_DIR)/common.mk
+include $(MAKEFILES_ROOT_DIR)/common.mk
 
 
 ifeq ($(wildcard $(OBJ_DIR)),) 		#if $(OBJ_DIR) dont exists then $(wildcard $(OBJ_DIR)) will produce empty string
@@ -62,13 +62,13 @@ ifdef MAKEFILE_WAS_GENERATED
 
         GLOBAL_HEADER_FILES_DEPS := $(patsubst %,%/*.h,$(GLOBAL_INCLUDE_DIR)) 
 
-        ADDITIONAL_DIRS_FOR_EXPORTS := $(sort $(APP_ROOT_DIR) $(SUBDIRS) $(GLOBAL_INCLUDE_DIR) $(MAKEFILE_DEFS_ROOT_DIR))
+        ADDITIONAL_DIRS_FOR_EXPORTS := $(sort $(APP_ROOT_DIR) $(SUBDIRS) $(GLOBAL_INCLUDE_DIR) $(MAKEFILES_ROOT_DIR))
         ADDITIONAL_DIRS_FOR_EXPORTS += $(BUILD_TOOLS_ROOT_DIR)/scatter_files
         ADDITIONAL_DIRS_FOR_EXPORTS := $(patsubst $(APP_ROOT_DIR)/%,%,$(realpath $(ADDITIONAL_DIRS_FOR_EXPORTS)))
         ADDITIONAL_DIRS_FOR_EXPORTS :=  $(patsubst $(WORKSPACE_ROOT_DIR)/%,$(WORKSPACE_NAME)/%,$(ADDITIONAL_DIRS_FOR_EXPORTS))#macke folder relative to workspace
 
 
-        include $(MAKEFILE_DEFS_ROOT_DIR)/common.mk #update all variables that use new generated files
+        include $(MAKEFILES_ROOT_DIR)/common.mk #update all variables that use new generated files
 
         #remove duplicate entries :
         GLOBAL_INCLUDE_DIR := $(sort $(GLOBAL_INCLUDE_DIR))
@@ -111,20 +111,20 @@ archive :
 archive_step2 : $(SUBDIRS)
 
 $(SUBDIRS):
-	$(eval COMMON_CC := $(MAKEFILE_DEFS_ROOT_DIR)/common_cc.mk)
+	$(eval COMMON_CC := $(MAKEFILES_ROOT_DIR)/common_cc.mk)
 	$(eval export COMMON_CC)
 	$(eval export TARGET)
 	@echo - $(patsubst $(WORKSPACE_ROOT_DIR)/%,%,$@)
 	$(MAKE) -C $@ -f Makefile.uc.mk $(TARGET)
 
 $(COMPONENTS_MK) : $(APP_ROOT_DIR)/.config
-	$(MAKE) -f $(MAKEFILE_DEFS_ROOT_DIR)/generate_include_components_mk_file.mk
+	$(MAKE) -f $(MAKEFILES_ROOT_DIR)/generate_include_components_mk_file.mk
 
 $(PROJECT_CONFIG_H_FILE) : $(APP_ROOT_DIR)/.config
-	$(MAKE) -f $(MAKEFILE_DEFS_ROOT_DIR)/generate_project_config_h_file.mk
+	$(MAKE) -f $(MAKEFILES_ROOT_DIR)/generate_project_config_h_file.mk
 
 build_outputs :  $(SUBDIRS)
-	$(MAKE) -f $(MAKEFILE_DEFS_ROOT_DIR)/build_final_outputs.mk
+	$(MAKE) -f $(MAKEFILES_ROOT_DIR)/build_final_outputs.mk
 
 
 clean:
@@ -134,12 +134,12 @@ clean:
 
 
 list_var:
-	$(MAKE) -f $(MAKEFILE_DEFS_ROOT_DIR)/list_usful_variables.mk
+	$(MAKE) -f $(MAKEFILES_ROOT_DIR)/list_usful_variables.mk
 
 
 
 menuconfig:
-	$(MAKE) -f $(MAKEFILE_DEFS_ROOT_DIR)/menuconfig.mk
+	$(MAKE) -f $(MAKEFILES_ROOT_DIR)/menuconfig.mk
 
 .PHONY: default rebuild archive clean all $(SUBDIRS)
 

@@ -32,26 +32,26 @@
 
 /* ------------------------ Exported variables ---------------*/
 
-volatile int g_u32DataCount = 0;
-volatile int status = 0;
+volatile int g_u32DataCount1 = 0;
+volatile int status1 = 0;
 #define TEST_COUNT	100
-int data[TEST_COUNT+1] = {0};
-volatile int pos = 0;
+int data1[TEST_COUNT+1] = {0};
+volatile int pos1 = 0;
 void SPI_IRQHandler()
 {
     /* Write 2 TX values to TX FIFO */
-  //  I2S_WRITE_TX_FIFO(SPI1, g_u32TxValue);
- //   I2S_WRITE_TX_FIFO(SPI1, g_u32TxValue);
+  //  I2S_SPI_WRITE_TX_FIFO(SPI1, g_u32TxValue);
+ //   I2S_SPI_WRITE_TX_FIFO(SPI1, g_u32TxValue);
     if((SPI2->I2SSTS & SPI_I2SSTS_RXEMPTY_Msk) == 0)
     {
-		status = ((SPI_T *)SPI2_BASE)->I2SSTS;
-		if (pos < TEST_COUNT)
+		status1 = ((SPI_T *)SPI2_BASE)->I2SSTS;
+		if (pos1 < TEST_COUNT)
 		{
-			pos++;
+			pos1++;
 		}
-		data[pos] = ((SPI_T *)SPI2_BASE)->RX;
+		data1[pos1] = ((SPI_T *)SPI2_BASE)->RX;
     }
-    g_u32DataCount += 2;
+    g_u32DataCount1 += 2;
 }
 
 /**
@@ -137,11 +137,11 @@ uint8_t I2S_onSPI_i94xxx_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_nu
 	    num_of_bytes_in_word = cfg_hndl->num_of_bytes_in_word;
 //	    num_of_bytes_in_word=1;
 
-		I2S_module->FIFOCTL = I2S_FIFO_RX_LEVEL_WORD_3;
+		I2S_module->FIFOCTL = I2S_SPI_FIFO_RX_LEVEL_WORD_3;
 #if 1
-	    I2S_Open(I2S_module, cfg_hndl->clock_mode, cfg_hndl->sample_rate,
+	    I2S_SPI_Open(I2S_module, cfg_hndl->clock_mode, cfg_hndl->sample_rate,
 	    		(num_of_bytes_in_word-1)<<SPI_I2SCTL_WDWIDTH_Pos,
-				I2S_STEREO, I2S_FORMAT_I2S);
+				I2S_SPI_STEREO, I2S_SPI_FORMAT_I2S);
 #else
 
 	   //  I2S_module->I2SCLK = 0x1f00;
@@ -150,30 +150,30 @@ uint8_t I2S_onSPI_i94xxx_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_nu
 	//    		SPI_I2SCTL_I2SEN_Msk;
 	    I2S_module->I2SCTL = SPI_I2SCTL_I2SEN_Msk;
 #endif
-//	I2S_CLR_INT_FLAG(I2S_module, I2S_STATUS_LZCIF_Msk | I2S_STATUS_RZCIF_Msk |
-//				I2S_STATUS_TXOVIF_Msk | I2S_STATUS_TXUDIF_Msk |
-//				I2S_STATUS_RXOVIF_Msk | I2S_STATUS_RXUDIF_Msk |
-//				I2S_STATUS_TDMATIF_Msk | I2S_STATUS_TDMAEIF_Msk |
-//				I2S_STATUS_RDMATIF_Msk|I2S_STATUS_RDMAEIF_Msk);
+//	I2S_CLR_INT_FLAG(I2S_module, I2S_SPI_STATUS_LZCIF_Msk | I2S_SPI_STATUS_RZCIF_Msk |
+//				I2S_SPI_STATUS_TXOVIF_Msk | I2S_SPI_STATUS_TXUDIF_Msk |
+//				I2S_SPI_STATUS_RXOVIF_Msk | I2S_SPI_STATUS_RXUDIF_Msk |
+//				I2S_SPI_STATUS_TDMATIF_Msk | I2S_SPI_STATUS_TDMAEIF_Msk |
+//				I2S_SPI_STATUS_RDMATIF_Msk|I2S_SPI_STATUS_RDMAEIF_Msk);
 
 #define 	 USE_INTERRUPT
 #ifdef USE_INTERRUPT
 		irq_register_interrupt(spi_irq , SPI_IRQHandler);
 		irq_set_priority(spi_irq , OS_MAX_INTERRUPT_PRIORITY_FOR_API_CALLS );
 		irq_enable_interrupt(spi_irq);
-	     I2S_EnableInt(I2S_module, 	I2S_FIFO_RXTH_INT_MASK);
+	     I2S_SPI_EnableInt(I2S_module, 	I2S_SPI_FIFO_RXTH_INT_MASK);
 
 #else
 		I2S_module->PDMACTL |= SPI_PDMACTL_PDMARST_Msk;
 	    SPI_TRIGGER_RX_PDMA(I2S_module) ;
 #endif
-	   // I2S_ENABLE_RX(I2S_module);
-		I2S_module->FIFOCTL |= I2S_FIFO_RX_LEVEL_WORD_4;
+	   // I2S_SPI_ENABLE_RX(I2S_module);
+		I2S_module->FIFOCTL |= I2S_SPI_FIFO_RX_LEVEL_WORD_4;
 	    I2S_module->FIFOCTL |= SPI_FIFOCTL_RXRST_Msk;
 		break;
 
 	case I2S_ENABLE_OUTPUT_IOCTL:
-		I2S_ENABLE_TX(I2S_module);
+		I2S_SPI_ENABLE_TX(I2S_module);
 	    SPI_TRIGGER_TX_PDMA(I2S_module) ;
 		break;
 

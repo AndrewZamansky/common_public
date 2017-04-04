@@ -4,10 +4,10 @@
 ### the following section we need to run just one time per build
 ifndef COMMON_INIT_SECTION_THAT_SHOULD_RUN_ONCE
 
-MAKEFILE_DEFS_ROOT_DIR :=$(abspath $(MAKEFILE_DEFS_ROOT_DIR))
+MAKEFILES_ROOT_DIR :=$(abspath $(MAKEFILES_ROOT_DIR))
 
-include $(MAKEFILE_DEFS_ROOT_DIR)/common_init_environment.mk
-include $(MAKEFILE_DEFS_ROOT_DIR)/common.mk
+include $(MAKEFILES_ROOT_DIR)/common_init_environment.mk
+include $(MAKEFILES_ROOT_DIR)/common.mk
 
 
 GLOBAL_PROJECT_SPECIFIC_CFLAGS :=
@@ -72,7 +72,7 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
 else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX)
     TEST_FILE_IN_SEARCHED_DIR:=bin/make
 endif
-include $(MAKEFILE_DEFS_ROOT_DIR)/_common_include_functions/tool_existence_check.mk
+include $(MAKEFILES_ROOT_DIR)/_common_include_functions/tool_existence_check.mk
 ####### end of tool existence test #####
 
 MAKE :="$(MAKE_DIR)/bin/make"
@@ -81,8 +81,6 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
 
     #replace backslash for slash
     APP_ROOT_DIR_WINDOWS := $(subst /,\,$(APP_ROOT_DIR))
-    OBJ_DIR := $(subst /,\,$(OBJ_DIR))
-    OUT_DIR := $(subst /,\,$(OUT_DIR))
     AUTO_GENERATED_FILES_DIR := $(subst /,\,$(AUTO_GENERATED_FILES_DIR))
     OUT_DIR_HISTORY := $(subst /,\,$(OUT_DIR_HISTORY))
     COMMON_DIR := $(subst /,\,$(COMMON_DIR))
@@ -163,8 +161,8 @@ ifeq ("$(wildcard $(COMMON_PRIVATE_DIR))","")#if common_private directory dont e
     DUMMY:=$(shell config PRIVATE_DUMMY>$(COMMON_PRIVATE_DIR)/Kconfig) # create   $(COMMON_PRIVATE_DIR)
 endif
 
-#dont enter if we are bulding .config file now
-ifeq ($(findstring menuconfig,$(MAKECMDGOALS)),)  #dont enter if we are bulding .config file now
+ifeq ($(findstring menuconfig,$(MAKECMDGOALS)),)
+    #DONT enter if we are bulding .config file now
 
     ifeq ("$(wildcard .config)","")
         $(info !--- .config file dont exists . run 'make menuconfig')
@@ -182,10 +180,11 @@ ifeq ($(findstring menuconfig,$(MAKECMDGOALS)),)  #dont enter if we are bulding 
     $(info ---- project name as declared in .config : $(PROJECT_NAME) ---- )
 
     $(info ---- running unique project name test ---- )
-    PASS_VARIABLES := MAKEFILE_DEFS_ROOT_DIR=$(MAKEFILE_DEFS_ROOT_DIR)
+    PASS_VARIABLES := MAKEFILES_ROOT_DIR=$(MAKEFILES_ROOT_DIR)
     PASS_VARIABLES += WORKSPACE_ROOT_DIR=$(WORKSPACE_ROOT_DIR)
     PASS_VARIABLES += APP_ROOT_DIR=$(APP_ROOT_DIR)
-    SHELL_OUT := $(shell $(MAKE) -f $(MAKEFILE_DEFS_ROOT_DIR)/prebuild_check_unique_project_name.mk $(PASS_VARIABLES)  2>&1)
+    SHELL_OUT := $(shell $(MAKE) -f $(MAKEFILES_ROOT_DIR)/prebuild_check_unique_project_name.mk $(PASS_VARIABLES)  2>&1)
+
     ifneq ($(findstring name is not unique,$(SHELL_OUT)),)#enter if name is not unique
         $(info )
         $(info !--- current PROJECT_NAME=$(PROJECT_NAME) , this name is already found as project name in other project)
@@ -194,10 +193,19 @@ ifeq ($(findstring menuconfig,$(MAKECMDGOALS)),)  #dont enter if we are bulding 
     endif
     $(info ---- unique project name test passed ---- )
 
-    include $(MAKEFILE_DEFS_ROOT_DIR)/git_prebuild_routines.mk
+    include $(MAKEFILES_ROOT_DIR)/git_prebuild_routines.mk
 
 endif
 
+ifneq ($(REDEFINE_OUTPUT_DIR),)
+    OBJ_DIR :=$(REDEFINE_OUTPUT_DIR)/$(PROJECT_NAME)/zOBJ
+    OUT_DIR :=$(REDEFINE_OUTPUT_DIR)/$(PROJECT_NAME)/zOUT
+endif
+
+ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
+    OBJ_DIR :=$(subst /,\,$(OBJ_DIR))
+    OUT_DIR :=$(subst /,\,$(OUT_DIR))
+endif
 
 COMPONENTS_MK := $(AUTO_GENERATED_FILES_DIR)/include_components.mk
 PROJECT_CONFIG_H_FILE := $(AUTO_GENERATED_FILES_DIR)/project_config.h
@@ -278,27 +286,27 @@ ifeq ($(findstring menuconfig,$(MAKECMDGOALS)),) #dont enter if we are bulding .
 
     ifdef CONFIG_ARM
         ifdef CONFIG_GCC
-            include $(MAKEFILE_DEFS_ROOT_DIR)/gcc/gcc_arm_init.mk
+            include $(MAKEFILES_ROOT_DIR)/gcc/gcc_arm_init.mk
         else ifdef CONFIG_GPP
-            include $(MAKEFILE_DEFS_ROOT_DIR)/gcc/gcc_arm_init.mk
+            include $(MAKEFILES_ROOT_DIR)/gcc/gcc_arm_init.mk
         else ifdef CONFIG_ARMCC
-            include $(MAKEFILE_DEFS_ROOT_DIR)/armcc/armcc_init.mk
+            include $(MAKEFILES_ROOT_DIR)/armcc/armcc_init.mk
         endif
     else ifdef CONFIG_PIC32
-        include $(MAKEFILE_DEFS_ROOT_DIR)/gcc/gcc_pic32_init.mk
+        include $(MAKEFILES_ROOT_DIR)/gcc/gcc_pic32_init.mk
     else ifdef CONFIG_AVR
-        include $(MAKEFILE_DEFS_ROOT_DIR)/gcc/gcc_avr_init.mk
+        include $(MAKEFILES_ROOT_DIR)/gcc/gcc_avr_init.mk
     else ifdef CONFIG_STM8
-        include $(MAKEFILE_DEFS_ROOT_DIR)/cxstm8/cxstm8_init.mk
+        include $(MAKEFILES_ROOT_DIR)/cxstm8/cxstm8_init.mk
     else ifdef CONFIG_HOST
         ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
             ifdef CONFIG_MIN_GW_GCC
-                include $(MAKEFILE_DEFS_ROOT_DIR)/gcc/gcc_host_init.mk
+                include $(MAKEFILES_ROOT_DIR)/gcc/gcc_host_init.mk
             else ifdef CONFIG_MICROSOFT_COMPILER
-                include $(MAKEFILE_DEFS_ROOT_DIR)/microsoft_compiler/msvc_host_init.mk
+                include $(MAKEFILES_ROOT_DIR)/microsoft_compiler/msvc_host_init.mk
             endif
         else
-            include $(MAKEFILE_DEFS_ROOT_DIR)/gcc/gcc_host_init.mk
+            include $(MAKEFILES_ROOT_DIR)/gcc/gcc_host_init.mk
         endif
     else
         $(error ---- unknown compiler ----)

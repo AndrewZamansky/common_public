@@ -26,6 +26,10 @@ uint8_t dma_i94xxx_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num , vo
 	#endif
 
 
+	#ifndef DMA_I94XXX_DT_TRANSFER_WORD_SIZE
+		#error "DMA_I94XXX_DT_TRANSFER_WORD_SIZE should be defined"
+	#endif
+
 	#ifndef DMA_I94XXX_DT_BUFFER_SIZE
 		#error "DMA_I94XXX_DT_CHANNEL_NUM should be defined"
 	#endif
@@ -35,9 +39,10 @@ uint8_t dma_i94xxx_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num , vo
 	#define STATIC_DEV_DATA_STRUCT			\
 		{									\
 			P_TO_STATIC_DEVICE_INST(DMA_I94XXX_DT_CALLBACK_PDEV) ,	\
-			DMA_I94XXX_DT_CHANNEL_NUM ,		\
-			DMA_I94XXX_DT_PERIPHERAL_TYPE ,	\
-			DMA_I94XXX_DT_BUFFER_SIZE 		\
+			DMA_I94XXX_DT_CHANNEL_NUM ,			\
+			DMA_I94XXX_DT_PERIPHERAL_TYPE ,		\
+			DMA_I94XXX_DT_TRANSFER_WORD_SIZE,	\
+			DMA_I94XXX_DT_BUFFER_SIZE 			\
 		}
 
 	#endif

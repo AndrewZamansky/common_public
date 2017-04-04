@@ -143,11 +143,11 @@ uint8_t clock_i94xxx_pll_ioctl( pdev_descriptor_t apdev,
 		rate = *(uint32_t*)aIoctl_param1;
 		if (CLK->PWRCTL & CLK_PWRCTL_HXTEN_Msk)
 		{
-	        CLK_EnablePLL(CLK_PLLCTL_PLLSRC_HXT, (rate << 1));
+	        CLK_EnablePLL(CLK_PLLCTL_PLLSRC_HXT, rate);
 		}
 	    else
 	    {
-	        CLK_EnablePLL(CLK_PLLCTL_PLLSRC_HIRC, (rate << 1));
+	        CLK_EnablePLL(CLK_PLLCTL_PLLSRC_HIRC, rate );
 	    }
 		cfg_clk->rate = rate;
 	    break;
@@ -343,6 +343,54 @@ uint8_t clock_i94xxx_spi2clk_ioctl( pdev_descriptor_t apdev,
 		break;
 	case CLK_IOCTL_ENABLE :
 	    CLK_EnableModuleClock(SPI2_MODULE);
+		break;
+	case CLK_IOCTL_GET_FREQ :
+		DEV_IOCTL_1_PARAMS(cfg_clk->parent_clk,
+					CLK_IOCTL_GET_FREQ, aIoctl_param1);
+		break;
+	default :
+		return 1;
+	}
+	return 0;
+}
+
+
+uint8_t clock_i94xxx_i2s_ioctl( pdev_descriptor_t apdev,
+		const uint8_t aIoctl_num, void * aIoctl_param1,
+		void * aIoctl_param2)
+{
+	struct cfg_clk_t *cfg_clk;
+	uint32_t curr_val;
+
+	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(apdev);
+	switch(aIoctl_num)
+	{
+	case CLK_IOCTL_SET_PARENT :
+		curr_val = (CLK->CLKSEL3 & ~ CLK_CLKSEL3_I2S0SEL_Msk);
+		if (i94xxx_xtal_clk_dev == aIoctl_param1)
+		{
+			CLK->CLKSEL3 = curr_val | CLK_CLKSEL3_I2S_SEL_HXT;
+		}
+		else if (i94xxx_hirc_clk_dev == aIoctl_param1)
+		{
+			CLK->CLKSEL3 = curr_val | CLK_CLKSEL3_I2S_SEL_HIRC;
+		}
+		else if (i94xxx_pll_clk_dev == aIoctl_param1)
+		{
+			CLK->CLKSEL3 = curr_val | CLK_CLKSEL3_I2S_SEL_PLL;
+		}
+		else if (i94xxx_hclk_clk_dev == aIoctl_param1)
+		{
+			CLK->CLKSEL3 = curr_val | CLK_CLKSEL3_I2S_SEL_HCLK;
+		}
+		else
+		{
+			CRITICAL_ERROR("bad parent clock \n");
+		}
+		cfg_clk->parent_clk = aIoctl_param1;
+		break;
+	case CLK_IOCTL_ENABLE :
+		CLK->APBCLK0 |= CLK_APBCLK0_I2S0CKEN_Msk;
 		break;
 	case CLK_IOCTL_GET_FREQ :
 		DEV_IOCTL_1_PARAMS(cfg_clk->parent_clk,

@@ -1,4 +1,4 @@
-include $(MAKEFILE_DEFS_ROOT_DIR)/common.mk
+include $(MAKEFILES_ROOT_DIR)/common.mk
 
 #test that arguments are set correctly 
 ifeq ($(LIST_FILE_NAME_TRUNCATE),)

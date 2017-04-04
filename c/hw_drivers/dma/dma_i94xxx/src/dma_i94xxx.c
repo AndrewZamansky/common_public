@@ -29,6 +29,7 @@
 #define BUFF_READY			2
 
 #define writeRegU32(addr,val)	( (*(volatile uint32_t *)(addr)) = (val) )
+#define readRegU32(addr)		 (*(volatile uint32_t *)(addr))
 
 /********  types  *********************/
 
@@ -41,6 +42,7 @@
 #define MAX_NUMBER_OF_CHANNELS	16
 pdev_descriptor_t channel_pdev[MAX_NUMBER_OF_CHANNELS] = {0};
 
+volatile int cnt1 = 0;
 
 static void update_buffer(dma_i94xxx_instance_t *cfg_hndl,
 		dma_i94xxx_runtime_instance_t *runtime_hndl)
@@ -50,6 +52,8 @@ static void update_buffer(dma_i94xxx_instance_t *cfg_hndl,
 	uint8_t *next_buff_status;
 	uint8_t channel_num;
 	uint8_t **buffers;
+	uint32_t reg_addr;
+	uint32_t reg_val;
 
 	channel_num = cfg_hndl->channel_num;
 	curr_buff_indx = runtime_hndl->curr_buff_indx;
@@ -59,26 +63,36 @@ static void update_buffer(dma_i94xxx_instance_t *cfg_hndl,
 
 	if (DMA_TO_PERIPHERAL == runtime_hndl->dma_peripheral_direction)
 	{
+		cnt1++;
 		runtime_hndl->buff_status[curr_buff_indx] = BUFF_IDLE;
 		if (BUFF_READY == *next_buff_status)
 		{
 			*next_buff_status = BUFF_IN_PROCCESS;
-			writeRegU32((uint32_t) &((PDMA)->DSCT0_SA) + 16 * (channel_num),
-					(size_t)buffers[next_buff_indx]);
+			PDMA_SET_SRC_ADDR(channel_num, (size_t)buffers[next_buff_indx]);
+			runtime_hndl->curr_buff_indx = next_buff_indx;
+		}
+		else
+		{
+			//CRITICAL_ERROR("next tx buffer not ready\n");
 		}
 	}
 	else
 	{
 		if (BUFF_IDLE != *next_buff_status)
 		{
-			CRITICAL_ERROR("buffer not ready\n");
+			CRITICAL_ERROR("next rx buffer not ready\n");
 		}
 		runtime_hndl->buff_status[curr_buff_indx] = BUFF_READY;
 		*next_buff_status = BUFF_IN_PROCCESS;
-		writeRegU32((uint32_t) &((PDMA)->DSCT0_DA) + 16 * (channel_num),
-				(size_t)buffers[next_buff_indx]);
+		PDMA_SET_DST_ADDR(channel_num, (size_t)buffers[next_buff_indx]);
+		runtime_hndl->curr_buff_indx = next_buff_indx;
 	}
-	runtime_hndl->curr_buff_indx = next_buff_indx;
+	/* reinit PDMA */
+	PDMA_SET_TRANS_CNT(channel_num, runtime_hndl->buff_size_in_transfer_words);
+	reg_addr = (uint32_t) &((PDMA)->DSCT0_CTL) + 16 * (channel_num);
+	reg_val = readRegU32(reg_addr);
+	reg_val |= 1;/* set BASIC MODE*/
+	writeRegU32(reg_addr, reg_val);
 }
 
 
@@ -192,6 +206,21 @@ static uint8_t set_peripheral_dma(dma_i94xxx_instance_t *cfg_hndl,
 		dma_peripheral_direction = DMA_TO_PERIPHERAL;
 		break;
 
+	case PDMA_I2S_RX :
+		src_addr =(void*) &I2S->RXFIFO;
+		src_ctrl = PDMA_SAR_FIX;
+		dest_ctrl = PDMA_DAR_INC;
+		dma_peripheral_direction = DMA_FROM_PERIPHERAL;
+		break;
+
+	case PDMA_I2S_TX :
+		src_addr = buff;
+		src_ctrl = PDMA_SAR_INC;
+		dest_addr = (void*)&I2S->TXFIFO;
+		dest_ctrl = PDMA_DAR_FIX;
+		dma_peripheral_direction = DMA_TO_PERIPHERAL;
+		break;
+
 	default :
 		return 1;
 	}
@@ -210,10 +239,14 @@ static uint8_t set_peripheral_dma(dma_i94xxx_instance_t *cfg_hndl,
     PDMA_SetTransferAddr(channel_num,
     		(uint32_t)src_addr, src_ctrl, (uint32_t)dest_addr, dest_ctrl);
     /* Set request source; set basic mode. */
-    PDMA_SetTransferMode(channel_num, peripheral_type, FALSE, 0);
-
     /* Single request type */
     PDMA_SetBurstType(channel_num, PDMA_REQ_SINGLE, PDMA_BURST_128);
+
+    if (DMA_FROM_PERIPHERAL == dma_peripheral_direction)
+    {/*setting mode will enable pdma channel*/
+    	PDMA_SetTransferMode(channel_num, peripheral_type, FALSE, 0);
+    }
+
 
     runtime_hndl->dma_peripheral_direction = dma_peripheral_direction;
     return 0;
@@ -233,14 +266,18 @@ uint8_t dma_i94xxx_ioctl( pdev_descriptor_t apdev, const uint8_t aIoctl_num,
 	dma_i94xxx_runtime_instance_t *runtime_hndl;
 	uint8_t channel_num;
 	uint8_t peripheral_type;
-	uint32_t buff_size;
+	uint32_t   buff_size_in_transfer_words;
+	uint32_t   transfer_word_size;
+	uint32_t   buff_size;
+
 
 	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(apdev);
 	runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(apdev);
 
 	channel_num = cfg_hndl->channel_num;
-	buff_size = cfg_hndl->buff_size;
 	peripheral_type = cfg_hndl->peripheral_type;
+	transfer_word_size = cfg_hndl->transfer_word_size;
+	buff_size = cfg_hndl->buff_size;
 
 	if (MAX_NUMBER_OF_CHANNELS <= channel_num)
 	{
@@ -260,9 +297,26 @@ uint8_t dma_i94xxx_ioctl( pdev_descriptor_t apdev, const uint8_t aIoctl_num,
 	    /* Enable PDMA channels */
 	    PDMA_Open(1 << channel_num);
 
+	    switch (transfer_word_size)
+	    {
+	    case PDMA_WIDTH_8:
+	    	buff_size_in_transfer_words = buff_size;
+	    	break;
+	    case PDMA_WIDTH_16:
+	    	buff_size_in_transfer_words = buff_size / 2;
+	    	break;
+	    case PDMA_WIDTH_32:
+	    	buff_size_in_transfer_words = buff_size / 4;
+	    	break;
+	    default:
+	    	CRITICAL_ERROR("wrong transfer_word_size\n");
+	    	break;
+	    }
+	    runtime_hndl->buff_size_in_transfer_words = buff_size_in_transfer_words;
 	    /* SPI master PDMA TX channel configuration */
 	    /* Set transfer width (32 bits) and transfer count */
-	    PDMA_SetTransferCnt(channel_num, PDMA_WIDTH_8, buff_size);
+	    PDMA_SetTransferCnt(channel_num,
+	    		transfer_word_size, buff_size_in_transfer_words);
 
 	    if (PDMA_MEM != peripheral_type)
 	    {
@@ -308,6 +362,8 @@ uint8_t dma_i94xxx_ioctl( pdev_descriptor_t apdev, const uint8_t aIoctl_num,
 	case DMA_I94XXX_IOCTL_SET_TX_BUFF :
 		{
 			uint8_t next_curr_buff_indx;
+			uint32_t reg_addr;
+			uint32_t reg_val;
 
 			/*
 			 * until we not change buff state from READY to IDLE in
@@ -320,6 +376,16 @@ uint8_t dma_i94xxx_ioctl( pdev_descriptor_t apdev, const uint8_t aIoctl_num,
 						(uint8_t*)aIoctl_param1 ;
 				runtime_hndl->buff_status[next_curr_buff_indx] = BUFF_READY;
 			}
+
+			reg_addr = (uint32_t) &((PDMA)->DSCT0_CTL) + 16 * (channel_num);
+			reg_val = readRegU32(reg_addr);
+		    if (( 0 == (reg_val & PDMA_DSCT0_CTL_OPMODE_Msk) ) &&
+		    	(DMA_TO_PERIPHERAL == runtime_hndl->dma_peripheral_direction))
+		    {/*setting mode will enable pdma channel*/
+		    	PDMA_SET_TRANS_CNT(channel_num,
+		    			runtime_hndl->buff_size_in_transfer_words);
+		    	PDMA_SetTransferMode(channel_num, peripheral_type, FALSE, 0);
+		    }
 		}
 		break;
 
