@@ -48,7 +48,7 @@ typedef struct
 
 /********  local defs *********************/
 
-static pdev_descriptor_t   callback_dev;
+static struct dev_desc_t *   callback_dev;
 
 static uint32_t sentLen;
 
@@ -181,7 +181,7 @@ size_t usb_virtual_com_pwrite(const void *aHandle ,const uint8_t *apData , size_
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t usb_virtual_com_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
+uint8_t usb_virtual_com_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
 	switch(aIoctl_num)
@@ -197,7 +197,7 @@ uint8_t usb_virtual_com_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 		    SetEPTxStatus(ENDP1, EP_TX_NAK);
 			break;
 		case IOCTL_SET_ISR_CALLBACK_DEV:
-			callback_dev =(pdev_descriptor_t) aIoctl_param1;
+			callback_dev =(struct dev_desc_t *) aIoctl_param1;
 			break;
 		default :
 			return 1;
@@ -217,7 +217,7 @@ uint8_t usb_virtual_com_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t  usb_virtual_com_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor)
+uint8_t  usb_virtual_com_api_init_dev_descriptor(struct dev_desc_t *aDevDescriptor)
 {
 	if(NULL == aDevDescriptor) return 1;
 

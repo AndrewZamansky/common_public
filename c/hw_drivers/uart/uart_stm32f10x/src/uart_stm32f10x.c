@@ -99,12 +99,12 @@ void UART3_Isr( void )
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-size_t uart_stm32f10x_pwrite(pdev_descriptor_t apdev , const uint8_t *apData , size_t aLength, size_t aOffset)
+size_t uart_stm32f10x_pwrite(struct dev_desc_t *adev , const uint8_t *apData , size_t aLength, size_t aOffset)
 {
 	UART_STM32F103x_Instance_t *handle;
     USART_TypeDef* USARTx;
 
-	handle = apdev->handle;
+	handle = adev->handle;
     USARTx=handle->USARTx_Handle;
     USART_SendData( USARTx, *apData );
     USART_ITConfig( USARTx , USART_IT_TXE, ENABLE );
@@ -223,13 +223,13 @@ inline uint8_t UART_STM32F10x_Init(UART_STM32F103x_Instance_t *apHandle)
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t uart_stm32f10x_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
+uint8_t uart_stm32f10x_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
 	UART_STM32F103x_Instance_t *handle;
     USART_TypeDef* USARTx;
 
-	handle = apdev->handle;
+	handle = adev->handle;
     USARTx=handle->USARTx_Handle;
 	GPIO_InitTypeDef GPIO_InitStructureTX;
 
@@ -256,7 +256,7 @@ uint8_t uart_stm32f10x_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 	//	    USART_ITConfig( USARTx , USART_IT_TXE, ENABLE );
 		    break;
 		case IOCTL_SET_ISR_CALLBACK_DEV:
-			handle->callback_dev =(pdev_descriptor_t) aIoctl_param1;
+			handle->callback_dev =(struct dev_desc_t *) aIoctl_param1;
 			break;
 		default :
 			return 1;

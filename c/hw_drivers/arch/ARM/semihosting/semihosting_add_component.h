@@ -3,8 +3,8 @@
 #include  "semihosting_api.h"
 #include "src/semihosting.h"
 
-extern uint8_t semihosting_ioctl(pdev_descriptor_t apdev ,const uint8_t aIoctl_num , void * aIoctl_param1, void * aIoctl_param2);
-extern size_t semihosting_pwrite(pdev_descriptor_t apdev ,const uint8_t *apData , size_t aLength, size_t aOffset);
+extern uint8_t semihosting_ioctl(struct dev_desc_t *adev ,const uint8_t aIoctl_num , void * aIoctl_param1, void * aIoctl_param2);
+extern size_t semihosting_pwrite(struct dev_desc_t *adev ,const uint8_t *apData , size_t aLength, size_t aOffset);
 
 #define	MODULE_NAME				semihosting
 #define	MODULE_IOCTL_FUNCTION	semihosting_ioctl

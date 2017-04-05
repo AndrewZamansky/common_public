@@ -18,7 +18,7 @@
 /********  types  *********************/
 
 typedef struct {
-	pdev_descriptor_t   callback_dev;
+	struct dev_desc_t *   callback_dev;
 } SEMIHOSTING_Instance_t;
 
 #endif

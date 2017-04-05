@@ -3,8 +3,6 @@
 #include  "timer_wrapper_api.h"
 #include "src/timer_wrapper.h"
 
-extern uint8_t timer_wrapper_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2);
-
 #define	MODULE_NAME					timer_wrapper
 #define	MODULE_IOCTL_FUNCTION		timer_wrapper_ioctl
 #define MODULE_CONFIG_DATA_STRUCT_TYPE		timer_wrapper_instance_t

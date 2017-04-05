@@ -41,12 +41,12 @@
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t gpio_pic32mx575_ioctl( pdev_descriptor_t apdev , const uint8_t aIoctl_num
+uint8_t gpio_pic32mx575_ioctl( struct dev_desc_t *adev , const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
 	gpio_pic32mx575_instance_t *config_handle;
 
-	config_handle = DEV_GET_CONFIG_DATA_POINTER(apdev);
+	config_handle = DEV_GET_CONFIG_DATA_POINTER(adev);
 
 	switch(aIoctl_num)
 	{

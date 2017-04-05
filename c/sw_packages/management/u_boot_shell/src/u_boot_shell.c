@@ -35,7 +35,7 @@
 /********  externals *********************/
 
 /* ------------------------------ Exported variables ---------------------------------*/
-pdev_descriptor_t gCurrReplyDev;
+struct dev_desc_t * gCurrReplyDev;
 
 extern int run_command(const char *cmd, int flag);
 
@@ -80,7 +80,7 @@ int cli_readline(const char *const prompt)
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t u_boot_shell_callback(pdev_descriptor_t apdev ,const uint8_t aCallback_num
+uint8_t u_boot_shell_callback(struct dev_desc_t *adev ,const uint8_t aCallback_num
 		, void * aCallback_param1, void * aCallback_param2)
 {
 
@@ -105,22 +105,22 @@ uint8_t u_boot_shell_callback(pdev_descriptor_t apdev ,const uint8_t aCallback_n
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t u_boot_shell_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
+uint8_t u_boot_shell_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
 {
 	u_boot_shell_instance_t *config_handle;
-	pdev_descriptor_t   server_dev ;
+	struct dev_desc_t *   server_dev ;
 
-	config_handle = DEV_GET_CONFIG_DATA_POINTER(apdev);
+	config_handle = DEV_GET_CONFIG_DATA_POINTER(adev);
 
 	switch(aIoctl_num)
 	{
 #ifdef CONFIG_USE_RUNTIME_DEVICE_CONFIGURATION
 		case IOCTL_SET_SERVER_DEVICE :
 			{
-				server_dev = (pdev_descriptor_t)aIoctl_param1;
+				server_dev = (struct dev_desc_t *)aIoctl_param1;
 				if(NULL != server_dev)
 				{
-					DEV_IOCTL(server_dev, IOCTL_SET_ISR_CALLBACK_DEV ,  (void*)apdev);
+					DEV_IOCTL(server_dev, IOCTL_SET_ISR_CALLBACK_DEV ,  (void*)adev);
 				}
 
 				config_handle->server_dev=server_dev;

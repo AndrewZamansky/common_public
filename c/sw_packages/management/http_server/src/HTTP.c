@@ -48,7 +48,7 @@ typedef enum
 
 typedef struct
 {
-	pdev_descriptor_t low_level_socket;
+	struct dev_desc_t * low_level_socket;
 	uint32_t socket_state;
 } HTTP_socket_info_t;
 
@@ -57,7 +57,7 @@ typedef struct
 {
 	uint32_t len;
 	uint8_t *pData;
-	pdev_descriptor_t low_level_socket;
+	struct dev_desc_t * low_level_socket;
 }xMessage_t;
 
 
@@ -90,7 +90,7 @@ static uint8_t ManagmentPort[PORT_STR_LEN+1];
 static uint8_t ManagmentServerIPRedandency[IP_STR_LEN+1];
 static uint8_t ManagmentPortRedandency[PORT_STR_LEN+1];
 
-static pdev_descriptor_t  server_device;
+static struct dev_desc_t *  server_device;
 
 static pdev_descriptor_const  timer_device = &http_timer_inst;
 //static pdev_descriptor_const semihosting_dev = &sh_dev_inst;
@@ -99,15 +99,15 @@ static pdev_descriptor_const  timer_device = &http_timer_inst;
 static uint8_t http_buffer[HTTP_BUFFER_LEN];
 
 
-static pdev_descriptor_t HTTP_menagmentSocketDesc;
+static struct dev_desc_t * HTTP_menagmentSocketDesc;
 static uint16_t unused_bytes_left;
 
 static BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 static uint32_t comm_reply_state;
 static HTTP_State_t currentState ;
 
-static pdev_descriptor_t this_dev;
-static pdev_descriptor_t client_dev;
+static struct dev_desc_t * this_dev;
+static struct dev_desc_t * client_dev;
 
 #define MAX_PERMIITED_SILENCE_TIMEOUT 3
 #define SILENCE_AFTER_LAST_RECEIVE_TIMEOUT 2
@@ -139,7 +139,7 @@ static uint8_t EOF_MARKER_STR[]="\r\n~2@5\r\n";
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t http_callback(pdev_descriptor_t apdev ,const uint8_t aCallback_num
+uint8_t http_callback(struct dev_desc_t *adev ,const uint8_t aCallback_num
 		, void * aCallback_param1, void * aCallback_param2)
 {
 	uint8_t *requestStr = ((callback_new_data_from_socket_t*)aCallback_param2)->pData;
@@ -147,7 +147,7 @@ uint8_t http_callback(pdev_descriptor_t apdev ,const uint8_t aCallback_num
 	uint32_t cmdStartPos;
 	uint8_t *pSendData;
 	xMessage_t xMessage;
-//	pdev_descriptor_t socketHandle=(pdev_descriptor_t)aCallback_param1;
+//	struct dev_desc_t * socketHandle=(struct dev_desc_t *)aCallback_param1;
 
 	if(NULL == xQueue)
 	{
@@ -171,7 +171,7 @@ uint8_t http_callback(pdev_descriptor_t apdev ,const uint8_t aCallback_num
 
 		memcpy(pSendData,(uint8_t*)&requestStr[cmdStartPos],str_len);
 
-		xMessage.low_level_socket = (pdev_descriptor_t)aCallback_param1;
+		xMessage.low_level_socket = (struct dev_desc_t *)aCallback_param1;
 		xMessage.len=str_len;
 		xMessage.pData=pSendData;
 
@@ -189,7 +189,7 @@ uint8_t http_callback(pdev_descriptor_t apdev ,const uint8_t aCallback_num
 }
 
 
-pdev_descriptor_t currLowLevelSocket;
+struct dev_desc_t * currLowLevelSocket;
 
 /*---------------------------------------------------------------------------------------------------------*/
 /* Function:        HTTP_API_SendData                                                                          */
@@ -447,13 +447,13 @@ static void HTTP_Task( void *pvParameters )
 uint8_t HTTP_socket_ioctl(const void *aHandle ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2 )
 {
-	ioctl_get_data_buffer_t *pDataBuffer;
+	struct ioctl_get_data_buffer_t *pDataBuffer;
 
 	switch(aIoctl_num)
 	{
 		case IOCTL_GET_AND_LOCK_DATA_BUFFER :
 //			PRINTF_DBG( (uint8_t*)"---http get buffer\r\n");
-			pDataBuffer=(ioctl_get_data_buffer_t *)aIoctl_param1;
+			pDataBuffer=(struct ioctl_get_data_buffer_t *)aIoctl_param1;
 			pDataBuffer->pBufferStart = http_buffer;
 			pDataBuffer->bufferWasOverflowed = 0;
 			pDataBuffer->TotalLength = unused_bytes_left;
@@ -485,7 +485,7 @@ uint8_t HTTP_socket_ioctl(const void *aHandle ,const uint8_t aIoctl_num
 /*---------------------------------------------------------------------------------------------------------*/
 uint32_t  HTTP_Start( )
 {
-	pdev_descriptor_t dev_descriptor;
+	struct dev_desc_t * dev_descriptor;
 
 	dev_descriptor = DEV_OPEN((uint8_t*)"serial");
 	DEV_READ(dev_descriptor,&poll_str[POLL_STR_SERIAL_START],POLL_STR_SERIAL_LEN);
@@ -514,10 +514,10 @@ uint32_t  HTTP_Start( )
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t HTTP_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
+uint8_t HTTP_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
-	ioctl_get_data_buffer_t *pDataBuffer;
+	struct ioctl_get_data_buffer_t *pDataBuffer;
 	uint32_t retVal;
 	uint32_t param_len;
 
@@ -530,7 +530,7 @@ uint8_t HTTP_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 			break;
 
 		case IOCTL_SET_ISR_CALLBACK_DEV :
-			client_dev = (pdev_descriptor_t)aIoctl_param1;
+			client_dev = (struct dev_desc_t *)aIoctl_param1;
 
 			break;
 
@@ -576,7 +576,7 @@ uint8_t HTTP_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 
 		case IOCTL_GET_AND_LOCK_DATA_BUFFER :
 //			PRINTF_DBG( (uint8_t*)"---http get buffer\r\n");
-			pDataBuffer=(ioctl_get_data_buffer_t *)aIoctl_param1;
+			pDataBuffer=(struct ioctl_get_data_buffer_t *)aIoctl_param1;
 			pDataBuffer->pBufferStart = http_buffer;
 			pDataBuffer->bufferWasOverflowed = 0;
 			pDataBuffer->TotalLength = unused_bytes_left;
@@ -609,7 +609,7 @@ uint8_t HTTP_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t  http_server_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor)
+uint8_t  http_server_api_init_dev_descriptor(struct dev_desc_t *aDevDescriptor)
 {
 
 	if(NULL == aDevDescriptor) return 1;

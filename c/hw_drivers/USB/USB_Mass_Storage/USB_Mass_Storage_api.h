@@ -19,7 +19,7 @@ typedef struct {
 	USB_Mass_Storage_API_Chip_t chip;
 	uint32_t  BlockCount;
 	uint32_t  BlockSize;
-	pdev_descriptor_t storage_dev;
+	struct dev_desc_t * storage_dev;
 } USB_Mass_Storage_API_Init_params_t;
 
 /**********  define API  functions  ************/

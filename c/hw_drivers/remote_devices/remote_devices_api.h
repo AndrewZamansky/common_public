@@ -30,7 +30,7 @@ typedef struct {
 
 
 
-uint8_t  remote_devices_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor);
+uint8_t  remote_devices_api_init_dev_descriptor(struct dev_desc_t *aDevDescriptor);
 
 
 #else

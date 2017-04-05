@@ -59,7 +59,7 @@ void SPI_IRQHandler()
  *
  * return:
  */
-uint8_t I2S_onSPI_i94xxx_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
+uint8_t I2S_onSPI_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
 	struct I2S_onSPI_i94xxx_cfg_t *cfg_hndl;
@@ -70,7 +70,7 @@ uint8_t I2S_onSPI_i94xxx_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_nu
 	struct dev_desc_t	*clk_dev;
 	struct dev_desc_t	*src_clock;
 
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(apdev);
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
 	I2S_module = (SPI_T*)cfg_hndl->base_address;
 	src_clock = cfg_hndl->src_clock;
 

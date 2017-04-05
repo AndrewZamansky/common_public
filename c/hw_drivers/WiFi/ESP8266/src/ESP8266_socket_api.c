@@ -7,7 +7,7 @@
 #include "errno.h"
 #include "os_wrapper.h"
 
-static pdev_descriptor_t esp8266_dev = NULL;
+static struct dev_desc_t * esp8266_dev = NULL;
 
 /**
  * Convert an uint16_t from host- to network byte order.
@@ -56,13 +56,13 @@ uint32_t ntohl(uint32_t n)
   return htonl(n);
 }
 
-void set_esp8266_pdev_for_socket_api(pdev_descriptor_t a_esp8266_dev)
+void set_esp8266_pdev_for_socket_api(struct dev_desc_t *a_esp8266_dev)
 {
 	esp8266_dev = a_esp8266_dev;
 }
 
 #define MAX_NUM_OF_SOCKETS	4
-pdev_descriptor_t  allocated_socket_dev[MAX_NUM_OF_SOCKETS]={0};
+struct dev_desc_t *  allocated_socket_dev[MAX_NUM_OF_SOCKETS]={0};
 
 int socket(int socket_family, int socket_type, int protocol)
 {
@@ -118,7 +118,7 @@ int socket(int socket_family, int socket_type, int protocol)
 
 int _close(int file)
 {
-	pdev_descriptor_t  socket_dev;
+	struct dev_desc_t *  socket_dev;
 	uint8_t retVal;
 
 	socket_dev = allocated_socket_dev[file];
@@ -132,7 +132,7 @@ int _close(int file)
 
 int connect(int sockfd, const struct sockaddr *addr, unsigned int addrlen)
 {
-	pdev_descriptor_t  socket_dev;
+	struct dev_desc_t *  socket_dev;
 	ESP8266_ioctl_socket_connect_t	ioctl_socket_connect;
 	struct sockaddr_in   *lp_sockaddr;
 	struct  in_addr *sin_addr;
@@ -164,7 +164,7 @@ int connect(int sockfd, const struct sockaddr *addr, unsigned int addrlen)
 
 size_t recv(int sockfd, void *buf, size_t len, int flags)
 {
-	pdev_descriptor_t  socket_dev;
+	struct dev_desc_t *  socket_dev;
 	size_t size_received;
 	ESP8266_ioctl_data_received_t ESP8266_ioctl_data_received;
 	uint8_t retVal;
@@ -264,7 +264,7 @@ int getsockname(int sockfd, struct sockaddr *local_addr, socklen_t *addrlen)
 
 int getpeername(int sockfd, struct sockaddr *addr, socklen_t *addrlen)
 {
-	pdev_descriptor_t  socket_dev;
+	struct dev_desc_t *  socket_dev;
 	struct sockaddr_in   *lp_sockaddr;
 	struct  in_addr *sin_addr;
 	char *ipAddrStr;
@@ -314,7 +314,7 @@ char curr_host_name[MAX_HOST_NAME] = {0};
 
 struct hostent*  gethostbyname( const char *name)
 {
-	pdev_descriptor_t  socket_dev;
+	struct dev_desc_t *  socket_dev;
 	ESP8266_ioctl_socket_open_t ioctl_socket_open;
 	ESP8266_ioctl_socket_connect_t	ioctl_socket_connect;
 	ESP8266_ioctl_get_conn_status_t	ioctl_socket_get_open_connection;
@@ -392,7 +392,7 @@ struct hostent*  gethostbyname( const char *name)
 int select(int nfds, fd_set *readfds, fd_set *writefds,
                   fd_set *exceptfds, struct timeval *timeout)
 {
-	pdev_descriptor_t  socket_dev;
+	struct dev_desc_t *  socket_dev;
 	uint8_t i;
 	uint8_t read_ready;
 	uint8_t retVal;
@@ -426,7 +426,7 @@ int select(int nfds, fd_set *readfds, fd_set *writefds,
 
 ssize_t send(int socket, const void *buffer, size_t length, int flags)
 {
-	pdev_descriptor_t  socket_dev;
+	struct dev_desc_t *  socket_dev;
 	 size_t ret_length;
 
 	if(0 != flags) while(1);

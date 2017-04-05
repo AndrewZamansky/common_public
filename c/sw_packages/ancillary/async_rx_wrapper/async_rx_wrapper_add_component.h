@@ -3,9 +3,6 @@
 #include  "async_rx_wrapper_api.h"
 #include "src/async_rx_wrapper.h"
 
-extern uint8_t async_rx_wrapper_ioctl(pdev_descriptor_t apdev ,const uint8_t aIoctl_num ,void * aIoctl_param1 , void * aIoctl_param2);
-extern uint8_t async_rx_wrapper_callback(pdev_descriptor_t apdev ,const uint8_t aCallback_num ,
-		void * aCallback_param1, void * aCallback_param2);
 
 #define	MODULE_NAME							async_rx_wrapper
 #define	MODULE_IOCTL_FUNCTION				async_rx_wrapper_ioctl

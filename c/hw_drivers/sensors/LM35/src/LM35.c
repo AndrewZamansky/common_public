@@ -39,15 +39,15 @@
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t LM35_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
+uint8_t LM35_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
 	LM35_Instance_t 		*config_handle;
 	LM35_runtime_instance_t *runtime_handle;
-	pdev_descriptor_t		adc_server_device;
+	struct dev_desc_t *		adc_server_device;
 
-	config_handle = DEV_GET_CONFIG_DATA_POINTER(apdev);
-	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(apdev);
+	config_handle = DEV_GET_CONFIG_DATA_POINTER(adev);
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
 	adc_server_device = config_handle->adc_server_device;
 	switch(aIoctl_num)
 	{

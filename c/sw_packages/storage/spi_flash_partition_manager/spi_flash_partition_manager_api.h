@@ -21,7 +21,7 @@ typedef enum
 	IOCTL_SPI_FLASH_PARTITION_MANAGER_GET_BLOCK_SIZE,
 }SPI_FLASH_PARTITION_MANAGER_API_ioctl_t;
 
-uint8_t  spi_flash_partition_manager_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor);
+uint8_t  spi_flash_partition_manager_api_init_dev_descriptor(struct dev_desc_t *aDevDescriptor);
 
 
 #include "src/spi_flash_partition_manager_static_dev_macros.h"

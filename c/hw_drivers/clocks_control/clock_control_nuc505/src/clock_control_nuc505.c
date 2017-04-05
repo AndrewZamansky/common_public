@@ -121,13 +121,13 @@ static uint32_t core_get_clock(void )
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t clock_control_nuc505_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
+uint8_t clock_control_nuc505_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
 	size_t clock_index;
 	clock_control_nuc505_instance_t *config_handle;
 
-	config_handle = DEV_GET_CONFIG_DATA_POINTER(apdev);
+	config_handle = DEV_GET_CONFIG_DATA_POINTER(adev);
 	clock_index = (size_t)aIoctl_param1 ;
 	switch(aIoctl_num)
 	{

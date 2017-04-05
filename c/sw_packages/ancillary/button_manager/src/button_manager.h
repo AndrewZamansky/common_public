@@ -22,12 +22,12 @@
 
 typedef struct
 {
-	pdev_descriptor_t   this_dev;
+	struct dev_desc_t *   this_dev;
 	os_queue_t xQueue ;
-	pdev_descriptor_t   client_dev;
+	struct dev_desc_t *   client_dev;
 
 	uint8_t num_of_buttons;
-	pdev_descriptor_t   *server_dev;
+	struct dev_desc_t *   *server_dev;
 	uint8_t		*idle_state;
 
 

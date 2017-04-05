@@ -111,7 +111,7 @@ static void GPIO_output_pins_Task( void *pvParameters )
 	GPIO_Instance_t *pCurrGPIO_Instance;
 	uint32_t i;
 	uint8_t next_state;
-	pdev_descriptor_t   server_dev  ;
+	struct dev_desc_t *   server_dev  ;
 	GPIO_OutputPin_t *pCurrOutputPin ;
 	uint8_t cycles;
 
@@ -177,10 +177,10 @@ static void GPIO_output_pins_Task( void *pvParameters )
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t GPIO_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
+uint8_t GPIO_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
 {
 	uint32_t retVal;
-	pdev_descriptor_t   server_dev = INSTANCE(aHandle)->server_dev ;
+	struct dev_desc_t *   server_dev = INSTANCE(aHandle)->server_dev ;
 	GPIO_Force_t forceState = INSTANCE(aHandle)->forceState ;
 	params_status_t paramStatus = INSTANCE(aHandle)->paramStatus;
 
@@ -301,7 +301,7 @@ uint8_t GPIO_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num , void * a
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t  sw_gpio_wrapper_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor)
+uint8_t  sw_gpio_wrapper_api_init_dev_descriptor(struct dev_desc_t *aDevDescriptor)
 {
 	GPIO_Instance_t *pInstance;
 	if (usedInstances >= GPIO_HAL_MAX_NUM_OF_GPIOS) return 1;

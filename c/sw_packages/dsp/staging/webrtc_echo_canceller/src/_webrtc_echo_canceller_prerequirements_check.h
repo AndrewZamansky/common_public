@@ -41,7 +41,7 @@ typedef pdsp_descriptor   			_if_fail_here_then___pdsp_descriptor___is_not_defin
 typedef dsp_param_t   				_if_fail_here_then___dsp_param_t___is_not_defined_in_webrtc_echo_canceller_config_h;
 
 
-typedef ioctl_get_data_buffer_t    	_if_fail_here_then___ioctl_get_data_buffer_t___is_not_defined_in_webrtc_echo_canceller_config_h;
+typedef struct ioctl_get_data_buffer_t    	_if_fail_here_then___ioctl_get_data_buffer_t___is_not_defined_in_webrtc_echo_canceller_config_h;
 
 /***************************/
 

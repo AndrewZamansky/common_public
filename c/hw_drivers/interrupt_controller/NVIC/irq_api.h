@@ -30,7 +30,7 @@ int irq_register_interrupt(int int_num , isr_t pIsr);
  *
  * return:
  */
-int irq_register_device_on_interrupt(int int_num , pdev_descriptor_t pdev);
+int irq_register_device_on_interrupt(int int_num , struct dev_desc_t * pdev);
 
 
 /**

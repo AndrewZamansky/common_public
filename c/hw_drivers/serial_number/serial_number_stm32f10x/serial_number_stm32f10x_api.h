@@ -13,7 +13,7 @@
 #define SERIAL_NUMBER_LEN  16
 
 
-uint8_t  serial_number_stm32f10x_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor);
+uint8_t  serial_number_stm32f10x_api_init_dev_descriptor(struct dev_desc_t *aDevDescriptor);
 
 #include "src/serial_number_stm32f10x_static_dev_macros.h"
 

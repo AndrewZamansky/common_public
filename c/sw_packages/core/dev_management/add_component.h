@@ -3,27 +3,26 @@
 #ifndef	MODULE_IOCTL_FUNCTION
 	#define MODULE_IOCTL_FUNCTION			DEV_API_dummy_ioctl_func
 #endif
-extern uint8_t MODULE_IOCTL_FUNCTION(pdev_descriptor_t apdev,
-		const uint8_t aIoctl_num, void * aIoctl_param1,
-		void * aIoctl_param2);
+extern uint8_t MODULE_IOCTL_FUNCTION(struct dev_desc_t *adev,
+		 uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2);
 
 #ifndef	MODULE_PWRITE_FUNCTION
 	#define MODULE_PWRITE_FUNCTION			DEV_API_dummy_pwrite_func
 #endif
-extern size_t MODULE_PWRITE_FUNCTION(const pdev_descriptor_t apdev,
-				const uint8_t *apData, size_t aLength, size_t aOffset);
+extern size_t MODULE_PWRITE_FUNCTION(struct dev_desc_t *adev,
+						uint8_t *apData, size_t aLength, size_t aOffset);
 
 #ifndef	MODULE_PREAD_FUNCTION
 	#define MODULE_PREAD_FUNCTION			DEV_API_dummy_pread_func
 #endif
-extern size_t MODULE_PREAD_FUNCTION(const pdev_descriptor_t apdev,
+extern size_t MODULE_PREAD_FUNCTION( struct dev_desc_t *adev,
 						uint8_t *apData, size_t aLength, size_t aOffset);
 
 #ifndef	MODULE_CALLBACK_FUNCTION
 	#define MODULE_CALLBACK_FUNCTION		DEV_API_dummy_callback_func
 #endif
-extern uint8_t MODULE_CALLBACK_FUNCTION(pdev_descriptor_t apdev,
-		const uint8_t aCallback_num, void * aCallback_param1,
+extern uint8_t MODULE_CALLBACK_FUNCTION(struct dev_desc_t *adev,
+		uint8_t aCallback_num, void * aCallback_param1,
 		void * aCallback_param2);
 
 

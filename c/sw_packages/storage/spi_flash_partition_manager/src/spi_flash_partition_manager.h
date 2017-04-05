@@ -15,7 +15,7 @@
 /***************   typedefs    *******************/
 
 typedef struct {
-	pdev_descriptor_const   spi_flash_server_dev;
+	struct dev_desc_t const *spi_flash_server_dev;
 } spi_flash_partition_manager_Instance_t;
 
 #endif /* */

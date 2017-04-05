@@ -82,13 +82,13 @@ void __attribute__((interrupt("IRQ"))) SysTick_IRQHandler(void)
  *
  * return:
  */
-uint8_t cortexM_systick_ioctl( pdev_descriptor_t apdev,
+uint8_t cortexM_systick_ioctl( struct dev_desc_t *adev,
 		const uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2)
 {
 	cortexM_systick_instance_t *config_handle;
 	uint32_t core_clock_rate;
 
-	config_handle = DEV_GET_CONFIG_DATA_POINTER(apdev);
+	config_handle = DEV_GET_CONFIG_DATA_POINTER(adev);
 	switch(aIoctl_num)
 	{
 	case IOCTL_TIMER_RATE_HZ_SET :

@@ -3,7 +3,7 @@
 #include  "clock_control_nuc505_api.h"
 #include 	"src/clock_control_nuc505.h"
 
-uint8_t clock_control_nuc505_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2);
+uint8_t clock_control_nuc505_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2);
 
 #define	MODULE_NAME						clock_control_nuc505
 #define	MODULE_IOCTL_FUNCTION			clock_control_nuc505_ioctl

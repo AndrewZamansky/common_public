@@ -15,8 +15,8 @@
 /***************   typedefs    *******************/
 
 typedef struct {
-	pdev_descriptor_t   spi_server_dev;
-	pdev_descriptor_t   gpio_select_dev;
+	struct dev_desc_t *   spi_server_dev;
+	struct dev_desc_t *   gpio_select_dev;
 } spi_flash_instance_t;
 
 #endif /* */

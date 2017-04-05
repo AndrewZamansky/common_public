@@ -72,7 +72,7 @@ typedef struct
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t button_manager_callback(pdev_descriptor_t apdev ,const uint8_t aCallback_num ,
+uint8_t button_manager_callback(struct dev_desc_t *adev ,const uint8_t aCallback_num ,
 		void * aCallback_param1, void * aCallback_param2)
 {
 	os_queue_t xQueue ;
@@ -125,8 +125,8 @@ static void button_manager_task( void *aHandle )
 	uint32_t hold_count,queue_wait_delay=100000;
 	uint8_t currState = BTN_STATE_IDLE;
 	uint8_t queueRetVal;
-	pdev_descriptor_t   *server_dev;
-	pdev_descriptor_t   this_dev;
+	struct dev_desc_t *   *server_dev;
+	struct dev_desc_t *   this_dev;
 	uint8_t		*idle_state;
 	btn_action_t	*pFound_action_state;
 
@@ -273,11 +273,11 @@ static void button_manager_task( void *aHandle )
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t button_manager_ioctl(pdev_descriptor_t apdev ,const uint8_t aIoctl_num
+uint8_t button_manager_ioctl(struct dev_desc_t *adev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
 	uint8_t i,num;
-	pdev_descriptor_t   server_dev;
+	struct dev_desc_t *   server_dev;
 
 	switch(aIoctl_num)
 	{
@@ -337,7 +337,7 @@ uint8_t button_manager_ioctl(pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t  button_manager_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor)
+uint8_t  button_manager_api_init_dev_descriptor(struct dev_desc_t *aDevDescriptor)
 {
 	buttons_group_t *pInstance;
 	if(NULL == aDevDescriptor) return 1;

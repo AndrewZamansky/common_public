@@ -18,7 +18,7 @@
 /********  types  *********************/
 
 struct I2S_onSPI_i94xxx_cfg_t {
-	pdev_descriptor_t   src_clock;
+	struct dev_desc_t *   src_clock;
 	size_t   base_address;
 	uint8_t   	clock_mode;
 	uint32_t	sample_rate;

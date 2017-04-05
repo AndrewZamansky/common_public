@@ -45,12 +45,12 @@ void ADC1_Init_Reduced(ADC1_PresSel_TypeDef ADC1_PrescalerSelection, ADC1_ExtTri
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t adc_stm8_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
+uint8_t adc_stm8_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
 	adc_stm8_instance_t *config_handle;
 
-	config_handle = DEV_GET_CONFIG_DATA_POINTER(apdev);
+	config_handle = DEV_GET_CONFIG_DATA_POINTER(adev);
 	switch(aIoctl_num)
 	{
 		case IOCTL_ADC_GET_CURRENT_VALUE_mV :

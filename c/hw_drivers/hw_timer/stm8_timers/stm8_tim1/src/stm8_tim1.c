@@ -66,12 +66,12 @@ INTERRUPT_HANDLER(TIM1_UPD_OVF_TRG_BRK_IRQHandler, 11)
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t stm8_tim1_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
+uint8_t stm8_tim1_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
 	stm8_tim1_instance_t *config_handle;
 
-	config_handle = DEV_GET_CONFIG_DATA_POINTER(apdev);
+	config_handle = DEV_GET_CONFIG_DATA_POINTER(adev);
 	switch(aIoctl_num)
 	{
 #ifdef CONFIG_USE_RUNTIME_DEVICE_CONFIGURATION

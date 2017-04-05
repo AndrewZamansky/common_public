@@ -47,7 +47,7 @@
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-size_t version_management_pread(pdev_descriptor_t apdev ,uint8_t *apData , size_t aLength, size_t aOffset)
+size_t version_management_pread(struct dev_desc_t *adev ,uint8_t *apData , size_t aLength, size_t aOffset)
 {
 	if(aLength > sizeof(VERSION_STR))
 	{

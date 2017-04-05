@@ -33,7 +33,7 @@
 #endif
 
 typedef struct {
-	pdev_descriptor_t   server_dev;
+	struct dev_desc_t *   server_dev;
 } async_tx_wrapper_instance_t;
 
 

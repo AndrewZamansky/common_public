@@ -73,7 +73,7 @@ typedef enum IRQn_local {
 
 
 /********  local variables *********************/
-pdev_descriptor_t callback_devs[
+struct dev_desc_t * callback_devs[
                             CONFIG_DT_MAXIMAL_INTERRUPT_NUMBER + 16] = {NULL};
 
 
@@ -86,7 +86,7 @@ pdev_descriptor_t callback_devs[
 void  IRQ_ATTR common_interrupt_handler()
 {
 	uint32_t curr_isr ;
-	pdev_descriptor_t pdev ;
+	struct dev_desc_t * pdev ;
 
 	curr_isr = __get_IPSR();
 	if ( CONFIG_DT_MAXIMAL_INTERRUPT_NUMBER < curr_isr )
@@ -129,7 +129,7 @@ int irq_register_interrupt(int int_num, isr_t pIsr)
  *
  * return:
  */
-int irq_register_device_on_interrupt(int int_num, pdev_descriptor_t pdev)
+int irq_register_device_on_interrupt(int int_num, struct dev_desc_t * pdev)
 {
 	callback_devs[int_num + 16] = pdev;
     return  irq_register_interrupt(int_num, common_interrupt_handler);

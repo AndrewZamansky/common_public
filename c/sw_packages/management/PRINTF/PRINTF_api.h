@@ -23,19 +23,19 @@ typedef enum
 
 } PRINTF_TYPE_t;
 
-uint32_t PRINTF_API_AddDebugOutput(pdev_descriptor_t aDevHandle);
-uint32_t PRINTF_API_AddNoteOutput(pdev_descriptor_t aDevHandle);
-uint32_t PRINTF_API_RemoveDebugOutput(pdev_descriptor_t aDevHandle);
-uint32_t PRINTF_API_RemoveNoteOutput(pdev_descriptor_t aDevHandle);
+uint32_t PRINTF_API_AddDebugOutput(struct dev_desc_t *aDevHandle);
+uint32_t PRINTF_API_AddNoteOutput(struct dev_desc_t *aDevHandle);
+uint32_t PRINTF_API_RemoveDebugOutput(struct dev_desc_t *aDevHandle);
+uint32_t PRINTF_API_RemoveNoteOutput(struct dev_desc_t *aDevHandle);
 
-void PRINTF_printf(PRINTF_TYPE_t aPrntType , pdev_descriptor_t aDevHandle,  const uint8_t* Format,...);
+void PRINTF_printf(PRINTF_TYPE_t aPrntType , struct dev_desc_t *aDevHandle,  const uint8_t* Format,...);
 void PRINTF_print_data(PRINTF_TYPE_t aPrntType , const uint8_t* data,  uint32_t aLen);
 
 
 /**********  define API  functions  ************/
 #if (CONFIG_USE_MINIMAL_PRINTF)
 
- extern pdev_descriptor_const  print_dev;
+ extern struct dev_desc_t const *print_dev;
 
  #define PRINTF_API_SET_DEV(dev)				print_dev = dev
  #define PRINT_DATA_DBG(data,len) 				DEV_WRITE(print_dev,data , len) // to avoid printf code

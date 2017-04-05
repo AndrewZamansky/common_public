@@ -21,7 +21,7 @@ typedef struct {
 	uint32_t rate;
 	uint32_t parent_clock_rate;
 	uint32_t calculated_period_rate;
-//	pdev_descriptor_t   clock_dev;
+//	struct dev_desc_t *   clock_dev;
 //	size_t	clock_index;
 	timer_callback_func_t timer_callback;
 	uint8_t mode;

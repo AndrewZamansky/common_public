@@ -20,7 +20,7 @@ typedef struct {
 
 
 /**********  define API  functions  ************/
-uint8_t  ram_disk_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor);
+uint8_t  ram_disk_api_init_dev_descriptor(struct dev_desc_t *aDevDescriptor);
 
 
 

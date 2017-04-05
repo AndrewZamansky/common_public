@@ -3,8 +3,8 @@
 #include  "uart_stm32f10x_api.h"
 #include  "src/uart_stm32f10x.h"
 
-uint8_t uart_stm32f10x_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2);
-size_t 	uart_stm32f10x_pwrite(pdev_descriptor_t apdev ,const uint8_t *apData , size_t aLength, size_t aOffset);
+uint8_t uart_stm32f10x_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2);
+size_t 	uart_stm32f10x_pwrite(struct dev_desc_t *adev ,const uint8_t *apData , size_t aLength, size_t aOffset);
 
 #define	MODULE_NAME					uart_stm32f10x
 #define	MODULE_IOCTL_FUNCTION		uart_stm32f10x_ioctl

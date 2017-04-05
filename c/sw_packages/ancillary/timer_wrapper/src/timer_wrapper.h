@@ -18,7 +18,7 @@
 
 typedef struct
 {
-	pdev_descriptor_t   hw_timer_wrapper;
+	struct dev_desc_t *   hw_timer_wrapper;
 } timer_wrapper_instance_t;
 
 typedef struct

@@ -72,7 +72,7 @@ static void IntNumToCharNum (uint32_t value , uint8_t *pbuf )
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t serial_stm32f10x_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
+uint8_t serial_stm32f10x_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
 	uint32_t hashed_name_result;
@@ -121,7 +121,7 @@ uint8_t serial_stm32f10x_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_nu
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t  serial_number_stm32f10x_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor)
+uint8_t  serial_number_stm32f10x_api_init_dev_descriptor(struct dev_desc_t *aDevDescriptor)
 {
 	if(NULL == aDevDescriptor) return 1;
 

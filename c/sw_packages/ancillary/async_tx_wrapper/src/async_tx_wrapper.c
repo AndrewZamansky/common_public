@@ -14,7 +14,7 @@
 
 #include "_async_tx_wrapper_prerequirements_check.h"
 
-#include "async_tx_wrapper_api.h" //place first to test that header file is self-contained
+#include "async_tx_wrapper_api.h"
 #include "async_tx_wrapper.h"
 
 #include "async_tx_wrapper_add_component.h"
@@ -50,29 +50,25 @@ typedef struct
 
 static uint8_t dummy_msg;
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        async_tx_wrapper_callback                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-uint8_t async_tx_wrapper_callback(pdev_descriptor_t apdev ,const uint8_t aCallback_num , void * aCallback_param1, void * aCallback_param2)
+/**
+ * async_tx_wrapper_callback()
+ *
+ * return:
+ */
+uint8_t async_tx_wrapper_callback(struct dev_desc_t *adev,
+		const uint8_t aCallback_num, void * aCallback_param1,
+		void * aCallback_param2)
 {
 	async_tx_wrapper_instance_t *config_handle;
 	async_tx_wrapper_runtime_instance_t *runtime_handle;
 	tx_int_size_t data_length ;
-	pdev_descriptor_t   server_dev ;
+	struct dev_desc_t *   server_dev ;
 	tx_int_size_t	transmitedSize;
 
 	transmitedSize = (tx_int_size_t)((size_t)aCallback_param1);
 
-	config_handle = DEV_GET_CONFIG_DATA_POINTER(apdev);
-	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(apdev);
+	config_handle = DEV_GET_CONFIG_DATA_POINTER(adev);
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
 
 	data_length = (tx_int_size_t)runtime_handle->data_length;
 
@@ -91,7 +87,10 @@ uint8_t async_tx_wrapper_callback(pdev_descriptor_t apdev ,const uint8_t aCallba
 	    	os_queue_t xTX_WaitQueue  ;
 	    	DEV_IOCTL_0_PARAMS(server_dev,IOCTL_UART_DISABLE_TX);
 	    	xTX_WaitQueue = runtime_handle->xTX_WaitQueue;
-	    	data_length = 0; // need to be here to avoid additional loop on stuck check
+
+	    	/* need to be here to avoid additional loop on stuck check */
+	    	data_length = 0;
+
 		    if(NULL != xTX_WaitQueue)
 		    {
 		        os_queue_send_immediate( xTX_WaitQueue, ( void * ) &dummy_msg);
@@ -104,31 +103,25 @@ uint8_t async_tx_wrapper_callback(pdev_descriptor_t apdev ,const uint8_t aCallba
 }
 
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        ASYNC_TX_WRAPPER_Send_Task                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-static void sw_uart_send_and_wait_for_end(pdev_descriptor_t apdev,
-			async_tx_wrapper_runtime_instance_t *runtime_handle ,
-			xMessage_t *xMessage , uint8_t called_from_task)
+/**
+ * sw_uart_send_and_wait_for_end()
+ *
+ * return:
+ */
+static void sw_uart_send_and_wait_for_end(struct dev_desc_t *adev,
+			async_tx_wrapper_runtime_instance_t *runtime_handle,
+			xMessage_t *xMessage, uint8_t called_from_task)
 {
 
 	async_tx_wrapper_instance_t *config_handle;
 
 	os_queue_t xTX_WaitQueue ;
-	pdev_descriptor_t   server_dev ;
+	struct dev_desc_t *   server_dev ;
 	uint8_t *pData ;
 	tx_int_size_t length ;
 	tx_int_size_t last_checked_length ;
 
-	config_handle = DEV_GET_CONFIG_DATA_POINTER(apdev);
+	config_handle = DEV_GET_CONFIG_DATA_POINTER(adev);
 
 	pData = xMessage->pData;
 	length = xMessage->len;
@@ -145,9 +138,10 @@ static void sw_uart_send_and_wait_for_end(pdev_descriptor_t apdev,
 		last_checked_length = length;
 		if(called_from_task)
 		{
-			/* when setting timeout = length then for baud rate <8k we should get only message only after
-				transmision ends */
-			os_queue_receive_with_timeout( xTX_WaitQueue , &( dummy_msg ) , length );
+			/* when setting timeout = length then for baud rate <8k we
+			 * should get only message only after transmision ends
+			 */
+			os_queue_receive_with_timeout( xTX_WaitQueue, &dummy_msg, length );
 		}
 		else
 		{
@@ -156,7 +150,7 @@ static void sw_uart_send_and_wait_for_end(pdev_descriptor_t apdev,
 			while (wait--);
 		}
 		length = runtime_handle->data_length;
-		if(length == last_checked_length) /* check if transmition is stucked */
+		if (length == last_checked_length)/* check if transmition is stucked */
 		{
 			break ;
 		}
@@ -165,7 +159,8 @@ static void sw_uart_send_and_wait_for_end(pdev_descriptor_t apdev,
 	DEV_IOCTL_0_PARAMS(server_dev ,IOCTL_UART_DISABLE_TX);
 	if(called_from_task)
 	{
-		os_queue_receive_with_timeout( xTX_WaitQueue , &( dummy_msg ) , 0 );//cleanup queue
+		//cleanup queue
+		os_queue_receive_with_timeout( xTX_WaitQueue , &( dummy_msg ) , 0 );
 	}
 
 #ifdef CONFIG_ASYNC_TX_WRAPPER_USE_MALLOC
@@ -174,18 +169,14 @@ static void sw_uart_send_and_wait_for_end(pdev_descriptor_t apdev,
 
 }
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        async_tx_wrapper_pwrite                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-size_t async_tx_wrapper_pwrite(pdev_descriptor_t apdev ,const uint8_t *apData , size_t aLength, size_t aOffset)
+
+/**
+ * async_tx_wrapper_pwrite()
+ *
+ * return:
+ */
+size_t async_tx_wrapper_pwrite(struct dev_desc_t *adev,
+			uint8_t *apData, size_t aLength, size_t aOffset)
 {
 	tx_int_size_t dataLen= (tx_int_size_t)aLength;
 	tx_int_size_t curr_transmit_len;
@@ -193,7 +184,7 @@ size_t async_tx_wrapper_pwrite(pdev_descriptor_t apdev ,const uint8_t *apData , 
 	uint8_t *pSendData;
 
 
-	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(apdev);
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
 
 	while(dataLen)
 	{
@@ -205,7 +196,8 @@ size_t async_tx_wrapper_pwrite(pdev_descriptor_t apdev ,const uint8_t *apData , 
 
 
 #ifdef CONFIG_ASYNC_TX_WRAPPER_USE_MALLOC
-		xMessage.pData=(uint8_t*)os_safe_malloc(curr_transmit_len * sizeof(uint8_t));
+		xMessage.pData =
+				(uint8_t*)os_safe_malloc(curr_transmit_len * sizeof(uint8_t));
 #else
 		if ( CONFIG_ASYNC_TX_WRAPPER_MAX_TX_BUFFER_SIZE < curr_transmit_len )
 		{
@@ -216,14 +208,15 @@ size_t async_tx_wrapper_pwrite(pdev_descriptor_t apdev ,const uint8_t *apData , 
 
 		pSendData = xMessage.pData;
 		if(NULL == pSendData) 	return 0;
-		memcpy(pSendData,(uint8_t*)apData,curr_transmit_len);
+		memcpy(pSendData, (uint8_t*)apData, curr_transmit_len);
 
 
 		xMessage.len=curr_transmit_len;
 
 		if(NULL != xQueue)
 		{
-			if(OS_QUEUE_SEND_SUCCESS != os_queue_send_infinite_wait( xQueue, ( void * ) &xMessage ))
+			if(OS_QUEUE_SEND_SUCCESS !=
+					os_queue_send_infinite_wait(xQueue, ( void * )&xMessage) )
 			{
 #ifdef CONFIG_ASYNC_TX_WRAPPER_USE_MALLOC
 				os_safe_free(pSendData);
@@ -233,7 +226,7 @@ size_t async_tx_wrapper_pwrite(pdev_descriptor_t apdev ,const uint8_t *apData , 
 		}
 		else
 		{
-			sw_uart_send_and_wait_for_end(apdev , runtime_handle , &xMessage ,0);
+			sw_uart_send_and_wait_for_end(adev, runtime_handle, &xMessage ,0);
 		}
 
 		dataLen-=curr_transmit_len;
@@ -246,18 +239,12 @@ size_t async_tx_wrapper_pwrite(pdev_descriptor_t apdev ,const uint8_t *apData , 
 
 
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        ASYNC_TX_WRAPPER_Send_Task                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-static void ASYNC_TX_WRAPPER_Send_Task( void *apdev )
+/**
+ * ASYNC_TX_WRAPPER_Send_Task()
+ *
+ * return:
+ */
+static void ASYNC_TX_WRAPPER_Send_Task( void *adev )
 {
 
 	xMessage_t xRxMessage;
@@ -265,9 +252,10 @@ static void ASYNC_TX_WRAPPER_Send_Task( void *apdev )
 
 	os_queue_t xQueue ;
 
-	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(apdev);
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
 
-	xQueue = os_create_queue( CONFIG_ASYNC_TX_WRAPPER_MAX_QUEUE_LEN , sizeof(xMessage_t ) );
+	xQueue = os_create_queue(
+			CONFIG_ASYNC_TX_WRAPPER_MAX_QUEUE_LEN , sizeof(xMessage_t ) );
 	runtime_handle->xQueue = xQueue ;
 
 
@@ -275,37 +263,32 @@ static void ASYNC_TX_WRAPPER_Send_Task( void *apdev )
 
 	for( ;; )
 	{
-		if( OS_QUEUE_RECEIVE_SUCCESS == os_queue_receive_infinite_wait( xQueue , &xRxMessage ) )
+		if( OS_QUEUE_RECEIVE_SUCCESS ==
+				os_queue_receive_infinite_wait( xQueue , &xRxMessage ) )
 		{
-			sw_uart_send_and_wait_for_end(apdev , runtime_handle , &xRxMessage , 1);
+			sw_uart_send_and_wait_for_end(adev, runtime_handle, &xRxMessage, 1);
 		}
 
 		os_stack_test();
-
 	}
 
 }
 
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        async_tx_wrapper_ioctl                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-uint8_t async_tx_wrapper_ioctl(pdev_descriptor_t apdev ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
+/**
+ * async_tx_wrapper_ioctl()
+ *
+ * return:
+ */
+uint8_t async_tx_wrapper_ioctl(struct dev_desc_t *adev,
+		uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2)
 {
 	async_tx_wrapper_instance_t *config_handle;
 	async_tx_wrapper_runtime_instance_t *runtime_handle;
-	pdev_descriptor_t   server_dev;
+	struct dev_desc_t *   server_dev;
 
-	config_handle = DEV_GET_CONFIG_DATA_POINTER(apdev);
-	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(apdev);
+	config_handle = DEV_GET_CONFIG_DATA_POINTER(adev);
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
 
 	server_dev  = config_handle->server_dev;
 
@@ -313,11 +296,11 @@ uint8_t async_tx_wrapper_ioctl(pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 	{
 #ifdef CONFIG_USE_RUNTIME_DEVICE_CONFIGURATION
 		case IOCTL_SET_SERVER_DEVICE :
-			server_dev = (pdev_descriptor_t)aIoctl_param1;
+			server_dev = (struct dev_desc_t *)aIoctl_param1;
 			config_handle->server_dev = server_dev;
 			if (NULL != server_dev)
 			{
-				DEV_IOCTL(server_dev, IOCTL_SET_ISR_CALLBACK_DEV, (void*)apdev);
+				DEV_IOCTL(server_dev, IOCTL_SET_ISR_CALLBACK_DEV, (void*)adev);
 			}
 			break;
 
@@ -331,8 +314,10 @@ uint8_t async_tx_wrapper_ioctl(pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 				xTX_WaitQueue = os_create_queue( 1 , sizeof(uint8_t ) );
 				runtime_handle->xTX_WaitQueue = xTX_WaitQueue ;
 
-				os_create_task("async_tx_wrapper_task",ASYNC_TX_WRAPPER_Send_Task,
-						apdev , ASYNC_TX_WRAPPER_TASK_STACK_SIZE , ASYNC_TX_WRAPPER_TASK_PRIORITY);
+				os_create_task("async_tx_wrapper_task",
+						ASYNC_TX_WRAPPER_Send_Task, adev,
+						ASYNC_TX_WRAPPER_TASK_STACK_SIZE,
+						ASYNC_TX_WRAPPER_TASK_PRIORITY);
 				DEV_IOCTL_0_PARAMS(server_dev , IOCTL_DEVICE_START );
 			}
 			break;

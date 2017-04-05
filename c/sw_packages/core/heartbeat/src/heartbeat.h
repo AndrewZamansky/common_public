@@ -18,8 +18,8 @@
 typedef void (*heartbeat_callback_func_t)(void)  ;
 
 typedef struct {
-	pdev_descriptor_t 	heartbeat_callback_dev;
-	pdev_descriptor_t   callibration_timer;
+	struct dev_desc_t * 	heartbeat_callback_dev;
+	struct dev_desc_t *   callibration_timer;
 } heartbeat_instance_t;
 
 #endif /* */

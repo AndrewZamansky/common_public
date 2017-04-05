@@ -55,12 +55,12 @@ void os_init(void);
 /**	*********  setting ticker device ********        **/
 /** 					    		   **/
 /**	function :	[os_set_tick_timer_dev()]  **/
-void  os_set_tick_timer_dev(pdev_descriptor_t a_timer_dev);
+void  os_set_tick_timer_dev(struct dev_desc_t *a_timer_dev);
 
 /**	*********  setting tick callback (if application need to perform something each tick)  ********        **/
 /** 					    		   **/
 /**	function :	[os_set_tick_callback()]  **/
-void  os_set_heartbeat_dev(pdev_descriptor_t a_heartbeat_dev);
+void  os_set_heartbeat_dev(struct dev_desc_t *a_heartbeat_dev);
 
 
 /**	*********  starting os ********        **/

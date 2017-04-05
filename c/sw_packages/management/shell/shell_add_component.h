@@ -3,8 +3,8 @@
 #include  "shell_api.h"
 #include "src/shell.h"
 
-extern uint8_t shell_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2);
-extern uint8_t shell_callback(pdev_descriptor_t apdev ,
+extern uint8_t shell_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2);
+extern uint8_t shell_callback(struct dev_desc_t *adev ,
 		const uint8_t aCallback_num , void * aCallback_param1, void * aCallback_param2);
 
 #define	MODULE_NAME					shell

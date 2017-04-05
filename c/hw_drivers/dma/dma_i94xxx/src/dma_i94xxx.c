@@ -40,7 +40,7 @@
 
 /* ------------------------ Exported variables --------*/
 #define MAX_NUMBER_OF_CHANNELS	16
-pdev_descriptor_t channel_pdev[MAX_NUMBER_OF_CHANNELS] = {0};
+struct dev_desc_t * channel_pdev[MAX_NUMBER_OF_CHANNELS] = {0};
 
 volatile int cnt1 = 0;
 
@@ -117,10 +117,10 @@ void PDMA_IRQHandler(void)
 
     	for (i=0; i < MAX_NUMBER_OF_CHANNELS ;i++)
     	{
-    		pdev_descriptor_t ch_pdev;
+    		struct dev_desc_t * ch_pdev;
     		dma_i94xxx_instance_t *cfg_hndl;
     		dma_i94xxx_runtime_instance_t *runtime_hndl;
-    		pdev_descriptor_t   callback_dev;
+    		struct dev_desc_t *   callback_dev;
 
     		if (0 == (done_status & 0x1))
     		{
@@ -258,7 +258,7 @@ static uint8_t set_peripheral_dma(dma_i94xxx_instance_t *cfg_hndl,
  *
  * return:
  */
-uint8_t dma_i94xxx_ioctl( pdev_descriptor_t apdev, const uint8_t aIoctl_num,
+uint8_t dma_i94xxx_ioctl( struct dev_desc_t *adev, const uint8_t aIoctl_num,
 		void * aIoctl_param1, void * aIoctl_param2)
 {
 	uint8_t ret;
@@ -271,8 +271,8 @@ uint8_t dma_i94xxx_ioctl( pdev_descriptor_t apdev, const uint8_t aIoctl_num,
 	uint32_t   buff_size;
 
 
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(apdev);
-	runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(apdev);
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
+	runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(adev);
 
 	channel_num = cfg_hndl->channel_num;
 	peripheral_type = cfg_hndl->peripheral_type;
@@ -284,7 +284,7 @@ uint8_t dma_i94xxx_ioctl( pdev_descriptor_t apdev, const uint8_t aIoctl_num,
     	CRITICAL_ERROR("channel number greater than allowed\n");
 	}
 
-	channel_pdev[channel_num] = apdev;
+	channel_pdev[channel_num] = adev;
 
 	ret = 0;
 	switch(aIoctl_num)

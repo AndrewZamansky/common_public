@@ -61,7 +61,7 @@
  */
 int do_get_dev_param (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
-	pdev_descriptor_t dev_descriptor;
+	struct dev_desc_t * dev_descriptor;
 	uint32_t retVal;
 	const dev_param_t *pIoctlParam;
 	uint8_t ret_buff[MAX_RET_BUFF_SIZE+1];

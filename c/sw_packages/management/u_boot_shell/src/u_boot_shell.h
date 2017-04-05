@@ -17,7 +17,7 @@
 /***************   typedefs    *******************/
 
 typedef struct {
-	pdev_descriptor_t server_dev;
+	struct dev_desc_t * server_dev;
 } u_boot_shell_instance_t;
 
 #endif /* */

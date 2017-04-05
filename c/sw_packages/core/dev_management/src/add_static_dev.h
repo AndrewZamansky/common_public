@@ -26,35 +26,56 @@
 #define DEV_RUNTIME_DATA_INST2(pdev)	runtime_data_inst_##pdev
 
 
+
 #ifndef	MODULE_CONFIG_DATA_STRUCT_TYPE
+
 	#define	HANDLE_TO_DEV_CONFIG_DATA_STRUCT		NULL
+
 #else
+
 	#ifndef STATIC_DEV_DATA_STRUCT
 		#error "STATIC_DEV_DATA_STRUCT should be defined"
 	#endif
 
 	EXTERN_DECLARATION_TO_STATIC_DEVICE_INST(DT_DEV_NAME) ;
-	MODULE_CONFIG_DATA_STRUCT_TYPE	 DEVICE_DATA_PLACEMENT	DEV_CONFIG_DATA_INST(DT_DEV_NAME) = STATIC_DEV_DATA_STRUCT;
-	#define	HANDLE_TO_DEV_CONFIG_DATA_STRUCT		&DEV_CONFIG_DATA_INST(DT_DEV_NAME)
+	MODULE_CONFIG_DATA_STRUCT_TYPE	 DEVICE_DATA_PLACEMENT	\
+				DEV_CONFIG_DATA_INST(DT_DEV_NAME) = STATIC_DEV_DATA_STRUCT;
+
+	#define	HANDLE_TO_DEV_CONFIG_DATA_STRUCT  &DEV_CONFIG_DATA_INST(DT_DEV_NAME)
+
 #endif
 
+
+
+
 #ifndef	MODULE_RUNTIME_DATA_STRUCT_TYPE
+
 	#define	HANDLE_TO_DEV_RUNTIME_DATA_STRUCT		NULL
+
 #else
 
-	#if (4 == __GNUC__)//because of  bug 53119 in gcc disable "-Wmissing-braces" warning
+	//because of  bug 53119 in gcc disable "-Wmissing-braces" warning
+	#if (4 == __GNUC__)
 		#pragma GCC diagnostic push
 		#pragma GCC diagnostic ignored "-Wmissing-braces"
 	#endif
 
-	MODULE_RUNTIME_DATA_STRUCT_TYPE	 DEVICE_DATA_PLACEMENT	DEV_RUNTIME_DATA_INST(DT_DEV_NAME) = {0};
-	#define	HANDLE_TO_DEV_RUNTIME_DATA_STRUCT		&DEV_RUNTIME_DATA_INST(DT_DEV_NAME)
+	MODULE_RUNTIME_DATA_STRUCT_TYPE	 DEVICE_DATA_PLACEMENT	\
+								DEV_RUNTIME_DATA_INST(DT_DEV_NAME) = {0};
 
-	#if (4 == __GNUC__)//because of  bug 53119 in gcc disable "-Wmissing-braces" warning
+	#define	HANDLE_TO_DEV_RUNTIME_DATA_STRUCT		\
+										&DEV_RUNTIME_DATA_INST(DT_DEV_NAME)
+
+	//because of  bug 53119 in gcc disable "-Wmissing-braces" warning
+	#if (4 == __GNUC__)
 		#pragma GCC diagnostic pop
 	#endif
 
 #endif
+
+
+
+
 
 #define	_DEV_NAME(pdev)		_DEV_NAME2(pdev)
 #define	_DEV_NAME2(pdev)	pdev##_str
@@ -66,7 +87,8 @@
 #define	_MODULE_NAME(module,pdev)		_MODULE_NAME2(module,pdev)
 #define	_MODULE_NAME2(module,pdev)		module##pdev##_str
 
-#define DT_DECLARE_MODULE_NAME_STR(module,pdev)		DT_DECLARE_MODULE_NAME_STR2(module,pdev)
+#define DT_DECLARE_MODULE_NAME_STR(module,pdev)		\
+										DT_DECLARE_MODULE_NAME_STR2(module,pdev)
 #define DT_DECLARE_MODULE_NAME_STR2(module,pdev)		\
 	DEVICE_DATA_PLACEMENT char _MODULE_NAME(module,pdev)[] = STRINGIFY(module)
 
@@ -79,7 +101,7 @@
 		(CONFIG_MAX_NUM_OF_DYNAMIC_DEVICES > 0))
 
 	DT_DECLARE_MODULE_NAME_STR(DT_DEV_MODULE , DT_DEV_NAME);
-	DEVICE_PLACEMENT dev_descriptor_t STATIC_DEVICE_INST(DT_DEV_NAME) =
+	DEVICE_PLACEMENT struct dev_desc_t STATIC_DEVICE_INST(DT_DEV_NAME) =
 	{
 		HANDLE_TO_DEV_CONFIG_DATA_STRUCT,
 		HANDLE_TO_DEV_RUNTIME_DATA_STRUCT,
@@ -93,7 +115,7 @@
 
 #else
 
-	DEVICE_PLACEMENT dev_descriptor_t STATIC_DEVICE_INST(DT_DEV_NAME) =
+	DEVICE_PLACEMENT struct dev_desc_t STATIC_DEVICE_INST(DT_DEV_NAME) =
 		{
 			HANDLE_TO_DEV_CONFIG_DATA_STRUCT,
 			HANDLE_TO_DEV_RUNTIME_DATA_STRUCT,

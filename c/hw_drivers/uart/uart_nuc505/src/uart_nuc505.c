@@ -40,7 +40,7 @@
 
 
 
-uint8_t uart_nuc505_callback(pdev_descriptor_t apdev ,
+uint8_t uart_nuc505_callback(struct dev_desc_t *adev ,
 		const uint8_t aCallback_num , void * aCallback_param1, void * aCallback_param2)
 {
 	uart_nuc505_instance_t *config_handle;
@@ -51,8 +51,8 @@ uint8_t uart_nuc505_callback(pdev_descriptor_t apdev ,
 	size_t numOfReceivedChars;
 	uint8_t	*buffer;
 
-	config_handle = DEV_GET_CONFIG_DATA_POINTER(apdev);
-	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(apdev);
+	config_handle = DEV_GET_CONFIG_DATA_POINTER(adev);
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
 	buffer = runtime_handle->rcv_data;
 
 	uart_regs =(UART_T *)config_handle->base_address;
@@ -78,7 +78,7 @@ uint8_t uart_nuc505_callback(pdev_descriptor_t apdev ,
 	//if(numOfReceivedChars>1) while(1);// debug trap
 	if(0 != numOfReceivedChars)
 	{
-		pdev_descriptor_t callback_rx_dev ;
+		struct dev_desc_t * callback_rx_dev ;
 		callback_rx_dev = config_handle->callback_rx_dev;
 		if (NULL != callback_rx_dev)
 		{
@@ -88,7 +88,7 @@ uint8_t uart_nuc505_callback(pdev_descriptor_t apdev ,
 
 	if (( (uart_regs->INTEN) & UART_INTEN_THREIEN_Msk) && (u32IntSts & UART_INTSTS_THREINT_Msk))
 	{
-		pdev_descriptor_t callback_tx_dev ;
+		struct dev_desc_t * callback_tx_dev ;
 		callback_tx_dev = config_handle->callback_tx_dev;
 		if (NULL != callback_tx_dev)
 		{
@@ -110,12 +110,12 @@ uint8_t uart_nuc505_callback(pdev_descriptor_t apdev ,
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
- size_t uart_nuc505_pwrite(pdev_descriptor_t apdev ,const uint8_t *apData , size_t aLength, size_t aOffset)
+ size_t uart_nuc505_pwrite(struct dev_desc_t *adev ,const uint8_t *apData , size_t aLength, size_t aOffset)
 {
 	UART_T *uart_regs;
 	uart_nuc505_instance_t *config_handle;
 
-	config_handle = DEV_GET_CONFIG_DATA_POINTER(apdev);
+	config_handle = DEV_GET_CONFIG_DATA_POINTER(adev);
 	uart_regs =(UART_T *)config_handle->base_address;
 
 	UART_WRITE(uart_regs, *apData);
@@ -137,14 +137,14 @@ uint8_t uart_nuc505_callback(pdev_descriptor_t apdev ,
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t uart_nuc505_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
+uint8_t uart_nuc505_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
 	uart_nuc505_instance_t *config_handle;
 	UART_T *uart_regs;
 	int uart_irq;
 
-	config_handle = DEV_GET_CONFIG_DATA_POINTER(apdev);
+	config_handle = DEV_GET_CONFIG_DATA_POINTER(adev);
 	uart_regs =(UART_T *)config_handle->base_address;
 	switch(aIoctl_num)
 	{
@@ -221,7 +221,7 @@ uint8_t uart_nuc505_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 				UART_ENABLE_INT(uart_regs,  (UART_INTEN_RDAIEN_Msk  | UART_INTEN_RXTOIEN_Msk));
 
 
-				irq_register_device_on_interrupt(uart_irq , apdev);
+				irq_register_device_on_interrupt(uart_irq , adev);
 				irq_set_priority(uart_irq , INTERRUPT_LOWEST_PRIORITY - 1 );
 				irq_enable_interrupt(uart_irq);
 			}
@@ -230,10 +230,10 @@ uint8_t uart_nuc505_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 			UART_DISABLE_INT(uart_regs,  UART_INTEN_THREIEN_Msk);
 			break;
 		case IOCTL_UART_SET_ISR_CALLBACK_TX_DEV:
-			config_handle->callback_tx_dev =(pdev_descriptor_t) aIoctl_param1;
+			config_handle->callback_tx_dev =(struct dev_desc_t *) aIoctl_param1;
 			break;
 		case IOCTL_UART_SET_ISR_CALLBACK_RX_DEV:
-			config_handle->callback_rx_dev =(pdev_descriptor_t) aIoctl_param1;
+			config_handle->callback_rx_dev =(struct dev_desc_t *) aIoctl_param1;
 			break;
 		default :
 			return 1;

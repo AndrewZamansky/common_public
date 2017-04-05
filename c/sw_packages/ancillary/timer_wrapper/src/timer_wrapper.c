@@ -44,19 +44,19 @@
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t timer_wrapper_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
+uint8_t timer_wrapper_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
 {
 	timer_wrapper_instance_t *config_handle;
 	timer_wrapper_runtime_instance_t *runtime_handle;
 	uint64_t curr_timer_wrapper_val;
 
-	config_handle = DEV_GET_CONFIG_DATA_POINTER(apdev);
-	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(apdev);
+	config_handle = DEV_GET_CONFIG_DATA_POINTER(adev);
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
 
 	switch(aIoctl_num)
 	{
 		case IOCTL_SET_SERVER_DEVICE :
-			config_handle->hw_timer_wrapper =  (pdev_descriptor_t)aIoctl_param1;
+			config_handle->hw_timer_wrapper =  (struct dev_desc_t *)aIoctl_param1;
 			break;
 
 		case IOCTL_TIMER_WRAPPER_API_GET_RATE_HZ :

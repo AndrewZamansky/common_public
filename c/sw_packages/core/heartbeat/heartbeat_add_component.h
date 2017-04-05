@@ -3,8 +3,8 @@
 #include "heartbeat_api.h"
 #include "src/heartbeat.h"
 
-extern uint8_t heartbeat_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2);
-extern uint8_t heartbeat_init( pdev_descriptor_t aDevDescriptor)	;
+extern uint8_t heartbeat_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2);
+extern uint8_t heartbeat_init( struct dev_desc_t *aDevDescriptor)	;
 
 #define	MODULE_NAME				heartbeat
 #define	MODULE_INIT_FUNCTION	heartbeat_init

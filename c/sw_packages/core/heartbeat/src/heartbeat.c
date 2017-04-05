@@ -65,12 +65,12 @@ void heartbeat_timer_callback()
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t heartbeat_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
+uint8_t heartbeat_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
 {
 	heartbeat_instance_t *handle;
 	static size_t ticks_per_mSec=1;
 
-	handle = DEV_GET_CONFIG_DATA_POINTER(apdev);
+	handle = DEV_GET_CONFIG_DATA_POINTER(adev);
 	switch(aIoctl_num)
 	{
 		case IOCTL_DEVICE_START :
@@ -122,7 +122,7 @@ uint8_t heartbeat_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num , voi
 					one_sec_countdown -= tmp_restart_counter;
 					if(0 >= one_sec_countdown)
 					{
-						pdev_descriptor_t 	heartbeat_callback_dev;
+						struct dev_desc_t * 	heartbeat_callback_dev;
 						cpu_usage_measure_mPercents = 100000 - (cpuUsageCounter*100)/ticks_per_mSec;
 						heartbeat_callback_dev = handle->heartbeat_callback_dev;
 						if (NULL != heartbeat_callback_dev)

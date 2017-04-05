@@ -22,8 +22,8 @@
 extern void os_start_arch_related_components(void) ;
 extern void xPortSysTickHandler(void);
 
-static pdev_descriptor_t l_timer_dev = NULL;
-static pdev_descriptor_t l_heartbeat_dev = NULL;
+static struct dev_desc_t * l_timer_dev = NULL;
+static struct dev_desc_t * l_heartbeat_dev = NULL;
 
 void *pvPortRealloc( void *p , size_t xWantedSize )
 {
@@ -111,12 +111,12 @@ void vPortSetupTimerInterrupt( void )
 }
 
 
-void  os_set_tick_timer_dev(pdev_descriptor_t a_timer_dev)
+void  os_set_tick_timer_dev(struct dev_desc_t *a_timer_dev)
 {
 	l_timer_dev = a_timer_dev;
 }
 
-void  os_set_heartbeat_dev(pdev_descriptor_t a_heartbeat_dev)
+void  os_set_heartbeat_dev(struct dev_desc_t *a_heartbeat_dev)
 {
 	l_heartbeat_dev = a_heartbeat_dev;
 }

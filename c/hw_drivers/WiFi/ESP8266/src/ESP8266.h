@@ -22,9 +22,9 @@
 
 
 typedef struct {
-	pdev_descriptor_t   timer_dev;
-	pdev_descriptor_t   uart_rx_dev;
-	pdev_descriptor_t	uart_tx_dev;
+	struct dev_desc_t *   timer_dev;
+	struct dev_desc_t *   uart_rx_dev;
+	struct dev_desc_t *	uart_tx_dev;
 } esp8266_instance_t;
 
 typedef enum
@@ -52,13 +52,13 @@ typedef enum
 
 typedef struct
 {
-	pdev_descriptor_t  client_device;
+	struct dev_desc_t *  client_device;
 	uint8_t socket_number;
 	uint8_t socket_in_use;
 	uint8_t	*recvedData;
 	size_t	curr_data_size;
 	size_t	size_of_data_left_to_receive;
-	pdev_descriptor_t	esp8266_dev;
+	struct dev_desc_t *	esp8266_dev;
 } esp8266_socket_t;
 
 typedef enum { DATA_FROM_UART,
@@ -75,7 +75,7 @@ typedef struct
 
 typedef struct
 {
-	pdev_descriptor_t socket_pdev;
+	struct dev_desc_t * socket_pdev;
 } esp8266_msg_close_socket_t;
 
 typedef struct
@@ -86,26 +86,26 @@ typedef struct
 
 typedef struct
 {
-	pdev_descriptor_t socket_pdev;
+	struct dev_desc_t * socket_pdev;
 	const uint8_t *data;
 	uint16_t data_length;
 } esp8266_msg_send_data_to_socket_t;
 
 typedef struct
 {
-	pdev_descriptor_t socket_pdev;
+	struct dev_desc_t * socket_pdev;
 	const char *strHostName;
 	char *port;
 } esp8266_msg_connect_socket_t;
 
 typedef struct
 {
-	pdev_descriptor_t *new_socket_pdev;
+	struct dev_desc_t * *new_socket_pdev;
 } esp8266_msg_open_socket_t;
 
 typedef struct
 {
-	pdev_descriptor_t  socket_pdev;
+	struct dev_desc_t *  socket_pdev;
 	char *strIP;
 	uint8_t strIPLen;
 	uint16_t *pPort;
@@ -113,13 +113,13 @@ typedef struct
 
 typedef struct
 {
-	pdev_descriptor_t  socket_pdev;
+	struct dev_desc_t *  socket_pdev;
 	uint8_t *newDataExists;
 } esp8266_msg_check_if_new_data_rcvd_t;
 
 typedef struct
 {
-	pdev_descriptor_t  socket_pdev;
+	struct dev_desc_t *  socket_pdev;
 	uint8_t *buffer;
 	size_t max_size;
 	size_t *size_received;
@@ -145,7 +145,7 @@ typedef struct
 typedef struct {
 	os_queue_t xQueue;
 	os_mutex_t sendDataMutex;
-	dev_descriptor_t  sockets_descriptors[ESP8266_MAX_NUM_OF_SOCKETS];
+	struct dev_desc_t  sockets_descriptors[ESP8266_MAX_NUM_OF_SOCKETS];
 	esp8266_socket_t  sockets[ESP8266_MAX_NUM_OF_SOCKETS];
 	ESP8266_State_t returnFromDataReceiveState;
 	ESP8266_State_t currentState ;

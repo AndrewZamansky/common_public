@@ -55,7 +55,7 @@ static uint16_t usedInstances =0 ;
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-static uint8_t adc_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
+static uint8_t adc_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
 	ADC_InitTypeDef lADC_InitStruct;
@@ -127,7 +127,7 @@ static uint8_t adc_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t  adc_stm32f10x_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor)
+uint8_t  adc_stm32f10x_api_init_dev_descriptor(struct dev_desc_t *aDevDescriptor)
 {
 	if(NULL == aDevDescriptor) return 1;
 	if (usedInstances >= ADC_HAL_MAX_NUM_OF_ADCS) return 1;

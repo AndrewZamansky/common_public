@@ -35,8 +35,8 @@
 
 
 
-uint8_t uart_i94xxx_callback(pdev_descriptor_t apdev ,
-		const uint8_t aCallback_num , void * aCallback_param1,
+uint8_t uart_i94xxx_callback(struct dev_desc_t *adev ,
+		uint8_t aCallback_num , void * aCallback_param1,
 		void * aCallback_param2)
 {
 	struct uart_i94xxx_cfg_t *cfg_hndl;
@@ -45,14 +45,14 @@ uint8_t uart_i94xxx_callback(pdev_descriptor_t apdev ,
     uint32_t u32IntSts ;
 	UART_T *uart_regs;
 
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(apdev);
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
 	uart_regs =(UART_T *)cfg_hndl->base_address;
 
 	u32IntSts = uart_regs->INTSTS;
 
 	if(u32IntSts & UART_INTSTS_RDAINT_Msk)
 	{
-		pdev_descriptor_t callback_rx_dev ;
+		struct dev_desc_t * callback_rx_dev ;
 		callback_rx_dev = cfg_hndl->callback_rx_dev;
 		u8InChar = UART_READ(uart_regs);
 		if (NULL != callback_rx_dev)
@@ -64,7 +64,7 @@ uint8_t uart_i94xxx_callback(pdev_descriptor_t apdev ,
 
 	if(u32IntSts & UART_INTSTS_THREINT_Msk)
 	{
-		pdev_descriptor_t callback_tx_dev ;
+		struct dev_desc_t * callback_tx_dev ;
 		callback_tx_dev = cfg_hndl->callback_tx_dev;
 		if (NULL != callback_tx_dev)
 		{
@@ -81,13 +81,13 @@ uint8_t uart_i94xxx_callback(pdev_descriptor_t apdev ,
  *
  * return:
  */
-size_t uart_i94xxx_pwrite(pdev_descriptor_t apdev,
-			const uint8_t *apData, size_t aLength, size_t aOffset)
+size_t uart_i94xxx_pwrite(struct dev_desc_t *adev,
+			uint8_t *apData, size_t aLength, size_t aOffset)
 {
 	UART_T *uart_regs;
 	struct uart_i94xxx_cfg_t *cfg_hndl;
 
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(apdev);
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
 	uart_regs =(UART_T *)cfg_hndl->base_address;
 
 	UART_WRITE(uart_regs, *apData);
@@ -103,7 +103,7 @@ size_t uart_i94xxx_pwrite(pdev_descriptor_t apdev,
  *
  * return:
  */
-uint8_t uart_i94xxx_ioctl( pdev_descriptor_t apdev, const uint8_t aIoctl_num,
+uint8_t uart_i94xxx_ioctl( struct dev_desc_t *adev, uint8_t aIoctl_num,
 		void * aIoctl_param1, void * aIoctl_param2)
 {
 	struct uart_i94xxx_cfg_t *cfg_hndl;
@@ -113,7 +113,7 @@ uint8_t uart_i94xxx_ioctl( pdev_descriptor_t apdev, const uint8_t aIoctl_num,
 	struct dev_desc_t	*src_clock;
 	struct dev_desc_t	*uart_clk_dev;
 
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(apdev);
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
 	uart_regs = (UART_T *)cfg_hndl->base_address;
 	src_clock = cfg_hndl->src_clock;
 	switch(aIoctl_num)
@@ -163,7 +163,7 @@ uint8_t uart_i94xxx_ioctl( pdev_descriptor_t apdev, const uint8_t aIoctl_num,
 		UART_EnableInt(uart_regs,
 				(UART_INTEN_RDAIEN_Msk  | UART_INTEN_RXTOIEN_Msk));
 
-		irq_register_device_on_interrupt(uart_irq, apdev);
+		irq_register_device_on_interrupt(uart_irq, adev);
 		irq_set_priority(uart_irq, INTERRUPT_LOWEST_PRIORITY - 1 );
 		irq_enable_interrupt(uart_irq);
 		break;
@@ -176,11 +176,11 @@ uint8_t uart_i94xxx_ioctl( pdev_descriptor_t apdev, const uint8_t aIoctl_num,
 		break;
 
 	case IOCTL_UART_SET_ISR_CALLBACK_TX_DEV:
-		cfg_hndl->callback_tx_dev =(pdev_descriptor_t) aIoctl_param1;
+		cfg_hndl->callback_tx_dev =(struct dev_desc_t *) aIoctl_param1;
 		break;
 
 	case IOCTL_UART_SET_ISR_CALLBACK_RX_DEV:
-		cfg_hndl->callback_rx_dev =(pdev_descriptor_t) aIoctl_param1;
+		cfg_hndl->callback_rx_dev =(struct dev_desc_t *) aIoctl_param1;
 		break;
 
 	default :

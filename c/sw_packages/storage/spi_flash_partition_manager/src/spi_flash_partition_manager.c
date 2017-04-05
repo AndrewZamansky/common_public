@@ -109,7 +109,7 @@ void  SPI_FLASH_PARTITION_MANAGER_Copy_from_buffer_to_main_area(const void *apHa
 {
 	size_t i,j;
 	uint8_t buffer[TEMP_BUFF_SIZE];
-	pdev_descriptor_const   spi_flash_server_dev=INSTANCE(apHandle)->spi_flash_server_dev;
+	struct dev_desc_t const *spi_flash_server_dev=INSTANCE(apHandle)->spi_flash_server_dev;
 
 	// fill bufer with current data from main storage
 	for(i=0 ; 8>i ; i++)
@@ -350,7 +350,7 @@ static void spi_flash_partition_manager_task( void *pvParameters )
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t  SPI_FLASH_PARTITION_MANAGER_start(pdev_descriptor_t apdev)
+uint8_t  SPI_FLASH_PARTITION_MANAGER_start(struct dev_desc_t *adev)
 {
 	uint8_t mbr_signiture[2];
 //	uint32_t id;
@@ -388,7 +388,7 @@ uint8_t  SPI_FLASH_PARTITION_MANAGER_start(pdev_descriptor_t apdev)
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t spi_flash_partition_manager_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
+uint8_t spi_flash_partition_manager_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
 	switch(aIoctl_num)
@@ -439,7 +439,7 @@ uint8_t spi_flash_partition_manager_ioctl( pdev_descriptor_t apdev ,const uint8_
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t  spi_flash_partition_manager_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor)
+uint8_t  spi_flash_partition_manager_api_init_dev_descriptor(struct dev_desc_t *aDevDescriptor)
 {
 	if(NULL == aDevDescriptor) return 1;
 

@@ -30,7 +30,7 @@ typedef struct {
 	uint8_t addr_num[16];
 	uint8_t pin_num;
 	uint8_t mode;
-	pdev_descriptor_t server_dev;
+	struct dev_desc_t * server_dev;
 } GPIO_REMOTE_Instance_t;
 
 
@@ -78,10 +78,10 @@ static uint8_t cmd[4];//=(uint8_t*)"axx\n";
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t gpio_remote_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
+uint8_t gpio_remote_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
-	pdev_descriptor_t server_dev;
+	struct dev_desc_t * server_dev;
 	uint8_t i,pin_num;
 	remote_cmd_t	remote_cmd;
 	char str_num[3];
@@ -190,7 +190,7 @@ uint8_t gpio_remote_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t  gpio_remote_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor)
+uint8_t  gpio_remote_api_init_dev_descriptor(struct dev_desc_t *aDevDescriptor)
 {
 	if(NULL == aDevDescriptor) return 1;
 	if (usedInstances >= GPIO_REMOTE_MAX_NUM_OF_GPIOS) return 1;

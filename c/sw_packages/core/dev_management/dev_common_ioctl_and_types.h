@@ -6,12 +6,12 @@
 #include "src/_dev_management_prerequirements_check.h"
 
 
-typedef struct
+struct ioctl_get_data_buffer_t
 {
 	uint8_t *pBufferStart;
 	size_t TotalLength;
 	uint8_t bufferWasOverflowed;
-}ioctl_get_data_buffer_t;
+};
 
 
 

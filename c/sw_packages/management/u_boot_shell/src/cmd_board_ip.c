@@ -61,7 +61,7 @@
  */
 int do_brd_ip (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
-	pdev_descriptor_t ESP8266_dev;
+	struct dev_desc_t * ESP8266_dev;
 
 	uint8_t ip_str[17];
 

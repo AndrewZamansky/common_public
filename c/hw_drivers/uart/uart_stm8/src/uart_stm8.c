@@ -46,7 +46,7 @@ void tx_function(void)
     /* In order to detect unexpected events during development,
    it is recommended to set a breakpoint on the following instruction.
 */
-    pdev_descriptor_t   callback_tx_dev;
+    struct dev_desc_t *   callback_tx_dev;
 
     if (UART1_GetFlagStatus(UART1_FLAG_TXE) == SET)
     {
@@ -57,7 +57,7 @@ void tx_function(void)
 
 }
 
-//pdev_descriptor_t   stm8_callback_dev;
+//struct dev_desc_t *   stm8_callback_dev;
 
 /**
   * @brief UART1 TX Interrupt routine.
@@ -89,7 +89,7 @@ void rx_function(void)
    it is recommended to set a breakpoint on the following instruction.
 */
     uint8_t cChar;
-    pdev_descriptor_t   callback_rx_dev;
+    struct dev_desc_t *   callback_rx_dev;
 
     if (UART1_GetFlagStatus(UART1_FLAG_RXNE) == SET)
     {
@@ -156,12 +156,12 @@ void rx_function(void)
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t uart_stm8_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
+uint8_t uart_stm8_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
 	uart_stm8_instance_t *config_handle;
 
-	config_handle = DEV_GET_CONFIG_DATA_POINTER(apdev);
+	config_handle = DEV_GET_CONFIG_DATA_POINTER(adev);
 	switch(aIoctl_num)
 	{
 		case IOCTL_UART_SET_BAUD_RATE :
@@ -183,7 +183,7 @@ uint8_t uart_stm8_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 		    break;
 #ifdef CONFIG_USE_RUNTIME_DEVICE_CONFIGURATION
 		case IOCTL_SET_ISR_CALLBACK_DEV:
-			stm8_callback_dev =(pdev_descriptor_t) aIoctl_param1;
+			stm8_callback_dev =(struct dev_desc_t *) aIoctl_param1;
 			break;
 #endif
 		default :

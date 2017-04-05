@@ -39,7 +39,7 @@
 typedef struct
 {
 	uint8_t dummy;
-//	pdev_descriptor_t dev_descriptor;
+//	struct dev_desc_t * dev_descriptor;
 } xMessage_t;
 
 /********  externals *********************/
@@ -49,7 +49,7 @@ typedef struct
 /********  local defs *********************/
 #if WIRELESS_UART_CONFIG_USE_AS_DYNAMIC_INSTANCE > 0
 
-pdev_descriptor_t this_dev;
+struct dev_desc_t * this_dev;
 static WIRELESS_UART_Instance_t WIRELESS_UART_InstanceParams = { 0 };
 
 static const dev_param_t wireless_uart_Dev_Params[]=
@@ -81,7 +81,7 @@ static os_queue_t xQueue = NULL;
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t wireless_uart_callback(pdev_descriptor_t apdev ,const uint8_t aCallback_num
+uint8_t wireless_uart_callback(struct dev_desc_t *adev ,const uint8_t aCallback_num
 		, void * aCallback_param1, void * aCallback_param2)
 {
 	xMessage_t  queueMsg;
@@ -91,7 +91,7 @@ uint8_t wireless_uart_callback(pdev_descriptor_t apdev ,const uint8_t aCallback_
 	}
 
 
-//	queueMsg.dev_descriptor = (pdev_descriptor_t)aCallback_param1;
+//	queueMsg.dev_descriptor = (struct dev_desc_t *)aCallback_param1;
 
 	os_queue_send_immediate( xQueue, ( void * ) &queueMsg);
 
@@ -155,7 +155,7 @@ static void wireless_uart_task( void *aHandle )
 	wireless_uart_rx_int_size_t curr_buff_pos,total_length;
 	wireless_uart_rx_int_size_t i;
 	uint8_t *pBufferStart;
-	ioctl_get_data_buffer_t data_buffer_info;
+	struct ioctl_get_data_buffer_t data_buffer_info;
 
 	uint8_t cnt,packet_size;
 	uint32_t received_crc;
@@ -284,11 +284,11 @@ static void wireless_uart_task( void *aHandle )
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t wireless_uart_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
+uint8_t wireless_uart_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
 
-	pdev_descriptor_t server_device;
+	struct dev_desc_t * server_device;
 
 	switch(aIoctl_num)
 	{
@@ -307,15 +307,15 @@ uint8_t wireless_uart_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 			INSTANCE(aHandle)->server_dev = server_device;
 			break;
 		case IOCTL_SET_ISR_CALLBACK_DEV :
-			INSTANCE(aHandle)->callback_dev = (pdev_descriptor_t)aIoctl_param1;
+			INSTANCE(aHandle)->callback_dev = (struct dev_desc_t *)aIoctl_param1;
 			break;
 #endif
 
 		case IOCTL_GET_AND_LOCK_DATA_BUFFER :
 
-			((ioctl_get_data_buffer_t *)aIoctl_param1)->TotalLength = currWorkingBufferLen;
+			((struct ioctl_get_data_buffer_t *)aIoctl_param1)->TotalLength = currWorkingBufferLen;
 
-			((ioctl_get_data_buffer_t *)aIoctl_param1)->pBufferStart = currWorkingBuffer;
+			((struct ioctl_get_data_buffer_t *)aIoctl_param1)->pBufferStart = currWorkingBuffer;
 			break;
 		case IOCTL_SET_BYTES_CONSUMED_IN_DATA_BUFFER :
 //			tmp = ((ioctl_set_bytes_consumed_in_data_buffer_t *) aIoctl_param1)->BytesWasConsumed;
@@ -351,7 +351,7 @@ uint8_t wireless_uart_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t  wireless_uart_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor)
+uint8_t  wireless_uart_api_init_dev_descriptor(struct dev_desc_t *aDevDescriptor)
 {
 
 	if(NULL == aDevDescriptor) return 1;

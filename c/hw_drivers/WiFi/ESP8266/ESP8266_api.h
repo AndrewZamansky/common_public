@@ -44,7 +44,7 @@ typedef enum
 
 typedef struct
 {
-	pdev_descriptor_t*  new_socket_descriptor;
+	struct dev_desc_t **  new_socket_descriptor;
 }ESP8266_ioctl_socket_open_t;
 
 typedef struct
@@ -75,7 +75,7 @@ typedef struct
 
 /**********  define API  functions  ************/
 
-uint8_t ESP8266_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor);
-void set_esp8266_pdev_for_socket_api(pdev_descriptor_t a_esp8266_dev);
+uint8_t ESP8266_api_init_dev_descriptor(struct dev_desc_t *aDevDescriptor);
+void set_esp8266_pdev_for_socket_api(struct dev_desc_t *a_esp8266_dev);
 
 #endif

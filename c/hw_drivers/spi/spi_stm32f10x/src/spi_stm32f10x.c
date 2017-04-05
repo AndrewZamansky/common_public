@@ -128,7 +128,7 @@ size_t spi_stm32f10x_pwrite(const void *aHandle ,const uint8_t *apData , size_t 
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t spi_stm32f10x_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
+uint8_t spi_stm32f10x_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
 	SPI_InitTypeDef  SPI_InitStructure;
@@ -187,7 +187,7 @@ uint8_t spi_stm32f10x_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t  spi_stm32f10x_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor)
+uint8_t  spi_stm32f10x_api_init_dev_descriptor(struct dev_desc_t *aDevDescriptor)
 {
 	if(NULL == aDevDescriptor) return 1;
 

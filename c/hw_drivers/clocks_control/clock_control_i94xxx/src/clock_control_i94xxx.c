@@ -74,13 +74,13 @@ void SystemCoreClockUpdate(void)
 }
 
 
-uint8_t clock_i94xxx_xtal_ioctl( pdev_descriptor_t apdev,
+uint8_t clock_i94xxx_xtal_ioctl( struct dev_desc_t *adev,
 		const uint8_t aIoctl_num, void * aIoctl_param1,
 		void * aIoctl_param2)
 {
 	struct cfg_clk_t *cfg_clk;
 
-	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(apdev);
+	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(adev);
 	switch(aIoctl_num)
 	{
 	case CLK_IOCTL_SET_FREQ :
@@ -96,7 +96,7 @@ uint8_t clock_i94xxx_xtal_ioctl( pdev_descriptor_t apdev,
 }
 
 
-uint8_t clock_i94xxx_hirc_ioctl( pdev_descriptor_t apdev,
+uint8_t clock_i94xxx_hirc_ioctl( struct dev_desc_t *adev,
 		const uint8_t aIoctl_num, void * aIoctl_param1,
 		void * aIoctl_param2)
 {
@@ -115,14 +115,14 @@ uint8_t clock_i94xxx_hirc_ioctl( pdev_descriptor_t apdev,
 }
 
 
-uint8_t clock_i94xxx_pll_ioctl( pdev_descriptor_t apdev,
+uint8_t clock_i94xxx_pll_ioctl( struct dev_desc_t *adev,
 		const uint8_t aIoctl_num, void * aIoctl_param1,
 		void * aIoctl_param2)
 {
 	struct cfg_clk_t *cfg_clk;
 	uint32_t rate;
 
-	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(apdev);
+	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(adev);
 	switch(aIoctl_num)
 	{
 	case CLK_IOCTL_SET_PARENT :
@@ -161,7 +161,7 @@ uint8_t clock_i94xxx_pll_ioctl( pdev_descriptor_t apdev,
 }
 
 
-uint8_t clock_i94xxx_hclk_ioctl( pdev_descriptor_t apdev,
+uint8_t clock_i94xxx_hclk_ioctl( struct dev_desc_t *adev,
 		const uint8_t aIoctl_num, void * aIoctl_param1,
 		void * aIoctl_param2)
 {
@@ -169,7 +169,7 @@ uint8_t clock_i94xxx_hclk_ioctl( pdev_descriptor_t apdev,
 	uint32_t rate;
 	uint32_t u32HclkDiv;
 
-	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(apdev);
+	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(adev);
 	switch(aIoctl_num)
 	{
 	case CLK_IOCTL_SET_PARENT :
@@ -208,7 +208,7 @@ uint8_t clock_i94xxx_hclk_ioctl( pdev_descriptor_t apdev,
 }
 
 
-uint8_t clock_i94xxx_pclk0_ioctl( pdev_descriptor_t apdev,
+uint8_t clock_i94xxx_pclk0_ioctl( struct dev_desc_t *adev,
 		const uint8_t aIoctl_num, void * aIoctl_param1,
 		void * aIoctl_param2)
 {
@@ -217,7 +217,7 @@ uint8_t clock_i94xxx_pclk0_ioctl( pdev_descriptor_t apdev,
 	uint32_t div;
 	uint32_t req_rate;
 
-	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(apdev);
+	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(adev);
 	switch(aIoctl_num)
 	{
 	case CLK_IOCTL_SET_FREQ :
@@ -243,7 +243,7 @@ uint8_t clock_i94xxx_pclk0_ioctl( pdev_descriptor_t apdev,
 }
 
 
-uint8_t clock_i94xxx_pclk1_ioctl( pdev_descriptor_t apdev,
+uint8_t clock_i94xxx_pclk1_ioctl( struct dev_desc_t *adev,
 		const uint8_t aIoctl_num, void * aIoctl_param1,
 		void * aIoctl_param2)
 {
@@ -252,7 +252,7 @@ uint8_t clock_i94xxx_pclk1_ioctl( pdev_descriptor_t apdev,
 	uint32_t div;
 	uint32_t req_rate;
 
-	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(apdev);
+	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(adev);
 	switch(aIoctl_num)
 	{
 	case CLK_IOCTL_SET_FREQ :
@@ -278,13 +278,13 @@ uint8_t clock_i94xxx_pclk1_ioctl( pdev_descriptor_t apdev,
 }
 
 
-uint8_t i94xxx_systick_clk_ioctl( pdev_descriptor_t apdev,
+uint8_t i94xxx_systick_clk_ioctl( struct dev_desc_t *adev,
 		const uint8_t aIoctl_num, void * aIoctl_param1,
 		void * aIoctl_param2)
 {
 	struct cfg_clk_t *cfg_clk;
 
-	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(apdev);
+	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(adev);
 	switch(aIoctl_num)
 	{
 	case CLK_IOCTL_SET_PARENT :
@@ -305,13 +305,13 @@ uint8_t i94xxx_systick_clk_ioctl( pdev_descriptor_t apdev,
 }
 
 
-uint8_t clock_i94xxx_spi2clk_ioctl( pdev_descriptor_t apdev,
+uint8_t clock_i94xxx_spi2clk_ioctl( struct dev_desc_t *adev,
 		const uint8_t aIoctl_num, void * aIoctl_param1,
 		void * aIoctl_param2)
 {
 	struct cfg_clk_t *cfg_clk;
 
-	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(apdev);
+	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(adev);
 	switch(aIoctl_num)
 	{
 	case CLK_IOCTL_SET_PARENT :
@@ -355,14 +355,14 @@ uint8_t clock_i94xxx_spi2clk_ioctl( pdev_descriptor_t apdev,
 }
 
 
-uint8_t clock_i94xxx_i2s_ioctl( pdev_descriptor_t apdev,
+uint8_t clock_i94xxx_i2s_ioctl( struct dev_desc_t *adev,
 		const uint8_t aIoctl_num, void * aIoctl_param1,
 		void * aIoctl_param2)
 {
 	struct cfg_clk_t *cfg_clk;
 	uint32_t curr_val;
 
-	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(apdev);
+	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(adev);
 	switch(aIoctl_num)
 	{
 	case CLK_IOCTL_SET_PARENT :
@@ -403,14 +403,14 @@ uint8_t clock_i94xxx_i2s_ioctl( pdev_descriptor_t apdev,
 }
 
 
-uint8_t clock_i94xxx_uart0clk_ioctl( pdev_descriptor_t apdev,
+uint8_t clock_i94xxx_uart0clk_ioctl( struct dev_desc_t *adev,
 		const uint8_t aIoctl_num, void * aIoctl_param1,
 		void * aIoctl_param2)
 {
 	struct cfg_clk_t *cfg_clk;
-	pdev_descriptor_t parent_clk_dev;
+	struct dev_desc_t * parent_clk_dev;
 
-	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(apdev);
+	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(adev);
 	switch(aIoctl_num)
 	{
 	case CLK_IOCTL_SET_PARENT :
@@ -455,7 +455,7 @@ uint8_t clock_i94xxx_uart0clk_ioctl( pdev_descriptor_t apdev,
  *
  * return:
  */
-uint8_t clock_control_i94xxx_ioctl( pdev_descriptor_t apdev,
+uint8_t clock_control_i94xxx_ioctl( struct dev_desc_t *adev,
 		const uint8_t aIoctl_num, void * aIoctl_param1,
 		void * aIoctl_param2)
 {
@@ -463,7 +463,7 @@ uint8_t clock_control_i94xxx_ioctl( pdev_descriptor_t apdev,
 	uint32_t rate;
 	struct dev_desc_t	*parent_clk_dev;
 
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(apdev);
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
 
 	switch(aIoctl_num)
 	{

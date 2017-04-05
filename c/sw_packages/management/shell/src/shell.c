@@ -38,7 +38,7 @@
 typedef struct
 {
 
-	pdev_descriptor_t pdev;
+	struct dev_desc_t * pdev;
 } xMessage_t;
 
 
@@ -68,7 +68,7 @@ typedef enum
 
 
 static os_queue_t xQueue = NULL;
-pdev_descriptor_t gCurrReplyDev;
+struct dev_desc_t * gCurrReplyDev;
 
 #define SHELL_PRINTF_BUF_LENGTH	 64
 static uint8_t shell_printf_buffer[SHELL_PRINTF_BUF_LENGTH]; //  define your own buffer’s size
@@ -100,7 +100,7 @@ int printf(const char *Format, ...)
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t shell_callback(pdev_descriptor_t apdev ,const uint8_t aCallback_num
+uint8_t shell_callback(struct dev_desc_t *adev ,const uint8_t aCallback_num
 		, void * aCallback_param1, void * aCallback_param2)
 {
 	xMessage_t  queueMsg;
@@ -111,7 +111,7 @@ uint8_t shell_callback(pdev_descriptor_t apdev ,const uint8_t aCallback_num
 	}
 
 
-	queueMsg.pdev = apdev;
+	queueMsg.pdev = adev;
 
 	//xQueueSendFromISR( xQueue, ( void * ) &queueMsg,  &xHigherPriorityTaskWoken );
 	os_queue_send_immediate( xQueue, ( void * ) &queueMsg);
@@ -141,12 +141,12 @@ static void Shell_Task( void *pvParameters )
 	uint8_t *pBufferStart;
 	uint8_t *pCmdStart;
 	uint8_t curr_char,eol_char;
-	ioctl_get_data_buffer_t data_buffer_info;
+	struct ioctl_get_data_buffer_t data_buffer_info;
 	shell_runtime_instance_t  *runtime_handle;
 	shell_instance_t *config_handle;
-	pdev_descriptor_t   callback_dev;
-	pdev_descriptor_t   curr_rx_dev;
-	pdev_descriptor_t   curr_dev;
+	struct dev_desc_t *   callback_dev;
+	struct dev_desc_t *   curr_rx_dev;
+	struct dev_desc_t *   curr_dev;
 
 	xQueue = os_create_queue( CONFIG_SHELL_MAX_QUEUE_LEN , sizeof( xMessage_t ) );
 
@@ -324,22 +324,22 @@ static void Shell_Task( void *pvParameters )
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t shell_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
+uint8_t shell_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
 {
 	shell_instance_t *config_handle;
-	pdev_descriptor_t   server_dev ;
+	struct dev_desc_t *   server_dev ;
 
-	config_handle = DEV_GET_CONFIG_DATA_POINTER(apdev);
+	config_handle = DEV_GET_CONFIG_DATA_POINTER(adev);
 
 	switch(aIoctl_num)
 	{
 #ifdef CONFIG_USE_RUNTIME_DEVICE_CONFIGURATION
 		case IOCTL_SET_SERVER_DEVICE :
 			{
-				server_dev = (pdev_descriptor_t)aIoctl_param1;
+				server_dev = (struct dev_desc_t *)aIoctl_param1;
 				if(NULL != server_dev)
 				{
-					DEV_IOCTL(server_dev, IOCTL_SET_ISR_CALLBACK_DEV ,  (void*)apdev);
+					DEV_IOCTL(server_dev, IOCTL_SET_ISR_CALLBACK_DEV ,  (void*)adev);
 				}
 
 				config_handle->server_tx_dev=server_dev;
@@ -347,7 +347,7 @@ uint8_t shell_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num , void * 
 			}
 			break;
 		case IOCTL_SET_CALLBACK_DEV:
-			config_handle->callback_dev =(pdev_descriptor_t) aIoctl_param1;
+			config_handle->callback_dev =(struct dev_desc_t *) aIoctl_param1;
 			break;
 #endif
 		case IOCTL_DEVICE_START :

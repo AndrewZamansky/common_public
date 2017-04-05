@@ -3,10 +3,6 @@
 #include  "async_tx_wrapper_api.h"
 #include "src/async_tx_wrapper.h"
 
-extern uint8_t async_tx_wrapper_ioctl(pdev_descriptor_t apdev ,const uint8_t aIoctl_num ,void * aIoctl_param1 , void * aIoctl_param2);
-extern uint8_t async_tx_wrapper_callback(pdev_descriptor_t apdev ,const uint8_t aCallback_num ,
-		void * aCallback_param1, void * aCallback_param2);
-extern size_t async_tx_wrapper_pwrite(pdev_descriptor_t apdev ,const uint8_t *apData , size_t aLength, size_t aOffset);
 
 #define	MODULE_NAME							async_tx_wrapper
 #define	MODULE_IOCTL_FUNCTION				async_tx_wrapper_ioctl

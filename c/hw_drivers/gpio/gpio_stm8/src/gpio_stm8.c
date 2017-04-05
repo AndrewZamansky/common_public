@@ -56,13 +56,13 @@ uint8_t GPIO_STM8_Init(gpio_stm8_instance_t *pInstance)
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t gpio_stm8_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
+uint8_t gpio_stm8_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
 {
 	gpio_stm8_instance_t *config_handle;
 	uint8_t pin_num;
 	GPIO_TypeDef* GPIOx;
 
-	config_handle = DEV_GET_CONFIG_DATA_POINTER(apdev);
+	config_handle = DEV_GET_CONFIG_DATA_POINTER(adev);
 	pin_num = config_handle->pin_num;
 	GPIOx = config_handle->GPIOx;
 

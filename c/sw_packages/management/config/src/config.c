@@ -71,7 +71,7 @@ static void Config_Task( void *pvParameters )
 {
 
 	uint32_t i;
-	pdev_descriptor_t currDev;
+	struct dev_desc_t * currDev;
 	uint32_t paramStatus;
 	const dev_param_t *dev_Params;
 	uint8_t dev_Num_Of_Params;
@@ -188,7 +188,7 @@ uint32_t config_parse_params(uint8_t *config_buff ,  uint32_t maxTokenAvailable 
 	return 1;
 }
 
-extern const included_module_t included_modules[];
+extern const struct included_module_t included_modules[];
 /*
  * function : config_device()
  *
@@ -200,13 +200,13 @@ uint32_t config_device(uint8_t *config_buff , uint32_t buff_len)
 	int maxTokenAvailable ;
 	uint8_t *pParam;
 	uint32_t found_token_num;
-	pdev_descriptor_t   dev_descriptor;
+	struct dev_desc_t *   dev_descriptor;
 	uint32_t retVal;
 	jsmntok_t curr_token,array_token;
 	const dev_param_t *dev_Params;
 	uint8_t dev_Num_Of_Params;
 	init_dev_descriptor_func_t afInitDev;
-	const included_module_t *pIncluded_module;
+	const struct included_module_t *pIncluded_module;
 
 	jsmn_init(&parser);
 	maxTokenAvailable = jsmn_parse(&parser, (char*)config_buff ,buff_len ,
@@ -315,7 +315,7 @@ uint32_t config_device(uint8_t *config_buff , uint32_t buff_len)
 uint32_t config_saved_params(uint8_t *config_buff)
 {
 	uint32_t i;
-	pdev_descriptor_t currDev;
+	struct dev_desc_t * currDev;
 	uint32_t readLen;
 	FIL fp;
 	uint32_t retVal=0;

@@ -33,8 +33,8 @@
 
 typedef struct {
 
-	pdev_descriptor_t   server_dev;
-	pdev_descriptor_t   client_dev;
+	struct dev_desc_t *   server_dev;
+	struct dev_desc_t *   client_dev;
 #ifdef CONFIG_ASYNC_RX_WRAPPER_USE_MALLOC
 	rx_int_size_t rx_buff_size;
 	uint8_t *rx_buff;

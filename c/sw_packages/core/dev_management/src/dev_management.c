@@ -31,27 +31,27 @@ extern uint8_t end_of_modules_stamp ;
 
 /***********   local variables    **************/
 #if CONFIG_MAX_NUM_OF_DYNAMIC_DEVICES > 0
-	dev_descriptor_t  dev_descriptors[CONFIG_MAX_NUM_OF_DYNAMIC_DEVICES];
+	struct dev_desc_t  dev_descriptors[CONFIG_MAX_NUM_OF_DYNAMIC_DEVICES];
 #endif
 
-uint8_t	DEV_IOCTL_0_PARAMS(pdev_descriptor_t dev,uint8_t ioctl_num)
+uint8_t	DEV_IOCTL_0_PARAMS(struct dev_desc_t * dev,uint8_t ioctl_num)
 {
 	return ((dev)->ioctl)(dev, ioctl_num, NULL, NULL);
 }
 
-uint8_t	DEV_IOCTL_1_PARAMS(pdev_descriptor_t dev,
+uint8_t	DEV_IOCTL_1_PARAMS(struct dev_desc_t * dev,
 						uint8_t ioctl_num, void *param1)
 {
 	return ((dev)->ioctl)(dev, ioctl_num, param1, NULL);
 }
 
 
-uint8_t	DEV_CALLBACK_0_PARAMS(pdev_descriptor_t dev,uint8_t ioctl_num)
+uint8_t	DEV_CALLBACK_0_PARAMS(struct dev_desc_t * dev,uint8_t ioctl_num)
 {
 	return ((dev)->callback)(dev, ioctl_num, NULL, NULL);
 }
 
-uint8_t	DEV_CALLBACK_1_PARAMS(pdev_descriptor_t dev,
+uint8_t	DEV_CALLBACK_1_PARAMS(struct dev_desc_t * dev,
 						uint8_t ioctl_num, void *param1)
 {
 	return ((dev)->callback)(dev, ioctl_num, param1, NULL);
@@ -59,10 +59,9 @@ uint8_t	DEV_CALLBACK_1_PARAMS(pdev_descriptor_t dev,
 
 
 
-size_t	DEV_WRITE(const pdev_descriptor_t apdev ,
-					const uint8_t *apData, size_t aLength )
+size_t	DEV_WRITE(struct dev_desc_t *adev, uint8_t *apData, size_t aLength )
 {
-	return ((dev_write_func_t)(apdev)->pwrite)(apdev, apData, aLength);
+	return ((dev_write_func_t)(adev)->pwrite)(adev, apData, aLength);
 }
 
 /*
@@ -70,7 +69,7 @@ size_t	DEV_WRITE(const pdev_descriptor_t apdev ,
  *
  *
  */
-size_t DEV_API_dummy_init_func(pdev_descriptor_t aDevDescriptor)
+size_t DEV_API_dummy_init_func(struct dev_desc_t *aDevDescriptor)
 {
 	return 0;
 }
@@ -80,9 +79,8 @@ size_t DEV_API_dummy_init_func(pdev_descriptor_t aDevDescriptor)
  *
  *
  */
-uint8_t DEV_API_dummy_ioctl_func(pdev_descriptor_t apdev,
-					const uint8_t aIoctl_num, void * aIoctl_param1,
-					void * aIoctl_param2)
+uint8_t DEV_API_dummy_ioctl_func(struct dev_desc_t *adev, uint8_t aIoctl_num,
+		void * aIoctl_param1, void * aIoctl_param2)
 {
 	return 1;
 }
@@ -92,7 +90,7 @@ uint8_t DEV_API_dummy_ioctl_func(pdev_descriptor_t apdev,
  *
  *
  */
-size_t DEV_API_dummy_pread_func(const pdev_descriptor_t apdev,
+size_t DEV_API_dummy_pread_func(struct dev_desc_t *adev,
 						uint8_t *apData, size_t aLength, size_t aOffset)
 {
 	return 0;
@@ -103,8 +101,8 @@ size_t DEV_API_dummy_pread_func(const pdev_descriptor_t apdev,
  *
  *
  */
-size_t DEV_API_dummy_pwrite_func(const pdev_descriptor_t apdev,
-				const uint8_t *apData, size_t aLength, size_t aOffset)
+size_t DEV_API_dummy_pwrite_func(struct dev_desc_t *adev,
+				uint8_t *apData, size_t aLength, size_t aOffset)
 {
 	return 0;
 }
@@ -115,8 +113,8 @@ size_t DEV_API_dummy_pwrite_func(const pdev_descriptor_t apdev,
  *
  *
  */
-uint8_t DEV_API_dummy_callback_func(pdev_descriptor_t apdev,
-		const uint8_t aCallback_num, void * aCallback_param1,
+uint8_t DEV_API_dummy_callback_func(struct dev_desc_t *adev,
+		uint8_t aCallback_num, void * aCallback_param1,
 		void * aCallback_param2)
 {
 	return 1;
@@ -130,12 +128,12 @@ uint8_t DEV_API_dummy_callback_func(pdev_descriptor_t apdev,
  *
  *
  */
-pdev_descriptor_t DEV_OPEN(const char *device_name)
+struct dev_desc_t * DEV_OPEN(const char *device_name)
 {
-	pdev_descriptor_t curr_pdev ;
+	struct dev_desc_t * curr_pdev ;
 
 	curr_pdev =
-			(pdev_descriptor_t)(((uint8_t*)&start_of_device_tree_stamp) + 4);
+			(struct dev_desc_t *)(((uint8_t*)&start_of_device_tree_stamp) + 4);
 	while (*(uint8_t*)curr_pdev != END_OF_DEVICE_TREE_STAMP)
 	{
 		//name_len=strlen((char*)static_dev_descriptors[i].name);
@@ -168,14 +166,14 @@ pdev_descriptor_t DEV_OPEN(const char *device_name)
  *
  *
  */
-static void init_new_device(pdev_descriptor_t pdev )
+static void init_new_device(struct dev_desc_t * pdev )
 {
 	const char *module_name_str ;
-	included_module_t *curr_include_module;
+	struct included_module_t *curr_include_module;
 
 	module_name_str = pdev->module_name;
 	curr_include_module =
-			(included_module_t*)(((uint8_t*)&start_of_modules_stamp) + 4);
+		(struct included_module_t*)(((uint8_t*)&start_of_modules_stamp) + 4);
 	while ((uint8_t*)curr_include_module < &end_of_modules_stamp)
 	{
 		if (0 == strcmp(module_name_str , curr_include_module->module_name))
@@ -212,7 +210,7 @@ void init_device_tree()
 {
 	uint32_t *src ;
 	uint32_t *dst ;
-	pdev_descriptor_t curr_pdev ;
+	struct dev_desc_t * curr_pdev ;
 
 	src = (uint32_t *)CONFIG_DEVICE_TREE_LOCATION_ADDR;
 	dst = &start_of_device_tree_stamp;
@@ -226,7 +224,7 @@ void init_device_tree()
 	}
 
 	curr_pdev =
-			(pdev_descriptor_t)(((uint8_t*)&start_of_device_tree_stamp) + 4);
+			(struct dev_desc_t *)(((uint8_t*)&start_of_device_tree_stamp) + 4);
 	while (*(uint8_t*)curr_pdev != END_OF_DEVICE_TREE_STAMP)
 	{
 		init_new_device(curr_pdev);
@@ -248,11 +246,11 @@ AUTO_INIT_FUNCTION(init_device_tree);
  *
  *
  */
-pdev_descriptor_t DEV_API_add_device(const char* module_name_str,
+struct dev_desc_t * DEV_API_add_device(const char* module_name_str,
 											const char *device_name_str)
 {
 	uint32_t i;
-	pdev_descriptor_t dev;
+	struct dev_desc_t * dev;
 
 	if (NULL == device_name_str)
 	{
@@ -295,15 +293,15 @@ pdev_descriptor_t DEV_API_add_device(const char* module_name_str,
  *
  *
  */
-dev_param_t const *get_config_param(pdev_descriptor_t pdev,
+dev_param_t const *get_config_param(struct dev_desc_t * pdev,
 		char *param_name_str )
 {
 	const char *module_name_str ;
-	included_module_t *curr_include_module;
+	struct included_module_t *curr_include_module;
 
 	module_name_str = pdev->module_name;
 	curr_include_module =
-			(included_module_t*)(((uint8_t*)&start_of_modules_stamp) + 4);
+		(struct included_module_t*)(((uint8_t*)&start_of_modules_stamp) + 4);
 	while ((uint8_t*)curr_include_module < &end_of_modules_stamp)
 	{
 		if (0 == strcmp(module_name_str , curr_include_module->module_name))
@@ -337,7 +335,7 @@ uint8_t DEV_SET_PARAM(char *dev_name_str,
 		char *param_name_str, char *param_val_str)
 {
 	dev_param_t  const *config_param;
-	pdev_descriptor_t pdev;
+	struct dev_desc_t * pdev;
 
 	pdev = DEV_OPEN(dev_name_str);
 	config_param = get_config_param(pdev, param_name_str);
@@ -348,7 +346,7 @@ uint8_t DEV_SET_PARAM(char *dev_name_str,
 	{
 	case DEV_PARAM_TYPE_PDEVICE:
 		{
-			pdev_descriptor_t param_pdev;
+			struct dev_desc_t * param_pdev;
 			param_pdev = DEV_OPEN(param_val_str);
 			DEV_IOCTL_1_PARAMS(pdev,
 					config_param->paramSetIoctl, param_pdev);
@@ -404,7 +402,7 @@ uint8_t DEV_GET_PARAM(char *dev_name_str, char *param_name_str,
 					char *param_val_str, uint8_t param_val_str_size)
 {
 	dev_param_t  const *config_param;
-	pdev_descriptor_t pdev;
+	struct dev_desc_t * pdev;
 
 	pdev = DEV_OPEN(dev_name_str);
 	config_param = get_config_param(pdev, param_name_str );
@@ -415,7 +413,7 @@ uint8_t DEV_GET_PARAM(char *dev_name_str, char *param_name_str,
 	{
 	case DEV_PARAM_TYPE_PDEVICE:
 		{
-			pdev_descriptor_t param_pdev;
+			struct dev_desc_t * param_pdev;
 			DEV_IOCTL_1_PARAMS(pdev, config_param->paramGetIoctl, &param_pdev);
 			strncpy(param_val_str, param_pdev->name, param_val_str_size);
 		}
@@ -470,7 +468,7 @@ uint8_t DEV_GET_PARAM(char *dev_name_str, char *param_name_str,
  *
  *
  */
-pdev_descriptor_t DevManagment_API_GetAllDevsArray(void)
+struct dev_desc_t * DevManagment_API_GetAllDevsArray(void)
 {
 	return dev_descriptors;
 }

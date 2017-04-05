@@ -18,7 +18,7 @@
 /********  types  *********************/
 
 typedef struct {
-	pdev_descriptor_t   callback_dev;
+	struct dev_desc_t *   callback_dev;
 	uint8_t   channel_num;
 	uint8_t   peripheral_type;
 	uint32_t   transfer_word_size;

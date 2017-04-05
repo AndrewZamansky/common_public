@@ -22,6 +22,6 @@ typedef enum
 
 
 /**********  define API  functions  ************/
-uint8_t  timer_wrapper_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor);
+uint8_t  timer_wrapper_api_init_dev_descriptor(struct dev_desc_t *aDevDescriptor);
 
 #endif

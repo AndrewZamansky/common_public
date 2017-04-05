@@ -39,7 +39,7 @@
  *
  * return:
  */
-uint8_t gpio_i94xxx_ioctl( pdev_descriptor_t apdev, const uint8_t aIoctl_num,
+uint8_t gpio_i94xxx_ioctl( struct dev_desc_t *adev, const uint8_t aIoctl_num,
 		void * aIoctl_param1, void * aIoctl_param2)
 {
 	gpio_i94xxx_instance_t *config_handle;
@@ -47,7 +47,7 @@ uint8_t gpio_i94xxx_ioctl( pdev_descriptor_t apdev, const uint8_t aIoctl_num,
 	uint32_t volatile * pDOUT;
 	uint16_t pin_num_mask;
 
-	config_handle = DEV_GET_CONFIG_DATA_POINTER(apdev);
+	config_handle = DEV_GET_CONFIG_DATA_POINTER(adev);
 	GPIOx = (GPIO_T*)config_handle->port_num;
 	pin_num_mask = config_handle->pin_num_mask;
 	pDOUT = &GPIOx->PA_DOUT;

@@ -110,7 +110,7 @@ uint32_t  ram_disk_GetBlockSize(ram_disk_API_Handle_t apHandle)
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t ram_disk_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
+uint8_t ram_disk_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
 	switch(aIoctl_num)
@@ -154,7 +154,7 @@ uint8_t ram_disk_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t  ram_disk_api_init_dev_descriptor(pdev_descriptor_t aDevDescriptor)
+uint8_t  ram_disk_api_init_dev_descriptor(struct dev_desc_t *aDevDescriptor)
 {
 	ram_disk_InstanceParams.chip = apInit_params->chip;
 

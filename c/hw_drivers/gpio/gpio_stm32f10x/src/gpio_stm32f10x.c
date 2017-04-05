@@ -67,14 +67,14 @@ uint8_t GPIO_STM32F10x_Init(GPIO_STM32F10X_Instance_t *pInstance)
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t gpio_stm32f10x_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
+uint8_t gpio_stm32f10x_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
 	GPIO_STM32F10X_Instance_t *handle;
 	GPIO_TypeDef* GPIOx;
 	uint32_t pin_num_mask;
 
-	handle = apdev->handle;
+	handle = adev->handle;
 	GPIOx = ports[handle->port_num];
 	pin_num_mask = handle->pin_num_mask;
 

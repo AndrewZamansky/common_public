@@ -20,7 +20,7 @@
  */
 int do_get_version (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
-	pdev_descriptor_t dev;
+	struct dev_desc_t * dev;
 	uint8_t ret_buff[MAX_RET_BUFF_SIZE+1];
 
 	dev = DEV_OPEN("ver_dev");

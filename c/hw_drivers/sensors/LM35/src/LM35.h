@@ -13,7 +13,7 @@
 
 typedef struct
 {
-	pdev_descriptor_const  adc_server_device;
+	struct dev_desc_t const *adc_server_device;
 } LM35_Instance_t;
 
 typedef struct {

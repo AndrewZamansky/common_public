@@ -78,7 +78,7 @@ static uint8_t spi_stm8_SendByte(uint8_t byte)
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-size_t spi_stm8_pread(pdev_descriptor_t apdev , uint8_t *apData , size_t aLength, size_t aOffset)
+size_t spi_stm8_pread(struct dev_desc_t *adev , uint8_t *apData , size_t aLength, size_t aOffset)
 {
 	size_t retVal = aLength;
 	while(aLength--)
@@ -103,7 +103,7 @@ size_t spi_stm8_pread(pdev_descriptor_t apdev , uint8_t *apData , size_t aLength
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-size_t spi_stm8_pwrite(pdev_descriptor_t apdev ,const uint8_t *apData , size_t aLength, size_t aOffset)
+size_t spi_stm8_pwrite(struct dev_desc_t *adev ,const uint8_t *apData , size_t aLength, size_t aOffset)
 {
 	size_t retVal = aLength;
 	while(aLength--)
@@ -127,7 +127,7 @@ size_t spi_stm8_pwrite(pdev_descriptor_t apdev ,const uint8_t *apData , size_t a
 /* Description:                                                                                            */
 /*                                                             						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t spi_stm8_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num
+uint8_t spi_stm8_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
 

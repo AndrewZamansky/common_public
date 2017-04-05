@@ -3,8 +3,8 @@
 #include  "esp8266_api.h"
 #include 	"src/esp8266.h"
 
-uint8_t ESP8266_callback(pdev_descriptor_t apdev , const uint8_t aCallback_num , void * aCallback_param1, void * aCallback_param2);
-uint8_t ESP8266_ioctl( pdev_descriptor_t apdev ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2);
+uint8_t ESP8266_callback(struct dev_desc_t *adev , const uint8_t aCallback_num , void * aCallback_param1, void * aCallback_param2);
+uint8_t ESP8266_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2);
 
 #define	MODULE_NAME					esp8266
 #define	MODULE_IOCTL_FUNCTION		ESP8266_ioctl
