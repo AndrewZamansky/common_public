@@ -82,7 +82,7 @@ uint8_t uart_i94xxx_callback(struct dev_desc_t *adev ,
  * return:
  */
 size_t uart_i94xxx_pwrite(struct dev_desc_t *adev,
-			uint8_t *apData, size_t aLength, size_t aOffset)
+			const uint8_t *apData, size_t aLength, size_t aOffset)
 {
 	UART_T *uart_regs;
 	struct uart_i94xxx_cfg_t *cfg_hndl;

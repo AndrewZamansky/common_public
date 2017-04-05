@@ -26,6 +26,6 @@
 /**********  define API  functions  ************/
 
 
-uint8_t  speex_echo_canceller_api_init_dsp_descriptor(pdsp_descriptor aDspDescriptor);
+uint8_t  speex_echo_canceller_api_init_dsp_descriptor(struct dsp_desc_t aDspDescriptor);
 
 #endif

@@ -59,9 +59,10 @@ uint8_t	DEV_CALLBACK_1_PARAMS(struct dev_desc_t * dev,
 
 
 
-size_t	DEV_WRITE(struct dev_desc_t *adev, uint8_t *apData, size_t aLength )
+size_t	DEV_WRITE(struct dev_desc_t *adev,
+			const uint8_t *apData, size_t aLength )
 {
-	return ((dev_write_func_t)(adev)->pwrite)(adev, apData, aLength);
+	return (adev->pwrite)(adev, apData, aLength, 0);
 }
 
 /*
@@ -102,7 +103,7 @@ size_t DEV_API_dummy_pread_func(struct dev_desc_t *adev,
  *
  */
 size_t DEV_API_dummy_pwrite_func(struct dev_desc_t *adev,
-				uint8_t *apData, size_t aLength, size_t aOffset)
+			const	uint8_t *apData, size_t aLength, size_t aOffset)
 {
 	return 0;
 }

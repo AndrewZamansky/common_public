@@ -2,10 +2,7 @@
  *
  * file :   I2S_splitter.c
  *
- *
- *
- *
- *
+
  */
 
 
@@ -14,7 +11,7 @@
 
 #include "_I2S_splitter_prerequirements_check.h"
 
-#include "I2S_splitter_api.h" //place first to test that header file is self-contained
+#include "I2S_splitter_api.h"
 #include "I2S_splitter.h"
 #include "common_dsp_api.h"
 
@@ -48,19 +45,14 @@ char I2S_splitter_module_name[] = "I2S_splitter";
 /***********   local variables    **************/
 
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        I2S_splitter_dsp                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-void I2S_splitter_dsp(pdsp_descriptor aDspDescriptor , size_t data_len ,
-		dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] , dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])
+/**
+ * I2S_splitter_dsp()
+ *
+ * return:
+ */
+void I2S_splitter_dsp(struct dsp_desc_t *adsp , size_t data_len ,
+		struct dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] ,
+		struct dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])
 {
 	float *apCh1Out ,  *apCh2Out;
 
@@ -82,18 +74,13 @@ void I2S_splitter_dsp(pdsp_descriptor aDspDescriptor , size_t data_len ,
 
 
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        I2S_splitter_ioctl                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-uint8_t I2S_splitter_ioctl(pdsp_descriptor aDspDescriptor ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
+/**
+ * I2S_splitter_ioctl()
+ *
+ * return:
+ */
+uint8_t I2S_splitter_ioctl(struct dsp_desc_t *adsp ,
+		uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
 {
 	switch(aIoctl_num)
 	{
@@ -109,20 +96,12 @@ uint8_t I2S_splitter_ioctl(pdsp_descriptor aDspDescriptor ,const uint8_t aIoctl_
 }
 
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:         I2S_splitter_init                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
+
+
 void  I2S_splitter_init(void)
 {
-	DSP_REGISTER_NEW_MODULE("I2S_splitter",I2S_splitter_ioctl , I2S_splitter_dsp , I2S_SPLITTER_Instance_t);
+	DSP_REGISTER_NEW_MODULE("I2S_splitter",
+			I2S_splitter_ioctl , I2S_splitter_dsp , I2S_SPLITTER_Instance_t);
 }
 
 AUTO_INIT_FUNCTION(I2S_splitter_init);

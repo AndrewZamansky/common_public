@@ -10,7 +10,7 @@ extern uint8_t MODULE_IOCTL_FUNCTION(struct dev_desc_t *adev,
 	#define MODULE_PWRITE_FUNCTION			DEV_API_dummy_pwrite_func
 #endif
 extern size_t MODULE_PWRITE_FUNCTION(struct dev_desc_t *adev,
-						uint8_t *apData, size_t aLength, size_t aOffset);
+						const uint8_t *apData, size_t aLength, size_t aOffset);
 
 #ifndef	MODULE_PREAD_FUNCTION
 	#define MODULE_PREAD_FUNCTION			DEV_API_dummy_pread_func

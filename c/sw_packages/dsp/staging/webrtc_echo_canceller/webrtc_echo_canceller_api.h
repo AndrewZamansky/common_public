@@ -18,6 +18,6 @@
 /**********  define API  functions  ************/
 
 
-extern "C" uint8_t  webrtc_echo_canceller_api_init_dsp_descriptor(pdsp_descriptor aDspDescriptor);
+extern "C" uint8_t  webrtc_echo_canceller_api_init_dsp_descriptor(struct dsp_desc_t aDspDescriptor);
 
 #endif

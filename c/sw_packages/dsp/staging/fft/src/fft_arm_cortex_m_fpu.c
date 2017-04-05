@@ -54,8 +54,8 @@
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-void fft_dsp(pdsp_descriptor apdsp, size_t data_len ,
-		dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] , dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])
+void fft_dsp(struct dsp_desc_t *adsp, size_t data_len ,
+		struct dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] , struct dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])
 {
 
 //	FFT_Instance_t *handle;
@@ -64,7 +64,7 @@ void fft_dsp(pdsp_descriptor apdsp, size_t data_len ,
 	arm_cfft_radix4_instance_f32 S;    /* ARM CFFT module */
 
 
-//	handle = apdsp->handle;
+//	handle = adsp->handle;
 	apCh1In = in_pads[0]->buff;
 	apCh1Out = out_pads[0].buff;
 
@@ -87,11 +87,11 @@ void fft_dsp(pdsp_descriptor apdsp, size_t data_len ,
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t fft_ioctl(pdsp_descriptor apdsp ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
+uint8_t fft_ioctl(struct dsp_desc_t *adsp ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
 {
 	FFT_Instance_t *handle;
 
-	handle = apdsp->handle;
+	handle = adsp->handle;
 	switch(aIoctl_num)
 	{
 
@@ -118,7 +118,7 @@ uint8_t fft_ioctl(pdsp_descriptor apdsp ,const uint8_t aIoctl_num , void * aIoct
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t  fft_api_init_dsp_descriptor(pdsp_descriptor aDspDescriptor)
+uint8_t  fft_api_init_dsp_descriptor(struct dsp_desc_t aDspDescriptor)
 {
 	FFT_Instance_t *pInstance;
 

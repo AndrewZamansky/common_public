@@ -54,14 +54,14 @@ char fir_filter_module_name[] = "fir_filter";
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-static void fir_filter_dsp(pdsp_descriptor apdsp , size_t data_len ,
-		dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] , dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])
+static void fir_filter_dsp(struct dsp_desc_t *adsp , size_t data_len ,
+		struct dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] , struct dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])
 {
 	float *apCh1In  ;
 	float *apCh1Out ;
 	FIR_FILTER_Instance_t *handle;
 
-	handle = apdsp->handle;
+	handle = adsp->handle;
 
 	if(0 == handle->number_of_filter_coefficients)
 	{
@@ -87,7 +87,7 @@ static void fir_filter_dsp(pdsp_descriptor apdsp , size_t data_len ,
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t fir_filter_ioctl(pdsp_descriptor apdsp ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
+uint8_t fir_filter_ioctl(struct dsp_desc_t *adsp ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
 {
 	size_t number_of_filter_coefficients;
 	size_t predefined_data_block_size;
@@ -95,7 +95,7 @@ uint8_t fir_filter_ioctl(pdsp_descriptor apdsp ,const uint8_t aIoctl_num , void 
 	fir_filter_api_set_params_t *p_band_set_params;
 	FIR_FILTER_Instance_t *handle;
 
-	handle = apdsp->handle;
+	handle = adsp->handle;
 	switch(aIoctl_num)
 	{
 		case IOCTL_DSP_INIT :

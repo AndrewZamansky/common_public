@@ -15,6 +15,6 @@
 /**********  define API  functions  ************/
 
 
-uint8_t  fft_api_init_dsp_descriptor(pdsp_descriptor aDspDescriptor);
+uint8_t  fft_api_init_dsp_descriptor(struct dsp_desc_t aDspDescriptor);
 
 #endif

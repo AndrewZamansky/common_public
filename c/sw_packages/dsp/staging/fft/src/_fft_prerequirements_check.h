@@ -37,11 +37,9 @@
 typedef uint8_t 					_if_fail_here_then___uint8_t___is_not_defined_in_project_header_files_1FFT1;
 typedef uint16_t		 			_if_fail_here_then___uint16_t___is_not_defined_in_project_header_files_1FFT1;
 typedef uint32_t   					_if_fail_here_then___uint32_t___is_not_defined_in_project_header_files_1FFT1;
-typedef pdsp_descriptor   			_if_fail_here_then___pdsp_descriptor___is_not_defined_in_project_header_files_1FFT1;
-typedef dsp_param_t   				_if_fail_here_then___dsp_param_t___is_not_defined_in_project_header_files_1FFT1;
+typedef struct dsp_desc_t   			_if_fail_here_then___pdsp_descriptor___is_not_defined_in_project_header_files_1FFT1;
 
 
-typedef struct ioctl_get_data_buffer_t    	_if_fail_here_then___ioctl_get_data_buffer_t___is_not_defined_in_project_header_files_1FFT1;
 
 /***************************/
 

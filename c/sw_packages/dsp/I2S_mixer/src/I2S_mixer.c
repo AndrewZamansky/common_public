@@ -14,7 +14,7 @@
 
 #include "_I2S_mixer_prerequirements_check.h"
 
-#include "I2S_mixer_api.h" //place first to test that header file is self-contained
+#include "I2S_mixer_api.h"
 #include "I2S_mixer.h"
 #include "common_dsp_api.h"
 
@@ -49,19 +49,15 @@ char I2S_mixer_module_name[] = "I2S_mixer";
 
 /***********   local variables    **************/
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        I2S_mixer_dsp                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-void I2S_mixer_dsp(pdsp_descriptor apdsp , size_t data_len ,
-		dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] , dsp_pad_t  out_pads[MAX_NUM_OF_OUTPUT_PADS])
+
+/**
+ * I2S_mixer_dsp()
+ *
+ * return:
+ */
+void I2S_mixer_dsp(struct dsp_desc_t *adsp , size_t data_len ,
+		struct dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] ,
+		struct dsp_pad_t  out_pads[MAX_NUM_OF_OUTPUT_PADS])
 {
 	float *apCh1In ,  *apCh2In;
 	I2S_MIXER_Instance_t *handle;
@@ -69,7 +65,7 @@ void I2S_mixer_dsp(pdsp_descriptor apdsp , size_t data_len ,
 	float max_out_val ;
 	float out_val ;
 
-	handle = apdsp->handle;
+	handle = adsp->handle;
 
 	max_out_val = handle->max_out_val;
 	enable_test_clipping = handle->enable_test_clipping;
@@ -120,22 +116,17 @@ void I2S_mixer_dsp(pdsp_descriptor apdsp , size_t data_len ,
 
 
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        I2S_mixer_ioctl                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-uint8_t I2S_mixer_ioctl(pdsp_descriptor apdsp ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
+/**
+ * I2S_mixer_ioctl()
+ *
+ * return:
+ */
+uint8_t I2S_mixer_ioctl(struct dsp_desc_t *adsp,
+		uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
 {
 	I2S_MIXER_Instance_t *handle;
 
-	handle = apdsp->handle;
+	handle = adsp->handle;
 
 	switch(aIoctl_num)
 	{
@@ -165,20 +156,10 @@ uint8_t I2S_mixer_ioctl(pdsp_descriptor apdsp ,const uint8_t aIoctl_num , void *
 
 
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:         I2S_mixer_init                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
 void  I2S_mixer_init(void)
 {
-	DSP_REGISTER_NEW_MODULE("I2S_mixer",I2S_mixer_ioctl , I2S_mixer_dsp , I2S_MIXER_Instance_t);
+	DSP_REGISTER_NEW_MODULE("I2S_mixer",
+			I2S_mixer_ioctl , I2S_mixer_dsp , I2S_MIXER_Instance_t);
 }
 
 AUTO_INIT_FUNCTION(I2S_mixer_init);

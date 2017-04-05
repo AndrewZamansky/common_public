@@ -87,11 +87,9 @@ typedef enum
 typedef uint8_t (*dev_ioctl_func_t)(struct dev_desc_t *adev,
 		 uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2);
 typedef size_t (*dev_pwrite_func_t)(struct dev_desc_t *adev,
-			     	   uint8_t *apData, size_t aLength, size_t aOffset);
+			     const   uint8_t *apData, size_t aLength, size_t aOffset);
 typedef uint32_t (*dev_pwrite32_func_t)(struct dev_desc_t *adev,
-				    uint8_t *apData, uint32_t aLength, uint32_t aOffset);
-typedef size_t (*dev_write_func_t)(struct dev_desc_t *adev,
-								    uint8_t *apData, size_t aLength);
+				  const uint8_t *apData, uint32_t aLength, uint32_t aOffset);
 typedef size_t (*dev_pread_func_t)(struct dev_desc_t *adev,
 						    uint8_t *apData , size_t aLength, size_t aOffset);
 typedef uint32_t (*dev_pread32_func_t)(struct dev_desc_t *adev,
@@ -167,7 +165,8 @@ uint8_t	DEV_CALLBACK_1_PARAMS(struct dev_desc_t * dev,
 #define DEV_PWRITE(dev, data, len, offset)  dev->pwrite(dev, data, len, offset)
 #define DEV_PWRITE32(dev, data, len, offset)    \
 				((dev_pwrite32_func_t)(dev)->pwrite)(dev, data, len, offset)
-size_t	DEV_WRITE(struct dev_desc_t *adev, uint8_t *apData, size_t aLength);
+size_t	DEV_WRITE(struct dev_desc_t *adev,
+			const uint8_t *apData, size_t aLength);
 #define DEV_PREAD(dev, data, len, offset)    dev->pread(dev, data, len, offset)
 #define DEV_PREAD32(dev, data, len, offset)  \
 					((dev_pread32_func_t)(dev)->pread)(dev, data, len, offset)
@@ -181,7 +180,7 @@ uint8_t DEV_API_dummy_callback_func( struct dev_desc_t *adev,
 size_t DEV_API_dummy_pread_func(struct dev_desc_t *adev,
 					uint8_t *apData, size_t aLength, size_t aOffset);
 size_t DEV_API_dummy_pwrite_func(struct dev_desc_t *adev,
-				uint8_t *apData , size_t aLength, size_t aOffset);
+				const uint8_t *apData , size_t aLength, size_t aOffset);
 size_t DEV_API_dummy_init_func(struct dev_desc_t *aDevDescriptor);
 struct dev_desc_t * DEV_OPEN(const char *device_name);
 uint8_t DEV_SET_PARAM(char *dev_name_str,

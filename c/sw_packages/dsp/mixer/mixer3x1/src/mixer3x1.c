@@ -50,8 +50,8 @@ char mixer3x1_module_name[] = "mixer3x1";
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-void mixer3x1_dsp(pdsp_descriptor apdsp , size_t data_len ,
-		dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] , dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])
+void mixer3x1_dsp(struct dsp_desc_t *adsp , size_t data_len ,
+		struct dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] , struct dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])
 {
 	MIXER3X1_Instance_t *handle;
 	float *apCh1In ,  *apCh2In ,  *apCh3In;
@@ -59,7 +59,7 @@ void mixer3x1_dsp(pdsp_descriptor apdsp , size_t data_len ,
 	float channels_weights_1,channels_weights_2,channels_weights_3  ;
 	float *channels_weights;
 
-	handle = apdsp->handle;
+	handle = adsp->handle;
 	apCh1In = in_pads[0]->buff;
 	apCh2In = in_pads[1]->buff;
 	apCh3In = in_pads[2]->buff;
@@ -96,13 +96,13 @@ void mixer3x1_dsp(pdsp_descriptor apdsp , size_t data_len ,
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t mixer3x1_ioctl(pdsp_descriptor apdsp ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
+uint8_t mixer3x1_ioctl(struct dsp_desc_t *adsp ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
 {
 	MIXER3X1_Instance_t *handle;
 	uint8_t i;
 	float *channels_weights ;
 
-	handle = apdsp->handle;
+	handle = adsp->handle;
 	channels_weights = handle->channels_weights ;
 	switch(aIoctl_num)
 	{

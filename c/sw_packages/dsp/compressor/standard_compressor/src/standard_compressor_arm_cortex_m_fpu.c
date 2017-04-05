@@ -54,8 +54,8 @@ char standard_compressor_module_name[] = "standard_compressor";
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-void standard_compressor_dsp(pdsp_descriptor apdsp , size_t data_len ,
-		dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] , dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])
+void standard_compressor_dsp(struct dsp_desc_t *adsp , size_t data_len ,
+		struct dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] , struct dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])
 {
 
 	STANDARD_COMPRESSOR_Instance_t *handle;
@@ -77,7 +77,7 @@ void standard_compressor_dsp(pdsp_descriptor apdsp , size_t data_len ,
 	float gain;
 	float alpha , one_minus_alpha;//
 
-	handle = apdsp->handle;
+	handle = adsp->handle;
 	apCh1In = in_pads[0]->buff;
 	apCh2In = in_pads[1]->buff;
 	apCh1Out = out_pads[0].buff;
@@ -159,11 +159,11 @@ void standard_compressor_dsp(pdsp_descriptor apdsp , size_t data_len ,
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t standard_compressor_ioctl(pdsp_descriptor apdsp ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
+uint8_t standard_compressor_ioctl(struct dsp_desc_t *adsp ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
 {
 	STANDARD_COMPRESSOR_Instance_t *handle;
 
-	handle = apdsp->handle;
+	handle = adsp->handle;
 	switch(aIoctl_num)
 	{
 		case IOCTL_DSP_INIT :

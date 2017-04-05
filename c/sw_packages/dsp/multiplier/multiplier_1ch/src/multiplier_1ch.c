@@ -49,8 +49,8 @@ char multiplier_1ch_module_name[] = "multiplier_1ch";
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-void multiplier_1ch_dsp(pdsp_descriptor apdsp , size_t data_len ,
-		dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] , dsp_pad_t  out_pads[MAX_NUM_OF_OUTPUT_PADS])
+void multiplier_1ch_dsp(struct dsp_desc_t *adsp , size_t data_len ,
+		struct dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] , struct dsp_pad_t  out_pads[MAX_NUM_OF_OUTPUT_PADS])
 {
 	float *apCh1In ;
 	float *apCh1Out  ;
@@ -58,7 +58,7 @@ void multiplier_1ch_dsp(pdsp_descriptor apdsp , size_t data_len ,
 	float weight ;
 	float curr_val;
 
-	handle = apdsp->handle;
+	handle = adsp->handle;
 
 	weight = handle->weight;
 
@@ -89,11 +89,11 @@ void multiplier_1ch_dsp(pdsp_descriptor apdsp , size_t data_len ,
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t multiplier_1ch_ioctl(pdsp_descriptor apdsp ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
+uint8_t multiplier_1ch_ioctl(struct dsp_desc_t *adsp ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
 {
 	MULTIPLIER_1CH_Instance_t *handle;
 
-	handle = apdsp->handle;
+	handle = adsp->handle;
 
 	switch(aIoctl_num)
 	{

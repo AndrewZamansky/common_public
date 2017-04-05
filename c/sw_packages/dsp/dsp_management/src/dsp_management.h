@@ -2,10 +2,6 @@
  * file : DSP_MANAGEMENT.h
  *
  *
- *
- *
- *
- *
  */
 
 #ifndef _DSP_MANAGEMENT_H

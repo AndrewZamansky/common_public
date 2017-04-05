@@ -39,21 +39,19 @@ char standard_compressor_module_name[] = "standard_compressor";
 
 /***********   local variables    **************/
 #define ALPHA				0.96f
-#define ONE_MINUS_ALPHA		((1.0f - ALPHA)/4) /* division by 4 put here instead of division by 2 in mono->stereo converter*/
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        standard_compressor_dsp                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-void standard_compressor_dsp(pdsp_descriptor apdsp , size_t data_len ,
-		dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] , dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])
+/* division by 4 put here instead of division by 2 in mono->stereo converter*/
+#define ONE_MINUS_ALPHA		((1.0f - ALPHA)/4)
+
+
+/**
+ * standard_compressor_dsp()
+ *
+ * return:
+ */
+void standard_compressor_dsp(struct dsp_desc_t *adsp , size_t data_len ,
+		struct dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] ,
+		struct dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])
 {
 
 	STANDARD_COMPRESSOR_Instance_t *handle;
@@ -73,9 +71,9 @@ void standard_compressor_dsp(pdsp_descriptor apdsp , size_t data_len ,
 	float tmp;
 	float mono_x;
 	float gain;
-	float alpha , one_minus_alpha;//
+	float alpha , one_minus_alpha;
 
-	handle = apdsp->handle;
+	handle = adsp->handle;
 	apCh1In = in_pads[0]->buff;
 	apCh2In = in_pads[1]->buff;
 	apCh1Out = out_pads[0].buff;
@@ -102,7 +100,7 @@ void standard_compressor_dsp(pdsp_descriptor apdsp , size_t data_len ,
 		curr_x2 = *apCh2In++;
 
 		mono_x = curr_x1 + curr_x2;
-				/*mono_x = mono_x/2 ;*/ /* division by 2 is inserted in ONE_MINUS_ALPHA*/
+	 /*mono_x = mono_x/2 ;*/ /* division by 2 is inserted in ONE_MINUS_ALPHA*/
 
 		mono_x = mono_x * mono_x;
 		mono_x *= one_minus_alpha ;
@@ -146,22 +144,17 @@ void standard_compressor_dsp(pdsp_descriptor apdsp , size_t data_len ,
 }
 
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        standard_compressor_ioctl                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-uint8_t standard_compressor_ioctl(pdsp_descriptor apdsp ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
+/**
+ * standard_compressor_ioctl()
+ *
+ * return:
+ */
+uint8_t standard_compressor_ioctl(struct dsp_desc_t *adsp,
+		uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
 {
 	STANDARD_COMPRESSOR_Instance_t *handle;
 
-	handle = apdsp->handle;
+	handle = adsp->handle;
 	switch(aIoctl_num)
 	{
 		case IOCTL_DSP_INIT :
@@ -195,20 +188,13 @@ uint8_t standard_compressor_ioctl(pdsp_descriptor apdsp ,const uint8_t aIoctl_nu
 }
 
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        standard_compressor_init                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
+
+
 void  standard_compressor_init(void)
 {
-	DSP_REGISTER_NEW_MODULE(STANDARD_COMPRESSOR_API_MODULE_NAME ,standard_compressor_ioctl , standard_compressor_dsp , STANDARD_COMPRESSOR_Instance_t);
+	DSP_REGISTER_NEW_MODULE(STANDARD_COMPRESSOR_API_MODULE_NAME,
+			standard_compressor_ioctl, standard_compressor_dsp,
+			STANDARD_COMPRESSOR_Instance_t);
 }
 
 AUTO_INIT_FUNCTION(standard_compressor_init);

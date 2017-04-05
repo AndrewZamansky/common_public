@@ -56,7 +56,7 @@ static uint8_t dummy_msg;
  * return:
  */
 uint8_t async_tx_wrapper_callback(struct dev_desc_t *adev,
-		const uint8_t aCallback_num, void * aCallback_param1,
+		uint8_t aCallback_num, void * aCallback_param1,
 		void * aCallback_param2)
 {
 	async_tx_wrapper_instance_t *config_handle;
@@ -176,7 +176,7 @@ static void sw_uart_send_and_wait_for_end(struct dev_desc_t *adev,
  * return:
  */
 size_t async_tx_wrapper_pwrite(struct dev_desc_t *adev,
-			uint8_t *apData, size_t aLength, size_t aOffset)
+			const uint8_t *apData, size_t aLength, size_t aOffset)
 {
 	tx_int_size_t dataLen= (tx_int_size_t)aLength;
 	tx_int_size_t curr_transmit_len;
