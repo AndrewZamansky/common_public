@@ -34,35 +34,27 @@
 
 /********  exported variables *********************/
 
-char standard_compressor_module_name[] = "standard_compressor";
-
-
 /**********   external variables    **************/
 
 /***********   local variables    **************/
-#define ALPHA				0.96f
-#define ONE_MINUS_ALPHA		((1.0f - ALPHA)/4) /* division by 4 put here instead of division by 2 in mono->stereo converter*/
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        standard_compressor_dsp                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
+
+/**
+ * standard_compressor_dsp()
+ *
+ * return:
+ */
 void standard_compressor_dsp(struct dsp_desc_t *adsp , size_t data_len ,
-		struct dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] , struct dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])
+		struct dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] ,
+		struct dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])
 {
 
-	STANDARD_COMPRESSOR_Instance_t *handle;
-	float *apCh1In ,  *apCh2In;
+	struct std_compressor_instance_t *handle;
+	float const *apCh1In;
+	float const *apCh2In;
 	float *apCh1Out ,  *apCh2Out;
 
-	float env_follower ;
+	float ratio_env_follower ;
 	float rms ;
 	float curr_ratio = 1;
 	float threshold  ;
@@ -91,11 +83,16 @@ void standard_compressor_dsp(struct dsp_desc_t *adsp , size_t data_len ,
 	reverse_ratio = handle->reverse_ratio;
 	gain = handle->gain;
 
-	env_follower = handle->env_follower;
+	ratio_env_follower = handle->ratio_env_follower;
 	rms = handle->rms;
 
 	alpha = handle->alpha;
 	one_minus_alpha = handle->one_minus_alpha;
+
+	//  following function take more CPU than straight forward calculations :
+	//	arm_add_f32 (apCh1In, apCh2In, apCh1Out, data_len);
+	//	arm_mult_f32 (apCh1Out, apCh1Out, apCh2Out, data_len);
+	//	arm_scale_f32 (apCh2Out, one_minus_alpha, apCh1Out, data_len);
 
 	while( data_len-- )
 	{
@@ -104,7 +101,7 @@ void standard_compressor_dsp(struct dsp_desc_t *adsp , size_t data_len ,
 		curr_x2 = *apCh2In++;
 
 		mono_x = curr_x1 + curr_x2;
-				/*mono_x = mono_x/2 ;*/ /* division by 2 is inserted in ONE_MINUS_ALPHA*/
+	  /*mono_x = mono_x/2 ;*/ /* division by 2 is inserted in ONE_MINUS_ALPHA*/
 
 		mono_x = mono_x * mono_x;
 		mono_x *= one_minus_alpha ;
@@ -122,96 +119,31 @@ void standard_compressor_dsp(struct dsp_desc_t *adsp , size_t data_len ,
 			curr_ratio = curr_ratio / tmp;
 		}
 
-		
-		if (curr_ratio < env_follower)
+
+		if (curr_ratio < ratio_env_follower)
 		{
-			curr_ratio *=attack;
-			env_follower *= attack_neg;
+			curr_ratio = fast_pow(curr_ratio, attack);
+			ratio_env_follower = fast_pow(ratio_env_follower, attack_neg);
 		}
 		else
 		{
-			curr_ratio *=release;
-			env_follower *= release_neg;
+			curr_ratio = fast_pow(curr_ratio, release);
+			ratio_env_follower = fast_pow(ratio_env_follower, release_neg);
 		}
-		env_follower += curr_ratio;
+		ratio_env_follower *= curr_ratio;
 
 
-		curr_x1 *=gain;
-		*apCh1Out++ = (env_follower * curr_x1);
-		curr_x2 *=gain;
-		*apCh2Out++ = (env_follower * curr_x2);
+		curr_x1 *= gain;
+		*apCh1Out++ = (ratio_env_follower * curr_x1);
+		curr_x2 *= gain;
+		*apCh2Out++ = (ratio_env_follower * curr_x2);
 	}
 
-	handle->env_follower = env_follower;
+	//  following function take more CPU than straight forward calculations :
+	// arm_scale_f32 (apCh1Out, gain, apCh1Out, data_len);
+	// arm_scale_f32 (apCh2Out, gain, apCh2Out, data_len);
+
+	handle->ratio_env_follower = ratio_env_follower;
 	handle->rms = rms;
 
 }
-
-
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        standard_compressor_ioctl                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-uint8_t standard_compressor_ioctl(struct dsp_desc_t *adsp ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
-{
-	STANDARD_COMPRESSOR_Instance_t *handle;
-
-	handle = adsp->handle;
-	switch(aIoctl_num)
-	{
-		case IOCTL_DSP_INIT :
-			handle->reverse_ratio = 1.0f;//0.5;
-			handle->env_follower = 1.0f;
-			handle->rms = 0.0f;
-			handle->release = 16.0f;
-			handle->attack = 1.0f;
-			handle->threshold = 0.99999f;
-			handle->gain =1.0f;
-			handle->alpha = ALPHA;
-			handle->one_minus_alpha = ONE_MINUS_ALPHA;
-
-			break;
-		case IOCTL_STANDARD_COMPRESSOR_SET_HIGH_THRESHOLD :
-			handle->threshold = *((float*)aIoctl_param1);
-			break;
-		case IOCTL_STANDARD_COMPRESSOR_SET_RATIO :
-			handle->reverse_ratio = 1/(*((float*)aIoctl_param1));
-			break;
-		case IOCTL_STANDARD_COMPRESSOR_SET_ATTACK :
-			handle->attack = *((float*)aIoctl_param1);
-			break;
-		case IOCTL_STANDARD_COMPRESSOR_SET_RELEASE :
-			handle->release = *((float*)aIoctl_param1);
-			break;
-		default :
-			return 1;
-	}
-	return 0;
-}
-
-
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        standard_compressor_init                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-void  standard_compressor_init(void)
-{
-	DSP_REGISTER_NEW_MODULE(STANDARD_COMPRESSOR_API_MODULE_NAME ,standard_compressor_ioctl , standard_compressor_dsp , STANDARD_COMPRESSOR_Instance_t);
-}
-
-AUTO_INIT_FUNCTION(standard_compressor_init);
-

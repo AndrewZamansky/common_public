@@ -4,6 +4,10 @@ config INCLUDE_STANDARD_COMPRESSOR
 	bool   "standard audio compressor"
 	default n
 
+config CONFIG_INCLUDE_STANDARD_COMPRESSOR_WITH_LOG
+	bool   "standard audio compressor with log10"
+	default n
+
 menuconfig INCLUDE_LOOKAHEAD_COMPRESSOR
 	bool   "look ahead audio compressor"
 	default n
