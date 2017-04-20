@@ -38,12 +38,20 @@ char standard_compressor_module_name[] = "standard_compressor";
 /**********   external variables    **************/
 
 /***********   local variables    **************/
-#define ALPHA				0.96f
-
-/* division by 4 put here instead of division by 2 in mono->stereo converter*/
-#define ONE_MINUS_ALPHA		((1.0f - ALPHA)/4)
 
 
+
+/*
+ *  val = 1- e ^ (-1/(SR*t))
+ */
+static float convert_ms_to_non_unit(float ms)
+{
+	float tmp;
+
+	tmp = -( 1 / (48000 * ms));
+	tmp = exp(tmp);
+	tmp = 1 - tmp;
+}
 
 
 /**
@@ -55,36 +63,52 @@ uint8_t standard_compressor_ioctl(struct dsp_desc_t *adsp,
 		uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
 {
 	struct std_compressor_instance_t *handle;
+	float alpha;
 
 	handle = adsp->handle;
 	switch(aIoctl_num)
 	{
-		case IOCTL_DSP_INIT :
-			handle->reverse_ratio = 1.0f;//0.5;
-			handle->ratio_env_follower = 1.0f;
-			handle->rms = 0.0f;
-			handle->release = 0.5f;
-			handle->attack = 0.5f;
-			handle->threshold = 0.99999f;
-			handle->gain =1.0f;
-			handle->alpha = ALPHA;
-			handle->one_minus_alpha = ONE_MINUS_ALPHA;
+	case IOCTL_DSP_INIT :
+		handle->reverse_ratio = 1.0f;//0.5;
+		handle->ratio_env_follower = 1.0f;
+		handle->rms = 0.0f;
+		handle->release = 0.5f;
+		handle->attack = 0.5f;
+		handle->threshold = 0.99999f;
+		handle->gain =1.0f;
 
-			break;
-		case IOCTL_STANDARD_COMPRESSOR_SET_HIGH_THRESHOLD :
-			handle->threshold = *((float*)aIoctl_param1);
-			break;
-		case IOCTL_STANDARD_COMPRESSOR_SET_RATIO :
-			handle->reverse_ratio = 1/(*((float*)aIoctl_param1));
-			break;
-		case IOCTL_STANDARD_COMPRESSOR_SET_ATTACK :
-			handle->attack = *((float*)aIoctl_param1);
-			break;
-		case IOCTL_STANDARD_COMPRESSOR_SET_RELEASE :
-			handle->release = *((float*)aIoctl_param1);
-			break;
-		default :
-			return 1;
+		alpha = 0.96f;
+		handle->alpha =alpha;
+		/*
+		 *  division by 4 put here instead of
+		 *  division by 2 in mono->stereo converter
+		 */
+		handle->one_minus_alpha = ((1.0f - alpha) / 4);
+
+		break;
+	case IOCTL_STANDARD_COMPRESSOR_SET_HIGH_THRESHOLD_DB :
+		handle->threshold = pow(10, (*((float*)aIoctl_param1)) / 20);
+		break;
+	case IOCTL_STANDARD_COMPRESSOR_SET_RATIO :
+		handle->reverse_ratio = 1/(*((float*)aIoctl_param1));
+		break;
+	case IOCTL_STANDARD_COMPRESSOR_SET_ATTACK_mS :
+		handle->attack = convert_ms_to_non_unit(*((float*)aIoctl_param1));
+		break;
+	case IOCTL_STANDARD_COMPRESSOR_SET_RELEASE_mS :
+		handle->release = convert_ms_to_non_unit(*((float*)aIoctl_param1));
+		break;
+	case IOCTL_STANDARD_COMPRESSOR_SET_ALPHA :
+		alpha = convert_ms_to_non_unit(*((float*)aIoctl_param1));
+		handle->alpha = alpha;
+		/*
+		 *  division by 4 put here instead of
+		 *  division by 2 in mono->stereo converter
+		 */
+		handle->one_minus_alpha = ((1.0f - alpha) / 4);
+		break;
+	default :
+		return 1;
 	}
 	return 0;
 }

@@ -35,10 +35,7 @@
 /**********   external variables    **************/
 
 /***********   local variables    **************/
-#define ALPHA				0.96f
 
-/* division by 4 put here instead of division by 2 in mono->stereo converter*/
-#define ONE_MINUS_ALPHA		((1.0f - ALPHA)/4)
 
 
 /**

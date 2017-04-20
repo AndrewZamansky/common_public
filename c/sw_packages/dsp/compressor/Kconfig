@@ -4,7 +4,7 @@ config INCLUDE_STANDARD_COMPRESSOR
 	bool   "standard audio compressor"
 	default n
 
-config CONFIG_INCLUDE_STANDARD_COMPRESSOR_WITH_LOG
+config INCLUDE_STANDARD_COMPRESSOR_WITH_LOG
 	bool   "standard audio compressor with log10"
 	default n
 

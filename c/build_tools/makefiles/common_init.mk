@@ -47,8 +47,9 @@ endif
 
 include $(WORKSPACE_ROOT_DIR)/workspace_config.mk
 
+MAKEFILES_INC_FUNC_DIR :=$(MAKEFILES_ROOT_DIR)/_common_include_functions
 DRIVERS_ROOT_DIR := $(COMMON_ROOT_DIR)/hw_drivers
-SW_PACKAGES_ROOT_DIR    :=    $(COMMON_ROOT_DIR)/sw_packages
+SW_PACKAGES_ROOT_DIR := $(COMMON_ROOT_DIR)/sw_packages
 
 AUTO_GENERATED_FILES_DIR := $(APP_ROOT_DIR)/z_auto_generated_files
 OBJ_DIR    := $(APP_ROOT_DIR)/zOBJ

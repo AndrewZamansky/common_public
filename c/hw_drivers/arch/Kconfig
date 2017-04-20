@@ -114,9 +114,16 @@ config CODE_SIZE_LIMIT
     
 endmenu
 
+
+config USE_APPLICATION_SPECIFIC_SCATTER_FILE
+	bool "use application specifc scatter file"
+    depends on ARM
+    default n
+
+
 config PUT_SPEED_CRITICAL_CODE_TO_RAM
 	bool "put speed critical code to ram"
-    depends on ARM
+    depends on ARM && !USE_APPLICATION_SPECIFIC_SCATTER_FILE
     default n
 
 config EXCEPTION_STACKS_DEBUG
