@@ -28,7 +28,7 @@ ifdef CONFIG_CORTEX_M4
 endif
 
 
-LDFLAGS += -g -g3 -ggdb3 #-gstabs3  #-O0   
+LDFLAGS += -g -g3 -ggdb3 #-gstabs3  #-O0
 
 LDFLAGS := $(GLOBAL_LDFLAGS) $(LDFLAGS)
 
@@ -92,7 +92,7 @@ FILES_TO_FORCE_IN_RAM += 123_DUMMY.X
 #{{{{{{{{  LINKER SCRIPT FILE PREPARATIONS {{{{{{{{
 
 ifdef CONFIG_USE_APPLICATION_SPECIFIC_SCATTER_FILE
-    SCATTER_FILE_OUTPUT =$(APP_DIR)/app.lds
+    SCATTER_FILE_OUTPUT =$(APP_ROOT_DIR)/$(PROJECT_NAME).lds
 else
     SCATTER_FILES_DIR :=$(BUILD_TOOLS_ROOT_DIR)/scatter_files/arm
     LDS_PREPROCESSOR_DEFS += -DFILES_TO_FORCE_IN_RAM="$(FILES_TO_FORCE_IN_RAM)"
@@ -118,7 +118,7 @@ ALL_OBJ_FILES = $(call rwildcard,$(OBJ_DIR)/,*.o)
 ALL_OBJ_FILES += $(call rwildcard,$(OBJ_DIR)/,*.oo)
 ALL_OBJ_FILES += $(call rwildcard,$(OBJ_DIR)/,*.o.asm)
 ALL_OBJ_FILES += $(call rwildcard,$(OBJ_DIR)/,*.O.asm)
-#some time, on windows, scan for .O.asm and .o.asm will generate duplicate files 
+#some time, on windows, scan for .O.asm and .o.asm will generate duplicate files
 #so $(sort) will eliminate duplication
 ALL_OBJ_FILES :=$(sort $(ALL_OBJ_FILES))
 ALL_OBJ_FILES :=$(subst \,/,$(ALL_OBJ_FILES))
@@ -164,7 +164,7 @@ endif
 
 
 ifdef CONFIG_USE_APPLICATION_SPECIFIC_SCATTER_FILE
-    CREATE_LDS_CMD += $(ECHO) using application specifc scatter file
+    CREATE_LDS_CMD += echo using application specifc scatter file
 else
     CREATE_LDS_CMD =$(CC) -E -P -x c -I z_auto_generated_files
     CREATE_LDS_CMD += $(LDS_PREPROCESSOR_DEFS)

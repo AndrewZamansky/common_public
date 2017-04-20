@@ -10,10 +10,6 @@
 /***************   includes    *******************/
 #include "_project.h"
 #include "auto_init_api.h"
-#include "dev_management_api.h"
-
-#define DEBUG
-#include "PRINTF_api.h"
 
 /***************   defines    *******************/
 
@@ -49,7 +45,8 @@ int smihosting_is_active = 0 ;
 
 /******************** default interrupt handlers ******************/
 
-EXTERN_C_FUNCTION void __attribute__((interrupt("SWI"))) do_app_software_interrupt(uint32_t int_num)
+EXTERN_C_FUNCTION void
+__attribute__((interrupt("SWI"))) do_app_software_interrupt(uint32_t int_num)
 {
     //based on int_num, you can determine which system call is called
     switch(int_num)
@@ -164,7 +161,6 @@ EXTERN_C_FUNCTION void __attribute__ ((noreturn)) _exit(int status)
 }
 
 EXTERN_C_FUNCTION int _write(int file, char *ptr, int len) {
-//	PRINT_DATA_DBG(ptr , len);
 	while(1) ;
  return len;
  }
@@ -214,24 +210,34 @@ EXTERN_C_FUNCTION void low_level_init(uint32_t curr_stack)
 	uint32_t *dst ;
 
 
-	/* assume that jump to  fill_mem32_with_pattern will not take more than 32 registers in stack */
+	/*
+	 * assume that jump to  fill_mem32_with_pattern will
+	 * not take more than 32 registers in stack
+	 */
 	curr_stack = (curr_stack & 0xffffffffc) - (4*32);
 
 
 #if  ( (1 == CONFIG_CORTEX_M3 ) || (1 == CONFIG_CORTEX_M4) )
     #if (1==CONFIG_EXCEPTION_STACKS_DEBUG)
-	    fill_mem32_with_pattern(&Buttom_Of_Stacks , (uint32_t *)curr_stack , 0xb1b1b1b1);
+	    fill_mem32_with_pattern(&Buttom_Of_Stacks,
+	    			(uint32_t *)curr_stack , 0xb1b1b1b1);
     #endif
 #else /* cortex - a9 */
 	v7_outer_cache_inval_all();
 
 	#if (1==CONFIG_EXCEPTION_STACKS_DEBUG)
-		fill_mem32_with_pattern(&__irq_stack_buttom__ , &__irq_stack_top__ , 0xb1b1b1b1);
-		fill_mem32_with_pattern(&__fiq_stack_buttom__ , &__fiq_stack_top__ , 0xb2b2b2b2);
-		fill_mem32_with_pattern(&__abt_stack_buttom__ , &__abt_stack_top__ , 0xb4b4b4b4);
-		fill_mem32_with_pattern(&__und_stack_buttom__ , &__und_stack_top__ , 0xb5b5b5b5);
-		fill_mem32_with_pattern(&__sys_stack_buttom__ , &__sys_stack_top__ , 0xb6b6b6b6);
-		fill_mem32_with_pattern(&__svc_stack_buttom__ , &curr_stack , 0xb3b3b3b3);
+		fill_mem32_with_pattern(&__irq_stack_buttom__,
+				&__irq_stack_top__ , 0xb1b1b1b1);
+		fill_mem32_with_pattern(&__fiq_stack_buttom__,
+				&__fiq_stack_top__ , 0xb2b2b2b2);
+		fill_mem32_with_pattern(&__abt_stack_buttom__,
+				&__abt_stack_top__ , 0xb4b4b4b4);
+		fill_mem32_with_pattern(&__und_stack_buttom__,
+				&__und_stack_top__ , 0xb5b5b5b5);
+		fill_mem32_with_pattern(&__sys_stack_buttom__,
+				&__sys_stack_top__ , 0xb6b6b6b6);
+		fill_mem32_with_pattern(&__svc_stack_buttom__,
+				&curr_stack , 0xb3b3b3b3);
 	#endif
 
 

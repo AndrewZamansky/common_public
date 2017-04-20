@@ -12,7 +12,7 @@
 
 /********  includes *********************/
 #include "_project.h"
-#include "dev_management_api.h"
+//#include "dev_management_api.h"
 #if !defined(CONFIG_HOST)
     #include "os_wrapper.h"
 #endif
@@ -29,12 +29,12 @@
 
 enum
 {
-#ifndef IOCTL_LAST_COMMON_IOCTL
-	IOCTL_LAST_COMMON_IOCTL_not_declared_in_project_header_files =sizeof((int)IOCTL_LAST_COMMON_IOCTL),
-#endif
-#ifndef DEV_CALLBACK_1_PARAMS
-	DEV_CALLBACK_1_PARAMS_not_declared_in_project_header_files =sizeof((int)DEV_CALLBACK_1_PARAMS),
-#endif
+//#ifndef IOCTL_LAST_COMMON_IOCTL
+//	IOCTL_LAST_COMMON_IOCTL_not_declared_in_project_header_files =sizeof((int)IOCTL_LAST_COMMON_IOCTL),
+//#endif
+//#ifndef DEV_CALLBACK_1_PARAMS
+//	DEV_CALLBACK_1_PARAMS_not_declared_in_project_header_files =sizeof((int)DEV_CALLBACK_1_PARAMS),
+//#endif
 
 
 #if !defined(CONFIG_HOST)

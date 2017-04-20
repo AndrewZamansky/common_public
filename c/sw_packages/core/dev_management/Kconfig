@@ -1,10 +1,9 @@
 #
 	
-menu "devices management options"
 
 menuconfig DYNAMIC_DEVICE_TREE
 	bool   "dynamic device tree"
-	default y
+	default n
 
 config DEVICE_TREE_LOCATION_ADDR
 	hex   "device tree location address"
@@ -18,7 +17,7 @@ config DEVICE_TREE_MAXIMAL_SIZE
 
 menuconfig USE_DYNAMIC_DEVICES
 	bool   "use dynamic devices"
-	default y
+	default n
 
 config MAX_NUM_OF_DYNAMIC_DEVICES
 	int   "maximal number of dynamic devices"
@@ -43,5 +42,3 @@ config USE_RUNTIME_DEVICE_CONFIGURATION_BY_PARAMETER_NAMES
 config USE_RUNTIME_DEVICE_CONFIGURATION
 	bool   "devices can be configured in runtime"
 	default n 
-
-endmenu

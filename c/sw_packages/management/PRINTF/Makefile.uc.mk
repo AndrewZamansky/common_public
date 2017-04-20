@@ -1,6 +1,6 @@
 
 INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_PRINTF)
-INCLUDE_THIS_FOR_H_FILES_PATH := y # always include path to PRINTF_api.h
+#INCLUDE_THIS_FOR_H_FILES_PATH := y # always include path to PRINTF_api.h
 
 DEFINES = 
 

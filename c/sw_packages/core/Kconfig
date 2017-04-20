@@ -2,8 +2,9 @@
 
 menu "core"
 
-config INCLUDE_DEV_MENAGMENT
-	def_bool  y
+menuconfig INCLUDE_DEV_MENAGMENT
+	bool  "include devices manager"
+	default n
 
 if INCLUDE_DEV_MENAGMENT
 source "$COMMON_DIR_PATH/c/sw_packages/core/dev_management/Kconfig"
@@ -16,7 +17,7 @@ config INCLUDE_VERSION_MENAGMENT
 menuconfig INCLUDE_HEARTBEAT
 	bool   "heartbeat routines"
 	depends on !GCC_TARGET_OS_LINUX && !HOST
-	default y
+	default n
 
 if INCLUDE_HEARTBEAT
 config HEARTBEAT_IS_SPEED_CRITICAL
