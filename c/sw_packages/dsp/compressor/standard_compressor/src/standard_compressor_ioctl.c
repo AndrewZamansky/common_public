@@ -48,9 +48,10 @@ static float convert_ms_to_non_unit(float ms)
 {
 	float tmp;
 
-	tmp = -( 1 / (48000 * ms));
+	tmp = -( 1.0f / (48000.0f * ms));
 	tmp = exp(tmp);
-	tmp = 1 - tmp;
+	tmp = 1.0f - tmp;
+	return tmp;
 }
 
 
@@ -86,8 +87,11 @@ uint8_t standard_compressor_ioctl(struct dsp_desc_t *adsp,
 		handle->one_minus_alpha = ((1.0f - alpha) / 4);
 
 		break;
+	case IOCTL_STANDARD_COMPRESSOR_SET_GAIN_DB :
+		handle->gain = pow(10, (*((float*)aIoctl_param1)) / 20.0f);
+		break;
 	case IOCTL_STANDARD_COMPRESSOR_SET_HIGH_THRESHOLD_DB :
-		handle->threshold = pow(10, (*((float*)aIoctl_param1)) / 20);
+		handle->threshold = pow(10, (*((float*)aIoctl_param1)) / 20.0f);
 		break;
 	case IOCTL_STANDARD_COMPRESSOR_SET_RATIO :
 		handle->reverse_ratio = 1/(*((float*)aIoctl_param1));
@@ -105,7 +109,7 @@ uint8_t standard_compressor_ioctl(struct dsp_desc_t *adsp,
 		 *  division by 4 put here instead of
 		 *  division by 2 in mono->stereo converter
 		 */
-		handle->one_minus_alpha = ((1.0f - alpha) / 4);
+		handle->one_minus_alpha = ((1.0f - alpha) / 4.0f);
 		break;
 	default :
 		return 1;
