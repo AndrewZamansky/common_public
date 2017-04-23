@@ -1,6 +1,6 @@
 /*
  *
- * file :   standard_compressor.c
+ * file :   noise_gate.c
  *
  *
  *
@@ -12,10 +12,10 @@
 
 /********  includes *********************/
 
-#include "_standard_compressor_prerequirements_check.h" // should be after {standard_compressor_config.h,dev_management_api.h}
+#include "_noise_gate_prerequirements_check.h" // should be after {noise_gate_config.h,dev_management_api.h}
 
-#include "standard_compressor_api.h" //place first to test that header file is self-contained
-#include "standard_compressor.h"
+#include "noise_gate_api.h" //place first to test that header file is self-contained
+#include "noise_gate.h"
 
 #include "math.h"
 #include "cpu_config.h"
@@ -40,11 +40,11 @@
 
 
 /**
- * standard_compressor_dsp()
+ * noise_gate_dsp()
  *
  * return:
  */
-void standard_compressor_dsp(struct dsp_desc_t *adsp , size_t data_len ,
+void noise_gate_dsp(struct dsp_desc_t *adsp , size_t data_len ,
 		struct dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] ,
 		struct dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])
 {
@@ -56,9 +56,8 @@ void standard_compressor_dsp(struct dsp_desc_t *adsp , size_t data_len ,
 
 	float ratio_env_follower ;
 	float rms ;
-	float curr_ratio = 1;
+	float curr_ratio ;
 	float threshold  ;
-	float reverse_ratio ;
 	float attack ;
 	float release ;
 	float release_neg ;
@@ -66,7 +65,6 @@ void standard_compressor_dsp(struct dsp_desc_t *adsp , size_t data_len ,
 	float curr_x1, curr_x2;
 	float tmp;
 	float mono_x;
-	float gain;
 	float alpha , one_minus_alpha;//
 
 	handle = adsp->handle;
@@ -80,8 +78,6 @@ void standard_compressor_dsp(struct dsp_desc_t *adsp , size_t data_len ,
 	release = handle->release;
 	release_neg =  1 - release ;
 	threshold = handle->threshold;
-	reverse_ratio = handle->reverse_ratio;
-	gain = handle->gain;
 
 	ratio_env_follower = handle->ratio_env_follower;
 	rms = handle->rms;
@@ -111,11 +107,9 @@ void standard_compressor_dsp(struct dsp_desc_t *adsp , size_t data_len ,
 
 		arm_sqrt_f32(rms , &rms);
 
-		if(rms > threshold)
+		if (rms < threshold)
 		{
-			curr_ratio = threshold/rms ;
-			tmp = fast_pow(curr_ratio , reverse_ratio);
-			curr_ratio = curr_ratio / tmp;
+			curr_ratio = 0;
 		}
 		else
 		{
@@ -136,9 +130,7 @@ void standard_compressor_dsp(struct dsp_desc_t *adsp , size_t data_len ,
 		ratio_env_follower *= curr_ratio;
 
 
-		curr_x1 *= gain;
 		*apCh1Out++ = (ratio_env_follower * curr_x1);
-		curr_x2 *= gain;
 		*apCh2Out++ = (ratio_env_follower * curr_x2);
 	}
 

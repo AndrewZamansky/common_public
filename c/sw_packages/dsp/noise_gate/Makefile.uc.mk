@@ -1,5 +1,5 @@
 
-INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_STANDARD_COMPRESSOR)
+INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_NOISE_GATE)
 
 ifneq ($(strip $(INCLUDE_THIS_COMPONENT)),)
     ifneq ($(and $(CONFIG_CORTEX_M4),$(CONFIG_INCLUDE_CORTEX_M_FPU)),)
@@ -7,7 +7,6 @@ ifneq ($(strip $(INCLUDE_THIS_COMPONENT)),)
         GLOBAL_LIBS_PATH += $(ARM_CMSIS_PATH)/CMSIS/Lib/GCC
     endif
 endif
- 
 
 #INCLUDE_DIR 
 
@@ -19,18 +18,18 @@ endif
 
 
 
-SRC = standard_compressor_ioctl.c
+SRC = noise_gate_ioctl.c
 
 ifneq ($(and $(CONFIG_CORTEX_M4),$(CONFIG_INCLUDE_CORTEX_M_FPU)),)
-    SRC += standard_compressor_arm_cortex_m_fpu.c
-    ifdef CONFIG_COMPRESSOR_IS_SPEED_CRITICAL
-        SPEED_CRITICAL_FILES += standard_compressor_arm_cortex_m_fpu.c
+    SRC += noise_gate_arm_cortex_m_fpu.c
+    ifdef CONFIG_NOISE_GATE_IS_SPEED_CRITICAL
+        SPEED_CRITICAL_FILES += noise_gate_arm_cortex_m_fpu.c
         SPEED_CRITICAL_FILES += libarm_cortexM4lf_math.a
     endif
 else
-    SRC += standard_compressor.c
+    SRC += noise_gate.c
     ifdef CONFIG_BIQUAD_FILTER_IS_SPEED_CRITICAL
-        SPEED_CRITICAL_FILES += standard_compressor.c
+        SPEED_CRITICAL_FILES += noise_gate.c
     endif
 endif
 
