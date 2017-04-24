@@ -56,9 +56,9 @@ else
     DBG_NAME :=
 endif
 
-ifdef CONFIG_MCC_COMPILER_32
+ifdef CONFIG_MSVC_COMPILER_32
     ARCH_NAME :=x86_32
-else
+else ifdef CONFIG_MSVC_COMPILER_64
     ARCH_NAME :=x86_64
 endif
 
@@ -67,12 +67,27 @@ ifdef    CONFIG_JUCE_VST_PLUGIN
     VPATH += | $(JUCE_PATH)/modules/juce_audio_plugin_client/utility
     SRC += juce_VST_Wrapper.cpp
     VPATH += | $(JUCE_PATH)/modules/juce_audio_plugin_client/VST
-    ifeq ($(wildcard $(OUT_DIR)\$(PROJECT_NAME).$(ARCH_NAME)$(DBG_NAME).exe),) 		#if VST tester dont exists then copy it tou output directory
-        ifdef CONFIG_MCC_COMPILER_32
-            DUMMY:=$(shell $(CP) $(TOOLS_ROOT_DIR)\saviHost_VST_tester\x32\savihost.exe $(OUT_DIR)\$(PROJECT_NAME).$(ARCH_NAME)$(DBG_NAME).exe )
-        else ifdef CONFIG_MCC_COMPILER_64
-            DUMMY:=$(shell $(CP) $(TOOLS_ROOT_DIR)\saviHost_VST_tester\x64\savihost.exe $(OUT_DIR)\$(PROJECT_NAME).$(ARCH_NAME)$(DBG_NAME).exe )
+    
+    ifdef CONFIG_USE_SAVI_HOST_VST_PLUGIN_TESTER
+       ifeq ($(wildcard $(REDEFINE_SAVIHOST_VST_TESTER_DIR)),)
+           $(info !--- $(WORKSPACE_ROOT_DIR)/workspace_config.mk/REDEFINE_SAVIHOST_VST_TESTER_DIR = $(REDEFINE_SAVIHOST_VST_TESTER_DIR))
+           $(info !--- $(REDEFINE_SAVIHOST_VST_TESTER_DIR) not found)
+           $(info !--- redefine $(WORKSPACE_ROOT_DIR)/workspace_config.mk/REDEFINE_SAVIHOST_VST_TESTER_DIR to valid saviHost VST tester directory)
+           $(error ---) 
+       endif
+    endif
+    
+    VST_TESTER :=$(OUT_DIR)\$(PROJECT_NAME).$(ARCH_NAME)$(DBG_NAME).exe
+    SAVIHOST_DIR :=$(REDEFINE_SAVIHOST_VST_TESTER_DIR)
+    #if VST tester dont exists then copy it tou output directory
+    ifeq ($(wildcard $(VST_TESTER)),)
+        ifdef CONFIG_MSVC_COMPILER_32
+            SAVIHOST :=$(SAVIHOST_DIR)\x32\savihost.exe
+        else ifdef CONFIG_MSVC_COMPILER_64
+            SAVIHOST :=$(SAVIHOST_DIR)\x64\savihost.exe
         endif
+        SAVIHOST := $(subst /,\,$(SAVIHOST))
+        DUMMY:=$(shell $(CP) $(SAVIHOST) $(VST_TESTER))
     endif
 
 

@@ -5,13 +5,14 @@ ifndef COMMON_INIT_SECTION_THAT_SHOULD_RUN_ONCE
 
 MSVC_ROOT_DIR :=
 
-####### test for existence of microsoft compiler and put its directory name in MSVC_ROOT_DIR #####
+#{{{{{{{{   test for existence of microsoft compiler   {{{{{{{{
+   # MSVC_ROOT_DIR will contain directry of microsoft compiler
 SEARCHED_TOOL:=cl
 SEARCHED_DIR_VARIABLE:=MSVC_ROOT_DIR
 MANUALLY_DEFINED_DIR_VARIABLE:=REDEFINE_VISUAL_STUDIO_DIR
 TEST_FILE_IN_SEARCHED_DIR:=bin\cl.exe
-include $(MAKEFILES_ROOT_DIR)/_common_include_functions/tool_existence_check.mk
-####### end of tool existence test #####
+include $(MAKEFILES_INC_FUNC_DIR)/tool_existence_check.mk
+#}}}}}}}}  #}}}}}}}}  END OF LDFLAGS PREPARATIONS }}}}}}}}
 
 MSVC_BIN_DIR	:=$(MSVC_ROOT_DIR)\bin
 MSVC_BIN_DIR := $(subst /,\,$(MSVC_BIN_DIR))
@@ -26,14 +27,16 @@ else ifneq ($(findstring Version 19,$(SHELL_OUT)),)
     VS_VERSION :=2015
     MSVC_VERSION :=19
 else
-    SHELL_OUT :=$(shell set "PATH=$(MSVC_ROOT_DIR)\..\Common7\IDE" & "$(MSVC_BIN_DIR)\cl.exe" 2>&1)
+    SHEL_CMD :=set "PATH=$(MSVC_ROOT_DIR)\..\Common7\IDE" &
+    SHEL_CMD +=$(MSVC_BIN_DIR)\cl.exe" 2>&1
+    SHELL_OUT :=$(shell $(SHEL_CMD))
     ifneq ($(findstring Version 17,$(SHELL_OUT)),)
         MSVC_SET_ADDITIONAL_PATHS :=set "PATH=$(MSVC_ROOT_DIR)\..\Common7\IDE" &
         VS_VERSION :=2012
         MSVC_VERSION :=17
     else
         $(info !---- unsupported version of visual studio)
-        $(info !---- install one of following versions : VS2012 , VS2013 , VS2015)
+        $(info !---- install one of following versions : VS2012, VS2013, VS2015)
         $(error )
     endif
 endif
@@ -44,78 +47,86 @@ GLOBAL_CFLAGS += /I"$(MSVC_ROOT_DIR)/include"
 ifdef CONFIG_USE_WINDOWS_KITS
 
     ifeq ($(VS_VERSION),2012)
-        WINDOWS_KIT_ROOT_DIR :=C:\Program Files (x86)\WINDOWS KITS\8.0
+        WDK_DIR :=C:\Program Files (x86)\WINDOWS KITS\8.0
     endif
 
     ifeq ($(VS_VERSION),2013)
-        WINDOWS_KIT_ROOT_DIR :=C:\Program Files (x86)\WINDOWS KITS\8.1
+        WDK_DIR :=C:\Program Files (x86)\WINDOWS KITS\8.1
     endif
 
     ifeq ($(VS_VERSION),2015)
-        WINDOWS_KIT_ROOT_DIR :=C:\Program Files (x86)\WINDOWS KITS\10
+        WDK_DIR :=C:\Program Files (x86)\WINDOWS KITS\10
     endif
 
-    TEST_WINDOWS_KIT_ROOT_DIR :=$(subst $(SPACE),\$(SPACE),$(WINDOWS_KIT_ROOT_DIR))
-    ifeq ("$(wildcard $(TEST_WINDOWS_KIT_ROOT_DIR))","")
-        $(info !--- $(TEST_WINDOWS_KIT_ROOT_DIR) does not exists )
+    TEST_WINDOWS_KIT_DIR :=$(subst $(SPACE),\$(SPACE),$(WDK_DIR))
+    ifeq ("$(wildcard $(TEST_WINDOWS_KIT_DIR))","")
+        $(info !--- $(TEST_WINDOWS_KIT_DIR) does not exists )
         $(info !--- window kit $(WINDOWS_KIT_VERSION) not found )
-        $(info !--- download windows kit $(WINDOWS_KIT_VERSION) and install to default location)
+        $(info !--- download/install windows kit $(WINDOWS_KIT_VERSION) to default location)
         $(error )
     endif
 
-    $(info ---- WDK :  $(WINDOWS_KIT_ROOT_DIR))
+    $(info ---- WDK :  $(WDK_DIR))
 
     ifeq ($(VS_VERSION),2012)
-        GLOBAL_CFLAGS += /I"$(WINDOWS_KIT_ROOT_DIR)\INCLUDE\UM"#cannot use $(call ADD_TO_GLOBAL_INCLUDE_PATH) because of spaces in folder name
-        GLOBAL_CFLAGS += /I"$(WINDOWS_KIT_ROOT_DIR)\INCLUDE\SHARED"
+        # cannot use $(call ADD_TO_GLOBAL_INCLUDE_PATH) because
+        # of spaces in folder name
+        GLOBAL_CFLAGS += /I"$(WDK_DIR)\INCLUDE\UM"
+        GLOBAL_CFLAGS += /I"$(WDK_DIR)\INCLUDE\SHARED"
     endif
 
     ifeq ($(VS_VERSION),2013)
-        GLOBAL_CFLAGS += /I"$(WINDOWS_KIT_ROOT_DIR)\INCLUDE\UM"#cannot use $(call ADD_TO_GLOBAL_INCLUDE_PATH) because of spaces in folder name
-        GLOBAL_CFLAGS += /I"$(WINDOWS_KIT_ROOT_DIR)\INCLUDE\SHARED"
+        # cannot use $(call ADD_TO_GLOBAL_INCLUDE_PATH) because
+        # of spaces in folder name
+        GLOBAL_CFLAGS += /I"$(WDK_DIR)\INCLUDE\UM"
+        GLOBAL_CFLAGS += /I"$(WDK_DIR)\INCLUDE\SHARED"
     endif
 
     ifeq ($(VS_VERSION),2015)
         WDK_10_VERSION:=
-        WINDOWS_KIT_ROOT_SUBVERSION_DIR :=$(WINDOWS_KIT_ROOT_DIR)\Include\10.0.10586.0
-        TEST_WINDOWS_KIT_ROOT_SUBVERSION_DIR :=$(subst $(SPACE),\$(SPACE),$(WINDOWS_KIT_ROOT_SUBVERSION_DIR))
-        ifneq ("$(wildcard $(TEST_WINDOWS_KIT_ROOT_SUBVERSION_DIR))","")
+        WDK_10_DIR :=$(WDK_DIR)\Include\10.0.10586.0
+        TEST_DIR :=$(subst $(SPACE),\$(SPACE),$(WDK_10_DIR))
+        ifneq ("$(wildcard $(TEST_WDK_10_DIR))","")
             WDK_10_VERSION :=10.0.10586.0
+            WDK_10_DIR :=
         endif
         ifeq ($(WDK_10_VERSION),)
-            WINDOWS_KIT_ROOT_SUBVERSION_DIR :=$(WINDOWS_KIT_ROOT_DIR)\Include\10.0.10240.0
-            TEST_WINDOWS_KIT_ROOT_SUBVERSION_DIR :=$(subst $(SPACE),\$(SPACE),$(WINDOWS_KIT_ROOT_SUBVERSION_DIR))
-            ifneq ("$(wildcard $(TEST_WINDOWS_KIT_ROOT_SUBVERSION_DIR))","")
+            WDK_10_DIR :=$(WDK_DIR)\Include\10.0.10240.0
+            TEST_WDK_10_DIR :=$(subst $(SPACE),\$(SPACE),$(WDK_10_DIR))
+            ifneq ("$(wildcard $(TEST_WDK_10_DIR))","")
                 WDK_10_VERSION :=10.0.10240.0
             endif
         endif
         ifeq ($(WDK_10_VERSION),)
-            WINDOWS_KIT_ROOT_SUBVERSION_DIR :=$(WINDOWS_KIT_ROOT_DIR)\Include\10.0.10150.0
-            TEST_WINDOWS_KIT_ROOT_SUBVERSION_DIR :=$(subst $(SPACE),\$(SPACE),$(WINDOWS_KIT_ROOT_SUBVERSION_DIR))
-            ifneq ("$(wildcard $(TEST_WINDOWS_KIT_ROOT_SUBVERSION_DIR))","")
+            WDK_10_DIR :=$(WDK_DIR)\Include\10.0.10150.0
+            TEST_WDK_10_DIR :=$(subst $(SPACE),\$(SPACE),$(WDK_10_DIR))
+            ifneq ("$(wildcard $(TEST_WDK_10_DIR))","")
                 WDK_10_VERSION :=10.0.10150.0
             endif
         endif
         ifeq ($(WDK_10_VERSION),)
-             $(info !--- no supported WDK 10 version found . supported versions are : 10.0.10586.0 , 10.0.10240.0 , 10.0.10150.0)
+             $(info !--- no supported WDK 10 version found.)
+             $(info !--- supported versions are 10.0.10586.0 , 10.0.10240.0 , 10.0.10150.0)
              $(error )
         endif
-        GLOBAL_CFLAGS += /I"$(WINDOWS_KIT_ROOT_SUBVERSION_DIR)\ucrt"#cannot use $(call ADD_TO_GLOBAL_INCLUDE_PATH) because of spaces in folder name
-        GLOBAL_CFLAGS += /I"$(WINDOWS_KIT_ROOT_SUBVERSION_DIR)\um"#cannot use $(call ADD_TO_GLOBAL_INCLUDE_PATH) because of spaces in folder name
-        GLOBAL_CFLAGS += /I"$(WINDOWS_KIT_ROOT_SUBVERSION_DIR)\shared"#cannot use $(call ADD_TO_GLOBAL_INCLUDE_PATH) because of spaces in folder name
+        
+        # cannot use $(call ADD_TO_GLOBAL_INCLUDE_PATH) because
+        # of spaces in folder name
+        GLOBAL_CFLAGS += /I"$(WDK_10_DIR)\ucrt"
+        GLOBAL_CFLAGS += /I"$(WDK_10_DIR)\um"
+        GLOBAL_CFLAGS += /I"$(WDK_10_DIR)\shared"
         $(info ---- WDK vaersion :  $(WDK_10_VERSION))
     endif
 
 endif
 
-#clear PATH environment variable to get rid of different microsoft compiler conflicts
-MSVC_LIB_ROOT_DIR  		:= $(MSVC_ROOT_DIR)/lib
 
 
-### GLOBAL_CFLAGS calculation
+#{{{{{{{{   GLOBAL_CFLAGS PREPARATIONS   {{{{{{{{
 
 GLOBAL_CFLAGS += /Zi
-GLOBAL_CFLAGS += /MP /GS /analyze- /W4 /Zc:wchar_t /Gm- /Fd"$(OUT_DIR)\\" /fp:precise
+GLOBAL_CFLAGS += /MP /GS /analyze- /W4 /Zc:wchar_t /Gm-
+GLOBAL_CFLAGS += /Fd"$(OUT_DIR)\\" /fp:precise
 GLOBAL_CFLAGS += /errorReport:prompt /WX- /Zc:forScope /GR /Gd /Oy-
 GLOBAL_CFLAGS += /EHsc#/EHsc
 GLOBAL_CFLAGS += /nologo /Fp"$(OUT_DIR)\out.pch"
@@ -133,9 +144,10 @@ endif
 ifdef CONFIG_COMPILE_FOR_DEBUG
     DUMMY := $$(call ADD_TO_GLOBAL_DEFINES , DEBUG)
     DUMMY := $$(call ADD_TO_GLOBAL_DEFINES , _DEBUG)
-    #following can cause executables not to open .
-    #for example some PC cubase is not openning VST (dll) pluging
-    #when compile with debug runtime libraries (maybe debug runtime libraries are missing , TO CHECK !!)
+    # following can cause executables not to open .
+    # for example some PC cubase is not openning VST (dll) pluging
+    # when compile with debug runtime libraries (maybe debug runtime 
+    # libraries are missing , TO CHECK !!)
     CRT_LIBRARIES_OPTION :=$(CRT_LIBRARIES_OPTION)d
 else
     DUMMY := $$(call ADD_TO_GLOBAL_DEFINES , NDEBUG)
@@ -155,6 +167,8 @@ endif
 
 
 GLOBAL_CFLAGS += /wd4100 #disable unused parameter warning
+
+#}}}}}}}}  END OF GLOBAL_CFLAGS PREPARATIONS }}}}}}}}
 
 
 # define flags for asm compiler :
