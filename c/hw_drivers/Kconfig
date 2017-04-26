@@ -93,6 +93,18 @@ if INCLUDE_INTERNAL_I2S
 source "$COMMON_DIR_PATH/c/hw_drivers/I2S/Kconfig"
 endif
 
+
+menuconfig INCLUDE_INTERNAL_PWM
+	bool   "internal pwm"
+	depends on I94XXX
+	default n
+
+config INTERNAL_PWM_IS_SPEED_CRITICAL
+	bool   "internal pwm is speed critical"
+	depends on INCLUDE_INTERNAL_PWM
+	default n
+
+
 config INCLUDE_USB_VIRTUAL_COM
 	bool   "usb virtual com"
 	depends on STM32F10x

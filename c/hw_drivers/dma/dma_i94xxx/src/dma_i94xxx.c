@@ -221,6 +221,14 @@ static uint8_t set_peripheral_dma(dma_i94xxx_instance_t *cfg_hndl,
 		dma_peripheral_direction = DMA_TO_PERIPHERAL;
 		break;
 
+	case PDMA_DPWM :
+		src_addr = buff;
+		src_ctrl = PDMA_SAR_INC;
+		dest_addr = (void*)&DPWM->DATA;
+		dest_ctrl = PDMA_DAR_FIX;
+		dma_peripheral_direction = DMA_TO_PERIPHERAL;
+		break;
+
 	default :
 		return 1;
 	}

@@ -89,6 +89,16 @@ config I2S_MIXER_IS_SPEED_CRITICAL
 	default y
 
 
+menuconfig INCLUDE_DPWM_MIXER
+	bool   "dpwm mixer"
+	default n
+
+config DPWM_MIXER_IS_SPEED_CRITICAL
+	bool   "dpwm mixer is speed critical"
+	depends on INCLUDE_DPWM_MIXER
+	default y
+
+
  
 menuconfig INCLUDE_VOICE_3D
 	bool   "voice 3D effect"
