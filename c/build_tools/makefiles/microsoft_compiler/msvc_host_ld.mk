@@ -26,22 +26,27 @@ else
     DBG_NAME :=
 endif
 
+NAMED_OUT_PREFIX :=$(OUT_DIR)/$(PROJECT_NAME).$(ARCH_NAME)$(DBG_NAME)
+
+HISTORY_OUT_PREFIX :=$(OUT_DIR_HISTORY)/$(PROJECT_NAME).$(ARCH_NAME)
+HISTORY_OUT_PREFIX :=$(HISTORY_OUT_PREFIX)$(DBG_NAME).$(MAIN_VERSION_STR)
+
 ifdef CONFIG_MSVC_OUTPUT_TYPE_WINDOWS_APPLICATION
     LINKER_OUTPUT := $(OUT_DIR)/$(OUTPUT_APP_NAME).exe
-    LINKER_OUTPUT_NAMED := $(OUT_DIR)/$(PROJECT_NAME).$(ARCH_NAME)$(DBG_NAME).exe
-    LINKER_HISTORY_OUTPUT := $(OUT_DIR_HISTORY)/$(PROJECT_NAME).$(ARCH_NAME)$(DBG_NAME).$(MAIN_VERSION_STR).exe
+    LINKER_OUTPUT_NAMED := $(NAMED_OUT_PREFIX).exe
+    LINKER_HISTORY_OUTPUT := $(HISTORY_OUT_PREFIX).exe
 endif
 
 ifdef CONFIG_MSVC_OUTPUT_TYPE_CONSOLE_APPLICATION
     LINKER_OUTPUT := $(OUT_DIR)/$(OUTPUT_APP_NAME).exe
-    LINKER_OUTPUT_NAMED := $(OUT_DIR)/$(PROJECT_NAME).$(ARCH_NAME)$(DBG_NAME).exe
-    LINKER_HISTORY_OUTPUT := $(OUT_DIR_HISTORY)/$(PROJECT_NAME).$(ARCH_NAME)$(DBG_NAME).$(MAIN_VERSION_STR).exe
+    LINKER_OUTPUT_NAMED := $(NAMED_OUT_PREFIX).exe
+    LINKER_HISTORY_OUTPUT := $(HISTORY_OUT_PREFIX).exe
 endif
 ifdef CONFIG_MSVC_OUTPUT_TYPE_DLL
     LINKER_OUTPUT := $(OUT_DIR)/$(OUTPUT_APP_NAME).dll
     LINKER_LIB_OUTPUT := $(OUT_DIR)/$(OUTPUT_APP_NAME).lib
-    LINKER_OUTPUT_NAMED := $(OUT_DIR)/$(PROJECT_NAME).$(ARCH_NAME)$(DBG_NAME).dll
-    LINKER_HISTORY_OUTPUT := $(OUT_DIR_HISTORY)/$(PROJECT_NAME).$(ARCH_NAME)$(DBG_NAME).$(MAIN_VERSION_STR).dll
+    LINKER_OUTPUT_NAMED := $(NAMED_OUT_PREFIX).dll
+    LINKER_HISTORY_OUTPUT := $(HISTORY_OUT_PREFIX).dll
 endif
 
 
@@ -85,8 +90,12 @@ ifdef CONFIG_COMPILE_FOR_DEBUG
     LDFLAGS += /SAFESEH:NO
     LDFLAGS += /DEBUG
 else
-    LDFLAGS += /OPT:REF#LINK removes unreferenced packaged functions and data
-    LDFLAGS += /OPT:ICF#perform 2(default) interations to find unreferenced code or data
+    #LINK removes unreferenced packaged functions and data:
+    LDFLAGS += /OPT:REF
+    
+    #perform 2(default) interations to find unreferenced code or data :
+    LDFLAGS += /OPT:ICF
+    
     LDFLAGS += /LTCG
     ifdef CONFIG_MSVC_COMPILER_32
         LDFLAGS += /SAFESEH
@@ -94,16 +103,19 @@ else
 endif
 
 ifdef CONFIG_MSVC_OUTPUT_TYPE_WINDOWS_APPLICATION
-    LDFLAGS += /ManifestFile:"$(OUT_DIR)\$(PROJECT_NAME).exe.intermediate.manifest"
+    MANIFEST_FILE :=$(OUT_DIR)\$(PROJECT_NAME).exe.intermediate.manifest
 endif
 ifdef CONFIG_MSVC_OUTPUT_TYPE_CONSOLE_APPLICATION
-    LDFLAGS += /ManifestFile:"$(OUT_DIR)\$(PROJECT_NAME).exe.intermediate.manifest"
+    MANIFEST_FILE :=$(OUT_DIR)\$(PROJECT_NAME).exe.intermediate.manifest
 endif
 ifdef CONFIG_MSVC_OUTPUT_TYPE_DLL
     LDFLAGS += /DLL
     LDFLAGS += /IMPLIB:"$(OUT_DIR)\$(PROJECT_NAME).lib"
-    LDFLAGS += /ManifestFile:"$(OUT_DIR)\$(PROJECT_NAME).dll.intermediate.manifest"
+    MANIFEST_FILE :=$(OUT_DIR)\$(PROJECT_NAME).dll.intermediate.manifest
 endif
+
+LDFLAGS += /ManifestFile:"$(MANIFEST_FILE)"
+
 LDFLAGS += /ERRORREPORT:PROMPT /NOLOGO /TLBID:1
 
 ifdef CONFIG_INCLUDE_TOOLCHAIN_LIBRARIES
@@ -123,27 +135,27 @@ ifdef CONFIG_USE_WINDOWS_KITS
 
     ifeq ($(VS_VERSION),2012)
         ifdef CONFIG_MSVC_COMPILER_32
-            LDFLAGS += /LIBPATH:"$(WINDOWS_KIT_ROOT_DIR)\LIB\WIN8\UM\X86"
+            LDFLAGS += /LIBPATH:"$(WDK_DIR)\LIB\WIN8\UM\X86"
         else
-            LDFLAGS += /LIBPATH:"$(WINDOWS_KIT_ROOT_DIR)\LIB\WIN8\UM\X64"
+            LDFLAGS += /LIBPATH:"$(WDK_DIR)\LIB\WIN8\UM\X64"
         endif
     endif
 
     ifeq ($(VS_VERSION),2013)
         ifdef CONFIG_MSVC_COMPILER_32
-            LDFLAGS += /LIBPATH:"$(WINDOWS_KIT_ROOT_DIR)\LIB\WINV6.3\UM\X86"
+            LDFLAGS += /LIBPATH:"$(WDK_DIR)\LIB\WINV6.3\UM\X86"
         else
-            LDFLAGS += /LIBPATH:"$(WINDOWS_KIT_ROOT_DIR)\LIB\WINV6.3\UM\X64"
+            LDFLAGS += /LIBPATH:"$(WDK_DIR)\LIB\WINV6.3\UM\X64"
         endif
     endif
     
     ifeq ($(VS_VERSION),2015)
         ifdef CONFIG_MSVC_COMPILER_32
-            LDFLAGS += /LIBPATH:"$(WINDOWS_KIT_ROOT_DIR)\LIB\$(WDK_10_VERSION)\ucrt\x86"
-            LDFLAGS += /LIBPATH:"$(WINDOWS_KIT_ROOT_DIR)\LIB\$(WDK_10_VERSION)\um\x86"
+            LDFLAGS += /LIBPATH:"$(WDK_DIR)\LIB\$(WDK_10_VERSION)\ucrt\x86"
+            LDFLAGS += /LIBPATH:"$(WDK_DIR)\LIB\$(WDK_10_VERSION)\um\x86"
         else
-            LDFLAGS += /LIBPATH:"$(WINDOWS_KIT_ROOT_DIR)\LIB\$(WDK_10_VERSION)\ucrt\x64"
-            LDFLAGS += /LIBPATH:"$(WINDOWS_KIT_ROOT_DIR)\LIB\$(WDK_10_VERSION)\um\x64"
+            LDFLAGS += /LIBPATH:"$(WDK_DIR)\LIB\$(WDK_10_VERSION)\ucrt\x64"
+            LDFLAGS += /LIBPATH:"$(WDK_DIR)\LIB\$(WDK_10_VERSION)\um\x64"
         endif
     endif
     
@@ -160,29 +172,21 @@ LDFLAGS += /MAP:"$(OUT_DIR)\$(PROJECT_NAME).map" /MAPINFO:EXPORTS
 LDFLAGS := $(GLOBAL_LDFLAGS) $(LDFLAGS)
 
 
-############   PREPROCESSOR FLAGS FOR LINKER SCRIPT #############
-
-
-
-
-##########################################################
-
-
-
-#LIBRARIES_DIRS := $(patsubst %,-L%,$(GLOBAL_LIBS_PATH))
-
 
 
 
 rwildcard=$(wildcard $1$2) $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2))
 
-#some time on windows .O.asm and .o.asm will appear as same files . so $(sort) will eliminate duplication
 
 
-ALL_OBJ_FILES := $(call rwildcard,$(OBJ_DIR)/,*.o) $(call rwildcard,$(OBJ_DIR)/,*.oo)  $(call rwildcard,$(OBJ_DIR)/,*.oop) 
-ALL_OBJ_FILES += $(call rwildcard,$(OBJ_DIR)/,*.o.asm) $(call rwildcard,$(OBJ_DIR)/,*.O.asm)
+ALL_OBJ_FILES := $(call rwildcard,$(OBJ_DIR)/,*.o)
+ALL_OBJ_FILES += $(call rwildcard,$(OBJ_DIR)/,*.oo)
+ALL_OBJ_FILES += $(call rwildcard,$(OBJ_DIR)/,*.oop) 
+ALL_OBJ_FILES += $(call rwildcard,$(OBJ_DIR)/,*.o.asm)
+ALL_OBJ_FILES += $(call rwildcard,$(OBJ_DIR)/,*.O.asm)
+# some time on windows .O.asm and .o.asm will appear as same files,
+# so $(sort) will eliminate duplication
 ALL_OBJ_FILES := $(sort $(ALL_OBJ_FILES))
-#ALL_OBJ_FILES	:= 	$(patsubst %.oop,%.obj,$(ALL_OBJ_FILES))
 
 ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
     LINKER_OUTPUT := $(subst /,\,$(LINKER_OUTPUT))
@@ -200,11 +204,14 @@ LIST_FILE_NAME_TRUNCATE :=$(ALL_OBJECTS_LIST_FILE)
 PREFIX_FOR_EACH_ITEM :=
 SUFFIX_LINE_FOR_EACH_ITEM :=
 ITEMS := $(ALL_OBJ_FILES)
-include $(MAKEFILES_ROOT_DIR)/_common_include_functions/add_item_list_to_file.mk
+include $(MAKEFILES_INC_FUNC_DIR)/add_item_list_to_file.mk
 #end of file creation
 
+LINKER_CMD =$(LD) /OUT:"$(LINKER_OUTPUT)" $(LDFLAGS) 
+LINKER_CMD +=$(LIBRARIES_DIRS) @$(ALL_OBJECTS_LIST_FILE) $(LIBS) 
+
 build_outputs :
-	$(LD) /OUT:"$(LINKER_OUTPUT)" $(LDFLAGS) $(LIBRARIES_DIRS) @$(ALL_OBJECTS_LIST_FILE) $(LIBS) 
+	$(LINKER_CMD)
 	$(CP)  $(LINKER_OUTPUT) $(LINKER_OUTPUT_NAMED)
 	$(CP)  $(LINKER_OUTPUT) $(LINKER_HISTORY_OUTPUT)
 ifeq ($(findstring y,$(CONFIG_CALCULATE_CRC32)),y)
