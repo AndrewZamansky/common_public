@@ -54,14 +54,14 @@ void standard_compressor_dsp(struct dsp_desc_t *adsp , size_t data_len ,
 	float const *apCh2In;
 	float *apCh1Out ,  *apCh2Out;
 
-	float ratio_env_follower ;
+	static float ratio_env_follower ;
 	float rms ;
 	float curr_ratio = 1;
 	float threshold  ;
 	float reverse_ratio ;
 	float attack ;
 	float release ;
-	float release_neg ;
+	static float release_neg ;
 	float attack_neg ;
 	float curr_x1, curr_x2;
 	float tmp;
@@ -76,9 +76,9 @@ void standard_compressor_dsp(struct dsp_desc_t *adsp , size_t data_len ,
 	apCh2Out = out_pads[1].buff;
 
 	attack = handle->attack;
-	attack_neg = 1 - attack;
+	attack_neg = 1.0f - attack;
 	release = handle->release;
-	release_neg =  1 - release ;
+	release_neg =  1.0f - release ;
 	threshold = handle->threshold;
 	reverse_ratio = handle->reverse_ratio;
 	gain = handle->gain;

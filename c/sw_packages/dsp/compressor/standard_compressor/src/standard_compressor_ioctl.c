@@ -12,9 +12,9 @@
 
 /********  includes *********************/
 
-#include "_standard_compressor_prerequirements_check.h" // should be after {standard_compressor_config.h,dev_management_api.h}
+#include "_standard_compressor_prerequirements_check.h"
 
-#include "standard_compressor_api.h" //place first to test that header file is self-contained
+#include "standard_compressor_api.h"
 #include "standard_compressor.h"
 
 #include "math.h"
@@ -48,6 +48,7 @@ static float convert_ms_to_non_unit(float ms)
 {
 	float tmp;
 
+	ms = ms / 1000; //transfer to seconds
 	tmp = -( 1.0f / (48000.0f * ms));
 	tmp = exp(tmp);
 	tmp = 1.0f - tmp;

@@ -36,9 +36,9 @@ typedef enum
 
 typedef enum
 {
-	DSP_PAD_TYPE_NOT_USED  = 0,
-	DSP_PAD_TYPE_NORMAL   ,
-	DSP_PAD_TYPE_NOT_ALLOCATED_BUFFER ,
+	DSP_OUT_PAD_TYPE_NOT_USED  = 0,
+	DSP_OUT_PAD_TYPE_NORMAL   ,
+	DSP_OUT_PAD_TYPE_NOT_ALLOCATED_BUFFER ,
 }DSP_PAD_TYPE_t;
 
 typedef enum
@@ -85,8 +85,7 @@ struct dsp_chain_t {
 	size_t 				occupied_dsp_modules;
 	size_t 				max_num_of_dsp_modules;
 
-	// +1 for dummy zero's input for unconnected inputs of modules
-	struct dsp_pad_t	chain_in_pads[MAX_NUM_OF_OUTPUT_PADS + 1];
+	struct dsp_pad_t	chain_in_pads[MAX_NUM_OF_OUTPUT_PADS];
 
 	struct dsp_pad_t*	chain_out_pads[MAX_NUM_OF_OUTPUT_PADS];
 	float *				out_buffers[MAX_NUM_OF_OUTPUT_PADS];

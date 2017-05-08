@@ -25,17 +25,12 @@
 
 /********  types  *********************/
 
-typedef struct
-{
-	void *pFilterParams;
-}biquads_cascading_filter_t;
-
-typedef struct
+struct biquads_cascading_filter_t
 {
 	uint8_t numOfStages;
 	float *  pCoeffs;
 	float *  pStates; // should be allocated numOfStages*4
-}sw_biquads_params_t;
+};
 
 
 
@@ -53,10 +48,11 @@ typedef struct
 
 void biquads_cascading_filter(void *pFilter,float *apIn,float *apOut,size_t buff_len)
 {
-
-	sw_biquads_params_t *filter_params;
-	float *pState,*pStates;
-	uint8_t currStage,numOfStages ;
+	struct biquads_cascading_filter_t  *p_biquads_cascading_filter;
+	float *pState;
+	float *pStates;
+	uint8_t currStage;
+	uint8_t numOfStages ;
 	float *pCoeffs;
 	float *currStageCoeffs;
 
@@ -68,10 +64,10 @@ void biquads_cascading_filter(void *pFilter,float *apIn,float *apOut,size_t buff
 	float tmp;
 
 
-	filter_params = (sw_biquads_params_t*)((biquads_cascading_filter_t *)pFilter)->pFilterParams;
-	pCoeffs = filter_params->pCoeffs;
-	numOfStages = filter_params->numOfStages;
-	pStates = filter_params->pStates;
+	p_biquads_cascading_filter = pFilter;
+	pCoeffs = p_biquads_cascading_filter->pCoeffs;
+	numOfStages = p_biquads_cascading_filter->numOfStages;
+	pStates = p_biquads_cascading_filter->pStates;
 	pOutTmp=0;
 	for(count = 0 ; count < buff_len; count++)
 	{
@@ -119,20 +115,25 @@ void biquads_cascading_filter(void *pFilter,float *apIn,float *apOut,size_t buff
  *
  *    {b10, b11, b12, a11, a12, b20, b21, b22, a21, a22, ...}
  */
-void *biquads_alloc(uint8_t num_of_stages, float *  	pCoeffs )
+void *biquads_alloc(uint8_t num_of_stages, float *pCoeffs )
 {
-	void *tmp;
 	biquads_cascading_filter_t *p_biquads_cascading_filter;
-	p_biquads_cascading_filter=(biquads_cascading_filter_t *)malloc(sizeof(biquads_cascading_filter_t));
+	void *pStates;
+	size_t size_of_states;
+
+	p_biquads_cascading_filter =(biquads_cascading_filter_t *)malloc(
+			sizeof(biquads_cascading_filter_t));
 
 	p_biquads_cascading_filter->pFilterParams =
 				(sw_biquads_params_t *)malloc(	sizeof(sw_biquads_params_t));
-	((sw_biquads_params_t*)p_biquads_cascading_filter->pFilterParams)->numOfStages = num_of_stages;
-	((sw_biquads_params_t*)p_biquads_cascading_filter->pFilterParams)->pCoeffs = pCoeffs;
-	tmp = malloc(NUM_OF_STATES_PER_STAGE * num_of_stages * sizeof(float));
-	memset(tmp  , 0 , NUM_OF_STATES_PER_STAGE * num_of_stages * sizeof(float));
-	((sw_biquads_params_t*)(p_biquads_cascading_filter->pFilterParams))->pStates=tmp;
 
+	size_of_states = NUM_OF_STATES_PER_STAGE * num_of_stages * sizeof(float);
+	pStates = malloc(size_of_states);
+	memset(pStates, 0, size_of_states);
+
+	p_biquads_cascading_filter->pStates = pStates;
+	p_biquads_cascading_filter->numOfStages = num_of_stages;
+	p_biquads_cascading_filter->pCoeffs = pCoeffs;
 
 	return p_biquads_cascading_filter;
 }
@@ -142,11 +143,11 @@ void *biquads_alloc(uint8_t num_of_stages, float *  	pCoeffs )
  */
 void biquads_free(void *pFilter,uint8_t num_of_stages, float *  	pCoeffs )
 {
+	struct biquads_cascading_filter_t  *p_biquads_cascading_filter;
 
-	free(  (   (sw_biquads_params_t*)((biquads_cascading_filter_t *)pFilter)->pFilterParams)->pStates  );
-
-	free(((biquads_cascading_filter_t *)pFilter)->pFilterParams);
-	free(pFilter);
+	p_biquads_cascading_filter = pFilter;
+	free( p_biquads_cascading_filter->pStates  );
+	free(p_biquads_cascading_filter);
 }
 
 

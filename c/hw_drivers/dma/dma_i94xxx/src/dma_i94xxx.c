@@ -80,7 +80,7 @@ static void update_buffer(dma_i94xxx_instance_t *cfg_hndl,
 	{
 		if (BUFF_IDLE != *next_buff_status)
 		{
-			CRITICAL_ERROR("next rx buffer not ready\n");
+			//CRITICAL_ERROR("next rx buffer not ready\n");//removed for debugging purposes
 		}
 		runtime_hndl->buff_status[curr_buff_indx] = BUFF_READY;
 		*next_buff_status = BUFF_IN_PROCCESS;

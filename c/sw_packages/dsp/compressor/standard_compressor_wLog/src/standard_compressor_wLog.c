@@ -16,6 +16,7 @@
 #include "math.h"
 
 #include "PRINTF_api.h"
+#include "common_dsp_api.h"
 
 
 #include "auto_init_api.h"

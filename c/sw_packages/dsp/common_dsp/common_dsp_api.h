@@ -10,5 +10,6 @@
 
 
 float fast_pow(float a, float b);
+float log2f_approx(float X);
 
 #endif

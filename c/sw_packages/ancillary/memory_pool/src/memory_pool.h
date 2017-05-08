@@ -15,22 +15,21 @@
 
 /***************   typedefs    *******************/
 
-typedef struct
+struct mem_pool_chunck_t
 {
 
 	void *mem;
 	uint8_t inUse;
 
-} xMemPool_t;
+};
 
 
-typedef struct
+struct mem_pool_t
 {
-
-	size_t num_of_chunks ;
-	xMemPool_t *pool_chunks ;
-
-} MEMORY_POOL_Instance_t;
+	size_t   num_of_chunks;
+	size_t   size_of_chunk;
+	struct mem_pool_chunck_t *pool_chunks ;
+};
 
 
 

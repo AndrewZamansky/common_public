@@ -92,7 +92,12 @@ FILES_TO_FORCE_IN_RAM += 123_DUMMY.X
 #{{{{{{{{  LINKER SCRIPT FILE PREPARATIONS {{{{{{{{
 
 ifdef CONFIG_USE_APPLICATION_SPECIFIC_SCATTER_FILE
-    SCATTER_FILE_OUTPUT =$(APP_ROOT_DIR)/$(PROJECT_NAME).lds
+    SCATTER_FILE =$(APP_ROOT_DIR)/$(PROJECT_NAME).lds
+    ifeq ($(wildcard $(SCATTER_FILE)),) #if scatter file not found
+        $(info !--- application configured to use it's own scatter file,)
+        $(info !--- but $(SCATTER_FILE) doesn't exist)
+        $(error )
+    endif
 else
     SCATTER_FILES_DIR :=$(BUILD_TOOLS_ROOT_DIR)/scatter_files/arm
     LDS_PREPROCESSOR_DEFS += -DFILES_TO_FORCE_IN_RAM="$(FILES_TO_FORCE_IN_RAM)"
@@ -102,7 +107,7 @@ else
         SCATTER_FILE_PATTERN =$(SCATTER_FILES_DIR)/arm_gcc_cortex_a.lds
     endif
 
-    SCATTER_FILE_OUTPUT =$(OUT_DIR)/$(OUTPUT_APP_NAME).lds
+    SCATTER_FILE =$(OUT_DIR)/$(OUTPUT_APP_NAME).lds
 endif
 
 #}}}}}}}}  END OF LINKER SCRIPT FILE PREPARATIONS }}}}}}}}
@@ -168,10 +173,10 @@ ifdef CONFIG_USE_APPLICATION_SPECIFIC_SCATTER_FILE
 else
     CREATE_LDS_CMD =$(CC) -E -P -x c -I z_auto_generated_files
     CREATE_LDS_CMD += $(LDS_PREPROCESSOR_DEFS)
-    CREATE_LDS_CMD += $(SCATTER_FILE_PATTERN) -o $(SCATTER_FILE_OUTPUT)
+    CREATE_LDS_CMD += $(SCATTER_FILE_PATTERN) -o $(SCATTER_FILE)
 endif
 
-LINKER_CMD =$(LD) $(LDFLAGS) -T $(SCATTER_FILE_OUTPUT) $(LIBRARIES_DIRS)
+LINKER_CMD =$(LD) $(LDFLAGS) -T $(SCATTER_FILE) $(LIBRARIES_DIRS)
 LINKER_CMD += @$(ALL_OBJECTS_LIST_FILE) $(LIBS) -o $(LINKER_OUTPUT)
 
 build_outputs :

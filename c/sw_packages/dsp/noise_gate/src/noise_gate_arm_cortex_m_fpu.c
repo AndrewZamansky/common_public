@@ -63,7 +63,6 @@ void noise_gate_dsp(struct dsp_desc_t *adsp , size_t data_len ,
 	float release_neg ;
 	float attack_neg ;
 	float curr_x1, curr_x2;
-	float tmp;
 	float mono_x;
 	float alpha , one_minus_alpha;//
 
