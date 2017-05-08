@@ -59,6 +59,7 @@ static int16_t total_number_of_external_interrupts;
 typedef enum IRQn_local {
     /******  Cortex-M4 Processor Exceptions Numbers ********/
     NonMaskableInt_IRQn_local    = -14, /*!<  2 Non Maskable Interrupt      */
+    HardFault_IRQn_local         = -13, /*!<  2 Hard Fault Interrupt      */
     MemoryManagement_IRQn_local  = -12, /*!<  4 Memory Management Interrupt */
     BusFault_IRQn_local          = -11, /*!<  5 Bus Fault Interrupt         */
     UsageFault_IRQn_local        = -10, /*!<  6 Usage Fault Interrupt       */
@@ -100,6 +101,38 @@ void  IRQ_ATTR common_interrupt_handler()
 		return ;
 	}
 	CRITICAL_ERROR("received interrupt was not registerd yet");
+}
+
+
+static volatile uint32_t R0_r, R1_r, R2_r, R3_r, R12_r, LR_r, PC_r, PSR_r;
+/**
+ * isr_hard_fault()
+ *
+ * return:
+ */
+void __attribute__((interrupt("IRQ"))) isr_hard_fault()
+{
+	uint32_t *stack;
+
+#if defined(__GNUC__)
+	register int sp asm ("sp");
+	stack = (uint32_t *)sp ;
+#elif defined(__arm)
+	__asm
+	{
+		//TODO
+	};
+#endif
+
+	R0_r = *stack++;
+	R1_r = *stack++;
+	R2_r = *stack++;
+	R3_r = *stack++;
+	R12_r = *stack++;
+	LR_r = *stack++;
+	PC_r = *stack++;
+	PSR_r = *stack++;
+    while (1);
 }
 
 
@@ -201,6 +234,7 @@ void  NVIC_API_Init(void)
 
     NVIC_SetPriorityGrouping(NVIC_PriorityGroup_4);
 
+    irq_register_interrupt(HardFault_IRQn_local, isr_hard_fault);
 
 
 }
