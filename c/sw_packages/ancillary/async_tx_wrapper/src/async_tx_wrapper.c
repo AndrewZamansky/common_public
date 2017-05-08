@@ -72,6 +72,11 @@ uint8_t async_tx_wrapper_callback(struct dev_desc_t *adev,
 
 	data_length = (tx_int_size_t)runtime_handle->data_length;
 
+	if (0 == data_length)
+	{
+		CRITICAL_ERROR("should never be reached\n");
+	}
+
 	if ((CALLBACK_TX_DONE == aCallback_num) && (data_length))
 	{
 		server_dev = config_handle->server_dev;
@@ -139,7 +144,7 @@ static void sw_uart_send_and_wait_for_end(struct dev_desc_t *adev,
 		if(called_from_task)
 		{
 			/* when setting timeout = length then for baud rate <8k we
-			 * should get only message only after transmision ends
+			 * should get only message only after transmission ends
 			 */
 			os_queue_receive_with_timeout( xTX_WaitQueue, &dummy_msg, length );
 		}
@@ -150,13 +155,17 @@ static void sw_uart_send_and_wait_for_end(struct dev_desc_t *adev,
 			while (wait--);
 		}
 		length = runtime_handle->data_length;
-		if (length == last_checked_length)/* check if transmition is stucked */
+		if (length == last_checked_length)/* check if transmission is stuck */
 		{
 			break ;
 		}
 	}
-	runtime_handle->data_length=0;
+
 	DEV_IOCTL_0_PARAMS(server_dev ,IOCTL_UART_DISABLE_TX);
+	/* after disabling TX interrupt should never be called
+	 * so it's safe to zero data_length
+	 */
+	runtime_handle->data_length=0;
 	if(called_from_task)
 	{
 		//cleanup queue
