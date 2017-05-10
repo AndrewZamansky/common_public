@@ -110,7 +110,7 @@ static volatile uint32_t R0_r, R1_r, R2_r, R3_r, R12_r, LR_r, PC_r, PSR_r;
  *
  * return:
  */
-void __attribute__((interrupt("IRQ"))) isr_hard_fault()
+void __attribute__((interrupt("IRQ"))) __attribute__((naked)) isr_hard_fault()
 {
 	uint32_t *stack;
 
