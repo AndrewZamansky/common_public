@@ -1,0 +1,21 @@
+
+INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_MULTIPLIER_2CHANNEL)
+ 
+
+
+#DEFINES = 
+
+#CFLAGS = 
+
+#ASMFLAGS =  
+
+ifdef CONFIG_MULTIPLIER_IS_SPEED_CRITICAL
+    SPEED_CRITICAL_FILES += multiplier_2ch.c
+endif
+
+SRC = multiplier_2ch.c
+
+VPATH = src
+
+
+include $(COMMON_CC)

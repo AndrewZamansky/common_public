@@ -12,15 +12,17 @@
 #define _MULTIPLIER_1CH_H
 
 #include "src/_multiplier_1ch_prerequirements_check.h"
+#include "multiplier_1ch.h"
 
 
 /***************   typedefs    *******************/
 
 
-typedef struct
+struct multiplier_1ch_instance_t
 {
 	float weight ;
-} MULTIPLIER_1CH_Instance_t;
+	struct multiplier_api_set_params_t set_params;
+};
 
 
 

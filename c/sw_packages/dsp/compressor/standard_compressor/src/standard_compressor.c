@@ -3,18 +3,15 @@
  * file :   standard_compressor.c
  *
  *
- *
- *
- *
  */
 
 
 
 /********  includes *********************/
 
-#include "_standard_compressor_prerequirements_check.h" // should be after {standard_compressor_config.h,dev_management_api.h}
+#include "_standard_compressor_prerequirements_check.h"
 
-#include "standard_compressor_api.h" //place first to test that header file is self-contained
+#include "standard_compressor_api.h"
 #include "standard_compressor.h"
 
 #include "math.h"

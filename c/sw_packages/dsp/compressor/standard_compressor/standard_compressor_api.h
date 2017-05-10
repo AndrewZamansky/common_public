@@ -20,9 +20,19 @@ typedef enum
 	IOCTL_STANDARD_COMPRESSOR_SET_RELEASE_mS,
 	IOCTL_STANDARD_COMPRESSOR_SET_RATIO,
 	IOCTL_STANDARD_COMPRESSOR_SET_ALPHA,
+	IOCTL_STANDARD_COMPRESSOR_GET_PARAMS,
 }STANDARD_COMPRESSOR_API_ioctl_t;
 
 
+struct standard_compressor_api_set_params_t
+{
+	float gain;
+	float threshold;
+	float attack;
+	float release;
+	float ratio;
+	float alpha;
+};
 
 /**********  define API  functions  ************/
 

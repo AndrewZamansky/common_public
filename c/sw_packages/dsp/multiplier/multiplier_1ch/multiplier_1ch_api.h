@@ -5,17 +5,13 @@
 #include "src/_multiplier_1ch_prerequirements_check.h"
 
 #include "common_dsp_api.h"
+#include "multiplier_api.h"
 
 /*****************  defines  **************/
 
 
 /**********  define API  types ************/
 
-
-typedef enum
-{
-	IOCTL_MULTIPLIER_SET_WEIGHT = IOCTL_DSP_LAST_COMMON_IOCTL+1,
-}MULTIPLIER_1CH_API_ioctl_t;
 
 
 /**********  define API  functions  ************/

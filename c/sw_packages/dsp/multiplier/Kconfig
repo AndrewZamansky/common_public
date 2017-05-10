@@ -4,7 +4,11 @@ config INCLUDE_MULTIPLIER_1CHANNEL
 	bool   "1 channel multiplier"
 	default n
 
-config MULTIPLIER_1CHANNEL_IS_SPEED_CRITICAL
+config INCLUDE_MULTIPLIER_2CHANNEL
+	bool   "2 channel multiplier"
+	default n
+
+config MULTIPLIER_IS_SPEED_CRITICAL
 	bool   "multiplier is speed critical"
-	depends on INCLUDE_MULTIPLIER_1CHANNEL
+	depends on INCLUDE_MULTIPLIER_1CHANNEL || INCLUDE_MULTIPLIER_2CHANNEL
 	default y

@@ -24,7 +24,7 @@ struct biquads_filter_t{
 	void *pBiquadFilter   ;
 	size_t num_of_bands ;
 	struct biquad_band_coeffs_t *pCoeffs;
-	biquad_filter_api_band_set_params_t band_set_params;
+	struct biquad_filter_api_band_set_params_t *band_set_params;
 };
 
 
