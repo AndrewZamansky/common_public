@@ -138,15 +138,7 @@ config INCLUDE_WIRELESS_UART
 	bool   "wireless uart"
 	default n
 
-
-menuconfig INCLUDE_SPI_FLASH
-	bool   "spi flash"
-	depends on INCLUDE_INTERNAL_SPI
-	default n
-
-if INCLUDE_SPI_FLASH
-source "$COMMON_DIR_PATH/c/hw_drivers/storage/spi_flash/Kconfig"
-endif
+source "$COMMON_DIR_PATH/c/hw_drivers/storage/Kconfig"
 
 ######## automatically selected configurations #########
 config INCLUDE_SERIAL_NUMBER

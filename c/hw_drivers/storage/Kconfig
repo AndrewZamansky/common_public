@@ -1,0 +1,20 @@
+#
+	
+menu "storage"
+
+config INCLUDE_INTERNAL_FLASH
+	bool   "internal flash"
+	depends on I94XXX
+	default n
+
+menuconfig INCLUDE_SPI_FLASH
+	bool   "spi flash"
+	depends on INCLUDE_INTERNAL_SPI
+	default n
+
+if INCLUDE_SPI_FLASH
+source "$COMMON_DIR_PATH/c/hw_drivers/storage/spi_flash/Kconfig"
+endif
+
+
+endmenu
