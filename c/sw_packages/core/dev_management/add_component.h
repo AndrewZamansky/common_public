@@ -15,7 +15,7 @@ extern size_t MODULE_PWRITE_FUNCTION(struct dev_desc_t *adev,
 #ifndef	MODULE_PREAD_FUNCTION
 	#define MODULE_PREAD_FUNCTION			DEV_API_dummy_pread_func
 #endif
-extern size_t MODULE_PREAD_FUNCTION( struct dev_desc_t *adev,
+extern size_t MODULE_PREAD_FUNCTION(struct dev_desc_t *adev,
 						uint8_t *apData, size_t aLength, size_t aOffset);
 
 #ifndef	MODULE_CALLBACK_FUNCTION

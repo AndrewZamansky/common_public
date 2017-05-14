@@ -59,8 +59,8 @@ void SPI_IRQHandler()
  *
  * return:
  */
-uint8_t I2S_onSPI_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
-		, void * aIoctl_param1 , void * aIoctl_param2)
+uint8_t I2S_onSPI_i94xxx_ioctl(struct dev_desc_t *adev,
+		const uint8_t aIoctl_num, void * aIoctl_param1 , void * aIoctl_param2)
 {
 	struct I2S_onSPI_i94xxx_cfg_t *cfg_hndl;
 	SPI_T	*I2S_module;
