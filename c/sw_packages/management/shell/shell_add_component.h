@@ -3,15 +3,12 @@
 #include  "shell_api.h"
 #include "src/shell.h"
 
-extern uint8_t shell_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2);
-extern uint8_t shell_callback(struct dev_desc_t *adev ,
-		const uint8_t aCallback_num , void * aCallback_param1, void * aCallback_param2);
 
-#define	MODULE_NAME					shell
-#define	MODULE_IOCTL_FUNCTION		shell_ioctl
-#define	MODULE_CALLBACK_FUNCTION	shell_callback
-#define MODULE_CONFIG_DATA_STRUCT_TYPE		shell_instance_t
-#define MODULE_RUNTIME_DATA_STRUCT_TYPE		shell_runtime_instance_t
+#define	MODULE_NAME							shell
+#define	MODULE_IOCTL_FUNCTION				shell_ioctl
+#define	MODULE_CALLBACK_FUNCTION			shell_callback
+#define MODULE_CONFIG_DATA_STRUCT_TYPE		struct shell_instance_t
+#define MODULE_RUNTIME_DATA_STRUCT_TYPE		struct shell_runtime_instance_t
 
 #ifdef DT_DEV_MODULE
 
@@ -39,14 +36,16 @@ extern uint8_t shell_callback(struct dev_desc_t *adev ,
 
 #define MODULE_CONFIGURABLE_PARAMS_ARRAY	{	\
 			{"shell_server" 	, IOCTL_SET_SERVER_DEVICE 	, IOCTL_VOID , \
-				DEV_PARAM_TYPE_PDEVICE , MAPPED_SET_DUMMY_PARAM() }			\
+				DEV_PARAM_TYPE_PDEVICE , MAPPED_SET_DUMMY_PARAM() }		   \
 		}
 
 
 
 #include "add_component.h"
 
-/* device specific defines should be undefined after calling #include "add_component.h" */
+/*
+ *  device specific defines should be undefined
+ *  after calling #include "add_static_dev.h"
+ */
 #undef SHELL_DT_SERVER_PDEV
 #undef SHELL_DT_CALLBACK_PDEV
-

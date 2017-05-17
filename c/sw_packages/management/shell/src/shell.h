@@ -16,15 +16,15 @@
 
 /***************   typedefs    *******************/
 
-typedef struct {
+struct shell_instance_t {
 	struct dev_desc_t * server_tx_dev;
 	struct dev_desc_t * server_rx_dev;
 	struct dev_desc_t *   callback_dev;
-} shell_instance_t;
+};
 
-typedef struct {
+struct shell_runtime_instance_t {
 	uint32_t lastTestedBytePos;
 	uint8_t lastEOLchar;
-} shell_runtime_instance_t;
+};
 
 #endif /* */

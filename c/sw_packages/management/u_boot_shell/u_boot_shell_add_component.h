@@ -3,14 +3,11 @@
 #include  "u_boot_shell_api.h"
 #include "src/u_boot_shell.h"
 
-extern uint8_t u_boot_shell_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2);
-extern uint8_t u_boot_shell_callback(struct dev_desc_t *adev ,
-		const uint8_t aCallback_num , void * aCallback_param1, void * aCallback_param2);
 
-#define	MODULE_NAME					u_boot_shell
-#define	MODULE_IOCTL_FUNCTION		u_boot_shell_ioctl
-#define	MODULE_CALLBACK_FUNCTION	u_boot_shell_callback
-#define MODULE_CONFIG_DATA_STRUCT_TYPE		u_boot_shell_instance_t
+#define	MODULE_NAME							u_boot_shell
+#define	MODULE_IOCTL_FUNCTION				u_boot_shell_ioctl
+#define	MODULE_CALLBACK_FUNCTION			u_boot_shell_callback
+#define MODULE_CONFIG_DATA_STRUCT_TYPE		struct u_boot_shell_instance_t
 
 #ifdef DT_DEV_MODULE
 
@@ -34,5 +31,8 @@ extern uint8_t u_boot_shell_callback(struct dev_desc_t *adev ,
 
 #include "add_component.h"
 
-/* device specific defines should be undefined after calling #include "add_component.h" */
+/**
+ *  device specific defines should be undefined
+ *  after calling #include "add_static_dev.h"
+ */
 #undef U_BOOT_SHELL_DT_SERVER_PDEV
