@@ -42,7 +42,7 @@
 #include "_project.h"
 
 #include <u-boot/include/command.h>
-#include "shell_api.h"
+#include "u_boot_shell_api.h"
 
 
 extern void* __HEAP_END;

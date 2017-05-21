@@ -3,9 +3,6 @@
  * file :   PRINTF.c
  *
  *
- *
- *
- *
  */
 
 
@@ -22,9 +19,6 @@
 #define MAX_NUM_OF_PRINTF_INSTANCES 4
 #define PRINTF_BUF_LENGTH  128
 /********  types  *********************/
-typedef struct {
-	struct dev_desc_t * dev_descriptor;
-} PRINTF_params_t;
 
 
 /********  externals *********************/
@@ -38,199 +32,176 @@ struct dev_desc_t const *print_dev;
 
 #else
 
-static PRINTF_params_t PRINTF_DebugInstanceParams[MAX_NUM_OF_PRINTF_INSTANCES] = { {0} };
-static PRINTF_params_t PRINTF_NoteInstanceParams[MAX_NUM_OF_PRINTF_INSTANCES] = { {0} };
+static struct dev_desc_t *debug_out_devs[MAX_NUM_OF_PRINTF_INSTANCES] = {NULL};
+static struct dev_desc_t *note_out_devs[MAX_NUM_OF_PRINTF_INSTANCES] = {NULL};
 
 static uint8_t sh_buffer[PRINTF_BUF_LENGTH]; //  define your own buffer’s size
 
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        PRINTF_API_AddDebugOutput                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-uint32_t PRINTF_API_AddDebugOutput(struct dev_desc_t *aDevHandle)
+static uint8_t add_dev(
+		struct dev_desc_t  **out_devs, struct dev_desc_t *aDevHandle)
 {
 	uint8_t i;
 
-	for(i=0;i< MAX_NUM_OF_PRINTF_INSTANCES; i++)
+	for (i = 0; i < MAX_NUM_OF_PRINTF_INSTANCES; i++)
 	{
-		if( (NULL == PRINTF_DebugInstanceParams[i].dev_descriptor) ||
-				(aDevHandle == PRINTF_DebugInstanceParams[i].dev_descriptor))
+		if ( (NULL == out_devs[i]) || (aDevHandle == out_devs[i]) )
 		{
-			PRINTF_DebugInstanceParams[i].dev_descriptor = aDevHandle;
+			out_devs[i] = aDevHandle;
 			return 0;
 		}
 	}
 	return 1;
 }
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        PRINTF_API_AddNoteOutput                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-uint32_t PRINTF_API_AddNoteOutput(struct dev_desc_t *aDevHandle )
-{
-	uint8_t i;
 
-	for(i=0;i< MAX_NUM_OF_PRINTF_INSTANCES; i++)
-	{
-		if((NULL == PRINTF_NoteInstanceParams[i].dev_descriptor) ||
-				(aDevHandle == PRINTF_NoteInstanceParams[i].dev_descriptor))
-		{
-			PRINTF_NoteInstanceParams[i].dev_descriptor = aDevHandle;
-			return 0;
-		}
-	}
-	return 1;
+/**
+ * PRINTF_API_AddDebugOutput()
+ *
+ * return:
+ */
+uint8_t PRINTF_API_AddDebugOutput(struct dev_desc_t *aDevHandle)
+{
+	return add_dev(debug_out_devs, aDevHandle);
 }
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        PRINTF_API_RemoveDebugOutput                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-uint32_t PRINTF_API_RemoveDebugOutput(struct dev_desc_t *aDevHandle)
+
+/**
+ * PRINTF_API_AddNoteOutput()
+ *
+ * return:
+ */
+uint8_t PRINTF_API_AddNoteOutput(struct dev_desc_t *aDevHandle )
+{
+	return add_dev(note_out_devs, aDevHandle);
+}
+
+
+
+
+static uint8_t remove_dev(
+		struct dev_desc_t  **out_devs, struct dev_desc_t *aDevHandle)
 {
 	uint8_t i;
 
-	for(i=0;i< MAX_NUM_OF_PRINTF_INSTANCES; i++)
+	for (i = 0; i < MAX_NUM_OF_PRINTF_INSTANCES; i++)
 	{
-		if(aDevHandle == PRINTF_DebugInstanceParams[i].dev_descriptor)
+		if(aDevHandle == out_devs[i])
 		{
-			PRINTF_DebugInstanceParams[i].dev_descriptor = NULL;
+			out_devs[i] = NULL;
 		}
 	}
 	return 0;
 }
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        PRINTF_API_RemoveNoteOutput                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-uint32_t PRINTF_API_RemoveNoteOutput(struct dev_desc_t *aDevHandle )
-{
-	uint8_t i;
 
-	for(i=0;i< MAX_NUM_OF_PRINTF_INSTANCES; i++)
-	{
-		if(aDevHandle == PRINTF_NoteInstanceParams[i].dev_descriptor)
-		{
-			PRINTF_NoteInstanceParams[i].dev_descriptor = NULL;
-		}
-	}
-	return 0;
+/**
+ * PRINTF_API_RemoveDebugOutput()
+ *
+ * return:
+ */
+uint8_t PRINTF_API_RemoveDebugOutput(struct dev_desc_t *aDevHandle)
+{
+	return remove_dev(debug_out_devs, aDevHandle);
 }
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        sendData                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-static void sendDebugOrNote(const PRINTF_params_t  *PRINTF_params_array,const uint8_t* pBuffer,uint32_t aLen)
+
+
+/**
+ * PRINTF_API_RemoveNoteOutput()
+ *
+ * return:
+ */
+uint8_t PRINTF_API_RemoveNoteOutput(struct dev_desc_t *aDevHandle )
+{
+	return remove_dev(note_out_devs, aDevHandle);
+}
+
+
+/**
+ * sendDebugOrNote()
+ *
+ * return:
+ */
+static void sendDebugOrNote(struct dev_desc_t  **out_devs,
+		const uint8_t* pBuffer,uint32_t aLen)
 {
 	uint8_t i;
 
-	for(i=0;i< MAX_NUM_OF_PRINTF_INSTANCES; i++)
+	for (i = 0; i < MAX_NUM_OF_PRINTF_INSTANCES; i++)
 	{
-		if(NULL != PRINTF_params_array[i].dev_descriptor)
+		if (NULL != out_devs[i])
 		{
-			DEV_WRITE(PRINTF_params_array[i].dev_descriptor,pBuffer , aLen);
+			DEV_WRITE(out_devs[i], pBuffer, aLen);
 		}
 	}
 
 }
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        common_sendData                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-static void common_sendData(PRINTF_TYPE_t aPrntType , const uint8_t* pBuffer,uint32_t aLen)
+
+/**
+ * common_sendData()
+ *
+ * return:
+ */
+static void common_sendData(
+		PRINTF_TYPE_t aPrntType, const uint8_t* pBuffer,uint32_t aLen)
 {
 	switch(aPrntType)
 	{
 		case PRINTF_TYPE_DBG :
-			sendDebugOrNote(PRINTF_DebugInstanceParams,pBuffer,aLen);
+			sendDebugOrNote(debug_out_devs,pBuffer,aLen);
 			break;
 		case PRINTF_TYPE_NOTE :
-			sendDebugOrNote(PRINTF_NoteInstanceParams,pBuffer,aLen);
+			sendDebugOrNote(note_out_devs,pBuffer,aLen);
 			break;
 		default:
 			break;
 	}
 }
 
+
 #ifndef _DONT_USE_PRINTF
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        PRINTF_printf                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-void PRINTF_printf(PRINTF_TYPE_t aPrntType , struct dev_desc_t *aDevHandle ,
-		   const uint8_t* Format,...)
+/**
+ * PRINTF_printf()
+ *
+ * return:
+ */
+void PRINTF_printf(PRINTF_TYPE_t aPrntType, const char* Format, ...)
 {
 	va_list args;
 	int retVal;
 
-	//return ;
-	va_start(args,Format);
-	retVal=vsnprintf((char*)sh_buffer,PRINTF_BUF_LENGTH,(char*)Format,args);
+	va_start(args, Format);
+	retVal = vsnprintf(
+			(char*)sh_buffer, PRINTF_BUF_LENGTH, Format, args);
 	va_end(args);
 
-	if(0>=retVal) return ;
+	if (0 >= retVal) return ;
 
-	if(NULL != aDevHandle)
-	{
-		DEV_WRITE(aDevHandle,sh_buffer , retVal);
-	}
-	else
-	{
-		common_sendData(aPrntType  ,sh_buffer,retVal);
-	}
+	common_sendData(aPrntType, sh_buffer, retVal);
+}
+
+
+/**
+ * PRINTF_REPLY()
+ *
+ * return:
+ */
+void PRINTF_REPLY(struct dev_desc_t *aDevHandle, const char* Format, ...)
+{
+	va_list args;
+	int retVal;
+
+	if (NULL == aDevHandle) return;
+
+	va_start(args, Format);
+	retVal = vsnprintf(
+			(char*)sh_buffer, PRINTF_BUF_LENGTH, Format, args);
+	va_end(args);
+
+	if (0 >= retVal) return ;
+
+	DEV_WRITE(aDevHandle, sh_buffer, retVal);
 }
 
 #endif
@@ -238,25 +209,52 @@ void PRINTF_printf(PRINTF_TYPE_t aPrntType , struct dev_desc_t *aDevHandle ,
 
 
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        PRINTF_print_data                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-void PRINTF_print_data(PRINTF_TYPE_t aPrntType ,  const uint8_t* data,  uint32_t aLen)
+/**
+ * PRINTF_print_data()
+ *
+ * return:
+ */
+void PRINTF_print_data(
+		PRINTF_TYPE_t aPrntType, const uint8_t* data, uint32_t aLen)
 {
-	if(0>=aLen) return ;
-
-	common_sendData(aPrntType , data ,aLen);
-
-
+	if (0 >= aLen) return ;
+	common_sendData(aPrntType, data, aLen);
 }
 
+
+/**
+ * PRINT_DATA_REPLY()
+ *
+ * return:
+ */
+void PRINT_DATA_REPLY(
+		struct dev_desc_t *aDevHandle, const uint8_t* data, uint32_t aLen)
+{
+	if (NULL == aDevHandle) return;
+	DEV_WRITE(aDevHandle, data, aLen);
+}
+
+
+/**
+ * PRINTF_print_str()
+ *
+ * return:
+ */
+void PRINTF_print_str(PRINTF_TYPE_t aPrntType, const char* str)
+{
+	common_sendData(aPrntType, (uint8_t*)str, strlen(str));
+}
+
+
+/**
+ * PRINT_STR_REPLY()
+ *
+ * return:
+ */
+void PRINT_STR_REPLY(struct dev_desc_t *aDevHandle, const char* str)
+{
+	if (NULL == aDevHandle) return;
+	DEV_WRITE(aDevHandle, (uint8_t*)str , strlen(str));
+}
 
 #endif

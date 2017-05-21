@@ -15,6 +15,7 @@
 #include "shell.h"
 
 #include "shell_add_component.h"
+#include "management_api.h"
 
 #if SHELL_CONFIG_MAX_RX_BUFFER_SIZE <= (1<<8)
 	typedef uint8_t shel_rx_int_size_t;
@@ -50,7 +51,7 @@ static uint8_t task_is_running=0;
 
 static const char erase_seq[] = "\b \b";		/* erase sequence	*/
 static const char eol_seq[] = "\r\n";		/* end of line sequence	*/
-static uint8_t EOF_MARKER_STR[]="\r\n~2@5\r\n";
+static char EOF_MARKER_STR[] = "\r\n~2@5\r\n";
 
 
 #define HEADER_CHAR_ON		'+'
@@ -63,29 +64,10 @@ typedef enum
 	START_OF_CMD_POS
 }Header_positions_t;
 
+static struct dev_desc_t *   curr_tx_dev;
 
 static os_queue_t xQueue = NULL;
-struct dev_desc_t * gCurrReplyDev;
 
-#define SHELL_PRINTF_BUF_LENGTH	 64
-static uint8_t shell_printf_buffer[SHELL_PRINTF_BUF_LENGTH];
-#include <stdarg.h>
-
-int printf(const char *Format, ...)
-{
-	va_list args;
-	int retVal;
-
-	//return ;
-	va_start(args,Format);
-	retVal = vsnprintf((char*)shell_printf_buffer,
-			SHELL_PRINTF_BUF_LENGTH,(char*)Format, args);
-	va_end(args);
-
-	SHELL_REPLY_DATA( shell_printf_buffer, retVal);
-
-	return 0;
-}
 
 /**
  * shell_callback()
@@ -110,6 +92,14 @@ uint8_t shell_callback(struct dev_desc_t *adev ,const uint8_t aCallback_num
 
 	return 0;
 }
+
+
+static void reply_data(const char *data, size_t len)
+{
+	if (NULL == curr_tx_dev) return ;
+	DEV_WRITE(curr_tx_dev, (uint8_t*)data, len);
+}
+
 
 #define SUMS_OF_EOLS	('\r'+'\n')
 
@@ -162,9 +152,9 @@ static uint8_t get_valid_line(struct shell_runtime_instance_t *runtime_handle,
 			{
 				if (HEADER_CHAR_ON != pBufferStart[HEADER_SUPPRESS_ECHO_POS])
 				{
-					SHELL_REPLY_DATA(&pBufferStart[endOfLastPrintfPos],
+					reply_data((char*)&pBufferStart[endOfLastPrintfPos],
 										curr_buff_pos - endOfLastPrintfPos);
-					SHELL_REPLY_DATA(erase_seq,sizeof(erase_seq)-1);
+					reply_data(erase_seq, sizeof(erase_seq)-1);
 				}
 				//shift buffer right before DEL
 				memmove(&pBufferStart[2],pBufferStart, curr_buff_pos-1);
@@ -198,7 +188,7 @@ static uint8_t get_valid_line(struct shell_runtime_instance_t *runtime_handle,
 
 	if (HEADER_CHAR_ON != pBufferStart[HEADER_SUPPRESS_ECHO_POS])
 	{
-		SHELL_REPLY_DATA( &pBufferStart[endOfLastPrintfPos],
+		reply_data((char*)&pBufferStart[endOfLastPrintfPos],
 								curr_buff_pos - endOfLastPrintfPos);
 	}
 
@@ -240,7 +230,7 @@ static uint8_t *extract_command_from_line(
 		}
 		else
 		{
-			SHELL_REPLY_DATA("invalid header\r\n",
+			reply_data("invalid header\r\n",
 							sizeof("invalid header\r\n")-1);
 			return NULL;
 		}
@@ -254,11 +244,13 @@ static uint8_t *extract_command_from_line(
 
 
 static void consume_line(
-		struct shell_instance_t *config_handle, uint8_t *pBufferStart,
+		struct shell_cfg_t *config_handle, uint8_t *pBufferStart,
 		shel_rx_int_size_t total_length, shel_rx_int_size_t EOL_pos)
 {
 	struct dev_desc_t *   callback_dev;
+	struct dev_desc_t *   cmd_save_dev;
 	uint8_t *pCmd;
+	struct rcvd_cmd_t	rcvd_cmd;
 
 	pCmd = extract_command_from_line(pBufferStart, EOL_pos);
 
@@ -266,13 +258,21 @@ static void consume_line(
 	{
 		if (pBufferStart == pCmd )
 		{
-			SHELL_REPLY_DATA( (const uint8_t*)"\r\n",2);
+			reply_data("\r\n", 2);
 		}
 		callback_dev = config_handle->callback_dev;
 		if (callback_dev )
 		{
-			DEV_CALLBACK_2_PARAMS(callback_dev , CALLBACK_DATA_RECEIVED,
-					pCmd, (void*)(EOL_pos + 1));
+			rcvd_cmd.reply_dev = config_handle->server_tx_dev;
+			rcvd_cmd.cmd_buf = pCmd;
+			rcvd_cmd.cmd_len = EOL_pos + 1;
+			DEV_CALLBACK_1_PARAMS(
+					callback_dev, CALLBACK_DATA_RECEIVED, &rcvd_cmd);
+		}
+		cmd_save_dev = config_handle->cmd_save_dev;
+		if (cmd_save_dev )
+		{
+			DEV_WRITE(cmd_save_dev, pCmd, EOL_pos + 1);
 		}
 	}
 
@@ -281,12 +281,12 @@ static void consume_line(
 	{
 		if (HEADER_CHAR_ON == pBufferStart[HEADER_ADD_EOF_MARK_POS])
 		{
-			SHELL_REPLY_DATA( EOF_MARKER_STR,sizeof(EOF_MARKER_STR) - 1);
+			reply_data( EOF_MARKER_STR, sizeof(EOF_MARKER_STR) - 1);
 		}
 	}
 	else
 	{
-		SHELL_REPLY_DATA( (const uint8_t*)"\r\n>",3);
+		reply_data("\r\n>", 3);
 	}
 }
 
@@ -304,7 +304,7 @@ static void Shell_Task( void *pvParameters )
 	uint8_t *pBufferStart;
 	struct ioctl_get_data_buffer_t data_buffer_info;
 	struct shell_runtime_instance_t  *runtime_handle;
-	struct shell_instance_t *config_handle;
+	struct shell_cfg_t *config_handle;
 	struct dev_desc_t *   curr_rx_dev;
 	struct dev_desc_t *   curr_dev;
 
@@ -320,8 +320,8 @@ static void Shell_Task( void *pvParameters )
 			curr_dev = pxRxedMessage.pdev;
 			config_handle = DEV_GET_CONFIG_DATA_POINTER(curr_dev);
 			runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(curr_dev);
-			gCurrReplyDev = config_handle->server_tx_dev;
 			curr_rx_dev = config_handle->server_rx_dev;
+			curr_tx_dev = config_handle->server_tx_dev;
 
 			DEV_IOCTL(curr_rx_dev,
 					IOCTL_GET_AND_LOCK_DATA_BUFFER, &data_buffer_info);
@@ -373,7 +373,7 @@ static void Shell_Task( void *pvParameters )
 uint8_t shell_ioctl( struct dev_desc_t *adev,
 		const uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2)
 {
-	struct shell_instance_t *config_handle;
+	struct shell_cfg_t *config_handle;
 	struct dev_desc_t *   server_dev ;
 
 	config_handle = DEV_GET_CONFIG_DATA_POINTER(adev);
@@ -398,7 +398,7 @@ uint8_t shell_ioctl( struct dev_desc_t *adev,
 		break;
 #endif
 	case IOCTL_DEVICE_START :
-		if(0==task_is_running)
+		if (0 == task_is_running)
 		{
 			task_is_running=1;
 			os_create_task("shell_task",Shell_Task,

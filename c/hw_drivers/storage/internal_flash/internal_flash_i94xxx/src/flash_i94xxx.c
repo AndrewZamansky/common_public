@@ -38,10 +38,10 @@ static size_t read_buff(uint8_t *buff,
 {
 	size_t actual_size_to_read;
 	size_t max_size_to_read;
-	size_t i;
+	size_t left_to_read;
 	size_t rdAddr;
 
-    if (DATA_FLASH_SIZE <= aOffsetFromAbsoluteStart)
+    if (FMC_APROM_END <= aOffsetFromAbsoluteStart)
     {
     	return 0;
     }
@@ -53,24 +53,26 @@ static size_t read_buff(uint8_t *buff,
 	}
 
 	rdAddr = aOffsetFromAbsoluteStart;
-	for (i = 0 ; i < actual_size_to_read; i = i - 4)
+	left_to_read = actual_size_to_read;
+	while (left_to_read)
 	{
 		uint32_t read_data;
 		uint8_t  copy_size;
 
 		read_data = FMC_Read(rdAddr);
-		if (4 <= i)
+		if (4 <= left_to_read)
 		{
 			copy_size = 4;
 		}
 		else
 		{
-			copy_size = i;
+			copy_size = left_to_read;
 		}
 		memcpy(buff, &read_data, copy_size);
 
-		buff += i;
-		rdAddr += i;
+		buff += copy_size;
+		rdAddr += copy_size;
+		left_to_read -= copy_size;
 	}
 	return actual_size_to_read;
 }
@@ -161,7 +163,7 @@ size_t internal_flash_i94xxx_pread(struct dev_desc_t *adev,
     return read_buff(apData, aLength, aOffset + DATA_FLASH_BASE);
 }
 
-
+#if 0
 static int  set_data_flash_base(uint32_t u32DFBA)
 {
     uint32_t   au32Config[2];          /* User Configuration */
@@ -174,12 +176,12 @@ static int  set_data_flash_base(uint32_t u32DFBA)
 
     /* Check if Data Flash is enabled and is expected address. */
     if ((!(au32Config[0] & 0x1)) && (au32Config[1] == u32DFBA))
-        return 0;                      /* no need to modify User Configuration */
+        return 0;              /* no need to modify User Configuration */
 
     FMC_ENABLE_CFG_UPDATE();           /* Enable User Configuration update. */
 
-    au32Config[0] &= ~0x1;             /* Clear CONFIG0 bit 0 to enable Data Flash */
-    au32Config[1] = u32DFBA;           /* Give Data Flash base address  */
+    au32Config[0] &= ~0x1;       /* Clear CONFIG0 bit 0 to enable Data Flash */
+    au32Config[1] = u32DFBA;     /* Give Data Flash base address  */
 
     /* Update User Configuration settings. */
     if (FMC_WriteConfig(au32Config, 2) < 0)
@@ -191,6 +193,7 @@ static int  set_data_flash_base(uint32_t u32DFBA)
     SYS->IPRST0 = SYS_IPRST0_CHIPRST_Msk;
     return 0;                          /* success */
 }
+#endif
 
 
 /**
@@ -212,7 +215,11 @@ uint8_t internal_flash_i94xxx_ioctl(struct dev_desc_t *adev,
 	{
 	case IOCTL_DEVICE_START :
 		FMC_Open();
-		//set_data_flash_base(DATA_FLASH_BASE);// az . kill chip (14.07.2017)
+
+		/* following can be removed after adding erase of config page and
+		 * writing 0x5A5A into CONFIG2 after erasing
+		 */
+		//set_data_flash_base(DATA_FLASH_BASE);
 		break;
 
 	default :

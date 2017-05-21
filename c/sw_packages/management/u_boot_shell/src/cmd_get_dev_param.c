@@ -45,7 +45,7 @@
 
 
 #include <u-boot/include/command.h>
-#include "shell_api.h"
+#include "u_boot_shell_api.h"
 
 #define MAX_RET_BUFF_SIZE 31
 

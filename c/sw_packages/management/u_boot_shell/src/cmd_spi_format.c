@@ -42,7 +42,7 @@
 #include "_project.h"
 
 #include <u-boot/include/command.h>
-#include "shell_api.h"
+#include "u_boot_shell_api.h"
 #include "SPI_FLASH_PARTITION_MANAGER_api.h"
 
 extern struct dev_desc_t * spi_flash_manager_dev;

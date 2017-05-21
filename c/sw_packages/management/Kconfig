@@ -28,6 +28,15 @@ menuconfig INCLUDE_SHELL
 	
 if INCLUDE_SHELL
 source "$COMMON_DIR_PATH/c/sw_packages/management/shell/Kconfig"
+
+menuconfig INCLUDE_SHELL_PRESETS
+	bool   "shell presets"
+	default n
+
+if INCLUDE_SHELL_PRESETS
+source "$COMMON_DIR_PATH/c/sw_packages/management/shell_presets/Kconfig"
+endif
+
 endif
 
 #if INCLUDE_SHELL || ARM_SEMIHOSTING_CONFIG_ENABLE_RX
@@ -44,3 +53,11 @@ endif
 	
 	
 endmenu
+
+
+######## automatically selected configurations #########
+config INCLUDE_MANAGEMENT
+	def_bool  y
+	depends on INCLUDE_UBOOT_SHELL || INCLUDE_SHELL || INCLUDE_SHELL_PRESETS
+
+######## end of automatically selected configurations #########	

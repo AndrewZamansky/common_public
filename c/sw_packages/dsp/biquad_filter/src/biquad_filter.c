@@ -101,6 +101,7 @@ static void set_number_of_bands(
 		pCoeffs[i].b1 = 0;
 		pCoeffs[i].b2 = 0;
 		p_band_set_params[i].filter_mode = BIQUADS_TRANSPARENT_MODE;
+		p_band_set_params[i].bypass = 1;
 	}
 
 	handle->pBiquadFilter =
@@ -146,18 +147,21 @@ uint8_t biquad_filter_ioctl(struct dsp_desc_t *adsp,
 		p_band_set_params = &(band_params->band_set_params);
 		if ((num_of_bands > band_num ) && (p_band_set_params->Fc > 0.01))
 		{
+			biquads_filter_mode_t filter_mode;
+
 			memcpy(&handle->band_set_params[band_num],
 				p_band_set_params,
 				sizeof(struct biquad_filter_api_band_set_params_t));
 			pCoeffs = &handle->pCoeffs[band_num];
+			filter_mode = p_band_set_params->filter_mode;
+			if (1 == p_band_set_params->bypass)
+			{
+				filter_mode = BIQUADS_TRANSPARENT_MODE;
+			}
 			biquads_coefficients_calculation(
-					p_band_set_params->filter_mode,
-					p_band_set_params->Fc,
-					p_band_set_params->QValue,
-					p_band_set_params->Gain,
-					48000,
-					(float*)pCoeffs
-					);
+					filter_mode, p_band_set_params->Fc,
+					p_band_set_params->QValue,	p_band_set_params->Gain,
+					48000, 	(float*)pCoeffs 	);
 		}
 		break;
 

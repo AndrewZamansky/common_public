@@ -25,14 +25,5 @@
 
 #endif
 
-extern struct dev_desc_t * gCurrReplyDev;
-
-#include "PRINTF_api.h"
-#if !defined(__CSMC__)// cosmic compiler fix
-#define SHELL_REPLY_PRINTF(...) 	PRINTF_REPLY(gCurrReplyDev , __VA_ARGS__)
-#endif
-#define SHELL_REPLY_STR(str) 		PRINT_STR_REPLY(gCurrReplyDev , str)
-#define SHELL_REPLY_DATA(data,len) 	PRINT_DATA_REPLY(gCurrReplyDev , data,len)
-
 
 #endif

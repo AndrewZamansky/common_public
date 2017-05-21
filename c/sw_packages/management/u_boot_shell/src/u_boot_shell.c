@@ -15,6 +15,7 @@
 #include "u_boot_shell.h"
 #include "config.h"
 #include "u_boot_shell_add_component.h"
+#include "management_api.h"
 
 #ifdef  _BOOTSTAGE_H
 	typedef enclosure_unnedded _code_by_DONT_USE_STD_IO_in_common_h_in_uboor_include_dir  dummy_type;
@@ -75,13 +76,22 @@ uint8_t u_boot_shell_callback(
 		struct dev_desc_t *adev, const uint8_t aCallback_num,
 		void * aCallback_param1, void * aCallback_param2)
 {
-	char *pCmdStart;
-
 	if(CALLBACK_DATA_RECEIVED == aCallback_num)
 	{
-		pCmdStart =( char *)aCallback_param1;
-		pCmdStart[((size_t)aCallback_param2) - 1] = '\0';
+		char prev_eol;
+		size_t eol_pos;
+		char *pCmdStart;
+		struct rcvd_cmd_t	*rcvd_cmd;
+
+		rcvd_cmd = aCallback_param1;
+		gCurrReplyDev = rcvd_cmd->reply_dev;
+		pCmdStart =( char *)rcvd_cmd->cmd_buf;
+
+		eol_pos = rcvd_cmd->cmd_len - 1;
+		prev_eol = pCmdStart[eol_pos];
+		pCmdStart[eol_pos] = '\0';
 		run_command((const char *)pCmdStart, 0);
+		pCmdStart[eol_pos] = prev_eol;
 	}
 	return 0;
 }

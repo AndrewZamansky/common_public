@@ -44,7 +44,7 @@
 #include "dev_management_api.h"
 
 #include <u-boot/include/command.h>
-#include "shell_api.h"
+#include "u_boot_shell_api.h"
 
 
 /*
