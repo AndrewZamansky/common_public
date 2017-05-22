@@ -61,7 +61,7 @@ config INCLUDE_INTERNAL_TIMER
 
 config INCLUDE_INTERNAL_FLASH
 	bool   "internal flash"
-	depends on STM32F10x
+	depends on STM32F10x || I94XXX
 	default n
 
 config INCLUDE_INTERNAL_GPIO
@@ -164,4 +164,9 @@ config INCLUDE_HW_TIMER
 config INCLUDE_GPIO
 	def_bool  y
 	depends on INCLUDE_INTERNAL_GPIO 
+
+config INCLUDE_FLASH_WRAPPER
+	def_bool  y
+	depends on INCLUDE_INTERNAL_FLASH
+
 ######## end of automatically selected configurations #########	

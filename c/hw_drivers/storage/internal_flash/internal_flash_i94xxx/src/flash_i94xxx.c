@@ -16,8 +16,10 @@
 
 #include "fmc.h"
 
+#include "flash_wrapper_api.h"
 
 /***************   defines    *******************/
+#define ERASE_BLOCK_SIZE   0x1000    /* 4k */
 #define DATA_FLASH_BASE    0x40000    /* Data Flash  start address */
 #define DATA_FLASH_SIZE   (FMC_APROM_END - DATA_FLASH_BASE)
 
@@ -30,51 +32,19 @@
 
 /***********   local variables    **************/
 
-static uint8_t wr_data[4*1024];
 
 
-static size_t read_buff(uint8_t *buff,
-		size_t aLength, size_t aOffsetFromAbsoluteStart)
+static uint32_t get_actual_read_write_len( uint32_t aLength, uint32_t aOffset)
 {
-	size_t actual_size_to_read;
-	size_t max_size_to_read;
-	size_t left_to_read;
-	size_t rdAddr;
-
-    if (FMC_APROM_END <= aOffsetFromAbsoluteStart)
-    {
-    	return 0;
-    }
-	actual_size_to_read = aLength;
-	max_size_to_read = FMC_APROM_END - aOffsetFromAbsoluteStart;
-	if (max_size_to_read < actual_size_to_read)
+	if (DATA_FLASH_SIZE <= aOffset)
 	{
-		actual_size_to_read = max_size_to_read;
+		return 0;
 	}
-
-	rdAddr = aOffsetFromAbsoluteStart;
-	left_to_read = actual_size_to_read;
-	while (left_to_read)
+	if (DATA_FLASH_SIZE <= (aOffset + aLength))
 	{
-		uint32_t read_data;
-		uint8_t  copy_size;
-
-		read_data = FMC_Read(rdAddr);
-		if (4 <= left_to_read)
-		{
-			copy_size = 4;
-		}
-		else
-		{
-			copy_size = left_to_read;
-		}
-		memcpy(buff, &read_data, copy_size);
-
-		buff += copy_size;
-		rdAddr += copy_size;
-		left_to_read -= copy_size;
+		aLength = DATA_FLASH_SIZE - aOffset;
 	}
-	return actual_size_to_read;
+	return aLength;
 }
 
 
@@ -86,65 +56,57 @@ static size_t read_buff(uint8_t *buff,
 size_t internal_flash_i94xxx_pwrite(struct dev_desc_t *adev,
 						const uint8_t *apData, size_t aLength, size_t aOffset)
 {
-	size_t actual_size_to_write;
-    uint32_t pageAddr;
+	size_t written_len;
     uint32_t wrAddr;
-    uint32_t retVal;
-    size_t	i;
+    uint32_t write_u32;
+    uint32_t word_offset;
+	uint8_t  copy_size;
 
-    if (DATA_FLASH_SIZE <= aOffset)
-    {
-    	return 0;
-    }
-	actual_size_to_write = aLength;
-	if (DATA_FLASH_SIZE < actual_size_to_write)
-	{
-		actual_size_to_write = DATA_FLASH_SIZE;
-	}
-	retVal = actual_size_to_write;
+    aLength = get_actual_read_write_len(aLength, aOffset);
+    written_len = aLength;
+
 	wrAddr = aOffset + DATA_FLASH_BASE;
 
 	FMC_ENABLE_AP_UPDATE();
-    while (actual_size_to_write)
+
+	word_offset = wrAddr & 0xf;
+	wrAddr = (wrAddr & (~0xf));
+	if (0 != word_offset)
+	{
+		uint8_t *u32_addr;
+
+		copy_size = 4 - word_offset;
+		if (copy_size > aLength)
+		{
+			copy_size = aLength;
+		}
+		write_u32 = FMC_Read(wrAddr);
+		u32_addr = (uint8_t*)(&write_u32);
+    	memcpy(&u32_addr[word_offset], apData, copy_size);
+        FMC_Write(wrAddr, write_u32);
+		aLength -= copy_size;
+		apData += copy_size;
+		wrAddr += 4;
+	}
+
+	while (4 <= aLength)
     {
-    	size_t wrSize;
-    	size_t offsetInPage;
-
-    	pageAddr = wrAddr & (~0xfff);
-    	offsetInPage = wrAddr & 0xfff;
-    	read_buff(wr_data, 0x1000, pageAddr);
-
-    	if (0 != offsetInPage)
-    	{
-    		wrSize = 0x1000 - offsetInPage;
-    	}
-    	else
-    	{
-			wrSize = actual_size_to_write;
-			if (0x1000 < wrSize)
-			{
-				wrSize = 0x1000;
-			}
-    	}
-
-    	memcpy(wr_data + offsetInPage, apData, wrSize);
-        FMC_Erase(pageAddr);     /* Erase page */
-        for (i = 0; i < 0x1000; i += 4)
-        {
-        	uint32_t write_u32;
-
-        	memcpy(&write_u32, &wr_data[i], 4);
-            FMC_Write(pageAddr, write_u32);
-            pageAddr += 4;
-        }
-
-        actual_size_to_write -= wrSize;
-        apData += wrSize;
-        wrAddr += wrSize;
+    	memcpy(&write_u32, apData, 4);
+        FMC_Write(wrAddr, write_u32);
+        aLength -= 4;
+        apData +=4;
+        wrAddr +=4;
     }
+
+	if (aLength)
+	{
+		write_u32 = FMC_Read(wrAddr);
+		memcpy(&write_u32, apData, aLength);
+        FMC_Write(wrAddr, write_u32);
+	}
 	FMC_DISABLE_AP_UPDATE();
 
-	return retVal;
+	return written_len;
 }
 
 
@@ -156,11 +118,53 @@ size_t internal_flash_i94xxx_pwrite(struct dev_desc_t *adev,
 size_t internal_flash_i94xxx_pread(struct dev_desc_t *adev,
 					uint8_t *apData, size_t aLength, size_t aOffset)
 {
-    if (DATA_FLASH_SIZE <= aOffset)
-    {
-    	return 0;
-    }
-    return read_buff(apData, aLength, aOffset + DATA_FLASH_BASE);
+	size_t read_len;
+    uint32_t readAddr;
+    uint32_t read_u32;
+    uint32_t word_offset;
+	uint8_t  copy_size;
+
+	// test alignment
+    aLength = get_actual_read_write_len(aLength, aOffset);
+    read_len = aLength;
+
+    readAddr = aOffset + DATA_FLASH_BASE;
+
+	word_offset = readAddr & 0xf;
+	readAddr = (readAddr & (~0xf));
+	if (0 != word_offset)
+	{
+		uint8_t *u32_addr;
+		copy_size = 4 - word_offset;
+		if (copy_size > aLength)
+		{
+			copy_size = aLength;
+		}
+		read_u32 = FMC_Read(readAddr);
+		u32_addr = (uint8_t*)(&read_u32);
+		memcpy(apData, &u32_addr[word_offset], copy_size);
+		aLength -= copy_size;
+		apData += copy_size;
+		readAddr += 4;
+	}
+
+	while (4 <= aLength)
+	{
+		read_u32 = FMC_Read(readAddr);
+		memcpy(apData, &read_u32, 4);
+
+		apData += 4;
+		readAddr += 4;
+		aLength -= 4;
+	}
+
+	if (aLength)
+	{
+		read_u32 = FMC_Read(readAddr);
+		memcpy(apData, &read_u32, aLength);
+	}
+
+    return read_len;
 }
 
 #if 0
@@ -221,7 +225,27 @@ uint8_t internal_flash_i94xxx_ioctl(struct dev_desc_t *adev,
 		 */
 		//set_data_flash_base(DATA_FLASH_BASE);
 		break;
+	case IOCTL_FLASH_WRAPPER_GET_ERASE_SIZE :
+		*(uint32_t*)aIoctl_param1 = ERASE_BLOCK_SIZE;
+		break;
+	case IOCTL_FLASH_WRAPPER_GET_FLASH_SIZE :
+		*(uint32_t*)aIoctl_param1 = DATA_FLASH_SIZE;
+		break;
+	case IOCTL_FLASH_WRAPPER_ERASE :
+		{
+		    uint32_t errAddr;
 
+		    errAddr = (*(uint32_t*)aIoctl_param1);
+		    if (DATA_FLASH_SIZE <= errAddr)
+		    {
+		    	return 1;
+		    }
+		    errAddr += DATA_FLASH_BASE;
+			FMC_ENABLE_AP_UPDATE();
+			FMC_Erase(errAddr);
+			FMC_DISABLE_AP_UPDATE();
+		}
+		break;
 	default :
 		return 1;
 	}
