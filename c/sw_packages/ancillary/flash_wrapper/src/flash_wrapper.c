@@ -11,12 +11,14 @@
 #include "_project_defines.h"
 #include "_project_func_declarations.h"
 
+#include "os_wrapper.h"
 #include "flash_wrapper.h"
 #include "flash_wrapper_api.h"
 
 
 /***************   defines    *******************/
 
+#define	DUMMY_FLASH_ADDR	0xffffffff
 
 /***************   typedefs    *******************/
 
@@ -28,8 +30,35 @@
 /***********   local variables    **************/
 
 
+static os_mutex_t  flash_wrapper_mutex;
 
+static void save_to_flash_and_fetch_new_block( struct dev_desc_t *adev,
+		uint32_t curr_block_addr, uint32_t new_block_addr)
+{
+	struct flash_wrapper_runtime_t *runtime_handle;
+	struct flash_wrapper_cfg_t *cfg_hndl;
+	struct dev_desc_t	*hw_flash_dev;
+	uint8_t 	*write_buffer;
+	uint32_t	erase_block_size;
 
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
+	erase_block_size = runtime_handle->erase_block_size;
+	hw_flash_dev = cfg_hndl->hw_flash_dev;
+	write_buffer = runtime_handle->write_buffer;
+
+	if (runtime_handle->curr_block_is_dirty)
+	{
+		DEV_IOCTL_1_PARAMS(hw_flash_dev,
+				IOCTL_FLASH_WRAPPER_ERASE, &curr_block_addr);
+		DEV_PWRITE(hw_flash_dev,
+				write_buffer, erase_block_size, curr_block_addr);
+	}
+	DEV_PREAD(hw_flash_dev, write_buffer, erase_block_size, new_block_addr);
+	runtime_handle->curr_block_addr = new_block_addr;
+	runtime_handle->curr_block_is_dirty = 0;
+
+}
 
 /**
  * flash_wrapper_pwrite()
@@ -40,8 +69,6 @@ size_t flash_wrapper_pwrite(struct dev_desc_t *adev,
 						const uint8_t *apData, size_t aLength, size_t aOffset)
 {
 	struct flash_wrapper_runtime_t *runtime_handle;
-	struct flash_wrapper_cfg_t *cfg_hndl;
-	struct dev_desc_t	*hw_flash_dev;
 	uint32_t	erase_block_size;
 	uint8_t 	*write_buffer;
     uint32_t 	pageAddr;
@@ -49,16 +76,18 @@ size_t flash_wrapper_pwrite(struct dev_desc_t *adev,
     uint32_t 	written_size;
 	uint32_t	flash_size;
 	uint32_t	page_mask;
+	uint32_t	curr_block_addr;
 
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
+	os_mutex_take_infinite_wait(flash_wrapper_mutex);
+
 	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
-	hw_flash_dev = cfg_hndl->hw_flash_dev;
 	erase_block_size = runtime_handle->erase_block_size;
 	write_buffer = runtime_handle->write_buffer;
 	flash_size = runtime_handle->flash_size;
+	curr_block_addr = runtime_handle->curr_block_addr;
 
 
-	page_mask = erase_block_size-1; // for example : 4k page -> mask = 0xfff
+	page_mask = erase_block_size - 1; // for example : 4k page -> mask = 0xfff
 	written_size = 0;
 	wrAddr = aOffset;
     while (aLength)
@@ -71,7 +100,11 @@ size_t flash_wrapper_pwrite(struct dev_desc_t *adev,
     	{
     		break;
     	}
-    	DEV_PREAD(hw_flash_dev, write_buffer, erase_block_size, pageAddr);
+
+    	if (pageAddr != curr_block_addr)
+    	{
+    		save_to_flash_and_fetch_new_block(adev, curr_block_addr, pageAddr);
+    	}
 
     	offsetInPage = wrAddr & page_mask;
 		wrSize = erase_block_size;
@@ -85,14 +118,15 @@ size_t flash_wrapper_pwrite(struct dev_desc_t *adev,
     	}
 
     	memcpy(write_buffer + offsetInPage, apData, wrSize);
-		DEV_IOCTL_1_PARAMS(hw_flash_dev, IOCTL_FLASH_WRAPPER_ERASE, &pageAddr);
-		DEV_PWRITE(hw_flash_dev, write_buffer,	wrSize, pageAddr);
+    	runtime_handle->curr_block_is_dirty = 1;
 
         apData += wrSize;
         wrAddr += wrSize;
         written_size += wrSize;
         aLength -= wrSize;
     }
+
+	os_mutex_give(flash_wrapper_mutex);
 
 	return written_size;
 }
@@ -113,6 +147,38 @@ size_t flash_wrapper_pread(struct dev_desc_t *adev,
 	hw_flash_dev = cfg_hndl->hw_flash_dev;
 
 	return DEV_PREAD(hw_flash_dev, apData,	aLength, aOffset);
+}
+
+
+/**
+ * flash_wrapper_task()
+ *
+ * return:
+ */
+static void flash_wrapper_task( void *adev )
+{
+	struct flash_wrapper_runtime_t *runtime_handle;
+	uint32_t	curr_block_addr;
+
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
+
+	for( ;; )
+	{
+		os_delay_ms(2000);
+
+		os_mutex_take_infinite_wait(flash_wrapper_mutex);
+
+		curr_block_addr = runtime_handle->curr_block_addr;
+		if (runtime_handle->curr_block_is_dirty)
+		{
+			save_to_flash_and_fetch_new_block(
+					adev, curr_block_addr, curr_block_addr);
+		}
+
+		os_mutex_give(flash_wrapper_mutex);
+
+		os_stack_test();
+	}
 }
 
 
@@ -145,6 +211,15 @@ uint8_t flash_wrapper_ioctl(struct dev_desc_t *adev,
 		DEV_IOCTL_1_PARAMS(hw_flash_dev,
 				IOCTL_FLASH_WRAPPER_GET_FLASH_SIZE, &flash_size);
 		runtime_handle->flash_size = flash_size;
+		runtime_handle->curr_block_addr = flash_size;//dummy address
+    	runtime_handle->curr_block_is_dirty = 0;
+
+		flash_wrapper_mutex = os_create_mutex();
+		os_create_task("flash_wrapper_task",
+				flash_wrapper_task, adev,
+				FLASH_WRAPPER_TASK_STACK_SIZE,
+				FLASH_WRAPPER_TASK_PRIORITY);
+
 		break;
 
 	default :

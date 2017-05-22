@@ -15,6 +15,8 @@ struct flash_wrapper_runtime_t {
 	uint8_t 	*write_buffer;
 	uint32_t	erase_block_size;
 	uint32_t	flash_size;
+	uint32_t	curr_block_addr;
+	uint8_t		curr_block_is_dirty;
 } ;
 
 #endif /* */
