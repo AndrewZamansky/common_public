@@ -159,6 +159,7 @@ static void flash_wrapper_task( void *adev )
 {
 	struct flash_wrapper_runtime_t *runtime_handle;
 	uint32_t	curr_block_addr;
+	uint8_t		curr_block_is_dirty;
 
 	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
 
@@ -167,14 +168,17 @@ static void flash_wrapper_task( void *adev )
 		os_delay_ms(2000);
 
 		os_mutex_take_infinite_wait(flash_wrapper_mutex);
-
-		curr_block_addr = runtime_handle->curr_block_addr;
-		if (runtime_handle->curr_block_is_dirty)
+		curr_block_is_dirty = runtime_handle->curr_block_addr;
+		if (2 == curr_block_is_dirty)
 		{
+			curr_block_addr = runtime_handle->curr_block_addr;
 			save_to_flash_and_fetch_new_block(
 					adev, curr_block_addr, curr_block_addr);
 		}
-
+		else if (1 == curr_block_is_dirty)
+		{
+			runtime_handle->curr_block_is_dirty = 2;
+		}
 		os_mutex_give(flash_wrapper_mutex);
 
 		os_stack_test();
