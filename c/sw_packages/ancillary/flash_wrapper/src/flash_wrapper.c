@@ -9,12 +9,15 @@
 /***************   includes    *******************/
 #include "_project_typedefs.h"
 #include "_project_defines.h"
-#include "_project_func_declarations.h"
+#include "_project_tasks_defines.h"
+
+#include "dev_management_api.h"
 
 #include "os_wrapper.h"
 #include "flash_wrapper.h"
 #include "flash_wrapper_api.h"
 
+#include "_flash_wrapper_prerequirements_check.h"
 
 /***************   defines    *******************/
 
@@ -59,6 +62,7 @@ static void save_to_flash_and_fetch_new_block( struct dev_desc_t *adev,
 	runtime_handle->curr_block_is_dirty = 0;
 
 }
+
 
 /**
  * flash_wrapper_pwrite()

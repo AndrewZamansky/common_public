@@ -2,7 +2,7 @@
 #ifndef _flash_wrapper_API_H_
 #define _flash_wrapper_API_H_
 
-#include "src/_flash_wrapper_prerequirements_check.h"
+#include "dev_management_api.h"
 
 /**********      defines      ************/
 
