@@ -10,7 +10,7 @@
 
 /********  includes *********************/
 
-#include "src/_uart_i94xxx_prerequirements_check.h"
+#include "dev_management_api.h"
 
 /********  types  *********************/
 

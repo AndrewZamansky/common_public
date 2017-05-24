@@ -11,7 +11,10 @@
 
 
 /********  includes *********************/
-#include "_project.h"
+#include "_project_typedefs.h"
+#include "_project_defines.h"
+
+#include "dev_management_api.h"
 
 #include "clock_control_api.h"
 #include "clock_control_nuc505_api.h"
@@ -21,6 +24,8 @@
 
 #include "clk.h"
 #include "spim.h"
+
+#include "_clock_control_nuc505_prerequirements_check.h"
 
 uint32_t SystemCoreClock = __HSI;               /*!< System Clock Frequency (Core Clock)*/
 uint32_t CyclesPerUs      = (__HSI / 1000000);  /*!< Cycles per micro second            */

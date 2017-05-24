@@ -3,25 +3,26 @@
  * file :   voice_3D.c
  *
  *
- *
- *
- *
  */
 
 
 
 /********  includes *********************/
+#include "_project_typedefs.h"
+#include "_project_defines.h"
 
-#include "_voice_3D_prerequirements_check.h" // should be after {voice_3D_config.h,dev_management_api.h}
+#include "dsp_management_api.h"
 
-#include "voice_3D_api.h" //place first to test that header file is self-contained
+#include "voice_3D_api.h"
 #include "voice_3D.h"
 #include "common_dsp_api.h"
 
 #include "math.h"
 
-
 #include "auto_init_api.h"
+
+
+#include "_voice_3D_prerequirements_check.h"
 
 /********  defines *********************/
 
@@ -43,22 +44,16 @@ char voice_3D_module_name[] = "voice_3D";
 /***********   local variables    **************/
 
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        voice_3D_dsp                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-void voice_3D_dsp(struct dsp_desc_t *adsp, size_t data_len ,
-		struct dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] , struct dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])
+/**
+ * voice_3D_dsp()
+ *
+ * return:
+ */
+void voice_3D_dsp(struct dsp_desc_t *adsp, size_t data_len,
+		struct dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS],
+		struct dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])
 {
-
-	VOICE_3D_Instance_t *handle;
+	struct VOICE_3D_Instance_t *handle;
 	float *apCh1In ,  *apCh2In;
 	float *apCh1Out ,  *apCh2Out;
 
@@ -106,22 +101,15 @@ void voice_3D_dsp(struct dsp_desc_t *adsp, size_t data_len ,
 }
 
 
-
-
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        voice_3D_ioctl                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-uint8_t voice_3D_ioctl(struct dsp_desc_t *adsp ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
+/**
+ * voice_3D_ioctl()
+ *
+ * return:
+ */
+uint8_t voice_3D_ioctl(struct dsp_desc_t *adsp,
+		const uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2)
 {
-	VOICE_3D_Instance_t *handle;
+	struct VOICE_3D_Instance_t *handle;
 
 	handle = adsp->handle;
 	switch(aIoctl_num)
@@ -149,20 +137,15 @@ uint8_t voice_3D_ioctl(struct dsp_desc_t *adsp ,const uint8_t aIoctl_num , void 
 
 
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        voice_3D_init                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
+/**
+ * voice_3D_init()
+ *
+ * return:
+ */
 void  voice_3D_init(void)
 {
-	DSP_REGISTER_NEW_MODULE("voice_3D",voice_3D_ioctl , voice_3D_dsp , VOICE_3D_Instance_t);
+	DSP_REGISTER_NEW_MODULE("voice_3D",
+			voice_3D_ioctl, voice_3D_dsp, struct VOICE_3D_Instance_t);
 }
 
 AUTO_INIT_FUNCTION(voice_3D_init);

@@ -3,22 +3,24 @@
  * file :   biquads.c
  *
  *
- *
- *
- *
  */
 
 
 
 /********  includes *********************/
+#include "_project_typedefs.h"
+#include "_project_defines.h"
+
+#include "dsp_management_api.h"
+#include "common_dsp_api.h"
 
 #include "_project.h"
-#include "_biquad_filter_prerequirements_check.h"
-#include "common_dsp_api.h"
 #include "cpu_config.h"
 #include "arm_math.h"
 #include "biquad_filter.h"
 #include "biquad_filter_api.h"
+
+#include "_biquad_filter_prerequirements_check.h"
 
 #define NUM_OF_STATES_PER_STAGE	2
 

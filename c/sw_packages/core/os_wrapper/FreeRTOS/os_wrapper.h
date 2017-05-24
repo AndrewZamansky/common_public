@@ -30,7 +30,9 @@
 
 
 /*define maximal priority for interrupt that can call OS API */
-#define OS_MAX_INTERRUPT_PRIORITY_FOR_API_CALLS 	(configMAX_SYSCALL_INTERRUPT_PRIORITY>>4) // 4 for priority bits . should be changed to generic model !!
+ //TODO : 4 for priority bits . should be changed to generic model !!
+#define OS_MAX_INTERRUPT_PRIORITY_FOR_API_CALLS  \
+						(configMAX_SYSCALL_INTERRUPT_PRIORITY>>4)
 
 
 /**	*********  mutex type definition *****    **/
@@ -57,9 +59,10 @@ void os_init(void);
 /**	function :	[os_set_tick_timer_dev()]  **/
 void  os_set_tick_timer_dev(struct dev_desc_t *a_timer_dev);
 
-/**	*********  setting tick callback (if application need to perform something each tick)  ********        **/
-/** 					    		   **/
-/**	function :	[os_set_tick_callback()]  **/
+/****setting tick callback (if application need to perform something each tick)
+ *
+ *	function :	[os_set_tick_callback()]
+ */
 void  os_set_heartbeat_dev(struct dev_desc_t *a_heartbeat_dev);
 
 

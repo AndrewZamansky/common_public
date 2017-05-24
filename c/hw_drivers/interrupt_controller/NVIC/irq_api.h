@@ -2,10 +2,9 @@
 #ifndef _irq_api_H_
 #define _irq_api_H_
 
-#include "_project.h"
-#include "src/_nvic_prerequirements_check.h"
 
 #include "cpu_config.h"
+#include "dev_management_api.h"
 
 
 

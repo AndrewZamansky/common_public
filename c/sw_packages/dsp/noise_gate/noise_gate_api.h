@@ -2,7 +2,7 @@
 #ifndef _noise_gate_API_H_
 #define _noise_gate_API_H_
 
-#include "src/_noise_gate_prerequirements_check.h"
+#include "dsp_management_api.h"
 
 
 /*****************  defines  **************/
@@ -14,7 +14,7 @@
 
 typedef enum
 {
-	IOCTL_NOISE_GATE_SET_THRESHOLD_DB = IOCTL_DSP_LAST_COMMON_IOCTL+1,
+	IOCTL_NOISE_GATE_SET_THRESHOLD_DB = IOCTL_DSP_LAST_COMMON_IOCTL + 1,
 	IOCTL_NOISE_GATE_SET_ATTACK_mS,
 	IOCTL_NOISE_GATE_SET_RELEASE_mS,
 	IOCTL_NOISE_GATE_SET_ALPHA,

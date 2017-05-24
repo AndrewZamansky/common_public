@@ -7,12 +7,15 @@
 
 
 /***************   includes    *******************/
-#include "memory_pool_api.h"
+#include "_project_typedefs.h"
+#include "_project_defines.h"
+#include "_project_func_declarations.h"
 
-#include "_memory_pool_prerequirements_check.h"
+#include "memory_pool_api.h"
 
 #include "memory_pool.h"
 
+#include "_memory_pool_prerequirements_check.h"
 
 /***************   defines    *******************/
 

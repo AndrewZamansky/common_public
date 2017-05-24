@@ -7,15 +7,21 @@
 
 
 /********  includes *********************/
+#include "_project_typedefs.h"
+#include "_project_defines.h"
 
-#include "_multiplier_2ch_prerequirements_check.h"
+#include "dsp_management_api.h"
+#include "common_dsp_api.h"
+
+#include "multiplier_api.h"
 
 #include "multiplier_2ch_api.h"
 #include "multiplier_2ch.h"
-#include "common_dsp_api.h"
 
 #include "auto_init_api.h"
 #include "math.h"
+
+#include "_multiplier_2ch_prerequirements_check.h"
 
 /********  defines *********************/
 

@@ -15,7 +15,6 @@
 #include "speex_echo_canceller_config.h"
 #include "dev_management_api.h" // for device manager defines and typedefs
 #include "dsp_management_api.h" // for device manager defines and typedefs
-#include "_speex_echo_canceller_prerequirements_check.h" // should be after {speex_echo_canceller_config.h,dev_management_api.h}
 
 #include "speex_echo_canceller_api.h" //place first to test that header file is self-contained
 #include "speex_echo_canceller.h"
@@ -26,6 +25,7 @@
 #include "speex/speex_echo.h"
 #include "speex/speex_preprocess.h"
 
+#include "_speex_echo_canceller_prerequirements_check.h"
 
 /********  defines *********************/
 
@@ -72,7 +72,7 @@ void speex_echo_canceller_dsp(struct dsp_desc_t *adsp , size_t data_len ,
 		struct dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] , struct dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])
 {
 
-	SPEEX_ECHO_CANCELLER_Instance_t *handle;
+	struct SPEEX_ECHO_CANCELLER_Instance_t *handle;
 	int16_t *apCh1In ,  *apCh2In ;
 	int16_t *apCh1Out  ;
 
@@ -101,7 +101,7 @@ void speex_echo_canceller_dsp(struct dsp_desc_t *adsp , size_t data_len ,
 /*---------------------------------------------------------------------------------------------------------*/
 uint8_t speex_echo_canceller_ioctl(struct dsp_desc_t *adsp ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
 {
-	SPEEX_ECHO_CANCELLER_Instance_t *handle;
+	struct SPEEX_ECHO_CANCELLER_Instance_t *handle;
 	SpeexEchoState *echo_state;
 	SpeexPreprocessState *preprocess_state;
 	int sampleRate = SAMPLE_RATE;
@@ -149,7 +149,7 @@ uint8_t speex_echo_canceller_ioctl(struct dsp_desc_t *adsp ,const uint8_t aIoctl
 /*---------------------------------------------------------------------------------------------------------*/
 uint8_t  speex_echo_canceller_api_init_dsp_descriptor(struct dsp_desc_t aDspDescriptor)
 {
-	SPEEX_ECHO_CANCELLER_Instance_t *pInstance;
+	struct SPEEX_ECHO_CANCELLER_Instance_t *pInstance;
 	if(NULL == aDspDescriptor) return 1;
 	if (usedInstances >= SPEEX_ECHO_CANCELLER_CONFIG_NUM_OF_DYNAMIC_INSTANCES) return 1;
 

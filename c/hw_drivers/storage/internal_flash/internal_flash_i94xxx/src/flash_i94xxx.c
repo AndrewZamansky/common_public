@@ -9,7 +9,8 @@
 /***************   includes    *******************/
 #include "_project_typedefs.h"
 #include "_project_defines.h"
-#include "_project_func_declarations.h"
+
+#include "dev_management_api.h"
 
 #include "internal_flash_i94xxx_api.h"
 #include "ISD94XXXSeries.h"
@@ -17,6 +18,10 @@
 #include "fmc.h"
 
 #include "flash_wrapper_api.h"
+
+#include "_flash_i94xxx_prerequirements_check.h"
+
+#include "internal_flash_i94xxx_add_component.h"
 
 /***************   defines    *******************/
 #define ERASE_BLOCK_SIZE   0x1000    /* 4k */

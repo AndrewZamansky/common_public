@@ -2,7 +2,7 @@
 #ifndef _async_rx_wrapper_API_H_
 #define _async_rx_wrapper_API_H_
 
-#include "src/_async_rx_wrapper_prerequirements_check.h"
+#include "dev_management_api.h"
 
 /*****************  defines  **************/
 
@@ -15,7 +15,7 @@
 
 typedef enum
 {
-	IOCTL_ASYNC_RX_WRAPPER_SET_BUFF_SIZE = IOCTL_LAST_COMMON_IOCTL+1,
+	IOCTL_ASYNC_RX_WRAPPER_SET_BUFF_SIZE = IOCTL_LAST_COMMON_IOCTL + 1,
 	IOCTL_ASYNC_RX_WRAPPER_RESET,
 	IOCTL_ASYNC_RX_WRAPPER_DONT_USE_TASK
 }ASYNC_RX_WRAPPER_API_ioctl_t;

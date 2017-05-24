@@ -2,16 +2,11 @@
  * file : STANDARD_COMPRESSOR.h
  *
  *
- *
- *
- *
- *
  */
 
 #ifndef _STANDARD_COMPRESSOR_H
 #define _STANDARD_COMPRESSOR_H
 
-#include "src/_standard_compressor_prerequirements_check.h"
 #include "standard_compressor_api.h"
 
 

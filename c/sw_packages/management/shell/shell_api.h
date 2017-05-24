@@ -4,7 +4,6 @@
 
 #ifdef CONFIG_INCLUDE_SHELL
 
-#include "src/_shell_prerequirements_check.h"
 
 /*****************  defines  **************/
 

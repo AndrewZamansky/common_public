@@ -2,20 +2,24 @@
  *
  * file :   I2S_splitter.c
  *
-
  */
 
 
 
 /********  includes *********************/
+#include "_project_typedefs.h"
+#include "_project_defines.h"
 
-#include "_I2S_splitter_prerequirements_check.h"
+#include "dsp_management_api.h"
+#include "common_dsp_api.h"
+
 
 #include "I2S_splitter_api.h"
 #include "I2S_splitter.h"
-#include "common_dsp_api.h"
 
 #include "auto_init_api.h"
+
+#include "_I2S_splitter_prerequirements_check.h"
 
 /********  defines *********************/
 
@@ -100,8 +104,8 @@ uint8_t I2S_splitter_ioctl(struct dsp_desc_t *adsp ,
 
 void  I2S_splitter_init(void)
 {
-	DSP_REGISTER_NEW_MODULE("I2S_splitter",
-			I2S_splitter_ioctl , I2S_splitter_dsp , I2S_SPLITTER_Instance_t);
+	DSP_REGISTER_NEW_MODULE("I2S_splitter",	I2S_splitter_ioctl,
+					I2S_splitter_dsp , struct I2S_SPLITTER_Instance_t);
 }
 
 AUTO_INIT_FUNCTION(I2S_splitter_init);

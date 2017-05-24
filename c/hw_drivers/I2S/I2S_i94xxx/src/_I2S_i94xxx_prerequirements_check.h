@@ -3,24 +3,19 @@
  *
  *
  *
- *
- *
- *
  */
 
 #ifndef _I2S_i94xxx_prerequirements_check_H
 #define _I2S_i94xxx_prerequirements_check_H
 
 
-#include "_project.h"
-#include "dev_management_api.h"
-#include "os_wrapper.h"
-#include "global_prerequirements_check.h"
-
 /***************************/
 /******** test defines *****/
 
 
+#ifndef OS_MAX_INTERRUPT_PRIORITY_FOR_API_CALLS
+  #error "define OS_MAX_INTERRUPT_PRIORITY_FOR_API_CALLS  in  os_wrapper.h"
+#endif
 
 
 /***************************/
@@ -43,4 +38,4 @@
 /***************************/
 
 
-#endif /* */
+#endif

@@ -6,8 +6,10 @@
  */
 
 /********  includes *********************/
+#include "_project_typedefs.h"
+#include "_project_defines.h"
 
-#include "_dsp_management_prerequirements_check.h"
+#include "dsp_management_api.h"
 
 #include "dsp_management.h"
 
@@ -16,6 +18,7 @@
 
 #include "auto_init_api.h"
 
+#include "_dsp_management_prerequirements_check.h"
 
 static	void *dsp_buffers_pool = NULL;
 

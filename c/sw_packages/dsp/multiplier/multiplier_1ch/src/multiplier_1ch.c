@@ -3,22 +3,25 @@
  * file :   multiplier_1ch.c
  *
  *
- *
- *
- *
  */
 
 
 
 /********  includes *********************/
+#include "_project_typedefs.h"
+#include "_project_defines.h"
 
-#include "_multiplier_1ch_prerequirements_check.h"
+#include "dsp_management_api.h"
+#include "common_dsp_api.h"
+
+#include "multiplier_api.h"
 
 #include "multiplier_1ch_api.h" //place first to test that header file is self-contained
 #include "multiplier_1ch.h"
-#include "common_dsp_api.h"
 
 #include "auto_init_api.h"
+
+#include "_multiplier_1ch_prerequirements_check.h"
 
 /********  defines *********************/
 

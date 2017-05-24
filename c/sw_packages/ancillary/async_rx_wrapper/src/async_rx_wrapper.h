@@ -2,16 +2,13 @@
  * file : ASYNC_RX_WRAPPER.h
  *
  *
- *
- *
- *
- *
  */
 
 #ifndef _ASYNC_RX_WRAPPER_H
 #define _ASYNC_RX_WRAPPER_H
 
-#include "src/_async_rx_wrapper_prerequirements_check.h"
+#include "_project_defines.h"
+#include "dev_management_api.h"
 
 
 /***************   typedefs    *******************/
@@ -31,7 +28,7 @@
 	#endif
 #endif
 
-typedef struct {
+struct async_rx_wrapper_cfg_t {
 
 	struct dev_desc_t *   server_dev;
 	struct dev_desc_t *   client_dev;
@@ -42,16 +39,16 @@ typedef struct {
 	uint8_t	rx_buff[CONFIG_ASYNC_RX_WRAPPER_RX_BUFFER_SIZE];
 #endif
 
-} async_rx_wrapper_instance_t;
+};
 
 
-typedef struct {
+struct async_rx_wrapper_runtime_t{
 
 	rx_int_size_t WritePos;
 	rx_int_size_t ReadPos;
     uint8_t isDataInUse;
 	uint8_t	bufferWasOverflowed;
 
-} async_rx_wrapper_runtime_instance_t;
+};
 
 #endif /* */

@@ -3,15 +3,11 @@
  *
  *
  *
- *
- *
- *
  */
 
 #ifndef _NOISE_GATE_H
 #define _NOISE_GATE_H
 
-#include "src/_noise_gate_prerequirements_check.h"
 
 
 /***************   typedefs    *******************/

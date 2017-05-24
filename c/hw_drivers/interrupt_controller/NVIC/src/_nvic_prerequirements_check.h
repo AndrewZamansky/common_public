@@ -2,20 +2,10 @@
  * file : nvic_prerequirements_check.h
  *
  *
- *
- *
- *
- *
  */
 
 #ifndef _nvic_prerequirements_check_H
 #define _nvic_prerequirements_check_H
-
-
-#include "_project.h"
-#include "dev_management_api.h"
-#include "cpu_config.h"
-#include "global_prerequirements_check.h"
 
 /***************************/
 /******** test defines *****/
@@ -37,6 +27,11 @@
 /**********************************/
 /*** test variable/function declaration existence (suffix should be unique)***/
 
+#ifndef CRITICAL_ERROR
+enum{
+	CRITICAL_ERROR___not_declared_in__project_func_declarations_h__or__in__project_defines_h____as_required_by_memory_pool = sizeof(CRITICAL_ERROR)
+};
+#endif
 
 /***************************/
 

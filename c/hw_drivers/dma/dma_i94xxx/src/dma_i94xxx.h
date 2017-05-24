@@ -13,7 +13,7 @@
 
 /********  includes *********************/
 
-#include "src/_dma_i94xxx_prerequirements_check.h"
+#include "dev_management_api.h"
 
 /********  types  *********************/
 

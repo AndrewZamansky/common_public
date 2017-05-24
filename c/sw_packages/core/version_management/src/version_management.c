@@ -11,9 +11,14 @@
 
 
 /********  includes *********************/
-#include "src/_version_management_prerequirements_check.h"
+#include "_project_typedefs.h"
+#include "_project_defines.h"
+
+#include "dev_management_api.h"
 
 #include "version_management_api.h"
+
+#include "_version_management_prerequirements_check.h"
 
 #include "version_management_add_component.h"
 
@@ -36,18 +41,14 @@
 
 /********  local defs *********************/
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        version_management_pread                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-size_t version_management_pread(struct dev_desc_t *adev ,uint8_t *apData , size_t aLength, size_t aOffset)
+
+/**
+ * version_management_pread()
+ *
+ * return:
+ */
+size_t version_management_pread(struct dev_desc_t *adev,
+				uint8_t *apData , size_t aLength, size_t aOffset)
 {
 	if(aLength > sizeof(VERSION_STR))
 	{

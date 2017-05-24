@@ -3,7 +3,7 @@
 #define _shell_presets_API_H_
 
 
-#include "src/_shell_presets_prerequirements_check.h"
+#include "dev_management_api.h"
 
 /*****************  defines  **************/
 

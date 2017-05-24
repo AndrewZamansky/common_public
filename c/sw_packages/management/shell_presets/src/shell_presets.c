@@ -7,14 +7,19 @@
 
 
 /********  includes *********************/
-#include "src/_shell_presets_prerequirements_check.h"
+#include "_project_typedefs.h"
+#include "_project_defines.h"
+
+#include "dev_management_api.h"
 
 #include "shell_presets_api.h"
-
 #include "shell_presets.h"
-
-#include "shell_presets_add_component.h"
 #include "management_api.h"
+
+#include "_shell_presets_prerequirements_check.h"
+
+/*following line add module to available module list for dynamic device tree*/
+#include "shell_presets_add_component.h"
 
 /********  defines *********************/
 

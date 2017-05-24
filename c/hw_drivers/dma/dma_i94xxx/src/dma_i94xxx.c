@@ -1,13 +1,15 @@
 /*
  *
  * dma_i94xxx.c
-
  *
  */
 
 /********  includes *********************/
 
-#include "src/_dma_i94xxx_prerequirements_check.h"
+#include "_project_typedefs.h"
+#include "_project_defines.h"
+
+#include "dev_management_api.h"
 
 #include "dma_i94xxx.h"
 
@@ -17,8 +19,11 @@
 #include "irq_api.h"
 #include "os_wrapper.h"
 
+#include "_dma_i94xxx_prerequirements_check.h"
 
+/*following line add module to available module list for dynamic device tree*/
 #include "dma_i94xxx_add_component.h"
+
 
 /********  defines *********************/
 #define DMA_TO_PERIPHERAL	0

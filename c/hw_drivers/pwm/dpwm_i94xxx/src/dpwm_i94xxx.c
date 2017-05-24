@@ -6,7 +6,10 @@
 
 /********  includes *********************/
 
-#include "src/_dpwm_i94xxx_prerequirements_check.h"
+#include "_project_typedefs.h"
+#include "_project_defines.h"
+
+#include "dev_management_api.h"
 
 #include "dpwm_i94xxx_api.h"
 #include "dpwm_i94xxx.h"
@@ -16,10 +19,14 @@
 
 #include "ISD94XXXSeries.h"
 
-#include "dpwm_i94xxx_add_component.h"
 
 #include "clock_control_i94xxx_api.h"
 #include "dpwm.h"
+
+#include "_dpwm_i94xxx_prerequirements_check.h"
+
+/*following line add module to available module list for dynamic device tree*/
+#include "dpwm_i94xxx_add_component.h"
 
 /********  defines *********************/
 

@@ -2,7 +2,7 @@
 #ifndef _timer_wrapper_API_H_
 #define _timer_wrapper_API_H_
 
-#include "src/_timer_wrapper_prerequirements_check.h"
+#include "dev_management_api.h"
 
 /*****************  defines  **************/
 
@@ -12,7 +12,8 @@
 
 typedef enum
 {
-	IOCTL_TIMER_WRAPPER_API_SET_COUNTDOWN_VALUE_AND_RESET = IOCTL_LAST_COMMON_IOCTL+1,
+	IOCTL_TIMER_WRAPPER_API_SET_COUNTDOWN_VALUE_AND_RESET
+										= IOCTL_LAST_COMMON_IOCTL + 1,
 	IOCTL_TIMER_WRAPPER_API_CHECK_IF_COUNTDOWN_ELAPSED,
 	IOCTL_TIMER_WRAPPER_API_GET_RATE_HZ,
 	IOCTL_TIMER_WRAPPER_API_RESTART_COUNTER,
@@ -22,6 +23,5 @@ typedef enum
 
 
 /**********  define API  functions  ************/
-uint8_t  timer_wrapper_api_init_dev_descriptor(struct dev_desc_t *aDevDescriptor);
 
 #endif

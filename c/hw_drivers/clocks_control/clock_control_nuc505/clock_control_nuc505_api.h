@@ -2,7 +2,6 @@
 #ifndef _CLOCK_CONTROL_NUC505_API_H_
 #define _CLOCK_CONTROL_NUC505_API_H_
 
-#include "src/_cortexM_systick_prerequirements_check.h"
 
 /**********  define API  types ************/
 

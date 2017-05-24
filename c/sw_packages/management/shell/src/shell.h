@@ -7,7 +7,7 @@
 #ifndef _SHELL_H
 #define _SHELL_H
 
-#include "src/_shell_prerequirements_check.h"
+#include "dev_management_api.h"
 
 
 /***************   typedefs    *******************/

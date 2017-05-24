@@ -3,28 +3,27 @@
  * file :   noise_gate.c
  *
  *
- *
- *
- *
  */
 
 
 
 /********  includes *********************/
+#include "_project_typedefs.h"
+#include "_project_defines.h"
 
-#include "_noise_gate_prerequirements_check.h" // should be after {noise_gate_config.h,dev_management_api.h}
+#include "dsp_management_api.h"
+#include "common_dsp_api.h"
 
-#include "noise_gate_api.h" //place first to test that header file is self-contained
+#include "noise_gate_api.h"
 #include "noise_gate.h"
 
 #include "math.h"
 #include "cpu_config.h"
 #include "arm_math.h"
 
-#include "PRINTF_api.h"
-
-
 #include "auto_init_api.h"
+
+#include "_noise_gate_prerequirements_check.h"
 
 /********  defines *********************/
 

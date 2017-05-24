@@ -3,28 +3,28 @@
  * file :   standard_compressor.c
  *
  *
- *
- *
- *
  */
 
 
 
 /********  includes *********************/
+#include "_project_typedefs.h"
+#include "_project_defines.h"
 
-#include "_standard_compressor_prerequirements_check.h" // should be after {standard_compressor_config.h,dev_management_api.h}
+#include "dsp_management_api.h"
+#include "common_dsp_api.h"
 
-#include "standard_compressor_api.h" //place first to test that header file is self-contained
+
+#include "standard_compressor_api.h"
 #include "standard_compressor.h"
 
 #include "math.h"
 #include "cpu_config.h"
 #include "arm_math.h"
 
-#include "PRINTF_api.h"
-
-
 #include "auto_init_api.h"
+
+#include "_standard_compressor_prerequirements_check.h"
 
 /********  defines *********************/
 

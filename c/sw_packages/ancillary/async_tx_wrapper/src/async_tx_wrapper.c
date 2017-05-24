@@ -3,20 +3,25 @@
  * file :   async_tx_wrapper.c
  *
  *
- *
- *
- *
  */
 
 
 
 /********  includes *********************/
+#include "_project_typedefs.h"
+#include "_project_defines.h"
+#include "_project_tasks_defines.h"
 
-#include "_async_tx_wrapper_prerequirements_check.h"
+#include "dev_management_api.h"
+
+#include "os_wrapper.h"
 
 #include "async_tx_wrapper_api.h"
 #include "async_tx_wrapper.h"
+#include "uart_api.h"
+#include "_async_tx_wrapper_prerequirements_check.h"
 
+/*following line add module to available module list for dynamic device tree*/
 #include "async_tx_wrapper_add_component.h"
 
 
@@ -59,8 +64,8 @@ uint8_t async_tx_wrapper_callback(struct dev_desc_t *adev,
 		uint8_t aCallback_num, void * aCallback_param1,
 		void * aCallback_param2)
 {
-	async_tx_wrapper_instance_t *config_handle;
-	async_tx_wrapper_runtime_instance_t *runtime_handle;
+	struct async_tx_wrapper_cfg_t *config_handle;
+	struct async_tx_wrapper_runtime_t *runtime_handle;
 	tx_int_size_t data_length ;
 	struct dev_desc_t *   server_dev ;
 	tx_int_size_t	transmitedSize;
@@ -114,11 +119,11 @@ uint8_t async_tx_wrapper_callback(struct dev_desc_t *adev,
  * return:
  */
 static void sw_uart_send_and_wait_for_end(struct dev_desc_t *adev,
-			async_tx_wrapper_runtime_instance_t *runtime_handle,
+			struct async_tx_wrapper_runtime_t *runtime_handle,
 			xMessage_t *xMessage, uint8_t called_from_task)
 {
 
-	async_tx_wrapper_instance_t *config_handle;
+	struct async_tx_wrapper_cfg_t *config_handle;
 
 	os_queue_t xTX_WaitQueue ;
 	struct dev_desc_t *   server_dev ;
@@ -189,7 +194,7 @@ size_t async_tx_wrapper_pwrite(struct dev_desc_t *adev,
 {
 	tx_int_size_t dataLen= (tx_int_size_t)aLength;
 	tx_int_size_t curr_transmit_len;
-	async_tx_wrapper_runtime_instance_t *runtime_handle;
+	struct async_tx_wrapper_runtime_t *runtime_handle;
 	uint8_t *pSendData;
 
 
@@ -257,7 +262,7 @@ static void ASYNC_TX_WRAPPER_Send_Task( void *adev )
 {
 
 	xMessage_t xRxMessage;
-	async_tx_wrapper_runtime_instance_t *runtime_handle;
+	struct async_tx_wrapper_runtime_t *runtime_handle;
 
 	os_queue_t xQueue ;
 
@@ -292,8 +297,8 @@ static void ASYNC_TX_WRAPPER_Send_Task( void *adev )
 uint8_t async_tx_wrapper_ioctl(struct dev_desc_t *adev,
 		uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2)
 {
-	async_tx_wrapper_instance_t *config_handle;
-	async_tx_wrapper_runtime_instance_t *runtime_handle;
+	struct async_tx_wrapper_cfg_t *config_handle;
+	struct async_tx_wrapper_runtime_t *runtime_handle;
 	struct dev_desc_t *   server_dev;
 
 	config_handle = DEV_GET_CONFIG_DATA_POINTER(adev);

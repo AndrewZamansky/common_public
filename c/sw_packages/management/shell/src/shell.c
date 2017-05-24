@@ -8,14 +8,21 @@
 
 
 /********  includes *********************/
-#include "src/_shell_prerequirements_check.h"
+#include "_project_typedefs.h"
+#include "_project_defines.h"
+#include "_project_tasks_defines.h"
 
+#include "dev_management_api.h"
+
+#include "os_wrapper.h"
 #include "shell_api.h"
-
 #include "shell.h"
-
-#include "shell_add_component.h"
 #include "management_api.h"
+
+#include "_shell_prerequirements_check.h"
+
+/*following line add module to available module list for dynamic device tree*/
+#include "shell_add_component.h"
 
 #if SHELL_CONFIG_MAX_RX_BUFFER_SIZE <= (1<<8)
 	typedef uint8_t shel_rx_int_size_t;

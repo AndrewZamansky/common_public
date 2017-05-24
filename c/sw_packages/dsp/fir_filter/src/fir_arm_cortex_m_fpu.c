@@ -2,24 +2,23 @@
  *
  * file :   firs.c
  *
- *
- *
- *
- *
  */
 
 
 
 /********  includes *********************/
+#include "_project_typedefs.h"
+#include "_project_defines.h"
 
-#include "_project.h"
-#include "_fir_filter_prerequirements_check.h"
+#include "dsp_management_api.h"
 #include "common_dsp_api.h"
+
 #include "cpu_config.h"
 #include "arm_math.h"
 #include "fir_filter.h"
 #include "fir_filter_api.h"
 
+#include "_fir_filter_prerequirements_check.h"
 
 /********  defines *********************/
 
@@ -63,7 +62,8 @@ void fir_filter_function(void *pFilter,float *apIn,float *apOut,size_t buff_len)
  *
  *    {b[numTaps-1], b[numTaps-2], b[N-2], ..., b[1], b[0]}
  */
-void *fir_alloc(size_t number_of_filter_coefficients, float *p_coefficients ,size_t predefined_data_block_size)
+void *fir_alloc(size_t number_of_filter_coefficients,
+		float *p_coefficients ,size_t predefined_data_block_size)
 {
 	fir_filter_t *p_fir_filter;
 	arm_fir_instance_f32* p_filter_instance;

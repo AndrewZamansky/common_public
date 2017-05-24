@@ -2,9 +2,7 @@
 #ifndef _multiplier_API_H_
 #define _multiplier_API_H_
 
-#include "src/_multiplier_2ch_prerequirements_check.h"
-
-#include "common_dsp_api.h"
+#include "dsp_management_api.h"
 
 /*****************  defines  **************/
 

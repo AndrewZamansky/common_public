@@ -2,7 +2,7 @@
 #ifndef _I2S_I94XXX_API_H_
 #define _I2S_I94XXX_API_H_
 
-#include "src/_I2S_i94xxx_prerequirements_check.h"
+#include "dev_management_api.h"
 #include "i2s.h"
 
 /*****************  defines  **************/
@@ -16,7 +16,7 @@
 
 typedef enum
 {
-	I2S_ENABLE_OUTPUT_IOCTL = IOCTL_LAST_COMMON_IOCTL+1
+	I2S_ENABLE_OUTPUT_IOCTL = IOCTL_LAST_COMMON_IOCTL + 1
 }I2S_API_ioctl_t;
 
 

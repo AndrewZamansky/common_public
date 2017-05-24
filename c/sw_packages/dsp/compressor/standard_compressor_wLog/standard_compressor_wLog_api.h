@@ -2,7 +2,7 @@
 #ifndef _standard_compressor_wLog_API_H_
 #define _standard_compressor_wLog_API_H_
 
-#include "src/_standard_compressor_wLog_prerequirements_check.h"
+#include "dsp_management_api.h"
 
 
 /*****************  defines  **************/

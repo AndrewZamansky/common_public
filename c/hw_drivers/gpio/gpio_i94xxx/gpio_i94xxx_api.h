@@ -3,7 +3,7 @@
 #define _GPIO_I94XXX_API_H_
 
 
-#include "src/_gpio_i94xxx_prerequirements_check.h"
+#include "dev_management_api.h"
 #include "gpio_api.h"
 
 
@@ -35,7 +35,7 @@ typedef enum
 
 typedef enum
 {
-	IOCTL_GPIO_I94XXX_SET_PORT_PARAM = IOCTL_LAST_COMMON_GPIO_IOCTL+1,
+	IOCTL_GPIO_I94XXX_SET_PORT_PARAM = IOCTL_LAST_COMMON_GPIO_IOCTL + 1,
 	IOCTL_GPIO_I94XXX_SET_SINGLE_PIN_NUMBER_PARAM,
 	IOCTL_GPIO_I94XXX_SET_MODE_PARAM
 }GPIO_I94XXX_API_ioctl_t;

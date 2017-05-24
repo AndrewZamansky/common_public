@@ -2,9 +2,7 @@
 #ifndef _voice_3D_API_H_
 #define _voice_3D_API_H_
 
-#include "src/_voice_3D_prerequirements_check.h"
-
-#include "common_dsp_api.h"
+#include "dsp_management_api.h"
 
 /*****************  defines  **************/
 
@@ -15,7 +13,7 @@
 
 typedef enum
 {
-	IOCTL_VOICE_3D_SET_MEDIUM_GAIN = IOCTL_DSP_LAST_COMMON_IOCTL+1,
+	IOCTL_VOICE_3D_SET_MEDIUM_GAIN = IOCTL_DSP_LAST_COMMON_IOCTL + 1,
 	IOCTL_VOICE_3D_SET_SIDE_GAIN,
 	IOCTL_VOICE_3D_SET_3D_GAIN,
 }VOICE_3D_API_ioctl_t;

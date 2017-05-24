@@ -2,9 +2,6 @@
 #ifndef _I2S_splitter_API_H_
 #define _I2S_splitter_API_H_
 
-#include "src/_I2S_splitter_prerequirements_check.h"
-
-#include "common_dsp_api.h"
 
 /*****************  defines  **************/
 

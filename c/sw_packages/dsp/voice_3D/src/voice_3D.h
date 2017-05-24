@@ -1,25 +1,18 @@
 /*
  * file : VOICE_3D.h
  *
- *
- *
- *
- *
- *
  */
 
 #ifndef _VOICE_3D_H
 #define _VOICE_3D_H
 
-#include "src/_voice_3D_prerequirements_check.h"
 
 
 /***************   typedefs    *******************/
 
 
 
-typedef struct
-{
+struct VOICE_3D_Instance_t {
 	float medium_gain;
 	float side_gain;
 	float _3D_gain;
@@ -28,4 +21,4 @@ typedef struct
 
 
 
-#endif /* */
+#endif

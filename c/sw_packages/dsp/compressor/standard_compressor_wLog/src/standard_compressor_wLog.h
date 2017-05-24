@@ -3,15 +3,11 @@
  *
  *
  *
- *
- *
- *
  */
 
 #ifndef _STANDARD_COMPRESSOR_wLog_H
 #define _STANDARD_COMPRESSOR_wLog_H
 
-#include "src/_standard_compressor_wLog_prerequirements_check.h"
 
 
 /***************   typedefs    *******************/

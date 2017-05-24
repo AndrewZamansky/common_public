@@ -3,9 +3,6 @@
  *clock_control_nuc505.h
  *
  *
- *
- *
- *
  */
 
 #ifndef _CLOCK_CONTROL_NUC505_H_
@@ -13,7 +10,6 @@
 
 /********  includes *********************/
 
-#include "src/_cortexM_systick_prerequirements_check.h"
 
 /********  types  *********************/
 

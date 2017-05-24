@@ -3,9 +3,6 @@
  * gpio_i94xxx.h
  *
  *
- *
- *
- *
  */
 
 #ifndef _GPIO_I94XXX_H_
@@ -13,7 +10,6 @@
 
 /********  includes *********************/
 
-#include "src/_gpio_i94xxx_prerequirements_check.h"
 
 /********  types  *********************/
 

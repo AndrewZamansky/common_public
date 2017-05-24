@@ -1,7 +1,8 @@
 
-#ifndef _Timer_API_H_
-#define _Timer_API_H_
+#ifndef _hw_Timer_API_H_
+#define _hw_Timer_API_H_
 
+#include "dev_management_api.h"
 
 /**********  define API  types ************/
 
@@ -14,7 +15,7 @@ typedef void (*timer_callback_func_t)(void)  ;
 
 typedef enum
 {
-	IOCTL_TIMER_INPUT_CLOCK_ID_SET = IOCTL_LAST_COMMON_IOCTL+1,
+	IOCTL_TIMER_INPUT_CLOCK_ID_SET = IOCTL_LAST_COMMON_IOCTL + 1,
 	IOCTL_TIMER_RATE_HZ_SET,
 	IOCTL_TIMER_GET_RATE_HZ,
 	IOCTL_TIMER_MODE_SET,

@@ -8,18 +8,25 @@
 
 
 /********  includes *********************/
-#include "src/_u_boot_shell_prerequirements_check.h"
+#include "_project_typedefs.h"
+#include "_project_defines.h"
+
+#include "dev_management_api.h"
 
 #include "u_boot_shell_api.h"
 
 #include "u_boot_shell.h"
 #include "config.h"
-#include "u_boot_shell_add_component.h"
 #include "management_api.h"
 
 #ifdef  _BOOTSTAGE_H
 	typedef enclosure_unnedded _code_by_DONT_USE_STD_IO_in_common_h_in_uboor_include_dir  dummy_type;
 #endif
+
+#include "_u_boot_shell_prerequirements_check.h"
+
+/*following line add module to available module list for dynamic device tree*/
+#include "u_boot_shell_add_component.h"
 
 
 /********  defines *********************/

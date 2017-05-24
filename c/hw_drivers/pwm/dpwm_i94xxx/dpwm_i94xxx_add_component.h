@@ -1,7 +1,7 @@
 /* !! DONT PUT HEADER FILE PROTECTIONS IN THIS FILE !! */
 
 #include  "dpwm_i94xxx_api.h"
-#include "src/dpwm_i94xxx.h"
+#include  "src/dpwm_i94xxx.h"
 
 #define	MODULE_NAME						dpwm_i94xxx
 #define	MODULE_IOCTL_FUNCTION			dpwm_i94xxx_ioctl

@@ -8,15 +8,18 @@
 
 
 /********  includes *********************/
+#include "_project_typedefs.h"
+#include "_project_defines.h"
 
-#include "_biquad_filter_prerequirements_check.h"
-
-#include "PRINTF_api.h"
+#include "dsp_management_api.h"
+#include "common_dsp_api.h"
 
 #include "biquad_filter_api.h"
 #include "biquad_filter.h"
 
 #include "auto_init_api.h"
+
+#include "_biquad_filter_prerequirements_check.h"
 
 /********  defines *********************/
 
@@ -90,7 +93,6 @@ static void set_number_of_bands(
 	p_band_set_params =
 			(struct  biquad_filter_api_band_set_params_t *)malloc(
 					size_of_params);
-	memset(p_band_set_params, 0, size_of_params);
 	handle->band_set_params = p_band_set_params;
 
 	for (i = 0; i < num_of_bands; i++)
@@ -100,7 +102,10 @@ static void set_number_of_bands(
 		pCoeffs[i].b0 = 1;
 		pCoeffs[i].b1 = 0;
 		pCoeffs[i].b2 = 0;
-		p_band_set_params[i].filter_mode = BIQUADS_TRANSPARENT_MODE;
+		p_band_set_params[i].filter_mode = BIQUADS_PEAK_MODE;
+		p_band_set_params[i].Fc = 1000;
+		p_band_set_params[i].QValue = 0.707;
+		p_band_set_params[i].Gain = 0;
 		p_band_set_params[i].bypass = 1;
 	}
 

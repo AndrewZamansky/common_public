@@ -3,9 +3,6 @@
  *clock_control_i94xxx.h
  *
  *
- *
- *
- *
  */
 
 #ifndef _CLOCK_CONTROL_I94XXX_H_
@@ -13,7 +10,6 @@
 
 /********  includes *********************/
 
-#include "src/_cortexM_systick_prerequirements_check.h"
 
 /********  types  *********************/
 

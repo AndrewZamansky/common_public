@@ -3,17 +3,11 @@
  *
  *
  *
- *
- *
- *
  */
 
 #ifndef _I2S_splitter_prerequirements_check_H
 #define _I2S_splitter_prerequirements_check_H
 
-#include "_project.h"
-#include "dsp_management_api.h"
-#include "global_prerequirements_check.h"
 
 /***************************/
 /******** test defines *****/
@@ -43,4 +37,4 @@
 
 
 
-#endif /* */
+#endif

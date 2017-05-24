@@ -2,7 +2,7 @@
 #ifndef _fir_filter_API_H_
 #define _fir_filter_API_H_
 
-#include "src/_fir_filter_prerequirements_check.h"
+#include "dsp_management_api.h"
 
 
 /*****************  defines  **************/

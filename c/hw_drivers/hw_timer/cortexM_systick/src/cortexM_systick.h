@@ -13,7 +13,8 @@
 
 /********  includes *********************/
 
-#include "src/_cortexM_systick_prerequirements_check.h"
+#include "dev_management_api.h"
+#include "hw_timer_api.h"
 
 /********  types  *********************/
 

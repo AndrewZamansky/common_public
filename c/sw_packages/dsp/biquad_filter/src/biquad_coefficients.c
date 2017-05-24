@@ -2,25 +2,24 @@
  *
  * file :   biquad_filter.c
  *
- *
- *
- *
- *
  */
 
 
 
 /********  includes *********************/
-#include "_project.h"
+#include "_project_typedefs.h"
+#include "_project_defines.h"
 
-#include "_biquad_filter_prerequirements_check.h"
-
+#include "dsp_management_api.h"
+#include "common_dsp_api.h"
 
 #include "biquad_filter_api.h" //place first to test that header file is self-contained
 #include "biquad_filter.h"
 
 #include "auto_init_api.h"
 #include "math.h"
+
+#include "_biquad_filter_prerequirements_check.h"
 
 /********  defines *********************/
 

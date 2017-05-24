@@ -19,9 +19,11 @@
 
 #include "_flash_wrapper_prerequirements_check.h"
 
+/*following line add module to available module list for dynamic device tree*/
+#include "flash_wrapper_add_component.h"
+
 /***************   defines    *******************/
 
-#define	DUMMY_FLASH_ADDR	0xffffffff
 
 /***************   typedefs    *******************/
 

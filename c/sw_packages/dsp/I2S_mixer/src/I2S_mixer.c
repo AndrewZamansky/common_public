@@ -3,22 +3,24 @@
  * file :   I2S_mixer.c
  *
  *
- *
- *
- *
  */
 
 
 
 /********  includes *********************/
+#include "_project_typedefs.h"
+#include "_project_defines.h"
 
-#include "_I2S_mixer_prerequirements_check.h"
+#include "dsp_management_api.h"
+#include "common_dsp_api.h"
+
 
 #include "I2S_mixer_api.h"
 #include "I2S_mixer.h"
-#include "common_dsp_api.h"
 
 #include "auto_init_api.h"
+
+#include "_I2S_mixer_prerequirements_check.h"
 
 /********  defines *********************/
 #if (2==NUM_OF_BYTES_PER_AUDIO_WORD)
@@ -60,7 +62,7 @@ void I2S_mixer_dsp(struct dsp_desc_t *adsp , size_t data_len ,
 		struct dsp_pad_t  out_pads[MAX_NUM_OF_OUTPUT_PADS])
 {
 	float *apCh1In ,  *apCh2In;
-	I2S_MIXER_Instance_t *handle;
+	struct I2S_MIXER_Instance_t *handle;
 	uint8_t enable_test_clipping;
 	float max_out_val ;
 	float out_val ;
@@ -124,7 +126,7 @@ void I2S_mixer_dsp(struct dsp_desc_t *adsp , size_t data_len ,
 uint8_t I2S_mixer_ioctl(struct dsp_desc_t *adsp,
 		uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
 {
-	I2S_MIXER_Instance_t *handle;
+	struct I2S_MIXER_Instance_t *handle;
 
 	handle = adsp->handle;
 
@@ -159,7 +161,7 @@ uint8_t I2S_mixer_ioctl(struct dsp_desc_t *adsp,
 void  I2S_mixer_init(void)
 {
 	DSP_REGISTER_NEW_MODULE("I2S_mixer",
-			I2S_mixer_ioctl , I2S_mixer_dsp , I2S_MIXER_Instance_t);
+			I2S_mixer_ioctl , I2S_mixer_dsp, struct I2S_MIXER_Instance_t);
 }
 
 AUTO_INIT_FUNCTION(I2S_mixer_init);

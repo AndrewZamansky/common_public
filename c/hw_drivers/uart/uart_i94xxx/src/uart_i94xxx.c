@@ -7,19 +7,22 @@
 
 /********  includes *********************/
 
-#include "src/_uart_i94xxx_prerequirements_check.h"
+#include "_project_typedefs.h"
+#include "_project_defines.h"
+
+#include "dev_management_api.h"
 
 #include "uart_i94xxx.h"
-
-
 #include "ISD94XXXSeries.h"
 
 #include "irq_api.h"
-
 #include "uart_api.h"
-
-#include "uart_i94xxx_add_component.h"
 #include "clock_control_i94xxx_api.h"
+
+#include "_uart_i94xxx_prerequirements_check.h"
+
+/*following line add module to available module list for dynamic device tree*/
+#include "uart_i94xxx_add_component.h"
 
 /********  defines *********************/
 

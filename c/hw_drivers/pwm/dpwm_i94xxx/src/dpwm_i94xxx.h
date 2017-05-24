@@ -3,9 +3,6 @@
  * dpwm_i94xxx.h
  *
  *
- *
- *
- *
  */
 
 #ifndef _DPWM_I94XXX_H_
@@ -13,7 +10,7 @@
 
 /********  includes *********************/
 
-#include "src/_dpwm_i94xxx_prerequirements_check.h"
+#include "dev_management_api.h"
 
 /********  types  *********************/
 

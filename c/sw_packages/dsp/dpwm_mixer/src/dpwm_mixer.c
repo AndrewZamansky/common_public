@@ -3,22 +3,24 @@
  * file :   dpwm_mixer.c
  *
  *
- *
- *
- *
  */
 
 
 
 /********  includes *********************/
+#include "_project_typedefs.h"
+#include "_project_defines.h"
 
-#include "_dpwm_mixer_prerequirements_check.h"
+#include "dsp_management_api.h"
+#include "common_dsp_api.h"
+
 
 #include "dpwm_mixer_api.h"
 #include "dpwm_mixer.h"
-#include "common_dsp_api.h"
 
 #include "auto_init_api.h"
+
+#include "_dpwm_mixer_prerequirements_check.h"
 
 /********  defines *********************/
 #ifndef ABS
@@ -52,7 +54,7 @@ void dpwm_mixer_dsp(struct dsp_desc_t *adsp , size_t data_len ,
 		struct dsp_pad_t  out_pads[MAX_NUM_OF_OUTPUT_PADS])
 {
 	float *apCh1In ,  *apCh2In;
-	DPWM_MIXER_Instance_t *handle;
+	struct DPWM_MIXER_Instance_t *handle;
 	uint8_t enable_test_clipping;
 	float max_out_val ;
 	float *pTxBuf;
@@ -113,7 +115,7 @@ void dpwm_mixer_dsp(struct dsp_desc_t *adsp , size_t data_len ,
 uint8_t dpwm_mixer_ioctl(struct dsp_desc_t *adsp,
 		uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
 {
-	DPWM_MIXER_Instance_t *handle;
+	struct DPWM_MIXER_Instance_t *handle;
 
 	handle = adsp->handle;
 
@@ -148,7 +150,7 @@ uint8_t dpwm_mixer_ioctl(struct dsp_desc_t *adsp,
 void  dpwm_mixer_init(void)
 {
 	DSP_REGISTER_NEW_MODULE("dpwm_mixer",
-			dpwm_mixer_ioctl , dpwm_mixer_dsp , DPWM_MIXER_Instance_t);
+			dpwm_mixer_ioctl , dpwm_mixer_dsp , struct DPWM_MIXER_Instance_t);
 }
 
 AUTO_INIT_FUNCTION(dpwm_mixer_init);

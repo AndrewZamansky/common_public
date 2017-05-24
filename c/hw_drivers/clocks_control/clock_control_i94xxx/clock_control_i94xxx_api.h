@@ -2,7 +2,7 @@
 #ifndef _CLOCK_CONTROL_I94XXX_API_H_
 #define _CLOCK_CONTROL_I94XXX_API_H_
 
-#include "src/_cortexM_systick_prerequirements_check.h"
+#include "dev_management_api.h"
 #include "clock_control_api.h"
 
 /**********  define API  types ************/

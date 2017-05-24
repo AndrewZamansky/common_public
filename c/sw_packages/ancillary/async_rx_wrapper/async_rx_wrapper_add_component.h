@@ -7,8 +7,8 @@
 #define	MODULE_NAME							async_rx_wrapper
 #define	MODULE_IOCTL_FUNCTION				async_rx_wrapper_ioctl
 #define	MODULE_CALLBACK_FUNCTION			async_rx_wrapper_callback
-#define MODULE_CONFIG_DATA_STRUCT_TYPE		async_rx_wrapper_instance_t
-#define MODULE_RUNTIME_DATA_STRUCT_TYPE		async_rx_wrapper_runtime_instance_t
+#define MODULE_CONFIG_DATA_STRUCT_TYPE		struct async_rx_wrapper_cfg_t
+#define MODULE_RUNTIME_DATA_STRUCT_TYPE		struct async_rx_wrapper_runtime_t
 
 #ifdef DT_DEV_MODULE
 

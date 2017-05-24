@@ -2,8 +2,9 @@
 #ifndef _u_boot_shell_API_H_
 #define _u_boot_shell_API_H_
 
+#include "dev_management_api.h"
+#include "PRINTF_api.h"
 
-#include "src/_u_boot_shell_prerequirements_check.h"
 
 /*****************  defines  **************/
 
@@ -17,7 +18,6 @@
 
 extern struct dev_desc_t * gCurrReplyDev;
 
-#include "PRINTF_api.h"
 #if !defined(__CSMC__)// cosmic compiler fix
 #define SHELL_REPLY_PRINTF(...)  	 PRINTF_REPLY(gCurrReplyDev, __VA_ARGS__)
 #endif

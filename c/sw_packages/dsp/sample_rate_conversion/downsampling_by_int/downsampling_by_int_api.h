@@ -2,7 +2,7 @@
 #ifndef _downsampling_by_int_filter_API_H_
 #define _downsampling_by_int_filter_API_H_
 
-#include "src/_downsampling_by_int_prerequirements_check.h"
+#include "dsp_management_api.h"
 
 
 /*****************  defines  **************/
@@ -15,7 +15,7 @@
 
 typedef enum
 {
-	IOCTL_DOWNSAMPLING_BY_INT_SET_FACTOR = IOCTL_DSP_LAST_COMMON_IOCTL+1 ,
+	IOCTL_DOWNSAMPLING_BY_INT_SET_FACTOR = IOCTL_DSP_LAST_COMMON_IOCTL + 1 ,
 	IOCTL_DOWNSAMPLING_BY_INT_SET_FIR_COEFFICIENTS
 }DOWNSAMPLING_BY_INT_FILTER_API_ioctl_t;
 

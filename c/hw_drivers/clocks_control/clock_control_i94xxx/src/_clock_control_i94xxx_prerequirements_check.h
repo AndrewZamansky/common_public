@@ -12,8 +12,6 @@
 #define _clock_control_i94xxx_prerequirements_check_H
 
 
-#include "_project.h"
-#include "global_prerequirements_check.h"
 /***************************/
 /******** test defines *****/
 

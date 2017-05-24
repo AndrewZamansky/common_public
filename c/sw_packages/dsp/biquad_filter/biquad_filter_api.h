@@ -2,7 +2,7 @@
 #ifndef _biquad_filter_API_H_
 #define _biquad_filter_API_H_
 
-#include "src/_biquad_filter_prerequirements_check.h"
+#include "dsp_management_api.h"
 
 
 /*****************  defines  **************/

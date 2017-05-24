@@ -2,9 +2,7 @@
 #ifndef _fft_API_H_
 #define _fft_API_H_
 
-#include "src/_fft_prerequirements_check.h"
-
-#include "common_dsp_api.h"
+#include "dsp_management_api.h"
 
 /*****************  defines  **************/
 

@@ -3,26 +3,22 @@
  * file :   webrtc_echo_canceller.c
  *
  *
- *
- *
- *
  */
 
 
 
 /********  includes *********************/
+#include "_project_typedefs.h"
+#include "_project_defines.h"
 
-#include "_webrtc_echo_canceller_prerequirements_check.h"
+#include "dsp_management_api.h"
 
-#include "webrtc_echo_canceller_api.h" //place first to test that header file is self-contained
+
+#include "webrtc_echo_canceller_api.h"
 #include "webrtc_echo_canceller.h"
 #include "common_dsp_api.h"
 
-//#include "math.h"
-//
-//#include "webrtc/webrtc_echo.h"
-//#include "webrtc/webrtc_preprocess.h"
-//
+#include "_webrtc_echo_canceller_prerequirements_check.h"
 
 #include "webrtc/base/checks.h"
 #include "webrtc/base/platform_file.h"
@@ -126,10 +122,8 @@ namespace webrtc
 /*---------------------------------------------------------------------------------------------------------*/
 uint8_t webrtc_echo_canceller_ioctl(pdsp_descriptor apdsp ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
 {
-	WEBRTC_ECHO_CANCELLER_Instance_t *handle;
 	webrtc::EchoCancellationImpl * echoCancellation;
 
-	handle = (WEBRTC_ECHO_CANCELLER_Instance_t *)apdsp->handle;
 	switch(aIoctl_num)
 	{
 		case IOCTL_DEVICE_START :

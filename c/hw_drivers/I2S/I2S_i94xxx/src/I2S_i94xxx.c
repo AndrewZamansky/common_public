@@ -6,20 +6,25 @@
 
 /********  includes *********************/
 
-#include "src/_I2S_i94xxx_prerequirements_check.h"
+#include "_project_typedefs.h"
+#include "_project_defines.h"
 
 #include "I2S_i94xxx_api.h"
 #include "I2S_i94xxx.h"
 #include "irq_api.h"
 #include "timer_wrapper_api.h"
 
+#include "os_wrapper.h"
 
 #include "ISD94XXXSeries.h"
 
-#include "I2S_i94xxx_add_component.h"
-
-#include "clock_control_i94xxx_api.h"
 #include "i2s.h"
+#include "clock_control_i94xxx_api.h"
+
+#include "_I2S_i94xxx_prerequirements_check.h"
+
+/*following line add module to available module list for dynamic device tree*/
+#include "I2S_i94xxx_add_component.h"
 
 /********  defines *********************/
 

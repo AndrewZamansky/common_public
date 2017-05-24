@@ -7,13 +7,20 @@
 
 
 /***************   includes    *******************/
-#include "src/_cortexM_systick_prerequirements_check.h"
+#include "_project_typedefs.h"
+#include "_project_defines.h"
+
+#include "dev_management_api.h"
 
 #include "cortexM_systick_api.h"
 #include "cortexM_systick.h"
 #include "irq_api.h"
 #include "clock_control_api.h"
+#include "hw_timer_api.h"
 
+#include "_cortexM_systick_prerequirements_check.h"
+
+/*following line add module to available module list for dynamic device tree*/
 #include "cortexM_systick_add_component.h"
 
 //locally disable IRQn_Type defined in soc

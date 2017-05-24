@@ -2,7 +2,7 @@
 #ifndef _DMA_I94XXX_API_H_
 #define _DMA_I94XXX_API_H_
 
-#include "src/_dma_i94xxx_prerequirements_check.h"
+#include "dev_management_api.h"
 
 /*****************  defines  **************/
 
@@ -28,7 +28,7 @@
 /**********  define API  functions  ************/
 typedef enum
 {
-	DMA_I94XXX_IOCTL_GET_RX_BUFF = IOCTL_LAST_COMMON_IOCTL+1,
+	DMA_I94XXX_IOCTL_GET_RX_BUFF = IOCTL_LAST_COMMON_IOCTL + 1,
 	DMA_I94XXX_IOCTL_SET_TX_BUFF
 }DMA_I94XXX_API_ioctl_t;
 

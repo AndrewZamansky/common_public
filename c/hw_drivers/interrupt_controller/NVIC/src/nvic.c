@@ -8,13 +8,17 @@
 
 /********  includes *********************/
 
-#include "_project.h"
-#include "_nvic_prerequirements_check.h"
+#include "_project_typedefs.h"
+#include "_project_defines.h"
+#include "_project_func_declarations.h"
+
 #include "dev_management_api.h"
 #include "cpu_config.h"
 
 #include "irq_api.h"
 #include "auto_init_api.h"
+
+#include "_nvic_prerequirements_check.h"
 
 #define START_OF_EXTERNAL_INTERRUPT_VECTOR_TABLE 		(RAM_START_ADDR + 64)
 

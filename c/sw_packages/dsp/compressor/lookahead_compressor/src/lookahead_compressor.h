@@ -3,22 +3,18 @@
  *
  *
  *
- *
- *
- *
  */
 
 #ifndef _LOOKAHEAD_COMPRESSOR_H
 #define _LOOKAHEAD_COMPRESSOR_H
 
-#include "src/_lookahead_compressor_prerequirements_check.h"
 
 
 /***************   typedefs    *******************/
 
 
 
-typedef struct {
+struct LOOKAHEAD_COMPRESSOR_Instance_t {
 
 	uint8_t type;
 	uint8_t usePreviousRatio;
@@ -35,7 +31,7 @@ typedef struct {
 	float prev_calculated_ratio;
 	uint32_t hit_counter;
 	float release_ratio_change_per_chunk;
-} LOOKAHEAD_COMPRESSOR_Instance_t;
+};
 
 
 

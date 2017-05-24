@@ -2,6 +2,8 @@
 #ifndef _dsp_management_api_h_
 #define _dsp_management_api_h_
 
+#include "_project_typedefs.h"
+#include "_project_defines.h"
 
 #define	MAX_NUM_OF_OUTPUT_PADS	3
 

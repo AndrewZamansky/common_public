@@ -7,7 +7,10 @@
 
 
 /***************   includes    *******************/
-#include "src/_gpio_i94xxx_prerequirements_check.h"
+#include "_project_typedefs.h"
+#include "_project_defines.h"
+
+#include "dev_management_api.h"
 
 #include "gpio_api.h"
 #include "gpio_i94xxx_api.h"
@@ -16,7 +19,11 @@
 #include "ISD94XXXSeries.h"
 #include "gpio.h"
 
+#include "_gpio_i94xxx_prerequirements_check.h"
+
+/*following line add module to available module list for dynamic device tree*/
 #include "gpio_i94xxx_add_component.h"
+
 
 /***************   defines    *******************/
 
@@ -92,5 +99,3 @@ uint8_t gpio_i94xxx_ioctl( struct dev_desc_t *adev, const uint8_t aIoctl_num,
 	}
 	return 0;
 }
-
-

@@ -2,9 +2,7 @@
 #ifndef _dpwm_mixer_API_H_
 #define _dpwm_mixer_API_H_
 
-#include "src/_dpwm_mixer_prerequirements_check.h"
-
-#include "common_dsp_api.h"
+#include "dsp_management_api.h"
 
 /*****************  defines  **************/
 

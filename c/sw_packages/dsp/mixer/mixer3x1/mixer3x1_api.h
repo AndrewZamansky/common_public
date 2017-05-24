@@ -2,9 +2,6 @@
 #ifndef _mixer3x1_API_H_
 #define _mixer3x1_API_H_
 
-#include "src/_mixer3x1_prerequirements_check.h"
-
-#include "common_dsp_api.h"
 
 /*****************  defines  **************/
 

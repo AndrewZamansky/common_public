@@ -11,8 +11,10 @@
 #ifndef _ASYNC_TX_WRAPPER_H
 #define _ASYNC_TX_WRAPPER_H
 
-#include "src/_async_tx_wrapper_prerequirements_check.h"
+#include "dev_management_api.h"
+#include "os_wrapper.h"
 
+#include "src/_async_tx_wrapper_prerequirements_check.h"
 
 /***************   typedefs    *******************/
 
@@ -32,17 +34,17 @@
 	#endif
 #endif
 
-typedef struct {
+struct async_tx_wrapper_cfg_t {
 	struct dev_desc_t *   server_dev;
-} async_tx_wrapper_instance_t;
+};
 
 
-typedef struct {
+struct async_tx_wrapper_runtime_t {
 	os_queue_t xQueue ;
 	const uint8_t  *sendData;
 	tx_int_size_t data_length;
 	os_queue_t xTX_WaitQueue ;
 
-} async_tx_wrapper_runtime_instance_t;
+};
 
 #endif /* */

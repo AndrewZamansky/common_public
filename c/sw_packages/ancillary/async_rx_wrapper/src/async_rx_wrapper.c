@@ -6,11 +6,17 @@
 
 /********  includes *********************/
 
-#include "_async_rx_wrapper_prerequirements_check.h"
+#include "_project_typedefs.h"
+#include "_project_defines.h"
+
+#include "dev_management_api.h"
 
 #include "async_rx_wrapper_api.h"
 #include "async_rx_wrapper.h"
 
+#include "_async_rx_wrapper_prerequirements_check.h"
+
+/*following line add module to available module list for dynamic device tree*/
 #include "async_rx_wrapper_add_component.h"
 
 
@@ -38,8 +44,8 @@
 uint8_t async_rx_wrapper_callback(struct dev_desc_t *adev ,
 	  uint8_t aCallback_num , void * aCallback_param1, void * aCallback_param2)
 {
-	async_rx_wrapper_instance_t *config_handle;
-	async_rx_wrapper_runtime_instance_t *runtime_handle;
+	struct async_rx_wrapper_cfg_t *config_handle;
+	struct async_rx_wrapper_runtime_t *runtime_handle;
     uint8_t *rx_buff;
     rx_int_size_t WritePos;
     rx_int_size_t copy_len;
@@ -115,8 +121,8 @@ uint8_t async_rx_wrapper_callback(struct dev_desc_t *adev ,
 uint8_t async_rx_wrapper_ioctl(struct dev_desc_t *adev, uint8_t aIoctl_num,
 					void * aIoctl_param1 , void * aIoctl_param2)
 {
-	async_rx_wrapper_instance_t *config_handle;
-	async_rx_wrapper_runtime_instance_t *runtime_handle;
+	struct async_rx_wrapper_cfg_t *config_handle;
+	struct async_rx_wrapper_runtime_t *runtime_handle;
 	rx_int_size_t WritePos,ReadPos;
 	struct dev_desc_t *   server_dev;
 	struct ioctl_get_data_buffer_t * ioctl_get_data_buffer;

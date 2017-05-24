@@ -3,22 +3,20 @@
  * file :   math_functions.c
  *
  *
- *
- *
- *
  */
 
 
 
 /********  includes *********************/
 
-#include "_project.h"
-#include "_common_dsp_prerequirements_check.h"
-
+#include "_project_typedefs.h"
+#include "_project_defines.h"
 
 #include "common_dsp_api.h"
 
 #include <math.h>
+
+#include "_common_dsp_prerequirements_check.h"
 
 /********  defines *********************/
 
@@ -76,9 +74,10 @@ float fast_pow(float a, float b)
 	a_in_raw_bit_represantation = a_in_raw_bit_represantation | ((-1+127)<<23);// -1 to have fraction = mantissa/2
 	*(uint32_t*)&fraction = a_in_raw_bit_represantation;
 
-		// log2(a) = exp + log2(fraction)
-	    // fraction = [0.5,1] so it can be approximated by taylor series around 0.75 :
-		// log2(fraction) ~= A2_log2 * fraction^2 + A2_log1 * fraction  + A2_log0
+	/* log2(a) = exp + log2(fraction)
+	 * fraction = [0.5,1] so it can be approximated by taylor series around 0.75 :
+	 * log2(fraction) ~= A2_log2 * fraction^2 + A2_log1 * fraction  + A2_log0
+	 */
 	log2_of_fraction = fraction * A2_log2;
 	log2_of_fraction += A1_log2;
 	log2_of_fraction *= fraction;

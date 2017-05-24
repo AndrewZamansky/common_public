@@ -3,25 +3,26 @@
  * file :   lookahead_compressor.c
  *
  *
- *
- *
- *
  */
 
 
 
 /********  includes *********************/
+#include "_project_typedefs.h"
+#include "_project_defines.h"
 
-#include "_lookahead_compressor_prerequirements_check.h" // should be after {lookahead_compressor_config.h,dev_management_api.h}
+#include "dsp_management_api.h"
+#include "common_dsp_api.h"
 
-#include "lookahead_compressor_api.h" //place first to test that header file is self-contained
+
+#include "lookahead_compressor_api.h"
 #include "lookahead_compressor.h"
 
 #include "math.h"
 
-#include "PRINTF_api.h"
-
 #include "auto_init_api.h"
+
+#include "_lookahead_compressor_prerequirements_check.h"
 
 /********  defines *********************/
 
@@ -47,10 +48,11 @@ char lookahead_compressor_module_name[] = "lookahead_compressor";
 
 
 #if 0
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        float_memcpy_with_ratio                                                                          */
-/*---------------------------------------------------------------------------------------------------------*/
-static void float_memcpy_with_ratio(float *dest ,float *src , size_t len , float ratio)
+/*--------------------------------------------------
+ * Function:        float_memcpy_with_ratio
+ *------------------------------------------------*/
+static void float_memcpy_with_ratio(
+		float *dest ,float *src , size_t len , float ratio)
 {
 	for( ; len ;len--)
 	{
@@ -59,9 +61,9 @@ static void float_memcpy_with_ratio(float *dest ,float *src , size_t len , float
 }
 #endif
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:         float_memcpy_with_ratio_2_buffers                                                                          */
-/*---------------------------------------------------------------------------------------------------------*/
+/*--------------------------------------------------
+ * Function:         float_memcpy_with_ratio_2_buffers
+ *------------------------------------------------*/
 static void float_memcpy_with_ratio_2_buffers(float *dest1 ,float *src1 ,
 		float *dest2 ,float *src2,size_t len,
 		float ratio,float step_ratio)
@@ -74,10 +76,11 @@ static void float_memcpy_with_ratio_2_buffers(float *dest1 ,float *src1 ,
 	}
 }
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:         get_max_abs_value_2_buffers                                                                          */
-/*---------------------------------------------------------------------------------------------------------*/
-static float get_max_abs_value_2_buffers(float *buf1 ,float *buf2 , size_t len , float init_val)
+/*--------------------------------------------------
+ * Function:         get_max_abs_value_2_buffers
+ *------------------------------------------------*/
+static float get_max_abs_value_2_buffers(
+		float *buf1 ,float *buf2 , size_t len , float init_val)
 {
 	float val ;
  	float max_val = init_val;
@@ -103,21 +106,16 @@ static float get_max_abs_value_2_buffers(float *buf1 ,float *buf2 , size_t len ,
 
 
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        lookahead_compressor_dsp                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
+/**
+ * lookahead_compressor_dsp()
+ *
+ * return:
+ */
 void lookahead_compressor_dsp(struct dsp_desc_t *adsp , size_t data_len ,
-		struct dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] , struct dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])
+		struct dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS],
+		struct dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])
 {
-	LOOKAHEAD_COMPRESSOR_Instance_t *handle ;
+	struct LOOKAHEAD_COMPRESSOR_Instance_t *handle ;
 	float *apCh1In ,  *apCh2In;
 	float *apCh1Out ,  *apCh2Out;
 	float max_val ;
@@ -155,9 +153,11 @@ void lookahead_compressor_dsp(struct dsp_desc_t *adsp , size_t data_len ,
 
 	if (handle->bChangeChunkSize)
 	{
-		look_ahead_length_buffer_Ch1 = (float*)realloc(look_ahead_length_buffer_Ch1 , chunk_size*sizeof(float));
+		look_ahead_length_buffer_Ch1 = (float*)realloc(
+				look_ahead_length_buffer_Ch1 , chunk_size*sizeof(float));
 		handle->look_ahead_length_buffer_Ch1 = look_ahead_length_buffer_Ch1;
-		look_ahead_length_buffer_Ch2 = (float*)realloc(look_ahead_length_buffer_Ch2 , chunk_size*sizeof(float));
+		look_ahead_length_buffer_Ch2 = (float*)realloc(
+				look_ahead_length_buffer_Ch2 , chunk_size*sizeof(float));
 		handle->look_ahead_length_buffer_Ch2 = look_ahead_length_buffer_Ch2;
 		handle->bChangeChunkSize = 0;
 	}
@@ -192,7 +192,8 @@ void lookahead_compressor_dsp(struct dsp_desc_t *adsp , size_t data_len ,
 	{
 		float tmp;
 
-		max_val = get_max_abs_value_2_buffers(&apCh1In[i],&apCh2In[i],chunk_size,threshold);
+		max_val = get_max_abs_value_2_buffers(
+				&apCh1In[i], &apCh2In[i], chunk_size, threshold);
 
 
 		if(max_val > threshold)
@@ -220,7 +221,8 @@ void lookahead_compressor_dsp(struct dsp_desc_t *adsp , size_t data_len ,
 			{
 				ratio_change_per_chunk = 0;
 				usePreviousRatio=0;
-				release_ratio_change_per_chunk = (1.0f - prev_calculated_ratio)/release;
+				release_ratio_change_per_chunk =
+						(1.0f - prev_calculated_ratio)/release;
 
 			}
 			else
@@ -254,15 +256,17 @@ void lookahead_compressor_dsp(struct dsp_desc_t *adsp , size_t data_len ,
 
 		if(0 == i)
 		{
-			float_memcpy_with_ratio_2_buffers(&apCh1Out[0], &look_ahead_length_buffer_Ch1[0 ] ,
-					&apCh2Out[0], &look_ahead_length_buffer_Ch2[0 ]  , chunk_size,prev_ratio,step_ratio);
+			float_memcpy_with_ratio_2_buffers(
+					&apCh1Out[0], &look_ahead_length_buffer_Ch1[0 ],
+					&apCh2Out[0], &look_ahead_length_buffer_Ch2[0 ],
+					chunk_size, prev_ratio, step_ratio);
 		}
 		else
 		{
-			float_memcpy_with_ratio_2_buffers(&apCh1Out[i],
-					&apCh1In[i - chunk_size  ] ,
-					&apCh2Out[i],
-					&apCh2In[i -  chunk_size]  ,chunk_size, prev_ratio,step_ratio);
+			float_memcpy_with_ratio_2_buffers(
+					&apCh1Out[i], &apCh1In[i - chunk_size  ],
+					&apCh2Out[i], &apCh2In[i - chunk_size],
+					chunk_size, prev_ratio, step_ratio);
 		}
 		prev_calculated_ratio = tmp_ratio;
 
@@ -271,8 +275,10 @@ void lookahead_compressor_dsp(struct dsp_desc_t *adsp , size_t data_len ,
 
 	}
 
-	float_memcpy_with_ratio_2_buffers(look_ahead_length_buffer_Ch1, &apCh1In[data_len - chunk_size ] ,
-			look_ahead_length_buffer_Ch2, &apCh2In[data_len - chunk_size ]  ,chunk_size, 1,0);
+	float_memcpy_with_ratio_2_buffers(
+			look_ahead_length_buffer_Ch1, &apCh1In[data_len - chunk_size ],
+			look_ahead_length_buffer_Ch2, &apCh2In[data_len - chunk_size ],
+			chunk_size, 1, 0);
 
 	handle->prev_ratio = prev_ratio;
 	handle->usePreviousRatio = usePreviousRatio ;
@@ -289,7 +295,8 @@ void lookahead_compressor_dsp(struct dsp_desc_t *adsp , size_t data_len ,
 	////		PRINTF_DBG("max_val = %d  \r\n" , max_val);
 	//		if(threshold_detectd)
 	//		{
-	//			PRINTF_DBG("threshold_detectd = %d r=%f \r\n" , threshold_detectd,prev_ratio);
+	//			PRINTF_DBG("threshold_detectd = %d r=%f \r\n" ,
+	//									threshold_detectd,prev_ratio);
 	//		}
 	//		threshold_detectd = 0;
 	//		print_count = 0;
@@ -301,20 +308,15 @@ void lookahead_compressor_dsp(struct dsp_desc_t *adsp , size_t data_len ,
 
 
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        lookahead_compressor_ioctl                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-uint8_t lookahead_compressor_ioctl(struct dsp_desc_t *adsp ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
+/**
+ * lookahead_compressor_ioctl()
+ *
+ * return:
+ */
+uint8_t lookahead_compressor_ioctl(struct dsp_desc_t *adsp,
+		const uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2)
 {
-	LOOKAHEAD_COMPRESSOR_Instance_t *handle;
+	struct LOOKAHEAD_COMPRESSOR_Instance_t *handle;
 	uint32_t look_ahead_length;
 
 	handle = adsp->handle;
@@ -371,20 +373,16 @@ uint8_t lookahead_compressor_ioctl(struct dsp_desc_t *adsp ,const uint8_t aIoctl
 }
 
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        lookahead_compressor_init                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
+/**
+ * lookahead_compressor_init()
+ *
+ * return:
+ */
 void  lookahead_compressor_init(void)
 {
-	DSP_REGISTER_NEW_MODULE(LOOKAHEAD_COMPRESSOR_API_MODULE_NAME ,lookahead_compressor_ioctl , lookahead_compressor_dsp , LOOKAHEAD_COMPRESSOR_Instance_t);
+	DSP_REGISTER_NEW_MODULE(LOOKAHEAD_COMPRESSOR_API_MODULE_NAME,
+			lookahead_compressor_ioctl, lookahead_compressor_dsp,
+			struct LOOKAHEAD_COMPRESSOR_Instance_t);
 }
 
 AUTO_INIT_FUNCTION(lookahead_compressor_init);

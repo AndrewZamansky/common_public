@@ -11,15 +11,18 @@
 
 
 /********  includes *********************/
+#include "_project_typedefs.h"
+#include "_project_defines.h"
 
-#include "_project.h"
-#include "_downsampling_by_int_prerequirements_check.h"
+#include "dsp_management_api.h"
 #include "common_dsp_api.h"
+
 #include "cpu_config.h"
 #include "arm_math.h"
 #include "downsampling_by_int.h"
 #include "downsampling_by_int_api.h"
 
+#include "_downsampling_by_int_prerequirements_check.h"
 
 /********  defines *********************/
 

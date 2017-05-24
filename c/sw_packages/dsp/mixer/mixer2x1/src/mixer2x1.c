@@ -2,24 +2,25 @@
  *
  * file :   mixer2x1.c
  *
- *
- *
- *
- *
  */
 
 
 
 /********  includes *********************/
+#include "_project_typedefs.h"
+#include "_project_defines.h"
 
-#include "_mixer2x1_prerequirements_check.h"
+#include "dsp_management_api.h"
+#include "common_dsp_api.h"
+
 
 #include "mixer_api.h"
 #include "mixer2x1_api.h"
 #include "mixer2x1.h"
-#include "common_dsp_api.h"
 
 #include "auto_init_api.h"
+
+#include "_mixer2x1_prerequirements_check.h"
 
 /********  defines *********************/
 
@@ -39,21 +40,17 @@ char mixer2x1_module_name[] = "mixer2x1";
 
 /***********   local variables    **************/
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        mixer2x1_dsp                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
+
+/**
+ * mixer2x1_dsp()
+ *
+ * return:
+ */
 void mixer2x1_dsp(struct dsp_desc_t *adsp , size_t data_len ,
-		struct dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] , struct dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])
+		struct dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS],
+		struct dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])
 {
-	MIXER2X1_Instance_t *handle;
+	struct MIXER2X1_Instance_t *handle;
 	float *apCh1In ,  *apCh2In;
 	float *apCh1Out  ;
 	float channels_weights_1,channels_weights_2  ;
@@ -82,21 +79,15 @@ void mixer2x1_dsp(struct dsp_desc_t *adsp , size_t data_len ,
 
 
 
-
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        mixer2x1_ioctl                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-uint8_t mixer2x1_ioctl(struct dsp_desc_t *adsp ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
+/**
+ * mixer2x1_ioctl()
+ *
+ * return:
+ */
+uint8_t mixer2x1_ioctl(struct dsp_desc_t *adsp,
+		const uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2)
 {
-	MIXER2X1_Instance_t *handle;
+	struct MIXER2X1_Instance_t *handle;
 	uint8_t i;
 	float *channels_weights ;
 
@@ -122,20 +113,15 @@ uint8_t mixer2x1_ioctl(struct dsp_desc_t *adsp ,const uint8_t aIoctl_num , void 
 
 
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        mixer2x1_init                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
+/**
+ * mixer2x1_init()
+ *
+ * return:
+ */
 void  mixer2x1_init(void)
 {
-	DSP_REGISTER_NEW_MODULE("mixer2x1",mixer2x1_ioctl , mixer2x1_dsp , MIXER2X1_Instance_t);
+	DSP_REGISTER_NEW_MODULE("mixer2x1",
+			mixer2x1_ioctl , mixer2x1_dsp , struct MIXER2X1_Instance_t);
 }
 
 AUTO_INIT_FUNCTION(mixer2x1_init);

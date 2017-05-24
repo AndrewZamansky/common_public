@@ -2,19 +2,18 @@
  *
  * file :   fft.c
  *
- *
- *
- *
- *
  */
 
 
 
 /********  includes *********************/
+#include "_project_typedefs.h"
+#include "_project_defines.h"
 
-#include "_fft_prerequirements_check.h" // should be after {fft_config.h,dev_management_api.h}
+#include "dsp_management_api.h"
 
-#include "fft_api.h" //place first to test that header file is self-contained
+
+#include "fft_api.h"
 #include "fft.h"
 #include "common_dsp_api.h"
 
@@ -23,6 +22,7 @@
 #include "cpu_config.h"
 #include "arm_math.h"
 
+#include "_fft_prerequirements_check.h"
 
 /********  defines *********************/
 
@@ -54,8 +54,9 @@
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-void fft_dsp(struct dsp_desc_t *adsp, size_t data_len ,
-		struct dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] , struct dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])
+void fft_dsp(struct dsp_desc_t *adsp, size_t data_len,
+		struct dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS],
+		struct dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])
 {
 
 //	FFT_Instance_t *handle;
@@ -87,9 +88,10 @@ void fft_dsp(struct dsp_desc_t *adsp, size_t data_len ,
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t fft_ioctl(struct dsp_desc_t *adsp ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
+uint8_t fft_ioctl(struct dsp_desc_t *adsp,
+		const uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2)
 {
-	FFT_Instance_t *handle;
+	struct FFT_Instance_t *handle;
 
 	handle = adsp->handle;
 	switch(aIoctl_num)
@@ -120,11 +122,11 @@ uint8_t fft_ioctl(struct dsp_desc_t *adsp ,const uint8_t aIoctl_num , void * aIo
 /*---------------------------------------------------------------------------------------------------------*/
 uint8_t  fft_api_init_dsp_descriptor(struct dsp_desc_t aDspDescriptor)
 {
-	FFT_Instance_t *pInstance;
+	struct FFT_Instance_t *pInstance;
 
 	if(NULL == aDspDescriptor) return 1;
 
-	pInstance = (FFT_Instance_t *)malloc(sizeof(FFT_Instance_t));
+	pInstance = (struct FFT_Instance_t *)malloc(sizeof(FFT_Instance_t));
 	if(NULL == pInstance) return 1;
 
 	aDspDescriptor->handle = pInstance;
