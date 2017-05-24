@@ -42,7 +42,7 @@ typedef struct {
 
 /***********   local variables    **************/
 
-static const dev_param_t GPIO_PIN_Dev_Params[]=
+static const struct dev_param_t GPIO_PIN_Dev_Params[]=
 {
 		{IOCTL_SET_SERVER_DEVICE_BY_NAME , IOCTL_VOID , (uint8_t*)SW_GPIO_WRAPPER_API_SERVER_DEVICE_STR, NOT_FOR_SAVE},
 		{IOCTL_SW_GPIO_WRAPPER_SET_BEHAVIOR_PARAM , IOCTL_VOID , (uint8_t*)SW_GPIO_WRAPPER_API_BEHAVIOR_STR, NOT_FOR_SAVE},

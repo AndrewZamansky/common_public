@@ -48,7 +48,7 @@ static uint16_t usedBtnGroups =0 ;
 	static buttons_group_t BtnGroupParams[BUTTON_MANAGER_CONFIG_NUM_OF_DYNAMIC_BUTTONS_GROUPS] = { {0} };
 
 #if 0
-	static const dev_param_t Button_Manager_Dev_Params[]=
+	static const struct  dev_param_t Button_Manager_Dev_Params[]=
 	{
 	};
 #endif
@@ -283,8 +283,6 @@ uint8_t button_manager_ioctl(struct dev_desc_t *adev ,const uint8_t aIoctl_num
 	{
 #if BUTTON_MANAGER_CONFIG_NUM_OF_DYNAMIC_BUTTONS_GROUPS > 0
 		case IOCTL_GET_PARAMS_ARRAY_FUNC :
-//			*(const dev_param_t**)aIoctl_param1  = BUTTON_MANAGER_Dev_Params;
-//			*(uint8_t*)aIoctl_param2 =  sizeof(BUTTON_MANAGER_Dev_Params)/sizeof(dev_param_t); //size
 			*(uint8_t*)aIoctl_param2 =  0; //size
 			break;
 		case IOCTL_BUTTON_MANAGER_SET_GROUP_SERVER_DEVS :

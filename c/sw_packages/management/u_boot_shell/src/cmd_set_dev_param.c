@@ -59,7 +59,7 @@ int do_set_dev_param (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 	struct dev_desc_t * dev_descriptor;
 	uint32_t retVal;
-	const dev_param_t *pIoctlParam;
+	const struct dev_param_t *pIoctlParam;
 
 	if(3 > argc)
 	{

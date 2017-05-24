@@ -66,7 +66,7 @@ typedef struct
 
 
 /***********   local variables    **************/
-static const dev_param_t HTTP_Dev_Params[]=
+static const struct dev_param_t HTTP_Dev_Params[]=
 {
 		{IOCTL_HTTP_SET_MNG_SERVER_IP , IOCTL_VOID , (uint8_t*)HTTP_API_MNG_SERVER_IP_STR, NOT_FOR_SAVE},
 		{IOCTL_HTTP_SET_MNG_SERVER_PORT , IOCTL_VOID , (uint8_t*)HTTP_API_MNG_SERVER_PORT_STR, NOT_FOR_SAVE},
@@ -525,8 +525,8 @@ uint8_t HTTP_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 	switch(aIoctl_num)
 	{
 		case IOCTL_GET_PARAMS_ARRAY_FUNC :
-			*(const dev_param_t**)aIoctl_param1  = HTTP_Dev_Params;
-			*(uint8_t*)aIoctl_param2 =  sizeof(HTTP_Dev_Params)/sizeof(dev_param_t); //size
+			*(const struct dev_param_t**)aIoctl_param1  = HTTP_Dev_Params;
+			*(uint8_t*)aIoctl_param2 =  sizeof(HTTP_Dev_Params)/sizeof(struct dev_param_t); //size
 			break;
 
 		case IOCTL_SET_ISR_CALLBACK_DEV :

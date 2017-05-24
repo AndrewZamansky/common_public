@@ -294,7 +294,7 @@ struct dev_desc_t * DEV_API_add_device(const char* module_name_str,
  *
  *
  */
-dev_param_t const *get_config_param(struct dev_desc_t * pdev,
+struct dev_param_t const *get_config_param(struct dev_desc_t * pdev,
 		char *param_name_str )
 {
 	const char *module_name_str ;
@@ -308,7 +308,7 @@ dev_param_t const *get_config_param(struct dev_desc_t * pdev,
 		if (0 == strcmp(module_name_str , curr_include_module->module_name))
 		{
 			uint8_t		 size_of_config_params_arr;
-			dev_param_t  const *config_param;
+			struct dev_param_t  const *config_param;
 			config_param = curr_include_module -> config_params_arr;
 			size_of_config_params_arr =
 					curr_include_module -> size_of_config_params_arr;
@@ -335,7 +335,7 @@ dev_param_t const *get_config_param(struct dev_desc_t * pdev,
 uint8_t DEV_SET_PARAM(char *dev_name_str,
 		char *param_name_str, char *param_val_str)
 {
-	dev_param_t  const *config_param;
+	struct dev_param_t  const *config_param;
 	struct dev_desc_t * pdev;
 
 	pdev = DEV_OPEN(dev_name_str);
@@ -369,7 +369,7 @@ uint8_t DEV_SET_PARAM(char *dev_name_str,
 		break;
 	case DEV_PARAM_TYPE_MAPPED_SET_TO_SIZE:
 		{
-			mapped_set_to_size_param_t	*p_mapped_set_type_param;
+			struct mapped_set_to_size_param_t	*p_mapped_set_type_param;
 			uint8_t					 mapped_set_size;
 
 			p_mapped_set_type_param = config_param->p_mapped_set_type_param;
@@ -402,7 +402,7 @@ uint8_t DEV_SET_PARAM(char *dev_name_str,
 uint8_t DEV_GET_PARAM(char *dev_name_str, char *param_name_str,
 					char *param_val_str, uint8_t param_val_str_size)
 {
-	dev_param_t  const *config_param;
+	struct dev_param_t  const *config_param;
 	struct dev_desc_t * pdev;
 
 	pdev = DEV_OPEN(dev_name_str);
@@ -435,7 +435,7 @@ uint8_t DEV_GET_PARAM(char *dev_name_str, char *param_name_str,
 		break;
 	case DEV_PARAM_TYPE_MAPPED_SET_TO_SIZE:
 		{
-			mapped_set_to_size_param_t	*p_mapped_set_type_param;
+			struct mapped_set_to_size_param_t	*p_mapped_set_type_param;
 			uint8_t					 mapped_set_size;
 			size_t 	val;
 

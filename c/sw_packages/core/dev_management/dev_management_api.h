@@ -54,24 +54,22 @@ typedef enum
 }dev_param_types_t;
 
 
-typedef struct
-{
+struct mapped_set_to_size_param_t {
 	char 			*nameStr;
 	size_t		 	val;
-}mapped_set_to_size_param_t;
+};
 
-typedef struct
-{
+struct dev_param_t {
 	char 					*paramNameStr;
 	uint8_t 				paramSetIoctl;
 	uint8_t 				paramGetIoctl;
 	dev_param_types_t 		param_type;
 	void					*p_mapped_set_type_param;
 	uint8_t					mapped_set_size;
-}dev_param_t;
+};
 
 #define MAPPED_SET_TO_SIZE_PARAM(mapped_set_array)	&mapped_set_array , \
-				 (sizeof(mapped_set_array)/sizeof(mapped_set_to_size_param_t))
+		(sizeof(mapped_set_array) / sizeof(struct mapped_set_to_size_param_t))
 #define MAPPED_SET_DUMMY_PARAM()	NULL , 0
 
 
@@ -130,7 +128,7 @@ struct included_module_t
 	dev_pread_func_t  		pread;
 	dev_callback_func_t  	callback;
 #ifdef CONFIG_USE_RUNTIME_DEVICE_CONFIGURATION_BY_PARAMETER_NAMES
-	dev_param_t  const		*config_params_arr;
+	struct  dev_param_t  const		*config_params_arr;
 	uint8_t					size_of_config_params_arr;
 #endif
 	uint8_t					module_config_struct_size;

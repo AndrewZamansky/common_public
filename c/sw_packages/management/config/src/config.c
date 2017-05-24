@@ -73,7 +73,7 @@ static void Config_Task( void *pvParameters )
 	uint32_t i;
 	struct dev_desc_t * currDev;
 	uint32_t paramStatus;
-	const dev_param_t *dev_Params;
+	const struct dev_param_t *dev_Params;
 	uint8_t dev_Num_Of_Params;
 	uint8_t save_buff[MAX_BUFF_SIZE+1];
 	FIL fp;
@@ -203,7 +203,7 @@ uint32_t config_device(uint8_t *config_buff , uint32_t buff_len)
 	struct dev_desc_t *   dev_descriptor;
 	uint32_t retVal;
 	jsmntok_t curr_token,array_token;
-	const dev_param_t *dev_Params;
+	const struct dev_param_t *dev_Params;
 	uint8_t dev_Num_Of_Params;
 	init_dev_descriptor_func_t afInitDev;
 	const struct included_module_t *pIncluded_module;
@@ -321,7 +321,7 @@ uint32_t config_saved_params(uint8_t *config_buff)
 	uint32_t retVal=0;
 	jsmn_parser parser;
 	uint32_t maxTokenAvailable ;
-	const dev_param_t *dev_Params;
+	const struct dev_param_t *dev_Params;
 	uint8_t dev_Num_Of_Params;
 	uint32_t found_token_num;
 	jsmntok_t curr_token;

@@ -109,12 +109,6 @@ uint8_t speex_echo_canceller_ioctl(struct dsp_desc_t *adsp ,const uint8_t aIoctl
 	handle = adsp->handle;
 	switch(aIoctl_num)
 	{
-//#if SPEEX_ECHO_CANCELLER_CONFIG_NUM_OF_DYNAMIC_INSTANCES > 0
-//		case IOCTL_GET_PARAMS_ARRAY_FUNC :
-//			*(const dev_param_t**)aIoctl_param1  = SPEEX_ECHO_CANCELLER_Dev_Params;
-//			*(uint8_t*)aIoctl_param2 = sizeof(SPEEX_ECHO_CANCELLER_Dev_Params)/sizeof(dev_param_t); //size
-//			break;
-//#endif // for SPEEX_ECHO_CANCELLER_CONFIG_NUM_OF_DYNAMIC_INSTANCES > 0
 
 
 		case IOCTL_DSP_INIT :
