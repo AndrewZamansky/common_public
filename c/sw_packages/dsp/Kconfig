@@ -110,25 +110,6 @@ config VOICE_3D_IS_SPEED_CRITICAL
 	default y
 
 
-menuconfig INCLUDE_COMPRESSOR
-	bool   "audio compressor"
-	default n
-
-if INCLUDE_COMPRESSOR
-source "$COMMON_DIR_PATH/c/sw_packages/dsp/compressor/Kconfig"
-endif
-
-
-menuconfig INCLUDE_NOISE_GATE
-	bool   "noise gate"
-	default n
-
-config NOISE_GATE_IS_SPEED_CRITICAL
-	bool   "noise gate effect is speed critical"
-	depends on INCLUDE_NOISE_GATE
-	default y
-
-
 
 
 
