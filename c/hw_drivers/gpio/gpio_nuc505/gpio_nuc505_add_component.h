@@ -3,11 +3,10 @@
 #include  "gpio_nuc505_api.h"
 #include "src/gpio_nuc505.h"
 
-uint8_t gpio_nuc505_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2);
 
-#define	MODULE_NAME				gpio_nuc505
-#define	MODULE_IOCTL_FUNCTION	gpio_nuc505_ioctl
-#define MODULE_CONFIG_DATA_STRUCT_TYPE	gpio_nuc505_instance_t
+#define	MODULE_NAME						gpio_nuc505
+#define	MODULE_IOCTL_FUNCTION			gpio_nuc505_ioctl
+#define MODULE_CONFIG_DATA_STRUCT_TYPE	struct gpio_nuc505_cfg_t
 
 #ifdef DT_DEV_MODULE
 

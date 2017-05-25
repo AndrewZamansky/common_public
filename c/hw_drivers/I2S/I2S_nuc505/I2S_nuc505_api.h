@@ -2,7 +2,6 @@
 #ifndef _I2S_NUC505_API_H_
 #define _I2S_NUC505_API_H_
 
-#include "src/_I2S_nuc505_prerequirements_check.h"
 
 /*****************  defines  **************/
 
@@ -21,11 +20,11 @@ typedef enum
 }I2S_API_ioctl_t;
 
 
-typedef struct
+struct I2S_API_set_params_t
 {
 	uint16_t num_of_words_in_buffer_per_chenel;
 	uint8_t	num_of_bytes_in_word;
-}I2S_API_set_params_t;
+};
 
 /**********  define API  functions  ************/
 

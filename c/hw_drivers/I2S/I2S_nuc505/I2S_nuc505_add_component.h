@@ -4,9 +4,9 @@
 #include "src/I2S_nuc505.h"
 
 
-#define	MODULE_NAME				I2S_nuc505
-#define	MODULE_IOCTL_FUNCTION	I2S_nuc505_ioctl
-#define MODULE_CONFIG_DATA_STRUCT_TYPE	I2S_nuc505_instance_t
+#define	MODULE_NAME						I2S_nuc505
+#define	MODULE_IOCTL_FUNCTION			I2S_nuc505_ioctl
+#define MODULE_CONFIG_DATA_STRUCT_TYPE	struct I2S_nuc505_cfg_t
 
 #ifdef DT_DEV_MODULE
 
@@ -52,6 +52,10 @@
 
 #include "add_component.h"
 
+/*
+ *  device specific defines should be undefined
+ *  after calling #include "add_component.h"
+ */
 #undef I2S_NUC505_DT_SAMPLE_RATE
 #undef I2S_NUC505_DT_MASTER_OR_SLAVE_MODE
 #undef I2S_NUC505_DT_TIMER_PDEV

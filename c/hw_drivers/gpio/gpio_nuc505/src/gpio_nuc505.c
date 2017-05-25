@@ -7,7 +7,10 @@
 
 
 /***************   includes    *******************/
-#include "src/_gpio_nuc505_prerequirements_check.h"
+#include "_project_typedefs.h"
+#include "_project_defines.h"
+
+#include "dev_management_api.h"
 
 #include "gpio_api.h"
 #include "gpio_nuc505_api.h"
@@ -16,6 +19,9 @@
 #include "NUC505Series.h"
 #include "gpio.h"
 
+#include "_gpio_nuc505_prerequirements_check.h"
+
+/*following line add module to available module list for dynamic device tree*/
 #include "gpio_nuc505_add_component.h"
 
 /***************   defines    *******************/
@@ -41,21 +47,15 @@ typedef struct
 
 
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        gpio_nuc505_ioctl                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
+/**
+ * gpio_nuc505_ioctl()
+ *
+ * return:
+ */
 uint8_t gpio_nuc505_ioctl( struct dev_desc_t *adev , const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
-	gpio_nuc505_instance_t *config_handle;
+	struct gpio_nuc505_cfg_t *config_handle;
 	GPIO_PX_T* GPIOx;
 	uint32_t volatile * pDOUT;
 	uint16_t pin_num_mask;
@@ -105,5 +105,3 @@ uint8_t gpio_nuc505_ioctl( struct dev_desc_t *adev , const uint8_t aIoctl_num
 	}
 	return 0;
 }
-
-

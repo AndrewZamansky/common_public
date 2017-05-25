@@ -2,7 +2,7 @@
 #ifndef _UART_NUC505_API_H_
 #define _UART_NUC505_API_H_
 
-#include "src/_uart_nuc505_prerequirements_check.h"
+#include "NUC505Series.h"
 
 /*****************  defines  **************/
 

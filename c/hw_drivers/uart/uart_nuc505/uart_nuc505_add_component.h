@@ -1,18 +1,15 @@
 /* !! DONT PUT HEADER FILE PROTECTIONS IN THIS FILE !! */
 
-#include  "uart_nuc505_api.h"
+#include  	"uart_nuc505_api.h"
 #include 	"src/uart_nuc505.h"
 
-uint8_t uart_nuc505_callback(struct dev_desc_t *adev , const uint8_t aCallback_num , void * aCallback_param1, void * aCallback_param2);
-uint8_t uart_nuc505_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2);
-size_t uart_nuc505_pwrite(struct dev_desc_t *adev ,const uint8_t *apData , size_t aLength, size_t aOffset);
 
-#define	MODULE_NAME					uart_nuc505
-#define	MODULE_IOCTL_FUNCTION		uart_nuc505_ioctl
-#define	MODULE_CALLBACK_FUNCTION	uart_nuc505_callback
-#define	MODULE_PWRITE_FUNCTION		uart_nuc505_pwrite
-#define MODULE_CONFIG_DATA_STRUCT_TYPE		uart_nuc505_instance_t
-#define MODULE_RUNTIME_DATA_STRUCT_TYPE		uart_nuc505_runtime_instance_t
+#define	MODULE_NAME						   	uart_nuc505
+#define	MODULE_IOCTL_FUNCTION			   	uart_nuc505_ioctl
+#define	MODULE_CALLBACK_FUNCTION		   	uart_nuc505_callback
+#define	MODULE_PWRITE_FUNCTION			   	uart_nuc505_pwrite
+#define MODULE_CONFIG_DATA_STRUCT_TYPE	   	struct uart_nuc505_cfg_t
+#define MODULE_RUNTIME_DATA_STRUCT_TYPE	   	struct uart_nuc505_runtime_t
 
 #ifdef DT_DEV_MODULE
 

@@ -35,5 +35,9 @@ endmenu
 #############  end of memories on soc ###################
 #########################################################
 
+comment "number of external interrupts : 30"
+config DT_NUMBER_OF_EXTERNAL_INTERRUPTS
+    int
+    default 30
 
 endmenu

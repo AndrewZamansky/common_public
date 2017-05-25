@@ -13,8 +13,8 @@
 
 /********  types  *********************/
 
-typedef struct {
-	uint32_t initial_clock_rates[NUC505_TOTAL_NUM_OF_CLOCKS];
-} clock_control_nuc505_instance_t;
+struct clk_cntl_nuc505_cfg_t {
+	uint32_t core_rate;
+} ;
 
 #endif

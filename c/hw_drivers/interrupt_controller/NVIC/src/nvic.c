@@ -79,7 +79,7 @@ typedef enum IRQn_local {
 
 /********  local variables *********************/
 struct dev_desc_t * callback_devs[
-                            CONFIG_DT_MAXIMAL_INTERRUPT_NUMBER + 16] = {NULL};
+                         CONFIG_DT_NUMBER_OF_EXTERNAL_INTERRUPTS + 16] = {NULL};
 
 
 
@@ -94,7 +94,7 @@ void  IRQ_ATTR common_interrupt_handler()
 	struct dev_desc_t * pdev ;
 
 	curr_isr = __get_IPSR();
-	if ( CONFIG_DT_MAXIMAL_INTERRUPT_NUMBER < curr_isr )
+	if ( (CONFIG_DT_NUMBER_OF_EXTERNAL_INTERRUPTS + 16) <= curr_isr )
 	{
 		CRITICAL_ERROR("received interrupt is larger then maximal interrupt number defined in project configuration");
 	}
@@ -210,7 +210,7 @@ void  NVIC_API_Init(void)
 	/*
 	 * SCnSCB->ICTR   shows number of interrupts in chunks of 32
 	 */
-	if ( (CONFIG_DT_MAXIMAL_INTERRUPT_NUMBER / 32) != i )
+	if ( (CONFIG_DT_NUMBER_OF_EXTERNAL_INTERRUPTS / 32) != i )
 	{
 		CRITICAL_ERROR("total number of interrupts defined in HW not match to maximal interrupt number defined in project configuration");
 	}
