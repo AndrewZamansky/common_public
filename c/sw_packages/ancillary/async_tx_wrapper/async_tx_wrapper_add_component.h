@@ -20,9 +20,9 @@
 
 	EXTERN_DECLARATION_TO_STATIC_DEVICE_INST(ASYNC_TX_WRAPPER_DT_SERVER_PDEV) ;
 
-	#define STATIC_DEV_DATA_STRUCT														\
-		{																				\
-			P_TO_STATIC_DEVICE_INST(ASYNC_TX_WRAPPER_DT_SERVER_PDEV) 	/*server_dev*/	\
+	#define STATIC_DEV_DATA_STRUCT										\
+		{																\
+			P_TO_STATIC_DEVICE_INST(ASYNC_TX_WRAPPER_DT_SERVER_PDEV) 	\
 		}
 
 #endif
@@ -35,5 +35,8 @@
 
 #include "add_component.h"
 
-/* device specific defines should be undefined after calling #include "add_component.h" */
+/**
+ *  device specific defines should be undefined
+ *  after calling #include "add_static_dev.h"
+ */
 #undef ASYNC_TX_WRAPPER_DT_SERVER_PDEV

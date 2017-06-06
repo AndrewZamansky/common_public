@@ -57,30 +57,41 @@ char I2S_mixer_module_name[] = "I2S_mixer";
  *
  * return:
  */
-void I2S_mixer_dsp(struct dsp_desc_t *adsp , size_t data_len ,
+void I2S_mixer_dsp(struct dsp_desc_t *adsp,
 		struct dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] ,
 		struct dsp_pad_t  out_pads[MAX_NUM_OF_OUTPUT_PADS])
 {
-	float *apCh1In ,  *apCh2In;
+	float *apCh1In;
+	float *apCh2In;
 	struct I2S_MIXER_Instance_t *handle;
 	uint8_t enable_test_clipping;
 	float max_out_val ;
 	float out_val ;
+	size_t in_data_len1 ;
+	size_t in_data_len2 ;
+	size_t out_data_len ;
+	buffer_type_t *pTxBuf;
 
 	handle = adsp->handle;
 
 	max_out_val = handle->max_out_val;
 	enable_test_clipping = handle->enable_test_clipping;
 
+	DSP_GET_BUFFER(in_pads[0], &apCh1In, &in_data_len1);
+	DSP_GET_BUFFER(in_pads[1], &apCh2In, &in_data_len2);
+	DSP_GET_BUFFER(&out_pads[0], (float**)&pTxBuf, &out_data_len);
 
-	buffer_type_t *pTxBuf;
-	pTxBuf = (buffer_type_t*)out_pads[0].buff;
+	if (in_data_len1 != in_data_len2 )
+	{
+		CRITICAL_ERROR("bad input buffer size");
+	}
 
-	apCh1In = in_pads[0]->buff;
-	apCh2In = in_pads[1]->buff;
+	if  (sizeof(buffer_type_t) != 2 )
+	{
+		CRITICAL_ERROR("TODO");
+	}
 
-
-	for( ; data_len ;data_len--)
+	while(in_data_len1--)
 	{
 		if(enable_test_clipping)
 		{

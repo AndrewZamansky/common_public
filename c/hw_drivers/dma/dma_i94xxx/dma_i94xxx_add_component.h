@@ -6,14 +6,19 @@
 
 #define	MODULE_NAME							dma_i94xxx
 #define	MODULE_IOCTL_FUNCTION				dma_i94xxx_ioctl
-#define MODULE_CONFIG_DATA_STRUCT_TYPE		dma_i94xxx_instance_t
-#define MODULE_RUNTIME_DATA_STRUCT_TYPE		dma_i94xxx_runtime_instance_t
+#define MODULE_CONFIG_DATA_STRUCT_TYPE		struct dma_i94xxx_cfg_t
+#define MODULE_RUNTIME_DATA_STRUCT_TYPE		struct dma_i94xxx_runtime_t
 
 #ifdef DT_DEV_MODULE
 
 	#ifndef DMA_I94XXX_DT_CALLBACK_PDEV
-		#error "DMA_I94XXX_DT_CALLBACK_PDEV should be defined"
+	   #define _DMA_I94XXX_CALLBACK_PDEV	NULL
+	#else
+       EXTERN_DECLARATION_TO_STATIC_DEVICE_INST(DMA_I94XXX_DT_CALLBACK_PDEV);
+	   #define _DMA_I94XXX_CALLBACK_PDEV 	\
+			P_TO_STATIC_DEVICE_INST(DMA_I94XXX_DT_CALLBACK_PDEV)
 	#endif
+
 
 	#ifndef DMA_I94XXX_DT_CHANNEL_NUM
 		#error "DMA_I94XXX_DT_CHANNEL_NUM should be defined"
@@ -24,9 +29,23 @@
 		#error "DMA_I94XXX_DT_PERIPHERAL_TYPE should be defined"
 	#endif
 
+	#if ( (DMA_I94XXX_DT_PERIPHERAL_TYPE == DMA_I94XXX_API_TYPE_I2S_TX) || \
+		  (DMA_I94XXX_DT_PERIPHERAL_TYPE == DMA_I94XXX_API_TYPE_I2S_RX) || \
+		  (DMA_I94XXX_DT_PERIPHERAL_TYPE == DMA_I94XXX_API_TYPE_DPWM) || \
+		  (DMA_I94XXX_DT_PERIPHERAL_TYPE == DMA_I94XXX_API_TYPE_SPI1_RX) || \
+		  (DMA_I94XXX_DT_PERIPHERAL_TYPE == DMA_I94XXX_API_TYPE_SPI1_TX) || \
+		  (DMA_I94XXX_DT_PERIPHERAL_TYPE == DMA_I94XXX_API_TYPE_SPI2_RX) || \
+		  (DMA_I94XXX_DT_PERIPHERAL_TYPE == DMA_I94XXX_API_TYPE_SPI2_TX) )
 
-	#ifndef DMA_I94XXX_DT_TRANSFER_WORD_SIZE
-		#error "DMA_I94XXX_DT_TRANSFER_WORD_SIZE should be defined"
+		#ifdef DMA_I94XXX_DT_TRANSFER_WORD_SIZE
+			#error "DMA_I94XXX_DT_TRANSFER_WORD_SIZE cannot be defined for these peripherals"
+		#endif
+		#define DMA_I94XXX_DT_TRANSFER_WORD_SIZE 	\
+											DMA_I94XXX_API_TRANSFER_WORD_32BIT
+	#else
+		#ifndef DMA_I94XXX_DT_TRANSFER_WORD_SIZE
+			#error "DMA_I94XXX_DT_TRANSFER_WORD_SIZE should be defined"
+		#endif
 	#endif
 
 	#ifndef DMA_I94XXX_DT_BUFFER_SIZE
@@ -34,10 +53,9 @@
 	#endif
 
 
-	EXTERN_DECLARATION_TO_STATIC_DEVICE_INST(DMA_I94XXX_DT_CALLBACK_PDEV) ;
-	#define STATIC_DEV_DATA_STRUCT			\
-		{									\
-			P_TO_STATIC_DEVICE_INST(DMA_I94XXX_DT_CALLBACK_PDEV) ,	\
+	#define STATIC_DEV_DATA_STRUCT				\
+		{										\
+			_DMA_I94XXX_CALLBACK_PDEV ,			\
 			DMA_I94XXX_DT_CHANNEL_NUM ,			\
 			DMA_I94XXX_DT_PERIPHERAL_TYPE ,		\
 			DMA_I94XXX_DT_TRANSFER_WORD_SIZE,	\
@@ -48,8 +66,15 @@
 
 #include "add_component.h"
 
-/* device specific defines should be undefined after calling #include "add_static_dev.h" */
+/*
+ *  device specific defines should be undefined
+ *  after calling #include "add_component.h"
+ */
 #undef DMA_I94XXX_DT_CALLBACK_PDEV
+#undef _DMA_I94XXX_CALLBACK_PDEV
+#undef DMA_I94XXX_DT_PERIPHERAL_PDEV
+#undef _DMA_I94XXX_PERIPHERAL_PDEV
 #undef DMA_I94XXX_DT_CHANNEL_NUM
 #undef DMA_I94XXX_DT_PERIPHERAL_TYPE
 #undef DMA_I94XXX_DT_BUFFER_SIZE
+#undef DMA_I94XXX_DT_TRANSFER_WORD_SIZE

@@ -27,7 +27,8 @@
 
 #ifdef ASYNC_RX_WRAPPER_DT_CLIENT_PDEV
 	EXTERN_DECLARATION_TO_STATIC_DEVICE_INST(ASYNC_RX_WRAPPER_DT_CLIENT_PDEV) ;
-	#define POINTER_TO_CLIENT_PDEV		P_TO_STATIC_DEVICE_INST(ASYNC_RX_WRAPPER_DT_CLIENT_PDEV)
+	#define POINTER_TO_CLIENT_PDEV		\
+						P_TO_STATIC_DEVICE_INST(ASYNC_RX_WRAPPER_DT_CLIENT_PDEV)
 #else
 	#define POINTER_TO_CLIENT_PDEV		NULL
 #endif
@@ -43,27 +44,32 @@
 	#endif
 
 
-	#define STATIC_DEV_DATA_STRUCT														\
-		{																				\
-			P_TO_STATIC_DEVICE_INST(ASYNC_RX_WRAPPER_DT_SERVER_PDEV) ,	/*server_dev*/	\
-			POINTER_TO_CLIENT_PDEV,								/* .client_dev */		\
-			RX_BUFFER_STRUCT_DATA														\
+	#define STATIC_DEV_DATA_STRUCT					    			  \
+		{															  \
+			P_TO_STATIC_DEVICE_INST(ASYNC_RX_WRAPPER_DT_SERVER_PDEV) ,\
+			POINTER_TO_CLIENT_PDEV,			   /* .client_dev */	  \
+			RX_BUFFER_STRUCT_DATA					  				  \
 		}
 
 #endif
 
 
 #define MODULE_CONFIGURABLE_PARAMS_ARRAY	{	\
-			{ASYNC_RX_WRAPPER_API_RX_BUFF_SIZE_STR , IOCTL_ASYNC_RX_WRAPPER_SET_BUFF_SIZE	, IOCTL_VOID , 	\
+			{	ASYNC_RX_WRAPPER_API_RX_BUFF_SIZE_STR , 				\
+				IOCTL_ASYNC_RX_WRAPPER_SET_BUFF_SIZE	, IOCTL_VOID , 	\
 				DEV_PARAM_TYPE_UINT32  , MAPPED_SET_DUMMY_PARAM()  },	\
 																		\
-			{ASYNC_RX_WRAPPER_API_SERVER_DEVICE_STR , IOCTL_SET_SERVER_DEVICE 	, IOCTL_VOID ,  \
-					DEV_PARAM_TYPE_PDEVICE , MAPPED_SET_DUMMY_PARAM() },\
+			{	ASYNC_RX_WRAPPER_API_SERVER_DEVICE_STR ,				\
+				IOCTL_SET_SERVER_DEVICE 	, IOCTL_VOID ,  			\
+				DEV_PARAM_TYPE_PDEVICE , MAPPED_SET_DUMMY_PARAM() },	\
 		}
 
 #include "add_component.h"
 
-/* device specific defines should be undefined after calling #include "add_component.h" */
+/**
+ *  device specific defines should be undefined
+ *  after calling #include "add_static_dev.h"
+ */
 #undef POINTER_TO_CLIENT_PDEV
 #undef RX_BUFFER_STRUCT_DATA
 #undef ASYNC_RX_WRAPPER_DT_SERVER_PDEV

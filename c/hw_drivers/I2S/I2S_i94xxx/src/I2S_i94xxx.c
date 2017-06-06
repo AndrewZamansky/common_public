@@ -79,12 +79,14 @@ uint8_t I2S_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
 	struct I2S_i94xxx_cfg_t *cfg_hndl;
+	struct I2S_i94xxx_runtime_t *runtime_handle;
 //	uint8_t   	clock_mode;
 	uint8_t		num_of_bytes_in_word;
 	struct dev_desc_t	*clk_dev;
 	struct dev_desc_t	*src_clock;
 
 	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
 	src_clock = cfg_hndl->src_clock;
 
 
@@ -119,7 +121,8 @@ uint8_t I2S_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 	    num_of_bytes_in_word = cfg_hndl->num_of_bytes_in_word;
 //	    num_of_bytes_in_word=1;
 
-	    I2S_Open(I2S, cfg_hndl->clock_mode, cfg_hndl->sample_rate,
+	    runtime_handle->actual_sample_rate = I2S_Open(
+	    		I2S, cfg_hndl->clock_mode, cfg_hndl->sample_rate,
 	    		(num_of_bytes_in_word-1)<<SPI_I2SCTL_WDWIDTH_Pos,
 				I2S_STEREO, I2S_FORMAT_I2S_STD);
 
@@ -139,9 +142,13 @@ uint8_t I2S_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 //	    I2S_module->FIFOCTL |= SPI_FIFOCTL_RXRST_Msk;
 		break;
 
-	case I2S_ENABLE_OUTPUT_IOCTL:
+	case I2S_I94XXX_ENABLE_OUTPUT_IOCTL:
 		I2S_ENABLE_TX(I2S);
 		I2S->CTL0 |= I2S_CTL0_TXPDMAEN_Msk;
+		break;
+
+	case I2S_I94XXX_GET_MEASURED_SAMPLE_RATE:
+		*((uint32_t*)aIoctl_param1) = runtime_handle->actual_sample_rate;
 		break;
 
 	default :

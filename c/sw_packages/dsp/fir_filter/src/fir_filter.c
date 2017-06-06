@@ -49,12 +49,14 @@ char fir_filter_module_name[] = "fir_filter";
  *
  * return:
  */
-static void fir_filter_dsp(struct dsp_desc_t *adsp , size_t data_len ,
+static void fir_filter_dsp(struct dsp_desc_t *adsp,
 		struct dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS],
 		struct dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])
 {
 	float *apCh1In  ;
 	float *apCh1Out ;
+	size_t in_data_len ;
+	size_t out_data_len ;
 	struct FIR_FILTER_Instance_t *handle;
 
 	handle = adsp->handle;
@@ -64,10 +66,15 @@ static void fir_filter_dsp(struct dsp_desc_t *adsp , size_t data_len ,
 		return;
 	}
 
-	apCh1In = in_pads[0]->buff;
-	apCh1Out = out_pads[0].buff;
+	DSP_GET_BUFFER(in_pads[0], &apCh1In, &in_data_len);
+	DSP_GET_BUFFER(&out_pads[0], &apCh1Out, &out_data_len);
 
-	fir_filter_function(handle->p_fir_filter , apCh1In , apCh1Out , data_len);
+	if (in_data_len > out_data_len )
+	{
+		CRITICAL_ERROR("bad buffers sizes");
+	}
+
+	fir_filter_function(handle->p_fir_filter, apCh1In, apCh1Out, out_data_len);
 
 }
 

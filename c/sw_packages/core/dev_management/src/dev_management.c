@@ -7,12 +7,15 @@
 
 
 /***************   includes    *******************/
+#include "_project_typedefs.h"
+#include "_project_defines.h"
 
 #include "dev_management_api.h"
-#include "_dev_management_prerequirements_check.h"
 #include "dev_management.h"
 
 #include "auto_init_api.h"
+
+#include "_dev_management_prerequirements_check.h"
 
 
 /***************   defines    *******************/

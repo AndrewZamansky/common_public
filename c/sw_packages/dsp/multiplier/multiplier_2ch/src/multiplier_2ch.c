@@ -47,7 +47,7 @@ char multiplier_2ch_module_name[] = "multiplier_2ch";
  *
  * return:
  */
-void multiplier_2ch_dsp(struct dsp_desc_t *adsp , size_t data_len ,
+void multiplier_2ch_dsp(struct dsp_desc_t *adsp,
 		struct dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS],
 		struct dsp_pad_t  out_pads[MAX_NUM_OF_OUTPUT_PADS])
 {
@@ -58,18 +58,36 @@ void multiplier_2ch_dsp(struct dsp_desc_t *adsp , size_t data_len ,
 	struct multiplier_2ch_instance_t *handle;
 	float weight ;
 	float curr_val;
+	size_t in_data_len1 ;
+	size_t in_data_len2 ;
+	size_t out_data_len1 ;
+	size_t out_data_len2 ;
 
 	handle = adsp->handle;
 
 	weight = handle->weight;
 
-	apCh1In = in_pads[0]->buff;
-	apCh2In = in_pads[1]->buff;
-	apCh1Out = out_pads[0].buff;
-	apCh2Out = out_pads[1].buff;
+	DSP_GET_BUFFER(in_pads[0], &apCh1In, &in_data_len1);
+	DSP_GET_BUFFER(in_pads[1], &apCh2In, &in_data_len2);
+	DSP_GET_BUFFER(&out_pads[0], &apCh1Out, &out_data_len1);
+	DSP_GET_BUFFER(&out_pads[1], &apCh2Out, &out_data_len2);
 
+	if (in_data_len1 != in_data_len2 )
+	{
+		CRITICAL_ERROR("bad input buffer size");
+	}
 
-	for( ; data_len ;data_len--)
+	if (out_data_len1 != out_data_len2 )
+	{
+		CRITICAL_ERROR("bad output buffer size");
+	}
+
+	if (in_data_len1 > out_data_len1 )
+	{
+		CRITICAL_ERROR("bad buffers sizes");
+	}
+
+	while (in_data_len1--)
 	{
 		curr_val = (*apCh1In++) * weight;
 		*apCh1Out++ = curr_val;

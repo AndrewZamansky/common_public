@@ -16,7 +16,7 @@
 
 #include "multiplier_api.h"
 
-#include "multiplier_1ch_api.h" //place first to test that header file is self-contained
+#include "multiplier_1ch_api.h"
 #include "multiplier_1ch.h"
 
 #include "auto_init_api.h"
@@ -47,7 +47,7 @@ char multiplier_1ch_module_name[] = "multiplier_1ch";
  *
  * return:
  */
-void multiplier_1ch_dsp(struct dsp_desc_t *adsp , size_t data_len ,
+void multiplier_1ch_dsp(struct dsp_desc_t *adsp,
 		struct dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS],
 		struct dsp_pad_t  out_pads[MAX_NUM_OF_OUTPUT_PADS])
 {
@@ -56,16 +56,22 @@ void multiplier_1ch_dsp(struct dsp_desc_t *adsp , size_t data_len ,
 	struct multiplier_1ch_instance_t *handle;
 	float weight ;
 	float curr_val;
+	size_t in_data_len ;
+	size_t out_data_len ;
 
 	handle = adsp->handle;
 
 	weight = handle->weight;
 
-	apCh1In = in_pads[0]->buff;
-	apCh1Out = out_pads[0].buff;
+	DSP_GET_BUFFER(in_pads[0], &apCh1In, &in_data_len);
+	DSP_GET_BUFFER(&out_pads[0], &apCh1Out, &out_data_len);
 
+	if (in_data_len > out_data_len )
+	{
+		CRITICAL_ERROR("bad buffers sizes");
+	}
 
-	for( ; data_len ;data_len--)
+	while (in_data_len--)
 	{
 		curr_val = (*apCh1In++) * weight;
 		*apCh1Out++ = curr_val;

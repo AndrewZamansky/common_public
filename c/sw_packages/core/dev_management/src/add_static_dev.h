@@ -1,6 +1,7 @@
 /* !! DONT PUT HEADER FILE PROTECTIONS IN THIS FILE !! */
 
 #include "dev_management_api.h"
+#include "arch.h"
 
 
 #ifndef DT_DEV_MODULE

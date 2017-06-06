@@ -3,9 +3,6 @@
  * file :   version_management.c
  *
  *
- *
- *
- *
  */
 
 
@@ -14,6 +11,7 @@
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 
+#include "string.h"
 #include "dev_management_api.h"
 
 #include "version_management_api.h"

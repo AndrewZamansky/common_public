@@ -147,6 +147,7 @@ uint32_t DPWM_GetSourceClk( void )
 }
 
 
+uint32_t dpwm_actualSamplingRate;
 
 int32_t	DPWM_Open(uint32_t samplingRateHz, DPWM_DATA_FORMAT_E format, DPWM_FIFO_WORD_WIDTH width)
 {
@@ -196,7 +197,7 @@ int32_t	DPWM_Open(uint32_t samplingRateHz, DPWM_DATA_FORMAT_E format, DPWM_FIFO_
 		actualSamplingRate = moduleClk / (clkDiv + 1) / zohDiv / k;
 	}
 
-	
+	dpwm_actualSamplingRate = actualSamplingRate;
 	/* configure clock according to required SR and module clock */
 	
 		

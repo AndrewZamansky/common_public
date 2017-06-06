@@ -20,6 +20,7 @@ struct uart_i94xxx_cfg_t {
 	struct dev_desc_t *   src_clock;
 	size_t   base_address;
 	uint32_t baud_rate;
+	uint32_t pinout;
 } ;
 
 

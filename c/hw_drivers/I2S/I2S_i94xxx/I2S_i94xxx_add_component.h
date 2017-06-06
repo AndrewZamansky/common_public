@@ -3,9 +3,10 @@
 #include  "I2S_i94xxx_api.h"
 #include "src/I2S_i94xxx.h"
 
-#define	MODULE_NAME						I2S_i94xxx
-#define	MODULE_IOCTL_FUNCTION			I2S_i94xxx_ioctl
-#define MODULE_CONFIG_DATA_STRUCT_TYPE	struct I2S_i94xxx_cfg_t
+#define	MODULE_NAME							I2S_i94xxx
+#define	MODULE_IOCTL_FUNCTION				I2S_i94xxx_ioctl
+#define MODULE_CONFIG_DATA_STRUCT_TYPE		struct I2S_i94xxx_cfg_t
+#define MODULE_RUNTIME_DATA_STRUCT_TYPE		struct I2S_i94xxx_runtime_t
 
 #ifdef DT_DEV_MODULE
 
@@ -42,12 +43,12 @@
 
 #endif
 
+#include "add_component.h"
+
 /**
  *  device specific defines should be undefined
  *  after calling #include "add_static_dev.h"
  */
-#include "add_component.h"
-
 #undef POINTER_TO_SRC_CLOCK_PDEV
 #if	(I2S_I94XXX_DT_MASTER_OR_SLAVE_MODE == I2S_I94XXX_API_MASTER_MODE)
     #undef I2S_I94XXX_DT_SAMPLE_RATE

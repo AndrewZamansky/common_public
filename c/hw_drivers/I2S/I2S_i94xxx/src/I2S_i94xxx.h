@@ -21,4 +21,8 @@ struct I2S_i94xxx_cfg_t {
 	uint8_t		num_of_bytes_in_word;
 } ;
 
+struct I2S_i94xxx_runtime_t {
+	uint32_t	actual_sample_rate;
+};
+
 #endif

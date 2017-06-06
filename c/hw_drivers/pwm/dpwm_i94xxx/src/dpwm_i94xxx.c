@@ -65,6 +65,9 @@ void DPWM_IRQHandler()
 }
 #endif
 
+
+extern uint32_t dpwm_actualSamplingRate;
+
 /**
  * dpwm_i94xxx_ioctl()
  *
@@ -99,6 +102,8 @@ uint8_t dpwm_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 		DPWM_Open(cfg_hndl->sample_rate,
 				DPWM_FORMAT_FLOATING_PNT, DPWM_WIDTH_24BIT_LSB);
 
+		DPWM->CTL &= ~(1 << DPWM_CTL_DPWM_CLKSET_Pos); //force K=128 for now
+		dpwm_actualSamplingRate = (dpwm_actualSamplingRate * 125) / 128;
 
 	    DPWM_DISABLE();
 
@@ -114,9 +119,13 @@ uint8_t dpwm_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 //	    I2S_module->FIFOCTL |= SPI_FIFOCTL_RXRST_Msk;
 		break;
 
-	case DPWM_ENABLE_OUTPUT_IOCTL:
+	case DPWM_I94XXX_ENABLE_OUTPUT_IOCTL:
 		DPWM_ENABLE();
 		DPWM_DMA_ENABLE();
+		break;
+
+	case DPWM_I94XXX_GET_MEASURED_SAMPLE_RATE:
+		*((uint32_t*)aIoctl_param1) = dpwm_actualSamplingRate;
 		break;
 
 	default :

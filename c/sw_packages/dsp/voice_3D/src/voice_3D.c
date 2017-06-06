@@ -49,13 +49,19 @@ char voice_3D_module_name[] = "voice_3D";
  *
  * return:
  */
-void voice_3D_dsp(struct dsp_desc_t *adsp, size_t data_len,
+void voice_3D_dsp(struct dsp_desc_t *adsp,
 		struct dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS],
 		struct dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])
 {
 	struct VOICE_3D_Instance_t *handle;
-	float *apCh1In ,  *apCh2In;
-	float *apCh1Out ,  *apCh2Out;
+	float *apCh1In;
+	float *apCh2In;
+	float *apCh1Out;
+	float*apCh2Out;
+	size_t in_data_len1 ;
+	size_t in_data_len2 ;
+	size_t out_data_len1 ;
+	size_t out_data_len2 ;
 
 	float main_ch_gain;
 	float second_ch_gain;
@@ -65,10 +71,27 @@ void voice_3D_dsp(struct dsp_desc_t *adsp, size_t data_len,
 	float _3D_gain;
 
 	handle = adsp->handle;
-	apCh1In = in_pads[0]->buff;
-	apCh2In = in_pads[1]->buff;
-	apCh1Out = out_pads[0].buff;
-	apCh2Out = out_pads[1].buff;
+
+	DSP_GET_BUFFER(in_pads[0], &apCh1In, &in_data_len1);
+	DSP_GET_BUFFER(in_pads[1], &apCh2In, &in_data_len2);
+	DSP_GET_BUFFER(&out_pads[0], &apCh1Out, &out_data_len1);
+	DSP_GET_BUFFER(&out_pads[1], &apCh2Out, &out_data_len2);
+
+	if (in_data_len1 != in_data_len2 )
+	{
+		CRITICAL_ERROR("bad input buffer size");
+	}
+
+	if (out_data_len1 != out_data_len2 )
+	{
+		CRITICAL_ERROR("bad output buffer size");
+	}
+
+	if (in_data_len1 > out_data_len1 )
+	{
+		CRITICAL_ERROR("bad buffers sizes");
+	}
+
 
 	medium_gain = handle->medium_gain ;
 	side_gain = handle->side_gain ;
@@ -77,7 +100,7 @@ void voice_3D_dsp(struct dsp_desc_t *adsp, size_t data_len,
 	main_ch_gain = medium_gain + side_gain ;
 	second_ch_gain = medium_gain + side_gain + _3D_gain ;
 
-	while(data_len--)
+	while(in_data_len1--)
 	{
 		float curr_ch_1;
 		float curr_ch_2;

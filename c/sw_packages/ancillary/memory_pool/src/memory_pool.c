@@ -81,7 +81,7 @@ void *memory_pool_zmalloc(void *memory_pool_handle)
  *
  * return:
  */
-void memory_pool_free(void *memory_pool_handle , void *mem)
+void memory_pool_free(void *memory_pool_handle, void *mem)
 {
 	size_t	num_of_chunks;
 	struct mem_pool_chunck_t *pMemPool;
@@ -109,7 +109,7 @@ void memory_pool_free(void *memory_pool_handle , void *mem)
  *
  * return:
  */
-void *memory_pool_init(size_t num_of_chunks,size_t size_of_chunk)
+void *memory_pool_init(size_t num_of_chunks, size_t size_of_chunk)
 {
 	struct mem_pool_t *pInstance;
 	struct mem_pool_chunck_t *pool_chunk;
@@ -156,4 +156,22 @@ void memory_pool_delete(void *memory_pool_handle)
 	}
 	free(pool_chunk);
 	free(memory_pool_handle);
+}
+
+/**
+ * memory_pool_get_chunk_size()
+ *
+ * return:
+ */
+size_t memory_pool_get_chunk_size(void *memory_pool_handle)
+{
+	struct mem_pool_t *mem_pool;
+
+	mem_pool = (struct mem_pool_t*)memory_pool_handle;
+	if (NULL == mem_pool)
+	{
+		CRITICAL_ERROR("uninitialized memory pool");
+	}
+
+	return mem_pool->size_of_chunk;
 }

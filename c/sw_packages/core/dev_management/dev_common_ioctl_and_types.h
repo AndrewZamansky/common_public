@@ -3,8 +3,6 @@
 #define _dev_common_ioctl_and_types_h_
 
 
-#include "src/_dev_management_prerequirements_check.h"
-
 
 struct ioctl_get_data_buffer_t
 {
@@ -23,6 +21,8 @@ typedef enum
 	CALLBACK_TX_DONE,
 	CALLBACK_DATA_RECEIVED,
 	CALLBACK_NEW_DATA_ARRIVED,
+	CALLBACK_BUFFER_UNDERFLOW,
+	CALLBACK_BUFFER_OVERFLOW,
 	CALLBACK_NEW_DATA_FROM_SOCKET_ARRIVED,
 	CALLBACK_BTN_STATE_CHANGED,
 	CALLBACK_LAST_COMMON_IOCTL

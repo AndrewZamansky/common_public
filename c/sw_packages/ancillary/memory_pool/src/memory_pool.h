@@ -1,8 +1,6 @@
 /*
  * file : memory_pool.h
  *
- *
- *
  */
 
 #ifndef _memory_pool_H
@@ -29,4 +27,4 @@ struct mem_pool_t
 
 
 
-#endif /* */
+#endif

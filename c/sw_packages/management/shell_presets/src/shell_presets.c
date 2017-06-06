@@ -11,10 +11,13 @@
 #include "_project_defines.h"
 
 #include "dev_management_api.h"
+#include "string.h"
 
 #include "shell_presets_api.h"
 #include "shell_presets.h"
 #include "management_api.h"
+
+#include "os_wrapper.h"
 
 #include "_shell_presets_prerequirements_check.h"
 
@@ -263,7 +266,7 @@ uint8_t shell_presets_ioctl( struct dev_desc_t *adev,
 	switch(aIoctl_num)
 	{
 	case IOCTL_DEVICE_START :
-		curr_preset_buf = (uint8_t *)malloc(preset_size);
+		curr_preset_buf = (uint8_t *)os_safe_malloc(preset_size);
 		runtime_handle->curr_preset_buf = curr_preset_buf;
 		DEV_IOCTL_0_PARAMS(storage_dev, IOCTL_DEVICE_START);
 		DEV_PREAD(storage_dev, curr_preset_buf, preset_size, 0);

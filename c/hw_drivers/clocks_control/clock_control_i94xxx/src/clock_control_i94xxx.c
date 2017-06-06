@@ -446,7 +446,7 @@ uint8_t clock_i94xxx_dpwm_ioctl( struct dev_desc_t *adev,
 		cfg_clk->parent_clk = aIoctl_param1;
 		break;
 	case CLK_IOCTL_ENABLE :
-		CLK->APBCLK1 |= CLK_APBCLK1_DPWMCKEN_Pos;
+		CLK->APBCLK1 |= CLK_APBCLK1_DPWMCKEN_Msk;
 		break;
 	case CLK_IOCTL_GET_FREQ :
 		get_parent_clock_rate(cfg_clk, aIoctl_param1);

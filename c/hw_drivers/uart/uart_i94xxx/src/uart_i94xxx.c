@@ -135,14 +135,21 @@ uint8_t uart_i94xxx_ioctl( struct dev_desc_t *adev, uint8_t aIoctl_num,
 			* Init I/O Multi-function
 			* Set PA multi-function pins for UART0 RXD(PA.8) and TXD(PA.7)
 			*/
-#if 0
-			SYS->GPA_MFPL &= ~(SYS_GPA_MFPL_PA7MFP_Msk);
-			SYS->GPA_MFPH &= ~(SYS_GPA_MFPH_PA8MFP_Msk);
-			SYS->GPA_MFPL |= (SYS_GPA_MFPL_PA7MFP_UART0_TXD);
-			SYS->GPA_MFPH |= (SYS_GPA_MFPH_PA8MFP_UART0_RXD);
-#else
-		  SYS->GPD_MFPH = (SYS->GPD_MFPH & (~0xFF000000)) | 0x44000000;
-#endif
+			switch (cfg_hndl->pinout)
+			{
+			case UART_I94XXX_UART0_TX_RX_PINS_PORT_B_PINS_8_9:
+			    SYS->GPB_MFPH &= ~(SYS_GPB_MFPH_PB8MFP_Msk);
+			    SYS->GPB_MFPH &= ~(SYS_GPB_MFPH_PB9MFP_Msk);
+			    SYS->GPB_MFPH |=  (SYS_GPB_MFPH_PB8MFP_UART0_TXD);
+			    SYS->GPB_MFPH |=  (SYS_GPB_MFPH_PB9MFP_UART0_RXD);
+				break;
+			case UART_I94XXX_UART0_TX_RX_PINS_PORT_D_PINS_14_15:
+				  SYS->GPD_MFPH = (SYS->GPD_MFPH & (~0xFF000000)) | 0x44000000;
+				break;
+			default :
+				return 1;
+
+			}
 		}
 		else
 		{

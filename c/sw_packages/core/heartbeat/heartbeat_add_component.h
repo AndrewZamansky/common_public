@@ -3,8 +3,6 @@
 #include "heartbeat_api.h"
 #include "src/heartbeat.h"
 
-extern uint8_t heartbeat_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2);
-extern uint8_t heartbeat_init( struct dev_desc_t *aDevDescriptor)	;
 
 #define	MODULE_NAME				heartbeat
 #define	MODULE_INIT_FUNCTION	heartbeat_init
@@ -34,6 +32,9 @@ extern uint8_t heartbeat_init( struct dev_desc_t *aDevDescriptor)	;
 
 #include "add_component.h"
 
-/* device specific defines should be undefined after calling #include "add_static_dev.h" */
+/**
+ *  device specific defines should be undefined
+ *  after calling #include "add_static_dev.h"
+ */
 #undef HEARTBEAT_DT_CALLBACK_FUNC
 #undef HEARTBEAT_DT_OS_TIMER_PDEV

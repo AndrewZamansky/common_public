@@ -47,13 +47,15 @@ char biquad_filter_module_name[] = "biquad_filter";
  *
  * return:
  */
-void biquad_filter_dsp(struct dsp_desc_t *adsp, size_t data_len,
+void biquad_filter_dsp(struct dsp_desc_t *adsp,
 		struct dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS],
 		struct dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])
 {
 	float *apCh1In  ;
 	float *apCh1Out ;
 	struct biquads_filter_t *handle;
+	size_t in_data_len ;
+	size_t out_data_len ;
 
 	handle = adsp->handle;
 
@@ -62,11 +64,17 @@ void biquad_filter_dsp(struct dsp_desc_t *adsp, size_t data_len,
 		return;
 	}
 
-	apCh1In = in_pads[0]->buff;
-	apCh1Out = out_pads[0].buff;
+	DSP_GET_BUFFER(in_pads[0], &apCh1In, &in_data_len);
+	DSP_GET_BUFFER(&out_pads[0], &apCh1Out, &out_data_len);
+
+	if (in_data_len > out_data_len )
+	{
+		CRITICAL_ERROR("bad buffers sizes");
+	}
+
 
 	biquads_cascading_filter(handle->pBiquadFilter,
-			apCh1In, apCh1Out, data_len);
+			apCh1In, apCh1Out, in_data_len);
 
 }
 

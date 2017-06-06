@@ -46,28 +46,44 @@ char mixer2x1_module_name[] = "mixer2x1";
  *
  * return:
  */
-void mixer2x1_dsp(struct dsp_desc_t *adsp , size_t data_len ,
+void mixer2x1_dsp(struct dsp_desc_t *adsp,
 		struct dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS],
 		struct dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])
 {
 	struct MIXER2X1_Instance_t *handle;
-	float *apCh1In ,  *apCh2In;
+	float *apCh1In;
+	float *apCh2In;
 	float *apCh1Out  ;
-	float channels_weights_1,channels_weights_2  ;
+	float channels_weights_1;
+	float channels_weights_2;
 	float *channels_weights;
 	float curr_val;
+	size_t in_data_len1 ;
+	size_t in_data_len2 ;
+	size_t out_data_len ;
 
 	handle = adsp->handle;
-	apCh1In = in_pads[0]->buff;
-	apCh2In = in_pads[1]->buff;
-	apCh1Out = out_pads[0].buff;
+
+	DSP_GET_BUFFER(in_pads[0], &apCh1In, &in_data_len1);
+	DSP_GET_BUFFER(in_pads[1], &apCh2In, &in_data_len2);
+	DSP_GET_BUFFER(&out_pads[0], &apCh1Out, &out_data_len);
+
+	if (in_data_len1 != in_data_len2 )
+	{
+		CRITICAL_ERROR("bad input buffer size");
+	}
+
+	if (in_data_len1 > out_data_len )
+	{
+		CRITICAL_ERROR("bad buffers sizes");
+	}
 
 	channels_weights = handle->channels_weights;
 
 	channels_weights_1 =  channels_weights[0];
 	channels_weights_2 =  channels_weights[1];
 
-	while( data_len--)
+	while( in_data_len1--)
 	{
 		curr_val = (*apCh1In++) * channels_weights_1;
 		curr_val += (*apCh2In++) * channels_weights_2;

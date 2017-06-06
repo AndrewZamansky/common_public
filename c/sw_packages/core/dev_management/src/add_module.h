@@ -2,6 +2,7 @@
 #define __add_module_h__
 
 #include "dev_management_api.h"
+#include "arch.h"
 
 #if (defined(CONFIG_DYNAMIC_DEVICE_TREE) ||  \
 		defined(CONFIG_USE_RUNTIME_DEVICE_CONFIGURATION_BY_PARAMETER_NAMES) || \

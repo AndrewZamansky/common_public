@@ -51,27 +51,37 @@ char downsampling_by_int_module_name[] = "downsampling_by_int";
  *
  * return:
  */
-static void downsampling_by_int_dsp(struct dsp_desc_t *adsp, size_t data_len ,
+static void downsampling_by_int_dsp(struct dsp_desc_t *adsp,
 		struct dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS],
 		struct dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])
 {
 	float *apCh1In  ;
 	float *apCh1Out ;
 	struct DOWNSAMPLING_BY_INT_Instance_t *handle;
+	size_t in_data_len ;
+	size_t out_data_len ;
+	void *p_downsampling_by_int_filter ;
+	size_t factor ;
 
 	handle = adsp->handle;
-
-	if((0 == handle->number_of_filter_coefficients) || (0 == handle->factor) ||
-		(NULL == handle->p_downsampling_by_int_filter))
+	p_downsampling_by_int_filter = handle->p_downsampling_by_int_filter;
+	factor = handle->factor;
+	if((0 == handle->number_of_filter_coefficients) || (0 == factor) ||
+		(NULL == p_downsampling_by_int_filter))
 	{
 		return;
 	}
 
-	apCh1In = in_pads[0]->buff;
-	apCh1Out = out_pads[0].buff;
+	DSP_GET_BUFFER(in_pads[0], &apCh1In, &in_data_len);
+	DSP_GET_BUFFER(&out_pads[0], &apCh1Out, &out_data_len);
+
+	if (in_data_len > (out_data_len / factor) )
+	{
+		CRITICAL_ERROR("bad buffers sizes");
+	}
 
 	downsampling_by_int_function(
-			handle->p_downsampling_by_int_filter, apCh1In, apCh1Out, data_len);
+			p_downsampling_by_int_filter, apCh1In, apCh1Out, in_data_len);
 
 }
 

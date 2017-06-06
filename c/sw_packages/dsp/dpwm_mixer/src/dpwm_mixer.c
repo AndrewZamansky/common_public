@@ -49,29 +49,47 @@ char dpwm_mixer_module_name[] = "dpwm_mixer";
  *
  * return:
  */
-void dpwm_mixer_dsp(struct dsp_desc_t *adsp , size_t data_len ,
+void dpwm_mixer_dsp(struct dsp_desc_t *adsp,
 		struct dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] ,
 		struct dsp_pad_t  out_pads[MAX_NUM_OF_OUTPUT_PADS])
 {
-	float *apCh1In ,  *apCh2In;
+	float *apCh1In;
+	float *apCh2In;
+	size_t in_data_len1 ;
+	size_t in_data_len2 ;
+	size_t out_data_len ;
 	struct DPWM_MIXER_Instance_t *handle;
 	uint8_t enable_test_clipping;
 	float max_out_val ;
 	float *pTxBuf;
+	float inVal1;
+	float inVal2;
+	uint32_t i;
 
 	handle = adsp->handle;
+
+	DSP_GET_BUFFER(in_pads[0], &apCh1In, &in_data_len1);
+	DSP_GET_BUFFER(in_pads[1], &apCh2In, &in_data_len2);
+	DSP_GET_BUFFER(&out_pads[0], &pTxBuf, &out_data_len);
+
+	if (in_data_len1 != in_data_len2 )
+	{
+		CRITICAL_ERROR("bad input buffer size");
+	}
+
+	if (out_data_len < (in_data_len1 + in_data_len2) )
+	{
+		CRITICAL_ERROR("output buffer is too small");
+	}
 
 	max_out_val = handle->max_out_val;
 	enable_test_clipping = handle->enable_test_clipping;
 
 
-	pTxBuf = out_pads[0].buff;
+	inVal1 = 0;
+	inVal2 = 0;
 
-	apCh1In = in_pads[0]->buff;
-	apCh2In = in_pads[1]->buff;
-
-
-	for( ; data_len ;data_len--)
+	for ( i = 0; i < in_data_len1; i++)
 	{
 		if(enable_test_clipping)
 		{
@@ -89,21 +107,18 @@ void dpwm_mixer_dsp(struct dsp_desc_t *adsp , size_t data_len ,
 			}
 		}
 
-		*pTxBuf = (*apCh1In++);
+		inVal1 = (*apCh1In++);
+		*pTxBuf = inVal1;
 		pTxBuf++;
 
-		*pTxBuf = (*apCh2In++);
+		inVal2 = (*apCh2In++);
+		*pTxBuf = inVal2;
 		pTxBuf++;
-
 
 	}
 
 	handle->max_out_val = max_out_val;
-
-
 }
-
-
 
 
 
@@ -116,6 +131,7 @@ uint8_t dpwm_mixer_ioctl(struct dsp_desc_t *adsp,
 		uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
 {
 	struct DPWM_MIXER_Instance_t *handle;
+	uint32_t additional_samples_number;
 
 	handle = adsp->handle;
 

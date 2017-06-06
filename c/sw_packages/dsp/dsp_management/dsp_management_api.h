@@ -40,7 +40,9 @@ typedef enum
 {
 	DSP_OUT_PAD_TYPE_NOT_USED  = 0,
 	DSP_OUT_PAD_TYPE_NORMAL   ,
-	DSP_OUT_PAD_TYPE_NOT_ALLOCATED_BUFFER ,
+	DSP_PAD_TYPE_DUMMY_ZERO_BUFFER ,
+	DSP_PAD_TYPE_CHAIN_INPUT_BUFFER ,
+	DSP_PAD_TYPE_CHAIN_OUTPUT_BUFFER ,
 }DSP_PAD_TYPE_t;
 
 typedef enum
@@ -52,6 +54,7 @@ typedef enum
 
 struct dsp_pad_t {
 	float *buff;
+	size_t buff_size;
 	uint8_t pad_type;
 	uint8_t total_registered_sinks;
 	uint8_t sinks_processed_counter;
@@ -61,7 +64,7 @@ struct dsp_pad_t {
 
 typedef uint8_t (*dsp_ioctl_func_t)(struct dsp_desc_t *dsp,
 		 uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2)  ;
-typedef void (*dsp_func_t)(struct dsp_desc_t *dsp, size_t data_len ,
+typedef void (*dsp_func_t)(struct dsp_desc_t *dsp,
 		struct dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS],
 		struct dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS] )  ;
 
@@ -134,9 +137,11 @@ uint8_t DSP_CREATE_MODULE_TO_CHAIN_OUTPUT_LINK(struct dsp_chain_t *ap_chain,
 		DSP_OUTPUT_PADS_t src_dsp_pad);
 
 void DSP_SET_CHAIN_INPUT_BUFFER(struct dsp_chain_t *ap_chain,
-				DSP_INPUT_PADS_t sink_dsp_pad, void *buffer);
+						DSP_INPUT_PADS_t sink_dsp_pad,
+						void *buffer, size_t buff_size );
 void DSP_SET_CHAIN_OUTPUT_BUFFER(struct dsp_chain_t *ap_chain,
-				DSP_OUTPUT_PADS_t src_dsp_pad, void *buffer);
+						DSP_OUTPUT_PADS_t output_dsp_pad,
+						void *buffer, size_t buff_size);
 
 struct dsp_chain_t *DSP_CREATE_CHAIN(size_t max_num_of_dsp_modules ,
 											void *adsp_buffers_pool);
@@ -144,6 +149,8 @@ void DSP_DELETE_CHAIN(struct dsp_chain_t * ap_chain);
 void DSP_ADD_MODULE_TO_CHAIN(struct dsp_chain_t *ap_chain,
 		char *a_module_name,  struct dsp_desc_t *dsp_module);
 
-void DSP_PROCESS_CHAIN(struct dsp_chain_t *ap_chain , size_t	len );
+void DSP_GET_BUFFER(struct dsp_pad_t *pad, float **buff, size_t *buff_len);
+
+void DSP_PROCESS_CHAIN(struct dsp_chain_t *ap_chain);
 
 #endif

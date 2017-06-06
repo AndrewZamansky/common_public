@@ -54,19 +54,40 @@ char I2S_splitter_module_name[] = "I2S_splitter";
  *
  * return:
  */
-void I2S_splitter_dsp(struct dsp_desc_t *adsp , size_t data_len ,
+void I2S_splitter_dsp(struct dsp_desc_t *adsp,
 		struct dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] ,
 		struct dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])
 {
-	float *apCh1Out ,  *apCh2Out;
-
-
-	apCh1Out = out_pads[0].buff;
-	apCh2Out = out_pads[1].buff;
-	float normalizer = 1.0/((float)(FLOAT_NORMALIZER));
+	float *apCh1Out;
+	float *apCh2Out;
+	size_t in_data_len;
+	size_t out_data_len1 ;
+	size_t out_data_len2 ;
 	buffer_type_t *pRxBuf;
-	pRxBuf = (buffer_type_t *)in_pads[0]->buff;
-	for( ; data_len ;data_len--)
+	float normalizer;
+
+	DSP_GET_BUFFER(in_pads[0], (float**)&pRxBuf, &in_data_len);
+	DSP_GET_BUFFER(&out_pads[0], &apCh1Out, &out_data_len1);
+	DSP_GET_BUFFER(&out_pads[1], &apCh2Out, &out_data_len2);
+
+	if (out_data_len1 != out_data_len2 )
+	{
+		CRITICAL_ERROR("bad output buffer size");
+	}
+
+
+	if  (sizeof(buffer_type_t) != 2 )
+	{
+		CRITICAL_ERROR("TODO");
+	}
+
+	if (in_data_len != out_data_len1 )
+	{
+		CRITICAL_ERROR("bad input buffer size");
+	}
+
+	normalizer = 1.0/((float)(FLOAT_NORMALIZER));
+	while(in_data_len--)
 	{
 		*apCh1Out++ = ((float) (*pRxBuf++)) * normalizer;//  pRxBuf[2*j ];
 		*apCh2Out++ = ((float) (*pRxBuf++)) * normalizer;//  pRxBuf[2*j + 1];

@@ -3,7 +3,8 @@
 #define _dev_management_api_h_
 
 
-#include "src/_dev_management_prerequirements_check.h"
+#include "_project_typedefs.h"
+#include "_project_defines.h"
 #include "dev_common_ioctl_and_types.h"
 
 #define NOT_FOR_SAVE 	0
