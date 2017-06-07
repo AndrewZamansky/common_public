@@ -30,8 +30,9 @@ struct dma_i94xxx_runtime_t {
 	uint8_t	*buff[NUM_OF_BUFFERS];
 	uint8_t	buff_status[NUM_OF_BUFFERS];
 	uint8_t   dma_peripheral_direction;
-	uint32_t   buff_size_in_transfer_words;
-	uint8_t	   need_external_restart;
+	uint32_t  buff_size_in_transfer_words;
+	uint8_t	  needed_manual_dma_start;
+	uint8_t	  prefilled_buffers;
 
 };
 
