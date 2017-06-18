@@ -9,8 +9,11 @@
 /**********  defines ************/
 
 #ifdef _MSC_VER/* in case we are using microsoft compiler*/
-	#pragma section("init_function_object_section$b", read)/* $a will be begining $c will be end of auto init functions*/
-	#define AUTO_INIT_FUNCTION_PLACEMENT	 __declspec(dllexport) __declspec(align(8)) __declspec(allocate("init_function_object_section$b"))
+	/* $a will be begining $c will be end of auto init functions*/
+	#pragma section("init_function_object_section$b", read)
+	#define AUTO_INIT_FUNCTION_PLACEMENT	 				\
+				__declspec(dllexport) __declspec(align(8)) 	\
+				__declspec(allocate("init_function_object_section$b"))
 #else
 
 
@@ -29,8 +32,9 @@ typedef struct
 	auto_init_func_t 	auto_init_func;
 }auto_init_struct_t;
 
-#define AUTO_INIT_FUNCTION(func)  \
-		auto_init_struct_t AUTO_INIT_FUNCTION_PLACEMENT auto_init_##func = { (int*)AUTO_INIT_MAGIC_NUMBER , func}
+#define AUTO_INIT_FUNCTION(func)  						\
+		auto_init_struct_t AUTO_INIT_FUNCTION_PLACEMENT \
+		auto_init_##func = { (int*)AUTO_INIT_MAGIC_NUMBER , func}
 
 
 /**********  define API  types ************/

@@ -1,0 +1,8 @@
+menu "apq8096 soc configuration"
+
+comment "selecting hexagon v60"
+config SOC_APQ8096
+	def_bool y
+	select HEXAGON_VERSION_60 
+
+endmenu

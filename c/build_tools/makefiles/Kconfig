@@ -63,6 +63,16 @@ endchoice
 endif
 
 
+##### HEXAGON  #########
+if HEXAGON
+
+config HEXAGON_COMPILER
+	def_bool  y
+
+endif
+
+
+
 ##### HOST  #########
 if HOST
 
@@ -103,6 +113,11 @@ endif
 
 if MICROSOFT_COMPILER
 source "$COMMON_DIR_PATH/c/build_tools/makefiles/microsoft_compiler/Kconfig"
+endif
+
+
+if HEXAGON_COMPILER
+source "$COMMON_DIR_PATH/c/build_tools/makefiles/clang/Kconfig"
 endif
 
 

@@ -1,0 +1,23 @@
+menu "clang options"
+
+
+choice
+	prompt "Optimization Level"
+	default GCC_OPTIMIZE_NONE
+
+config GCC_OPTIMIZE_NONE
+	bool "-O0 : No Optimizations"
+
+config GCC_OPTIMIZE_SIZE
+    bool "-Os : Optimize for size "
+
+config GCC_OPTIMIZE_SPEED
+	bool "-O2 : Optimize for speed "
+
+config GCC_OPTIMIZE_ULTRA_SPEED
+	bool "-O3 : Optimize for ultra-speed but can increase code-size "
+
+endchoice
+
+
+endmenu

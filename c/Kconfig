@@ -20,6 +20,9 @@ config STM8
 config AVR
 	bool "avr"
 
+config HEXAGON
+	bool "hexagon"
+
 config HOST
 	bool "host"
 

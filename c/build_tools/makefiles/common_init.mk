@@ -299,6 +299,8 @@ ifeq ($(findstring menuconfig,$(MAKECMDGOALS)),) #dont enter if we are bulding .
         include $(MAKEFILES_ROOT_DIR)/gcc/gcc_avr_init.mk
     else ifdef CONFIG_STM8
         include $(MAKEFILES_ROOT_DIR)/cxstm8/cxstm8_init.mk
+    else ifdef CONFIG_HEXAGON
+        include $(MAKEFILES_ROOT_DIR)/clang/clang_hexagon_init.mk
     else ifdef CONFIG_HOST
         ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
             ifdef CONFIG_MIN_GW_GCC

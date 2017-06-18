@@ -133,7 +133,8 @@
 
 
 #ifndef CONFIG_DYNAMIC_DEVICE_TREE
-	struct dev_desc_t  * DT_DEV_NAME = P_TO_STATIC_DEVICE_INST(DT_DEV_NAME);
+	DEVICE_PLACEMENT struct dev_desc_t  * DT_DEV_NAME =
+								P_TO_STATIC_DEVICE_INST(DT_DEV_NAME);
 #endif
 
 #undef	DT_DEV_MODULE

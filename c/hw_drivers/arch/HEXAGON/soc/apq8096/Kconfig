@@ -1,0 +1,19 @@
+menu "`--->  apq8096 board configurations"
+
+choice
+	prompt "Board"
+	default NUC505_EB
+
+config OPENQ_820_SOM
+	bool "open-Q 820 SOM"
+
+endchoice
+
+if OPENQ_820_SOM
+source "$COMMON_DIR_PATH/c/hw_drivers/arch/HEXAGON/soc/apq8096/Kconfig.openq820som.dt"
+endif
+
+
+
+endmenu
+

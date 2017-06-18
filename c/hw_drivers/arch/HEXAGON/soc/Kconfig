@@ -1,0 +1,20 @@
+
+
+choice
+	prompt "SOC"
+	default APQ8096
+
+config APQ8096
+	bool "Snapdragon 820 apq8096"
+
+endchoice
+
+
+if APQ8096
+source "$COMMON_DIR_PATH/c/hw_drivers/arch/HEXAGON/soc/apq8096/Kconfig"
+endif
+
+
+config HEXAGON_VERSION_60
+    bool
+    default n

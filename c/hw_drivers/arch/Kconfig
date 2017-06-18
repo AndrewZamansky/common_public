@@ -17,6 +17,14 @@ source "$COMMON_DIR_PATH/c/hw_drivers/arch/PIC32/soc/Kconfig"
 endif
 
 
+if HEXAGON
+source "$COMMON_DIR_PATH/c/hw_drivers/arch/HEXAGON/soc/Kconfig"
+endif
+
+
+
+if !HEXAGON
+
 
 menu "memories configuration"
 
@@ -132,5 +140,7 @@ config EXCEPTION_STACKS_DEBUG
     default n
 
 
+
+endif #### (if !HEXAGON)
 
 endmenu
