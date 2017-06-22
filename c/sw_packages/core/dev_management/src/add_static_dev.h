@@ -133,8 +133,9 @@
 
 
 #ifndef CONFIG_DYNAMIC_DEVICE_TREE
-	DEVICE_PLACEMENT struct dev_desc_t  * DT_DEV_NAME =
-								P_TO_STATIC_DEVICE_INST(DT_DEV_NAME);
+	/* dont put DEVICE_PLACEMENT here as it can be __attribute__(section)
+	 * and it will put pointer itself into this section */
+	struct dev_desc_t  * DT_DEV_NAME =	P_TO_STATIC_DEVICE_INST(DT_DEV_NAME);
 #endif
 
 #undef	DT_DEV_MODULE

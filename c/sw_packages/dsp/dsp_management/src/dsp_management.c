@@ -547,6 +547,10 @@ void DSP_SET_CHAIN_OUTPUT_BUFFER(struct dsp_chain_t *ap_chain,
 	struct dsp_pad_t *p_curr_out_pad_of_source;
 
 	p_curr_out_pad_of_source = ap_chain->chain_out_pads[output_dsp_pad];
+	if (NULL == p_curr_out_pad_of_source)
+	{
+		CRITICAL_ERROR("source pad not connected");
+	}
 	p_curr_out_pad_of_source->buff = (float*)buffer;
 	p_curr_out_pad_of_source->buff_size = buff_size;
 }

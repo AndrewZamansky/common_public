@@ -131,7 +131,6 @@ uint8_t dpwm_mixer_ioctl(struct dsp_desc_t *adsp,
 		uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
 {
 	struct DPWM_MIXER_Instance_t *handle;
-	uint32_t additional_samples_number;
 
 	handle = adsp->handle;
 
