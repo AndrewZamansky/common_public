@@ -52,8 +52,6 @@ DRIVERS_ROOT_DIR := $(COMMON_ROOT_DIR)/hw_drivers
 SW_PACKAGES_ROOT_DIR := $(COMMON_ROOT_DIR)/sw_packages
 
 AUTO_GENERATED_FILES_DIR := $(APP_ROOT_DIR)/z_auto_generated_files
-OBJ_DIR    := $(APP_ROOT_DIR)/zOBJ
-OUT_DIR    :=    $(APP_ROOT_DIR)/zOUT
 OUT_DIR_HISTORY    :=    $(APP_ROOT_DIR)/zOUT_history
 
 MKDIR=mkdir    
@@ -172,7 +170,18 @@ ifeq ($(findstring menuconfig,$(MAKECMDGOALS)),)
 
     include .config
 
-    PROJECT_NAME :=$(patsubst "%",%,$(CONFIG_PROJECT_NAME))
+    CONFIG_PROJECT_NAME :=$(strip $(CONFIG_PROJECT_NAME))
+    CONFIG_PROJECT_NAME :=$(patsubst "%",%,$(CONFIG_PROJECT_NAME))
+    CONFIG_PROJECT_NAME_SUFFIX :=$(strip $(CONFIG_PROJECT_NAME_SUFFIX))
+    CONFIG_PROJECT_NAME_SUFFIX :=$(patsubst "%",%,$(CONFIG_PROJECT_NAME_SUFFIX))
+
+    PROJECT_NAME :=$(CONFIG_PROJECT_NAME)
+    ifeq (,$(CONFIG_PROJECT_NAME_SUFFIX))
+        FULL_PROJECT_NAME :=$(CONFIG_PROJECT_NAME)
+    else
+        FULL_PROJECT_NAME :=$(CONFIG_PROJECT_NAME)_$(CONFIG_PROJECT_NAME_SUFFIX)
+    endif
+
     ifeq ($(PROJECT_NAME),)      # if $(PROJECT_NAME) is empty
         $(info error : project have to be named set CONFIG_PROJECT_NAME in .config or using menuconfig)
         $(error )
@@ -199,8 +208,11 @@ ifeq ($(findstring menuconfig,$(MAKECMDGOALS)),)
 endif
 
 ifneq ($(REDEFINE_OUTPUT_DIR),)
-    OBJ_DIR :=$(REDEFINE_OUTPUT_DIR)/$(PROJECT_NAME)/zOBJ
-    OUT_DIR :=$(REDEFINE_OUTPUT_DIR)/$(PROJECT_NAME)/zOUT
+    OBJ_DIR :=$(REDEFINE_OUTPUT_DIR)/$(FULL_PROJECT_NAME)/zOBJ
+    OUT_DIR :=$(REDEFINE_OUTPUT_DIR)/$(FULL_PROJECT_NAME)/zOUT
+else
+    OBJ_DIR    :=$(APP_ROOT_DIR)/zOBJ
+    OUT_DIR    :=$(APP_ROOT_DIR)/zOUT    
 endif
 
 ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)

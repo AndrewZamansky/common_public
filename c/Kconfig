@@ -3,7 +3,17 @@
 config PROJECT_NAME
 	string "Project Name"
 	default ""
-    
+
+menuconfig PROJECT_IS_PART_OF_BUNDLE
+	bool "this project is part of bundle"
+	default n
+
+config PROJECT_NAME_SUFFIX
+	string "Project Name Suffix"
+	depends on PROJECT_IS_PART_OF_BUNDLE
+	default ""
+
+
 choice
 	prompt "Architecture"
 	default HOST

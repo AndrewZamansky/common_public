@@ -45,7 +45,7 @@ else
 endif
 ifdef CONFIG_COMPILE_FOR_DEBUG
     GLOBAL_CFLAGS += -g
-    GLOBAL_CFLAGS += -v
+    #GLOBAL_CFLAGS += -v
 else
     $(error TODO)
 endif

@@ -14,8 +14,10 @@
 	#define AUTO_INIT_FUNCTION_PLACEMENT	 				\
 				__declspec(dllexport) __declspec(align(8)) 	\
 				__declspec(allocate("init_function_object_section$b"))
-#else
+#elif defined(CONFIG_HEXAGON_COMPILER)
 
+	#define AUTO_INIT_FUNCTION_PLACEMENT	 	\
+							__attribute__((section("auto_init_section")))
 
 //	#define AUTO_INIT_FUNCTION_PLACEMENT	const
 //	#define DEVICE_DATA_PLACEMENT

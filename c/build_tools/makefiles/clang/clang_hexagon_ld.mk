@@ -13,9 +13,9 @@ endif
 LDFLAGS += -O0 
 LDFLAGS += -mG0lib 
 LDFLAGS += -G0 
-LDFLAGS += -v 
-LDFLAGS := $(GLOBAL_LDFLAGS) $(LDFLAGS)
-LDFLAGS_SO += -Wl,-Map=$(OUT_DIR)/$(OUTPUT_APP_NAME).map
+#LDFLAGS += -v 
+LDFLAGS += $(GLOBAL_LDFLAGS)
+LDFLAGS += -Wl,-Map=$(OUT_DIR)/$(OUTPUT_APP_NAME).map
 
 LDFLAGS_SO += -fpic 
 LDFLAGS_SO += -shared 
@@ -73,54 +73,25 @@ include $(MAKEFILES_INC_FUNC_DIR)/add_item_list_to_file_in_one_line.mk
 #}}}}}}}}  END OF CREATING OBJECT LIST  }}}}}}}}
 
 
-#{{{{{{{{  CREATING OBJECT LIST {{{{{{{{
-
-rwildcard=$(wildcard $1$2) $(foreach d,$(filter-out %/main_sim,$(wildcard $1*)),$(call rwildcard,$d/,$2))
-
-ALL_OBJ_FILES_SO = $(call rwildcard,$(OBJ_DIR)/,*.o)
-ALL_OBJ_FILES_SO += $(call rwildcard,$(OBJ_DIR)/,*.oo)
-ALL_OBJ_FILES_SO += $(call rwildcard,$(OBJ_DIR)/,*.o.asm)
-ALL_OBJ_FILES_SO += $(call rwildcard,$(OBJ_DIR)/,*.O.asm)
-#some time, on windows, scan for .O.asm and .o.asm will generate duplicate files
-#so $(sort) will eliminate duplication
-ALL_OBJ_FILES_SO :=$(sort $(ALL_OBJ_FILES_SO))
-ALL_OBJ_FILES_SO :=$(subst \,/,$(ALL_OBJ_FILES_SO))
-
-ALL_OBJECTS_LIST_FILE_SO:=$(OUT_DIR)\objects_so.txt
-
-#create file with list of objects
-LIST_FILE_NAME_TRUNCATE :=$(ALL_OBJECTS_LIST_FILE_SO)
-PREFIX_FOR_EACH_ITEM :=
-ITEMS := $(ALL_OBJ_FILES_SO)
-include $(MAKEFILES_INC_FUNC_DIR)/add_item_list_to_file_in_one_line.mk
-#end of file creation
-
-#}}}}}}}}  END OF CREATING OBJECT LIST  }}}}}}}}
-
 
 #{{{{{{{{  DEFINING OUTPUTS {{{{{{{{
 
-LINKER_OUTPUT_SO := $(OUT_DIR)/$(OUTPUT_APP_NAME).so
- #OUTPUT_ASM_SO :=  $(OUT_DIR)/$(OUTPUT_APP_NAME).asm
-
-ifdef CONFIG_COMPILE_FOR_SIMULATION
-    LINKER_OUTPUT := $(OUT_DIR)/$(OUTPUT_APP_NAME)_for_sim
-endif
-
-
+LINKER_OUTPUT := $(OUT_DIR)/$(OUTPUT_APP_NAME)
 HISTORY_OUT_PREFIX :=$(OUT_DIR_HISTORY)/$(PROJECT_NAME)_$(MAIN_VERSION_STR)
-
-LINKER_HISTORY_OUTPUT_SO := $(HISTORY_OUT_PREFIX).so
-
-ifdef CONFIG_COMPILE_FOR_SIMULATION
-    LINKER_HISTORY_OUTPUT := $(HISTORY_OUT_PREFIX)
+ifdef CONFIG_CLANG_OUTPUT_TYPE_DYNAMIC_LIBRARY
+    LINKER_OUTPUT :=$(LINKER_OUTPUT).so
+    HISTORY_OUT_PREFIX :=$(HISTORY_OUT_PREFIX).so
+else ifdef CONFIG_CLANG_OUTPUT_TYPE_APPLICATION
+    #do nothing for now
+else
+    $(error ---- unknown output type ----)
 endif
+#OUTPUT_ASM :=  $(OUT_DIR)/$(OUTPUT_APP_NAME).asm
+
 
 ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
     LINKER_OUTPUT := $(subst /,\,$(LINKER_OUTPUT))
     LINKER_HISTORY_OUTPUT := $(subst /,\,$(LINKER_HISTORY_OUTPUT))
-    LINKER_OUTPUT_SO := $(subst /,\,$(LINKER_OUTPUT_SO))
-    LINKER_HISTORY_OUTPUT_SO := $(subst /,\,$(LINKER_HISTORY_OUTPUT_SO))
     OUTPUT_CRC32 := $(subst /,\,$(OUTPUT_CRC32))
 endif
 
@@ -131,7 +102,7 @@ endif
 #}}}}}}}}  END OF DEFINING OUTPUTS  }}}}}}}}
 
 
-ifdef CONFIG_COMPILE_FOR_SIMULATION
+ifdef CONFIG_CLANG_OUTPUT_TYPE_APPLICATION
     
     LINKER_CMD =$(LD) $(LDFLAGS)  $(LIBRARIES_DIRS) 
     LINKER_CMD += -Wl,--start-group -Wl,--whole-archive
@@ -147,32 +118,25 @@ ifdef CONFIG_COMPILE_FOR_SIMULATION
     LINKER_CMD += $(APQ8096_SRC_DIR)/common/a1std/ship/hexagon_Debug_dynamic/a1std.a
     LINKER_CMD += $(APQ8096_SRC_DIR)/audio/voice_imc_utils/ship/hexagon_Debug_dynamic/voice_imc_utils.a
     LINKER_CMD += @$(ALL_OBJECTS_LIST_FILE) -Wl,--end-group -o $(LINKER_OUTPUT)
-    
+
+else ifdef CONFIG_CLANG_OUTPUT_TYPE_DYNAMIC_LIBRARY 
+   
+   LINKER_CMD =$(LD) $(LDFLAGS) $(LDFLAGS_SO) $(LIBRARIES_DIRS)
+    ifdef CONFIG_HEXAGON_VERSION_60
+        LINKER_CMD += -L$(HEXAGON_ROOT_DIR)/target/hexagon/lib/v60/G0/pic
+    endif
+    LINKER_CMD += @$(ALL_OBJECTS_LIST_FILE) $(LIBS) -o $(LINKER_OUTPUT)
+ 
 endif
 
 
-LINKER_CMD_SO =$(LD) $(LDFLAGS) $(LDFLAGS_SO) $(LIBRARIES_DIRS)
-ifdef CONFIG_HEXAGON_VERSION_60
-    LINKER_CMD_SO += -L$(HEXAGON_ROOT_DIR)/target/hexagon/lib/v60/G0/pic
-endif
-LINKER_CMD_SO += @$(ALL_OBJECTS_LIST_FILE_SO) $(LIBS) -o $(LINKER_OUTPUT_SO)
 
 #	$(FULL_GCC_PREFIX)objdump -d -S $(LINKER_OUTPUT) > $(OUTPUT_ASM)
 
 build_outputs :
-	$(LINKER_CMD_SO)
-	$(CP)  $(LINKER_OUTPUT_SO) $(LINKER_HISTORY_OUTPUT_SO)
-ifeq ($(findstring y,$(CONFIG_CALCULATE_CRC32)),y)
-	$(CRC32CALC) $(OUTPUT_BIN) > $(OUTPUT_CRC32)
-endif
-ifdef CONFIG_COMPILE_FOR_SIMULATION
 	$(LINKER_CMD)
 	$(CP)  $(LINKER_OUTPUT) $(LINKER_HISTORY_OUTPUT)
-	@echo ------------
-	@echo !!!  TO LAUNCH SIMULATION : COPY CONFIG FILES, INPUT , OPEN COMMAND SHELL AND RUN :
-	@echo !!!  1) COPY CONFIG FILES, INPUT FILES , ETC. , INTO $(OUT_DIR)
-	@echo !!!  2) OPEN COMMAND SHELL AND RUN :
-	@echo $(HEXAGON_ROOT_DIR)/bin/hexagon-sim -mv60 --simulated_returnval --usefs $(OUT_DIR) --pmu_statsfile $(OUT_DIR)/pmu_stats.txt $(LINKER_OUTPUT)
-	@echo ------------
+ifeq ($(findstring y,$(CONFIG_CALCULATE_CRC32)),y)
+	$(CRC32CALC) $(OUTPUT_BIN) > $(OUTPUT_CRC32)
 endif
 	

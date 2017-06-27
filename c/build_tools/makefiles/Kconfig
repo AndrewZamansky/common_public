@@ -135,13 +135,4 @@ config COMPILE_FOR_DEBUG
 	default y
 
 
-if HEXAGON
-
-config COMPILE_FOR_SIMULATION
-	bool   "compile for simulation"
-	default n
-
-endif
-
-
 endmenu

@@ -8,6 +8,9 @@ ifeq ($(strip $(CONFIG_PROJECT_NAME)),)
     $(error PROJECT_NAME not found or is empty)
 endif
 
+CONFIG_PROJECT_NAME :=$(strip $(CONFIG_PROJECT_NAME))
+CONFIG_PROJECT_NAME_SUFFIX :=$(strip $(CONFIG_PROJECT_NAME_SUFFIX))
+
 # to improve speed of unique name recursive test in all subdirectoris ,
 # following list of files will stop the recursivity of rwildcard function
 # and files from this list will not be tested for "$(filename)/.config" pattern
@@ -28,8 +31,14 @@ ALL_CONFIG_FILES := $(strip $(ALL_CONFIG_FILES))
 TEST_MK :=$(MAKEFILES_ROOT_DIR)/_prebuild_check_unique_project_name.mk
 INCLUDE_ALL_CONFIG_FILES :=$(patsubst %,% $(TEST_MK),$(ALL_CONFIG_FILES))
 
-CURR_PROJECT_NAME :=$(CONFIG_PROJECT_NAME)
+ifeq (,$(CONFIG_PROJECT_NAME_SUFFIX))
+   FULL_CURR_PROJECT_NAME :=$(CONFIG_PROJECT_NAME)
+else
+   FULL_CURR_PROJECT_NAME :=$(CONFIG_PROJECT_NAME)_$(CONFIG_PROJECT_NAME_SUFFIX)
+endif
+
 CONFIG_PROJECT_NAME:=dummy_1X2Y
+CONFIG_PROJECT_NAME_SUFFIX:=dummy_1X2Y
 include $(INCLUDE_ALL_CONFIG_FILES)
 
 all :
