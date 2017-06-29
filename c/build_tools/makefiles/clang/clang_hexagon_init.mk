@@ -5,7 +5,7 @@ ifndef COMMON_INIT_SECTION_THAT_SHOULD_RUN_ONCE
 
 HEXAGON_ROOT_DIR :=
 
-####### test for existence of microsoft compiler and put its directory name in MSVC_ROOT_DIR #####
+####### test for existence of hexagon compiler and put its directory name in HEXAGON_ROOT_DIR #####
 SEARCHED_TOOL:=hexagon-clang
 SEARCHED_DIR_VARIABLE:=HEXAGON_ROOT_DIR
 MANUALLY_DEFINED_DIR_VARIABLE:=REDEFINE_HEXAGON_ROOT_DIR
