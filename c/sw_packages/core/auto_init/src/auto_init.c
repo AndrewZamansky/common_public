@@ -28,13 +28,14 @@ void auto_init_api(void)
 	auto_init_struct_t *p_curr_auto_init;
 	auto_init_struct_t *p_end_of_auto_init;
 
+
 #if !defined(CONFIG_HEXAGON_COMPILER) && !defined(CONFIG_ANDROID_NDK)
 	#pragma message( "change to __start_auto_init_section in " __FILE__ )
 	p_curr_auto_init = (auto_init_struct_t *)&init_functions_section_start;
 	p_end_of_auto_init = (auto_init_struct_t *)&init_functions_section_end;
 #else
-	p_curr_auto_init = (auto_init_struct_t *)__start_auto_init_section;
-	p_end_of_auto_init = (auto_init_struct_t *)__stop_auto_init_section;
+	p_curr_auto_init = (auto_init_struct_t *)&__start_auto_init_section;
+	p_end_of_auto_init = (auto_init_struct_t *)&__stop_auto_init_section;
 #endif
 
 	while(p_curr_auto_init < p_end_of_auto_init)
