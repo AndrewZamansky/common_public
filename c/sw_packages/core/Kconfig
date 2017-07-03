@@ -12,6 +12,7 @@ endif
 
 config INCLUDE_VERSION_MENAGMENT
 	bool   "version management"
+	select INCLUDE_DEV_MENAGMENT
 	default y
 
 menuconfig INCLUDE_HEARTBEAT
@@ -27,7 +28,7 @@ endif
 
 
 menu "RT OS"
-depends on !GCC_TARGET_OS_LINUX && !HOST
+depends on !GCC_TARGET_OS_LINUX && !HOST && !ANDROID_NDK
 source "$COMMON_DIR_PATH/c/sw_packages/core/os_wrapper/Kconfig"
 
 

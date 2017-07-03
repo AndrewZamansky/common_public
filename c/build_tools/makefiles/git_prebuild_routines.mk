@@ -1,6 +1,10 @@
 
-DEFAULT_GIT_IGNORE_FILE    :=    $(COMMON_ROOT_DIR)/build_tools/default.project.gitignore
-CURRENT_GIT_IGNORE_FILE    :=    $(APP_ROOT_DIR)/.gitignore
+DEFAULT_GIT_IGNORE_FILE :=$(COMMON_ROOT_DIR)/build_tools/default.project.gitignore
+CURRENT_GIT_IGNORE_FILE :=$(APP_ROOT_DIR)/.gitignore
+ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
+    DEFAULT_GIT_IGNORE_FILE := $(subst /,\,$(DEFAULT_GIT_IGNORE_FILE))
+    CURRENT_GIT_IGNORE_FILE := $(subst /,\,$(CURRENT_GIT_IGNORE_FILE))
+endif
 
 GIT_ROOT_DIR:=
 

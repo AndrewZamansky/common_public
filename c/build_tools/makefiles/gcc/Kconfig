@@ -44,6 +44,39 @@ config USED_FOR_SEMIHOSTING_UPLOADING
 
 endif
 
+
+##### ANDROID_NDK_COMPILER  #########
+if ANDROID_NDK_COMPILER
+
+choice
+	prompt "gcc architecture"
+	default ANDROID_NDK_ARCH_ARM
+
+config ANDROID_NDK_ARCH_ARM
+	bool "arm"
+config ANDROID_NDK_ARCH_ARM64
+	bool "aarch64"
+config ANDROID_NDK_ARCH_MIPS
+	bool "mips"
+config ANDROID_NDK_ARCH_MIPS64
+	bool "mips64"
+endchoice
+
+choice
+	prompt "gcc version of ndk"
+	default ANDROID_NDK_GCC_4_9
+
+config ANDROID_NDK_GCC_4_6
+	bool "4.6"
+config ANDROID_NDK_GCC_4_8
+	bool "4.8"
+config ANDROID_NDK_GCC_4_9
+	bool "4.9"
+endchoice
+
+endif
+
+
 ##### HOST  #########
 if HOST
 
@@ -75,6 +108,21 @@ config PIC32_C32_VERSION
 
 endif
 
+
+if ANDROID_NDK_COMPILER
+
+choice
+	prompt "output type"
+	default GCC_OUTPUT_TYPE_APPLICATION
+
+config GCC_OUTPUT_TYPE_APPLICATION
+	bool "application"
+
+config GCC_OUTPUT_TYPE_DYNAMIC_LIBRARY
+	bool "dynamic library"
+endchoice
+
+endif
 
 
 choice

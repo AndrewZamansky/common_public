@@ -48,3 +48,9 @@ define ADD_TO_GLOBAL_LIBRARIES_PATH =
 endef
 #usage :
 #    DUMMY := $(call ADD_TO_GLOBAL_LIBRARIES_PATH , var )
+
+define ADD_TO_GLOBAL_ARCHIVES =
+    $(eval GLOBAL_ARCHIVES := $(GLOBAL_ARCHIVES) $(1))
+endef
+#usage :
+#    DUMMY := $(call ADD_TO_GLOBAL_ARCHIVES , var )

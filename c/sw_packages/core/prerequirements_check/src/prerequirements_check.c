@@ -4,8 +4,6 @@
  *
  *
  *
- *
- *
  */
 
 
@@ -13,7 +11,7 @@
 /********  includes *********************/
 #include "_project.h"
 //#include "dev_management_api.h"
-#if !defined(CONFIG_HOST)
+#if !defined(CONFIG_HOST) && !defined(CONFIG_ANDROID_NDK)
     #include "os_wrapper.h"
 #endif
 #include "global_prerequirements_check.h"
@@ -37,7 +35,7 @@ enum
 //#endif
 
 
-#if !defined(CONFIG_HOST)
+#if !defined(CONFIG_HOST) && !defined(CONFIG_ANDROID_NDK)
 	#ifndef os_stack_test
 		os_stack_test___not_declared_in_shell_config_h=sizeof((int)os_stack_test),
 	#endif

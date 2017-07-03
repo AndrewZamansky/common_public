@@ -20,6 +20,8 @@ else ifdef CONFIG_PIC32
     include $(MAKEFILES_ROOT_DIR)/gcc/gcc_pic32_ld.mk
 else ifdef CONFIG_HEXAGON
     include $(MAKEFILES_ROOT_DIR)/clang/clang_hexagon_ld.mk
+else ifdef CONFIG_ANDROID_NDK
+    include $(MAKEFILES_ROOT_DIR)/gcc/gcc_android_ld.mk
 else ifdef CONFIG_STM8
     include $(MAKEFILES_ROOT_DIR)/cxstm8/cxstm8_ld.mk
 else ifdef CONFIG_HOST

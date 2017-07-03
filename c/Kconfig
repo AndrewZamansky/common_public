@@ -13,6 +13,14 @@ config PROJECT_NAME_SUFFIX
 	depends on PROJECT_IS_PART_OF_BUNDLE
 	default ""
 
+menuconfig OUTPUT_NAME_CHOOSEN_AUTOMATICALLY
+	bool "name of final output is choosen automatically"
+	default y
+
+config REDEFINED_OUTPUT_NAME
+	string "name of final output"
+	depends on !OUTPUT_NAME_CHOOSEN_AUTOMATICALLY
+	default "out"
 
 choice
 	prompt "Architecture"
@@ -32,6 +40,9 @@ config AVR
 
 config HEXAGON
 	bool "hexagon"
+
+config ANDROID_NDK
+	bool "android_ndk"
 
 config HOST
 	bool "host"

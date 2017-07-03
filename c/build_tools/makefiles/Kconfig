@@ -72,6 +72,16 @@ config HEXAGON_COMPILER
 endif
 
 
+##### ANDROID_NDK  #########
+if ANDROID_NDK
+
+config ANDROID_NDK_COMPILER
+	def_bool  y
+
+endif
+
+
+
 
 ##### HOST  #########
 if HOST
@@ -107,7 +117,7 @@ endchoice
 endif
 
 
-if GCC || GPP || MIN_GW_GCC || MIN_GW_GPP || PIC_C32 || PIC_XC32
+if GCC || GPP || MIN_GW_GCC || MIN_GW_GPP || PIC_C32 || PIC_XC32 || ANDROID_NDK_COMPILER
 source "$COMMON_DIR_PATH/c/build_tools/makefiles/gcc/Kconfig"
 endif
 

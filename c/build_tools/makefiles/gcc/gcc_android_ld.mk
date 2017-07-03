@@ -1,14 +1,12 @@
-#{{{{{{{{  DEFINING OUTPUTS {{{{{{{{
-
 ifdef CONFIG_REDEFINED_OUTPUT_NAME
     CONFIG_REDEFINED_OUTPUT_NAME :=$(patsubst "%",%,$(CONFIG_REDEFINED_OUTPUT_NAME))
     OUTPUT_NAME :=$(CONFIG_REDEFINED_OUTPUT_NAME)
     HISTORY_OUTPUT_NAME :=$(CONFIG_REDEFINED_OUTPUT_NAME)_$(MAIN_VERSION_STR).so
 else
-    ifdef CONFIG_CLANG_OUTPUT_TYPE_DYNAMIC_LIBRARY
+    ifdef CONFIG_GCC_OUTPUT_TYPE_DYNAMIC_LIBRARY
         OUTPUT_NAME :=lib$(FULL_PROJECT_NAME).so
         HISTORY_OUTPUT_NAME :=lib$(FULL_PROJECT_NAME)_$(MAIN_VERSION_STR).so
-    else ifdef CONFIG_CLANG_OUTPUT_TYPE_APPLICATION
+    else ifdef CONFIG_GCC_OUTPUT_TYPE_APPLICATION
         OUTPUT_NAME :=$(FULL_PROJECT_NAME)
         HISTORY_OUTPUT_NAME :=$(FULL_PROJECT_NAME)_$(MAIN_VERSION_STR)
     else
@@ -30,33 +28,41 @@ endif
 #}}}}}}}}  END OF DEFINING OUTPUTS  }}}}}}}}
 
 
-
-
 #{{{{{{{{   LDFLAGS PREPARATIONS   {{{{{{{{
 
 #init LDFLAGS
 LDFLAGS :=
 
-ifdef CONFIG_HEXAGON_VERSION_60
-    LDFLAGS += -mv60 
-else
-    $(error unknown hexagon version)
-endif
 
 LDFLAGS += -O0 
-LDFLAGS += -mG0lib 
-LDFLAGS += -G0 
-#LDFLAGS += -v 
 LDFLAGS += $(GLOBAL_LDFLAGS)
-LDFLAGS += -Wl,-Map=$(OUT_DIR)/$(OUTPUT_NAME).map
 
-LDFLAGS_SO += -fpic 
-LDFLAGS_SO += -shared 
-LDFLAGS_SO += -Wl,-Bsymbolic
-LDFLAGS_SO += -Wl,--wrap=malloc -Wl,--wrap=calloc -Wl,--wrap=free 
-LDFLAGS_SO += -Wl,--wrap=realloc -Wl,--wrap=memalign -Wl,--wrap=__stack_chk_fail
-LDFLAGS_SO += -Wl,-soname=$(OUTPUT_NAME)
+ifdef CONFIG_ANDROID_NDK_ARCH_ARM
+    GCC_ARM_ARCH :=armv7-a
+else
+    $(error UNIMPLEMENTED ARCH)
+endif
+LDFLAGS += -march=$(GCC_ARM_ARCH)
 
+LDFLAGS += -Wl,-Map=$(OUT_DIR)/$(OUTPUT_APP_NAME).map
+
+LDFLAGS += -mthumb
+LDFLAGS += -fpie 
+LDFLAGS += -fPIE 
+LDFLAGS += -fPIC 
+LDFLAGS += -pie 
+LDFLAGS += -Wl,-unresolved-symbols=ignore-in-shared-libs
+LDFLAGS += -nostdlib
+
+ifdef CONFIG_GCC_OUTPUT_TYPE_APPLICATION
+    LDFLAGS += -Bdynamic
+    LDFLAGS += -Wl,-llog
+    LDFLAGS += -Wl,-ldl
+endif
+
+LDFLAGS_SO += -nostartfiles
+LDFLAGS_SO += -shared
+LDFLAGS_SO += -Bsymbolc
 
 #}}}}}}}}  END OF LDFLAGS PREPARATIONS }}}}}}}}
 
@@ -69,6 +75,7 @@ ifdef CONFIG_INCLUDE_TOOLCHAIN_LIBRARIES
     STD_LIBRARIES := libc.a
     STD_LIBRARIES +=libm.a libgcc.a libstdc++
     GLOBAL_LIBS += $(STD_LIBRARIES)
+    GLOBAL_LIBS_PATH += $(ANDROID_NDK_ROOT_DIR)/platforms/android-21/arch-arm/usr/lib
 endif
 GLOBAL_LIBS :=$(sort $(GLOBAL_LIBS)) #remove duplicates
 LIBS := $(patsubst lib%,-l%,$(GLOBAL_LIBS))
@@ -108,29 +115,28 @@ include $(MAKEFILES_INC_FUNC_DIR)/add_item_list_to_file_in_one_line.mk
 
 
 
-ifdef CONFIG_CLANG_OUTPUT_TYPE_APPLICATION
+
+
+ifdef CONFIG_GCC_OUTPUT_TYPE_APPLICATION
     
     LINKER_CMD =$(LD) $(LDFLAGS)  $(LIBRARIES_DIRS) 
-    LINKER_CMD += -Wl,--start-group -Wl,--whole-archive
-    ifdef CONFIG_HEXAGON_VERSION_60
-        LINKER_CMD += $(HEXAGON_ROOT_DIR)/target/hexagon/lib/v60/G0/libhexagon.a
-    endif
-    LINKER_CMD += $(LIBS) -Wl,--no-whole-archive -Wl,--end-group
-    LINKER_CMD += -Wl,--start-group
-    LINKER_CMD += -Wl,--dynamic-linker=
-    LINKER_CMD += -Wl,-E
-    LINKER_CMD += -Wl,--force-dynamic
-    LINKER_CMD += $(APQ8096_SRC_DIR)/common/rtld/ship/hexagon_Debug_dynamic/rtld.a
-    LINKER_CMD += $(APQ8096_SRC_DIR)/common/a1std/ship/hexagon_Debug_dynamic/a1std.a
-    LINKER_CMD += $(APQ8096_SRC_DIR)/audio/voice_imc_utils/ship/hexagon_Debug_dynamic/voice_imc_utils.a
-    LINKER_CMD += @$(ALL_OBJECTS_LIST_FILE) -Wl,--end-group -o $(LINKER_OUTPUT)
+    #LINKER_CMD += -Wl,--start-group -Wl,--whole-archive
+    LINKER_CMD += $(ANDROID_NDK_ROOT_DIR)/platforms/android-21/arch-arm/usr/lib/crtbegin_dynamic.o
+    LINKER_CMD += $(ANDROID_NDK_ROOT_DIR)/platforms/android-21/arch-arm/usr/lib/crtend_android.o
+    LINKER_CMD += @$(ALL_OBJECTS_LIST_FILE) $(GLOBAL_ARCHIVES) $(LIBS) -o $(LINKER_OUTPUT)
+#    LINKER_CMD += $(LIBS) -Wl,--no-whole-archive -Wl,--end-group
+#    LINKER_CMD += -Wl,--start-group
+#    LINKER_CMD += -Wl,--dynamic-linker=
+#    LINKER_CMD += -Wl,-E
+#    LINKER_CMD += -Wl,--force-dynamic
+#    LINKER_CMD += $(APQ8096_SRC_DIR)/common/rtld/ship/hexagon_Debug_dynamic/rtld.a
+#    LINKER_CMD += $(APQ8096_SRC_DIR)/common/a1std/ship/hexagon_Debug_dynamic/a1std.a
+#    LINKER_CMD += $(APQ8096_SRC_DIR)/audio/voice_imc_utils/ship/hexagon_Debug_dynamic/voice_imc_utils.a
+#    LINKER_CMD += @$(ALL_OBJECTS_LIST_FILE) -Wl,--end-group -o $(LINKER_OUTPUT)
 
-else ifdef CONFIG_CLANG_OUTPUT_TYPE_DYNAMIC_LIBRARY 
+else ifdef CONFIG_GCC_OUTPUT_TYPE_DYNAMIC_LIBRARY 
    
-   LINKER_CMD =$(LD) $(LDFLAGS) $(LDFLAGS_SO) $(LIBRARIES_DIRS)
-    ifdef CONFIG_HEXAGON_VERSION_60
-        LINKER_CMD += -L$(HEXAGON_ROOT_DIR)/target/hexagon/lib/v60/G0/pic
-    endif
+    LINKER_CMD =$(LD) $(LDFLAGS) $(LDFLAGS_SO) $(LIBRARIES_DIRS)  $(GLOBAL_ARCHIVES)
     LINKER_CMD += @$(ALL_OBJECTS_LIST_FILE) $(LIBS) -o $(LINKER_OUTPUT)
  
 endif

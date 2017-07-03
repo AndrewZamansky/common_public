@@ -23,7 +23,7 @@ endif
 
 
 
-if !HEXAGON
+if !HEXAGON && !ANDROID_NDK
 
 
 menu "memories configuration"
@@ -141,6 +141,6 @@ config EXCEPTION_STACKS_DEBUG
 
 
 
-endif #### (if !HEXAGON)
+endif #### (if !HEXAGON && !ANDROID_NDK)
 
 endmenu
