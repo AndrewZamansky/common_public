@@ -41,7 +41,7 @@ else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX)
     DIR_NAME:=toolchains\$(ARCH_DIR_NAME)\prebuilt\$(OS_DIR_NAME)\bin
     TEST_FILE_IN_SEARCHED_DIR:=$(DIR_NAME)\$(GNU_COMPILATION_PREFIX)-gcc.exe
 endif
-include $(MAKEFILES_ROOT_DIR)/_common_include_functions/tool_existence_check.mk
+include $(MAKEFILES_ROOT_DIR)/_include_functions/tool_existence_check.mk
 ####### end of tool existence test #####
 
 GCC_ROOT_DIR :=$(ANDROID_NDK_ROOT_DIR)/toolchains

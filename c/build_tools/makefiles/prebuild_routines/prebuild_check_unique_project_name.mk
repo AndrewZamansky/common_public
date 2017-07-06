@@ -28,7 +28,7 @@ ALL_CONFIG_FILES :=$(filter-out $(APP_ROOT_DIR)/.config,$(ALL_CONFIG_FILES))
 ALL_CONFIG_FILES := $(strip $(ALL_CONFIG_FILES))
 
 
-TEST_MK :=$(MAKEFILES_ROOT_DIR)/_prebuild_check_unique_project_name.mk
+TEST_MK :=$(MAKEFILES_ROOT_DIR)/prebuild_routines/_prebuild_check_unique_project_name.mk
 INCLUDE_ALL_CONFIG_FILES :=$(patsubst %,% $(TEST_MK),$(ALL_CONFIG_FILES))
 
 ifeq (,$(CONFIG_PROJECT_NAME_SUFFIX))

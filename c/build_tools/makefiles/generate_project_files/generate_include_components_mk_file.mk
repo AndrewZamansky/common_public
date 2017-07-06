@@ -39,7 +39,7 @@ ALL_CONFIG_FILES := $(patsubst \
 # to rebuild $(COMPONENTS_MK) after copying project
 NEW_LINE :=WORKSPACE_ROOT_DIR_FOR_TEST :=$(WORKSPACE_ROOT_DIR)
 FILE_CONTENT := echo $(NEW_LINE)>$(COMPONENTS_MK) $(SHELL_CMD_DELIMITER)
-NEW_LINE :=include $$(MAKEFILES_ROOT_DIR)/check_location.mk
+NEW_LINE :=include $$(MAKEFILES_ROOT_DIR)/generate_project_files/check_location.mk
 FILE_CONTENT += echo $(NEW_LINE) >>$(COMPONENTS_MK) $(SHELL_CMD_DELIMITER)
 DUMMY:=$(shell $(FILE_CONTENT))
 
@@ -48,13 +48,13 @@ LIST_FILE_NAME_APPEND :=$(COMPONENTS_MK)
 PREFIX_FOR_EACH_ITEM :=include 
 SUFFIX_LINE_FOR_EACH_ITEM :=
 ITEMS :=$(ALL_CONFIG_FILES)
-include $(MAKEFILES_ROOT_DIR)/_common_include_functions/add_item_list_to_file.mk
+include $(MAKEFILES_ROOT_DIR)/_include_functions/add_item_list_to_file.mk
 #end of file creation
 
 # init INCLUDE_THIS_FOR_H_FILES_PATH variable
 $(shell echo INCLUDE_THIS_FOR_H_FILES_PATH := NO>> $(COMPONENTS_MK))
 
-ADD_COMPONENT_UCONFIG_MK :=$$(MAKEFILES_ROOT_DIR)/add_component_uconfig.mk
+ADD_COMPONENT_UCONFIG_MK :=$$(MAKEFILES_ROOT_DIR)/generate_project_files/add_component_uconfig.mk
 
 # adding following lines to include_components.mk 
 # "include $(MAKEFILES_ROOT_DIR)/add_component_uconfig.mk "
@@ -63,7 +63,7 @@ LIST_FILE_NAME_APPEND :=$(COMPONENTS_MK)
 PREFIX_FOR_EACH_ITEM := COMPONENT_CONFIG_FILE := 
 SUFFIX_LINE_FOR_EACH_ITEM := include $(ADD_COMPONENT_UCONFIG_MK)
 ITEMS :=$(ALL_CONFIG_FILES)
-include $(MAKEFILES_ROOT_DIR)/_common_include_functions/add_item_list_to_file.mk
+include $(MAKEFILES_ROOT_DIR)/_include_functions/add_item_list_to_file.mk
 #end of file creation
 
 

@@ -18,7 +18,7 @@ ifdef CONFIG_INCLUDE_NGHTTP2
             #test if current commit and branch of uboot git is the same as required by application
             CURR_GIT_REPOSITORY_DIR :=$(NGHTTP2_PATH)
             CURR_GIT_COMMIT_HASH_VARIABLE :=CONFIG_NGHTTP2_GIT_COMMIT_HASH
-            include $(MAKEFILES_ROOT_DIR)/_common_include_functions/git_prebuild_repo_check.mk
+            include $(MAKEFILES_ROOT_DIR)/_include_functions/git_prebuild_repo_check.mk
         endif
     endif
     

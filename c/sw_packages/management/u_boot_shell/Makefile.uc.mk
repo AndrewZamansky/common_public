@@ -20,7 +20,7 @@ ifdef CONFIG_INCLUDE_UBOOT_SHELL
             CURR_GIT_REPOSITORY_DIR :=$(U_BOOT_PATH)
             CURR_GIT_COMMIT_HASH_VARIABLE :=CONFIG_UBOOT_GIT_COMMIT_HASH
             CURR_GIT_BUNDLE :=$(CURR_UBOOT_COMPONENT_LOCATION)/u-boot.bundle
-            include $(MAKEFILES_ROOT_DIR)/_common_include_functions/git_prebuild_repo_check.mk
+            include $(MAKEFILES_ROOT_DIR)/_include_functions/git_prebuild_repo_check.mk
         endif
     endif
 

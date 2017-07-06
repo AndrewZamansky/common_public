@@ -14,7 +14,7 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
 else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX)
     TEST_FILE_IN_SEARCHED_DIR:=bin/hexagon-clang
 endif
-include $(MAKEFILES_ROOT_DIR)/_common_include_functions/tool_existence_check.mk
+include $(MAKEFILES_ROOT_DIR)/_include_functions/tool_existence_check.mk
 ####### end of tool existence test #####
 
 

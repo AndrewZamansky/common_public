@@ -25,7 +25,7 @@ else # valid target :
 
 COMMON_CC :=
 
-include $(MAKEFILES_ROOT_DIR)/common_init.mk
+include $(MAKEFILES_ROOT_DIR)/prebuild_routines/init.mk
 
 include $(MAKEFILES_ROOT_DIR)/common.mk
 
@@ -111,17 +111,17 @@ archive :
 archive_step2 : $(SUBDIRS)
 
 $(SUBDIRS):
-	$(eval COMMON_CC := $(MAKEFILES_ROOT_DIR)/common_cc.mk)
+	$(eval COMMON_CC := $(MAKEFILES_ROOT_DIR)/compilers/common_cc.mk)
 	$(eval export COMMON_CC)
 	$(eval export TARGET)
 	@echo - $(patsubst $(WORKSPACE_ROOT_DIR)/%,%,$@)
 	$(MAKE) -C $@ -f Makefile.uc.mk $(TARGET)
 
 $(COMPONENTS_MK) : $(APP_ROOT_DIR)/.config
-	$(MAKE) -f $(MAKEFILES_ROOT_DIR)/generate_include_components_mk_file.mk
+	$(MAKE) -f $(MAKEFILES_ROOT_DIR)/generate_project_files/generate_include_components_mk_file.mk
 
 $(PROJECT_CONFIG_H_FILE) : $(APP_ROOT_DIR)/.config
-	$(MAKE) -f $(MAKEFILES_ROOT_DIR)/generate_project_config_h_file.mk
+	$(MAKE) -f $(MAKEFILES_ROOT_DIR)/generate_project_files/generate_project_config_h_file.mk
 
 build_outputs :  $(SUBDIRS)
 	$(MAKE) -f $(MAKEFILES_ROOT_DIR)/build_final_outputs.mk
