@@ -50,7 +50,7 @@ config HOST
 endchoice
 
 
-source "$COMMON_DIR_PATH/c/build_tools/makefiles/Kconfig"
+source "$COMMON_DIR_PATH/build_tools/makefiles/Kconfig"
 	   	
 if !HOST
 source "$COMMON_DIR_PATH/c/hw_drivers/arch/Kconfig"

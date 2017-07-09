@@ -1,0 +1,148 @@
+menu "Build System"
+
+
+##### ARM  #########
+if ARM
+
+choice
+	prompt "Compiler"
+	default GCC
+
+config GCC
+	bool "gcc"
+
+config GPP
+    bool "g++"
+
+config ARMCC
+	bool "armcc"
+
+endchoice
+
+config INCLUDE_CORTEX_M_FPU
+	bool   "compile with fpu support"
+	depends on CORTEX_M4
+	default n
+
+
+endif
+
+
+##### PIC32  #########
+if PIC32
+
+choice
+	prompt "Compiler"
+	default PIC_C32
+
+config PIC_C32
+	bool "C32 "
+
+config PIC_XC32
+	bool "XC32 "
+
+endchoice
+
+
+endif
+
+
+##### STM8  #########
+if STM8
+
+choice
+	prompt "Compiler"
+	default CXSTM8
+
+config CXSTM8
+	bool "cosmic compiler for stm8 "
+
+endchoice
+
+
+endif
+
+
+##### HEXAGON  #########
+if HEXAGON
+
+config HEXAGON_COMPILER
+	def_bool  y
+
+endif
+
+
+##### ANDROID_NDK  #########
+if ANDROID_NDK
+
+config ANDROID_NDK_COMPILER
+	def_bool  y
+
+endif
+
+
+
+
+##### HOST  #########
+if HOST
+
+choice
+	prompt "Compiler for windows host"
+	default MIN_GW_GCC
+
+config MIN_GW_GCC
+	bool "MinGW gcc"
+
+config MIN_GW_GPP
+    bool "MinGW g++"
+
+config MICROSOFT_COMPILER
+    bool "Microsoft Compiler"
+
+
+endchoice
+
+choice
+	prompt "Compiler for linux host"
+	default LINUX_HOST_GCC
+
+config LINUX_HOST_GCC
+	bool "gcc"
+
+config LINUX_HOST_GPP
+    bool "g++"
+
+endchoice
+
+endif
+
+
+if GCC || GPP || MIN_GW_GCC || MIN_GW_GPP || PIC_C32 || PIC_XC32 || ANDROID_NDK_COMPILER
+source "$COMMON_DIR_PATH/build_tools/makefiles/c/compilers/gcc/Kconfig"
+endif
+
+if MICROSOFT_COMPILER
+source "$COMMON_DIR_PATH/build_tools/makefiles/c/compilers/microsoft_compiler/Kconfig"
+endif
+
+
+if HEXAGON_COMPILER
+source "$COMMON_DIR_PATH/build_tools/makefiles/c/compilers/clang/Kconfig"
+endif
+
+
+menuconfig INCLUDE_TOOLCHAIN_LIBRARIES
+	bool   "tool chain libraries"
+	default y
+	
+config TOOLCHAIN_LIBRARIES_ARE_SPEED_CRUCIAL
+	bool   "tool chain libraries are speed crucial"
+	depends on INCLUDE_TOOLCHAIN_LIBRARIES
+	default n
+
+config COMPILE_FOR_DEBUG
+	bool   "compile for debugging(include debug info)"
+	default y
+
+
+endmenu

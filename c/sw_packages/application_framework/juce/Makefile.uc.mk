@@ -70,9 +70,9 @@ ifdef    CONFIG_JUCE_VST_PLUGIN
     
     ifdef CONFIG_USE_SAVI_HOST_VST_PLUGIN_TESTER
        ifeq ($(wildcard $(REDEFINE_SAVIHOST_VST_TESTER_DIR)),)
-           $(info !--- $(WORKSPACE_ROOT_DIR)/workspace_config.mk/REDEFINE_SAVIHOST_VST_TESTER_DIR = $(REDEFINE_SAVIHOST_VST_TESTER_DIR))
+           $(info !--- $(PARENT_OF_COMMON_PUBLIC_DIR)/workspace_config.mk/REDEFINE_SAVIHOST_VST_TESTER_DIR = $(REDEFINE_SAVIHOST_VST_TESTER_DIR))
            $(info !--- $(REDEFINE_SAVIHOST_VST_TESTER_DIR) not found)
-           $(info !--- redefine $(WORKSPACE_ROOT_DIR)/workspace_config.mk/REDEFINE_SAVIHOST_VST_TESTER_DIR to valid saviHost VST tester directory)
+           $(info !--- redefine $(PARENT_OF_COMMON_PUBLIC_DIR)/workspace_config.mk/REDEFINE_SAVIHOST_VST_TESTER_DIR to valid saviHost VST tester directory)
            $(error ---) 
        endif
     endif
