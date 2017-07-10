@@ -1,19 +1,19 @@
 #
 
-source "$COMMON_DIR_PATH/c/sw_packages/core/Kconfig"
+source "$KCONFIG_START_DIR_PATH/sw_packages/core/Kconfig"
 
-source "$COMMON_DIR_PATH/c/sw_packages/application_framework/Kconfig"
+source "$KCONFIG_START_DIR_PATH/sw_packages/application_framework/Kconfig"
 
-source "$COMMON_DIR_PATH/c/sw_packages/ancillary/Kconfig"
+source "$KCONFIG_START_DIR_PATH/sw_packages/ancillary/Kconfig"
 
-source "$COMMON_DIR_PATH/c/sw_packages/management/Kconfig"
+source "$KCONFIG_START_DIR_PATH/sw_packages/management/Kconfig"
 
-source "$COMMON_DIR_PATH/c/sw_packages/utilities/Kconfig"
+source "$KCONFIG_START_DIR_PATH/sw_packages/utilities/Kconfig"
 
-source "$COMMON_DIR_PATH/c/sw_packages/storage/Kconfig"
+source "$KCONFIG_START_DIR_PATH/sw_packages/storage/Kconfig"
 
-source "$COMMON_DIR_PATH/c/sw_packages/dsp/Kconfig"
+source "$KCONFIG_START_DIR_PATH/sw_packages/dsp/Kconfig"
 
-source "$COMMON_DIR_PATH/c/sw_packages/net/Kconfig"
+source "$KCONFIG_START_DIR_PATH/sw_packages/net/Kconfig"
 
-source "$COMMON_DIR_PATH/c/sw_packages/staging/Kconfig"
+source "$KCONFIG_START_DIR_PATH/sw_packages/staging/Kconfig"

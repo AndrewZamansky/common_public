@@ -5,6 +5,7 @@ ifndef COMMON_INIT_SECTION_THAT_SHOULD_RUN_ONCE
 BUILD_TOOLS_ROOT_DIR :=$(COMMON_PROJECT_MAKEFILE_DIR)/../..
 MAKEFILES_ROOT_DIR :=$(BUILD_TOOLS_ROOT_DIR)/makefiles
 PREBUILD_ROUTINES_DIR :=$(MAKEFILES_ROOT_DIR)/prebuild_routines
+GENERATE_PRJ_FILES_DIR :=$(MAKEFILES_ROOT_DIR)/generate_project_files
 
 include $(PREBUILD_ROUTINES_DIR)/init_environment.mk
 include $(MAKEFILES_ROOT_DIR)/common.mk
@@ -35,6 +36,8 @@ OUT_DIR_HISTORY    :=    $(APP_ROOT_DIR)/zOUT_history
 
 COMMON_PRIVATE_DIR = $(PARENT_OF_COMMON_PUBLIC_DIR)/common_private
 
+OUT_DIR :=$(APP_ROOT_DIR)/zOUT
+
 ####### test for existence of make and put its directory name in MAKE_DIR #####
 SEARCHED_TOOL:=make
 SEARCHED_DIR_VARIABLE:=MAKE_DIR
@@ -56,6 +59,7 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
     OUT_DIR_HISTORY := $(subst /,\,$(OUT_DIR_HISTORY))
     COMMON_PUBLIC_DIR := $(subst /,\,$(COMMON_PUBLIC_DIR))
     COMMON_PRIVATE_DIR := $(subst /,\,$(COMMON_PRIVATE_DIR))
+    OUT_DIR := $(subst /,\,$(OUT_DIR))
 endif
 
 #if common_private directory dont exists then create a dummy one

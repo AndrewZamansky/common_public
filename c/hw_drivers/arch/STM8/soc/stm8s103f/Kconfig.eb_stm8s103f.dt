@@ -3,7 +3,7 @@ menu "`---> stm8s103f evaluation board"
 
     
     
-source "$COMMON_DIR_PATH/c/hw_drivers/arch/STM8/soc/stm8s103f/Kconfig.soc_stm8s103f.dt"
+source "$KCONFIG_START_DIR_PATH/hw_drivers/arch/STM8/soc/stm8s103f/Kconfig.soc_stm8s103f.dt"
 
 
 endmenu

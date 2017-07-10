@@ -12,17 +12,13 @@ endif
 # tested for "$(filename)/Makefile.uc.mk" pattern
 UNWANTED_FILES = %zOUT %zOBJ %zOUT_history %z_auto_generated_files
 UNWANTED_FILES += %project_config_includes %.config %.config.old
-UNWANTED_FILES += %.gitignore %Makefile %.git
+UNWANTED_FILES += %.gitignore %Makefile %.git %.c %.h %Makefile.uc.mk
 UNWANTED_FILES :=$(UNWANTED_FILES)
 
-ls=$(filter-out $(UNWANTED_FILES),$(wildcard $1*))
+ls=$(filter-out $(UNWANTED_FILES),$(wildcard $1/*))
 
-rwildcard=$(wildcard $1$2) $(foreach d, $(call ls,$1), $(call rwildcard,$d/,$2))
-
-ALL_CONFIG_FILES := $(call rwildcard,$(APP_ROOT_DIR)/app,Makefile.uc.mk)
-ALL_CONFIG_FILES += $(call rwildcard,$(SW_PACKAGES_ROOT_DIR)/,Makefile.uc.mk)
-ALL_CONFIG_FILES += $(call rwildcard,$(DRIVERS_ROOT_DIR)/,Makefile.uc.mk)
-ALL_CONFIG_FILES += $(call rwildcard,$(COMMON_PRIVATE_DIR)/,Makefile.uc.mk)
+r = $(wildcard $1/Makefile.uc.mk) $(foreach d, $(call ls,$1), $(call r,$d))
+ALL_CONFIG_FILES :=$(foreach d, $(SCAN_DIRS_FOR_CONFIG_FILES), $(call r,$d))
 $(info scan for Makefile.uc.mk done . creating include_components.mk)
 
 # replace long directory names with $(.._DIR) variables
@@ -39,7 +35,7 @@ ALL_CONFIG_FILES := $(patsubst \
 # to rebuild $(COMPONENTS_MK) after copying project
 NEW_LINE :=WORKSPACE_ROOT_DIR_FOR_TEST :=$(PARENT_OF_COMMON_PUBLIC_DIR)
 FILE_CONTENT := echo $(NEW_LINE)>$(COMPONENTS_MK) $(SHELL_CMD_DELIMITER)
-NEW_LINE :=include $$(MAKEFILES_ROOT_DIR)/generate_project_files/check_location.mk
+NEW_LINE :=include $$(GENERATE_PRJ_FILES_DIR)/check_location.mk
 FILE_CONTENT += echo $(NEW_LINE) >>$(COMPONENTS_MK) $(SHELL_CMD_DELIMITER)
 DUMMY:=$(shell $(FILE_CONTENT))
 
@@ -54,7 +50,7 @@ include $(MAKEFILES_ROOT_DIR)/_include_functions/add_item_list_to_file.mk
 # init INCLUDE_THIS_FOR_H_FILES_PATH variable
 $(shell echo INCLUDE_THIS_FOR_H_FILES_PATH := NO>> $(COMPONENTS_MK))
 
-ADD_COMPONENT_UCONFIG_MK :=$$(MAKEFILES_ROOT_DIR)/generate_project_files/add_component_uconfig.mk
+ADD_COMPONENT_UCONFIG_MK :=$$(GENERATE_PRJ_FILES_DIR)/add_component_uconfig.mk
 
 # adding following lines to include_components.mk 
 # "include $(MAKEFILES_ROOT_DIR)/add_component_uconfig.mk "

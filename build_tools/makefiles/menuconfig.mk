@@ -22,19 +22,18 @@ endif
 include $(MAKEFILES_INC_FUNC_DIR)/tool_existence_check.mk
 ####### end of tool existence test #####
 
-
-
 ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
 
     ERROR_LOG =  $(OUT_DIR)\kconfig.out
+    KCONFIG_START_DIR_PATH := $(subst /,\,$(KCONFIG_START_DIR_PATH))
 
 
     KCONFIG_BASIC_CMD :=$(KCONFIG_ROOT_DIR)/kconfig-mconf.exe $(COMMON_PUBLIC_DIR)/Kconfig
     KCONFIG_CMD :=$(KCONFIG_BASIC_CMD) 2>$(ERROR_LOG)
     KCONFIG_CMD_FOR_WARNING_CHECK :=$(KCONFIG_BASIC_CMD) 1>$(ERROR_LOG)
-    MANUAL_KCONFIG_CMD :=set "COMMON_DIR_PATH=$(COMMON_PUBLIC_DIR)" & $(APP_PARTITION) & cd $(APP_ROOT_DIR) & $(KCONFIG_BASIC_CMD)
-    MANUAL_KCONFIG_CMD_FOR_WARNING_CHECK :=set "COMMON_DIR_PATH=$(PARENT_OF_COMMON_PUBLIC_DIR)/common" & $(APP_PARTITION) & cd $(APP_ROOT_DIR) & $(KCONFIG_CMD_FOR_WARNING_CHECK)
-    NEW_WIN_KCONFIG_CMD :=set "COMMON_DIR_PATH=$(COMMON_PUBLIC_DIR)" & start $(KCONFIG_CMD)
+    MANUAL_KCONFIG_CMD :=set "KCONFIG_START_DIR_PATH=$(KCONFIG_START_DIR_PATH)" & $(APP_PARTITION) & cd $(APP_ROOT_DIR) & $(KCONFIG_BASIC_CMD)
+    MANUAL_KCONFIG_CMD_FOR_WARNING_CHECK :=set "KCONFIG_START_DIR_PATH=$(KCONFIG_START_DIR_PATH)" & $(APP_PARTITION) & cd $(APP_ROOT_DIR) & $(KCONFIG_CMD_FOR_WARNING_CHECK)
+    NEW_WIN_KCONFIG_CMD :=set "KCONFIG_START_DIR_PATH=$(KCONFIG_START_DIR_PATH)" & start $(KCONFIG_CMD)
     KCONFIG_PRINT_ERRORS_CMD :=type $(ERROR_LOG)
 
 else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX)
@@ -56,7 +55,7 @@ else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX)
 ##        $(info !--- after installing run kconfig-mconf in shell and check that you get "can't find file ..." output only)
 
 
-	$(info !--- TODO : add COMMON_DIR_PATH=$(COMMON_PUBLIC_DIR) to shell environment)
+	$(info !--- TODO : add KCONFIG_START_DIR_PATH=$(KCONFIG_START_DIR_PATH) to shell environment)
 	$(error )
     KCONFIG_CMD :=kconfig-mconf $(COMMON_PUBLIC_DIR)/Kconfig 2>$(ERROR_LOG)
     KCONFIG_CMD_FOR_WARNING_CHECK :=kconfig-mconf $(COMMON_PUBLIC_DIR)/Kconfig 1>$(ERROR_LOG)

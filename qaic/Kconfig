@@ -22,48 +22,7 @@ config REDEFINED_OUTPUT_NAME
 	depends on !OUTPUT_NAME_CHOOSEN_AUTOMATICALLY
 	default "out"
 
-choice
-	prompt "Architecture"
-	default HOST
-
-config ARM
-	bool "arm"
-
-config PIC32
-	bool "pic32"
-
-config STM8
-	bool "stm8"
-
-config AVR
-	bool "avr"
-
-config HEXAGON
-	bool "hexagon"
-
-config ANDROID_NDK
-	bool "android_ndk"
-
-config HOST
-	bool "host"
-
-endchoice
-
-
-source "$KCONFIG_START_DIR_PATH/../build_tools/makefiles/Kconfig"
-	   	
-if !HOST
-source "$KCONFIG_START_DIR_PATH/hw_drivers/arch/Kconfig"
-endif
-
-menu "Hardware Drivers"
-source "$KCONFIG_START_DIR_PATH/hw_drivers/Kconfig"
-endmenu
-
-
-menu "Software Packages"
-source "$KCONFIG_START_DIR_PATH/sw_packages/Kconfig"
-endmenu
+source "$KCONFIG_START_DIR_PATH/soc/Kconfig"
 
 menuconfig USE_COMMON_PRIVATE_PACKAGES
 	bool   "use common private packages"
@@ -76,10 +35,6 @@ config COMMON_PRIVATE_GIT_COMMIT_HASH
 	default ""
 endif
 
-
-config CPU_CALCULATE_CRC32
-	bool   "calculate crc32 of output binary"
-	default n
 
 config COMMON_PUBLIC_GIT_COMMIT_HASH
 	string "common public git commit hash"

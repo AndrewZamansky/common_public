@@ -24,12 +24,8 @@ else # valid target :
 
 
 #this line is reached with only COMMON_PROJECT_MAKEFILE_DIR initialized
-include $(COMMON_PROJECT_MAKEFILE_DIR)/../prebuild_routines/init.mk
-
-ifeq ($(findstring menuconfig,$(MAKECMDGOALS)),)
-    #DONT enter if we are bulding .config file now
-    include $(MAKEFILES_ROOT_DIR)/c/init_for_c.mk
-endif
+include $(COMMON_PROJECT_MAKEFILE_DIR)/../prebuild_routines/init_workspace.mk
+include $(MAKEFILES_ROOT_DIR)/c/init_for_c.mk
 
 COMMON_CC :=
 
@@ -82,6 +78,7 @@ ifdef MAKEFILE_WAS_GENERATED
         GLOBAL_DEFINES := $(sort $(GLOBAL_DEFINES))
         GLOBAL_LIBS := $(sort $(GLOBAL_LIBS))
         GLOBAL_LIBS_PATH := $(sort $(GLOBAL_LIBS_PATH))
+        GLOBAL_ARCHIVES := $(sort $(GLOBAL_ARCHIVES))
 
         SKIP_SECTION_THAT_SHOULD_RUN_ONCE_AFTER_AUTO_FILE_GENERATIONS = YES
         export #export all variables declared before

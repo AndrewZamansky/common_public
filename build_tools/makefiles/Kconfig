@@ -118,16 +118,16 @@ endif
 
 
 if GCC || GPP || MIN_GW_GCC || MIN_GW_GPP || PIC_C32 || PIC_XC32 || ANDROID_NDK_COMPILER
-source "$COMMON_DIR_PATH/build_tools/makefiles/c/compilers/gcc/Kconfig"
+source "$KCONFIG_START_DIR_PATH/../build_tools/makefiles/c/compilers/gcc/Kconfig"
 endif
 
 if MICROSOFT_COMPILER
-source "$COMMON_DIR_PATH/build_tools/makefiles/c/compilers/microsoft_compiler/Kconfig"
+source "$KCONFIG_START_DIR_PATH/../build_tools/makefiles/c/compilers/microsoft_compiler/Kconfig"
 endif
 
 
 if HEXAGON_COMPILER
-source "$COMMON_DIR_PATH/build_tools/makefiles/c/compilers/clang/Kconfig"
+source "$KCONFIG_START_DIR_PATH/../build_tools/makefiles/c/compilers/clang/Kconfig"
 endif
 
 

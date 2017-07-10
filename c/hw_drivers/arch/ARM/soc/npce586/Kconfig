@@ -10,7 +10,7 @@ config NPCE586_EB
 endchoice
 
 if NPCE586_EB
-source "$COMMON_DIR_PATH/c/hw_drivers/arch/ARM/soc/npce586/Kconfig.eb.npce586.dt"
+source "$KCONFIG_START_DIR_PATH/hw_drivers/arch/ARM/soc/npce586/Kconfig.eb.npce586.dt"
 endif
 
 

@@ -90,7 +90,7 @@ menuconfig INCLUDE_INTERNAL_I2S
 	default n
 	
 if INCLUDE_INTERNAL_I2S
-source "$COMMON_DIR_PATH/c/hw_drivers/I2S/Kconfig"
+source "$KCONFIG_START_DIR_PATH/hw_drivers/I2S/Kconfig"
 endif
 
 
@@ -138,7 +138,7 @@ config INCLUDE_WIRELESS_UART
 	bool   "wireless uart"
 	default n
 
-source "$COMMON_DIR_PATH/c/hw_drivers/storage/Kconfig"
+source "$KCONFIG_START_DIR_PATH/hw_drivers/storage/Kconfig"
 
 ######## automatically selected configurations #########
 config INCLUDE_SERIAL_NUMBER

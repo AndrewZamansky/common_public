@@ -1,0 +1,8 @@
+choice
+	prompt "SOC"
+	default APQ8096
+
+config APQ8096
+	bool "Snapdragon 820 apq8096"
+
+endchoice

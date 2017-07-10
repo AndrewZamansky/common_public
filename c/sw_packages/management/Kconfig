@@ -7,7 +7,7 @@ menuconfig INCLUDE_PRINTF
 	default n
 
 if INCLUDE_PRINTF
-source "$COMMON_DIR_PATH/c/sw_packages/management/PRINTF/Kconfig"
+source "$KCONFIG_START_DIR_PATH/sw_packages/management/PRINTF/Kconfig"
 endif
 
 
@@ -27,14 +27,14 @@ menuconfig INCLUDE_SHELL
 	default n
 	
 if INCLUDE_SHELL
-source "$COMMON_DIR_PATH/c/sw_packages/management/shell/Kconfig"
+source "$KCONFIG_START_DIR_PATH/sw_packages/management/shell/Kconfig"
 
 menuconfig INCLUDE_SHELL_PRESETS
 	bool   "shell presets"
 	default n
 
 if INCLUDE_SHELL_PRESETS
-source "$COMMON_DIR_PATH/c/sw_packages/management/shell_presets/Kconfig"
+source "$KCONFIG_START_DIR_PATH/sw_packages/management/shell_presets/Kconfig"
 endif
 
 endif
@@ -46,7 +46,7 @@ menuconfig INCLUDE_UBOOT_SHELL
 	default n
 
 if INCLUDE_UBOOT_SHELL
-source "$COMMON_DIR_PATH/c/sw_packages/management/u_boot_shell/Kconfig"
+source "$KCONFIG_START_DIR_PATH/sw_packages/management/u_boot_shell/Kconfig"
 endif
 
 #endif

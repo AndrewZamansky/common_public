@@ -45,25 +45,25 @@ config SOC_HAS_DSP
     default n
 
 if NPCE586
-source "$COMMON_DIR_PATH/c/hw_drivers/arch/ARM/soc/npce586/Kconfig"
+source "$KCONFIG_START_DIR_PATH/hw_drivers/arch/ARM/soc/npce586/Kconfig"
 endif
 
 if I94XXX
-source "$COMMON_DIR_PATH/c/hw_drivers/arch/ARM/soc/i94xxx/Kconfig"
+source "$KCONFIG_START_DIR_PATH/hw_drivers/arch/ARM/soc/i94xxx/Kconfig"
 endif
 
 if STM32F103RC
-source "$COMMON_DIR_PATH/c/hw_drivers/arch/ARM/soc/stm32/stm32f103rc/Kconfig"
+source "$KCONFIG_START_DIR_PATH/hw_drivers/arch/ARM/soc/stm32/stm32f103rc/Kconfig"
 endif
 
 if NUC505
-source "$COMMON_DIR_PATH/c/hw_drivers/arch/ARM/soc/nuc505/Kconfig"
+source "$KCONFIG_START_DIR_PATH/hw_drivers/arch/ARM/soc/nuc505/Kconfig"
 endif
 
 if POLEG
-source "$COMMON_DIR_PATH/c/hw_drivers/arch/ARM/soc/poleg/Kconfig"
+source "$KCONFIG_START_DIR_PATH/hw_drivers/arch/ARM/soc/poleg/Kconfig"
 endif
 
 if GENERIC_SOC
-source "$COMMON_DIR_PATH/c/hw_drivers/arch/ARM/soc/generic_board/Kconfig"
+source "$KCONFIG_START_DIR_PATH/hw_drivers/arch/ARM/soc/generic_board/Kconfig"
 endif

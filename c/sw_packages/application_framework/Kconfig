@@ -8,7 +8,7 @@ menuconfig INCLUDE_JUCE
 	default n
 
 if INCLUDE_JUCE
-source "$COMMON_DIR_PATH/c/sw_packages/application_framework/juce/Kconfig"
+source "$KCONFIG_START_DIR_PATH/sw_packages/application_framework/juce/Kconfig"
 endif
 
 

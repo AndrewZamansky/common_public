@@ -6,7 +6,7 @@ config CRYSTAL_CLOCK
     default 12000000 
     
     
-source "$COMMON_DIR_PATH/c/hw_drivers/arch/ARM/soc/i94xxx/Kconfig.socI94XXX.dt"
+source "$KCONFIG_START_DIR_PATH/hw_drivers/arch/ARM/soc/i94xxx/Kconfig.socI94XXX.dt"
 
 
 endmenu

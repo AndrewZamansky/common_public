@@ -10,7 +10,7 @@ config I94XXX_SVB
 endchoice
 
 if I94XXX_SVB
-source "$COMMON_DIR_PATH/c/hw_drivers/arch/ARM/soc/i94xxx/Kconfig.svbI94120.dt"
+source "$KCONFIG_START_DIR_PATH/hw_drivers/arch/ARM/soc/i94xxx/Kconfig.svbI94120.dt"
 endif
 
 

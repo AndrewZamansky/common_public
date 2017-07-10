@@ -1,8 +1,8 @@
 #
 mainmenu "uCProjects Configuration"
-config COMMON_DIR_PATH
+config KCONFIG_START_DIR_PATH
 	string
-	option env="COMMON_DIR_PATH"
+	option env="KCONFIG_START_DIR_PATH"
 
 
-source "$COMMON_DIR_PATH/c/Kconfig"
+source "$KCONFIG_START_DIR_PATH/Kconfig"
