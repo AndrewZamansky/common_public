@@ -1,0 +1,15 @@
+
+
+choice
+	prompt "SOC"
+	default ESP8266
+
+config ESP8266
+	bool "ESP8266"
+
+endchoice
+
+
+if ESP8266
+source "$KCONFIG_START_DIR_PATH/hw_drivers/arch/TENSILICA/soc/esp8266/Kconfig"
+endif

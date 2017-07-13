@@ -1,10 +1,8 @@
 menu "GCC options"
 
 
-
 ##### ARM  #########
 if ARM
-
 
 config GCC_VENDOR_NAME
     string "gcc vendor name"
@@ -109,6 +107,7 @@ config PIC32_C32_VERSION
 endif
 
 
+##### ANDROID_NDK_COMPILER  #########
 if ANDROID_NDK_COMPILER
 
 choice
@@ -122,6 +121,11 @@ config GCC_OUTPUT_TYPE_DYNAMIC_LIBRARY
 	bool "dynamic library"
 endchoice
 
+endif
+
+
+##### TENSILICA  #########
+if TENSILICA
 endif
 
 
@@ -146,7 +150,6 @@ config GCC_OPTIMISE_ULTRA_SPEED
 	bool "-O3 : Optimise for ultra-speed but can increase code-size "
 
 endchoice
-
 
 
 

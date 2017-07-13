@@ -29,7 +29,8 @@ void auto_init_api(void)
 	auto_init_struct_t *p_end_of_auto_init;
 
 
-#if !defined(CONFIG_HEXAGON_COMPILER) && !defined(CONFIG_ANDROID_NDK)
+#if !defined(CONFIG_HEXAGON_COMPILER) && !defined(CONFIG_ANDROID_NDK) \
+		&& !defined(CONFIG_TENSILICA)
 	#pragma message( "change to __start_auto_init_section in " __FILE__ )
 	p_curr_auto_init = (auto_init_struct_t *)&init_functions_section_start;
 	p_end_of_auto_init = (auto_init_struct_t *)&init_functions_section_end;

@@ -117,7 +117,7 @@ endchoice
 endif
 
 
-if GCC || GPP || MIN_GW_GCC || MIN_GW_GPP || PIC_C32 || PIC_XC32 || ANDROID_NDK_COMPILER
+if GCC || GPP || MIN_GW_GCC || MIN_GW_GPP || PIC_C32 || PIC_XC32 || ANDROID_NDK_COMPILER || TENSILICA
 source "$KCONFIG_START_DIR_PATH/../build_tools/makefiles/c/compilers/gcc/Kconfig"
 endif
 

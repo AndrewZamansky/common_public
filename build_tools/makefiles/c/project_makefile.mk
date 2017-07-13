@@ -129,6 +129,7 @@ $(PROJECT_CONFIG_H_FILE) : $(APP_ROOT_DIR)/.config
 
 build_outputs :  $(SUBDIRS)
 	$(MAKE) -f $(MAKEFILES_ROOT_DIR)/c/build_final_outputs.mk
+	
 
 
 clean:

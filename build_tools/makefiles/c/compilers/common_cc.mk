@@ -3,31 +3,33 @@ include $(MAKEFILES_ROOT_DIR)/common.mk
 
 ifdef CONFIG_ARM
     ifdef CONFIG_GCC
-        include $(MAKEFILES_ROOT_DIR)/c/compilers/gcc/gcc_cc.mk
+        include $(COMPILERS_DIR)/gcc/gcc_cc.mk
     else ifdef CONFIG_GPP
-        include $(MAKEFILES_ROOT_DIR)/c/compilers/gcc/gcc_cc.mk
+        include $(COMPILERS_DIR)/gcc/gcc_cc.mk
     else ifdef CONFIG_ARMCC
-        include $(MAKEFILES_ROOT_DIR)/c/compilers/armcc/armcc_cc.mk
+        include $(COMPILERS_DIR)/armcc/armcc_cc.mk
     endif
 else ifdef CONFIG_AVR
-    include $(MAKEFILES_ROOT_DIR)/c/compilers/gcc/gcc_cc.mk
+    include $(COMPILERS_DIR)/gcc/gcc_cc.mk
+else ifdef CONFIG_TENSILICA
+    include $(COMPILERS_DIR)/gcc/gcc_cc.mk
 else ifdef CONFIG_PIC32
-    include $(MAKEFILES_ROOT_DIR)/c/compilers/gcc/gcc_cc.mk
+    include $(COMPILERS_DIR)/gcc/gcc_cc.mk
 else ifdef CONFIG_STM8
-    include $(MAKEFILES_ROOT_DIR)/c/compilers/cxstm8/cxstm8_cc.mk
+    include $(COMPILERS_DIR)/cxstm8/cxstm8_cc.mk
 else ifdef CONFIG_HEXAGON
-    include $(MAKEFILES_ROOT_DIR)/c/compilers/clang/clang_hexagon_cc.mk
+    include $(COMPILERS_DIR)/clang/clang_hexagon_cc.mk
 else ifdef CONFIG_ANDROID_NDK
-    include $(MAKEFILES_ROOT_DIR)/c/compilers/gcc/gcc_cc.mk
+    include $(COMPILERS_DIR)/gcc/gcc_cc.mk
 else ifdef CONFIG_HOST
     ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
         ifdef CONFIG_MIN_GW_GCC
-            include $(MAKEFILES_ROOT_DIR)/c/compilers/gcc/gcc_cc.mk
+            include $(COMPILERS_DIR)/gcc/gcc_cc.mk
         else ifdef CONFIG_MICROSOFT_COMPILER
-            include $(MAKEFILES_ROOT_DIR)/c/compilers/microsoft_compiler/msvc_cc.mk
+            include $(COMPILERS_DIR)/microsoft_compiler/msvc_cc.mk
         endif
     else
-        include $(MAKEFILES_ROOT_DIR)/c/compilers/gcc/gcc_cc.mk
+        include $(COMPILERS_DIR)/gcc/gcc_cc.mk
     endif
 else
     $(error ---- unknown compiler ----)

@@ -14,7 +14,8 @@
 	#define AUTO_INIT_FUNCTION_PLACEMENT	 				\
 				__declspec(dllexport) __declspec(align(8)) 	\
 				__declspec(allocate("init_function_object_section$b"))
-#elif defined(CONFIG_HEXAGON_COMPILER) || defined(CONFIG_ANDROID_NDK)
+#elif defined(CONFIG_HEXAGON_COMPILER) || defined(CONFIG_ANDROID_NDK) || \
+	 defined(CONFIG_TENSILICA)
 
 	#define AUTO_INIT_FUNCTION_PLACEMENT	 	\
 							__attribute__((section("auto_init_section")))

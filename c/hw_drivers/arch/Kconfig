@@ -21,6 +21,9 @@ if HEXAGON
 source "$KCONFIG_START_DIR_PATH/hw_drivers/arch/HEXAGON/soc/Kconfig"
 endif
 
+if TENSILICA
+source "$KCONFIG_START_DIR_PATH/hw_drivers/arch/TENSILICA/soc/Kconfig"
+endif
 
 
 if !HEXAGON && !ANDROID_NDK
@@ -125,7 +128,7 @@ endmenu
 
 config USE_APPLICATION_SPECIFIC_SCATTER_FILE
 	bool "use application specifc scatter file"
-    depends on ARM
+    depends on ARM || TENSILICA
     default n
 
 

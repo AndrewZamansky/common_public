@@ -19,7 +19,8 @@ GNU_COMPILATION_PREFIX	:=arm-$(VENDOR_NAME)$(OS_PREFIX)$(ABI_PREFIX)
 
 GCC_ROOT_DIR :=
 
-####### test for existence of microsoft compiler and put its directory name in MSVC_ROOT_DIR #####
+####### test for existence of arm gcc compiler and  #####
+####### put its directory name in GCC_ROOT_DIR     #####
 SEARCHED_TOOL:=$(GNU_COMPILATION_PREFIX)-gcc
 SEARCHED_DIR_VARIABLE:=GCC_ROOT_DIR
 MANUALLY_DEFINED_DIR_VARIABLE:=REDEFINE_ARM_GCC_ROOT_DIR
@@ -84,13 +85,15 @@ else ifdef CONFIG_CORTEX_M4
     endif
 endif
 
- ifdef CONFIG_GCC_OPTIMISE_SIZE
+ifdef CONFIG_GCC_OPTIMISE_SIZE
     GLOBAL_CFLAGS +=  -ffunction-sections
 endif
 
 GLOBAL_CFLAGS += -$(CONFIG_OPTIMIZE_LEVEL) -g -g3 -ggdb3 #-gstabs3
 
-GLOBAL_CFLAGS := $(GLOBAL_CFLAGS) #stop GLOBAL_CFLAGS calculation each time it used
+
+#stop GLOBAL_CFLAGS calculation each time it used :
+GLOBAL_CFLAGS := $(GLOBAL_CFLAGS)
 
 ### GLOBAL_ASMFLAGS calculation
 GLOBAL_ASMFLAGS += -mcpu=$(CONFIG_CPU_TYPE)  -gdwarf-2   -mthumb-interwork

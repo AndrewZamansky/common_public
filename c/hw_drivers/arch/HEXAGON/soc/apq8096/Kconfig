@@ -2,7 +2,7 @@ menu "`--->  apq8096 board configurations"
 
 choice
 	prompt "Board"
-	default NUC505_EB
+	default OPENQ_820_SOM
 
 config OPENQ_820_SOM
 	bool "open-Q 820 SOM"

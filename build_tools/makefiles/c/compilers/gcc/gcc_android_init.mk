@@ -26,7 +26,8 @@ GNU_COMPILATION_PREFIX	:=$(ARCH_PREFIX)-linux-androideabi
 
 ANDROID_NDK_ROOT_DIR :=
 
-####### test for existence of microsoft compiler and put its directory name in ANDROID_NDK_ROOT_DIR #####
+####### test for existence of android NDK compiler and  #####
+####### put its directory name in ANDROID_NDK_ROOT_DIR  #####
 SEARCHED_TOOL :=$(GNU_COMPILATION_PREFIX)-gcc
 SEARCHED_DIR_VARIABLE :=ANDROID_NDK_ROOT_DIR
 MANUALLY_DEFINED_DIR_VARIABLE :=REDEFINE_ANDROID_NDK_DIR
@@ -35,7 +36,7 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
     TEST_FILE_IN_SEARCHED_DIR:=$(DIR_NAME)\$(GNU_COMPILATION_PREFIX)-gcc.exe
 else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX)
     DIR_NAME:=toolchains\$(ARCH_DIR_NAME)\prebuilt\$(OS_DIR_NAME)\bin
-    TEST_FILE_IN_SEARCHED_DIR:=$(DIR_NAME)\$(GNU_COMPILATION_PREFIX)-gcc.exe
+    TEST_FILE_IN_SEARCHED_DIR:=$(DIR_NAME)\$(GNU_COMPILATION_PREFIX)-gcc
 endif
 include $(MAKEFILES_ROOT_DIR)/_include_functions/tool_existence_check.mk
 ####### end of tool existence test #####
@@ -89,7 +90,8 @@ GLOBAL_CFLAGS += -g
 GLOBAL_CFLAGS += -std=gnu99
 GLOBAL_CFLAGS += -march=$(GCC_ARM_ARCH)
 
-GLOBAL_CFLAGS := $(GLOBAL_CFLAGS) #stop GLOBAL_CFLAGS calculation each time it used
+#stop GLOBAL_CFLAGS calculation each time it used
+GLOBAL_CFLAGS := $(GLOBAL_CFLAGS)
 
 ### GLOBAL_ASMFLAGS calculation
 GLOBAL_ASMFLAGS += -march=$(GCC_ARM_ARCH) -mthumb-interwork

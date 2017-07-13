@@ -77,6 +77,8 @@ ifeq ($(findstring menuconfig,$(MAKECMDGOALS)),)
         include $(COMPILERS_DIR)/gcc/gcc_pic32_init.mk
     else ifdef CONFIG_AVR
         include $(COMPILERS_DIR)/gcc/gcc_avr_init.mk
+    else ifdef CONFIG_TENSILICA
+        include $(COMPILERS_DIR)/gcc/gcc_tensilica_init.mk
     else ifdef CONFIG_STM8
         include $(COMPILERS_DIR)/cxstm8/cxstm8_init.mk
     else ifdef CONFIG_HEXAGON

@@ -1,0 +1,30 @@
+menu "`--->  esp8266 board configurations"
+
+choice
+	prompt "Board"
+	default ESP_01
+
+config ESP_01
+	bool "ESP-01"
+
+endchoice
+
+if ESP_01
+source "$KCONFIG_START_DIR_PATH/hw_drivers/arch/TENSILICA/soc/esp8266/Kconfig.esp_01.dt"
+endif
+
+
+choice
+	prompt "SDK type"
+	default SDK_NONOS
+
+config SDK_NONOS
+	bool "SDK without OS"
+
+config SDK_RTOS
+	bool "SDK with RTOS"
+
+endchoice
+
+endmenu
+
