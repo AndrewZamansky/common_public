@@ -33,6 +33,7 @@ ifdef CONFIG_ESP8266
     	DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(SDK_ESP8266_PATH)/include/ssl)
     	DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(SDK_ESP8266_PATH)/include/json)
     	DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(SDK_ESP8266_PATH)/include/openssl)
+        endif
     endif
     
 	#INCLUDE_THIS_COMPONENT := y
