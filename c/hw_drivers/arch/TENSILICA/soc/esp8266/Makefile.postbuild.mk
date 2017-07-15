@@ -27,7 +27,15 @@ BUILD_FLASH_IMAGE :=set PATH=%PATH%;$(COMPILER_PATH)&
 BUILD_FLASH_IMAGE += set COMPILE=gcc&
 BUILD_FLASH_IMAGE += $(CP) $(SDK_ESP8266_PATH)\tools\gen_appbin.py $(OUT_DIR)&
 BUILD_FLASH_IMAGE += $(CD) $(OUT_DIR) &
-BUILD_FLASH_IMAGE += gen_appbin.py at_esp8266.elf 0 0 0 0 0
+ifdef CONFIG_SDK_NONOS
+    BUILD_FLASH_IMAGE += gen_appbin.py $(LINKER_OUTPUT) 0 0 0 0 0
+else ifdef CONFIG_SDK_RTOS
+    BUILD_FLASH_IMAGE += gen_appbin.py $(LINKER_OUTPUT) 0 0 0 0
+else
+    $(info !--- unknown SDK )
+    $(error )
+endif
+
 
 build_outputs:
 	$(FULL_GCC_PREFIX)objcopy --only-section .text -O binary $(LINKER_OUTPUT) $(OUT_DIR)/eagle.app.v6.text.bin

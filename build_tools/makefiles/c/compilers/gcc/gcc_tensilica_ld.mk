@@ -68,12 +68,7 @@ endif
 LIBS := $(patsubst lib%,-l%,$(GLOBAL_LIBS))
 LIBS := $(patsubst %.a,%,$(LIBS))
 
-ifeq ($(findstring cortex-m,$(CONFIG_CPU_TYPE)),cortex-m)
-#	GLOBAL_LIBS_PATH := $(GLOBAL_LIBS_PATH) $(GCC_LIB_ROOT_DIR)/fpu
-#	GLOBAL_LIBS_PATH := $(GLOBAL_LIBS_PATH) $(GCC_LIB_ROOT_DIR)/thumb
-else	
-    GLOBAL_LIBS_PATH := $(GLOBAL_LIBS_PATH) $(GCC_LIB_ROOT_DIR)
-endif
+
 LIBRARIES_DIRS := $(patsubst %,-L%,$(GLOBAL_LIBS_PATH))
 
 #}}}}}}}}  END OF LIBRARIES PREPARATIONS }}}}}}}}
@@ -152,7 +147,7 @@ endif
 
 LINKER_CMD =$(LD) $(LDFLAGS) -T $(SCATTER_FILE) $(LIBRARIES_DIRS)
 LINKER_CMD += -Wl,--start-group
-LINKER_CMD += @$(ALL_OBJECTS_LIST_FILE) $(LIBS) 
+LINKER_CMD += $(LIBS) @$(ALL_OBJECTS_LIST_FILE) 
 LINKER_CMD += -Wl,--end-group
 LINKER_CMD += -o $(LINKER_OUTPUT)
 
@@ -173,6 +168,6 @@ ifeq ($(findstring y,$(CONFIG_USED_FOR_SEMIHOSTING_UPLOADING)),y)
 	$(CP) $(OUTPUT_CRC32) $(CONFIG_SEMIHOSTING_UPLOADING_DIR)
 endif
 ifdef POST_BUILD_MAKEFILE_DIR
-	$(MAKE) -C $(POST_BUILD_MAKEFILE_DIR) -f Makefile.postbuild build_outputs
+	$(MAKE) -C $(POST_BUILD_MAKEFILE_DIR) -f Makefile.postbuild.mk build_outputs
 endif
 
