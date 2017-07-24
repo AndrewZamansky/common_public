@@ -10,7 +10,7 @@ config ESP_01
 endchoice
 
 if ESP_01
-source "$KCONFIG_START_DIR_PATH/hw_drivers/arch/TENSILICA/soc/esp8266/Kconfig.esp_01.dt"
+source "$KCONFIG_START_DIR_PATH/hw_drivers/arch/XTENSA/soc/esp8266/Kconfig.esp_01.dt"
 endif
 
 

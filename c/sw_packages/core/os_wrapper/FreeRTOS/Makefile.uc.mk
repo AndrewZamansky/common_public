@@ -16,9 +16,13 @@ ifdef CONFIG_FREE_RTOS
     
     DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH ,  $(FREE_RTOS_PATH)/FreeRTOS/Source/include )
     DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH ,  $(FREE_RTOS_PATH)/FreeRTOS/Demo/Common/include )
-    DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH ,  $(FREE_RTOS_PATH)/FreeRTOS/Source/portable/GCC/ARM_CM3 )
-    
-    DUMMY := $(call ADD_TO_GLOBAL_DEFINES , FREERTOS)#used in external sources like wolfssl, ...
+    ifdef CONFIG_CORTEX_M4
+        DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH ,  $(FREE_RTOS_PATH)/FreeRTOS/Source/portable/GCC/ARM_CM3 )
+    else ifdef CONFIG_XTENSA_XCC
+        DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH ,  $(FREE_RTOS_PATH)/FreeRTOS/Source/portable/XCC/Xtensa )
+    endif
+    #used in external sources like wolfssl, ...
+    DUMMY := $(call ADD_TO_GLOBAL_DEFINES , FREERTOS)
 endif  
 
 
@@ -56,9 +60,18 @@ VPATH += : $(FREE_RTOS_PATH)/FreeRTOS/Source/portable/MemMang
 SRC += port.c 
 ifdef CONFIG_CORTEX_M3
 	SRC += freeRtos_cortex_M_port.c
-endif
-ifdef CONFIG_CORTEX_M4
+else ifdef CONFIG_CORTEX_M4
 	SRC += freeRtos_cortex_M_port.c
+else ifdef 	CONFIG_XTENSA_XCC
+	SRC += portasm.S
+	SRC += xtensa_context.S
+	SRC += portclib.c
+	SRC += xtensa_init.c
+	SRC += xtensa_intr_asm.S
+	SRC += xtensa_intr.c
+	SRC += xtensa_overlay_os_hook.c
+	SRC += xtensa_vectors.S
+	SRC += freeRtos_xtensa_port.c
 endif
 
 ifdef CONFIG_GCC	
@@ -90,15 +103,18 @@ else ifdef CONFIG_ARMCC
         else
             VPATH += :$(FREE_RTOS_PATH)/FreeRTOS/Source/portable/RVDS/ARM_CM3
         endif         
-    endif     
+    endif
+else ifdef CONFIG_XTENSA_XCC 
+    VPATH += :$(FREE_RTOS_PATH)/FreeRTOS/Source/portable/XCC/Xtensa
 endif
 
+
 ifdef CONFIG_RT_OS_IS_SPEED_CRITICAL
-    SPEED_CRITICAL_FILES +=os_wrapper_FreeRTOS.c tasks.c  croutine.c event_groups.c list.c queue.c timers.c heap_3.c port.c
+    SPEED_CRITICAL_FILES +=os_wrapper_FreeRTOS.c tasks.c  croutine.c port.c
+    SPEED_CRITICAL_FILES +=event_groups.c list.c queue.c timers.c heap_3.c
 endif
 
 
  
-
 
 include $(COMMON_CC)

@@ -3,7 +3,9 @@
 #define _auto_init_api_h_
 
 
-#include "src/_auto_init_prerequirements_check.h"
+#include "_project_typedefs.h"
+#include "_project_defines.h"
+
 #include "arch.h"
 
 /**********  defines ************/
@@ -15,14 +17,13 @@
 				__declspec(dllexport) __declspec(align(8)) 	\
 				__declspec(allocate("init_function_object_section$b"))
 #elif defined(CONFIG_HEXAGON_COMPILER) || defined(CONFIG_ANDROID_NDK) || \
-	 defined(CONFIG_TENSILICA)
+	 defined(CONFIG_XTENSA_GCC)
 
 	#define AUTO_INIT_FUNCTION_PLACEMENT	 	\
 							__attribute__((section("auto_init_section")))
-
-//	#define AUTO_INIT_FUNCTION_PLACEMENT	const
-//	#define DEVICE_DATA_PLACEMENT
-
+#elif defined(CONFIG_XTENSA_XCC)
+	#define AUTO_INIT_FUNCTION_PLACEMENT	 	\
+							const __attribute__((section(".rodata.autoinit")))
 #endif
 
 

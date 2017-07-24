@@ -21,8 +21,8 @@ if HEXAGON
 source "$KCONFIG_START_DIR_PATH/hw_drivers/arch/HEXAGON/soc/Kconfig"
 endif
 
-if TENSILICA
-source "$KCONFIG_START_DIR_PATH/hw_drivers/arch/TENSILICA/soc/Kconfig"
+if XTENSA
+source "$KCONFIG_START_DIR_PATH/hw_drivers/arch/XTENSA/soc/Kconfig"
 endif
 
 
@@ -128,7 +128,7 @@ endmenu
 
 config USE_APPLICATION_SPECIFIC_SCATTER_FILE
 	bool "use application specifc scatter file"
-    depends on ARM || TENSILICA
+    depends on ARM || XTENSA
     default n
 
 

@@ -1,8 +1,0 @@
-menu "`---> esp_01 evaluation board"
-
-    
-    
-source "$KCONFIG_START_DIR_PATH/hw_drivers/arch/TENSILICA/soc/esp8266/Kconfig.esp8266.dt"
-
-
-endmenu

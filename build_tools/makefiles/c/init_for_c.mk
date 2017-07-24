@@ -18,8 +18,8 @@ ifeq ($(findstring menuconfig,$(MAKECMDGOALS)),)
     
     PROJECT_CONFIG_H_FILE := $(AUTO_GENERATED_FILES_DIR)/project_config.h
     
-    SCAN_DIRS_FOR_CONFIG_FILES = $(APP_ROOT_DIR) $(SW_PACKAGES_ROOT_DIR)
-    SCAN_DIRS_FOR_CONFIG_FILES += $(DRIVERS_ROOT_DIR) $(COMMON_PRIVATE_DIR)/c
+    SCAN_DIRS_FOR_CONFIG_FILES = $(APP_ROOT_DIR) $(PUBLIC_SW_PACKAGES_DIR)
+    SCAN_DIRS_FOR_CONFIG_FILES += $(PUBLIC_DRIVERS_DIR) $(COMMON_PRIVATE_DIR)/c
     
     GLOBAL_DEFINES += VERSION_STR="$(FULL_VERSION_STR)"
 
@@ -77,8 +77,10 @@ ifeq ($(findstring menuconfig,$(MAKECMDGOALS)),)
         include $(COMPILERS_DIR)/gcc/gcc_pic32_init.mk
     else ifdef CONFIG_AVR
         include $(COMPILERS_DIR)/gcc/gcc_avr_init.mk
-    else ifdef CONFIG_TENSILICA
-        include $(COMPILERS_DIR)/gcc/gcc_tensilica_init.mk
+    else ifdef CONFIG_XTENSA_GCC
+        include $(COMPILERS_DIR)/gcc/gcc_xtensa_init.mk
+    else ifdef CONFIG_XTENSA_XCC
+        include $(COMPILERS_DIR)/xcc/xcc_xtensa_init.mk
     else ifdef CONFIG_STM8
         include $(COMPILERS_DIR)/cxstm8/cxstm8_init.mk
     else ifdef CONFIG_HEXAGON

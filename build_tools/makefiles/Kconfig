@@ -63,6 +63,24 @@ endchoice
 endif
 
 
+##### XTENSA  #########
+if XTENSA
+
+choice
+	prompt "Compiler"
+	default XTENSA_GCC
+
+config XTENSA_GCC
+	bool "gcc "
+
+config XTENSA_XCC
+	bool "xcc "
+
+endchoice
+
+endif
+
+
 ##### HEXAGON  #########
 if HEXAGON
 
@@ -117,7 +135,7 @@ endchoice
 endif
 
 
-if GCC || GPP || MIN_GW_GCC || MIN_GW_GPP || PIC_C32 || PIC_XC32 || ANDROID_NDK_COMPILER || TENSILICA
+if GCC || GPP || MIN_GW_GCC || MIN_GW_GPP || PIC_C32 || PIC_XC32 || ANDROID_NDK_COMPILER || XTENSA_GCC
 source "$KCONFIG_START_DIR_PATH/../build_tools/makefiles/c/compilers/gcc/Kconfig"
 endif
 
@@ -130,6 +148,9 @@ if HEXAGON_COMPILER
 source "$KCONFIG_START_DIR_PATH/../build_tools/makefiles/c/compilers/clang/Kconfig"
 endif
 
+if XTENSA_XCC
+source "$KCONFIG_START_DIR_PATH/../build_tools/makefiles/c/compilers/xcc/Kconfig"
+endif
 
 menuconfig INCLUDE_TOOLCHAIN_LIBRARIES
 	bool   "tool chain libraries"

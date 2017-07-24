@@ -25,9 +25,9 @@ $(info scan for Makefile.uc.mk done . creating include_components.mk)
 ALL_CONFIG_FILES := $(patsubst \
                 $(APP_ROOT_DIR)%,$$(APP_ROOT_DIR)%,$(ALL_CONFIG_FILES))
 ALL_CONFIG_FILES := $(patsubst \
-                $(DRIVERS_ROOT_DIR)%,$$(DRIVERS_ROOT_DIR)%,$(ALL_CONFIG_FILES))
+                $(PUBLIC_DRIVERS_DIR)%,$$(PUBLIC_DRIVERS_DIR)%,$(ALL_CONFIG_FILES))
 ALL_CONFIG_FILES := $(patsubst \
-        $(SW_PACKAGES_ROOT_DIR)%,$$(SW_PACKAGES_ROOT_DIR)%,$(ALL_CONFIG_FILES))
+        $(PUBLIC_SW_PACKAGES_DIR)%,$$(PUBLIC_SW_PACKAGES_DIR)%,$(ALL_CONFIG_FILES))
 ALL_CONFIG_FILES := $(patsubst \
             $(COMMON_PRIVATE_DIR)%,$$(COMMON_PRIVATE_DIR)%,$(ALL_CONFIG_FILES))
 

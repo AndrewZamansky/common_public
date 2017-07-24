@@ -2,7 +2,7 @@
 ifeq ($(findstring YES,$(CONFIG_INCLUDE_UGFX)),YES) 	 
 	INCLUDE_THIS_COMPONENT := YES   # must be here !!
 	GLOBAL_INCLUDE_DIR += $(EXTERNAL_SOURCE_ROOT_DIR)/ugfx
-	GLOBAL_INCLUDE_DIR += $(SW_PACKAGES_ROOT_DIR)/ugfx/include
+	GLOBAL_INCLUDE_DIR += $(PUBLIC_SW_PACKAGES_DIR)/ugfx/include
 endif  
 
 #INCLUDE_DIR =   

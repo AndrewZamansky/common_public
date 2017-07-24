@@ -12,7 +12,6 @@
 #define _auto_init_prerequirements_check_H
 
 
-#include "_project.h"
 #include "global_prerequirements_check.h"
 /***************************/
 /******** test defines *****/

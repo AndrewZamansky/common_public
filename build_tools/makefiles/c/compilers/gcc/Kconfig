@@ -124,8 +124,8 @@ endchoice
 endif
 
 
-##### TENSILICA  #########
-if TENSILICA
+##### XTENSA  #########
+if XTENSA
 endif
 
 

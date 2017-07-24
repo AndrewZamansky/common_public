@@ -16,7 +16,7 @@ INCLUDE_DIR = ffmpeg_config_include
 
 INCLUDE_DIR += $(EXTERNAL_SOURCE_ROOT_DIR)/ffmpeg
 INCLUDE_DIR += $(EXTERNAL_SOURCE_ROOT_DIR)/ffmpeg/libavfilter
-INCLUDE_DIR += $(SW_PACKAGES_ROOT_DIR)/dsp/ffmpeg
+INCLUDE_DIR += $(PUBLIC_SW_PACKAGES_DIR)/dsp/ffmpeg
 
 SRC += af_biquads.c
 SRC += formats.c

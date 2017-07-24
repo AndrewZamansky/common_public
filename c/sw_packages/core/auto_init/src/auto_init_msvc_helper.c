@@ -9,8 +9,12 @@
 /***************   includes    *******************/
 
 
-#include "_auto_init_prerequirements_check.h"
+#include "_project_typedefs.h"
+#include "_project_defines.h"
+
 #include "auto_init_api.h"
+
+#include "_auto_init_prerequirements_check.h"
 
 
 

@@ -5,8 +5,12 @@
  */
 
 /***************   includes    *******************/
-#include "_auto_init_prerequirements_check.h"
+#include "_project_typedefs.h"
+#include "_project_defines.h"
+
 #include "auto_init_api.h"
+
+#include "_auto_init_prerequirements_check.h"
 
 /***************   defines    *******************/
 
@@ -30,10 +34,13 @@ void auto_init_api(void)
 
 
 #if !defined(CONFIG_HEXAGON_COMPILER) && !defined(CONFIG_ANDROID_NDK) \
-		&& !defined(CONFIG_TENSILICA)
+		&& !defined(CONFIG_XTENSA_GCC) && !defined(CONFIG_XTENSA_XCC)
 	#pragma message( "change to __start_auto_init_section in " __FILE__ )
 	p_curr_auto_init = (auto_init_struct_t *)&init_functions_section_start;
 	p_end_of_auto_init = (auto_init_struct_t *)&init_functions_section_end;
+#elif defined(CONFIG_XTENSA_XCC)
+	p_curr_auto_init = NULL;
+	p_end_of_auto_init = NULL;
 #else
 	p_curr_auto_init = (auto_init_struct_t *)&__start_auto_init_section;
 	p_end_of_auto_init = (auto_init_struct_t *)&__stop_auto_init_section;

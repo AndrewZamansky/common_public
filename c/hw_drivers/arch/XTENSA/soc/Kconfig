@@ -1,0 +1,53 @@
+
+
+choice
+	prompt "SOC"
+	default XTENSA_SIM
+
+config ESP8266
+	bool "ESP8266"
+	select XTENSA_LX6
+
+config XTENSA_SIM
+	bool "simulator"
+
+endchoice
+
+if XTENSA_SIM
+
+choice
+	prompt "CORE"
+	default XTENSA_LX6_
+
+config XTENSA_LX6_
+	bool "lx6"
+	select XTENSA_LX6
+
+config XTENSA_LX7_
+	bool "lx7"
+	select XTENSA_LX7
+
+config XTENSA_HIFI3_BD5_
+	bool "hifi3_bd5"
+	select XTENSA_HIFI3_BD5
+
+endchoice
+
+endif
+
+if ESP8266
+source "$KCONFIG_START_DIR_PATH/hw_drivers/arch/XTENSA/soc/esp8266/Kconfig"
+endif
+
+if XTENSA_SIM
+source "$KCONFIG_START_DIR_PATH/hw_drivers/arch/XTENSA/soc/sim/Kconfig"
+endif
+
+config XTENSA_LX6
+	bool
+	
+config XTENSA_LX7
+	bool
+	
+config XTENSA_HIFI3_BD5
+	bool

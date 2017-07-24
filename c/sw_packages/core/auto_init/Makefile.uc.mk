@@ -8,17 +8,36 @@ INCLUDE_THIS_COMPONENT := y
 
 #ASMFLAGS =  
 
+# AUTO_INIT_WITH_BOUNDS is prefered as itis more robust
+AUTO_INIT_WITH_BOUNDS :=
+AUTO_INIT_WITH_BOUNDS += $(CONFIG_MICROSOFT_COMPILER)
+AUTO_INIT_WITH_BOUNDS += $(CONFIG_HEXAGON_COMPILER)
+AUTO_INIT_WITH_BOUNDS += $(CONFIG_ANDROID_NDK)
+AUTO_INIT_WITH_BOUNDS += $(CONFIG_XTENSA_GCC)
+AUTO_INIT_WITH_BOUNDS :=$(strip $(AUTO_INIT_WITH_BOUNDS))
 
+AUTO_INIT_WITHOUT_BOUNDS :=
+AUTO_INIT_WITHOUT_BOUNDS +=$(CONFIG_XTENSA_XCC)
+AUTO_INIT_WITHOUT_BOUNDS :=$(strip $(AUTO_INIT_WITHOUT_BOUNDS))
 
-SRC = auto_init.c 
+ifneq ($(AUTO_INIT_WITH_BOUNDS),)
+    SRC = auto_init_with_section_bounds.c 
+else ifneq ($(AUTO_INIT_WITHOUT_BOUNDS),)
+    SRC = auto_init_without_section_bounds.c 
+else
+    $(info unkonown compliler for auto_init infrastructure)
+    $(erro)
+endif
+
+USE_GCC_AUTO_INIT_HELPER :=
+USE_GCC_AUTO_INIT_HELPER += $(CONFIG_HEXAGON_COMPILER)
+USE_GCC_AUTO_INIT_HELPER += $(CONFIG_ANDROID_NDK)
+USE_GCC_AUTO_INIT_HELPER += $(CONFIG_XTENSA_GCC)
+USE_GCC_AUTO_INIT_HELPER :=$(strip $(USE_GCC_AUTO_INIT_HELPER))
 
 ifdef CONFIG_MICROSOFT_COMPILER
     SRC += auto_init_msvc_helper.c
-else ifdef CONFIG_HEXAGON_COMPILER
-    SRC += auto_init_gcc_helper.c
-else ifdef CONFIG_ANDROID_NDK
-    SRC += auto_init_gcc_helper.c
-else ifdef CONFIG_TENSILICA
+else ifneq ($(USE_GCC_AUTO_INIT_HELPER),)
     SRC += auto_init_gcc_helper.c
 endif
 

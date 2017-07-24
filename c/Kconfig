@@ -38,8 +38,8 @@ config STM8
 config AVR
 	bool "avr"
 
-config TENSILICA
-	bool "tensilica"
+config XTENSA
+	bool "xtensa"
 
 config HEXAGON
 	bool "hexagon"

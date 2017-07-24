@@ -28,8 +28,8 @@ endif
 include $(PARENT_OF_COMMON_PUBLIC_DIR)/workspace_config.mk
 
 MAKEFILES_INC_FUNC_DIR :=$(MAKEFILES_ROOT_DIR)/_include_functions
-DRIVERS_ROOT_DIR := $(COMMON_PUBLIC_DIR)/c/hw_drivers
-SW_PACKAGES_ROOT_DIR := $(COMMON_PUBLIC_DIR)/c/sw_packages
+PUBLIC_DRIVERS_DIR := $(COMMON_PUBLIC_DIR)/c/hw_drivers
+PUBLIC_SW_PACKAGES_DIR := $(COMMON_PUBLIC_DIR)/c/sw_packages
 
 AUTO_GENERATED_FILES_DIR := $(APP_ROOT_DIR)/z_auto_generated_files
 OUT_DIR_HISTORY    :=    $(APP_ROOT_DIR)/zOUT_history
@@ -68,6 +68,15 @@ ifeq ("$(wildcard $(COMMON_PRIVATE_DIR))","")
     DUMMY:=$(shell $(ECHO) config PRIVATE_DUMMY>$(COMMON_PRIVATE_DIR)/Kconfig)
 endif
 
+ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
+    SET_CC_ENV_VARS :=set APP_ROOT_DIR=$(APP_ROOT_DIR)&
+    SET_CC_ENV_VARS +=set EXTERNAL_SOURCE_ROOT_DIR=$(EXTERNAL_SOURCE_ROOT_DIR)&
+    SET_CC_ENV_VARS +=set PUBLIC_SW_PACKAGES_DIR=$(PUBLIC_SW_PACKAGES_DIR)&
+    SET_CC_ENV_VARS +=set PUBLIC_DRIVERS_DIR=$(PUBLIC_DRIVERS_DIR)
+else
+    $(info --- add enviranmental variable PUBLIC_SW_PACKAGES_DIR)
+    $(error)
+endif
 
 COMMON_INIT_SECTION_THAT_SHOULD_RUN_ONCE = dummy_value
 

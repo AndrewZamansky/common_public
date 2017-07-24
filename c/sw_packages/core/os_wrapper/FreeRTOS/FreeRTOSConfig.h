@@ -86,11 +86,28 @@
 #define configUSE_PREEMPTION		1
 #define configUSE_IDLE_HOOK			1
 #define configUSE_TICK_HOOK			0
+
+#define configTOTAL_HEAP_SIZE		( ( size_t ) ( CONFIG_HEAP_SIZE ) )
+
+#define configMAX_PRIORITIES		( 5 )
+
+#if !defined(CONFIG_XTENSA_XCC)
+
 #define configCPU_CLOCK_HZ			0 // not in use . os clock configured in application . was : ( ( unsigned long ) CONFIG_CORE_CLOCK )
 #define configTICK_RATE_HZ			1 // not in use . os clock configured in application . was : ( ( TickType_t ) 1000 )
-#define configMAX_PRIORITIES		( 5 )
 #define configMINIMAL_STACK_SIZE	( ( unsigned short ) 256 )
-#define configTOTAL_HEAP_SIZE		( ( size_t ) ( CONFIG_HEAP_SIZE ) )
+
+#else
+
+#define configMINIMAL_STACK_SIZE		(XT_STACK_MIN_SIZE > 4096 ? XT_STACK_MIN_SIZE : 4096)
+#define configTICK_RATE_HZ				( 50 )
+
+/* Default clock rate for simulator */
+#define configCPU_CLOCK_HZ				2000000
+#define configISR_STACK_SIZE			2048
+
+#endif
+
 #define configMAX_TASK_NAME_LEN		( 32 )
 #define configUSE_TRACE_FACILITY	0
 #define configUSE_16_BIT_TICKS		0
@@ -114,6 +131,7 @@ to exclude the API function. */
 #define INCLUDE_uxTaskGetStackHighWaterMark  CONFIG_TEST_TASK_STACK
 
 #if defined(CONFIG_CORTEX_M3) || defined(CONFIG_CORTEX_M4)
+
 /* This is the raw value as per the Cortex-M3 NVIC.  Values can be 255
 (lowest) to 0 (1?) (highest). */
 #define configKERNEL_INTERRUPT_PRIORITY 		0xff
@@ -129,6 +147,12 @@ priority values, 0 to 15.  This must correspond to the
 configKERNEL_INTERRUPT_PRIORITY setting.  Here 15 corresponds to the lowest
 NVIC value of 255. */
 #define configLIBRARY_KERNEL_INTERRUPT_PRIORITY	15
+
+
+#elif defined(CONFIG_XTENSA_XCC)
+
+#define configKERNEL_INTERRUPT_PRIORITY		1
+#define configMAX_SYSCALL_INTERRUPT_PRIORITY	XCHAL_EXCM_LEVEL
 
 #endif
 
