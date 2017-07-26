@@ -109,7 +109,7 @@ struct dev_desc_t
 		(CONFIG_MAX_NUM_OF_DYNAMIC_DEVICES>0))
 	char	*module_name;
 #endif
-#if !defined(CONFIG_DONT_USE_DEVICE_NAME_STRINGS)
+#if defined(CONFIG_USE_DEVICE_NAME_STRINGS)
 	char 					*name;
 #endif
 	dev_ioctl_func_t  		ioctl;

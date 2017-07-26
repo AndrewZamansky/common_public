@@ -125,7 +125,7 @@ uint8_t DEV_API_dummy_callback_func(struct dev_desc_t *adev,
 }
 
 
-#if !defined(CONFIG_DONT_USE_DEVICE_NAME_STRINGS)
+#if defined(CONFIG_USE_DEVICE_NAME_STRINGS)
 
 /*
  * function : DEV_OPEN()
@@ -136,6 +136,7 @@ struct dev_desc_t * DEV_OPEN(const char *device_name)
 {
 	struct dev_desc_t * curr_pdev ;
 
+#ifdef CONFIG_USE_SPECIFIC_MEMORY_LOCATION_FOR_DEVICES
 	curr_pdev =
 			(struct dev_desc_t *)(((uint8_t*)&start_of_device_tree_stamp) + 4);
 	while (*(uint8_t*)curr_pdev != END_OF_DEVICE_TREE_STAMP)
@@ -147,6 +148,7 @@ struct dev_desc_t * DEV_OPEN(const char *device_name)
 		}
 		curr_pdev++;
 	}
+#endif
 
 #if CONFIG_MAX_NUM_OF_DYNAMIC_DEVICES > 0
 	curr_pdev =  &dev_descriptors[0];
@@ -161,7 +163,7 @@ struct dev_desc_t * DEV_OPEN(const char *device_name)
 #endif
 	return NULL;
 }
-#endif /* !defined(CONFIG_DONT_USE_DEVICE_NAME_STRINGS) */
+#endif /* defined(CONFIG_USE_DEVICE_NAME_STRINGS) */
 
 #if defined(CONFIG_DYNAMIC_DEVICE_TREE) || (CONFIG_MAX_NUM_OF_DYNAMIC_DEVICES>0)
 

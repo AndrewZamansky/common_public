@@ -25,6 +25,33 @@ extern uint8_t MODULE_CALLBACK_FUNCTION(struct dev_desc_t *adev,
 		uint8_t aCallback_num, void * aCallback_param1,
 		void * aCallback_param2);
 
+#ifdef CONFIG_USE_SPECIFIC_MEMORY_LOCATION_FOR_DEVICES
+	#if (defined(CONFIG_CORTEX_M3) || defined(CONFIG_CORTEX_M4) || 	\
+			defined(CONFIG_CORTEX_A9) )  && defined(CONFIG_GCC)
+		#define START_OF_MODULES_PLACEMENT	 		__attribute__((section(".start_of_modules")))
+		#define MODULES_PLACEMENT	 				__attribute__((section(".modules")))
+		#define END_OF_MODULES_PLACEMENT	 		__attribute__((section(".end_of_modules")))
+
+		#define START_OF_DEVICE_TREE_PLACEMENT	 	__attribute__((section(".start_of_device_tree")))
+		#define DEVICE_PLACEMENT	 				__attribute__((section(".static_devs")))
+		#define END_OF_DEVICE_TREE_PLACEMENT	 	__attribute__((section(".end_of_device_tree")))
+
+		#define DEVICE_DATA_PLACEMENT	 			__attribute__((section(".static_devs_data")))
+		#define AUTO_INIT_FUNCTION_PLACEMENT	 	__attribute__((section(".auto_init_functions")))
+	#endif
+
+#else
+	#define START_OF_MODULES_PLACEMENT
+	#define MODULES_PLACEMENT
+	#define END_OF_MODULES_PLACEMENT
+
+	#define START_OF_DEVICE_TREE_PLACEMENT
+	#define DEVICE_PLACEMENT
+	#define END_OF_DEVICE_TREE_PLACEMENT
+
+	#define DEVICE_DATA_PLACEMENT
+#endif
+
 
 #ifdef DT_DEV_MODULE
 	#include "src/add_static_dev.h"

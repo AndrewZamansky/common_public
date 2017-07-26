@@ -1,8 +1,13 @@
 #
 	
+config USE_SPECIFIC_MEMORY_LOCATION_FOR_DEVICES
+	bool "devices placed in specific memory loactions"
+	default n
 
 menuconfig DYNAMIC_DEVICE_TREE
 	bool   "dynamic device tree"
+	depends on USE_SPECIFIC_MEMORY_LOCATION_FOR_DEVICES
+	select USE_DEVICE_NAME_STRINGS
 	default n
 
 config DEVICE_TREE_LOCATION_ADDR
@@ -29,10 +34,10 @@ config DEVICE_MANAGEMENT_DUMMY_DELIMITER
 	bool
 	default n
 
-config DONT_USE_DEVICE_NAME_STRINGS
-	bool   "dont use device name strings (reduce code size)"
-	depends on !DYNAMIC_DEVICE_TREE
-	default n
+config USE_DEVICE_NAME_STRINGS
+	bool   "use device name strings (increase code size)"
+	depends on USE_SPECIFIC_MEMORY_LOCATION_FOR_DEVICES || USE_DYNAMIC_DEVICES
+	default y
 
 config USE_RUNTIME_DEVICE_CONFIGURATION_BY_PARAMETER_NAMES
 	bool   "devices can be configured by parameter names"
