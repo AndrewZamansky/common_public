@@ -66,8 +66,6 @@
 #ifndef FREERTOS_CONFIG_H
 #define FREERTOS_CONFIG_H
 
-/* Library includes. */
-//#include "stm32f10x_lib.h"
 #include "_project_defines.h"
 #include "cpu_config.h"
 
@@ -91,21 +89,14 @@
 
 #define configMAX_PRIORITIES		( 5 )
 
-#if !defined(CONFIG_XTENSA_XCC)
-
 #define configCPU_CLOCK_HZ			0 // not in use . os clock configured in application . was : ( ( unsigned long ) CONFIG_CORE_CLOCK )
 #define configTICK_RATE_HZ			1 // not in use . os clock configured in application . was : ( ( TickType_t ) 1000 )
-#define configMINIMAL_STACK_SIZE	( ( unsigned short ) 256 )
 
+#if !defined(CONFIG_XTENSA_XCC)
+	#define configMINIMAL_STACK_SIZE	( ( unsigned short ) 256 )
 #else
-
-#define configMINIMAL_STACK_SIZE		(XT_STACK_MIN_SIZE > 4096 ? XT_STACK_MIN_SIZE : 4096)
-#define configTICK_RATE_HZ				( 50 )
-
-/* Default clock rate for simulator */
-#define configCPU_CLOCK_HZ				2000000
-#define configISR_STACK_SIZE			2048
-
+	#define configMINIMAL_STACK_SIZE		(XT_STACK_MIN_SIZE > 4096 ? XT_STACK_MIN_SIZE : 4096)
+	#define configISR_STACK_SIZE			2048
 #endif
 
 #define configMAX_TASK_NAME_LEN		( 32 )
@@ -132,27 +123,27 @@ to exclude the API function. */
 
 #if defined(CONFIG_CORTEX_M3) || defined(CONFIG_CORTEX_M4)
 
-/* This is the raw value as per the Cortex-M3 NVIC.  Values can be 255
-(lowest) to 0 (1?) (highest). */
-#define configKERNEL_INTERRUPT_PRIORITY 		0xff
-/* !!!! configMAX_SYSCALL_INTERRUPT_PRIORITY must not be set to zero !!!!
-See http://www.FreeRTOS.org/RTOS-Cortex-M3-M4.html. */
-//#define configMAX_SYSCALL_INTERRUPT_PRIORITY
-/* example 4 priority bits for : (0xbf) equivalent to priority 11.(11<<4 + 0xf) (1 padding for compatibility)*/
-/* example 3 priority bits for : (0xbf) equivalent to priority 5.(5<<4 + 0x1f) (1 padding for compatibility)*/
-#define configMAX_SYSCALL_INTERRUPT_PRIORITY  ((CONFIG_MAXIMAL_INTERRUPT_SYSCALL_PRIO << __NVIC_PRIO_BITS) | ( (1 << (8 - __NVIC_PRIO_BITS)) -1 ))
+	/* This is the raw value as per the Cortex-M3 NVIC.  Values can be 255
+	(lowest) to 0 (1?) (highest). */
+	#define configKERNEL_INTERRUPT_PRIORITY 		0xff
+	/* !!!! configMAX_SYSCALL_INTERRUPT_PRIORITY must not be set to zero !!!!
+	See http://www.FreeRTOS.org/RTOS-Cortex-M3-M4.html. */
+	//#define configMAX_SYSCALL_INTERRUPT_PRIORITY
+	/* example 4 priority bits for : (0xbf) equivalent to priority 11.(11<<4 + 0xf) (1 padding for compatibility)*/
+	/* example 3 priority bits for : (0xbf) equivalent to priority 5.(5<<4 + 0x1f) (1 padding for compatibility)*/
+	#define configMAX_SYSCALL_INTERRUPT_PRIORITY  ((CONFIG_MAXIMAL_INTERRUPT_SYSCALL_PRIO << __NVIC_PRIO_BITS) | ( (1 << (8 - __NVIC_PRIO_BITS)) -1 ))
 
-/* This is the value being used as per the ST library which permits 16
-priority values, 0 to 15.  This must correspond to the
-configKERNEL_INTERRUPT_PRIORITY setting.  Here 15 corresponds to the lowest
-NVIC value of 255. */
-#define configLIBRARY_KERNEL_INTERRUPT_PRIORITY	15
+	/* This is the value being used as per the ST library which permits 16
+	priority values, 0 to 15.  This must correspond to the
+	configKERNEL_INTERRUPT_PRIORITY setting.  Here 15 corresponds to the lowest
+	NVIC value of 255. */
+	#define configLIBRARY_KERNEL_INTERRUPT_PRIORITY	15
 
 
 #elif defined(CONFIG_XTENSA_XCC)
 
-#define configKERNEL_INTERRUPT_PRIORITY		1
-#define configMAX_SYSCALL_INTERRUPT_PRIORITY	XCHAL_EXCM_LEVEL
+	#define configKERNEL_INTERRUPT_PRIORITY		1
+	#define configMAX_SYSCALL_INTERRUPT_PRIORITY	XCHAL_EXCM_LEVEL
 
 #endif
 

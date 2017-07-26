@@ -94,14 +94,10 @@ extern "C" {
 -----------------------------------------------------------------------------*/
 
 /* Extra space required for interrupt/exception hooks. */
-#ifdef XT_INTEXC_HOOKS
-  #ifdef __XTENSA_CALL0_ABI__
-    #define STK_INTEXC_EXTRA        0x200
-  #else
-    #define STK_INTEXC_EXTRA        0x180
-  #endif
+#ifdef __XTENSA_CALL0_ABI__
+	#define STK_INTEXC_EXTRA        0x200
 #else
-  #define STK_INTEXC_EXTRA          0
+	#define STK_INTEXC_EXTRA        0x180
 #endif
 
 /* Check C library thread safety support and compute size of C library save area. */
@@ -155,6 +151,8 @@ extern "C" {
 #define XT_STACK_EXTRA            (XT_XTRA_SIZE)
 #define XT_STACK_EXTRA_CLIB       (XT_XTRA_SIZE + XT_CLIB_CONTEXT_AREA_SIZE)
 
+
+#define XT_INTEXC_HOOK_NUM  (1 + XCHAL_NUM_INTLEVELS + XCHAL_HAVE_NMI)
 
 #ifdef __cplusplus
 }

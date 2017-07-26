@@ -5,7 +5,6 @@
 /**********  defines ************/
 
 
-
 #define START_OF_MODULES_PLACEMENT	 		const
 #define MODULES_PLACEMENT	 				const
 #define END_OF_MODULES_PLACEMENT	 		const

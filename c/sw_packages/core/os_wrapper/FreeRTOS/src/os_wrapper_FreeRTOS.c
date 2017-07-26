@@ -22,9 +22,7 @@
 extern void os_start_arch_related_components(void) ;
 extern void xPortSysTickHandler(void);
 
-#if !defined(CONFIG_XTENSA_XCC)
-	static struct dev_desc_t * l_timer_dev = NULL;
-#endif
+static struct dev_desc_t * l_timer_dev = NULL;
 
 static struct dev_desc_t * l_heartbeat_dev = NULL;
 
@@ -76,12 +74,10 @@ uint8_t os_queue_send_immediate(os_queue_t queue ,  void * pData  )
 
 void os_start(void)
 {
-#if !defined(CONFIG_XTENSA_XCC)
 	if (NULL == l_timer_dev)
 	{
 		return ;
 	}
-#endif
 
 	os_start_arch_related_components();
 	vTaskStartScheduler();
@@ -108,7 +104,6 @@ void vApplicationIdleHook()
 #endif
 }
 
-#if !defined(CONFIG_XTENSA_XCC)
 
 /* implement  vPortSetupTimerInterrupt() function
  * to disable weak copy of this function in port.c if local systick
@@ -125,7 +120,6 @@ void  os_set_tick_timer_dev(struct dev_desc_t *a_timer_dev)
 {
 	l_timer_dev = a_timer_dev;
 }
-#endif
 
 void  os_set_heartbeat_dev(struct dev_desc_t *a_heartbeat_dev)
 {

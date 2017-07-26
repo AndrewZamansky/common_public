@@ -1,5 +1,8 @@
 menu "`--->  simulator configurations"
 
+config XTENSA_SIM_CORE_CLOCK
+    int "crystal clock in Hz"
+    default 100000000 
 
 endmenu
 

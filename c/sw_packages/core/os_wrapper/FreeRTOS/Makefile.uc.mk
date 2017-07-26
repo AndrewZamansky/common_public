@@ -66,11 +66,7 @@ else ifdef 	CONFIG_XTENSA_XCC
 	SRC += portasm.S
 	SRC += xtensa_context.S
 	SRC += portclib.c
-	SRC += xtensa_init.c
-	SRC += xtensa_intr_asm.S
-	SRC += xtensa_intr.c
 	SRC += xtensa_overlay_os_hook.c
-	SRC += xtensa_vectors.S
 	SRC += freeRtos_xtensa_port.c
 endif
 

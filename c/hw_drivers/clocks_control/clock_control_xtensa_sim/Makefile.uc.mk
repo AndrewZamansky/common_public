@@ -1,4 +1,4 @@
-ifdef CONFIG_I94XXX
+ifdef CONFIG_XTENSA_SIM
     INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_INTERNAL_CLOCK_CONTROL)
 endif
 
@@ -13,11 +13,8 @@ endif
 
 
 
-SRC = clock_control_i94xxx.c
+SRC = clock_control_xtensa_sim.c
 VPATH = src
 
-SRC += clk.c
-
-VPATH +=  | $(I94XXX_SRC_DIR)
 
 include $(COMMON_CC)

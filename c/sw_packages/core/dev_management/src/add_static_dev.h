@@ -56,7 +56,7 @@
 #else
 
 	//because of  bug 53119 in gcc disable "-Wmissing-braces" warning
-	#if (4 == __GNUC__)
+	#if (4 == __GNUC__) && !defined(CONFIG_XTENSA_XCC)
 		#pragma GCC diagnostic push
 		#pragma GCC diagnostic ignored "-Wmissing-braces"
 	#endif
@@ -68,7 +68,7 @@
 										&DEV_RUNTIME_DATA_INST(DT_DEV_NAME)
 
 	//because of  bug 53119 in gcc disable "-Wmissing-braces" warning
-	#if (4 == __GNUC__)
+	#if (4 == __GNUC__) && !defined(CONFIG_XTENSA_XCC)
 		#pragma GCC diagnostic pop
 	#endif
 

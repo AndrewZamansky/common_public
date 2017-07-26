@@ -1,0 +1,6 @@
+
+INCLUDE_THIS_COMPONENT := $(CONFIG_XTENSA)
+
+
+
+include $(COMMON_CC)
