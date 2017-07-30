@@ -27,13 +27,13 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ******************************************************************************/
 
 #include <stdlib.h>
+#include <stdint.h>
 
 #include <xtensa/config/core.h>
 
 #include "irq_api.h"
+#include "xtensa_ops.h"
 
-
-#if XCHAL_HAVE_EXCEPTIONS
 
 /* Handler table is in xtensa_intr_asm.S */
 
@@ -73,9 +73,7 @@ xt_exc_handler xt_set_exception_handler(int n, xt_exc_handler f)
     return ((old == &xt_unhandled_exception) ? 0 : old);
 }
 
-#endif
 
-#if XCHAL_HAVE_INTERRUPTS
 
 /* Handler table is in xtensa_intr_asm.S */
 
@@ -127,6 +125,24 @@ xt_handler xt_set_interrupt_handler(int n, xt_handler f, void * arg)
     return ((old == &xt_unhandled_interrupt) ? 0 : old);
 }
 
+#define UNINITIALIZED_INT_ENABLE_VALUES	0xffffffff
+static uint32_t last_intenable_val = UNINITIALIZED_INT_ENABLE_VALUES;
 
-#endif /* XCHAL_HAVE_INTERRUPTS */
+void	irq_block_all(void)
+{
+	uint32_t intenable_val;
 
+	intenable_val = 0;
+	XSR(intenable_val, INTENABLE);
+	last_intenable_val = intenable_val;
+}
+
+void	irq_unblock_all(void)
+{
+	uint32_t intenable_val;
+
+	if (UNINITIALIZED_INT_ENABLE_VALUES == last_intenable_val) return;
+
+	intenable_val = last_intenable_val;
+	XSR(intenable_val, INTENABLE);
+}

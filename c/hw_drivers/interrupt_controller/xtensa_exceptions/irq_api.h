@@ -90,4 +90,11 @@ static inline void xt_set_intclear(unsigned int arg)
 
 
 
+/***************** unblock interrupts reception **************/
+void	irq_unblock_all(void);
+
+/***************** block interrupts reception **************/
+void	irq_block_all(void);
+
+
 #endif

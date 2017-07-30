@@ -1,8 +1,10 @@
 
-#ifndef _ARM_API_H_
-#define _ARM_API_H_
+#ifndef _semihosting_api_H_
+#define _semihosting_api_H_
 
-#include "src/_semihosting_prerequirements_check.h"
+#include "_project_typedefs.h"
+#include "_project_defines.h"
+#include "dev_common_ioctl_and_types.h"
 
 /**********  defines ************/
 

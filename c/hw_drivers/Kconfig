@@ -23,7 +23,7 @@ config INCLUDE_GIC
 ######## semihosting configurations #########
 menuconfig INCLUDE_SEMIHOSTING
 	bool   "semihosting"
-	depends on ARM
+	depends on ARM || XTENSA_XCC
 	select INCLUDE_PRINTF
 	default n
 

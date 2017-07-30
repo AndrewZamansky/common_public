@@ -2,7 +2,9 @@
 #ifndef _heartbeat_API_H_
 #define _heartbeat_API_H_
 
-#include "src/_heartbeat_prerequirements_check.h"
+#include "_project_typedefs.h"
+#include "_project_defines.h"
+#include "dev_common_ioctl_and_types.h"
 
 /*****************  defines  **************/
 

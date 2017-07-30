@@ -7,7 +7,7 @@
 #define	MODULE_NAME				heartbeat
 #define	MODULE_INIT_FUNCTION	heartbeat_init
 #define	MODULE_IOCTL_FUNCTION	heartbeat_ioctl
-#define MODULE_CONFIG_DATA_STRUCT_TYPE	heartbeat_instance_t
+#define MODULE_CONFIG_DATA_STRUCT_TYPE	struct heartbeat_instance_t
 
 #ifdef DT_DEV_MODULE
 

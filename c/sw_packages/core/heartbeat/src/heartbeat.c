@@ -8,7 +8,9 @@
 
 
 /********  includes *********************/
-#include "src/_heartbeat_prerequirements_check.h"
+#include "_project_typedefs.h"
+#include "_project_defines.h"
+
 
 #include "heartbeat_api.h"
 
@@ -18,6 +20,12 @@
 
 #include "irq_api.h"
 
+//#include "dev_management_api.h"
+#include "os_wrapper.h"
+
+#include "_heartbeat_prerequirements_check.h"
+
+/*following line add module to available module list for dynamic device tree*/
 #include "heartbeat_add_component.h"
 
 /********  defines *********************/
@@ -34,6 +42,7 @@
 /********  local defs *********************/
 
 volatile uint32_t cpuUsageCounter;
+volatile uint32_t cpu1secUsageCounter = 0;
 volatile uint32_t restart_counter=1;
 volatile uint32_t callibrationDone = 0;
 //uint32_t idleCpuUsageCounter;
@@ -59,7 +68,7 @@ void heartbeat_timer_callback()
 uint8_t heartbeat_ioctl( struct dev_desc_t *adev,
 		const uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2)
 {
-	heartbeat_instance_t *handle;
+	struct heartbeat_instance_t *handle;
 	static size_t ticks_per_mSec=1;
 
 	handle = DEV_GET_CONFIG_DATA_POINTER(adev);
@@ -72,18 +81,17 @@ uint8_t heartbeat_ioctl( struct dev_desc_t *adev,
 		DEV_IOCTL_0_PARAMS(handle->callibration_timer , IOCTL_DEVICE_START );
 
 		irq_unblock_all()	;
-		while(1)
+		while (1)
 		{
-
-			if(restart_counter )
+			if ( restart_counter )
 			{
 				if(SKIP_MEASURES == callibrationDone)
 				{
 					break;
 				}
 				callibrationDone++;
-				cpuUsageCounter=0;
-				restart_counter=0;
+				cpuUsageCounter = 0;
+				restart_counter = 0;
 			}
 			cpuUsageCounter++;
 		}
@@ -93,6 +101,7 @@ uint8_t heartbeat_ioctl( struct dev_desc_t *adev,
 		//idleCpuUsageCounter = cpuUsageCounter * 1000;
 		cpuUsageCounter=0;
 
+		callibrationDone++;
 
 
 		DEV_IOCTL_0_PARAMS(handle->callibration_timer , IOCTL_TIMER_STOP );
@@ -107,30 +116,37 @@ uint8_t heartbeat_ioctl( struct dev_desc_t *adev,
 	case HEARTBEAT_API_CALL_FROM_IDLE_TASK :
 		while (1)
 		{
-			if(restart_counter )
+			if (restart_counter )
 			{
 				uint16_t tmp_restart_counter = restart_counter;
-				restart_counter=0;
 
 				one_sec_countdown -= tmp_restart_counter;
+				cpu1secUsageCounter += cpuUsageCounter;
 				if (0 >= one_sec_countdown)
 				{
 					struct dev_desc_t * 	heartbeat_callback_dev;
-					cpu_usage_measure_mPercents =
-							100000 - (cpuUsageCounter * 100) / ticks_per_mSec;
+					cpu_usage_measure_mPercents = 100000 -
+							( (cpu1secUsageCounter * 100) / ticks_per_mSec );
 					heartbeat_callback_dev = handle->heartbeat_callback_dev;
 					if (NULL != heartbeat_callback_dev)
 					{
 						DEV_CALLBACK_0_PARAMS( heartbeat_callback_dev,
 												HEARTBEAT_API_HEARTBEAT_TICK );
 					}
-					cpuUsageCounter=0;
-					one_sec_countdown=1000;
+					cpu1secUsageCounter = 0;
+					one_sec_countdown = 1000;
 
 					os_low_stack_trap(32);
 				}
-
-
+				cpuUsageCounter = cpuUsageCounter / restart_counter;
+				if ( cpuUsageCounter > ticks_per_mSec)
+				{
+					ticks_per_mSec = cpuUsageCounter;
+					one_sec_countdown = 1000;
+					cpu1secUsageCounter = 0;
+				}
+				restart_counter = 0;
+				cpuUsageCounter = 0;
 			}
 			cpuUsageCounter++;
 
@@ -144,7 +160,7 @@ uint8_t heartbeat_ioctl( struct dev_desc_t *adev,
 	case HEARTBEAT_API_BUSY_WAIT_mS:
 		{
 			size_t ticks_to_wait = (size_t)aIoctl_param1;
-			ticks_to_wait =ticks_to_wait * ticks_per_mSec;
+			ticks_to_wait = ticks_to_wait * ticks_per_mSec;
 			while (ticks_to_wait--);
 		}
 		break;

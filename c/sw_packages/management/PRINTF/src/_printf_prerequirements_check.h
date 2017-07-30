@@ -11,8 +11,6 @@
 #ifndef _printf_prerequirements_check_H
 #define _printf_prerequirements_check_H
 
-#include "_project.h"
-#include "dev_management_api.h"
 #include "global_prerequirements_check.h"
 
 

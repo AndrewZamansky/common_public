@@ -8,12 +8,18 @@
 
 
 /********  includes *********************/
-#include "src/_printf_prerequirements_check.h"
+#include "_project_typedefs.h"
+#include "_project_defines.h"
+
+#include "dev_management_api.h"
 
 #include "PRINTF.h"
 #include "PRINTF_api.h"
 
 #include <stdarg.h>
+#include <string.h>
+
+#include "_printf_prerequirements_check.h"
 
 /********  defines *********************/
 #define MAX_NUM_OF_PRINTF_INSTANCES 4

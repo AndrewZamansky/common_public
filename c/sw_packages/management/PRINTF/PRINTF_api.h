@@ -2,7 +2,10 @@
 #ifndef _PRINTF_API_H_
 #define _PRINTF_API_H_
 
-#include "src/_printf_prerequirements_check.h"
+#include "_project_typedefs.h"
+#include "_project_defines.h"
+
+#include "dev_management_api.h"
 
 /*****************  defines  **************/
 

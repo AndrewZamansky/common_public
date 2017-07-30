@@ -8,9 +8,11 @@
 ***************************************** */
 
 /* ------------------------ INCLUDES ---------------------------------------*/
+#include "_project_typedefs.h"
+#include "_project_defines.h"
 
 #include "semihosting_api.h"
-#include "src/_semihosting_prerequirements_check.h"
+#include "dev_management_api.h"
 
 #include "PRINTF_api.h"
 #ifdef CONFIG_ARM_SEMIHOSTING_CONFIG_ENABLE_RX
@@ -19,17 +21,22 @@
 
 #include "semihosting.h"
 
+#include "_semihosting_prerequirements_check.h"
+
+/*following line add module to available module list for dynamic device tree*/
+#include "semihosting_add_component.h"
+
 /* ------------------------ defines ------------------------------*/
 
 /* ------------------------typedefs ------------------------------*/
 
-/* ---------------------------- External variables ---------------------------------*/
+/* ---------------------------- External variables -------------------------*/
 
 /* ------------------------ External functions ------------------------------*/
 
-/* ------------------------------ Exported variables ---------------------------------*/
+/* ------------------------------ Exported variables -----------------------*/
 
-/* ------------------------------ Local variables ---------------------------------*/
+/* ------------------------------ Local variables ---------------------------*/
 
 
 /* ------------------------ Local Functions  -------------------------------*/
@@ -157,7 +164,8 @@ char _SH_ReadC(void) {
   return c;
 }
 
-int ARM_API_SH_Write(int FileHandle, const uint8_t* pBuffer, int NumBytesToWrite)
+int ARM_API_SH_Write(int FileHandle,
+		const uint8_t* pBuffer, int NumBytesToWrite)
 {
   int NumBytesLeft;
   void* block[3];
@@ -201,28 +209,25 @@ void arm_get_line_from_console(uint8_t* pBuffer,int maxLen)
 
 }
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        arm_sh_pwrite                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-size_t semihosting_pwrite( struct dev_desc_t *adev ,const uint8_t *apData , size_t aLength, size_t aOffset)
+/**
+ * semihosting_pwrite()
+ *
+ * return:
+ */
+size_t semihosting_pwrite( struct dev_desc_t *adev,
+		const uint8_t *apData, size_t aLength, size_t aOffset)
 {
-	SEMIHOSTING_Instance_t *handle;
+	struct semihosting_instance_t *handle;
 	struct dev_desc_t *   callback_dev;
 
-	handle = adev->handle ;
+	handle = DEV_GET_CONFIG_DATA_POINTER(adev);
 	callback_dev = handle->callback_dev;
 	ARM_API_SH_Write(terminal_hndl,apData,aLength);
 	if(NULL != callback_dev)
 	{
-		DEV_CALLBACK_1_PARAMS(callback_dev , CALLBACK_TX_DONE,(void*)aLength); // !!! to avoid recursivity in semihosting transmited length should be '>=aLength'
+		/* !!! to avoid recursivity in
+		 * semihosting transmited length should be '>=aLength' */
+		DEV_CALLBACK_1_PARAMS(callback_dev , CALLBACK_TX_DONE,(void*)aLength);
 	}
 	return aLength;
 }
@@ -234,18 +239,12 @@ const char *windows_sync_file="C:/Temp/1234.txt";
 const char *linux_sync_file="/tmp/1234";
 const char *p_sync_file_str;
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        create_sync_file                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-static void create_sync_file( struct dev_desc_t *adev  , int sync_file_hanfler )
+/**
+ * create_sync_file()
+ *
+ * return:
+ */
+static void create_sync_file( struct dev_desc_t *adev, int sync_file_hanfler )
 {
 	PRINT_STR_REPLY(adev , "\r\n\r\nif you want to enter commands over semihosting\r\ndelete ");
 	PRINT_STR_REPLY(adev ,p_sync_file_str);
@@ -259,28 +258,22 @@ static void create_sync_file( struct dev_desc_t *adev  , int sync_file_hanfler )
 #define RUN_STATE_FAILED_CREATING_FILE	1
 #define RUN_STATE_RUNNING				2
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        test_for_input_ready                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
+/**
+ * test_for_input_ready()
+ *
+ * return:
+ */
 static void test_for_input_ready( struct dev_desc_t *adev  )
 {
 	uint8_t cRead;
 	int read_sync_hndl;
 	size_t i;
 	struct dev_desc_t *   callback_dev;
-	SEMIHOSTING_Instance_t *handle;
+	struct semihosting_instance_t *handle;
 
 	static uint8_t run_state = RUN_STATE_PREINIT;
 
-	handle = adev->handle;
+	handle = DEV_GET_CONFIG_DATA_POINTER(adev);
 
 	if (RUN_STATE_PREINIT == run_state)
 	{
@@ -316,7 +309,8 @@ static void test_for_input_ready( struct dev_desc_t *adev  )
 
 
 	read_sync_hndl=ARM_API_SH_Open(p_sync_file_str,1);
-	if(-1 != read_sync_hndl) // file exists - user dont want to execute any command
+	// file exists - user dont want to execute any command :
+	if(-1 != read_sync_hndl)
 	{
 		read_sync_hndl=ARM_API_SH_Close(read_sync_hndl);
 	}
@@ -324,7 +318,8 @@ static void test_for_input_ready( struct dev_desc_t *adev  )
 	{
 		PRINTF_REPLY(adev , "\r\n\r\nenter command (length should be less than %d) \r\n"
 				"and press 'enter' till response \r\n>",CONFIG_ARM_SEMIHOSTING_RX_BUFFER);
-		ARM_API_SH_Read(terminal_hndl ,sh_rx_buffer,CONFIG_ARM_SEMIHOSTING_RX_BUFFER);
+		ARM_API_SH_Read(terminal_hndl,
+				sh_rx_buffer,CONFIG_ARM_SEMIHOSTING_RX_BUFFER);
 		cRead = sh_rx_buffer[0];
 		i=1;
 		while (('\n' != cRead) && ('\r' != cRead) && (i<CONFIG_ARM_SEMIHOSTING_RX_BUFFER))
@@ -341,7 +336,8 @@ static void test_for_input_ready( struct dev_desc_t *adev  )
 		if (callback_dev )
 		{
 
-			DEV_CALLBACK_2_PARAMS(callback_dev , CALLBACK_DATA_RECEIVED,  sh_rx_buffer, (void*)i);
+			DEV_CALLBACK_2_PARAMS(callback_dev,
+					CALLBACK_DATA_RECEIVED,  sh_rx_buffer, (void*)i);
 		}
 
 		read_sync_hndl=ARM_API_SH_Open(p_sync_file_str,4);
@@ -354,17 +350,11 @@ static void test_for_input_ready( struct dev_desc_t *adev  )
 }
 
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        poll_for_semihosting_data_task                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
+/**
+ * poll_for_semihosting_data_task()
+ *
+ * return:
+ */
 void poll_for_semihosting_data_task( void *aHandle )
 {
 
@@ -387,29 +377,26 @@ void poll_for_semihosting_data_task( void *aHandle )
 #endif
 
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        arm_sh_ioctl                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-uint8_t semihosting_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num , void * aIoctl_param1, void * aIoctl_param2)
+/**
+ * semihosting_ioctl()
+ *
+ * return:
+ */
+uint8_t semihosting_ioctl( struct dev_desc_t *adev,
+		const uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2)
 {
-	SEMIHOSTING_Instance_t *handle;
+	struct semihosting_instance_t *handle;
 
-	handle = adev->handle;
+	handle = DEV_GET_CONFIG_DATA_POINTER(adev);
 	switch(aIoctl_num)
 	{
 		case IOCTL_DEVICE_START :
 			terminal_hndl=ARM_API_SH_Open(":tt",5);//mode 5=wb
 #ifdef CONFIG_ARM_SEMIHOSTING_CONFIG_ENABLE_RX
-			os_create_task("sw_uart_wrapper_task",poll_for_semihosting_data_task,
-					adev , ARM_SEMIHOSTING_CONFIG_TASK_STACK_SIZE , ARM_SEMIHOSTING_CONFIG_TASK_PRIORITY);
+			os_create_task("sw_uart_wrapper_task",
+					poll_for_semihosting_data_task, adev,
+					ARM_SEMIHOSTING_CONFIG_TASK_STACK_SIZE,
+					ARM_SEMIHOSTING_CONFIG_TASK_PRIORITY);
 #endif
 			break;
 		case IOCTL_SET_CALLBACK_DEV:
