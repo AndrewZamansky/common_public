@@ -21,6 +21,8 @@
 #include "auto_init_api.h"
 #include "math.h"
 
+#include "string.h"
+
 #include "_multiplier_2ch_prerequirements_check.h"
 
 /********  defines *********************/

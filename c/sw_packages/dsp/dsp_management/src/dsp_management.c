@@ -18,6 +18,8 @@
 
 #include "auto_init_api.h"
 
+#include "os_wrapper.h"
+
 #include "_dsp_management_prerequirements_check.h"
 
 static	void *dsp_buffers_pool = NULL;
@@ -100,7 +102,7 @@ void _DSP_REGISTER_NEW_MODULE(char *a_module_name,
 {
 	struct dsp_module_t* p_new_dsp_module;
 	size_of_module_array++;
-	dsp_module_array = (struct dsp_module_t*)realloc(dsp_module_array,
+	dsp_module_array = (struct dsp_module_t*)os_safe_realloc(dsp_module_array,
 			sizeof(struct dsp_module_t) * size_of_module_array);
 	p_new_dsp_module = &dsp_module_array[size_of_module_array - 1];
 	p_new_dsp_module->name = a_module_name;
@@ -117,7 +119,7 @@ void _DSP_REGISTER_NEW_MODULE(char *a_module_name,
  */
 void DSP_DELETE_MODULES()
 {
-	free(dsp_module_array);
+	os_safe_free(dsp_module_array);
 	dsp_module_array = NULL;
 }
 
@@ -145,8 +147,8 @@ struct dsp_chain_t *DSP_CREATE_CHAIN(size_t max_num_of_dsp_modules,
 		default_zero_buff.pad_type = DSP_PAD_TYPE_DUMMY_ZERO_BUFFER;
 	}
 
-	pdsp_chain =  (struct dsp_chain_t*)malloc( sizeof(struct dsp_chain_t));
-	pdsp_chain->dsp_chain = (struct dsp_desc_t**)malloc(
+	pdsp_chain =  (struct dsp_chain_t*)os_safe_malloc( sizeof(struct dsp_chain_t));
+	pdsp_chain->dsp_chain = (struct dsp_desc_t**)os_safe_malloc(
 			max_num_of_dsp_modules * sizeof(struct dsp_desc_t));
 	pdsp_chain->max_num_of_dsp_modules = max_num_of_dsp_modules;
 	pdsp_chain->occupied_dsp_modules = 0 ;
@@ -182,11 +184,11 @@ void DSP_DELETE_CHAIN(struct dsp_chain_t * ap_chain)
 	for (i=0 ; i < occupied_dsp_modules ; i++)
 	{
 		DSP_IOCTL_0_PARAMS(*dsp_module , IOCTL_DSP_DELETE );
-		free((*dsp_module)->handle);
+		os_safe_free((*dsp_module)->handle);
 		dsp_module++;
 	}
-	free(ap_chain->dsp_chain);
-	free(ap_chain);
+	os_safe_free(ap_chain->dsp_chain);
+	os_safe_free(ap_chain);
 }
 
 
@@ -235,7 +237,7 @@ void DSP_ADD_MODULE_TO_CHAIN(struct dsp_chain_t *ap_chain,
 			dsp_module->ctl = DSP_MANAGEMENT_API_MODULE_CONTROL_ON;
 			dsp_module->ioctl = p_dsp_module->ioctl;
 			dsp_module->dsp_func = p_dsp_module->dsp_func;
-			dsp_module->handle =malloc( p_dsp_module->module_data_size );
+			dsp_module->handle =os_safe_malloc( p_dsp_module->module_data_size );
 			retVal = DSP_IOCTL_0_PARAMS(dsp_module , IOCTL_DSP_INIT );
 
 			// error trap in case dsp module failed to start

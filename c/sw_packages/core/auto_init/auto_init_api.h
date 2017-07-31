@@ -10,14 +10,14 @@
 
 /**********  defines ************/
 
-#ifdef _MSC_VER/* in case we are using microsoft compiler*/
+#ifdef CONFIG_MICROSOFT_COMPILER/* in case we are using microsoft compiler*/
 	/* $a will be begining $c will be end of auto init functions*/
 	#pragma section("init_function_object_section$b", read)
 	#define AUTO_INIT_FUNCTION_PLACEMENT	 				\
 				__declspec(dllexport) __declspec(align(8)) 	\
 				__declspec(allocate("init_function_object_section$b"))
 #elif defined(CONFIG_HEXAGON_COMPILER) || defined(CONFIG_ANDROID_NDK) || \
-	 defined(CONFIG_XTENSA_GCC)
+	 defined(CONFIG_XTENSA_GCC) || (defined(CONFIG_ARM) && defined(CONFIG_GCC) )
 
 	#define AUTO_INIT_FUNCTION_PLACEMENT	 	\
 							__attribute__((section("auto_init_section")))

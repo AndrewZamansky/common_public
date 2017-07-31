@@ -64,21 +64,15 @@ SECTIONS
 #endif
 #endif
 	. = __start_of_device_tree_on_RAM__;
-	.start_of_device_tree . : AT ( __start_of_device_tree_on_ROM__ )
+
+	__start_static_devs_section = .;
+	static_devs_section . : AT ( __start_of_device_tree_on_ROM__ )
 	{
-		KEEP(*(.start_of_device_tree)) ;
+		KEEP(*(static_devs_section)) ;
 	}  > DATA_LOCATION
-	__static_devs_section_start_on_ROM__ = __start_of_device_tree_on_ROM__ + SIZEOF(.start_of_device_tree);
-	.static_devs . : AT ( __static_devs_section_start_on_ROM__ )
-	{
-		KEEP(*(.static_devs)) ;
-	}  > DATA_LOCATION
-	__end_of_device_tree_on_ROM__ = __static_devs_section_start_on_ROM__ + SIZEOF(.static_devs);
-	.end_of_device_tree . : AT ( __end_of_device_tree_on_ROM__ )
-	{
-		KEEP(*(.end_of_device_tree)) ;
-	}  > DATA_LOCATION
-	__static_devs_data_on_ROM__ = __end_of_device_tree_on_ROM__ + SIZEOF(.end_of_device_tree);
+	__stop_static_devs_section = .;
+
+	__static_devs_data_on_ROM__ = __start_of_device_tree_on_ROM__ + SIZEOF(static_devs_section);
 	.static_devs_data . : AT ( __static_devs_data_on_ROM__)
 	{
 		*(.static_devs_data) ;
@@ -112,28 +106,22 @@ SECTIONS
 	}  > CODE_LOCATION
 
 	. = ALIGN(4);
-	.start_of_modules . :
-	{
-	   KEEP(*(.start_of_modules ))
-	}  > CODE_LOCATION
 
-	.modules . :
+	__start_modules_section = .;
+	modules_section . :
 	{
-	   KEEP(*(.modules ))
+	   KEEP(*(modules_section))
 	}  > CODE_LOCATION
+	__stop_modules_section = .;
 
-	.end_of_modules . :
-	{
-	   KEEP(*(.end_of_modules ))
-	}  > CODE_LOCATION
 
-	init_functions_section_start = .;
-	.auto_init_functions . :
+	__start_auto_init_section = .;
+	auto_init_section . :
 	{
-		KEEP(*(.auto_init_functions)) ;
+		KEEP(*(auto_init_section)) ;
 		. = ALIGN(4);
 	}  > CODE_LOCATION
-	init_functions_section_end = .;
+	__stop_auto_init_section = .;
 
 	.rodata . :
 	{
