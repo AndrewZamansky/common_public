@@ -86,6 +86,14 @@ static void set_number_of_bands(
 	size_t size_of_params;
 	struct biquad_filter_api_band_set_params_t *p_band_set_params;
 	int i;
+	void *pBiquadFilter   ;
+
+	pBiquadFilter = handle->pBiquadFilter;
+
+	if (NULL == pBiquadFilter)
+	{
+		CRITICAL_ERROR("filter not initialized");
+	}
 
 	handle->num_of_bands = num_of_bands;
 	free(handle->pCoeffs);
@@ -133,16 +141,16 @@ uint8_t biquad_filter_ioctl(struct dsp_desc_t *adsp,
 {
 	size_t num_of_bands;
 	uint8_t band_num;
-	struct biquad_band_coeffs_t *pCoeffs;
-	struct biquad_filter_api_band_set_params_t *p_band_set_params;
-	struct biquads_filter_t *handle;
-	struct biquad_filter_api_band_set_t *band_params;
+	static struct biquad_band_coeffs_t *pCoeffs;
+	static struct biquad_filter_api_band_set_params_t *p_band_set_params;
+	static struct biquads_filter_t *handle;
+	static struct biquad_filter_api_band_set_t *band_params;
 
 	handle = adsp->handle;
 	switch(aIoctl_num)
 	{
 	case IOCTL_DSP_INIT :
-		handle->num_of_bands =0;
+		handle->num_of_bands = 0;
 		handle->pCoeffs = NULL ;
 		handle->band_set_params = NULL ;
 

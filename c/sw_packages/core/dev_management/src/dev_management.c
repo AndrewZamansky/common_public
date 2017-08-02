@@ -204,6 +204,7 @@ struct dev_desc_t * DEV_API_add_device(const char* module_name_str,
 
 	return NULL;
 }
+
 #endif
 
 
@@ -342,17 +343,5 @@ uint8_t DEV_GET_PARAM(char *dev_name_str, char *param_name_str,
 	}
 
 	return 0;
-}
-#endif
-
-#if CONFIG_MAX_NUM_OF_DYNAMIC_DEVICES > 0
-/*
- * function : DevManagment_API_GetAllDevsArray()
- *
- *
- */
-struct dev_desc_t * DevManagment_API_GetAllDevsArray(void)
-{
-	return dev_descriptors;
 }
 #endif

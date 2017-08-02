@@ -22,7 +22,7 @@
 
 #include "_biquad_filter_prerequirements_check.h"
 
-#define NUM_OF_STATES_PER_STAGE	2
+#define NUM_OF_STATES_PER_STAGE   2
 
 /********  defines *********************/
 
@@ -70,16 +70,16 @@ void biquads_cascading_filter(void *pFilter,
  *
  *    {b10, b11, b12, a11, a12, b20, b21, b22, a21, a22, ...}
  */
-void *biquads_alloc(uint8_t num_of_stages, float *  	pCoeffs )
+void *biquads_alloc(uint8_t num_of_stages, float *pCoeffs )
 {
 	struct biquads_cascading_filter_t *p_biquads_cascading_filter;
 	arm_biquad_cascade_df2T_instance_f32* p_arm_filter_inst;
 	float* p_filter_state;
 
-	p_biquads_cascading_filter =(struct biquads_cascading_filter_t *)malloc(
+	p_biquads_cascading_filter = (struct biquads_cascading_filter_t *)malloc(
 									sizeof(struct biquads_cascading_filter_t));
 
-	p_arm_filter_inst =(arm_biquad_cascade_df2T_instance_f32*) malloc(
+	p_arm_filter_inst = (arm_biquad_cascade_df2T_instance_f32*) malloc(
 								sizeof(arm_biquad_cascade_df2T_instance_f32));
 
 	p_biquads_cascading_filter->pFilterParams = p_arm_filter_inst;
