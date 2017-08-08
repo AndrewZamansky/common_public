@@ -13,10 +13,10 @@ INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_VOICE_3D)
 
 
 
-SRC = voice_3D.c
+SRC = voice_3D.cpp
 
 ifdef CONFIG_VOICE_3D_IS_SPEED_CRITICAL
-    SPEED_CRITICAL_FILES += voice_3D.c
+    SPEED_CRITICAL_FILES += voice_3D.cpp
 endif
 
 VPATH = src

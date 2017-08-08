@@ -12,7 +12,7 @@
 #include "_project_defines.h"
 
 #include "dsp_management_api.h"
-#include "common_dsp_api.h"
+#include "dsp_management_internal_api.h"
 
 #include "biquad_filter_api.h"
 #include "biquad_filter.h"
@@ -51,13 +51,13 @@ void biquad_filter_dsp(struct dsp_desc_t *adsp,
 		struct dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS],
 		struct dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])
 {
-	float *apCh1In  ;
-	float *apCh1Out ;
+	real_t *apCh1In  ;
+	real_t *apCh1Out ;
 	struct biquads_filter_t *handle;
 	size_t in_data_len ;
 	size_t out_data_len ;
 
-	handle = adsp->handle;
+	handle = (struct biquads_filter_t *)adsp->handle;
 
 	if(0 == handle->num_of_bands)
 	{
@@ -82,26 +82,18 @@ void biquad_filter_dsp(struct dsp_desc_t *adsp,
 static void set_number_of_bands(
 		struct biquads_filter_t *handle, size_t num_of_bands)
 {
-	struct biquad_band_coeffs_t *pCoeffs;
 	size_t size_of_params;
 	struct biquad_filter_api_band_set_params_t *p_band_set_params;
-	int i;
-	void *pBiquadFilter   ;
+	uint16_t i;
+	real_t *biquad_bands_coeffs;
 
-	pBiquadFilter = handle->pBiquadFilter;
-
-	if (NULL == pBiquadFilter)
-	{
-		CRITICAL_ERROR("filter not initialized");
-	}
 
 	handle->num_of_bands = num_of_bands;
-	free(handle->pCoeffs);
+	free(handle->biquad_bands_coeffs);
 	free(handle->band_set_params);
 
-	pCoeffs = (struct biquad_band_coeffs_t *)malloc(
-			sizeof(struct biquad_band_coeffs_t) * num_of_bands);
-	handle->pCoeffs = pCoeffs;
+	biquad_bands_coeffs = (real_t *)malloc(	5 * sizeof(real_t) * num_of_bands);
+	handle->biquad_bands_coeffs = biquad_bands_coeffs;
 
 	size_of_params = num_of_bands *
 			sizeof(struct  biquad_filter_api_band_set_params_t);
@@ -113,11 +105,14 @@ static void set_number_of_bands(
 
 	for (i = 0; i < num_of_bands; i++)
 	{
-		pCoeffs[i].a1 = 0;
-		pCoeffs[i].a2 = 0;
-		pCoeffs[i].b0 = 1;
-		pCoeffs[i].b1 = 0;
-		pCoeffs[i].b2 = 0;
+		uint16_t curr_coeff_start_pos;
+
+		curr_coeff_start_pos = i * 5;
+		biquad_bands_coeffs[curr_coeff_start_pos + 0] = (float)1;
+		biquad_bands_coeffs[curr_coeff_start_pos + 1] = (float)0;
+		biquad_bands_coeffs[curr_coeff_start_pos + 2] = (float)0;
+		biquad_bands_coeffs[curr_coeff_start_pos + 3] = (float)0;
+		biquad_bands_coeffs[curr_coeff_start_pos + 4] = (float)0;
 		p_band_set_params[i].filter_mode = BIQUADS_PEAK_MODE;
 		p_band_set_params[i].Fc = 1000;
 		p_band_set_params[i].QValue = 0.707;
@@ -125,8 +120,9 @@ static void set_number_of_bands(
 		p_band_set_params[i].bypass = 1;
 	}
 
+	biquads_free(handle->pBiquadFilter);
 	handle->pBiquadFilter =
-			biquads_alloc(handle->num_of_bands, (float *)pCoeffs );
+			biquads_alloc(handle->num_of_bands, biquad_bands_coeffs );
 
 }
 
@@ -141,18 +137,19 @@ uint8_t biquad_filter_ioctl(struct dsp_desc_t *adsp,
 {
 	size_t num_of_bands;
 	uint8_t band_num;
-	static struct biquad_band_coeffs_t *pCoeffs;
-	static struct biquad_filter_api_band_set_params_t *p_band_set_params;
-	static struct biquads_filter_t *handle;
-	static struct biquad_filter_api_band_set_t *band_params;
+	struct biquad_filter_api_band_set_params_t *p_band_set_params;
+	struct biquads_filter_t *handle;
+	struct biquad_filter_api_band_set_t *band_params;
 
-	handle = adsp->handle;
+	handle = (struct biquads_filter_t *)adsp->handle;
+
 	switch(aIoctl_num)
 	{
 	case IOCTL_DSP_INIT :
 		handle->num_of_bands = 0;
-		handle->pCoeffs = NULL ;
+		handle->biquad_bands_coeffs = NULL ;
 		handle->band_set_params = NULL ;
+		handle->pBiquadFilter = NULL ;
 
 		break;
 
@@ -169,11 +166,12 @@ uint8_t biquad_filter_ioctl(struct dsp_desc_t *adsp,
 		if ((num_of_bands > band_num ) && (p_band_set_params->Fc > 0.01))
 		{
 			biquads_filter_mode_t filter_mode;
+			real_t *curr_coeffs;
 
 			memcpy(&handle->band_set_params[band_num],
 				p_band_set_params,
 				sizeof(struct biquad_filter_api_band_set_params_t));
-			pCoeffs = &handle->pCoeffs[band_num];
+			curr_coeffs = &handle->biquad_bands_coeffs[5 * band_num];
 			filter_mode = p_band_set_params->filter_mode;
 			if (1 == p_band_set_params->bypass)
 			{
@@ -182,7 +180,7 @@ uint8_t biquad_filter_ioctl(struct dsp_desc_t *adsp,
 			biquads_coefficients_calculation(
 					filter_mode, p_band_set_params->Fc,
 					p_band_set_params->QValue,	p_band_set_params->Gain,
-					48000, 	(float*)pCoeffs 	);
+					(float)48000, 	curr_coeffs);
 		}
 		break;
 

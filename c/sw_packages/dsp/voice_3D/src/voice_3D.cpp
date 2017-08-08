@@ -12,10 +12,10 @@
 #include "_project_defines.h"
 
 #include "dsp_management_api.h"
+#include "dsp_management_internal_api.h"
 
 #include "voice_3D_api.h"
 #include "voice_3D.h"
-#include "common_dsp_api.h"
 
 #include "math.h"
 
@@ -54,23 +54,23 @@ void voice_3D_dsp(struct dsp_desc_t *adsp,
 		struct dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])
 {
 	struct VOICE_3D_Instance_t *handle;
-	float *apCh1In;
-	float *apCh2In;
-	float *apCh1Out;
-	float*apCh2Out;
+	real_t *apCh1In;
+	real_t *apCh2In;
+	real_t *apCh1Out;
+	real_t *apCh2Out;
 	size_t in_data_len1 ;
 	size_t in_data_len2 ;
 	size_t out_data_len1 ;
 	size_t out_data_len2 ;
 
-	float main_ch_gain;
-	float second_ch_gain;
+	real_t main_ch_gain;
+	real_t second_ch_gain;
 
-	float medium_gain;
-	float side_gain;
-	float _3D_gain;
+	real_t medium_gain;
+	real_t side_gain;
+	real_t _3D_gain;
 
-	handle = adsp->handle;
+	handle = (struct VOICE_3D_Instance_t *)adsp->handle;
 
 	DSP_GET_BUFFER(in_pads[0], &apCh1In, &in_data_len1);
 	DSP_GET_BUFFER(in_pads[1], &apCh2In, &in_data_len2);
@@ -102,10 +102,10 @@ void voice_3D_dsp(struct dsp_desc_t *adsp,
 
 	while(in_data_len1--)
 	{
-		float curr_ch_1;
-		float curr_ch_2;
-		float tmp;
-		float tmp1;
+		real_t curr_ch_1;
+		real_t curr_ch_2;
+		real_t tmp;
+		real_t tmp1;
 
 		curr_ch_1 = *apCh1In++;
 		curr_ch_2 = *apCh2In++;
@@ -134,19 +134,19 @@ uint8_t voice_3D_ioctl(struct dsp_desc_t *adsp,
 {
 	struct VOICE_3D_Instance_t *handle;
 
-	handle = adsp->handle;
+	handle = (struct VOICE_3D_Instance_t *)adsp->handle;
 	switch(aIoctl_num)
 	{
 		case IOCTL_DSP_INIT :
-			handle->medium_gain = 0.5;
-			handle->side_gain =  0.5;
-			handle->_3D_gain = 0;
+			handle->medium_gain = (float)0.5;
+			handle->side_gain =  (float)0.5;
+			handle->_3D_gain = (float)0;
 			break;
 		case IOCTL_VOICE_3D_SET_MEDIUM_GAIN :
-			handle->medium_gain = (*((float*)aIoctl_param1))/2;
+			handle->medium_gain = (*((float*)aIoctl_param1)) / (float)2;
 			break;
 		case IOCTL_VOICE_3D_SET_SIDE_GAIN :
-			handle->side_gain = (*((float*)aIoctl_param1))/2;
+			handle->side_gain = (*((float*)aIoctl_param1)) / (float)2;
 			break;
 		case IOCTL_VOICE_3D_SET_3D_GAIN :
 			handle->_3D_gain = *((float*)aIoctl_param1);

@@ -2,17 +2,18 @@
 INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_2X1_MIXER)
   
 
-#DEFINES = 
+#DEFINES =
 
-#CFLAGS = 
+#CFLAGS =
 
 #ASMFLAGS =  
 
+SRC = mixer2x1.cpp
+
 ifdef CONFIG_MIXER_IS_SPEED_CRITICAL
-    SPEED_CRITICAL_FILES += mixer2x1.c
+    SPEED_CRITICAL_FILES += mixer2x1.cpp
 endif
 
-SRC = mixer2x1.c
 
 VPATH = src
 

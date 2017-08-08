@@ -13,17 +13,12 @@
 
 /***************   typedefs    *******************/
 
-struct biquad_band_coeffs_t
-{
-	float b0, b1 , b2 , a1 , a2;
-};
-
 
 struct biquads_filter_t{
 
 	void *pBiquadFilter   ;
 	size_t num_of_bands ;
-	struct biquad_band_coeffs_t *pCoeffs;
+	real_t *biquad_bands_coeffs; /* b0,b1,b2,a1,a2*/
 	struct biquad_filter_api_band_set_params_t *band_set_params;
 };
 
@@ -35,22 +30,22 @@ struct biquads_filter_t{
  *
  *    {b10, b11, b12, a11, a12, b20, b21, b22, a21, a22, ...}
  */
-void *biquads_alloc(uint8_t num_of_stages, float *pCoeffs );
+void *biquads_alloc(uint8_t num_of_stages, real_t *pCoeffs );
 
 /*  func : biquads_free()
  */
 void biquads_free(void *pFilter );
 
 void biquads_cascading_filter(void *pFilter,
-		float *pin, float *pOut, size_t buff_len);
+		real_t *pin, real_t *pOut, size_t buff_len);
 
 void biquads_coefficients_calculation_common(biquads_filter_mode_t filter_mode,
-		float FreqC, float QValue, float Gain_dB,
-		float SamplingRate, float *pCoeffs);
+		real_t FreqC, real_t QValue, real_t Gain_dB,
+		real_t SamplingRate, real_t *pCoeffs);
 
 void biquads_coefficients_calculation(biquads_filter_mode_t filter_mode,
-		float FreqC, float QValue, float Gain_dB,
-		float SamplingRate, float *pCoeffs);
+		real_t FreqC, real_t QValue, real_t Gain_dB,
+		real_t SamplingRate, real_t *pCoeffs);
 
 
 

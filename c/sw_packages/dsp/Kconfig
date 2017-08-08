@@ -3,15 +3,30 @@
 ###################  DSP menu ####################
 menu "DSP"
 
+choice
+	prompt "real number format"
+	default DSP_REAL_NUMBER_FORMAT_FLOATING_POINT
+
+config DSP_REAL_NUMBER_FORMAT_FLOATING_POINT
+	bool "floating point"
+
+config DSP_REAL_NUMBER_FORMAT_FIXED_POINT
+	bool "fixed point"
+
+endchoice
+
+config FIXMATH_NO_CACHE
+	bool   "disable cache in libfixmath"
+	depends on DSP_REAL_NUMBER_FORMAT_FIXED_POINT
+	default n
+
 config INCLUDE_COMMON_DSP
 	bool   "common dsp"
 	default n
 
-if INCLUDE_COMMON_DSP
-
-
 config COMMON_DSP_IS_SPEED_CRITICAL
 	bool   "common dsp is speed critical"
+	depends on INCLUDE_COMMON_DSP
 	default y
 
 menuconfig INCLUDE_BIQUAD_FILTER
@@ -151,7 +166,6 @@ config WEBRTC_IS_SPEED_CRITICAL
 	default y
 endmenu
 
-endif
 
 endmenu
 #################### end of DSP menu###############################

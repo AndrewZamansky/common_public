@@ -15,11 +15,11 @@ typedef enum
 }MIXER_API_ioctl_t;
 
 
-typedef struct _set_channel_weight_t
+struct set_channel_weight_t
 {
 	uint8_t channel_num;
 	float weight;
-} set_channel_weight_t;
+};
 
 
 

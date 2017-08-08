@@ -170,4 +170,3 @@ endif
 ifdef POST_BUILD_MAKEFILE_DIR
 	$(MAKE) -C $(POST_BUILD_MAKEFILE_DIR) -f Makefile.postbuild.mk build_outputs
 endif
-

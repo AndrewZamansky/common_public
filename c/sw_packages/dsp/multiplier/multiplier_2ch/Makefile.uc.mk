@@ -9,11 +9,12 @@ INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_MULTIPLIER_2CHANNEL)
 
 #ASMFLAGS =  
 
+SRC = multiplier_2ch.cpp
+
 ifdef CONFIG_MULTIPLIER_IS_SPEED_CRITICAL
-    SPEED_CRITICAL_FILES += multiplier_2ch.c
+    SPEED_CRITICAL_FILES += multiplier_2ch.cpp
 endif
 
-SRC = multiplier_2ch.c
 
 VPATH = src
 

@@ -13,10 +13,10 @@
 
 
 struct VOICE_3D_Instance_t {
-	float medium_gain;
-	float side_gain;
-	float _3D_gain;
-} VOICE_3D_Instance_t;
+	real_t medium_gain;
+	real_t side_gain;
+	real_t _3D_gain;
+};
 
 
 
