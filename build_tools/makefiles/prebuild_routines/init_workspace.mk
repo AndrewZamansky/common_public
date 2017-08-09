@@ -65,7 +65,6 @@ endif
 #if common_private directory dont exists then create a dummy one
 ifeq ("$(wildcard $(COMMON_PRIVATE_DIR))","")
     DUMMY:=$(shell $(MKDIR)  $(COMMON_PRIVATE_DIR))
-    DUMMY:=$(shell $(ECHO) config PRIVATE_DUMMY>$(COMMON_PRIVATE_DIR)/Kconfig)
 endif
 
 ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)

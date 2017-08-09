@@ -7,9 +7,11 @@ choice
 config ESP8266
 	bool "ESP8266"
 	select XTENSA_LX6
+	select PUBLIC_SOC_SELECTED
 
 config XTENSA_SIM
 	bool "simulator"
+	select PUBLIC_SOC_SELECTED
 
 endchoice
 
@@ -36,11 +38,11 @@ endchoice
 endif
 
 if ESP8266
-source "$KCONFIG_START_DIR_PATH/hw_drivers/arch/XTENSA/soc/esp8266/Kconfig"
+source "$KCONFIG_PUBLIC_START_DIR/hw_drivers/arch/XTENSA/soc/esp8266/Kconfig"
 endif
 
 if XTENSA_SIM
-source "$KCONFIG_START_DIR_PATH/hw_drivers/arch/XTENSA/soc/sim/Kconfig"
+source "$KCONFIG_PUBLIC_START_DIR/hw_drivers/arch/XTENSA/soc/sim/Kconfig"
 endif
 
 config XTENSA_LX6

@@ -72,7 +72,7 @@ menuconfig INCLUDE_MIXER
 	default n
 
 if INCLUDE_MIXER
-source "$KCONFIG_START_DIR_PATH/sw_packages/dsp/mixer/Kconfig"
+source "$KCONFIG_PUBLIC_START_DIR/sw_packages/dsp/mixer/Kconfig"
 endif
 
 menuconfig INCLUDE_MULTIPLIER
@@ -80,7 +80,7 @@ menuconfig INCLUDE_MULTIPLIER
 	default n
 
 if INCLUDE_MULTIPLIER
-source "$KCONFIG_START_DIR_PATH/sw_packages/dsp/multiplier/Kconfig"
+source "$KCONFIG_PUBLIC_START_DIR/sw_packages/dsp/multiplier/Kconfig"
 endif
 
 menuconfig INCLUDE_I2S_SPLITTER

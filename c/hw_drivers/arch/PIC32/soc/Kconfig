@@ -6,16 +6,18 @@ choice
 
 config PIC32MX575
 	bool "PIC32MX575"
+	select PUBLIC_SOC_SELECTED
 
 config PIC32_GENERIC_PIC32_SOC
 	bool "generic SOC"
+	select PUBLIC_SOC_SELECTED
 
 endchoice
 
 if PIC32MX575
-source "$KCONFIG_START_DIR_PATH/hw_drivers/arch/PIC32/soc/pic32mx575/Kconfig"
+source "$KCONFIG_PUBLIC_START_DIR/hw_drivers/arch/PIC32/soc/pic32mx575/Kconfig"
 endif
 
 if PIC32_GENERIC_PIC32_SOC
-source "$KCONFIG_START_DIR_PATH/hw_drivers/arch/PIC32/soc/generic_board_Kconfig"
+source "$KCONFIG_PUBLIC_START_DIR/hw_drivers/arch/PIC32/soc/generic_board_Kconfig"
 endif

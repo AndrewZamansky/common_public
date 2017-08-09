@@ -1,7 +1,7 @@
 #
 	
 if NUC505
-source "$KCONFIG_START_DIR_PATH/hw_drivers/I2S/I2S_nuc505/Kconfig"
+source "$KCONFIG_PUBLIC_START_DIR/hw_drivers/I2S/I2S_nuc505/Kconfig"
 endif
 
 config INTERNAL_I2S_SPEED_CRITICAL

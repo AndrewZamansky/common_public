@@ -2,7 +2,13 @@
 ### the following section we need to run just one time per build
 ifndef INIT_FOR_C_SECTION_THAT_SHOULD_RUN_ONCE
 
-KCONFIG_START_DIR_PATH :=$(COMMON_PUBLIC_DIR)/c
+KCONFIG_PUBLIC_START_DIR :=$(COMMON_PUBLIC_DIR)/c
+KCONFIG_PRIVATE_START_DIR :=$(COMMON_PRIVATE_DIR)/c
+
+ifeq ("$(wildcard $(COMMON_PRIVATE_DIR)/c)","")
+    DUMMY:=$(shell $(MKDIR)  $(COMMON_PRIVATE_DIR)/c)
+    DUMMY:=$(shell $(ECHO) config PRIVATE_DUMMY>$(COMMON_PRIVATE_DIR)/c/Kconfig)
+endif
 
 ifeq ($(findstring menuconfig,$(MAKECMDGOALS)),)
     #DONT enter if we are bulding .config file now

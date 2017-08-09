@@ -10,7 +10,7 @@ config EUSE_TAOBAO_BOARD
 endchoice
 
 if EUSE_TAOBAO_BOARD
-source "$KCONFIG_START_DIR_PATH/hw_drivers/arch/ARM/soc/stm32/stm32f103rc/Kconfig.euse.taobao.dt"
+source "$KCONFIG_PUBLIC_START_DIR/hw_drivers/arch/ARM/soc/stm32/stm32f103rc/Kconfig.euse.taobao.dt"
 endif
 
 

@@ -6,21 +6,26 @@ choice
 
 config NUC505
 	bool "nuc505"
+	select PUBLIC_SOC_SELECTED
 
 config POLEG
 	bool "poleg"
+	select PUBLIC_SOC_SELECTED
 
 config STM32F103RC
 	bool "stm32f103rc"
-
-config NPCE586
-	bool "npce586"
+	select PUBLIC_SOC_SELECTED
 
 config I94XXX
 	bool "I94XXX"
+	select PUBLIC_SOC_SELECTED
 
 config GENERIC_SOC
 	bool "generic SOC"
+	select PUBLIC_SOC_SELECTED
+
+config PRIVATE_ARM_SOC
+	bool "private SOC"
 
 endchoice
 
@@ -44,26 +49,22 @@ config SOC_HAS_DSP
     bool
     default n
 
-if NPCE586
-source "$KCONFIG_START_DIR_PATH/hw_drivers/arch/ARM/soc/npce586/Kconfig"
-endif
-
 if I94XXX
-source "$KCONFIG_START_DIR_PATH/hw_drivers/arch/ARM/soc/i94xxx/Kconfig"
+source "$KCONFIG_PUBLIC_START_DIR/hw_drivers/arch/ARM/soc/i94xxx/Kconfig"
 endif
 
 if STM32F103RC
-source "$KCONFIG_START_DIR_PATH/hw_drivers/arch/ARM/soc/stm32/stm32f103rc/Kconfig"
+source "$KCONFIG_PUBLIC_START_DIR/hw_drivers/arch/ARM/soc/stm32/stm32f103rc/Kconfig"
 endif
 
 if NUC505
-source "$KCONFIG_START_DIR_PATH/hw_drivers/arch/ARM/soc/nuc505/Kconfig"
+source "$KCONFIG_PUBLIC_START_DIR/hw_drivers/arch/ARM/soc/nuc505/Kconfig"
 endif
 
 if POLEG
-source "$KCONFIG_START_DIR_PATH/hw_drivers/arch/ARM/soc/poleg/Kconfig"
+source "$KCONFIG_PUBLIC_START_DIR/hw_drivers/arch/ARM/soc/poleg/Kconfig"
 endif
 
 if GENERIC_SOC
-source "$KCONFIG_START_DIR_PATH/hw_drivers/arch/ARM/soc/generic_board/Kconfig"
+source "$KCONFIG_PUBLIC_START_DIR/hw_drivers/arch/ARM/soc/generic_board/Kconfig"
 endif

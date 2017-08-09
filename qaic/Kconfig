@@ -22,14 +22,14 @@ config REDEFINED_OUTPUT_NAME
 	depends on !OUTPUT_NAME_CHOOSEN_AUTOMATICALLY
 	default "out"
 
-source "$KCONFIG_START_DIR_PATH/soc/Kconfig"
+source "$KCONFIG_PUBLIC_START_DIR/soc/Kconfig"
 
 menuconfig USE_COMMON_PRIVATE_PACKAGES
 	bool   "use common private packages"
 	default n
 
 if 	USE_COMMON_PRIVATE_PACKAGES
-source "$KCONFIG_START_DIR_PATH/../../common_private/Kconfig"
+source "$KCONFIG_PUBLIC_START_DIR/../../common_private/Kconfig"
 config COMMON_PRIVATE_GIT_COMMIT_HASH
 	string "common private git commit hash"
 	default ""
