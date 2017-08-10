@@ -12,7 +12,7 @@
 #include "_project_defines.h"
 
 #include "dsp_management_api.h"
-#include "common_dsp_api.h"
+#include "dsp_management_internal_api.h"
 
 
 #include "dpwm_mixer_api.h"
@@ -53,20 +53,20 @@ void dpwm_mixer_dsp(struct dsp_desc_t *adsp,
 		struct dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] ,
 		struct dsp_pad_t  out_pads[MAX_NUM_OF_OUTPUT_PADS])
 {
-	float *apCh1In;
-	float *apCh2In;
+	real_t *apCh1In;
+	real_t *apCh2In;
 	size_t in_data_len1 ;
 	size_t in_data_len2 ;
 	size_t out_data_len ;
 	struct DPWM_MIXER_Instance_t *handle;
 	uint8_t enable_test_clipping;
-	float max_out_val ;
-	float *pTxBuf;
-	float inVal1;
-	float inVal2;
+	real_t max_out_val ;
+	real_t *pTxBuf;
+	real_t inVal1;
+	real_t inVal2;
 	uint32_t i;
 
-	handle = adsp->handle;
+	handle = (struct DPWM_MIXER_Instance_t *)adsp->handle;
 
 	DSP_GET_BUFFER(in_pads[0], &apCh1In, &in_data_len1);
 	DSP_GET_BUFFER(in_pads[1], &apCh2In, &in_data_len2);
@@ -93,7 +93,7 @@ void dpwm_mixer_dsp(struct dsp_desc_t *adsp,
 	{
 		if(enable_test_clipping)
 		{
-			float tmp1, tmp2;
+			real_t tmp1, tmp2;
 			tmp1 = ABS(*apCh1In);
 			tmp2 = ABS(*apCh2In);
 			if (tmp1 >= max_out_val)
@@ -132,7 +132,7 @@ uint8_t dpwm_mixer_ioctl(struct dsp_desc_t *adsp,
 {
 	struct DPWM_MIXER_Instance_t *handle;
 
-	handle = adsp->handle;
+	handle = (struct DPWM_MIXER_Instance_t *)adsp->handle;
 
 	switch(aIoctl_num)
 	{

@@ -1,0 +1,24 @@
+
+INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_BAND_SPLITTER_BUTTERWORTH_6DB_GAIN)
+
+#INCLUDE_DIR
+
+#DEFINES =
+
+#CFLAGS =
+
+#ASMFLAGS =
+
+
+
+
+SRC = band_splitter_butterworth_6db_gain.cpp
+
+ifdef CONFIG_INCLUDE_BAND_SPLITTER_BUTTERWORTH_6DB_GAIN_SPEED_CRITICAL
+    SPEED_CRITICAL_FILES += band_splitter_butterworth_6db_gain.cpp
+endif
+
+VPATH = src
+
+
+include $(COMMON_CC)

@@ -66,6 +66,7 @@ void biquads_coefficients_calculation_common(biquads_filter_mode_t filter_mode,
 	real_t K_pow_2;
 	real_t tmp;
 	real_t sqrt_V;
+	real_t one_plus_KmulK;
 
 	zero = (int16_t)0;
 	one  = (int16_t)1;
@@ -104,8 +105,9 @@ void biquads_coefficients_calculation_common(biquads_filter_mode_t filter_mode,
 
 	K_pow_2 = K * K;
 
-	one_minus_KdivQ_plus_KmulK = one - K_div_Q + K_pow_2;
-	one_plus_KdivQ_plus_KmulK  = one + K_div_Q + K_pow_2;
+	one_plus_KmulK = one + K_pow_2;
+	one_minus_KdivQ_plus_KmulK = one_plus_KmulK - K_div_Q;
+	one_plus_KdivQ_plus_KmulK  = one_plus_KmulK + K_div_Q;
 	one_div__one_plus_KdivQ_plus_KmulK = one / one_plus_KdivQ_plus_KmulK;
 	K_pow_2_minus_one__mul_2 = two * (K_pow_2 - one);
 
@@ -178,11 +180,11 @@ void biquads_coefficients_calculation_common(biquads_filter_mode_t filter_mode,
 		{
 			real_t one_plus_VdivQmulK_plus_KmulK;
 			real_t one_minus_VdivQmulK_plus_KmulK;
-			real_t VdivQmulK_plus_KmulK;
+			real_t VdivQmulK;
 
-			VdivQmulK_plus_KmulK = (V / QValue * K) + K_pow_2;
-			one_plus_VdivQmulK_plus_KmulK = one + VdivQmulK_plus_KmulK;
-			one_minus_VdivQmulK_plus_KmulK = one - VdivQmulK_plus_KmulK;
+			VdivQmulK = (V * K_div_Q);
+			one_plus_VdivQmulK_plus_KmulK = one_plus_KmulK + VdivQmulK;
+			one_minus_VdivQmulK_plus_KmulK = one_plus_KmulK - VdivQmulK;
 			if(Gain_dB >= zero)
 			{
 				norm = one_div__one_plus_KdivQ_plus_KmulK;
@@ -209,14 +211,15 @@ void biquads_coefficients_calculation_common(biquads_filter_mode_t filter_mode,
 			real_t one_plus_sqrtV_mul_K_div_Q_plus_V_mul_K_pow_2;
 			real_t one_minus_sqrtV_mul_K_div_Q_plus_V_mul_K_pow_2;
 			real_t two_mul__V_mul_K_pow_2_minus_one;
-			real_t sqrtV_mul_K_div_Q_plus_V_mul_K_pow_2;
+			real_t sqrtV_mul_K_div_Q;
+			real_t one_plus_V_mul_K_mul_K;
 
-			sqrtV_mul_K_div_Q_plus_V_mul_K_pow_2 =
-							sqrt_V * K_div_Q + V * K_pow_2;
+			one_plus_V_mul_K_mul_K = one + V * K_pow_2;
+			sqrtV_mul_K_div_Q = sqrt_V * K_div_Q;
 			one_plus_sqrtV_mul_K_div_Q_plus_V_mul_K_pow_2 =
-							one + sqrtV_mul_K_div_Q_plus_V_mul_K_pow_2;
+					one_plus_V_mul_K_mul_K + sqrtV_mul_K_div_Q;
 			one_minus_sqrtV_mul_K_div_Q_plus_V_mul_K_pow_2 =
-							one - sqrtV_mul_K_div_Q_plus_V_mul_K_pow_2;
+					one_plus_V_mul_K_mul_K - sqrtV_mul_K_div_Q;
 			two_mul__V_mul_K_pow_2_minus_one = two * (V * K_pow_2 - one);
 
 			if(Gain_dB >= zero)
@@ -245,13 +248,15 @@ void biquads_coefficients_calculation_common(biquads_filter_mode_t filter_mode,
 			real_t V_plus_sqrtV_mul_K_div_Q_plus_K_pow_2;
 			real_t V_minus_sqrtV_mul_K_div_Q_plus_K_pow_2;
 			real_t two_mul__K_pow_2_minus_V;
-			real_t sqrtV_mul_K_div_Q_plus_K_pow_2;
+			real_t sqrtV_mul_K_div_Q;
+			real_t V_plus_mul_K_mul_K;
 
-			sqrtV_mul_K_div_Q_plus_K_pow_2 = (sqrt_V * K_div_Q) + K_pow_2;
+			V_plus_mul_K_mul_K = V + K_pow_2;
+			sqrtV_mul_K_div_Q = sqrt_V * K_div_Q;
 			V_plus_sqrtV_mul_K_div_Q_plus_K_pow_2 =
-							V + sqrtV_mul_K_div_Q_plus_K_pow_2;
+					V_plus_mul_K_mul_K + sqrtV_mul_K_div_Q;
 			V_minus_sqrtV_mul_K_div_Q_plus_K_pow_2 =
-							V - sqrtV_mul_K_div_Q_plus_K_pow_2;
+					V_plus_mul_K_mul_K - sqrtV_mul_K_div_Q;
 			two_mul__K_pow_2_minus_V = two * (K_pow_2 - V);
 
 			if(Gain_dB >= zero)
@@ -274,6 +279,45 @@ void biquads_coefficients_calculation_common(biquads_filter_mode_t filter_mode,
 			}
 		}
 		break;
+
+	case BIQUADS_ALL_PASS_BUTTERWORTH_1_POLE :
+		{
+			real_t a;
+
+			a = cos(w0) / (one + sin(w0));
+			norm = one;
+			a1 = zero - a;
+			a2 = zero;
+			b0 = zero - a;
+			b1 = one;
+			b2 = zero;
+		}
+		break;
+
+	case BIQUADS_ALL_PASS_BUTTERWORTH_2_POLES :
+		{
+			real_t a;
+			real_t q,p2,A,Q;
+			real_t s,c;
+
+			s = sin(w0);
+			c = cos(w0);
+			a = c / (one + s);
+			A = (one + a) / (one - a);
+			Q = A * (one - c) * 0.5f;
+
+			q = (one - Q) / (one + Q);
+			p2 = (one + q) * c;
+
+			norm = one;
+			a1 = zero - p2;
+			a2 = q;
+			b0 = q;
+			b1 = zero - p2;
+			b2 = one;
+		}
+		break;
+
 	}
 
 
@@ -282,4 +326,9 @@ void biquads_coefficients_calculation_common(biquads_filter_mode_t filter_mode,
 	pCoeffs[2] = b2 * norm;
 	pCoeffs[3] = a1 * norm;
 	pCoeffs[4] = a2 * norm;
+//	pCoeffs[0] = 0.984415f;
+//	pCoeffs[1] = -1.98417f;
+//	pCoeffs[2] = 1;
+//	pCoeffs[3] = 0.984415;
+//	pCoeffs[4] = -1.98417f;
 }

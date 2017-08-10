@@ -12,7 +12,7 @@ INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_COMMON_DSP) $(CONFIG_AUTO_INCLUDE_COM
 
 
 
-SRC = math_functions.c
+SRC = math_functions.cpp
 VPATH = src
 
 
@@ -25,7 +25,7 @@ ifdef CONFIG_AUTO_COMMON_DSP_IS_SPEED_CRITICAL
 endif
 
 ifdef _COMMON_DSP_IS_SPEED_CRITICAL
-    SPEED_CRITICAL_FILES += math_functions.c
+    SPEED_CRITICAL_FILES += math_functions.cpp
 endif
 
 

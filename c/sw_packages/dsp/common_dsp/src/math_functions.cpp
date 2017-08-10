@@ -100,6 +100,7 @@ static inline float b_mult_log2_of_a(float b, float a)
 	return ( b * log2_of_a);
 }
 
+//#define USE_TAYLOR_AROUND_0_5  // for taylor around x=0.5 (not for neg numbers)
 #define USE_SEVENTH_TAYLOR_POWER
 //#define USE_THIRD_TAYLOR_POWER
 #ifdef USE_THIRD_TAYLOR_POWER
@@ -108,14 +109,25 @@ static inline float b_mult_log2_of_a(float b, float a)
 	#define A1_2_power_x		(0.69314718055994530942f)
 	#define A0_2_power_x		(1.0f)
 #elif defined(USE_SEVENTH_TAYLOR_POWER)
-	#define A7_2_power_x		(0.000021570623008968f)
-	#define A6_2_power_x		(0.00021783881590746449f)
-	#define A5_2_power_x		(0.00188564987653693711f)
-	#define A4_2_power_x		(0.01360208862866362641f)
-	#define A3_2_power_x		(0.07849466324122069881f)
-	#define A2_2_power_x		(0.33973158418307492704f)
-	#define A1_2_power_x		(0.98025814346854719171f)
-	#define A0_2_power_x		(1.4142135623730950488f)
+	#ifdef USE_TAYLOR_AROUND_0_5 //for taylor around x=0.5
+		#define A7_2_power_x		(0.000021570623008968f)
+		#define A6_2_power_x		(0.00021783881590746449f)
+		#define A5_2_power_x		(0.00188564987653693711f)
+		#define A4_2_power_x		(0.01360208862866362641f)
+		#define A3_2_power_x		(0.07849466324122069881f)
+		#define A2_2_power_x		(0.33973158418307492704f)
+		#define A1_2_power_x		(0.98025814346854719171f)
+		#define A0_2_power_x		(1.4142135623730950488f)
+	#else
+		#define A7_2_power_x		(0.00001525273380405984f)
+		#define A6_2_power_x		(0.0001540353039338161f)
+		#define A5_2_power_x		(0.00133335581464284434f)
+		#define A4_2_power_x		(0.00961812910762847716f)
+		#define A3_2_power_x		(0.05550410866482157995f)
+		#define A2_2_power_x		(0.24022650695910071233f)
+		#define A1_2_power_x		(0.69314718055994530942f)
+		#define A0_2_power_x		(1.0f)
+	#endif
 #else
 	#define A2_2_power_x		(0.33973f)
 	#define A1_2_power_x		(0.64053f)
@@ -137,7 +149,7 @@ static inline float b_mult_log2_of_a(float b, float a)
  *  4) calculate 2^fraction_z  by taylor
  *  5) result = 2^int_z  *  2^fraction_z
  */
-float fast_pow(float a, float b)
+float fast_pow_float(float a, float b)
 {
 	float	z;
 	int32_t	int_of_z;
@@ -145,6 +157,10 @@ float fast_pow(float a, float b)
 	float retVal;
 	float	power_of_fraction;
 
+	if (a < 0)
+	{
+		CRITICAL_ERROR("a must be positive");
+	}
 	z = b_mult_log2_of_a(b, a);
 
 
@@ -167,7 +183,9 @@ float fast_pow(float a, float b)
 #elif defined(USE_SEVENTH_TAYLOR_POWER)
 	// fraction_of_z = [0,1] so it can be approximated by taylor series around 0.5  :
 	// 2^fraction_of_z ~= An_2_power_x * (fraction_of_z - 0.5)^n
+#ifdef USE_TAYLOR_AROUND_0_5
 	fraction_of_z -= 0.5;
+#endif
 	power_of_fraction = 0.0f;
 	power_of_fraction += A7_2_power_x;
 	power_of_fraction *= fraction_of_z ;
@@ -210,7 +228,7 @@ static float log2f_approx_coeff[4] = {1.23149591368684f,
  * to the result.  A 3rd order polynomial is used and the result
  * when computing db20() is accurate to 7.984884e-003 dB.
  */
-float log2f_approx(float X)
+float log2f_approx_float(float X)
 {
   float *C = &log2f_approx_coeff[0];
   float Y;

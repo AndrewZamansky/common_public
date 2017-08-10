@@ -220,10 +220,10 @@ void PDMA_IRQHandler(void)
 static uint8_t set_peripheral_dma(struct dma_i94xxx_cfg_t *cfg_hndl,
 		struct dma_i94xxx_runtime_t *runtime_hndl)
 {
-	static uint32_t src_ctrl;
-	static uint32_t dest_ctrl;
-	static void *src_addr;
-	static  void *dest_addr;
+	uint32_t src_ctrl;
+	uint32_t dest_ctrl;
+	void *src_addr;
+	void *dest_addr;
 	uint8_t channel_num;
 	uint8_t peripheral_type;
 	uint8_t dma_peripheral_direction;

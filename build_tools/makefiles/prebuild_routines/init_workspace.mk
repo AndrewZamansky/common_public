@@ -17,6 +17,11 @@ TMP :=$(realpath $(COMMON_PUBLIC_DIR)/..)
 #remove prefix that appear on some machines :
 PARENT_OF_COMMON_PUBLIC_DIR := $(patsubst $(APP_ROOT_DIR)/%,%,$(TMP))
 
+# depricated. used for older projects
+WORKSPACE_ROOT_DIR :=$(PARENT_OF_COMMON_PUBLIC_DIR)
+
+
+
 WORKSPACE_NAME := $(notdir $(abspath $(PARENT_OF_COMMON_PUBLIC_DIR)/..))
 
 TMP :=$(call calc_parent_dir,$(PARENT_OF_COMMON_PUBLIC_DIR))

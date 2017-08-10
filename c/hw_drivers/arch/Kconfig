@@ -142,7 +142,7 @@ config PUT_SPEED_CRITICAL_CODE_TO_RAM
 
 config EXCEPTION_STACKS_DEBUG
 	bool "fill system stacks with pattern (help to debug stack overflow)"
-    depends on POLEG || NUC505
+    depends on CORTEX_A9 || CORTEX_M3 || CORTEX_M4
     default n
 
 

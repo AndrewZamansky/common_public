@@ -5,8 +5,8 @@
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 
-#define	MAX_NUM_OF_OUTPUT_PADS	3
-
+#define MAX_NUM_OF_OUTPUT_PADS  3
+#define DSP_MAGIC_NUMBER        0xa2b6
 
 /**********  define API  types ************/
 
@@ -100,6 +100,7 @@ struct dsp_module_t {
 	dsp_management_api_module_control_t   ctl;
 	struct dsp_pad_t        *in_pads[MAX_NUM_OF_OUTPUT_PADS];
 	struct dsp_pad_t        out_pads[MAX_NUM_OF_OUTPUT_PADS];
+	uint16_t                magic_num;
 };
 
 struct dsp_chain_t {
@@ -110,24 +111,22 @@ struct dsp_chain_t {
 	struct dsp_pad_t  chain_in_pads[MAX_NUM_OF_OUTPUT_PADS];
 
 	struct dsp_pad_t  *chain_out_pads[MAX_NUM_OF_OUTPUT_PADS];
-	//real_t            *out_buffers[MAX_NUM_OF_OUTPUT_PADS];
+	uint16_t          magic_num;
 };
 
 /**********  define API  functions  ************/
 
-
-/*  ioctl functions */
-#define DSP_IOCTL_0_PARAMS(dsp, ioctl_num)   		\
-							((dsp)->ioctl)(dsp, ioctl_num, NULL, NULL)
-#define DSP_IOCTL_1_PARAMS(dsp, ioctl_num, ioctl_param)   \
-							((dsp)->ioctl)(dsp, ioctl_num, ioctl_param, NULL)
-#define DSP_IOCTL		DSP_IOCTL_1_PARAMS
-#define DSP_IOCTL_2_PARAMS(dsp,ioctl_num,ioctl_param1,ioctl_param2)   \
-					((dsp)->ioctl)(dsp, ioctl_num, ioctl_param1, ioctl_param2)
-
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/*  ioctl functions */
+uint8_t	DSP_IOCTL_0_PARAMS(struct dsp_desc_t *dsp_module, uint8_t ioctl_num);
+uint8_t	DSP_IOCTL_1_PARAMS(struct dsp_desc_t *dsp_module,
+								uint8_t ioctl_num, void *param1);
+uint8_t	DSP_IOCTL_2_PARAMS(struct dsp_desc_t *dsp_module,
+						uint8_t ioctl_num, void *param1, void *param2);
+
 
 void dsp_management_api_set_module_control(struct dsp_desc_t *dsp,
 								dsp_management_api_module_control_t ctl);

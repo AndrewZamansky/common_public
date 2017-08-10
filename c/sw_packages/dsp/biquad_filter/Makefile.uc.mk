@@ -27,6 +27,7 @@ USE_CORTEX_M_FPU := $(and $(USE_CORTEX_M_FPU),$(CONFIG_DSP_REAL_NUMBER_FORMAT_FL
 
 ifneq ($(USE_CORTEX_M_FPU),)
 	SRC += biquads_arm_cortex_m_fpu.cpp
+#    SRC += biquads.cpp
 	ifdef CONFIG_BIQUAD_FILTER_IS_SPEED_CRITICAL
 		SPEED_CRITICAL_FILES += biquads_arm_cortex_m_fpu.cpp
 		SPEED_CRITICAL_FILES += libarm_cortexM4lf_math.a
@@ -46,7 +47,7 @@ ifneq ($(USE_CORTEX_M_FPU),)
 	#	SPEED_CRITICAL_FILES += arm_abs_f32.c
 	#endif
 else
-    SRC += biquads.cpp
+    SRC += biquads_c_calc.cpp
     ifdef CONFIG_BIQUAD_FILTER_IS_SPEED_CRITICAL
         SPEED_CRITICAL_FILES += biquads.cpp
     endif

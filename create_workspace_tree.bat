@@ -16,12 +16,12 @@ mkdir uCWorkspace\uCProjects\apps
 SET workspace_config_file=uCWorkspace\uCProjects\workspace_config.mk
 
 echo #>%workspace_config_file%
-echo #   you can use $(WORKSPACE_ROOT_DIR)  variable to define path relative to current uCProject directory>>%workspace_config_file%
+echo #   you can use $(PARENT_OF_COMMON_PUBLIC_DIR)  variable to define path relative to current uCProject directory>>%workspace_config_file%
 echo #>>%workspace_config_file%
 echo.>>%workspace_config_file%
 echo.>>%workspace_config_file%
 
-echo #REDEFINE_KCONFIG_DIR			=	$(WORKSPACE_ROOT_DIR)/../tools/windows/kconfig/kconfig3.12.0>>%workspace_config_file%
-echo #REDEFINE_MAKE_PROGRAM_DIR		=	$(WORKSPACE_ROOT_DIR)/../tools/windows/make/make4.1>>%workspace_config_file%
+echo #REDEFINE_KCONFIG_DIR			=	$(PARENT_OF_COMMON_PUBLIC_DIR)/../tools/windows/kconfig/kconfig3.12.0>>%workspace_config_file%
+echo #REDEFINE_MAKE_PROGRAM_DIR		=	$(PARENT_OF_COMMON_PUBLIC_DIR)/../tools/windows/make/make4.1>>%workspace_config_file%
 echo #REDEFINE_VISUAL_STUDIO_DIR		=   C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC>>%workspace_config_file%
 
