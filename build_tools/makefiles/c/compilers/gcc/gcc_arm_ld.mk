@@ -135,6 +135,8 @@ ifdef CONFIG_PUT_SPEED_CRITICAL_CODE_TO_RAM
     FILES_TO_FORCE_IN_RAM := $(SPEED_CRITICAL_FILES) $(SPEED_CRITICAL_STD_LIBS)
     FILES_TO_FORCE_IN_RAM := $(sort $(FILES_TO_FORCE_IN_RAM))
     FILES_TO_FORCE_IN_RAM := $(patsubst %.c,%.o,$(FILES_TO_FORCE_IN_RAM))
+    FILES_TO_FORCE_IN_RAM := $(patsubst %.cc,%.oo,$(FILES_TO_FORCE_IN_RAM))
+    FILES_TO_FORCE_IN_RAM := $(patsubst %.cpp,%.oop,$(FILES_TO_FORCE_IN_RAM))
     FILES_TO_FORCE_IN_RAM := $(patsubst %.s,%.o.asm,$(FILES_TO_FORCE_IN_RAM))
     FILES_TO_FORCE_IN_RAM := $(patsubst %.S,%.O.asm,$(FILES_TO_FORCE_IN_RAM))
     # add * to deal with libraries pathes  :

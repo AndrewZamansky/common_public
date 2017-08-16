@@ -88,6 +88,7 @@ rwildcard=$(wildcard $1$2) $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2))
 
 ALL_OBJ_FILES = $(call rwildcard,$(OBJ_DIR)/,*.o)
 ALL_OBJ_FILES += $(call rwildcard,$(OBJ_DIR)/,*.oo)
+ALL_OBJ_FILES += $(call rwildcard,$(OBJ_DIR)/,*.oop)
 ALL_OBJ_FILES += $(call rwildcard,$(OBJ_DIR)/,*.o.asm)
 ALL_OBJ_FILES += $(call rwildcard,$(OBJ_DIR)/,*.O.asm)
 #some time, on windows, scan for .O.asm and .o.asm will generate duplicate files
@@ -145,4 +146,7 @@ build_outputs :
 ifeq ($(findstring y,$(CONFIG_CALCULATE_CRC32)),y)
 	$(CRC32CALC) $(OUTPUT_BIN) > $(OUTPUT_CRC32)
 endif
-	
+ifdef POST_BUILD_MAKEFILE_DIR
+	@echo running application specific post build script $(POST_BUILD_MAKEFILE_DIR)/Makefile.postbuild.mk
+	$(MAKE) -C $(POST_BUILD_MAKEFILE_DIR) -f Makefile.postbuild.mk build_outputs
+endif
