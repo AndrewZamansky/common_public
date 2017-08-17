@@ -157,7 +157,7 @@ void DSP_DELETE_MODULES()
  * return:
  */
 struct dsp_chain_t *DSP_CREATE_CHAIN(size_t max_num_of_dsp_modules,
-		size_t max_num_of_allocated_buffers)
+		size_t max_num_of_allocated_buffers, size_t size_of_items_in_buffer)
 {
 	struct dsp_chain_t *pdsp_chain;
 	struct dsp_desc_t **dsp_modules;
@@ -167,7 +167,7 @@ struct dsp_chain_t *DSP_CREATE_CHAIN(size_t max_num_of_dsp_modules,
 	if (NULL == dsp_buffers_pool)
 	{
 		dsp_buffers_pool = memory_pool_init(max_num_of_allocated_buffers,
-				I2S_BUFF_LEN * sizeof(real_t));
+				size_of_items_in_buffer * sizeof(real_t));
 	}
 	if (NULL == default_zero_buff.buff)
 	{

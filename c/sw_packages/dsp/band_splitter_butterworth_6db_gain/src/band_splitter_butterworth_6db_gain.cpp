@@ -130,7 +130,7 @@ static 	void init_filters_dsp_chains(
 	struct dsp_chain_t *filter_2_poles_dsp_chain;
 	struct dsp_desc_t *p_filter_all_pass_2_poles;
 
-	filter_1_pole_dsp_chain = DSP_CREATE_CHAIN(1, 0);
+	filter_1_pole_dsp_chain = DSP_CREATE_CHAIN(1, 0, 0);
 	handle->filter_1_pole_dsp_chain = filter_1_pole_dsp_chain;
 	p_filter_all_pass_1_pole = &handle->filter_all_pass_1_pole;
 
@@ -145,7 +145,7 @@ static 	void init_filters_dsp_chains(
 	DSP_IOCTL_1_PARAMS(p_filter_all_pass_1_pole,
 			IOCTL_BIQUAD_FILTER_SET_NUM_OF_BANDS , (void*) 1 );
 
-	filter_2_poles_dsp_chain = DSP_CREATE_CHAIN(1, 0);
+	filter_2_poles_dsp_chain = DSP_CREATE_CHAIN(1, 0, 0);
 	handle->filter_2_poles_dsp_chain = filter_2_poles_dsp_chain;
 	p_filter_all_pass_2_poles = &handle->filter_all_pass_2_poles;
 

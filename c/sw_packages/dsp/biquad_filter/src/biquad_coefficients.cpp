@@ -284,7 +284,11 @@ void biquads_coefficients_calculation_common(biquads_filter_mode_t filter_mode,
 		{
 			real_t a;
 
-			a = cos(w0) / (one + sin(w0));
+			#ifdef CONFIG_DSP_REAL_NUMBER_FORMAT_FLOATING_POINT
+				a = cos(w0) / (one + sin(w0));
+			#elif defined(CONFIG_DSP_REAL_NUMBER_FORMAT_FIXED_POINT)
+				a = w0.cos() / (one + w0.sin());
+			#endif
 			norm = one;
 			a1 = zero - a;
 			a2 = zero;
@@ -300,8 +304,13 @@ void biquads_coefficients_calculation_common(biquads_filter_mode_t filter_mode,
 			real_t q,p2,A,Q;
 			real_t s,c;
 
-			s = sin(w0);
-			c = cos(w0);
+			#ifdef CONFIG_DSP_REAL_NUMBER_FORMAT_FLOATING_POINT
+				s = sin(w0);
+				c = cos(w0);
+			#elif defined(CONFIG_DSP_REAL_NUMBER_FORMAT_FIXED_POINT)
+				s = w0.sin();
+				c = w0.cos();
+			#endif
 			a = c / (one + s);
 			A = (one + a) / (one - a);
 			Q = A * (one - c) * 0.5f;

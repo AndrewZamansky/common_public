@@ -18,7 +18,7 @@ endif
 
 LINKER_OUTPUT := $(OUT_DIR)/$(OUTPUT_NAME)
 LINKER_HISTORY_OUTPUT :=$(OUT_DIR_HISTORY)/$(HISTORY_OUTPUT_NAME)
-#OUTPUT_ASM :=  $(OUT_DIR)/$(OUTPUT_NAME).asm
+OUTPUT_ASM :=  $(OUT_DIR)/$(OUTPUT_NAME).asm
 
 
 ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
@@ -138,11 +138,13 @@ endif
 
 
 
-#	$(FULL_GCC_PREFIX)objdump -d -S $(LINKER_OUTPUT) > $(OUTPUT_ASM)
+ASM_CMD := $(HEXAGON_ROOT_DIR)/bin/hexagon-llvm-objdump.exe
+ASM_CMD +=  -disassemble $(LINKER_OUTPUT) > $(OUTPUT_ASM)
 
 build_outputs :
 	$(LINKER_CMD)
 	$(CP)  $(LINKER_OUTPUT) $(LINKER_HISTORY_OUTPUT)
+	$(ASM_CMD)
 ifeq ($(findstring y,$(CONFIG_CALCULATE_CRC32)),y)
 	$(CRC32CALC) $(OUTPUT_BIN) > $(OUTPUT_CRC32)
 endif

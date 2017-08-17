@@ -155,7 +155,7 @@ void DSP_SET_CHAIN_OUTPUT_BUFFER(struct dsp_chain_t *ap_chain,
 
 
 struct dsp_chain_t *DSP_CREATE_CHAIN(size_t max_num_of_dsp_modules ,
-									size_t max_num_of_allocated_buffers);
+		size_t max_num_of_allocated_buffers, size_t size_of_items_in_buffer);
 void DSP_DELETE_CHAIN(struct dsp_chain_t * ap_chain);
 void DSP_ADD_MODULE_TO_CHAIN(struct dsp_chain_t *ap_chain,
 		char *a_module_name,  struct dsp_desc_t *dsp_module);
