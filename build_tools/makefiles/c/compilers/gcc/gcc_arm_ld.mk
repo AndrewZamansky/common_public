@@ -209,7 +209,3 @@ ifeq ($(findstring y,$(CONFIG_USED_FOR_SEMIHOSTING_UPLOADING)),y)
 	$(CP)  $(OUTPUT_BIN) $(CONFIG_SEMIHOSTING_UPLOADING_DIR)
 	$(CP) $(OUTPUT_CRC32) $(CONFIG_SEMIHOSTING_UPLOADING_DIR)
 endif
-ifdef POST_BUILD_MAKEFILE_DIR
-	@echo running application specific post build script $(POST_BUILD_MAKEFILE_DIR)/Makefile.postbuild.mk
-	$(MAKE) -C $(POST_BUILD_MAKEFILE_DIR) -f Makefile.postbuild.mk build_outputs
-endif

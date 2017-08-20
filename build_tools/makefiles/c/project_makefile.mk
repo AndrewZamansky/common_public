@@ -98,8 +98,7 @@ all: $(COMPONENTS_MK) $(PROJECT_CONFIG_H_FILE)
 	$(MAKE) all_after_makefile_generated
 
 all_after_makefile_generated : build_outputs
-	$(eval TARGET := all)
-	$(info ---- Compiling project $(APP_ROOT_DIR) done at $(TIME_STR) ----)
+	$(MAKE) -f $(MAKEFILES_ROOT_DIR)/c/post_build.mk
 
 rebuild : clean
 	$(MAKE) all
@@ -129,7 +128,7 @@ $(PROJECT_CONFIG_H_FILE) : $(APP_ROOT_DIR)/.config
 
 build_outputs :  $(SUBDIRS)
 	$(MAKE) -f $(MAKEFILES_ROOT_DIR)/c/build_final_outputs.mk
-	
+
 
 
 clean:

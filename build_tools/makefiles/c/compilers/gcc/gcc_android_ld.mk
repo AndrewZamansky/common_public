@@ -44,7 +44,7 @@ else
 endif
 LDFLAGS += -march=$(GCC_ARM_ARCH)
 
-LDFLAGS += -Wl,-Map=$(OUT_DIR)/$(OUTPUT_APP_NAME).map
+LDFLAGS += -Wl,-Map=$(OUT_DIR)/$(OUTPUT_NAME).map
 
 LDFLAGS += -mthumb
 LDFLAGS += -fpie 

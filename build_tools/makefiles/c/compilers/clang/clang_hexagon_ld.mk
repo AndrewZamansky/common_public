@@ -148,7 +148,3 @@ build_outputs :
 ifeq ($(findstring y,$(CONFIG_CALCULATE_CRC32)),y)
 	$(CRC32CALC) $(OUTPUT_BIN) > $(OUTPUT_CRC32)
 endif
-ifdef POST_BUILD_MAKEFILE_DIR
-	@echo running application specific post build script $(POST_BUILD_MAKEFILE_DIR)/Makefile.postbuild.mk
-	$(MAKE) -C $(POST_BUILD_MAKEFILE_DIR) -f Makefile.postbuild.mk build_outputs
-endif
