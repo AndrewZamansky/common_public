@@ -3,8 +3,13 @@
 #define _DPWM_I94XXX_API_H_
 
 #include "dev_management_api.h"
+#include "src/dpwm.h"
 
 /*****************  defines  **************/
+
+#define    DPWM_I94XXX_API_CH_IO_BANK_A   DPWM_IO_ON_GPA
+#define    DPWM_I94XXX_API_CH_IO_BANK_C   DPWM_IO_ON_GPC
+#define    DPWM_I94XXX_API_CH_IO_BANK_D   DPWM_IO_ON_GPD
 
 /**********  define API  types ************/
 

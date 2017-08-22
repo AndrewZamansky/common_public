@@ -88,9 +88,9 @@ uint8_t dpwm_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 	{
 	case IOCTL_DEVICE_START :
     	/* mux pins */
-    	DPWM_MuxPins(DPWM_CHAN_LEFT, DPWM_IO_ON_GPC);
-    	DPWM_MuxPins(DPWM_CHAN_RIGHT, DPWM_IO_ON_GPC);
-    	DPWM_MuxPins(DPWM_CHAN_SUB, DPWM_IO_ON_GPC);
+    	DPWM_MuxPins(DPWM_CHAN_LEFT, cfg_hndl->left_ch_io_bank);
+    	DPWM_MuxPins(DPWM_CHAN_RIGHT, cfg_hndl->right_ch_io_bank);
+    	DPWM_MuxPins(DPWM_CHAN_SUB, cfg_hndl->sub_ch_io_bank);
 
 		clk_dev = i94xxx_dpwm_clk_dev;
 
