@@ -132,9 +132,9 @@ build_outputs :  $(SUBDIRS)
 
 
 clean:
-	$(RM) $(OBJ_DIR)
-	$(RM) $(OUT_DIR)
-	$(RM) $(AUTO_GENERATED_FILES_DIR)
+	$(RMDIR) $(OBJ_DIR)
+	$(RMDIR) $(OUT_DIR)
+	$(RMDIR) $(AUTO_GENERATED_FILES_DIR)
 
 
 list_var:

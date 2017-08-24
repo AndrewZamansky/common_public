@@ -131,13 +131,13 @@ static void set_number_of_bands(
 uint8_t biquad_filter_ioctl(struct dsp_desc_t *adsp,
 		const uint8_t aIoctl_num, void * aIoctl_param1 , void * aIoctl_param2)
 {
-	size_t num_of_bands;
-	uint8_t band_num;
-	struct biquad_filter_api_band_set_params_t *p_band_set_params;
-	struct biquads_filter_t *handle;
-	struct biquad_filter_api_band_set_t *band_params;
-	biquads_filter_mode_t filter_mode;
-	real_t *curr_coeffs;
+	static size_t num_of_bands;
+	static uint8_t band_num;
+	static struct biquad_filter_api_band_set_params_t *p_band_set_params;
+	static struct biquads_filter_t *handle;
+	static struct biquad_filter_api_band_set_t *band_params;
+	static biquads_filter_mode_t filter_mode;
+	static real_t *curr_coeffs;
 
 	handle = (struct biquads_filter_t *)adsp->handle;
 
@@ -162,8 +162,9 @@ uint8_t biquad_filter_ioctl(struct dsp_desc_t *adsp,
 		band_num = band_params->band_num ;
 		p_band_set_params = &(band_params->band_set_params);
 
-		if ((num_of_bands < band_num ) || (p_band_set_params->Fc < 0.01))
+		if ((num_of_bands <= band_num ) || (p_band_set_params->Fc < 0.01))
 		{
+			CRITICAL_ERROR("bad band number");
 			return 1;
 		}
 
@@ -171,7 +172,7 @@ uint8_t biquad_filter_ioctl(struct dsp_desc_t *adsp,
 			sizeof(struct biquad_filter_api_band_set_params_t));
 		curr_coeffs = &handle->biquad_bands_coeffs[5 * band_num];
 		filter_mode = p_band_set_params->filter_mode;
-		if (1 == p_band_set_params->bypass)
+		if (0 != p_band_set_params->bypass)
 		{
 			filter_mode = BIQUADS_TRANSPARENT_MODE;
 		}

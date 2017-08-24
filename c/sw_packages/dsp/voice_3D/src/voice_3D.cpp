@@ -63,12 +63,9 @@ void voice_3D_dsp(struct dsp_desc_t *adsp,
 	size_t out_data_len1 ;
 	size_t out_data_len2 ;
 
-	real_t main_ch_gain;
-	real_t second_ch_gain;
 
-	real_t medium_gain;
-	real_t side_gain;
-	real_t _3D_gain;
+	real_t C;
+	real_t D;
 
 	handle = (struct VOICE_3D_Instance_t *)adsp->handle;
 
@@ -93,12 +90,9 @@ void voice_3D_dsp(struct dsp_desc_t *adsp,
 	}
 
 
-	medium_gain = handle->medium_gain ;
-	side_gain = handle->side_gain ;
-	_3D_gain = handle->_3D_gain ;
+	C = handle->C ;
+	D = handle->D ;
 
-	main_ch_gain = medium_gain + side_gain ;
-	second_ch_gain = medium_gain + side_gain + _3D_gain ;
 
 	while(in_data_len1--)
 	{
@@ -110,17 +104,60 @@ void voice_3D_dsp(struct dsp_desc_t *adsp,
 		curr_ch_1 = *apCh1In++;
 		curr_ch_2 = *apCh2In++;
 
-		tmp = main_ch_gain * curr_ch_1;
-		tmp1 = curr_ch_2 * second_ch_gain;
+		tmp = C * curr_ch_1;
+		tmp1 = D * curr_ch_2;
 		tmp +=tmp1;
 		*apCh1Out++ = tmp;
 
-		tmp = main_ch_gain * curr_ch_2;
-		tmp1 = curr_ch_1 * second_ch_gain;
+		tmp = D * curr_ch_1;
+		tmp1 = C * curr_ch_2;
 		tmp +=tmp1;
 		*apCh2Out++ = tmp;
 	}
 
+}
+
+static void update_coefficients(struct VOICE_3D_Instance_t * handle)
+{
+	real_t center_gain;
+	real_t side_gain;
+	real_t _3D_gain;
+	real_t one;
+	real_t zero;
+	real_t A;
+	real_t B;
+	real_t C;
+	real_t D;
+
+	one = (int16_t)1;
+	zero = (int16_t)0;
+
+	center_gain = handle->center_gain;
+	side_gain = handle->side_gain;
+	_3D_gain = handle->_3D_gain;
+
+	if ( zero == handle->enable_voice)
+	{
+		center_gain = one;
+		side_gain = one;
+	}
+
+	if ( zero == handle->enable_3D)
+	{
+		_3D_gain = zero;
+	}
+
+	A = one - (_3D_gain * 0.2f);
+	B = one + (_3D_gain * 1.45f);
+
+	C = (center_gain * A) + (side_gain * B);
+	D = (center_gain * A) - (side_gain * B);
+
+	C = C * 0.5f;
+	D = D * 0.5f;
+
+	handle->C = C;
+	handle->D = D;
 }
 
 
@@ -138,22 +175,46 @@ uint8_t voice_3D_ioctl(struct dsp_desc_t *adsp,
 	switch(aIoctl_num)
 	{
 		case IOCTL_DSP_INIT :
-			handle->medium_gain = (float)0.5;
-			handle->side_gain =  (float)0.5;
+			handle->center_gain = (float)1;
+			handle->side_gain =  (float)1;
 			handle->_3D_gain = (float)0;
+			handle->enable_voice = (float)1;
+			handle->enable_3D = (float)1;
 			break;
-		case IOCTL_VOICE_3D_SET_MEDIUM_GAIN :
-			handle->medium_gain = (*((float*)aIoctl_param1)) / (float)2;
+		case IOCTL_VOICE_3D_SET_CENTER_GAIN :
+			handle->center_gain = (*((float*)aIoctl_param1));
 			break;
 		case IOCTL_VOICE_3D_SET_SIDE_GAIN :
-			handle->side_gain = (*((float*)aIoctl_param1)) / (float)2;
+			handle->side_gain = (*((float*)aIoctl_param1));
 			break;
 		case IOCTL_VOICE_3D_SET_3D_GAIN :
 			handle->_3D_gain = *((float*)aIoctl_param1);
 			break;
+		case IOCTL_VOICE_3D_SET_VOICE_ON :
+			handle->enable_voice = *((uint8_t*)aIoctl_param1);
+		case IOCTL_VOICE_3D_SET_3D_ON :
+			handle->enable_3D = *((uint8_t*)aIoctl_param1);
+			break;
+		case IOCTL_VOICE_3D_GET_CENTER_GAIN :
+			*((float*)aIoctl_param1) = handle->center_gain;
+			break;
+		case IOCTL_VOICE_3D_GET_SIDE_GAIN :
+			*((float*)aIoctl_param1) = handle->side_gain;
+			break;
+		case IOCTL_VOICE_3D_GET_3D_GAIN :
+			*((float*)aIoctl_param1) = handle->_3D_gain;
+			break;
+		case IOCTL_VOICE_3D_GET_VOICE_ON :
+			*((uint8_t*)aIoctl_param1) = handle->enable_voice;
+		case IOCTL_VOICE_3D_GET_3D_ON :
+			*((uint8_t*)aIoctl_param1) = handle->enable_3D;
+			break;
 		default :
 			return 1;
 	}
+
+	update_coefficients(handle);
+
 	return 0;
 }
 

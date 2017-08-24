@@ -153,9 +153,10 @@ void DSP_SET_CHAIN_OUTPUT_BUFFER(struct dsp_chain_t *ap_chain,
 						DSP_OUTPUT_PADS_t output_dsp_pad,
 						uint8_t *buffer, size_t buff_size);
 
+void DSP_INIT(size_t max_num_of_allocated_buffers,
+							size_t size_of_items_in_buffer);
+struct dsp_chain_t *DSP_CREATE_CHAIN(size_t max_num_of_dsp_modules);
 
-struct dsp_chain_t *DSP_CREATE_CHAIN(size_t max_num_of_dsp_modules ,
-		size_t max_num_of_allocated_buffers, size_t size_of_items_in_buffer);
 void DSP_DELETE_CHAIN(struct dsp_chain_t * ap_chain);
 void DSP_ADD_MODULE_TO_CHAIN(struct dsp_chain_t *ap_chain,
 		char *a_module_name,  struct dsp_desc_t *dsp_module);

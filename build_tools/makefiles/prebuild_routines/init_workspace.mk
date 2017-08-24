@@ -82,6 +82,19 @@ else
     $(error)
 endif
 
+
+ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
+    ### test for existence of make and put its directory name in 7ZIP_DIR #####
+    SEARCHED_TOOL:=7z
+    SEARCHED_DIR_VARIABLE:=7ZIP_DIR
+    MANUALLY_DEFINED_DIR_VARIABLE:=REDEFINE_7ZIP_DIR
+    TEST_FILE_IN_SEARCHED_DIR:=7z.exe
+    include $(MAKEFILES_INC_FUNC_DIR)/tool_existence_check.mk
+    ####### end of tool existence test #####
+    ARCHIVATOR :=$(7ZIP_DIR)/7z.exe  a -mx9 -t7z
+endif
+
+
 COMMON_INIT_SECTION_THAT_SHOULD_RUN_ONCE = dummy_value
 
 export

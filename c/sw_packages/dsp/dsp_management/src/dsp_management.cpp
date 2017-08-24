@@ -152,12 +152,34 @@ void DSP_DELETE_MODULES()
 
 
 /**
+ * DSP_INIT()
+ *
+ * return:
+ */
+void DSP_INIT(size_t max_num_of_allocated_buffers,
+							size_t size_of_items_in_buffer)
+{
+	if (NULL != dsp_buffers_pool)
+	{
+		CRITICAL_ERROR("DSP already initialized");
+	}
+
+	dsp_buffers_pool = memory_pool_init(max_num_of_allocated_buffers,
+			size_of_items_in_buffer * sizeof(real_t));
+
+	default_zero_buff.buff = (real_t*)memory_pool_zmalloc(dsp_buffers_pool);
+	default_zero_buff.buff_size =
+			memory_pool_get_chunk_size(dsp_buffers_pool) / sizeof(real_t);
+	default_zero_buff.pad_type = DSP_PAD_TYPE_DUMMY_ZERO_BUFFER;
+}
+
+
+/**
  * DSP_CREATE_CHAIN()
  *
  * return:
  */
-struct dsp_chain_t *DSP_CREATE_CHAIN(size_t max_num_of_dsp_modules,
-		size_t max_num_of_allocated_buffers, size_t size_of_items_in_buffer)
+struct dsp_chain_t *DSP_CREATE_CHAIN(size_t max_num_of_dsp_modules)
 {
 	struct dsp_chain_t *pdsp_chain;
 	struct dsp_desc_t **dsp_modules;
@@ -166,15 +188,7 @@ struct dsp_chain_t *DSP_CREATE_CHAIN(size_t max_num_of_dsp_modules,
 
 	if (NULL == dsp_buffers_pool)
 	{
-		dsp_buffers_pool = memory_pool_init(max_num_of_allocated_buffers,
-				size_of_items_in_buffer * sizeof(real_t));
-	}
-	if (NULL == default_zero_buff.buff)
-	{
-		default_zero_buff.buff = (real_t*)memory_pool_zmalloc(dsp_buffers_pool);
-		default_zero_buff.buff_size =
-				memory_pool_get_chunk_size(dsp_buffers_pool) / sizeof(real_t);
-		default_zero_buff.pad_type = DSP_PAD_TYPE_DUMMY_ZERO_BUFFER;
+		CRITICAL_ERROR("DSP not initialized");
 	}
 
 	pdsp_chain =

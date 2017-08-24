@@ -20,6 +20,7 @@ struct biquads_filter_t{
 	size_t num_of_bands ;
 	real_t *biquad_bands_coeffs; /* b0,b1,b2,a1,a2*/
 	struct biquad_filter_api_band_set_params_t *band_set_params;
+
 };
 
 
