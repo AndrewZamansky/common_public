@@ -1,10 +1,10 @@
 ifdef REDEFINE_PIC32_GCC_ROOT_DIR
     $(info  pic32 gcc dir  redefined to $(REDEFINE_PIC32_GCC_ROOT_DIR) )
     ifeq ("$(wildcard $(REDEFINE_PIC32_GCC_ROOT_DIR))","")
-        $(info !--- pic32 gcc path $(REDEFINE_PIC32_GCC_ROOT_DIR) dont exists)
-        $(info !--- to use default pic32 gcc location remove/comment REDEFINE_PIC32_GCC_ROOT_DIR variable in  $(PARENT_OF_COMMON_PUBLIC_DIR)/workspace_config.mk )
-        $(info !--- you can set customized gcc path in REDEFINE_PIC32_GCC_ROOT_DIR variable in $(PARENT_OF_COMMON_PUBLIC_DIR)/workspace_config.mk )
-        $(error )
+        $(info err: pic32 gcc path $(REDEFINE_PIC32_GCC_ROOT_DIR) dont exists)
+        $(info ---: to use default pic32 gcc location remove/comment REDEFINE_PIC32_GCC_ROOT_DIR variable in  $(PARENT_OF_COMMON_PUBLIC_DIR)/workspace_config.mk )
+        $(info ---: you can set customized gcc path in REDEFINE_PIC32_GCC_ROOT_DIR variable in $(PARENT_OF_COMMON_PUBLIC_DIR)/workspace_config.mk )
+        $(call exit,1)
     else
         GCC_ROOT_DIR 	:= 	$(REDEFINE_PIC32_GCC_ROOT_DIR)
     endif
@@ -12,20 +12,20 @@ else
     ifdef CONFIG_PIC32_COMPILER_LOCATION_WINDOWS_DEFAULT
         $(info  looking for pic32 gcc in default windows location)
         TOOLS_ROOT_DIR :=C:\Program\ Files\ (x86)\Microchip\MPLAB\ C32\ Suite
-        #$(info !--- path  --$(wildcard C:\Program\ Files\ (x86)\Microchip\MPLAB\ C32\ Suite)--  )
+        #$(info err: path  --$(wildcard C:\Program\ Files\ (x86)\Microchip\MPLAB\ C32\ Suite)--  )
         ifeq ("$(wildcard $(TOOLS_ROOT_DIR))","")
-            $(info !--- path  $(TOOLS_ROOT_DIR) dont exists)
-            $(info !--- get MPLAB C32 Suite and put it into $(TOOLS_ROOT_DIR))
-            $(info !--- make sure thatpic32-libs,bin and pic32mx  folders is located in $(TOOLS_ROOT_DIR)/  after unpacking   )
-            $(info !--- or use set CONFIG_PIC32_COMPILER_LOCATION_WORKSPACE_TOOLS_DIRECTORY in menuconfig   )
-            $(error )
+            $(info err: path  $(TOOLS_ROOT_DIR) dont exists)
+            $(info ---: get MPLAB C32 Suite and put it into $(TOOLS_ROOT_DIR))
+            $(info ---: make sure thatpic32-libs,bin and pic32mx  folders is located in $(TOOLS_ROOT_DIR)/  after unpacking   )
+            $(info ---: or use set CONFIG_PIC32_COMPILER_LOCATION_WORKSPACE_TOOLS_DIRECTORY in menuconfig   )
+            $(call exit,1)
         endif    
         GCC_ROOT_DIR :=C:\Program Files (x86)\Microchip\MPLAB C32 Suite
     else ifdef CONFIG_PIC32_COMPILER_LOCATION_WORKSPACE_TOOLS_DIRECTORY 
         $(info  looking for pic32 gcc in workspace tools location)
         ifeq ("$(wildcard $(TOOLS_ROOT_DIR)/gcc/pic32)","")
-            $(info !--- path  $(TOOLS_ROOT_DIR)/gcc/pic32 dont exists create it )
-            $(error )
+            $(info err: path  $(TOOLS_ROOT_DIR)/gcc/pic32 dont exists create it )
+            $(call exit,1)
         endif
         
         TEST_GCC_ROOT_DIR 	:= 	$(TOOLS_ROOT_DIR)/gcc/pic32/c32
@@ -38,8 +38,8 @@ else
         ifndef GCC_NOT_FOUND
            TEST_GCC_ROOT_DIR 	:= 	$(TOOLS_ROOT_DIR)/gcc/pic32/c32-$(PIC32_C32_VERSION)
            ifeq ("$(wildcard $(TEST_GCC_ROOT_DIR))","")
-               $(info !--- $(TEST_GCC_ROOT_DIR) dont exists )
-               $(info !--- (if needed you can change compiler version using menuconfig in "Building System" menu ))
+               $(info err: $(TEST_GCC_ROOT_DIR) dont exists )
+               $(info ---: (if needed you can change compiler version using menuconfig in "Building System" menu ))
                GCC_NOT_FOUND :=1
            endif
     	endif
@@ -47,12 +47,12 @@ else
 
         ifdef GCC_NOT_FOUND
             TEST_GCC_ROOT_DIR 	:= 	$(TOOLS_ROOT_DIR)/gcc/pic32/c32-$(PIC32_C32_VERSION)
-            $(info !--- gcc path $(TEST_GCC_ROOT_DIR) dont exists )
-            $(info !--- get MPLAB C32 Suite and put it into $(TEST_GCC_ROOT_DIR))
-            $(info !--- make sure thatpic32-libs,bin and pic32mx  folders is located in $(TEST_GCC_ROOT_DIR)/  after unpacking   )
-            $(info !--- or use set CONFIG_PIC32_COMPILER_LOCATION_WORKSPACE_TOOLS_DIRECTORY in menuconfig   )
-            $(info !--- you can also set customized gcc path in REDEFINE_PIC32_GCC_ROOT_DIR variable in $(PARENT_OF_COMMON_PUBLIC_DIR)/workspace_config.mk )
-            $(error )
+            $(info err: gcc path $(TEST_GCC_ROOT_DIR) dont exists )
+            $(info ---: get MPLAB C32 Suite and put it into $(TEST_GCC_ROOT_DIR))
+            $(info ---: make sure thatpic32-libs,bin and pic32mx  folders is located in $(TEST_GCC_ROOT_DIR)/  after unpacking   )
+            $(info ---: or use set CONFIG_PIC32_COMPILER_LOCATION_WORKSPACE_TOOLS_DIRECTORY in menuconfig   )
+            $(info ---: you can also set customized gcc path in REDEFINE_PIC32_GCC_ROOT_DIR variable in $(PARENT_OF_COMMON_PUBLIC_DIR)/workspace_config.mk )
+            $(call exit,1)
         endif
 
         GCC_ROOT_DIR :=$(lastword $(wildcard $(TEST_GCC_ROOT_DIR)))#take the latest gcc version

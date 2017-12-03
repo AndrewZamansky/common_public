@@ -26,11 +26,25 @@ WORKSPACE_NAME := $(notdir $(abspath $(PARENT_OF_COMMON_PUBLIC_DIR)/..))
 
 TMP :=$(call calc_parent_dir,$(PARENT_OF_COMMON_PUBLIC_DIR))
 EXTERNAL_SOURCE_ROOT_DIR :=$(TMP)/external_source
-ifeq ("$(wildcard $(EXTERNAL_SOURCE_ROOT_DIR))","")
-    DUMMY:=$(shell $(MKDIR)  $(EXTERNAL_SOURCE_ROOT_DIR))
-endif
+$(call mkdir_if_not_exists, $(EXTERNAL_SOURCE_ROOT_DIR))
 
-include $(PARENT_OF_COMMON_PUBLIC_DIR)/workspace_config.mk
+WORKSPACE_CONFIG :=$(PARENT_OF_COMMON_PUBLIC_DIR)/workspace_config.mk
+WORKSPACE_CONFIG_EXPORTED :=$(WORKSPACE_CONFIG).exported
+ifeq ("$(wildcard $(WORKSPACE_CONFIG))","")
+    ifneq ("$(wildcard $(WORKSPACE_CONFIG_EXPORTED))","")
+        FILES := $(WORKSPACE_CONFIG_EXPORTED) $(WORKSPACE_CONFIG)
+        ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
+            FILES := $(subst /,\,$(FILES))
+            DUMMY := $(shell copy /Y $(FILES))
+        else
+            $(info err: TODO)
+            $(call exit,1)
+        endif
+    endif
+endif
+ifneq ("$(wildcard $(WORKSPACE_CONFIG))","")
+    include $(WORKSPACE_CONFIG)
+endif
 
 MAKEFILES_INC_FUNC_DIR :=$(MAKEFILES_ROOT_DIR)/_include_functions
 PUBLIC_DRIVERS_DIR := $(COMMON_PUBLIC_DIR)/c/hw_drivers
@@ -67,10 +81,10 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
     OUT_DIR := $(subst /,\,$(OUT_DIR))
 endif
 
+
 #if common_private directory dont exists then create a dummy one
-ifeq ("$(wildcard $(COMMON_PRIVATE_DIR))","")
-    DUMMY:=$(shell $(MKDIR)  $(COMMON_PRIVATE_DIR))
-endif
+$(call mkdir_if_not_exists, $(COMMON_PRIVATE_DIR))
+
 
 ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
     SET_CC_ENV_VARS :=set APP_ROOT_DIR=$(APP_ROOT_DIR)&
@@ -78,20 +92,8 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
     SET_CC_ENV_VARS +=set PUBLIC_SW_PACKAGES_DIR=$(PUBLIC_SW_PACKAGES_DIR)&
     SET_CC_ENV_VARS +=set PUBLIC_DRIVERS_DIR=$(PUBLIC_DRIVERS_DIR)
 else
-    $(info --- add enviranmental variable PUBLIC_SW_PACKAGES_DIR)
-    $(error)
-endif
-
-
-ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
-    ### test for existence of make and put its directory name in 7ZIP_DIR #####
-    SEARCHED_TOOL:=7z
-    SEARCHED_DIR_VARIABLE:=7ZIP_DIR
-    MANUALLY_DEFINED_DIR_VARIABLE:=REDEFINE_7ZIP_DIR
-    TEST_FILE_IN_SEARCHED_DIR:=7z.exe
-    include $(MAKEFILES_INC_FUNC_DIR)/tool_existence_check.mk
-    ####### end of tool existence test #####
-    ARCHIVATOR :=$(7ZIP_DIR)/7z.exe  a -mx9 -t7z
+    $(info err: add enviranmental variable PUBLIC_SW_PACKAGES_DIR)
+    $(call exit,1)
 endif
 
 

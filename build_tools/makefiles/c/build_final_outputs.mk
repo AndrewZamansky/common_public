@@ -36,6 +36,7 @@ else ifdef CONFIG_HOST
         include $(COMPILERS_DIR)/gcc/gcc_host_ld.mk
     endif
 else
-    $(error ---- unknown compiler ----)
+    $(info err: unknown compiler)
+    $(call exit,1)
 endif
 

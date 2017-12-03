@@ -3,27 +3,27 @@ include $(MAKEFILES_ROOT_DIR)/common.mk
 #test that arguments are set correctly 
 ifeq ($(LIST_FILE_NAME_TRUNCATE),)
     ifeq ($(LIST_FILE_NAME_APPEND),)
-        $(info !--- LIST_FILE_NAME_TRUNCATE or LIST_FILE_NAME_APPEND (= name of file to create/append) should be set before including this file)
-        $(error )
+        $(info err: LIST_FILE_NAME_TRUNCATE or LIST_FILE_NAME_APPEND (= name of file to create/append) should be set before including this file)
+        $(call exit,1)
     endif
 endif
 ifneq ($(LIST_FILE_NAME_TRUNCATE),)
     ifneq ($(LIST_FILE_NAME_APPEND),)
-        $(info !--- only one argument of LIST_FILE_NAME_TRUNCATE or LIST_FILE_NAME_APPEND may be set before including this file)
-        $(error )
+        $(info err: only one argument of LIST_FILE_NAME_TRUNCATE or LIST_FILE_NAME_APPEND may be set before including this file)
+        $(call exit,1)
     endif
 endif
 ifeq ($(PREFIX_FOR_EACH_ITEM),DUMMY_________123)
-    $(info !--- PREFIX_FOR_EACH_ITEM (= string to insert before each item) should be set before including this file)
-    $(error )
+    $(info err: PREFIX_FOR_EACH_ITEM (= string to insert before each item) should be set before including this file)
+    $(call exit,1)
 endif
 ifeq ($(SUFFIX_LINE_FOR_EACH_ITEM),DUMMY_________123)
-    $(info !--- SUFFIX_LINE_FOR_EACH_ITEM (= string to insert after each item) should be set before including this file)
-    $(error )
+    $(info err: SUFFIX_LINE_FOR_EACH_ITEM (= string to insert after each item) should be set before including this file)
+    $(call exit,1)
 endif
 ifeq ($(ITEMS),DUMMY_________123)
-    $(info !--- ITEMS (= items to place in file) should be set before including this file)
-    $(error )
+    $(info err: ITEMS (= items to place in file) should be set before including this file)
+    $(call exit,1)
 endif
 
 ifneq ($(LIST_FILE_NAME_TRUNCATE),)

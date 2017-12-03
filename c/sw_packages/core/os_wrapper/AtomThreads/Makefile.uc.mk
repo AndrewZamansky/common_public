@@ -11,6 +11,10 @@ ifdef CONFIG_ATOM_THREADS
         $(error )
     endif
     
+    ifeq ("","$(filter $(ATOMTHREADS_RTOS_PATH),$(EXTERNAL_SRC_DIRS))")
+        EXTERNAL_SRC_DIRS := $(EXTERNAL_SRC_DIRS) $(ATOMTHREADS_RTOS_PATH)
+    endif
+
     DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH ,  $(ATOMTHREADS_RTOS_PATH)/kernel )
     
     ifdef CONFIG_STM8

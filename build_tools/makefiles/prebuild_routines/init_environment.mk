@@ -23,7 +23,7 @@ else # we are not in windows now
         $(info Linux OS detected . )
         include $(PREBUILD_ROUTINES_DIR)/init_linux_environment.mk
     else # we are not in linux now
-        $(error ---- UNKNOWN HOST OS ----)
+        $(info err: UNKNOWN HOST OS)
 endif 
 	
 endif

@@ -27,28 +27,28 @@ GIT ="$(GIT_ROOT_DIR)\bin\git.exe"
 ## test for validity of application git repository
 GIT_DIR := $(firstword $(wildcard ./.git))
 ifeq ($(findstring ./.git,$(GIT_DIR)),)      # if not found ./.git in $(GIT_DIR)
-    $(info !--- error : create git repository of project . for example by running following command : )
-    $(info !--- $(CD) $(APP_ROOT_DIR) $(SHELL_CMD_DELIMITER) $(GIT) init $(SHELL_CMD_DELIMITER) $(CP) $(DEFAULT_GIT_IGNORE_FILE) $(CURRENT_GIT_IGNORE_FILE))
-    $(error )
+    $(info err: error : create git repository of project . for example by running following command : )
+    $(info ---: $(CD) $(APP_ROOT_DIR) $(SHELL_CMD_DELIMITER) $(GIT) init $(SHELL_CMD_DELIMITER) $(CP) $(DEFAULT_GIT_IGNORE_FILE) $(CURRENT_GIT_IGNORE_FILE))
+    $(call exit,1)
 endif
 
 CURR_APPLICATION_GIT_BRANCH := $(shell $(GIT) rev-parse --abbrev-ref HEAD 2>&1)
 CURR_APPLICATION_GIT_BRANCH := $(patsubst heads/%,%,$(CURR_APPLICATION_GIT_BRANCH))#removing heads/ if exists
 ifneq ($(findstring ambiguous argument 'HEAD',$(CURR_APPLICATION_GIT_BRANCH)),)
-    $(info !--- git repository test failed : $(APP_ROOT_DIR))
-    $(info !--- git error  :   $(CURR_APPLICATION_GIT_BRANCH))
-    $(info !--- maybe branch was not created after git initialization )
-    $(info !--- in this case create branch by running following command [ it will add all files in directory ] :)
-    $(info !--- $(CD) $(APP_ROOT_DIR) $(SHELL_CMD_DELIMITER) $(GIT) add . & $(GIT) commit -m "initial commit")
-    $(error )
+    $(info err: git repository test failed : $(APP_ROOT_DIR))
+    $(info ---: git error  :   $(CURR_APPLICATION_GIT_BRANCH))
+    $(info ---: maybe branch was not created after git initialization )
+    $(info ---: in this case create branch by running following command [ it will add all files in directory ] :)
+    $(info ---: $(CD) $(APP_ROOT_DIR) $(SHELL_CMD_DELIMITER) $(GIT) add . & $(GIT) commit -m "initial commit")
+    $(call exit,1)
 endif
 ifeq ($(findstring $(PROJECT_NAME),$(CURR_APPLICATION_GIT_BRANCH)),)      # if not found $(PROJECT_NAME) in $(CURR_APPLICATION_GIT_BRANCH)
-    $(info !--- git repository test failed : $(APP_ROOT_DIR))
-    $(info !--- error : branch names must be of type $(PROJECT_NAME) or $(PROJECT_NAME)<_vVersion>)
-    $(info !--- but current branch name is $(CURR_APPLICATION_GIT_BRANCH))
-    $(info !--- in case that this git is just created run following comand  :)
-    $(info !--- $(CD) $(APP_ROOT_DIR) $(SHELL_CMD_DELIMITER) $(GIT) branch -m $(PROJECT_NAME))
-    $(error )
+    $(info err: git repository test failed : $(APP_ROOT_DIR))
+    $(info ---: error : branch names must be of type $(PROJECT_NAME) or $(PROJECT_NAME)<_vVersion>)
+    $(info ---: but current branch name is $(CURR_APPLICATION_GIT_BRANCH))
+    $(info ---: in case that this git is just created run following comand  :)
+    $(info ---: $(CD) $(APP_ROOT_DIR) $(SHELL_CMD_DELIMITER) $(GIT) branch -m $(PROJECT_NAME))
+    $(call exit,1)
 endif
 ## end of test for validity of application git repository
 

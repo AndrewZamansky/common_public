@@ -8,6 +8,11 @@ ifdef CONFIG_STM8
         $(info make sure inc and src  folders is located in $(BSP_STM8S_PATH)/  after unpacking   )
         $(error )
     endif
+
+    ifeq ("","$(filter $(BSP_STM8S_PATH),$(EXTERNAL_SRC_DIRS))")
+        EXTERNAL_SRC_DIRS := $(EXTERNAL_SRC_DIRS) $(BSP_STM8S_PATH)
+    endif
+
     DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(BSP_STM8S_PATH)/inc )
 	DUMMY := $(call ADD_TO_GLOBAL_DEFINES , STM8S103)
 	STM8S_SRC_DIR := $(BSP_STM8S_PATH)/src

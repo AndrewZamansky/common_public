@@ -11,6 +11,10 @@ ifneq ($(strip $(INCLUDE_THIS_COMPONENT) ),)
         $(error )
     endif
 
+    ifeq ("","$(filter $(ARM_CMSIS_PATH),$(EXTERNAL_SRC_DIRS))")
+        EXTERNAL_SRC_DIRS := $(EXTERNAL_SRC_DIRS) $(ARM_CMSIS_PATH)
+    endif
+
     DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(ARM_CMSIS_PATH)/CMSIS/Include)
 endif
 

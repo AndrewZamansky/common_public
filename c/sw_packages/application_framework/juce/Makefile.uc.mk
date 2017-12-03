@@ -12,15 +12,10 @@ ifdef CONFIG_INCLUDE_JUCE
         $(error )
     endif
 
-    ifeq ($(MAKECMDGOALS),all_after_makefile_generated)
-        ifndef JUCE_GIT_TEST_ALREADY_PERFORMED
-            JUCE_GIT_TEST_ALREADY_PERFORMED:=1
-            #test if current commit and branch of uboot git is the same as required by application
-            CURR_GIT_REPOSITORY_DIR :=$(JUCE_PATH)
-            CURR_GIT_COMMIT_HASH_VARIABLE :=CONFIG_JUCE_GIT_COMMIT_HASH
-            include $(MAKEFILES_ROOT_DIR)/_include_functions/git_prebuild_repo_check.mk
-        endif
-    endif
+    #test if current commit and branch of uboot git is the same as required by application
+    CURR_GIT_REPOSITORY_DIR :=$(JUCE_PATH)
+    CURR_GIT_COMMIT_HASH_VARIABLE :=CONFIG_JUCE_GIT_COMMIT_HASH
+    include $(MAKEFILES_ROOT_DIR)/_include_functions/git_prebuild_repo_check.mk
     
     CURR_JUCE_COMPONENT_LOCATION := $(patsubst %/Makefile.uc.mk,%,$(realpath $(filter %juce/Makefile.uc.mk,$(MAKEFILE_LIST))))
     DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(JUCE_PATH))

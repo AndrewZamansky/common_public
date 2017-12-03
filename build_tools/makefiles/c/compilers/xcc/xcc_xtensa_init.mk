@@ -18,9 +18,9 @@ include $(MAKEFILES_ROOT_DIR)/_include_functions/tool_existence_check.mk
 ifeq ("$(wildcard $(REDEFINE_XTENSA_CONFIGS_DIR))","")
     TMP_VAR_NAME :=$(PARENT_OF_COMMON_PUBLIC_DIR)/workspace_config.mk
     TMP_VAR_NAME :=$(TMP_VAR_NAME)/REDEFINE_XTENSA_CONFIGS_DIR
-    $(info !--- $(REDEFINE_XTENSA_CONFIGS_DIR) does not exists)
-    $(info !--- define Xtensa config dir in $(TMP_VAR_NAME))
-    $(error )
+    $(info err: $(REDEFINE_XTENSA_CONFIGS_DIR) does not exists)
+    $(info ---: define Xtensa config dir in $(TMP_VAR_NAME))
+    $(call exit,1)
 endif
 
 ### GLOBAL_CFLAGS calculation
@@ -55,13 +55,13 @@ ifdef CONFIG_XTENSA_HIFI3_BD5
 	DUMMY := $(call ADD_TO_GLOBAL_DEFINES , CONFIG_hifi3_bd5)
 	CORE_CONFIG_DIR :=$(REDEFINE_XTENSA_CONFIGS_DIR)/hifi3_bd5/config
 else
-    $(info ---- unknown core)
-    $(error --)
+    $(info err: unknown core)
+    $(call exit,1)
 endif
 
 ifeq ("$(wildcard $(CORE_CONFIG_DIR))","")
-    $(info !--- $(CORE_CONFIG_DIR) does not exists)
-    $(error )
+    $(info err: $(CORE_CONFIG_DIR) does not exists)
+    $(call exit,1)
 endif
 
 GLOBAL_CFLAGS += --xtensa-core=$(XCC_CORE)

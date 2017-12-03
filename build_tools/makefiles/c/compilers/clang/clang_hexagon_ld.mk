@@ -12,7 +12,8 @@ else
         OUTPUT_NAME :=$(FULL_PROJECT_NAME)
         HISTORY_OUTPUT_NAME :=$(FULL_PROJECT_NAME)_$(MAIN_VERSION_STR)
     else
-        $(error ---- unknown output type ----)
+        $(info err: unknown output type)
+        $(call exit,1)
     endif
 endif
 
@@ -40,7 +41,8 @@ LDFLAGS :=
 ifdef CONFIG_HEXAGON_VERSION_60
     LDFLAGS += -mv60 
 else
-    $(error unknown hexagon version)
+    $(info err: unknown hexagon version)
+    $(call exit,1)
 endif
 
 LDFLAGS += -O0 

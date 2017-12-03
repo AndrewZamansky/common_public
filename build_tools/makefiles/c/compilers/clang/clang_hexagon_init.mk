@@ -36,13 +36,15 @@ endif
 ifdef CONFIG_HEXAGON_VERSION_60
     GLOBAL_CFLAGS += -mv60
 else
-    $(error unknown hexagon version)
+    $(info err: unknown hexagon version)
+    $(call exit,1)
 endif
 ifdef CONFIG_COMPILE_FOR_DEBUG
     GLOBAL_CFLAGS += -g
     #GLOBAL_CFLAGS += -v
 else
-    $(error TODO)
+    $(info err: TODO)
+    $(call exit,1)
 endif
 GLOBAL_CFLAGS += -G0
 GLOBAL_CFLAGS += -Wall 

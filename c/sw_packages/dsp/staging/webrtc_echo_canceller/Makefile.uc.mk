@@ -11,6 +11,11 @@ ifdef CONFIG_INCLUDE_WEBRTC_AEC
         $(info ---    )
         $(error )
     endif
+
+    ifeq ("","$(filter $(WEBRTC_PATH),$(EXTERNAL_SRC_DIRS))")
+        EXTERNAL_SRC_DIRS := $(EXTERNAL_SRC_DIRS) $(WEBRTC_PATH)
+    endif
+
     GLOBAL_LIBS += libstdc++.a
 endif
 

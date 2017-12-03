@@ -15,14 +15,14 @@ else
         HISTORY_OUTPUT_NAME :=$(FULL_PROJECT_NAME)_$(MAIN_VERSION_STR)
         HISTORY_OUTPUT_NAME :=$(HISTORY_OUTPUT_NAME)r$(DATE_STR).elf
 #    else
-#        $(error ---- unknown output type ----)
+#        $(info err: unknown output type)
+#        $(call exit,1)
 #    endif
 endif
 
 LINKER_OUTPUT := $(OUT_DIR)/$(OUTPUT_NAME)
 MAP_FILE := $(OUT_DIR)/$(OUTPUT_NAME).map
-LINKER_HISTORY_OUTPUT :=$(OUT_DIR)/$(HISTORY_OUTPUT_NAME)
-HISTORY_COMPRESSED_OUTPUT :=$(OUT_DIR_HISTORY)/$(HISTORY_OUTPUT_NAME).7z
+LINKER_HISTORY_OUTPUT :=$(OUT_DIR_HISTORY)/$(HISTORY_OUTPUT_NAME)
 OUTPUT_ASM :=  $(OUT_DIR)/$(OUTPUT_NAME).asm
 OUTPUT_BIN := $(OUT_DIR)/$(OUTPUT_NAME).bin
 OUTPUT_HEX :=  $(OUT_DIR)/$(OUTPUT_NAME).hex
@@ -32,9 +32,9 @@ OUTPUT_HEX :=  $(OUT_DIR)/$(OUTPUT_NAME).hex
 ifdef CONFIG_USE_APPLICATION_SPECIFIC_SCATTER_FILE
     SCATTER_FILE =$(APP_ROOT_DIR)/$(PROJECT_NAME).lds
     ifeq ($(wildcard $(SCATTER_FILE)),) #if scatter file not found
-        $(info !--- application configured to use it's own scatter file,)
-        $(info !--- but $(SCATTER_FILE) doesn't exist)
-        $(error )
+        $(info err: application configured to use it's own scatter file,)
+        $(info ---: but $(SCATTER_FILE) doesn't exist)
+        $(call exit,1)
     endif
 else
     SCATTER_FILES_DIR :=$(BUILD_TOOLS_ROOT_DIR)/scatter_files/arm
@@ -55,14 +55,10 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
     LINKER_OUTPUT := $(subst /,\,$(LINKER_OUTPUT))
     MAP_FILE := $(subst /,\,$(MAP_FILE))
     LINKER_HISTORY_OUTPUT := $(subst /,\,$(LINKER_HISTORY_OUTPUT))
-    HISTORY_COMPRESSED_OUTPUT := $(subst /,\,$(HISTORY_COMPRESSED_OUTPUT))
     OUTPUT_ASM := $(subst /,\,$(OUTPUT_ASM))
     OUTPUT_BIN := $(subst /,\,$(OUTPUT_BIN))
     OUTPUT_HEX := $(subst /,\,$(OUTPUT_HEX))
     OUTPUT_CRC32 := $(subst /,\,$(OUTPUT_CRC32))
-
-    HISTORY_COMPRESS_CMD :=$(ARCHIVATOR)
-    HISTORY_COMPRESS_CMD +=$(HISTORY_COMPRESSED_OUTPUT) $(LINKER_HISTORY_OUTPUT)
 endif
 
 
@@ -207,8 +203,6 @@ build_outputs :
 	$(FULL_GCC_PREFIX)objcopy -O binary $(LINKER_OUTPUT) $(OUTPUT_BIN)
 	$(FULL_GCC_PREFIX)objcopy -O ihex $(LINKER_OUTPUT) $(OUTPUT_HEX)
 	$(CP)  $(LINKER_OUTPUT) $(LINKER_HISTORY_OUTPUT)
-	$(HISTORY_COMPRESS_CMD)
-	$(RM)  $(LINKER_HISTORY_OUTPUT)
 ifeq ($(findstring y,$(CONFIG_CALCULATE_CRC32)),y)
 	$(CRC32CALC) $(OUTPUT_BIN) > $(OUTPUT_CRC32)
 endif

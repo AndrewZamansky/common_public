@@ -8,6 +8,6 @@ else
 endif
 
 ifeq ($(FULL_PROJECT_NAME),$(FULL_CURR_PROJECT_NAME))
-    $(info !--- name is not unique)
-    $(error )
+    $(info err: name is not unique)
+    $(call exit,1)
 endif

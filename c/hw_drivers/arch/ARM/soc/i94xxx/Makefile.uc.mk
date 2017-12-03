@@ -9,6 +9,11 @@ ifdef CONFIG_I94XXX
         $(info !--- make sure Library and SampleCode  folders is located in $(BSP_I94XXX_PATH)/  after unpacking   )
         $(error )
     endif
+
+    ifeq ("","$(filter $(BSP_I94XXX_PATH),$(EXTERNAL_SRC_DIRS))")
+        EXTERNAL_SRC_DIRS := $(EXTERNAL_SRC_DIRS) $(BSP_I94XXX_PATH)
+    endif
+
     DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(BSP_I94XXX_PATH)/Library/StdDriver/inc )
 	I94XXX_SRC_DIR := $(BSP_I94XXX_PATH)/Library/StdDriver/src
 	INCLUDE_THIS_COMPONENT := y

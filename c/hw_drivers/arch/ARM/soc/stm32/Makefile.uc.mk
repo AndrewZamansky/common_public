@@ -8,6 +8,11 @@ ifdef CONFIG_STM32F103RC
         $(info !--- make sure inc and src  folders is located in $(BSP_STM32F10X_PATH)/  after unpacking   )
         $(error )
     endif
+    
+    ifeq ("","$(filter $(BSP_STM32F10X_PATH),$(EXTERNAL_SRC_DIRS))")
+        EXTERNAL_SRC_DIRS := $(EXTERNAL_SRC_DIRS) $(BSP_STM32F10X_PATH)
+    endif
+    
     DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(BSP_STM32F10X_PATH)/inc )
     DUMMY := $(call ADD_TO_GLOBAL_DEFINES ,STM32F10X_MD )
     DUMMY := $(call ADD_TO_GLOBAL_DEFINES ,USE_STM3210B_EVAL )

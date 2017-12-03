@@ -2,10 +2,7 @@
 include $(MAKEFILES_ROOT_DIR)/common.mk
 ENTER_PROJECT_DIR :=
 ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
-    SHELL_CMD_DELIMITER = &
     ENTER_PROJECT_DIR += $(COMMON_PARTITION) & 
-else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX)
-    SHELL_CMD_DELIMITER = ;
 endif
 ENTER_PROJECT_DIR += cd $(APP_ROOT_DIR)
 
@@ -23,6 +20,15 @@ include $(MAKEFILES_INC_FUNC_DIR)/tool_existence_check.mk
 ####### end of tool existence test #####
 
 MAIN_KCONFIG :=$(COMMON_PUBLIC_DIR)/Kconfig
+
+
+# if no Kconfig in "common_priveate" then create dummy one
+COMMON_PRIVATE_KCONFIG_FILE :=$(KCONFIG_PRIVATE_START_DIR)/Kconfig
+ifeq ("$(wildcard $(COMMON_PRIVATE_KCONFIG_FILE))","")
+    $(call mkdir_if_not_exists, $(dir $(COMMON_PRIVATE_KCONFIG_FILE)))
+    DUMMY:=$(shell echo config PRIVATE_DUMMY>$(COMMON_PRIVATE_KCONFIG_FILE))
+endif
+
 
 ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
 
@@ -51,23 +57,23 @@ else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX)
     ERROR_LOG =  $(OUT_DIR)/kconfig.out
 
 
-##   $(info !--- $(SHELL_OUTPUT))
-##   $(info !--- you need to install kconfig frontends)
-##   $(info !--- example of installing in ubuntu  :)
-##   $(info !--- ----------------------------------)
-##   $(info !--- sudo apt-get install gperf libncurses5-dev)
-##   $(info !--- cd ~;git clone https://patacongo@bitbucket.org/nuttx/tools.git tools)
-##   $(info !--- cd tools/kconfig-frontends/)
-##   $(info !--- ./configure --enable-mconf --disable-shared --enable-static)
-##   $(info !--- make)
-##   $(info !--- sudo make install )
-##   $(info !--- ----------------------------------)
-##   $(info !--- after installing run kconfig-mconf in shell and check that you)
-##   $(info !--- get "can't find file ..." output only)
+##   $(info err: $(SHELL_OUTPUT))
+##   $(info ---: you need to install kconfig frontends)
+##   $(info ---: example of installing in ubuntu  :)
+##   $(info ---: ----------------------------------)
+##   $(info ---: sudo apt-get install gperf libncurses5-dev)
+##   $(info ---: cd ~;git clone https://patacongo@bitbucket.org/nuttx/tools.git tools)
+##   $(info ---: cd tools/kconfig-frontends/)
+##   $(info ---: ./configure --enable-mconf --disable-shared --enable-static)
+##   $(info ---: make)
+##   $(info ---: sudo make install )
+##   $(info ---: ----------------------------------)
+##   $(info ---: after installing run kconfig-mconf in shell and check that you)
+##   $(info ---: get "can't find file ..." output only)
 
 
-	$(info !--- TODO : add KCONFIG_START_DIR_PATH=$(KCONFIG_START_DIR_PATH) to shell environment)
-	$(error )
+	$(info err: TODO : add KCONFIG_START_DIR_PATH=$(KCONFIG_START_DIR_PATH) to shell environment)
+	$(call exit,1)
     KCONFIG_CMD :=kconfig-mconf $(MAIN_KCONFIG) 2>$(ERROR_LOG)
     KCONFIG_CMD_FOR_WARNING_CHECK_CMD :=kconfig-mconf $(MAIN_KCONFIG) 1>$(ERROR_LOG)
     MANUAL_KCONFIG_CMD :=cd $(APP_ROOT_DIR) ; $(KCONFIG_CMD)
@@ -82,10 +88,10 @@ endif
 $(info running : $(NEW_WIN_KCONFIG_CMD))
 SHELL_OUTPUT :=$(shell $(NEW_WIN_KCONFIG_CMD))
 ifneq ($(findstring Redirection is not supported,$(SHELL_OUTPUT)),)
-    $(info !--- you can run kconfig utility only from shell.)
-    $(info !--- open shell and run the following :)
-    $(info !--- $(ENTER_PROJECT_DIR) $(SHELL_CMD_DELIMITER) $(MAKE) menuconfig)
-    $(error )
+    $(info err: you can run kconfig utility only from shell.)
+    $(info ---: open shell and run the following :)
+    $(info ---: $(ENTER_PROJECT_DIR) $(SHELL_CMD_DELIMITER) $(MAKE) menuconfig)
+    $(call exit,1)
 endif
 
 SHELL_OUTPUT :=$(shell $(KCONFIG_PRINT_ERRORS_CMD))
