@@ -14,6 +14,12 @@ endif
 include $(MAKEFILES_ROOT_DIR)/_include_functions/tool_existence_check.mk
 ####### end of tool existence test #####
 
+ifeq ("$(strip $(REDEFINE_XTENSA_CONFIGS_DIR))","")
+    TMP_VAR_NAME :=$(PARENT_OF_COMMON_PUBLIC_DIR)/workspace_config.mk
+    TMP_VAR_NAME :=$(TMP_VAR_NAME)/REDEFINE_XTENSA_CONFIGS_DIR
+    $(info !--- $(TMP_VAR_NAME) is empty or does not exists)
+    $(error )
+endif
 
 ifeq ("$(wildcard $(REDEFINE_XTENSA_CONFIGS_DIR))","")
     TMP_VAR_NAME :=$(PARENT_OF_COMMON_PUBLIC_DIR)/workspace_config.mk
