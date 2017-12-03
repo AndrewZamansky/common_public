@@ -191,6 +191,9 @@ void *os_create_task_FreeRTOS(char *taskName , void (*taskFunction)(void *apPara
 /**	function :	[os_safe_malloc()]  **/
 #define os_safe_free   vPortFree
 
+/**	function :	[os_safe_realloc()]  **/
+void *pvPortRealloc( void *p , size_t xWantedSize );
+#define os_safe_realloc   pvPortRealloc
 
 /********* stack debug ********/
 #ifdef CONFIG_TEST_TASK_STACK

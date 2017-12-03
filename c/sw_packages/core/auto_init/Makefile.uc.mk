@@ -14,6 +14,9 @@ AUTO_INIT_WITH_BOUNDS += $(CONFIG_MICROSOFT_COMPILER)
 AUTO_INIT_WITH_BOUNDS += $(CONFIG_HEXAGON_COMPILER)
 AUTO_INIT_WITH_BOUNDS += $(CONFIG_ANDROID_NDK)
 AUTO_INIT_WITH_BOUNDS += $(CONFIG_XTENSA_GCC)
+ifdef CONFIG_ARM
+    AUTO_INIT_WITH_BOUNDS += $(CONFIG_GCC)
+endif
 AUTO_INIT_WITH_BOUNDS :=$(strip $(AUTO_INIT_WITH_BOUNDS))
 
 AUTO_INIT_WITHOUT_BOUNDS :=
@@ -25,8 +28,8 @@ ifneq ($(AUTO_INIT_WITH_BOUNDS),)
 else ifneq ($(AUTO_INIT_WITHOUT_BOUNDS),)
     SRC = auto_init_without_section_bounds.c 
 else
-    $(info unkonown compliler for auto_init infrastructure)
-    $(erro)
+    $(info !--- unkonown compliler for auto_init infrastructure)
+    $(error)
 endif
 
 USE_GCC_AUTO_INIT_HELPER :=

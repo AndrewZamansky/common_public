@@ -2,7 +2,7 @@ menu "`---> openq820som evaluation board"
 
     
     
-source "$KCONFIG_START_DIR_PATH/hw_drivers/arch/HEXAGON/soc/apq8096/Kconfig.apq8096.dt"
+source "$KCONFIG_PUBLIC_START_DIR/hw_drivers/arch/HEXAGON/soc/apq8096/Kconfig.apq8096.dt"
 
 
 endmenu

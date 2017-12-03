@@ -6,16 +6,18 @@ choice
 
 config STM8S103F
 	bool "STM8S103F"
+	select PUBLIC_SOC_SELECTED
 
 config GENERIC_STM8_SOC
 	bool "generic SOC"
+	select PUBLIC_SOC_SELECTED
 
 endchoice
 
 if STM8S103F
-source "$KCONFIG_START_DIR_PATH/hw_drivers/arch/STM8/soc/stm8s103f/Kconfig"
+source "$KCONFIG_PUBLIC_START_DIR/hw_drivers/arch/STM8/soc/stm8s103f/Kconfig"
 endif
 
 if GENERIC_STM8_SOC
-source "$KCONFIG_START_DIR_PATH/hw_drivers/arch/STM8/soc/generic_board_Kconfig"
+source "$KCONFIG_PUBLIC_START_DIR/hw_drivers/arch/STM8/soc/generic_board_Kconfig"
 endif

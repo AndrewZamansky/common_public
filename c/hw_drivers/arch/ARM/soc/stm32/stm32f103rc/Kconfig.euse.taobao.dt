@@ -6,7 +6,7 @@ config CRYSTAL_CLOCK
     default 8000000 
     
     
-source "$KCONFIG_START_DIR_PATH/hw_drivers/arch/ARM/soc/stm32/stm32f103rc/Kconfig.soc.stm32f103rc.dt"
+source "$KCONFIG_PUBLIC_START_DIR/hw_drivers/arch/ARM/soc/stm32/stm32f103rc/Kconfig.soc.stm32f103rc.dt"
 
 
 endmenu

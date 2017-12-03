@@ -10,7 +10,7 @@ else
         OUTPUT_NAME :=$(FULL_PROJECT_NAME)
         HISTORY_OUTPUT_NAME :=$(FULL_PROJECT_NAME)_$(MAIN_VERSION_STR)
     else
-        $(error ---- unknown output type ----)
+        $(info err: unknown output type)
     endif
 endif
 
@@ -40,11 +40,12 @@ LDFLAGS += $(GLOBAL_LDFLAGS)
 ifdef CONFIG_ANDROID_NDK_ARCH_ARM
     GCC_ARM_ARCH :=armv7-a
 else
-    $(error UNIMPLEMENTED ARCH)
+    $(info err: UNIMPLEMENTED ARCH)
+    $(call exit,1)
 endif
 LDFLAGS += -march=$(GCC_ARM_ARCH)
 
-LDFLAGS += -Wl,-Map=$(OUT_DIR)/$(OUTPUT_APP_NAME).map
+LDFLAGS += -Wl,-Map=$(OUT_DIR)/$(OUTPUT_NAME).map
 
 LDFLAGS += -mthumb
 LDFLAGS += -fpie 

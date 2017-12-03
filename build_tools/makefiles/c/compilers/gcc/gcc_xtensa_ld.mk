@@ -10,7 +10,8 @@ else
         OUTPUT_NAME :=$(FULL_PROJECT_NAME).elf
         HISTORY_OUTPUT_NAME :=$(FULL_PROJECT_NAME)_$(MAIN_VERSION_STR).elf
 #    else
-#        $(error ---- unknown output type ----)
+#        $(info err: unknown output type)
+#        $(call exit,1)
 #    endif
 endif
 
@@ -84,9 +85,9 @@ LIBRARIES_DIRS := $(patsubst %,-L%,$(GLOBAL_LIBS_PATH))
 ifdef CONFIG_USE_APPLICATION_SPECIFIC_SCATTER_FILE
     SCATTER_FILE =$(APP_ROOT_DIR)/$(PROJECT_NAME).lds
     ifeq ($(wildcard $(SCATTER_FILE)),) #if scatter file not found
-        $(info !--- application configured to use it's own scatter file,)
-        $(info !--- but $(SCATTER_FILE) doesn't exist)
-        $(error )
+        $(info err: application configured to use it's own scatter file,)
+        $(info ---: but $(SCATTER_FILE) doesn't exist)
+        $(call exit,1)
     endif
 else
 #    SCATTER_FILES_DIR :=$(BUILD_TOOLS_ROOT_DIR)/scatter_files/arm
@@ -167,7 +168,3 @@ ifeq ($(findstring y,$(CONFIG_USED_FOR_SEMIHOSTING_UPLOADING)),y)
 	$(CP)  $(OUTPUT_BIN) $(CONFIG_SEMIHOSTING_UPLOADING_DIR)
 	$(CP) $(OUTPUT_CRC32) $(CONFIG_SEMIHOSTING_UPLOADING_DIR)
 endif
-ifdef POST_BUILD_MAKEFILE_DIR
-	$(MAKE) -C $(POST_BUILD_MAKEFILE_DIR) -f Makefile.postbuild.mk build_outputs
-endif
-

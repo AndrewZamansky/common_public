@@ -9,6 +9,11 @@ ifdef CONFIG_NUC505
         $(info !--- make sure Library and SampleCode  folders is located in $(BSP_NUC505_PATH)/  after unpacking   )
         $(error )
     endif
+    
+    ifeq ("","$(filter $(BSP_NUC505_PATH),$(EXTERNAL_SRC_DIRS))")
+        EXTERNAL_SRC_DIRS := $(EXTERNAL_SRC_DIRS) $(BSP_NUC505_PATH)
+    endif
+    
     DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(BSP_NUC505_PATH)/Library/StdDriver/inc )
 	NUC505_SRC_DIR := $(BSP_NUC505_PATH)/Library/StdDriver/src
 	INCLUDE_THIS_COMPONENT := y

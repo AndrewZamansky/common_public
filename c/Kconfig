@@ -53,19 +53,19 @@ config HOST
 endchoice
 
 
-source "$KCONFIG_START_DIR_PATH/../build_tools/makefiles/Kconfig"
+source "$KCONFIG_PUBLIC_START_DIR/../build_tools/makefiles/Kconfig"
 	   	
 if !HOST
-source "$KCONFIG_START_DIR_PATH/hw_drivers/arch/Kconfig"
+source "$KCONFIG_PUBLIC_START_DIR/hw_drivers/arch/Kconfig"
 endif
 
 menu "Hardware Drivers"
-source "$KCONFIG_START_DIR_PATH/hw_drivers/Kconfig"
+source "$KCONFIG_PUBLIC_START_DIR/hw_drivers/Kconfig"
 endmenu
 
 
 menu "Software Packages"
-source "$KCONFIG_START_DIR_PATH/sw_packages/Kconfig"
+source "$KCONFIG_PUBLIC_START_DIR/sw_packages/Kconfig"
 endmenu
 
 menuconfig USE_COMMON_PRIVATE_PACKAGES
@@ -73,7 +73,7 @@ menuconfig USE_COMMON_PRIVATE_PACKAGES
 	default n
 
 if 	USE_COMMON_PRIVATE_PACKAGES
-source "$KCONFIG_START_DIR_PATH/../../common_private/Kconfig"
+source "$KCONFIG_PRIVATE_START_DIR/Kconfig"
 config COMMON_PRIVATE_GIT_COMMIT_HASH
 	string "common private git commit hash"
 	default ""

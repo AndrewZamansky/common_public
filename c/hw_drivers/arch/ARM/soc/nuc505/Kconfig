@@ -10,7 +10,7 @@ config NUC505_EB
 endchoice
 
 if NUC505_EB
-source "$KCONFIG_START_DIR_PATH/hw_drivers/arch/ARM/soc/nuc505/Kconfig.eb505.dt"
+source "$KCONFIG_PUBLIC_START_DIR/hw_drivers/arch/ARM/soc/nuc505/Kconfig.eb505.dt"
 endif
 
 

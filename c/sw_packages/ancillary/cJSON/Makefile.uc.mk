@@ -12,6 +12,9 @@ ifeq ($(strip $(CONFIG_INCLUDE_CJSON)),y)
         $(error )
     endif
 
+    ifeq ("","$(filter $(CJSON_PATH),$(EXTERNAL_SRC_DIRS))")
+        EXTERNAL_SRC_DIRS := $(EXTERNAL_SRC_DIRS) $(CJSON_PATH)
+    endif
 
     #CURR_CJSON_COMPONENT_LOCATION := $(patsubst %/Makefile.uc.mk,%,$(realpath $(filter %cJSON/Makefile.uc.mk,$(MAKEFILE_LIST))))
     DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(CJSON_PATH))

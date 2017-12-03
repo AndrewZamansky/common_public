@@ -34,7 +34,8 @@ else ifdef CONFIG_HOST
         include $(COMPILERS_DIR)/gcc/gcc_cc.mk
     endif
 else
-    $(error ---- unknown compiler ----)
+    $(info err: unknown compiler)
+    $(call exit,1)
 endif
 
 $(eval $(CALCULATE_ALL_INCLUDE_DIRS))
@@ -65,9 +66,7 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
     CURR_OBJ_DIR := $(subst /,\,$(CURR_OBJ_DIR))
 endif
 
-ifeq ($(wildcard $(CURR_OBJ_DIR)),) 		#if $(CURR_OBJ_DIR) dont exists then $(wildcard $(CURR_OBJ_DIR)) will produce empty string
-   DUMMY:=$(shell $(MKDIR)  $(CURR_OBJ_DIR)) # create   $(CURR_OBJ_DIR)
-endif
+$(call mkdir_if_not_exists, $(CURR_OBJ_DIR))
 
 SRC_C    :=$(filter %.c,$(SRC))
 SRC_CC   :=$(filter %.cc,$(SRC))
@@ -81,14 +80,6 @@ ASM_OBJ := $(patsubst %.s,$(CURR_OBJ_DIR)/%.o.asm,$(SRC_ASM))
 ASM_OBJ_O := $(patsubst %.S,$(CURR_OBJ_DIR)/%.O.asm,$(SRC_ASM_S))
 
 all: $(SRC_OBJ) $(SRC_CC_OBJ) $(SRC_CPP_OBJ) $(ASM_OBJ) $(ASM_OBJ_O)
-
-ifeq ($(findstring $(WORKSPACE_NAME),$(LOCAL_DIRS_FOR_EXPORTS)),$(WORKSPACE_NAME))
-archive :
-	$(ARCHIVER) $(ARCHIVE_OUTPUT) $(LOCAL_DIRS_FOR_EXPORTS)
-else
-archive :
-	@echo "no files to add"
-endif
 
 ALL_ASM_INCLUDE_DIRS :=$(subst $(PUBLIC_SW_PACKAGES_DIR),%PUBLIC_SW_PACKAGES_DIR%,$(ALL_ASM_INCLUDE_DIRS))
 ALL_ASM_INCLUDE_DIRS :=$(subst $(EXTERNAL_SOURCE_ROOT_DIR),%EXTERNAL_SOURCE_ROOT_DIR%,$(ALL_ASM_INCLUDE_DIRS))

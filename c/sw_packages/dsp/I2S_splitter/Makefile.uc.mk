@@ -8,11 +8,12 @@ INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_I2S_SPLITTER)
 
 #ASMFLAGS =  
 
+SRC = I2S_splitter.cpp
+
 ifdef CONFIG_I2S_SPLITTER_IS_SPEED_CRITICAL
-    SPEED_CRITICAL_FILES += I2S_splitter.c
+    SPEED_CRITICAL_FILES += I2S_splitter.cpp
 endif
 
-SRC = I2S_splitter.c
 
 VPATH = src
 

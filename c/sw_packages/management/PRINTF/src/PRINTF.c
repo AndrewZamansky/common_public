@@ -18,6 +18,7 @@
 
 #include <stdarg.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "_printf_prerequirements_check.h"
 

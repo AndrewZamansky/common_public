@@ -14,6 +14,10 @@ ifdef CONFIG_FREE_RTOS
         $(error )
     endif
     
+    ifeq ("","$(filter $(FREE_RTOS_PATH),$(EXTERNAL_SRC_DIRS))")
+        EXTERNAL_SRC_DIRS := $(EXTERNAL_SRC_DIRS) $(FREE_RTOS_PATH)
+    endif
+    
     DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH ,  $(FREE_RTOS_PATH)/FreeRTOS/Source/include )
     DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH ,  $(FREE_RTOS_PATH)/FreeRTOS/Demo/Common/include )
     ifdef CONFIG_CORTEX_M4

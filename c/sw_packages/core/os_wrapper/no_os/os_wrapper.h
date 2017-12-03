@@ -133,6 +133,19 @@
 #define os_delay_ms(...)
 
 
+/*********** thread safe  malloc/free **********/
+/**	function :	[os_safe_malloc()]  **/
+#define os_safe_malloc   malloc
+
+/**	function :	[os_safe_malloc()]  **/
+#define os_safe_free   free
+
+/**	function :	[os_safe_realloc()]  **/
+#define os_safe_realloc   realloc
+
+
+
+
 /********* stack debug ********/
 
 #define os_stack_test()

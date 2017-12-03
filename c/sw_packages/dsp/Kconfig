@@ -3,15 +3,30 @@
 ###################  DSP menu ####################
 menu "DSP"
 
+choice
+	prompt "real number format"
+	default DSP_REAL_NUMBER_FORMAT_FLOATING_POINT
+
+config DSP_REAL_NUMBER_FORMAT_FLOATING_POINT
+	bool "floating point"
+
+config DSP_REAL_NUMBER_FORMAT_FIXED_POINT
+	bool "fixed point"
+
+endchoice
+
+config FIXMATH_NO_CACHE
+	bool   "disable cache in libfixmath"
+	depends on DSP_REAL_NUMBER_FORMAT_FIXED_POINT
+	default n
+
 config INCLUDE_COMMON_DSP
 	bool   "common dsp"
 	default n
 
-if INCLUDE_COMMON_DSP
-
-
 config COMMON_DSP_IS_SPEED_CRITICAL
 	bool   "common dsp is speed critical"
+	depends on INCLUDE_COMMON_DSP
 	default y
 
 menuconfig INCLUDE_BIQUAD_FILTER
@@ -57,7 +72,7 @@ menuconfig INCLUDE_MIXER
 	default n
 
 if INCLUDE_MIXER
-source "$KCONFIG_START_DIR_PATH/sw_packages/dsp/mixer/Kconfig"
+source "$KCONFIG_PUBLIC_START_DIR/sw_packages/dsp/mixer/Kconfig"
 endif
 
 menuconfig INCLUDE_MULTIPLIER
@@ -65,7 +80,7 @@ menuconfig INCLUDE_MULTIPLIER
 	default n
 
 if INCLUDE_MULTIPLIER
-source "$KCONFIG_START_DIR_PATH/sw_packages/dsp/multiplier/Kconfig"
+source "$KCONFIG_PUBLIC_START_DIR/sw_packages/dsp/multiplier/Kconfig"
 endif
 
 menuconfig INCLUDE_I2S_SPLITTER
@@ -110,6 +125,15 @@ config VOICE_3D_IS_SPEED_CRITICAL
 	default y
 
 
+menuconfig INCLUDE_BAND_SPLITTER_BUTTERWORTH_6DB_GAIN
+	bool   "band splitter butterworth 6db gain"
+	default n
+
+config INCLUDE_BAND_SPLITTER_BUTTERWORTH_6DB_GAIN_SPEED_CRITICAL
+	bool   "band splitter butterworth 6db gain is speed critical"
+	depends on INCLUDE_BAND_SPLITTER_BUTTERWORTH_6DB_GAIN
+	default y
+
 
 
 
@@ -151,7 +175,6 @@ config WEBRTC_IS_SPEED_CRITICAL
 	default y
 endmenu
 
-endif
 
 endmenu
 #################### end of DSP menu###############################

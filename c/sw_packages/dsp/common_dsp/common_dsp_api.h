@@ -7,7 +7,7 @@
 
 
 
-float fast_pow(float a, float b);
-float log2f_approx(float X);
+float fast_pow_float(float a, float b);
+float log2f_approx_float(float X);
 
 #endif

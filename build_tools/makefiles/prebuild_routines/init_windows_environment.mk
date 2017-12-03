@@ -12,7 +12,8 @@ endif
 
 COMMON_PARTITION := $(firstword $(subst :, ,$(BUILD_TOOLS_ROOT_DIR))):
 APP_PARTITION := $(firstword $(subst :, ,$(APP_ROOT_DIR))):
-RM        :=rmdir /S /Q
+RMDIR     :=rmdir /S /Q
+RM        :=del /F /Q
 CP        :=copy /Y
 
 SHELL_OUTPUT :=$(shell WMIC Path Win32_LocalTime Get Year /value)

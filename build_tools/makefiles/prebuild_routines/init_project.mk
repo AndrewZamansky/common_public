@@ -1,6 +1,6 @@
 ifeq ("$(wildcard .config)","")
-    $(info !--- .config file dont exists . run 'make menuconfig')
-    $(error )
+    $(info err: .config file dont exists . run 'make menuconfig')
+    $(call exit,1)
 endif
 
 include .config
@@ -19,7 +19,7 @@ endif
 
 ifeq ($(PROJECT_NAME),)      # if $(PROJECT_NAME) is empty
     $(info error : project have to be named set CONFIG_PROJECT_NAME in .config or using menuconfig)
-    $(error )
+    $(call exit,1)
 endif
 $(info ---- project directory : $(APP_ROOT_DIR) ---- )
 $(info ---- project name as declared in .config : $(PROJECT_NAME) ---- )
@@ -34,10 +34,10 @@ SHELL_OUT := $(shell $(MAKE) -f $(MAKE_FILE) $(PASS_VARIABLES)  2>&1)
 
 ifneq ($(findstring name is not unique,$(SHELL_OUT)),)#if name is not unique
     $(info )
-    $(info !--- current PROJECT_NAME=$(PROJECT_NAME) , this name is already)
-    $(info !--- found as project name in some other project)
-    $(info !--- project name, assigned to PROJECT_NAME in .config file, should be unique)
-    $(error )
+    $(info err: current PROJECT_NAME=$(PROJECT_NAME) , this name is already)
+    $(info ---: found as project name in some other project)
+    $(info ---: project name, assigned to PROJECT_NAME in .config file, should be unique)
+    $(call exit,1)
 endif
 $(info ---- unique project name test passed ---- )
 

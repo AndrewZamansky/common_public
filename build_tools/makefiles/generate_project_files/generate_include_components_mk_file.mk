@@ -3,7 +3,8 @@ include $(MAKEFILES_ROOT_DIR)/common.mk
 
 # testing for unique project name
 ifeq ($(strip $(CONFIG_PROJECT_NAME)),)
-    $(error PROJECT_NAME not found or is empty)
+    $(info err: PROJECT_NAME not found or is empty)
+    $(call exit,1)
 endif
 
 # to improve speed of Makefile.uc.mk recursive search in all subdirectoris ,

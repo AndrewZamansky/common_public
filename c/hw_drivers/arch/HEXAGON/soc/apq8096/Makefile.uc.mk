@@ -11,6 +11,10 @@ ifdef CONFIG_APQ8096
         $(error )
     endif
     
+    ifeq ("","$(filter $(SDK_APQ8096_PATH),$(EXTERNAL_SRC_DIRS))")
+        EXTERNAL_SRC_DIRS := $(EXTERNAL_SRC_DIRS) $(SDK_APQ8096_PATH)
+    endif
+
     DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(SDK_APQ8096_PATH)/incs)
     DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(SDK_APQ8096_PATH)/incs/audio)
     DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(SDK_APQ8096_PATH)/incs/stddef)

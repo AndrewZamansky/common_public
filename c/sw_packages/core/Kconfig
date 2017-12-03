@@ -7,7 +7,7 @@ menuconfig INCLUDE_DEV_MENAGMENT
 	default n
 
 if INCLUDE_DEV_MENAGMENT
-source "$KCONFIG_START_DIR_PATH/sw_packages/core/dev_management/Kconfig"
+source "$KCONFIG_PUBLIC_START_DIR/sw_packages/core/dev_management/Kconfig"
 endif
 
 config INCLUDE_VERSION_MENAGMENT
@@ -29,7 +29,7 @@ endif
 
 menu "RT OS"
 depends on !GCC_TARGET_OS_LINUX && !HOST && !ANDROID_NDK
-source "$KCONFIG_START_DIR_PATH/sw_packages/core/os_wrapper/Kconfig"
+source "$KCONFIG_PUBLIC_START_DIR/sw_packages/core/os_wrapper/Kconfig"
 
 
 endmenu	

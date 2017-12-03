@@ -17,7 +17,7 @@ config NONE_RT_OS
 endchoice
 
 if FREE_RTOS
-source "$KCONFIG_START_DIR_PATH/sw_packages/core/os_wrapper/FreeRTOS/Kconfig"
+source "$KCONFIG_PUBLIC_START_DIR/sw_packages/core/os_wrapper/FreeRTOS/Kconfig"
 endif
 
 if FREE_RTOS || ATOM_THREADS || OSA

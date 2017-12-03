@@ -4,27 +4,30 @@
 menu "Platform configurations"
 
 if ARM
-source "$KCONFIG_START_DIR_PATH/hw_drivers/arch/ARM/soc/Kconfig"
+source "$KCONFIG_PUBLIC_START_DIR/hw_drivers/arch/ARM/soc/Kconfig"
 endif
 
 
 if STM8
-source "$KCONFIG_START_DIR_PATH/hw_drivers/arch/STM8/soc/Kconfig"
+source "$KCONFIG_PUBLIC_START_DIR/hw_drivers/arch/STM8/soc/Kconfig"
 endif
 
 if PIC32
-source "$KCONFIG_START_DIR_PATH/hw_drivers/arch/PIC32/soc/Kconfig"
+source "$KCONFIG_PUBLIC_START_DIR/hw_drivers/arch/PIC32/soc/Kconfig"
 endif
 
 
 if HEXAGON
-source "$KCONFIG_START_DIR_PATH/hw_drivers/arch/HEXAGON/soc/Kconfig"
+source "$KCONFIG_PUBLIC_START_DIR/hw_drivers/arch/HEXAGON/soc/Kconfig"
 endif
 
 if XTENSA
-source "$KCONFIG_START_DIR_PATH/hw_drivers/arch/XTENSA/soc/Kconfig"
+source "$KCONFIG_PUBLIC_START_DIR/hw_drivers/arch/XTENSA/soc/Kconfig"
 endif
 
+config PUBLIC_SOC_SELECTED
+    bool
+    default n
 
 if !HEXAGON && !ANDROID_NDK
 
@@ -139,7 +142,7 @@ config PUT_SPEED_CRITICAL_CODE_TO_RAM
 
 config EXCEPTION_STACKS_DEBUG
 	bool "fill system stacks with pattern (help to debug stack overflow)"
-    depends on POLEG || NUC505
+    depends on CORTEX_A9 || CORTEX_M3 || CORTEX_M4
     default n
 
 

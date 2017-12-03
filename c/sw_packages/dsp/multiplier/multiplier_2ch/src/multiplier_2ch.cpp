@@ -11,7 +11,7 @@
 #include "_project_defines.h"
 
 #include "dsp_management_api.h"
-#include "common_dsp_api.h"
+#include "dsp_management_internal_api.h"
 
 #include "multiplier_api.h"
 
@@ -20,6 +20,8 @@
 
 #include "auto_init_api.h"
 #include "math.h"
+
+#include "string.h"
 
 #include "_multiplier_2ch_prerequirements_check.h"
 
@@ -51,19 +53,19 @@ void multiplier_2ch_dsp(struct dsp_desc_t *adsp,
 		struct dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS],
 		struct dsp_pad_t  out_pads[MAX_NUM_OF_OUTPUT_PADS])
 {
-	float *apCh1In ;
-	float *apCh2In ;
-	float *apCh1Out  ;
-	float *apCh2Out  ;
+	real_t *apCh1In ;
+	real_t *apCh2In ;
+	real_t *apCh1Out  ;
+	real_t *apCh2Out  ;
 	struct multiplier_2ch_instance_t *handle;
-	float weight ;
-	float curr_val;
+	real_t weight ;
+	real_t curr_val;
 	size_t in_data_len1 ;
 	size_t in_data_len2 ;
 	size_t out_data_len1 ;
 	size_t out_data_len2 ;
 
-	handle = adsp->handle;
+	handle = (struct multiplier_2ch_instance_t *)adsp->handle;
 
 	weight = handle->weight;
 
@@ -109,23 +111,31 @@ void multiplier_2ch_dsp(struct dsp_desc_t *adsp,
 uint8_t multiplier_2ch_ioctl(struct dsp_desc_t *adsp,
 		const uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2)
 {
-	float weight;
+	real_t weight;
+	real_t tmp;
 	struct multiplier_2ch_instance_t *handle;
 	struct multiplier_api_set_params_t *set_params;
 
-	handle = adsp->handle;
+	handle = (struct multiplier_2ch_instance_t *)adsp->handle;
 	set_params = &handle->set_params;
 
 	switch(aIoctl_num)
 	{
 		case IOCTL_DSP_INIT :
-			handle->weight = 1;
-			set_params->weight = 0;
+			handle->weight = (int16_t)1;
+			set_params->weight = (int16_t)0;
 			break;
 
 		case IOCTL_MULTIPLIER_SET_WEIGHT :
 			weight = *(float*)aIoctl_param1;
-			handle->weight = pow(10, weight / 20.0f);;
+			tmp = (float)10;
+			#ifdef CONFIG_DSP_REAL_NUMBER_FORMAT_FLOATING_POINT
+				handle->weight = pow(tmp, weight/(float)20);
+			#else
+				tmp = fix16_log(tmp);
+				tmp *= (weight / (float)20);
+				handle->weight = fix16_exp(tmp);
+			#endif
 			set_params->weight = weight;
 			break;
 

@@ -1,8 +1,11 @@
 #
 mainmenu "uCProjects Configuration"
-config KCONFIG_START_DIR_PATH
+config KCONFIG_PUBLIC_START_DIR
 	string
-	option env="KCONFIG_START_DIR_PATH"
+	option env="KCONFIG_PUBLIC_START_DIR"
 
+config KCONFIG_PRIVATE_START_DIR
+	string
+	option env="KCONFIG_PRIVATE_START_DIR"
 
-source "$KCONFIG_START_DIR_PATH/Kconfig"
+source "$KCONFIG_PUBLIC_START_DIR/Kconfig"

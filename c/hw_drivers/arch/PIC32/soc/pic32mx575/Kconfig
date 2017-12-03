@@ -10,7 +10,7 @@ config BARAK_SVB_REV_B
 endchoice
 
 if BARAK_SVB_REV_B
-source "$KCONFIG_START_DIR_PATH/hw_drivers/arch/PIC32/soc/pic32mx575/Kconfig.barak_svb.dt"
+source "$KCONFIG_PUBLIC_START_DIR/hw_drivers/arch/PIC32/soc/pic32mx575/Kconfig.barak_svb.dt"
 endif
 
 

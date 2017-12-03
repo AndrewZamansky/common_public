@@ -11,6 +11,10 @@ ifdef CONFIG_OSA
         $(error )
     endif
     
+    ifeq ("","$(filter $(OSA_RTOS_PATH),$(EXTERNAL_SRC_DIRS))")
+        EXTERNAL_SRC_DIRS := $(EXTERNAL_SRC_DIRS) $(OSA_RTOS_PATH)
+    endif
+
     DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH ,  $(OSA_RTOS_PATH) )
     
     ifdef CONFIG_STM8

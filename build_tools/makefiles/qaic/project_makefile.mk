@@ -31,17 +31,9 @@ include $(MAKEFILES_ROOT_DIR)/qaic/init_for_qaic.mk
 
 include $(MAKEFILES_ROOT_DIR)/common.mk
 
-ifeq ($(wildcard $(OUT_DIR)),)
-   DUMMY:=$(shell $(MKDIR)  $(OUT_DIR))  # create   $(OUT_DIR)
-endif
-
-ifeq ($(wildcard $(OUT_DIR_HISTORY)),)
-   DUMMY:=$(shell $(MKDIR)  $(OUT_DIR_HISTORY))  # create   $(OUT_DIR)
-endif
-
-ifeq ($(wildcard $(AUTO_GENERATED_FILES_DIR)),) 		
-   DUMMY:=$(shell $(MKDIR)  $(AUTO_GENERATED_FILES_DIR))  # create   $(OUT_DIR)
-endif
+$(call mkdir_if_not_exists, $(OUT_DIR))
+$(call mkdir_if_not_exists, $(OUT_DIR_HISTORY))
+$(call mkdir_if_not_exists, $(AUTO_GENERATED_FILES_DIR))
 
 
 ifdef MAKEFILE_WAS_GENERATED

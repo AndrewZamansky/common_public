@@ -10,13 +10,18 @@
 #include "_project_defines.h"
 
 #include "dsp_management_api.h"
+#include "dsp_management_internal_api.h"
 
 #include "dsp_management.h"
 
-#include "memory_pool_api.h"
 #include "string.h"
 
 #include "auto_init_api.h"
+
+extern "C" {
+#include "memory_pool_api.h"
+#include "os_wrapper.h"
+}
 
 #include "_dsp_management_prerequirements_check.h"
 
@@ -42,12 +47,12 @@ struct dsp_module_t *dsp_module_array = NULL;
 struct dsp_pad_t default_zero_buff = {NULL, DSP_OUT_PAD_TYPE_NOT_USED, 0, 0};
 
 /**
- * my_float_memcpy()
+ * my_memcpy()
  *
  * on gcc cortex-m3 MEMCPY() is slower then direct copy !!!
  * return:
  */
-static void my_float_memcpy(float *dest ,float *src , size_t len)
+static void my_memcpy(real_t *dest ,real_t *src , size_t len)
 {
 	while (len--)
 	{
@@ -57,13 +62,13 @@ static void my_float_memcpy(float *dest ,float *src , size_t len)
 
 #if 0
 /**
- * my_float_memcpy_2_buffers()
+ * my_memcpy_2_buffers()
  *
  * on gcc cortex-m3 MEMCPY() is slower then direct copy !!!
  * return:
  */
-static void my_float_memcpy_2_buffers(float *dest1, float *src1,
-								float *dest2, float *src2, size_t len)
+static void my_memcpy_2_buffers(real_t *dest1, real_t *src1,
+								real_t *dest2, real_t *src2, size_t len)
 {
 	while (len--)
 	{
@@ -75,12 +80,12 @@ static void my_float_memcpy_2_buffers(float *dest1, float *src1,
 
 
 /**
- * my_float_memset()
+ * my_memset()
  *
  * on gcc cortex-m3 MEMSET() is slower then direct copy !!!
  * return:
  */
-static void my_float_memset(float *dest ,float val , size_t len)
+static void my_memset(real_t *dest ,real_t val, size_t len)
 {
 	while (len--)
 	{
@@ -88,19 +93,43 @@ static void my_float_memset(float *dest ,float val , size_t len)
 	}
 }
 
+uint8_t	DSP_IOCTL_2_PARAMS(struct dsp_desc_t *dsp_module,
+						uint8_t ioctl_num, void *param1, void *param2)
+{
+	if (DSP_MAGIC_NUMBER != dsp_module->magic_num)
+	{
+		CRITICAL_ERROR("dsp module not initialized");
+	}
+	return (dsp_module->ioctl)(dsp_module, ioctl_num, param1, param2);
+}
+
+uint8_t	DSP_IOCTL_1_PARAMS(struct dsp_desc_t *dsp_module,
+						uint8_t ioctl_num, void *param1)
+{
+	return DSP_IOCTL_2_PARAMS(dsp_module, ioctl_num, param1, NULL);
+}
+
+uint8_t	DSP_IOCTL_0_PARAMS(struct dsp_desc_t *dsp_module, uint8_t ioctl_num)
+{
+	return DSP_IOCTL_1_PARAMS(dsp_module, ioctl_num, NULL);
+}
+
+
+
+
 
 /**
  * _DSP_REGISTER_NEW_MODULE()
  *
  * return:
  */
-void _DSP_REGISTER_NEW_MODULE(char *a_module_name,
+void _DSP_REGISTER_NEW_MODULE(const char *a_module_name,
 		dsp_ioctl_func_t a_ioctle_func, dsp_func_t a_dsp_func,
 		uint16_t a_module_data_size)
 {
 	struct dsp_module_t* p_new_dsp_module;
 	size_of_module_array++;
-	dsp_module_array = (struct dsp_module_t*)realloc(dsp_module_array,
+	dsp_module_array = (struct dsp_module_t*)os_safe_realloc(dsp_module_array,
 			sizeof(struct dsp_module_t) * size_of_module_array);
 	p_new_dsp_module = &dsp_module_array[size_of_module_array - 1];
 	p_new_dsp_module->name = a_module_name;
@@ -117,8 +146,31 @@ void _DSP_REGISTER_NEW_MODULE(char *a_module_name,
  */
 void DSP_DELETE_MODULES()
 {
-	free(dsp_module_array);
+	os_safe_free(dsp_module_array);
 	dsp_module_array = NULL;
+}
+
+
+/**
+ * DSP_INIT()
+ *
+ * return:
+ */
+void DSP_INIT(size_t max_num_of_allocated_buffers,
+							size_t size_of_items_in_buffer)
+{
+	if (NULL != dsp_buffers_pool)
+	{
+		CRITICAL_ERROR("DSP already initialized");
+	}
+
+	dsp_buffers_pool = memory_pool_init(max_num_of_allocated_buffers,
+			size_of_items_in_buffer * sizeof(real_t));
+
+	default_zero_buff.buff = (real_t*)memory_pool_zmalloc(dsp_buffers_pool);
+	default_zero_buff.buff_size =
+			memory_pool_get_chunk_size(dsp_buffers_pool) / sizeof(real_t);
+	default_zero_buff.pad_type = DSP_PAD_TYPE_DUMMY_ZERO_BUFFER;
 }
 
 
@@ -127,41 +179,37 @@ void DSP_DELETE_MODULES()
  *
  * return:
  */
-struct dsp_chain_t *DSP_CREATE_CHAIN(size_t max_num_of_dsp_modules,
-		void *adsp_buffers_pool)
+struct dsp_chain_t *DSP_CREATE_CHAIN(size_t max_num_of_dsp_modules)
 {
 	struct dsp_chain_t *pdsp_chain;
+	struct dsp_desc_t **dsp_modules;
 	uint8_t i;
+	uint32_t alloc_size;
 
 	if (NULL == dsp_buffers_pool)
 	{
-		dsp_buffers_pool = adsp_buffers_pool ;
-	}
-	if (NULL == default_zero_buff.buff)
-	{
-		default_zero_buff.buff = (float*)memory_pool_zmalloc(dsp_buffers_pool);
-		default_zero_buff.buff_size =
-				memory_pool_get_chunk_size(dsp_buffers_pool) / sizeof(float);
-		default_zero_buff.pad_type = DSP_PAD_TYPE_DUMMY_ZERO_BUFFER;
+		CRITICAL_ERROR("DSP not initialized");
 	}
 
-	pdsp_chain =  (struct dsp_chain_t*)malloc( sizeof(struct dsp_chain_t));
-	pdsp_chain->dsp_chain = (struct dsp_desc_t**)malloc(
-			max_num_of_dsp_modules * sizeof(struct dsp_desc_t));
+	pdsp_chain =
+			(struct dsp_chain_t*)os_safe_malloc( sizeof(struct dsp_chain_t));
+	memset(pdsp_chain, 0, sizeof(struct dsp_chain_t));
+
+	alloc_size = max_num_of_dsp_modules * sizeof(struct dsp_desc_t);
+	dsp_modules = (struct dsp_desc_t**)os_safe_malloc(alloc_size);
+	pdsp_chain->dsp_chain = dsp_modules;
+	memset(dsp_modules, 0, alloc_size);
 	pdsp_chain->max_num_of_dsp_modules = max_num_of_dsp_modules;
 	pdsp_chain->occupied_dsp_modules = 0 ;
 
-	for (i=0; i<MAX_NUM_OF_OUTPUT_PADS; i++)
+	for (i = 0; i < MAX_NUM_OF_OUTPUT_PADS; i++)
 	{
 		pdsp_chain->chain_in_pads[i].pad_type =
 				DSP_PAD_TYPE_CHAIN_INPUT_BUFFER;
 		pdsp_chain->chain_in_pads[i].buff =	NULL;
-		pdsp_chain->chain_in_pads[i].total_registered_sinks =	0;
-		pdsp_chain->chain_in_pads[i].sinks_processed_counter =	0;
 		pdsp_chain->chain_out_pads[i] = NULL;
-//		pdsp_chain->chain_out_pads[i] = &default_zero_buff;
-//		pdsp_chain->out_buffers[i] = NULL;
 	}
+	pdsp_chain->magic_num = DSP_MAGIC_NUMBER;
 	return pdsp_chain;
 }
 
@@ -182,11 +230,11 @@ void DSP_DELETE_CHAIN(struct dsp_chain_t * ap_chain)
 	for (i=0 ; i < occupied_dsp_modules ; i++)
 	{
 		DSP_IOCTL_0_PARAMS(*dsp_module , IOCTL_DSP_DELETE );
-		free((*dsp_module)->handle);
+		os_safe_free((*dsp_module)->handle);
 		dsp_module++;
 	}
-	free(ap_chain->dsp_chain);
-	free(ap_chain);
+	os_safe_free(ap_chain->dsp_chain);
+	os_safe_free(ap_chain);
 }
 
 
@@ -205,51 +253,59 @@ void DSP_ADD_MODULE_TO_CHAIN(struct dsp_chain_t *ap_chain,
 	struct dsp_pad_t **in_pads;
 	struct dsp_pad_t *out_pads;
 	struct dsp_pad_t *curr_out_pad;
+	void *handle;
 
 	occupied_dsp_modules = ap_chain->occupied_dsp_modules;
-	if ( occupied_dsp_modules  == ap_chain->max_num_of_dsp_modules)
+	if ( occupied_dsp_modules == ap_chain->max_num_of_dsp_modules)
 	{
 		CRITICAL_ERROR("too many modules");
 	}
 
-	for (i=0 ; i < size_of_module_array ; i++)
+	for (i = 0; i < size_of_module_array; i++)
 	{
 		p_dsp_module = &dsp_module_array[i];
-		if (0==strcmp(a_module_name,p_dsp_module->name))
+		if (0 != strcmp(a_module_name, p_dsp_module->name))
 		{
-			in_pads = dsp_module->in_pads;
-			out_pads = dsp_module->out_pads;
-			for (i = 0; i<MAX_NUM_OF_OUTPUT_PADS; i++)
-			{
-				// set to default zero's input buffer
-				in_pads[i] = &default_zero_buff;
-
-				curr_out_pad = &out_pads[i];
-				curr_out_pad->pad_type = DSP_OUT_PAD_TYPE_NOT_USED;
-				curr_out_pad->total_registered_sinks = 0;
-				curr_out_pad->sinks_processed_counter = 0;
-				curr_out_pad->buff = NULL;
-				curr_out_pad->buff_size = 0;
-			}
-
-			dsp_module->ctl = DSP_MANAGEMENT_API_MODULE_CONTROL_ON;
-			dsp_module->ioctl = p_dsp_module->ioctl;
-			dsp_module->dsp_func = p_dsp_module->dsp_func;
-			dsp_module->handle =malloc( p_dsp_module->module_data_size );
-			retVal = DSP_IOCTL_0_PARAMS(dsp_module , IOCTL_DSP_INIT );
-
-			// error trap in case dsp module failed to start
-			if (retVal)
-			{
-				CRITICAL_ERROR("dsp module failed to start");
-			}
-
-
-			ap_chain->dsp_chain[occupied_dsp_modules++] = dsp_module;
-
-			ap_chain->occupied_dsp_modules = occupied_dsp_modules ;
-			return ;
+			continue;
 		}
+
+		in_pads = dsp_module->in_pads;
+		out_pads = dsp_module->out_pads;
+		for (i = 0; i < MAX_NUM_OF_OUTPUT_PADS; i++)
+		{
+			// set to default zero's input buffer
+			in_pads[i] = &default_zero_buff;
+
+			curr_out_pad = &out_pads[i];
+			curr_out_pad->pad_type = DSP_OUT_PAD_TYPE_NOT_USED;
+			curr_out_pad->total_registered_sinks = 0;
+			curr_out_pad->sinks_processed_counter = 0;
+			curr_out_pad->buff = NULL;
+			curr_out_pad->buff_size = 0;
+		}
+
+		dsp_module->ctl = DSP_MANAGEMENT_API_MODULE_CONTROL_ON;
+		dsp_module->ioctl = p_dsp_module->ioctl;
+		dsp_module->dsp_func = p_dsp_module->dsp_func;
+		handle = os_safe_malloc( p_dsp_module->module_data_size );
+		dsp_module->handle = handle;
+		memset(handle, 0, p_dsp_module->module_data_size);
+
+		dsp_module->magic_num = DSP_MAGIC_NUMBER;
+
+		retVal = DSP_IOCTL_0_PARAMS(dsp_module , IOCTL_DSP_INIT );
+
+		// error trap in case dsp module failed to start
+		if (retVal)
+		{
+			CRITICAL_ERROR("dsp module failed to start");
+		}
+
+
+		ap_chain->dsp_chain[occupied_dsp_modules++] = dsp_module;
+
+		ap_chain->occupied_dsp_modules = occupied_dsp_modules ;
+		return ;
 	}
 
 	// error trap in case module with a_module_name string was not found
@@ -298,7 +354,7 @@ void DSP_PROCESS(struct dsp_desc_t *dsp )
 	struct dsp_pad_t **in_pads ;
 	struct dsp_pad_t *out_pads ;
 	uint8_t i;
-	float *dummy_output_buff = NULL;
+	real_t *dummy_output_buff = NULL;
 	uint8_t dummy_output_buff_allocated = 0;
 	size_t buff_size;
 
@@ -314,9 +370,9 @@ void DSP_PROCESS(struct dsp_desc_t *dsp )
 		pad_type = curr_out_pad->pad_type;
 		if (DSP_OUT_PAD_TYPE_NORMAL == pad_type)
 		{
-			curr_out_pad->buff = (float*)memory_pool_malloc(dsp_buffers_pool);
+			curr_out_pad->buff = (real_t*)memory_pool_malloc(dsp_buffers_pool);
 			curr_out_pad->buff_size =
-				memory_pool_get_chunk_size(dsp_buffers_pool) / sizeof(float);
+				memory_pool_get_chunk_size(dsp_buffers_pool) / sizeof(real_t);
 			curr_out_pad->sinks_processed_counter =
 				curr_out_pad->total_registered_sinks;
 		}
@@ -325,12 +381,12 @@ void DSP_PROCESS(struct dsp_desc_t *dsp )
 			if (0 == dummy_output_buff_allocated)
 			{
 				dummy_output_buff =
-						(float*)memory_pool_malloc(dsp_buffers_pool);
+						(real_t*)memory_pool_malloc(dsp_buffers_pool);
 				dummy_output_buff_allocated = 1;
 			}
 			curr_out_pad->buff = dummy_output_buff;
 			curr_out_pad->buff_size =
-				memory_pool_get_chunk_size(dsp_buffers_pool) / sizeof(float);
+				memory_pool_get_chunk_size(dsp_buffers_pool) / sizeof(real_t);
 		}
 	}
 
@@ -355,7 +411,7 @@ void DSP_PROCESS(struct dsp_desc_t *dsp )
 			}
 			if (DSP_OUT_PAD_TYPE_NOT_USED != curr_out_pad->pad_type)
 			{
-				my_float_memcpy(curr_out_pad->buff, in_pad->buff, buff_size);
+				my_memcpy(curr_out_pad->buff, in_pad->buff, buff_size);
 			}
 		}
 	}
@@ -367,7 +423,7 @@ void DSP_PROCESS(struct dsp_desc_t *dsp )
 			buff_size = curr_out_pad->buff_size;
 			if (DSP_OUT_PAD_TYPE_NOT_USED != curr_out_pad->pad_type)
 			{
-				my_float_memset(curr_out_pad->buff, 0, buff_size);
+				my_memset(curr_out_pad->buff, (float) 0, buff_size);
 			}
 		}
 	}
@@ -404,7 +460,7 @@ void DSP_PROCESS_CHAIN(struct dsp_chain_t *ap_chain)
 	for(i = 0; i < MAX_NUM_OF_OUTPUT_PADS; i++)
 	{
 		struct dsp_pad_t *curr_source_out_pad ;
-//		float *out_buff;
+//		real_t *out_buff;
 		curr_source_out_pad = ap_chain->chain_out_pads[i];
 
 		if (NULL != curr_source_out_pad)
@@ -420,7 +476,7 @@ void DSP_PROCESS_CHAIN(struct dsp_chain_t *ap_chain)
 //		out_buff = ap_chain->out_buffers[i];
 //		if (NULL != out_buff)
 //		{
-//			my_float_memcpy(out_buff, curr_source_out_pad->buff, len);
+//			my_memcpy(out_buff, curr_source_out_pad->buff, len);
 //		}
 //
 //		if  (DSP_OUT_PAD_TYPE_NORMAL == curr_source_out_pad->pad_type)
@@ -451,6 +507,15 @@ uint8_t DSP_CREATE_INTER_MODULES_LINK(struct dsp_desc_t *src_dsp,
 	struct dsp_pad_t *p_curr_out_pad_of_source;
 	struct dsp_pad_t **p_curr_in_pad_of_sink;
 
+	if (DSP_MAGIC_NUMBER != src_dsp->magic_num)
+	{
+		CRITICAL_ERROR("source module not initialized");
+	}
+	if (DSP_MAGIC_NUMBER != sink_dsp->magic_num)
+	{
+		CRITICAL_ERROR("sink module not initialized");
+	}
+
 	p_curr_in_pad_of_sink = &sink_dsp->in_pads[sink_dsp_pad];
 	if(&default_zero_buff != *p_curr_in_pad_of_sink)
 	{
@@ -477,6 +542,15 @@ uint8_t DSP_CREATE_CHAIN_INPUT_TO_MODULE_LINK(struct dsp_chain_t *ap_chain,
 {
 	struct dsp_pad_t *p_curr_out_pad_of_source;
 	struct dsp_pad_t **p_curr_in_pad_of_sink;
+
+	if (DSP_MAGIC_NUMBER != ap_chain->magic_num)
+	{
+		CRITICAL_ERROR("chain not initialized");
+	}
+	if (DSP_MAGIC_NUMBER != sink_dsp->magic_num)
+	{
+		CRITICAL_ERROR("sink module not initialized");
+	}
 
 	p_curr_in_pad_of_sink = &sink_dsp->in_pads[sink_dsp_pad];
 	if(&default_zero_buff != *p_curr_in_pad_of_sink)
@@ -505,6 +579,15 @@ uint8_t DSP_CREATE_MODULE_TO_CHAIN_OUTPUT_LINK(struct dsp_chain_t *ap_chain,
 {
 	struct dsp_pad_t *p_curr_out_pad_of_source;
 
+	if (DSP_MAGIC_NUMBER != ap_chain->magic_num)
+	{
+		CRITICAL_ERROR("chain not initialized");
+	}
+	if (DSP_MAGIC_NUMBER != src_dsp->magic_num)
+	{
+		CRITICAL_ERROR("source module not initialized");
+	}
+
 	p_curr_out_pad_of_source = &(src_dsp->out_pads[src_dsp_pad]) ;
 	if(DSP_PAD_TYPE_CHAIN_OUTPUT_BUFFER == p_curr_out_pad_of_source->pad_type)
 	{
@@ -525,12 +608,12 @@ uint8_t DSP_CREATE_MODULE_TO_CHAIN_OUTPUT_LINK(struct dsp_chain_t *ap_chain,
  */
 void DSP_SET_CHAIN_INPUT_BUFFER(struct dsp_chain_t *ap_chain,
 						DSP_INPUT_PADS_t sink_dsp_pad,
-						void *buffer, size_t buff_size )
+						uint8_t *buffer, size_t buff_size )
 {
 	struct dsp_pad_t *p_curr_out_pad_of_source;
 
 	p_curr_out_pad_of_source = &(ap_chain->chain_in_pads[sink_dsp_pad]) ;
-	p_curr_out_pad_of_source->buff = (float*)buffer;
+	p_curr_out_pad_of_source->buff = (real_t*)buffer;
 	p_curr_out_pad_of_source->buff_size = buff_size;
 }
 
@@ -542,7 +625,7 @@ void DSP_SET_CHAIN_INPUT_BUFFER(struct dsp_chain_t *ap_chain,
  */
 void DSP_SET_CHAIN_OUTPUT_BUFFER(struct dsp_chain_t *ap_chain,
 						DSP_OUTPUT_PADS_t output_dsp_pad,
-						void *buffer, size_t buff_size)
+						uint8_t *buffer, size_t buff_size)
 {
 	struct dsp_pad_t *p_curr_out_pad_of_source;
 
@@ -551,7 +634,7 @@ void DSP_SET_CHAIN_OUTPUT_BUFFER(struct dsp_chain_t *ap_chain,
 	{
 		CRITICAL_ERROR("source pad not connected");
 	}
-	p_curr_out_pad_of_source->buff = (float*)buffer;
+	p_curr_out_pad_of_source->buff = (real_t*)buffer;
 	p_curr_out_pad_of_source->buff_size = buff_size;
 }
 
@@ -573,7 +656,7 @@ void dsp_management_api_set_module_control(struct dsp_desc_t *dsp,
  *
  * return:
  */
-void DSP_GET_BUFFER(struct dsp_pad_t *pad, float **buff, size_t *buff_len)
+void DSP_GET_BUFFER(struct dsp_pad_t *pad, real_t **buff, size_t *buff_len)
 {
 	*buff = pad->buff;
 	*buff_len = pad->buff_size;

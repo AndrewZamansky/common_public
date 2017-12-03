@@ -11,7 +11,7 @@
 #include "_project_defines.h"
 
 #include "dsp_management_api.h"
-#include "common_dsp_api.h"
+#include "dsp_management_internal_api.h"
 
 
 #include "mixer_api.h"
@@ -51,18 +51,18 @@ void mixer2x1_dsp(struct dsp_desc_t *adsp,
 		struct dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])
 {
 	struct MIXER2X1_Instance_t *handle;
-	float *apCh1In;
-	float *apCh2In;
-	float *apCh1Out  ;
-	float channels_weights_1;
-	float channels_weights_2;
-	float *channels_weights;
-	float curr_val;
+	real_t *apCh1In;
+	real_t *apCh2In;
+	real_t *apCh1Out  ;
+	real_t channels_weights_1;
+	real_t channels_weights_2;
+	real_t *channels_weights;
+	real_t curr_val;
 	size_t in_data_len1 ;
 	size_t in_data_len2 ;
 	size_t out_data_len ;
 
-	handle = adsp->handle;
+	handle = (struct MIXER2X1_Instance_t *)adsp->handle;
 
 	DSP_GET_BUFFER(in_pads[0], &apCh1In, &in_data_len1);
 	DSP_GET_BUFFER(in_pads[1], &apCh2In, &in_data_len2);
@@ -105,20 +105,24 @@ uint8_t mixer2x1_ioctl(struct dsp_desc_t *adsp,
 {
 	struct MIXER2X1_Instance_t *handle;
 	uint8_t i;
-	float *channels_weights ;
+	real_t *channels_weights ;
 
-	handle = adsp->handle;
+	handle = (struct MIXER2X1_Instance_t *)adsp->handle;
+
 	channels_weights = handle->channels_weights ;
 	switch(aIoctl_num)
 	{
 		case IOCTL_DSP_INIT :
-
+			channels_weights[0] = (int16_t)0;
+			channels_weights[1] = (int16_t)0;
 			break;
+
 		case IOCTL_MIXER_SET_CHANNEL_WEIGHT :
-			i = ((set_channel_weight_t*)aIoctl_param1)->channel_num;
-			if( 2> i)
+			i = ((struct set_channel_weight_t *)aIoctl_param1)->channel_num;
+			if ( 2 > i)
 			{
-				channels_weights[i] = ((set_channel_weight_t*)aIoctl_param1)->weight;
+				channels_weights[i] =
+						((struct set_channel_weight_t *)aIoctl_param1)->weight;
 			}
 			break;
 		default :

@@ -13,7 +13,7 @@
 
 
 struct MIXER3X1_Instance_t {
-	float channels_weights[3];
+	real_t channels_weights[3];
 };
 
 

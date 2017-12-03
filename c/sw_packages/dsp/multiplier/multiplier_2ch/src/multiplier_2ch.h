@@ -13,7 +13,7 @@
 
 struct multiplier_2ch_instance_t
 {
-	float weight ;
+	real_t weight ;
 	struct multiplier_api_set_params_t set_params;
 };
 

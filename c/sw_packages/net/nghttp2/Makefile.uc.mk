@@ -12,15 +12,10 @@ ifdef CONFIG_INCLUDE_NGHTTP2
         $(error )
     endif
 
-    ifeq ($(MAKECMDGOALS),all_after_makefile_generated)
-        ifndef NGHTTP2_GIT_TEST_ALREADY_PERFORMED
-            NGHTTP2_GIT_TEST_ALREADY_PERFORMED:=1
-            #test if current commit and branch of uboot git is the same as required by application
-            CURR_GIT_REPOSITORY_DIR :=$(NGHTTP2_PATH)
-            CURR_GIT_COMMIT_HASH_VARIABLE :=CONFIG_NGHTTP2_GIT_COMMIT_HASH
-            include $(MAKEFILES_ROOT_DIR)/_include_functions/git_prebuild_repo_check.mk
-        endif
-    endif
+    #test if current commit and branch of nghttp2 git is the same as required by application
+    CURR_GIT_REPOSITORY_DIR :=$(NGHTTP2_PATH)
+    CURR_GIT_COMMIT_HASH_VARIABLE :=CONFIG_NGHTTP2_GIT_COMMIT_HASH
+    include $(MAKEFILES_ROOT_DIR)/_include_functions/git_prebuild_repo_check.mk
     
     CURR_NGHTTP2_COMPONENT_LOCATION := $(patsubst %/Makefile.uc.mk,%,$(realpath $(filter %nghttp2/Makefile.uc.mk,$(MAKEFILE_LIST))))
     DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(CURR_NGHTTP2_COMPONENT_LOCATION)/includes)

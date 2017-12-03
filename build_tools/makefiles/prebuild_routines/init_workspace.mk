@@ -17,15 +17,34 @@ TMP :=$(realpath $(COMMON_PUBLIC_DIR)/..)
 #remove prefix that appear on some machines :
 PARENT_OF_COMMON_PUBLIC_DIR := $(patsubst $(APP_ROOT_DIR)/%,%,$(TMP))
 
+# depricated. used for older projects
+WORKSPACE_ROOT_DIR :=$(PARENT_OF_COMMON_PUBLIC_DIR)
+
+
+
 WORKSPACE_NAME := $(notdir $(abspath $(PARENT_OF_COMMON_PUBLIC_DIR)/..))
 
 TMP :=$(call calc_parent_dir,$(PARENT_OF_COMMON_PUBLIC_DIR))
 EXTERNAL_SOURCE_ROOT_DIR :=$(TMP)/external_source
-ifeq ("$(wildcard $(EXTERNAL_SOURCE_ROOT_DIR))","")
-    DUMMY:=$(shell $(MKDIR)  $(EXTERNAL_SOURCE_ROOT_DIR))
-endif
+$(call mkdir_if_not_exists, $(EXTERNAL_SOURCE_ROOT_DIR))
 
-include $(PARENT_OF_COMMON_PUBLIC_DIR)/workspace_config.mk
+WORKSPACE_CONFIG :=$(PARENT_OF_COMMON_PUBLIC_DIR)/workspace_config.mk
+WORKSPACE_CONFIG_EXPORTED :=$(WORKSPACE_CONFIG).exported
+ifeq ("$(wildcard $(WORKSPACE_CONFIG))","")
+    ifneq ("$(wildcard $(WORKSPACE_CONFIG_EXPORTED))","")
+        FILES := $(WORKSPACE_CONFIG_EXPORTED) $(WORKSPACE_CONFIG)
+        ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
+            FILES := $(subst /,\,$(FILES))
+            DUMMY := $(shell copy /Y $(FILES))
+        else
+            $(info err: TODO)
+            $(call exit,1)
+        endif
+    endif
+endif
+ifneq ("$(wildcard $(WORKSPACE_CONFIG))","")
+    include $(WORKSPACE_CONFIG)
+endif
 
 MAKEFILES_INC_FUNC_DIR :=$(MAKEFILES_ROOT_DIR)/_include_functions
 PUBLIC_DRIVERS_DIR := $(COMMON_PUBLIC_DIR)/c/hw_drivers
@@ -62,11 +81,10 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
     OUT_DIR := $(subst /,\,$(OUT_DIR))
 endif
 
+
 #if common_private directory dont exists then create a dummy one
-ifeq ("$(wildcard $(COMMON_PRIVATE_DIR))","")
-    DUMMY:=$(shell $(MKDIR)  $(COMMON_PRIVATE_DIR))
-    DUMMY:=$(shell $(ECHO) config PRIVATE_DUMMY>$(COMMON_PRIVATE_DIR)/Kconfig)
-endif
+$(call mkdir_if_not_exists, $(COMMON_PRIVATE_DIR))
+
 
 ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
     SET_CC_ENV_VARS :=set APP_ROOT_DIR=$(APP_ROOT_DIR)&
@@ -74,9 +92,10 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
     SET_CC_ENV_VARS +=set PUBLIC_SW_PACKAGES_DIR=$(PUBLIC_SW_PACKAGES_DIR)&
     SET_CC_ENV_VARS +=set PUBLIC_DRIVERS_DIR=$(PUBLIC_DRIVERS_DIR)
 else
-    $(info --- add enviranmental variable PUBLIC_SW_PACKAGES_DIR)
-    $(error)
+    $(info err: add enviranmental variable PUBLIC_SW_PACKAGES_DIR)
+    $(call exit,1)
 endif
+
 
 COMMON_INIT_SECTION_THAT_SHOULD_RUN_ONCE = dummy_value
 

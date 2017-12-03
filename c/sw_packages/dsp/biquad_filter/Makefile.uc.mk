@@ -19,13 +19,17 @@ endif
 
 
 
-SRC = biquad_filter.c
-SRC += biquad_coefficients.c
+SRC = biquad_filter.cpp
+SRC += biquad_coefficients.cpp
 
-ifneq ($(and $(CONFIG_CORTEX_M4),$(CONFIG_INCLUDE_CORTEX_M_FPU)),)
-	SRC += biquads_arm_cortex_m_fpu.c
+USE_CORTEX_M_FPU := $(and $(CONFIG_CORTEX_M4),$(CONFIG_INCLUDE_CORTEX_M_FPU))
+USE_CORTEX_M_FPU := $(and $(USE_CORTEX_M_FPU),$(CONFIG_DSP_REAL_NUMBER_FORMAT_FLOATING_POINT))
+
+ifneq ($(USE_CORTEX_M_FPU),)
+	SRC += biquads_arm_cortex_m_fpu.cpp
+#    SRC += biquads.cpp
 	ifdef CONFIG_BIQUAD_FILTER_IS_SPEED_CRITICAL
-		SPEED_CRITICAL_FILES += biquads_arm_cortex_m_fpu.c
+		SPEED_CRITICAL_FILES += biquads_arm_cortex_m_fpu.cpp
 		SPEED_CRITICAL_FILES += libarm_cortexM4lf_math.a
 	endif
 
@@ -43,9 +47,9 @@ ifneq ($(and $(CONFIG_CORTEX_M4),$(CONFIG_INCLUDE_CORTEX_M_FPU)),)
 	#	SPEED_CRITICAL_FILES += arm_abs_f32.c
 	#endif
 else
-    SRC += biquads.c
+    SRC += biquads_c_calc.cpp
     ifdef CONFIG_BIQUAD_FILTER_IS_SPEED_CRITICAL
-        SPEED_CRITICAL_FILES += biquads.c
+        SPEED_CRITICAL_FILES += biquads.cpp
     endif
 endif
 

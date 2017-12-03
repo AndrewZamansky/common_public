@@ -13,16 +13,11 @@ ifeq ($(strip $(CONFIG_INCLUDE_OPENSSL)),y)
         $(error )
     endif
 
-    ifeq ($(MAKECMDGOALS),all_after_makefile_generated)
-        ifndef OPENSSL_GIT_TEST_ALREADY_PERFORMED
-            OPENSSL_GIT_TEST_ALREADY_PERFORMED:=1
-            #test if current commit and branch of uboot git is the same as required by application
-            CURR_GIT_REPOSITORY_DIR :=$(OPENSSL_PATH)
-            CURR_GIT_COMMIT_HASH_VARIABLE :=CONFIG_OPENSSL_GIT_COMMIT_HASH
-            CURR_GIT_BUNDLE :=$(CURR_OPENSSL_COMPONENT_LOCATION)/openssl.bundle
-            include $(MAKEFILES_ROOT_DIR)/_include_functions/git_prebuild_repo_check.mk
-        endif
-    endif
+    #test if current commit and branch of openssl git is the same as required by application
+    CURR_GIT_REPOSITORY_DIR :=$(OPENSSL_PATH)
+    CURR_GIT_COMMIT_HASH_VARIABLE :=CONFIG_OPENSSL_GIT_COMMIT_HASH
+    CURR_GIT_BUNDLE :=$(CURR_OPENSSL_COMPONENT_LOCATION)/openssl.bundle
+    include $(MAKEFILES_ROOT_DIR)/_include_functions/git_prebuild_repo_check.mk
     
     DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(CURR_OPENSSL_COMPONENT_LOCATION)/include)
     DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(CURR_OPENSSL_COMPONENT_LOCATION)/include/openssl)

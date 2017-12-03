@@ -12,13 +12,14 @@ else
         OUTPUT_NAME :=$(FULL_PROJECT_NAME)
         HISTORY_OUTPUT_NAME :=$(FULL_PROJECT_NAME)_$(MAIN_VERSION_STR)
     else
-        $(error ---- unknown output type ----)
+        $(info err: unknown output type)
+        $(call exit,1)
     endif
 endif
 
 LINKER_OUTPUT := $(OUT_DIR)/$(OUTPUT_NAME)
 LINKER_HISTORY_OUTPUT :=$(OUT_DIR_HISTORY)/$(HISTORY_OUTPUT_NAME)
-#OUTPUT_ASM :=  $(OUT_DIR)/$(OUTPUT_NAME).asm
+OUTPUT_ASM :=  $(OUT_DIR)/$(OUTPUT_NAME).asm
 
 
 ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
@@ -40,7 +41,8 @@ LDFLAGS :=
 ifdef CONFIG_HEXAGON_VERSION_60
     LDFLAGS += -mv60 
 else
-    $(error unknown hexagon version)
+    $(info err: unknown hexagon version)
+    $(call exit,1)
 endif
 
 LDFLAGS += -O0 
@@ -88,6 +90,7 @@ rwildcard=$(wildcard $1$2) $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2))
 
 ALL_OBJ_FILES = $(call rwildcard,$(OBJ_DIR)/,*.o)
 ALL_OBJ_FILES += $(call rwildcard,$(OBJ_DIR)/,*.oo)
+ALL_OBJ_FILES += $(call rwildcard,$(OBJ_DIR)/,*.oop)
 ALL_OBJ_FILES += $(call rwildcard,$(OBJ_DIR)/,*.o.asm)
 ALL_OBJ_FILES += $(call rwildcard,$(OBJ_DIR)/,*.O.asm)
 #some time, on windows, scan for .O.asm and .o.asm will generate duplicate files
@@ -137,12 +140,13 @@ endif
 
 
 
-#	$(FULL_GCC_PREFIX)objdump -d -S $(LINKER_OUTPUT) > $(OUTPUT_ASM)
+ASM_CMD := $(HEXAGON_ROOT_DIR)/bin/hexagon-llvm-objdump.exe
+ASM_CMD +=  -disassemble $(LINKER_OUTPUT) > $(OUTPUT_ASM)
 
 build_outputs :
 	$(LINKER_CMD)
 	$(CP)  $(LINKER_OUTPUT) $(LINKER_HISTORY_OUTPUT)
+	$(ASM_CMD)
 ifeq ($(findstring y,$(CONFIG_CALCULATE_CRC32)),y)
 	$(CRC32CALC) $(OUTPUT_BIN) > $(OUTPUT_CRC32)
 endif
-	

@@ -30,9 +30,9 @@ else
         VS_VERSION :=2012
         MSVC_VERSION :=17
     else
-        $(info !---- unsupported version of visual studio)
-        $(info !---- install one of following versions : VS2012, VS2013, VS2015)
-        $(error )
+        $(info err: unsupported version of visual studio)
+        $(info err: install one of following versions : VS2012, VS2013, VS2015)
+        $(call exit,1)
     endif
 endif
 $(info ---- Visual studio version :  $(VS_VERSION))
@@ -55,10 +55,10 @@ ifdef CONFIG_USE_WINDOWS_KITS
 
     TEST_WINDOWS_KIT_DIR :=$(subst $(SPACE),\$(SPACE),$(WDK_DIR))
     ifeq ("$(wildcard $(TEST_WINDOWS_KIT_DIR))","")
-        $(info !--- $(TEST_WINDOWS_KIT_DIR) does not exists )
-        $(info !--- window kit $(WINDOWS_KIT_VERSION) not found )
-        $(info !--- download/install windows kit $(WINDOWS_KIT_VERSION) to default location)
-        $(error )
+        $(info err: $(TEST_WINDOWS_KIT_DIR) does not exists )
+        $(info ---: window kit $(WINDOWS_KIT_VERSION) not found )
+        $(info ---: download/install windows kit $(WINDOWS_KIT_VERSION) to default location)
+        $(call exit,1)
     endif
 
     $(info ---- WDK :  $(WDK_DIR))
@@ -100,9 +100,9 @@ ifdef CONFIG_USE_WINDOWS_KITS
             endif
         endif
         ifeq ($(WDK_10_VERSION),)
-             $(info !--- no supported WDK 10 version found.)
-             $(info !--- supported versions are 10.0.10586.0 , 10.0.10240.0 , 10.0.10150.0)
-             $(error )
+             $(info err: no supported WDK 10 version found.)
+             $(info ---: supported versions are 10.0.10586.0 , 10.0.10240.0 , 10.0.10150.0)
+             $(call exit,1)
         endif
         
         # cannot use $(call ADD_TO_GLOBAL_INCLUDE_PATH) because

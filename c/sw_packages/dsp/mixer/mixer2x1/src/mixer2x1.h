@@ -15,7 +15,7 @@
 
 struct MIXER2X1_Instance_t {
 
-	float channels_weights[2];
+	real_t channels_weights[2];
 
 };
 

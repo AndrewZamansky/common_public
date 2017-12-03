@@ -13,7 +13,7 @@ menuconfig INCLUDE_SPI_FLASH
 	default n
 
 if INCLUDE_SPI_FLASH
-source "$KCONFIG_START_DIR_PATH/hw_drivers/storage/spi_flash/Kconfig"
+source "$KCONFIG_PUBLIC_START_DIR/hw_drivers/storage/spi_flash/Kconfig"
 endif
 
 

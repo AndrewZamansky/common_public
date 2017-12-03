@@ -2,7 +2,7 @@ menu "`---> esp_01 evaluation board"
 
     
     
-source "$KCONFIG_START_DIR_PATH/hw_drivers/arch/XTENSA/soc/esp8266/Kconfig.esp8266.dt"
+source "$KCONFIG_PUBLIC_START_DIR/hw_drivers/arch/XTENSA/soc/esp8266/Kconfig.esp8266.dt"
 
 
 endmenu

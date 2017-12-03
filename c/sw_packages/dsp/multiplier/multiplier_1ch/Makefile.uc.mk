@@ -3,17 +3,18 @@ INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_MULTIPLIER_1CHANNEL)
  
 
 
-#DEFINES = 
+#DEFINES =
 
-#CFLAGS = 
+#CFLAGS =
 
-#ASMFLAGS =  
+#ASMFLAGS =
+
+SRC = multiplier_1ch.cpp
 
 ifdef CONFIG_MULTIPLIER_IS_SPEED_CRITICAL
-    SPEED_CRITICAL_FILES += multiplier_1ch.c
+    SPEED_CRITICAL_FILES += multiplier_1ch.cpp
 endif
 
-SRC = multiplier_1ch.c
 
 VPATH = src
 

@@ -21,11 +21,13 @@
 /***********   global variables    **************/
 
 /***********   local variables    **************/
-extern int *init_functions_section_start ;
-extern int *init_functions_section_end ;
-
-extern int *__start_auto_init_section ;
-extern int *__stop_auto_init_section ;
+#if defined(CONFIG_MICROSOFT_COMPILER)
+	extern int *init_functions_section_start ;
+	extern int *init_functions_section_end ;
+#else
+	extern int *__start_auto_init_section ;
+	extern int *__stop_auto_init_section ;
+#endif
 
 void auto_init_api(void)
 {
@@ -33,14 +35,10 @@ void auto_init_api(void)
 	auto_init_struct_t *p_end_of_auto_init;
 
 
-#if !defined(CONFIG_HEXAGON_COMPILER) && !defined(CONFIG_ANDROID_NDK) \
-		&& !defined(CONFIG_XTENSA_GCC) && !defined(CONFIG_XTENSA_XCC)
-	#pragma message( "change to __start_auto_init_section in " __FILE__ )
+#if defined(CONFIG_MICROSOFT_COMPILER)
+    #pragma message( "change to __start_auto_init_section in " __FILE__ )
 	p_curr_auto_init = (auto_init_struct_t *)&init_functions_section_start;
 	p_end_of_auto_init = (auto_init_struct_t *)&init_functions_section_end;
-#elif defined(CONFIG_XTENSA_XCC)
-	p_curr_auto_init = NULL;
-	p_end_of_auto_init = NULL;
 #else
 	p_curr_auto_init = (auto_init_struct_t *)&__start_auto_init_section;
 	p_end_of_auto_init = (auto_init_struct_t *)&__stop_auto_init_section;
@@ -59,6 +57,7 @@ void auto_init_api(void)
 		}
 		else
 		{
+			/*for compilers that insert spaces between data (like MSVC)*/
 			data_size = sizeof(int*);
 		}
 		p_curr_auto_init =

@@ -22,6 +22,8 @@ typedef enum _biquads_filter_mode_t {
     BIQUADS_PEAK_MODE,
     BIQUADS_LOWSHELF_MODE,
     BIQUADS_HIGHSHELF_MODE,
+    BIQUADS_ALL_PASS_BUTTERWORTH_1_POLE,
+    BIQUADS_ALL_PASS_BUTTERWORTH_2_POLES,
 } biquads_filter_mode_t;
 
 
@@ -40,7 +42,7 @@ struct biquad_filter_api_band_set_params_t
 {
 	float Fc;
 	float QValue;
-	float Gain;
+	float Gain_db;
 	biquads_filter_mode_t filter_mode;
 	uint8_t bypass;
 };

@@ -136,20 +136,20 @@ endif
 
 
 if GCC || GPP || MIN_GW_GCC || MIN_GW_GPP || PIC_C32 || PIC_XC32 || ANDROID_NDK_COMPILER || XTENSA_GCC
-source "$KCONFIG_START_DIR_PATH/../build_tools/makefiles/c/compilers/gcc/Kconfig"
+source "$KCONFIG_PUBLIC_START_DIR/../build_tools/makefiles/c/compilers/gcc/Kconfig"
 endif
 
 if MICROSOFT_COMPILER
-source "$KCONFIG_START_DIR_PATH/../build_tools/makefiles/c/compilers/microsoft_compiler/Kconfig"
+source "$KCONFIG_PUBLIC_START_DIR/../build_tools/makefiles/c/compilers/microsoft_compiler/Kconfig"
 endif
 
 
 if HEXAGON_COMPILER
-source "$KCONFIG_START_DIR_PATH/../build_tools/makefiles/c/compilers/clang/Kconfig"
+source "$KCONFIG_PUBLIC_START_DIR/../build_tools/makefiles/c/compilers/clang/Kconfig"
 endif
 
 if XTENSA_XCC
-source "$KCONFIG_START_DIR_PATH/../build_tools/makefiles/c/compilers/xcc/Kconfig"
+source "$KCONFIG_PUBLIC_START_DIR/../build_tools/makefiles/c/compilers/xcc/Kconfig"
 endif
 
 menuconfig INCLUDE_TOOLCHAIN_LIBRARIES

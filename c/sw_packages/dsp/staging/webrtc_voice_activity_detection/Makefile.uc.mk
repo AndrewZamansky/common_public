@@ -11,6 +11,10 @@ ifdef CONFIG_INCLUDE_WEBRTC_VAD
         $(info ---    )
         $(error )
     endif
+    
+    ifeq ("","$(filter $(WEBRTC_PATH),$(EXTERNAL_SRC_DIRS))")
+        EXTERNAL_SRC_DIRS := $(EXTERNAL_SRC_DIRS) $(WEBRTC_PATH)
+    endif
 endif
 
 INCLUDE_DIR +=$(WEBRTC_PATH)

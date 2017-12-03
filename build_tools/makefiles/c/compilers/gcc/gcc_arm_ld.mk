@@ -1,3 +1,67 @@
+ifdef CONFIG_REDEFINED_OUTPUT_NAME
+
+    OUTPUT_NAME :=$(patsubst "%",%,$(CONFIG_REDEFINED_OUTPUT_NAME))
+
+    HISTORY_OUTPUT_NAME :=$(OUTPUT_NAME)_$(MAIN_VERSION_STR)
+    HISTORY_OUTPUT_NAME :=$(HISTORY_OUTPUT_NAME)r$(DATE_STR)
+
+else
+#    ifdef CONFIG_GCC_OUTPUT_TYPE_DYNAMIC_LIBRARY
+#        OUTPUT_NAME :=lib$(FULL_PROJECT_NAME).so
+#        HISTORY_OUTPUT_NAME :=lib$(FULL_PROJECT_NAME)_$(MAIN_VERSION_STR).so
+#    else ifdef CONFIG_GCC_OUTPUT_TYPE_APPLICATION
+        OUTPUT_NAME :=$(FULL_PROJECT_NAME).elf
+
+        HISTORY_OUTPUT_NAME :=$(FULL_PROJECT_NAME)_$(MAIN_VERSION_STR)
+        HISTORY_OUTPUT_NAME :=$(HISTORY_OUTPUT_NAME)r$(DATE_STR).elf
+#    else
+#        $(info err: unknown output type)
+#        $(call exit,1)
+#    endif
+endif
+
+LINKER_OUTPUT := $(OUT_DIR)/$(OUTPUT_NAME)
+MAP_FILE := $(OUT_DIR)/$(OUTPUT_NAME).map
+LINKER_HISTORY_OUTPUT :=$(OUT_DIR_HISTORY)/$(HISTORY_OUTPUT_NAME)
+OUTPUT_ASM :=  $(OUT_DIR)/$(OUTPUT_NAME).asm
+OUTPUT_BIN := $(OUT_DIR)/$(OUTPUT_NAME).bin
+OUTPUT_HEX :=  $(OUT_DIR)/$(OUTPUT_NAME).hex
+
+#{{{{{{{{  LINKER SCRIPT FILE PREPARATIONS {{{{{{{{
+
+ifdef CONFIG_USE_APPLICATION_SPECIFIC_SCATTER_FILE
+    SCATTER_FILE =$(APP_ROOT_DIR)/$(PROJECT_NAME).lds
+    ifeq ($(wildcard $(SCATTER_FILE)),) #if scatter file not found
+        $(info err: application configured to use it's own scatter file,)
+        $(info ---: but $(SCATTER_FILE) doesn't exist)
+        $(call exit,1)
+    endif
+else
+    SCATTER_FILES_DIR :=$(BUILD_TOOLS_ROOT_DIR)/scatter_files/arm
+    LDS_PREPROCESSOR_DEFS += -DFILES_TO_FORCE_IN_RAM="$(FILES_TO_FORCE_IN_RAM)"
+    ifdef CONFIG_CORTEX_M4
+        SCATTER_FILE_PATTERN =$(SCATTER_FILES_DIR)/arm_gcc_cortex_m.lds
+    else
+        SCATTER_FILE_PATTERN =$(SCATTER_FILES_DIR)/arm_gcc_cortex_a.lds
+    endif
+
+    SCATTER_FILE =$(OUT_DIR)/$(OUTPUT_NAME).lds
+endif
+
+#}}}}}}}}  END OF LINKER SCRIPT FILE PREPARATIONS }}}}}}}}
+
+ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
+    SCATTER_FILE := $(subst /,\,$(SCATTER_FILE))
+    LINKER_OUTPUT := $(subst /,\,$(LINKER_OUTPUT))
+    MAP_FILE := $(subst /,\,$(MAP_FILE))
+    LINKER_HISTORY_OUTPUT := $(subst /,\,$(LINKER_HISTORY_OUTPUT))
+    OUTPUT_ASM := $(subst /,\,$(OUTPUT_ASM))
+    OUTPUT_BIN := $(subst /,\,$(OUTPUT_BIN))
+    OUTPUT_HEX := $(subst /,\,$(OUTPUT_HEX))
+    OUTPUT_CRC32 := $(subst /,\,$(OUTPUT_CRC32))
+endif
+
+
 
 #{{{{{{{{   LDFLAGS PREPARATIONS   {{{{{{{{
 
@@ -12,7 +76,7 @@ LDFLAGS += -mcpu=$(CONFIG_CPU_TYPE)
 LDFLAGS += -mthumb-interwork
 LDFLAGS += -Wl,--gc-sections
 LDFLAGS += -nostartfiles
-LDFLAGS += -Wl,-Map=$(OUT_DIR)/$(OUTPUT_APP_NAME).map
+LDFLAGS += -Wl,-Map=$(MAP_FILE)
 
 ifdef CONFIG_USE_NANO_STD_LIBS
     LDFLAGS += -specs=nano.specs
@@ -57,7 +121,7 @@ LIBS := $(patsubst %.a,%,$(LIBS))
 ifeq ($(findstring cortex-m,$(CONFIG_CPU_TYPE)),cortex-m)
 #	GLOBAL_LIBS_PATH := $(GLOBAL_LIBS_PATH) $(GCC_LIB_ROOT_DIR)/fpu
 #	GLOBAL_LIBS_PATH := $(GLOBAL_LIBS_PATH) $(GCC_LIB_ROOT_DIR)/thumb
-else	
+else
     GLOBAL_LIBS_PATH := $(GLOBAL_LIBS_PATH) $(GCC_LIB_ROOT_DIR)
 endif
 LIBRARIES_DIRS := $(patsubst %,-L%,$(GLOBAL_LIBS_PATH))
@@ -73,6 +137,8 @@ ifdef CONFIG_PUT_SPEED_CRITICAL_CODE_TO_RAM
     FILES_TO_FORCE_IN_RAM := $(SPEED_CRITICAL_FILES) $(SPEED_CRITICAL_STD_LIBS)
     FILES_TO_FORCE_IN_RAM := $(sort $(FILES_TO_FORCE_IN_RAM))
     FILES_TO_FORCE_IN_RAM := $(patsubst %.c,%.o,$(FILES_TO_FORCE_IN_RAM))
+    FILES_TO_FORCE_IN_RAM := $(patsubst %.cc,%.oo,$(FILES_TO_FORCE_IN_RAM))
+    FILES_TO_FORCE_IN_RAM := $(patsubst %.cpp,%.oop,$(FILES_TO_FORCE_IN_RAM))
     FILES_TO_FORCE_IN_RAM := $(patsubst %.s,%.o.asm,$(FILES_TO_FORCE_IN_RAM))
     FILES_TO_FORCE_IN_RAM := $(patsubst %.S,%.O.asm,$(FILES_TO_FORCE_IN_RAM))
     # add * to deal with libraries pathes  :
@@ -89,31 +155,6 @@ FILES_TO_FORCE_IN_RAM += 123_DUMMY.X
 
 
 
-#{{{{{{{{  LINKER SCRIPT FILE PREPARATIONS {{{{{{{{
-
-ifdef CONFIG_USE_APPLICATION_SPECIFIC_SCATTER_FILE
-    SCATTER_FILE =$(APP_ROOT_DIR)/$(PROJECT_NAME).lds
-    ifeq ($(wildcard $(SCATTER_FILE)),) #if scatter file not found
-        $(info !--- application configured to use it's own scatter file,)
-        $(info !--- but $(SCATTER_FILE) doesn't exist)
-        $(error )
-    endif
-else
-    SCATTER_FILES_DIR :=$(BUILD_TOOLS_ROOT_DIR)/scatter_files/arm
-    LDS_PREPROCESSOR_DEFS += -DFILES_TO_FORCE_IN_RAM="$(FILES_TO_FORCE_IN_RAM)"
-    ifdef CONFIG_CORTEX_M4
-        SCATTER_FILE_PATTERN =$(SCATTER_FILES_DIR)/arm_gcc_cortex_m.lds
-    else
-        SCATTER_FILE_PATTERN =$(SCATTER_FILES_DIR)/arm_gcc_cortex_a.lds
-    endif
-
-    SCATTER_FILE =$(OUT_DIR)/$(OUTPUT_APP_NAME).lds
-endif
-
-#}}}}}}}}  END OF LINKER SCRIPT FILE PREPARATIONS }}}}}}}}
-
-
-
 
 #{{{{{{{{  CREATING OBJECT LIST {{{{{{{{
 
@@ -121,6 +162,7 @@ rwildcard=$(wildcard $1$2) $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2))
 
 ALL_OBJ_FILES = $(call rwildcard,$(OBJ_DIR)/,*.o)
 ALL_OBJ_FILES += $(call rwildcard,$(OBJ_DIR)/,*.oo)
+ALL_OBJ_FILES += $(call rwildcard,$(OBJ_DIR)/,*.oop)
 ALL_OBJ_FILES += $(call rwildcard,$(OBJ_DIR)/,*.o.asm)
 ALL_OBJ_FILES += $(call rwildcard,$(OBJ_DIR)/,*.O.asm)
 #some time, on windows, scan for .O.asm and .o.asm will generate duplicate files
@@ -142,31 +184,6 @@ include $(MAKEFILES_INC_FUNC_DIR)/add_item_list_to_file_in_one_line.mk
 
 
 
-#{{{{{{{{  DEFINING OUTPUTS {{{{{{{{
-
-LINKER_OUTPUT := $(OUT_DIR)/$(OUTPUT_APP_NAME).elf
-OUTPUT_BIN := $(OUT_DIR)/$(OUTPUT_APP_NAME).bin
-OUTPUT_HEX :=  $(OUT_DIR)/$(OUTPUT_APP_NAME).hex
-OUTPUT_ASM :=  $(OUT_DIR)/$(OUTPUT_APP_NAME).asm
-
-HISTORY_OUT_PREFIX :=$(OUT_DIR_HISTORY)/$(PROJECT_NAME)_$(MAIN_VERSION_STR)
-OUTPUT_HISTORY_BIN :=  $(HISTORY_OUT_PREFIX)r$(DATE_STR).bin
-LINKER_HISTORY_OUTPUT := $(HISTORY_OUT_PREFIX).elf
-
-ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
-    LINKER_OUTPUT := $(subst /,\,$(LINKER_OUTPUT))
-    OUTPUT_BIN := $(subst /,\,$(OUTPUT_BIN))
-    OUTPUT_HISTORY_BIN := $(subst /,\,$(OUTPUT_HISTORY_BIN))
-    LINKER_HISTORY_OUTPUT := $(subst /,\,$(LINKER_HISTORY_OUTPUT))
-    OUTPUT_CRC32 := $(subst /,\,$(OUTPUT_CRC32))
-endif
-
-ifeq ($(findstring y,$(CONFIG_USED_FOR_SEMIHOSTING_UPLOADING)),y)
-    CONFIG_CALCULATE_CRC32=y
-endif
-
-#}}}}}}}}  END OF DEFINING OUTPUTS  }}}}}}}}
-
 
 ifdef CONFIG_USE_APPLICATION_SPECIFIC_SCATTER_FILE
     CREATE_LDS_CMD += echo using application specifc scatter file
@@ -185,7 +202,6 @@ build_outputs :
 	$(FULL_GCC_PREFIX)objdump -d -S $(LINKER_OUTPUT) > $(OUTPUT_ASM)
 	$(FULL_GCC_PREFIX)objcopy -O binary $(LINKER_OUTPUT) $(OUTPUT_BIN)
 	$(FULL_GCC_PREFIX)objcopy -O ihex $(LINKER_OUTPUT) $(OUTPUT_HEX)
-	$(CP)  $(OUTPUT_BIN) $(OUTPUT_HISTORY_BIN)
 	$(CP)  $(LINKER_OUTPUT) $(LINKER_HISTORY_OUTPUT)
 ifeq ($(findstring y,$(CONFIG_CALCULATE_CRC32)),y)
 	$(CRC32CALC) $(OUTPUT_BIN) > $(OUTPUT_CRC32)

@@ -2,7 +2,8 @@ ifdef CONFIG_ANDROID_NDK_ARCH_ARM
     ARCH_PREFIX :=arm
     GCC_ARM_ARCH :=armv7-a
 else
-    $(error UNIMPLEMENTED ARCH)
+    $(info err: UNIMPLEMENTED ARCH)
+    $(call exit,1)
 endif
 
 ifdef CONFIG_ANDROID_NDK_GCC_4_6
@@ -12,7 +13,8 @@ else ifdef CONFIG_ANDROID_NDK_GCC_4_8
 else ifdef CONFIG_ANDROID_NDK_GCC_4_9
     ANDROID_GCC_VER:=4.9
 else
-    $(error UNSUPPORTED GCC VERSION)
+    $(info err: UNSUPPORTED GCC VERSION)
+    $(call exit,1)
 endif
 
 ARCH_DIR_NAME :=$(ARCH_PREFIX)-linux-androideabi-$(ANDROID_GCC_VER)

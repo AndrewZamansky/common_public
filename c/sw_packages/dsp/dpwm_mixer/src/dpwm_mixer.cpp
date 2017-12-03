@@ -1,6 +1,6 @@
 /*
  *
- * file :   I2S_mixer.c
+ * file :   dpwm_mixer.c
  *
  *
  */
@@ -12,29 +12,21 @@
 #include "_project_defines.h"
 
 #include "dsp_management_api.h"
-#include "common_dsp_api.h"
+#include "dsp_management_internal_api.h"
 
 
-#include "I2S_mixer_api.h"
-#include "I2S_mixer.h"
+#include "dpwm_mixer_api.h"
+#include "dpwm_mixer.h"
 
 #include "auto_init_api.h"
 
-#include "_I2S_mixer_prerequirements_check.h"
+#include "_dpwm_mixer_prerequirements_check.h"
 
 /********  defines *********************/
-#if (2==NUM_OF_BYTES_PER_AUDIO_WORD)
-	#define	FLOAT_NORMALIZER	0x7fff
-	typedef int16_t	buffer_type_t	;
-#endif
-#if (4==NUM_OF_BYTES_PER_AUDIO_WORD)
-	#define	FLOAT_NORMALIZER	0x7fffffff
-	typedef int32_t	buffer_type_t	;
-#endif
-
 #ifndef ABS
 #define ABS(x)  (x > 0 ? x : -x)
 #endif
+
 /********  types  *********************/
 
 /********  externals *********************/
@@ -42,7 +34,7 @@
 
 /********  exported variables *********************/
 
-char I2S_mixer_module_name[] = "I2S_mixer";
+char dpwm_mixer_module_name[] = "dpwm_mixer";
 
 
 /**********   external variables    **************/
@@ -53,49 +45,55 @@ char I2S_mixer_module_name[] = "I2S_mixer";
 
 
 /**
- * I2S_mixer_dsp()
+ * dpwm_mixer_dsp()
  *
  * return:
  */
-void I2S_mixer_dsp(struct dsp_desc_t *adsp,
+void dpwm_mixer_dsp(struct dsp_desc_t *adsp,
 		struct dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] ,
 		struct dsp_pad_t  out_pads[MAX_NUM_OF_OUTPUT_PADS])
 {
-	float *apCh1In;
-	float *apCh2In;
-	struct I2S_MIXER_Instance_t *handle;
-	uint8_t enable_test_clipping;
-	float max_out_val ;
-	float out_val ;
+	real_t *apCh1In;
+	real_t *apCh2In;
 	size_t in_data_len1 ;
 	size_t in_data_len2 ;
 	size_t out_data_len ;
-	buffer_type_t *pTxBuf;
+	struct DPWM_MIXER_Instance_t *handle;
+	uint8_t enable_test_clipping;
+	real_t max_out_val ;
+	real_t *pTxBuf;
+	real_t inVal1;
+	real_t inVal2;
+	uint32_t i;
 
-	handle = adsp->handle;
-
-	max_out_val = handle->max_out_val;
-	enable_test_clipping = handle->enable_test_clipping;
+	handle = (struct DPWM_MIXER_Instance_t *)adsp->handle;
 
 	DSP_GET_BUFFER(in_pads[0], &apCh1In, &in_data_len1);
 	DSP_GET_BUFFER(in_pads[1], &apCh2In, &in_data_len2);
-	DSP_GET_BUFFER(&out_pads[0], (float**)&pTxBuf, &out_data_len);
+	DSP_GET_BUFFER(&out_pads[0], &pTxBuf, &out_data_len);
 
 	if (in_data_len1 != in_data_len2 )
 	{
 		CRITICAL_ERROR("bad input buffer size");
 	}
 
-	if  (sizeof(buffer_type_t) != 2 )
+	if (out_data_len < (in_data_len1 + in_data_len2) )
 	{
-		CRITICAL_ERROR("TODO");
+		CRITICAL_ERROR("output buffer is too small");
 	}
 
-	while(in_data_len1--)
+	max_out_val = handle->max_out_val;
+	enable_test_clipping = handle->enable_test_clipping;
+
+
+	inVal1 = 0;
+	inVal2 = 0;
+
+	for ( i = 0; i < in_data_len1; i++)
 	{
 		if(enable_test_clipping)
 		{
-			float tmp1, tmp2;
+			real_t tmp1, tmp2;
 			tmp1 = ABS(*apCh1In);
 			tmp2 = ABS(*apCh2In);
 			if (tmp1 >= max_out_val)
@@ -109,37 +107,32 @@ void I2S_mixer_dsp(struct dsp_desc_t *adsp,
 			}
 		}
 
-		out_val = (*apCh1In++) * FLOAT_NORMALIZER;
-		*pTxBuf = (buffer_type_t)(out_val);
+		inVal1 = (*apCh1In++);
+		*pTxBuf = inVal1;
 		pTxBuf++;
 
-		out_val = (*apCh2In++) * FLOAT_NORMALIZER;
-		*pTxBuf = (buffer_type_t)(out_val);
+		inVal2 = (*apCh2In++);
+		*pTxBuf = inVal2;
 		pTxBuf++;
-
 
 	}
 
 	handle->max_out_val = max_out_val;
-
-
 }
 
 
 
-
-
 /**
- * I2S_mixer_ioctl()
+ * dpwm_mixer_ioctl()
  *
  * return:
  */
-uint8_t I2S_mixer_ioctl(struct dsp_desc_t *adsp,
+uint8_t dpwm_mixer_ioctl(struct dsp_desc_t *adsp,
 		uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
 {
-	struct I2S_MIXER_Instance_t *handle;
+	struct DPWM_MIXER_Instance_t *handle;
 
-	handle = adsp->handle;
+	handle = (struct DPWM_MIXER_Instance_t *)adsp->handle;
 
 	switch(aIoctl_num)
 	{
@@ -148,15 +141,15 @@ uint8_t I2S_mixer_ioctl(struct dsp_desc_t *adsp,
 			handle->max_out_val = 0;
 			break;
 
-		case IOCTL_I2S_MIXER_ENABLE_TEST_CLIPPING :
+		case IOCTL_DPWM_MIXER_ENABLE_TEST_CLIPPING :
 			handle->enable_test_clipping = 1;
 			break;
 
-		case IOCTL_I2S_MIXER_DISABLE_TEST_CLIPPING :
+		case IOCTL_DPWM_MIXER_DISABLE_TEST_CLIPPING :
 			handle->enable_test_clipping = 0;
 			break;
 
-		case IOCTL_I2S_MIXER_GET_MAX_OUTPUT_VALUE :
+		case IOCTL_DPWM_MIXER_GET_MAX_OUTPUT_VALUE :
 			*(float*)aIoctl_param1 = handle->max_out_val  ;
 			handle->max_out_val = 0;
 			break;
@@ -169,10 +162,10 @@ uint8_t I2S_mixer_ioctl(struct dsp_desc_t *adsp,
 
 
 
-void  I2S_mixer_init(void)
+void  dpwm_mixer_init(void)
 {
-	DSP_REGISTER_NEW_MODULE("I2S_mixer",
-			I2S_mixer_ioctl , I2S_mixer_dsp, struct I2S_MIXER_Instance_t);
+	DSP_REGISTER_NEW_MODULE("dpwm_mixer",
+			dpwm_mixer_ioctl , dpwm_mixer_dsp , struct DPWM_MIXER_Instance_t);
 }
 
-AUTO_INIT_FUNCTION(I2S_mixer_init);
+AUTO_INIT_FUNCTION(dpwm_mixer_init);

@@ -13,7 +13,7 @@ menuconfig INCLUDE_ASYNC_TX_WRAPPER
 	default n
 
 if INCLUDE_ASYNC_TX_WRAPPER
-source "$KCONFIG_START_DIR_PATH/sw_packages/ancillary/async_tx_wrapper/Kconfig"
+source "$KCONFIG_PUBLIC_START_DIR/sw_packages/ancillary/async_tx_wrapper/Kconfig"
 endif
 
 menuconfig INCLUDE_ASYNC_RX_WRAPPER
@@ -22,7 +22,7 @@ menuconfig INCLUDE_ASYNC_RX_WRAPPER
 	default n
 
 if INCLUDE_ASYNC_RX_WRAPPER
-source "$KCONFIG_START_DIR_PATH/sw_packages/ancillary/async_rx_wrapper/Kconfig"
+source "$KCONFIG_PUBLIC_START_DIR/sw_packages/ancillary/async_rx_wrapper/Kconfig"
 endif
 
 config INCLUDE_TIMER_WRAPPER

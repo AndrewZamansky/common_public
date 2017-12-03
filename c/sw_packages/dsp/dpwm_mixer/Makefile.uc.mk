@@ -10,10 +10,10 @@ INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_DPWM_MIXER)
 #ASMFLAGS =  
 
 
-SRC = dpwm_mixer.c
+SRC = dpwm_mixer.cpp
 
 ifdef CONFIG_DPWM_MIXER_IS_SPEED_CRITICAL
-    SPEED_CRITICAL_FILES += dpwm_mixer.c
+    SPEED_CRITICAL_FILES += dpwm_mixer.cpp
 endif
 
 VPATH = src

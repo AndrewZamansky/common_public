@@ -7,7 +7,7 @@ menuconfig INCLUDE_CURL
 	default n
 
 if INCLUDE_CURL
-source "$KCONFIG_START_DIR_PATH/sw_packages/net/curl/Kconfig"
+source "$KCONFIG_PUBLIC_START_DIR/sw_packages/net/curl/Kconfig"
 endif
 
 menuconfig INCLUDE_OPENSSL
@@ -15,7 +15,7 @@ menuconfig INCLUDE_OPENSSL
 	default n
 
 if INCLUDE_OPENSSL
-source "$KCONFIG_START_DIR_PATH/sw_packages/net/openssl/Kconfig"
+source "$KCONFIG_PUBLIC_START_DIR/sw_packages/net/openssl/Kconfig"
 endif
 
 menuconfig INCLUDE_WOLFSSL
@@ -23,7 +23,7 @@ menuconfig INCLUDE_WOLFSSL
 	default n
 
 if INCLUDE_WOLFSSL
-source "$KCONFIG_START_DIR_PATH/sw_packages/net/wolfssl/Kconfig"
+source "$KCONFIG_PUBLIC_START_DIR/sw_packages/net/wolfssl/Kconfig"
 endif
 
 menuconfig INCLUDE_NGHTTP2
@@ -31,7 +31,7 @@ menuconfig INCLUDE_NGHTTP2
 	default n
 
 if INCLUDE_NGHTTP2
-source "$KCONFIG_START_DIR_PATH/sw_packages/net/nghttp2/Kconfig"
+source "$KCONFIG_PUBLIC_START_DIR/sw_packages/net/nghttp2/Kconfig"
 endif
 
 

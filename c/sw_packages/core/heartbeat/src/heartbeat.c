@@ -69,7 +69,7 @@ uint8_t heartbeat_ioctl( struct dev_desc_t *adev,
 		const uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2)
 {
 	struct heartbeat_instance_t *handle;
-	static size_t ticks_per_mSec=1;
+	static size_t ticks_per_mSec = 1;
 
 	handle = DEV_GET_CONFIG_DATA_POINTER(adev);
 	switch (aIoctl_num)

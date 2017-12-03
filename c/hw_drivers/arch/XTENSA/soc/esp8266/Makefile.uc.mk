@@ -17,6 +17,10 @@ ifdef CONFIG_ESP8266
         $(error )
     endif
 
+    ifeq ("","$(filter $(SDK_ESP8266_PATH),$(EXTERNAL_SRC_DIRS))")
+        EXTERNAL_SRC_DIRS := $(EXTERNAL_SRC_DIRS) $(SDK_ESP8266_PATH)
+    endif
+
     DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(SDK_ESP8266_PATH)/include)
     ifdef CONFIG_SDK_RTOS
         DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(SDK_ESP8266_PATH)/driver_lib/include)

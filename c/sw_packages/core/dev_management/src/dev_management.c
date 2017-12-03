@@ -25,10 +25,11 @@
 
 
 /**********   external variables    **************/
-extern uint32_t start_of_device_tree_stamp ;
-extern uint32_t start_of_modules_stamp ;
-extern uint8_t end_of_modules_stamp ;
 
+struct dev_desc_t * find_static_dev_by_name(const char *device_name);
+void init_new_device(struct dev_desc_t * pdev );
+struct dev_param_t const *get_config_param(struct dev_desc_t * pdev,
+		char *param_name_str );
 
 /***********   global variables    **************/
 
@@ -118,8 +119,7 @@ size_t DEV_API_dummy_pwrite_func(struct dev_desc_t *adev,
  *
  */
 uint8_t DEV_API_dummy_callback_func(struct dev_desc_t *adev,
-		uint8_t aCallback_num, void * aCallback_param1,
-		void * aCallback_param2)
+		uint8_t aCallback_num, void * aCallback_param1,	void * aCallback_param2)
 {
 	return 1;
 }
@@ -137,24 +137,15 @@ struct dev_desc_t * DEV_OPEN(const char *device_name)
 	struct dev_desc_t * curr_pdev ;
 
 #ifdef CONFIG_USE_SPECIFIC_MEMORY_LOCATION_FOR_DEVICES
-	curr_pdev =
-			(struct dev_desc_t *)(((uint8_t*)&start_of_device_tree_stamp) + 4);
-	while (*(uint8_t*)curr_pdev != END_OF_DEVICE_TREE_STAMP)
-	{
-		//name_len=strlen((char*)static_dev_descriptors[i].name);
-		if (0 == strcmp( (char*)curr_pdev->name , device_name ) )
-		{
-			return  curr_pdev;
-		}
-		curr_pdev++;
-	}
+	curr_pdev = find_static_dev_by_name(device_name);
+	if (NULL != curr_pdev) return curr_pdev;
 #endif
 
 #if CONFIG_MAX_NUM_OF_DYNAMIC_DEVICES > 0
 	curr_pdev =  &dev_descriptors[0];
-	while(curr_pdev <  &dev_descriptors[CONFIG_MAX_NUM_OF_DYNAMIC_DEVICES])
+	while (curr_pdev <  &dev_descriptors[CONFIG_MAX_NUM_OF_DYNAMIC_DEVICES])
 	{
-		if (0 == strcmp(curr_pdev->name , (char*)device_name ) )
+		if (0 == strcmp(curr_pdev->name, (char*)device_name ) )
 		{
 			return  curr_pdev;
 		}
@@ -165,83 +156,6 @@ struct dev_desc_t * DEV_OPEN(const char *device_name)
 }
 #endif /* defined(CONFIG_USE_DEVICE_NAME_STRINGS) */
 
-#if defined(CONFIG_DYNAMIC_DEVICE_TREE) || (CONFIG_MAX_NUM_OF_DYNAMIC_DEVICES>0)
-
-/*
- * function : add_new_device()
- *
- *
- */
-static void init_new_device(struct dev_desc_t * pdev )
-{
-	const char *module_name_str ;
-	struct included_module_t *curr_include_module;
-
-	module_name_str = pdev->module_name;
-	curr_include_module =
-		(struct included_module_t*)(((uint8_t*)&start_of_modules_stamp) + 4);
-	while ((uint8_t*)curr_include_module < &end_of_modules_stamp)
-	{
-		if (0 == strcmp(module_name_str , curr_include_module->module_name))
-		{
-			pdev->ioctl		= curr_include_module->ioctl;
-			pdev->pwrite	= curr_include_module->pwrite;
-			pdev->pread		= curr_include_module->pread;
-			pdev->callback	= curr_include_module->callback;
-			if (NULL == pdev->p_config_data)
-			{
-				pdev->p_config_data =
-						malloc(curr_include_module->module_config_struct_size);
-			}
-			pdev->p_runtime_data =
-					malloc(curr_include_module->module_runtime_struct_size);
-			break;
-		}
-		curr_include_module++;
-	}
-	CRITICAL_ERROR("module not found\n");
-}
-
-#endif
-
-
-
-#if defined(CONFIG_DYNAMIC_DEVICE_TREE)
-/*
- * function : init_device_tree()
- *
- *
- */
-void init_device_tree()
-{
-	uint32_t *src ;
-	uint32_t *dst ;
-	struct dev_desc_t * curr_pdev ;
-
-	src = (uint32_t *)CONFIG_DEVICE_TREE_LOCATION_ADDR;
-	dst = &start_of_device_tree_stamp;
-	if (src != dst)
-	{
-		while ((uint8_t*)dst < ( ((uint8_t*)&start_of_device_tree_stamp) +
-				CONFIG_DEVICE_TREE_MAXIMAL_SIZE))
-		{
-		  *dst++ = *src++; /* 4 bytes copy*/
-		}
-	}
-
-	curr_pdev =
-			(struct dev_desc_t *)(((uint8_t*)&start_of_device_tree_stamp) + 4);
-	while (*(uint8_t*)curr_pdev != END_OF_DEVICE_TREE_STAMP)
-	{
-		init_new_device(curr_pdev);
-		curr_pdev++;
-	}
-
-}
-
-AUTO_INIT_FUNCTION(init_device_tree);
-
-#endif
 
 
 
@@ -263,10 +177,10 @@ struct dev_desc_t * DEV_API_add_device(const char* module_name_str,
 		return NULL;
 	}
 
-	for (i=0 ; i < CONFIG_MAX_NUM_OF_DYNAMIC_DEVICES ; i++)
+	for (i = 0; i < CONFIG_MAX_NUM_OF_DYNAMIC_DEVICES; i++)
 	{
 		dev = &dev_descriptors[i];
-		if(0 == dev->name[0])
+		if (0 == dev->name[0])
 		{
 			char *new_str;
 			uint8_t name_str_len;
@@ -290,47 +204,11 @@ struct dev_desc_t * DEV_API_add_device(const char* module_name_str,
 
 	return NULL;
 }
+
 #endif
 
 
 #ifdef CONFIG_USE_RUNTIME_DEVICE_CONFIGURATION_BY_PARAMETER_NAMES
-/*
- * function : DEV_SET_PARAM()
- *
- *
- */
-struct dev_param_t const *get_config_param(struct dev_desc_t * pdev,
-		char *param_name_str )
-{
-	const char *module_name_str ;
-	struct included_module_t *curr_include_module;
-
-	module_name_str = pdev->module_name;
-	curr_include_module =
-		(struct included_module_t*)(((uint8_t*)&start_of_modules_stamp) + 4);
-	while ((uint8_t*)curr_include_module < &end_of_modules_stamp)
-	{
-		if (0 == strcmp(module_name_str , curr_include_module->module_name))
-		{
-			uint8_t		 size_of_config_params_arr;
-			struct dev_param_t  const *config_param;
-			config_param = curr_include_module -> config_params_arr;
-			size_of_config_params_arr =
-					curr_include_module -> size_of_config_params_arr;
-			while (size_of_config_params_arr--)
-			{
-				if (0 == strcmp(param_name_str, config_param->paramNameStr))
-				{
-					return config_param;
-				}
-				config_param++;
-			}
-			return NULL;
-		}
-		curr_include_module++;
-	}
-	return NULL;
-}
 
 /*
  * function : DEV_SET_PARAM()
@@ -348,7 +226,7 @@ uint8_t DEV_SET_PARAM(char *dev_name_str,
 
 	if(NULL == config_param) return 1;
 
-	switch(config_param->param_type)
+	switch (config_param->param_type)
 	{
 	case DEV_PARAM_TYPE_PDEVICE:
 		{
@@ -465,17 +343,5 @@ uint8_t DEV_GET_PARAM(char *dev_name_str, char *param_name_str,
 	}
 
 	return 0;
-}
-#endif
-
-#if CONFIG_MAX_NUM_OF_DYNAMIC_DEVICES > 0
-/*
- * function : DevManagment_API_GetAllDevsArray()
- *
- *
- */
-struct dev_desc_t * DevManagment_API_GetAllDevsArray(void)
-{
-	return dev_descriptors;
 }
 #endif

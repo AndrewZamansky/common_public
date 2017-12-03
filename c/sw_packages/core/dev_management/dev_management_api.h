@@ -7,12 +7,28 @@
 #include "_project_defines.h"
 #include "dev_common_ioctl_and_types.h"
 
-#define NOT_FOR_SAVE 	0
-#define FOR_SAVE 		1
+#define NOT_FOR_SAVE    0
+#define FOR_SAVE        1
+
+#define DEV_MAGIC_NUMBER    0x1B3D
+#define MODULE_MAGIC_NUMBER    0x1C3E
 
 
-#define END_OF_DEVICE_TREE_STAMP	0xF1
+#if defined(CONFIG_USE_SPECIFIC_MEMORY_LOCATION_FOR_DEVICES) &&  \
+	( (defined(CONFIG_CORTEX_M3) || defined(CONFIG_CORTEX_M4) || \
+			defined(CONFIG_CORTEX_A9) )  && defined(CONFIG_GCC) )
 
+	#define MODULES_PLACEMENT        __attribute__((section("modules_section")))
+	#define DEVICE_PLACEMENT     __attribute__((section("static_devs_section")))
+	#define DEVICE_DATA_PLACEMENT  __attribute__((section(".static_devs_data")))
+
+#else
+	#define MODULES_PLACEMENT
+
+	#define DEVICE_PLACEMENT
+
+	#define DEVICE_DATA_PLACEMENT
+#endif
 
 /**********  define API  types ************/
 
@@ -21,25 +37,25 @@
 #define STRINGIFY(X) STRINGIFY2(X)
 #define STRINGIFY2(X) #X
 
-#define STATIC_DEVICE_INCLUDE_NAME(module_name)		\
+#define STATIC_DEVICE_INCLUDE_NAME(module_name)  \
 								STATIC_DEVICE_INCLUDE_NAME2(module_name)
 
 #define STATIC_DEVICE_INCLUDE_NAME2(module_name)  module_name##_add_component.h
 
 #define ADD_CURRENT_DEV  \
-						   STRINGIFY(STATIC_DEVICE_INCLUDE_NAME(DT_DEV_MODULE))
+						STRINGIFY(STATIC_DEVICE_INCLUDE_NAME(DT_DEV_MODULE))
 
 
 
-#define EXTERN_DECLARATION_TO_STATIC_DEVICE_INST(pdev)	\
+#define EXTERN_DECLARATION_TO_STATIC_DEVICE_INST(pdev) \
 								EXTERN_DECLARATION_TO_STATIC_DEVICE_INST2(pdev)
 
-#define EXTERN_DECLARATION_TO_STATIC_DEVICE_INST2(pdev)	\
-						  extern DEVICE_PLACEMENT struct dev_desc_t inst_##pdev
+#define EXTERN_DECLARATION_TO_STATIC_DEVICE_INST2(pdev) \
+						extern DEVICE_PLACEMENT struct dev_desc_t inst_##pdev
 
-#define STATIC_DEVICE_INST(pdev)		STATIC_DEVICE_INST2(pdev)
-#define STATIC_DEVICE_INST2(pdev)		inst_##pdev
-#define P_TO_STATIC_DEVICE_INST(pdev)	&STATIC_DEVICE_INST(pdev)
+#define STATIC_DEVICE_INST(pdev)        STATIC_DEVICE_INST2(pdev)
+#define STATIC_DEVICE_INST2(pdev)       inst_##pdev
+#define P_TO_STATIC_DEVICE_INST(pdev)   &STATIC_DEVICE_INST(pdev)
 
 struct dev_desc_t;
 
@@ -48,7 +64,7 @@ typedef enum
 	DEV_PARAM_TYPE_PDEVICE,
 	DEV_PARAM_TYPE_UINT8  ,
 	DEV_PARAM_TYPE_UINT16 ,
-	DEV_PARAM_TYPE_INT	  ,
+	DEV_PARAM_TYPE_INT    ,
 	DEV_PARAM_TYPE_UINT32 ,
 	DEV_PARAM_TYPE_STRING ,
 	DEV_PARAM_TYPE_MAPPED_SET_TO_SIZE
@@ -56,22 +72,22 @@ typedef enum
 
 
 struct mapped_set_to_size_param_t {
-	char 			*nameStr;
-	size_t		 	val;
+	char     *nameStr;
+	size_t   val;
 };
 
 struct dev_param_t {
-	char 					*paramNameStr;
-	uint8_t 				paramSetIoctl;
-	uint8_t 				paramGetIoctl;
-	dev_param_types_t 		param_type;
-	void					*p_mapped_set_type_param;
-	uint8_t					mapped_set_size;
+	char               *paramNameStr;
+	uint8_t            paramSetIoctl;
+	uint8_t            paramGetIoctl;
+	dev_param_types_t  param_type;
+	void               *p_mapped_set_type_param;
+	uint8_t            mapped_set_size;
 };
 
-#define MAPPED_SET_TO_SIZE_PARAM(mapped_set_array)	&mapped_set_array , \
+#define MAPPED_SET_TO_SIZE_PARAM(mapped_set_array)  &mapped_set_array , \
 		(sizeof(mapped_set_array) / sizeof(struct mapped_set_to_size_param_t))
-#define MAPPED_SET_DUMMY_PARAM()	NULL , 0
+#define MAPPED_SET_DUMMY_PARAM()   NULL , 0
 
 
 typedef enum
@@ -86,90 +102,93 @@ typedef enum
 typedef uint8_t (*dev_ioctl_func_t)(struct dev_desc_t *adev,
 		 uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2);
 typedef size_t (*dev_pwrite_func_t)(struct dev_desc_t *adev,
-			     const   uint8_t *apData, size_t aLength, size_t aOffset);
+				const   uint8_t *apData, size_t aLength, size_t aOffset);
 typedef uint32_t (*dev_pwrite32_func_t)(struct dev_desc_t *adev,
-				  const uint8_t *apData, uint32_t aLength, uint32_t aOffset);
+					const uint8_t *apData, uint32_t aLength, uint32_t aOffset);
 typedef size_t (*dev_pread_func_t)(struct dev_desc_t *adev,
-						    uint8_t *apData , size_t aLength, size_t aOffset);
+							uint8_t *apData , size_t aLength, size_t aOffset);
 typedef uint32_t (*dev_pread32_func_t)(struct dev_desc_t *adev,
-					     uint8_t *apData, uint32_t aLength, uint32_t aOffset);
+						uint8_t *apData, uint32_t aLength, uint32_t aOffset);
 typedef size_t (*dev_read_func_t)(struct dev_desc_t *adev,
-			                             uint8_t *apData, size_t aLength);
+									uint8_t *apData, size_t aLength);
 typedef uint8_t (*dev_callback_func_t)(struct dev_desc_t *adev,
-			              uint8_t aCallback_num, void * aCallback_param1,
-			                void * aCallback_param2);
+							uint8_t aCallback_num, void * aCallback_param1,
+							void * aCallback_param2);
 
 
 struct dev_desc_t
 {
-	void*    				p_config_data;
-	void*    				p_runtime_data;
+	void*               p_config_data;
+	void*               p_runtime_data;
 #if (defined(CONFIG_DYNAMIC_DEVICE_TREE) ||  \
 		defined(CONFIG_USE_RUNTIME_DEVICE_CONFIGURATION_BY_PARAMETER_NAMES) || \
 		(CONFIG_MAX_NUM_OF_DYNAMIC_DEVICES>0))
-	char	*module_name;
+	char                *module_name;
 #endif
 #if defined(CONFIG_USE_DEVICE_NAME_STRINGS)
-	char 					*name;
+	char                 *name;
 #endif
-	dev_ioctl_func_t  		ioctl;
-	dev_pwrite_func_t  		pwrite;
-	dev_pread_func_t  		pread;
-	dev_callback_func_t  	callback;
-
+	dev_ioctl_func_t     ioctl;
+	dev_pwrite_func_t    pwrite;
+	dev_pread_func_t     pread;
+	dev_callback_func_t  callback;
+#ifdef CONFIG_USE_SPECIFIC_MEMORY_LOCATION_FOR_DEVICES
+	void                 *magic_number;
+#endif
 };
 
 
 
 struct included_module_t
 {
-	char *module_name;
-	dev_ioctl_func_t  		ioctl;
-	dev_pwrite_func_t  		pwrite;
-	dev_pread_func_t  		pread;
-	dev_callback_func_t  	callback;
+	char                 *module_name;
+	dev_ioctl_func_t     ioctl;
+	dev_pwrite_func_t    pwrite;
+	dev_pread_func_t     pread;
+	dev_callback_func_t  callback;
 #ifdef CONFIG_USE_RUNTIME_DEVICE_CONFIGURATION_BY_PARAMETER_NAMES
-	struct  dev_param_t  const		*config_params_arr;
-	uint8_t					size_of_config_params_arr;
+	struct dev_param_t   const *config_params_arr;
+	uint8_t              size_of_config_params_arr;
 #endif
-	uint8_t					module_config_struct_size;
-	uint8_t					module_runtime_struct_size;
+	uint8_t              module_config_struct_size;
+	uint8_t              module_runtime_struct_size;
+	void                 *magic_number;
 };
 
 /**********  define API  functions  ************/
 
 /*  get data functions */
-#define DEV_GET_CONFIG_DATA_POINTER(dev)	\
+#define DEV_GET_CONFIG_DATA_POINTER(dev)   \
 						(((struct dev_desc_t *)dev)->p_config_data)
-#define DEV_GET_RUNTIME_DATA_POINTER(dev)	\
+#define DEV_GET_RUNTIME_DATA_POINTER(dev)  \
 						(((struct dev_desc_t *)dev)->p_runtime_data)
 
 /*  ioctl functions */
-#define DEV_IOCTL		DEV_IOCTL_1_PARAMS
-uint8_t	DEV_IOCTL_0_PARAMS(struct dev_desc_t * dev, uint8_t ioctl_num);
-uint8_t	DEV_IOCTL_1_PARAMS(struct dev_desc_t * dev,
+#define DEV_IOCTL        DEV_IOCTL_1_PARAMS
+uint8_t DEV_IOCTL_0_PARAMS(struct dev_desc_t * dev, uint8_t ioctl_num);
+uint8_t DEV_IOCTL_1_PARAMS(struct dev_desc_t * dev,
 						uint8_t ioctl_num, void *param1);
-#define DEV_IOCTL_2_PARAMS(dev, ioctl_num, ioctl_param1, ioctl_param2)  	\
+#define DEV_IOCTL_2_PARAMS(dev, ioctl_num, ioctl_param1, ioctl_param2)    \
 		(dev)->ioctl(dev ,ioctl_num,(void*)ioctl_param1,(void*)ioctl_param2)
 
 
 /* callback functions */
-uint8_t	DEV_CALLBACK_0_PARAMS(struct dev_desc_t * dev, uint8_t ioctl_num);
-uint8_t	DEV_CALLBACK_1_PARAMS(struct dev_desc_t * dev,
+uint8_t DEV_CALLBACK_0_PARAMS(struct dev_desc_t * dev, uint8_t ioctl_num);
+uint8_t DEV_CALLBACK_1_PARAMS(struct dev_desc_t * dev,
 						uint8_t ioctl_num, void *param1);
 #define DEV_CALLBACK_2_PARAMS(dev, callback_num, param1, param2)    \
-	 	 dev->callback(dev, callback_num,(void*)param1, (void*)param2)
+			dev->callback(dev, callback_num,(void*)param1, (void*)param2)
 
 
 #define DEV_PWRITE(dev, data, len, offset)  dev->pwrite(dev, data, len, offset)
 #define DEV_PWRITE32(dev, data, len, offset)    \
 				((dev_pwrite32_func_t)(dev)->pwrite)(dev, data, len, offset)
-size_t	DEV_WRITE(struct dev_desc_t *adev,
+size_t  DEV_WRITE(struct dev_desc_t *adev,
 			const uint8_t *apData, size_t aLength);
 #define DEV_PREAD(dev, data, len, offset)    dev->pread(dev, data, len, offset)
 #define DEV_PREAD32(dev, data, len, offset)  \
 					((dev_pread32_func_t)(dev)->pread)(dev, data, len, offset)
-#define DEV_READ(dev, data, len)    		\
+#define DEV_READ(dev, data, len)    \
 						((dev_read_func_t)(dev)->pread)(dev, data, len)
 
 uint8_t DEV_API_dummy_ioctl_func( struct dev_desc_t *adev,
