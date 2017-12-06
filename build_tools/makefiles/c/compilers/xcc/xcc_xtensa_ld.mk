@@ -3,17 +3,18 @@ ifdef CONFIG_REDEFINED_OUTPUT_NAME
     OUTPUT_NAME :=$(CONFIG_REDEFINED_OUTPUT_NAME)
     HISTORY_OUTPUT_NAME :=$(CONFIG_REDEFINED_OUTPUT_NAME)_$(MAIN_VERSION_STR).so
 else
-#    ifdef CONFIG_GCC_OUTPUT_TYPE_DYNAMIC_LIBRARY
-#        OUTPUT_NAME :=lib$(FULL_PROJECT_NAME).so
-#        HISTORY_OUTPUT_NAME :=lib$(FULL_PROJECT_NAME)_$(MAIN_VERSION_STR).so
-#    else ifdef CONFIG_GCC_OUTPUT_TYPE_APPLICATION
+    ifdef CONFIG_OUTPUT_TYPE_STATIC_LIBRARY
+        OUTPUT_NAME :=lib$(FULL_PROJECT_NAME).a
+        HISTORY_OUTPUT_NAME :=lib$(FULL_PROJECT_NAME)_$(MAIN_VERSION_STR).a
+    else ifdef CONFIG_OUTPUT_TYPE_APPLICATION
         OUTPUT_NAME :=$(FULL_PROJECT_NAME).elf
         HISTORY_OUTPUT_NAME :=$(FULL_PROJECT_NAME)_$(MAIN_VERSION_STR).elf
-#    else
-#        $(info err: unknown output type)
-#        $(call exit,1)
-#    endif
+    else
+        $(info err: unknown output type)
+        $(call exit,1)
+    endif
 endif
+
 
 LINKER_OUTPUT := $(OUT_DIR)/$(OUTPUT_NAME)
 LINKER_HISTORY_OUTPUT :=$(OUT_DIR_HISTORY)/$(HISTORY_OUTPUT_NAME)
@@ -35,14 +36,18 @@ endif
 #{{{{{{{{   LDFLAGS PREPARATIONS   {{{{{{{{
 
 #init LDFLAGS
-LDFLAGS :=
+LDFLAGS := 
 
 LDFLAGS += --xtensa-core=$(XCC_CORE)
 LDFLAGS += --xtensa-system=$(CORE_CONFIG_DIR)
 LDFLAGS += -Wl,-Map=$(OUT_DIR)/$(OUTPUT_NAME).map
 
-
+GLOBAL_LDFLAGS := $(sort $(GLOBAL_LDFLAGS))# remove duplicates
 LDFLAGS := $(GLOBAL_LDFLAGS) $(LDFLAGS)
+
+ifndef CONFIG_INCLUDE_TOOLCHAIN_LIBRARIES
+    LDFLAGS += -nostdlib
+endif
 
 #}}}}}}}}  END OF LDFLAGS PREPARATIONS }}}}}}}}
 
@@ -63,6 +68,7 @@ ifdef CONFIG_INCLUDE_TOOLCHAIN_LIBRARIES
         SPEED_CRITICAL_STD_LIBS := $(STD_LIBRARIES)
     endif
 endif
+GLOBAL_LIBS :=$(sort $(GLOBAL_LIBS)) #remove duplicates
 LIBS := $(patsubst lib%,-l%,$(GLOBAL_LIBS))
 LIBS := $(patsubst %.a,%,$(LIBS))
 
@@ -135,16 +141,22 @@ ifeq ($(findstring y,$(CONFIG_USED_FOR_SEMIHOSTING_UPLOADING)),y)
 endif
 
 
+ifdef CONFIG_OUTPUT_TYPE_STATIC_LIBRARY
+    LINKER_CMD =$(AR) r $(LINKER_OUTPUT) @$(ALL_OBJECTS_LIST_FILE)
+else ifdef CONFIG_OUTPUT_TYPE_APPLICATION
+    LINKER_CMD_ARG :=$(LDFLAGS) $(LIBRARIES_DIRS) 
+    LINKER_CMD_ARG += -Wl,@$(ALL_OBJECTS_LIST_FILE)  $(LIBS)
+    LINKER_CMD_ARG += -o $(LINKER_OUTPUT)
+    LINKER_CMD_ARG :=$(subst \,/,$(LINKER_CMD_ARG))# ipa receives only '/'
+    LINKER_CMD :=cd /D $(OUT_DIR)/ & $(LD) $(LINKER_CMD_ARG)
+endif
 
-
-LINKER_CMD =$(LD) $(LDFLAGS)
-LINKER_CMD += -Wl,@$(ALL_OBJECTS_LIST_FILE) 
-LINKER_CMD += -o $(LINKER_OUTPUT)
 
 LINKER_TO_ASM_CMD = $(XCC_ROOT_DIR)/bin/xt-objdump
 LINKER_TO_ASM_CMD += --xtensa-core=$(XCC_CORE)
 LINKER_TO_ASM_CMD += --xtensa-system=$(CORE_CONFIG_DIR)
 LINKER_TO_ASM_CMD +=-d -S $(LINKER_OUTPUT) > $(OUTPUT_ASM)
+
 
 export
 #	$(CREATE_LDS_CMD)

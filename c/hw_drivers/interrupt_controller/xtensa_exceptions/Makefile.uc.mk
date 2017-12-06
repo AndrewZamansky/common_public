@@ -1,21 +1,21 @@
 
-INCLUDE_THIS_COMPONENT := $(CONFIG_XTENSA_XCC)
+ifeq (y,$(CONFIG_OUTPUT_TYPE_APPLICATION))
+    INCLUDE_THIS_COMPONENT := $(CONFIG_XTENSA_XCC)
+endif
 
+#INCLUDE_DIR +=
 
-#INCLUDE_DIR =  
+#DEFINES +=
 
-#DEFINES = 
+#CFLAGS +=
 
-#CFLAGS = 
+#ASMFLAGS +=
 
-#ASMFLAGS =  
-
-
-SRC = xtensa_vectors.S
+SRC += xtensa_vectors.S
 SRC += xtensa_intr_asm.S
 SRC += xtensa_intr.c
 
-VPATH = src_xcc
+VPATH += | src_xcc
 
 ifdef CONFIG_CPU_SPECIFIC_FILES_ARE_SPEAD_CRITICAL 
     #SPEED_CRITICAL_FILES := $(SPEED_CRITICAL_FILES) $(SRC)

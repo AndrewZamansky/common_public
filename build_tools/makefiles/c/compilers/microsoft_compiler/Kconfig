@@ -1,20 +1,20 @@
 menu "Microsoft compiler options"
 
+if OUTPUT_TYPE_APPLICATION && (!JUCE_VST_PLUGIN)
+
 choice
 	prompt "output type"
 	default MSVC_OUTPUT_TYPE_CONSOLE_APPLICATION
 
 config MSVC_OUTPUT_TYPE_WINDOWS_APPLICATION
-	depends on !JUCE_VST_PLUGIN
 	bool "windows application"
 
 config MSVC_OUTPUT_TYPE_CONSOLE_APPLICATION
-	depends on !JUCE_VST_PLUGIN
 	bool "console application"
 
-config MSVC_OUTPUT_TYPE_DLL
-	bool "dll"
 endchoice
+
+endif ## from "if OUTPUT_TYPE_APPLICATION"
 
 
 choice

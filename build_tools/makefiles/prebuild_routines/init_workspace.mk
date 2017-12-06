@@ -2,6 +2,7 @@
 ### the following section we need to run just one time per build
 ifndef COMMON_INIT_SECTION_THAT_SHOULD_RUN_ONCE
 
+# this is common_public/build_tools folder :
 BUILD_TOOLS_ROOT_DIR :=$(COMMON_PROJECT_MAKEFILE_DIR)/../..
 MAKEFILES_ROOT_DIR :=$(BUILD_TOOLS_ROOT_DIR)/makefiles
 PREBUILD_ROUTINES_DIR :=$(MAKEFILES_ROOT_DIR)/prebuild_routines

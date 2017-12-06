@@ -13,12 +13,16 @@ config XTENSA_SIM
 	bool "simulator"
 	select PUBLIC_SOC_SELECTED
 
+config XTENSA_FPGA_SIM
+	bool "fpga simulator"
+	select PUBLIC_SOC_SELECTED
+
 endchoice
 
-if XTENSA_SIM
+if XTENSA_SIM || XTENSA_FPGA_SIM
 
 choice
-	prompt "CORE"
+	prompt "Xtensa core configuration"
 	default XTENSA_LX6_
 
 config XTENSA_LX6_
@@ -33,6 +37,10 @@ config XTENSA_HIFI3_BD5_
 	bool "hifi3_bd5"
 	select XTENSA_HIFI3_BD5
 
+config XTENSA_FUSIONF1_FPGA_2
+	bool "FusionF1_FPGA_2"
+	depends on XCC_TOOLS_VER_2017_7
+
 endchoice
 
 endif
@@ -43,6 +51,10 @@ endif
 
 if XTENSA_SIM
 source "$KCONFIG_PUBLIC_START_DIR/hw_drivers/arch/XTENSA/soc/sim/Kconfig"
+endif
+
+if XTENSA_FPGA_SIM
+source "$KCONFIG_PUBLIC_START_DIR/hw_drivers/arch/XTENSA/soc/fpga_sim/Kconfig"
 endif
 
 config XTENSA_LX6

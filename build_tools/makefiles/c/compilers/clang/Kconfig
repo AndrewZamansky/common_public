@@ -1,18 +1,6 @@
 menu "clang options"
 
 choice
-	prompt "output type"
-	default CLANG_OUTPUT_TYPE_APPLICATION
-
-config CLANG_OUTPUT_TYPE_APPLICATION
-	bool "application"
-
-config CLANG_OUTPUT_TYPE_DYNAMIC_LIBRARY
-	bool "dynamic library"
-endchoice
-
-
-choice
 	prompt "Optimization Level"
 	default GCC_OPTIMIZE_NONE
 

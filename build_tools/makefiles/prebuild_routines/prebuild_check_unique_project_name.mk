@@ -10,7 +10,7 @@ ifeq ($(strip $(CONFIG_PROJECT_NAME)),)
 endif
 
 CONFIG_PROJECT_NAME :=$(strip $(CONFIG_PROJECT_NAME))
-CONFIG_PROJECT_NAME_SUFFIX :=$(strip $(CONFIG_PROJECT_NAME_SUFFIX))
+CONFIG_NAME_SUFFIX_IN_BUNDLE :=$(strip $(CONFIG_NAME_SUFFIX_IN_BUNDLE))
 
 # to improve speed of unique name recursive test in all subdirectoris ,
 # following list of files will stop the recursivity of rwildcard function
@@ -32,14 +32,14 @@ ALL_CONFIG_FILES := $(strip $(ALL_CONFIG_FILES))
 TEST_MK :=$(MAKEFILES_ROOT_DIR)/prebuild_routines/_prebuild_check_unique_project_name.mk
 INCLUDE_ALL_CONFIG_FILES :=$(patsubst %,% $(TEST_MK),$(ALL_CONFIG_FILES))
 
-ifeq (,$(CONFIG_PROJECT_NAME_SUFFIX))
+ifeq (,$(CONFIG_NAME_SUFFIX_IN_BUNDLE))
    FULL_CURR_PROJECT_NAME :=$(CONFIG_PROJECT_NAME)
 else
-   FULL_CURR_PROJECT_NAME :=$(CONFIG_PROJECT_NAME)_$(CONFIG_PROJECT_NAME_SUFFIX)
+   FULL_CURR_PROJECT_NAME :=$(CONFIG_PROJECT_NAME)_$(CONFIG_NAME_SUFFIX_IN_BUNDLE)
 endif
 
 CONFIG_PROJECT_NAME:=dummy_1X2Y
-CONFIG_PROJECT_NAME_SUFFIX:=dummy_1X2Y
+CONFIG_NAME_SUFFIX_IN_BUNDLE:=dummy_1X2Y
 include $(INCLUDE_ALL_CONFIG_FILES)
 
 all :

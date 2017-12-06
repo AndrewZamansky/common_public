@@ -135,6 +135,23 @@ endchoice
 endif
 
 
+choice
+	prompt "output type"
+	default OUTPUT_TYPE_APPLICATION
+
+config OUTPUT_TYPE_APPLICATION
+	bool "application"
+
+config OUTPUT_TYPE_STATIC_LIBRARY
+	depends on XTENSA_XCC
+	bool "static library"
+
+config OUTPUT_TYPE_DYNAMIC_LIBRARY
+	depends on HEXAGON_COMPILER || ANDROID_NDK_COMPILER || MICROSOFT_COMPILER
+	bool "dynamic library"
+endchoice
+
+
 if GCC || GPP || MIN_GW_GCC || MIN_GW_GPP || PIC_C32 || PIC_XC32 || ANDROID_NDK_COMPILER || XTENSA_GCC
 source "$KCONFIG_PUBLIC_START_DIR/../build_tools/makefiles/c/compilers/gcc/Kconfig"
 endif

@@ -17,6 +17,12 @@ endef
 #usage :
 #    DUMMY := $(call ADD_TO_GLOBAL_LIBRARIES , var )
 
+define ADD_TO_GLOBAL_LDFLAGS =
+    $(eval GLOBAL_LDFLAGS := $(GLOBAL_LDFLAGS) $(1))
+endef
+#usage :
+#    DUMMY := $(call ADD_TO_GLOBAL_LDFLAGS,var)
+
 define ADD_TO_GLOBAL_LIBRARIES_PATH =
     $(eval GLOBAL_LIBS_PATH := $(GLOBAL_LIBS_PATH) $(1))
 endef

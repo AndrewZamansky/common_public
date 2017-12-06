@@ -110,17 +110,6 @@ endif
 ##### ANDROID_NDK_COMPILER  #########
 if ANDROID_NDK_COMPILER
 
-choice
-	prompt "output type"
-	default GCC_OUTPUT_TYPE_APPLICATION
-
-config GCC_OUTPUT_TYPE_APPLICATION
-	bool "application"
-
-config GCC_OUTPUT_TYPE_DYNAMIC_LIBRARY
-	bool "dynamic library"
-endchoice
-
 endif
 
 

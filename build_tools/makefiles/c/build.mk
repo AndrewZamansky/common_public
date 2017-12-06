@@ -11,10 +11,11 @@ GLOBAL_CFLAGS :=
 GLOBAL_ASMFLAGS :=
 GLOBAL_LDFLAGS :=
 
+include $(MAKEFILES_ROOT_DIR)/common.mk
+
 include $(MAKEFILES_ROOT_DIR)/c/init_for_c.mk
 
 
-include $(MAKEFILES_ROOT_DIR)/common.mk
 
 
 include $(COMPONENTS_MK)
@@ -53,7 +54,17 @@ build_outputs :  $(SUBDIRS)
 
 $(SUBDIRS):
 	$(eval COMMON_CC := $(MAKEFILES_ROOT_DIR)/c/compilers/common_cc.mk)
+	$(eval SRC :=)
+	$(eval VPATH :=)
+	$(eval CFLAGS :=)
+	$(eval DEFINES :=)
+	$(eval ASMFLAGS :=)
 	$(eval export COMMON_CC)
+	$(eval export SRC)
+	$(eval export CFLAGS)
+	$(eval export DEFINES)
+	$(eval export ASMFLAGS)
+	$(eval export VPATH)
 	$(eval export TARGET)
 	@echo - $(patsubst $(PARENT_OF_COMMON_PUBLIC_DIR)/%,%,$@)
 	$(MAKE) -C $@ -f Makefile.uc.mk $(TARGET)

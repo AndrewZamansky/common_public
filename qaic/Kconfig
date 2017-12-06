@@ -8,7 +8,7 @@ menuconfig PROJECT_IS_PART_OF_BUNDLE
 	bool "this project is part of bundle"
 	default n
 
-config PROJECT_NAME_SUFFIX
+config NAME_SUFFIX_IN_BUNDLE
 	string "Project Name Suffix"
 	depends on PROJECT_IS_PART_OF_BUNDLE
 	default ""

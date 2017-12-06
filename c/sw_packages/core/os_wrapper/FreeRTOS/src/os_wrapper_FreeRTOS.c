@@ -11,8 +11,11 @@
 
 #include "_project.h"
 
-#define DEBUG
-#include "PRINTF_api.h"
+#ifdef CONFIG_TEST_TASK_STACK
+	#define DEBUG
+	#include "PRINTF_api.h"
+#endif
+
 #include "os_wrapper.h"
 #include "hw_timer_api.h"
 #ifdef CONFIG_INCLUDE_HEARTBEAT
