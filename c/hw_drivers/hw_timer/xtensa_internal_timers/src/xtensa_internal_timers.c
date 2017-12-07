@@ -37,8 +37,8 @@
 
 /**********   external variables    **************/
 
-extern void _tensa_internal_timer_timer_asm_init(void);
-extern void _tensa_internal_timer_timer_asm_rearm(void);
+extern void _xtensa_internal_timer_timer_asm_init(void);
+extern void _xtensa_internal_timer_timer_asm_rearm(void);
 
 
 /***********   local variables    **************/
@@ -64,7 +64,7 @@ static void xtensa_internal_timer_tick_handler( struct dev_desc_t *adev)
 	config_handle = DEV_GET_CONFIG_DATA_POINTER(adev);
 	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
 
-	_tensa_internal_timer_timer_asm_rearm();
+	_xtensa_internal_timer_timer_asm_rearm();
 
 	runtime_handle->currentTick++;
 	timer_callback = config_handle->timer_callback;
@@ -111,7 +111,7 @@ uint8_t xtensa_internal_timers_ioctl( struct dev_desc_t *adev,
 
 		 /* set rate */
 		_xtensa_internal_timers_tick_divisor  =
-								(core_clock_rate/config_handle->rate) ;
+								(core_clock_rate / config_handle->rate) ;
 
 		timer_index = config_handle->timer_index;
 		switch (timer_index)
@@ -119,7 +119,7 @@ uint8_t xtensa_internal_timers_ioctl( struct dev_desc_t *adev,
 		case 0:
 			xt_set_interrupt_handler(XCHAL_TIMER_INTERRUPT(0),
 					 (xt_handler)xtensa_internal_timer_tick_handler, adev);
-			_tensa_internal_timer_timer_asm_init();
+			_xtensa_internal_timer_timer_asm_init();
 			xt_ints_on( 1 << XCHAL_TIMER_INTERRUPT(0) );
 			break;
 		default:

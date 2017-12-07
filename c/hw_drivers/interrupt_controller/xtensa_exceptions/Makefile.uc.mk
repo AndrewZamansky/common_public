@@ -11,9 +11,12 @@ endif
 
 #ASMFLAGS +=
 
-SRC += xtensa_vectors.S
-SRC += xtensa_intr_asm.S
 SRC += xtensa_intr.c
+
+ifeq (y,$(CONFIG_FREE_RTOS))
+    SRC += xtensa_intr_asm.S
+    SRC += xtensa_vectors.S
+endif
 
 VPATH += | src_xcc
 

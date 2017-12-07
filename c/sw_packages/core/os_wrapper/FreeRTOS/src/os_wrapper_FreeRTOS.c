@@ -3,9 +3,6 @@
  *
  *
  *
- *
- *
- *
  */
 
 
@@ -22,7 +19,7 @@
 #include "heartbeat_api.h"
 #endif
 
-extern void os_start_arch_related_components(void) ;
+extern void os_start_arch_related_components(void);
 extern void xPortSysTickHandler(void);
 
 static struct dev_desc_t * l_timer_dev = NULL;
@@ -32,7 +29,7 @@ static struct dev_desc_t * l_heartbeat_dev = NULL;
 void *pvPortRealloc( void *p , size_t xWantedSize )
 {
 	void *pvReturn = pvPortMalloc(xWantedSize);
-	if( pvReturn != NULL )		memcpy(pvReturn,p,xWantedSize);
+	if( pvReturn != NULL )  memcpy(pvReturn,p,xWantedSize);
 	vPortFree(p);
 
 	#if( configUSE_MALLOC_FAILED_HOOK == 1 )
@@ -48,7 +45,8 @@ void *pvPortRealloc( void *p , size_t xWantedSize )
 	return pvReturn;
 }
 
-void *os_create_task_FreeRTOS(char *taskName , void (*taskFunction)(void *apParam),
+void *os_create_task_FreeRTOS(char *taskName,
+		void (*taskFunction)(void *apParam),
 		void *taskFunctionParam , uint16_t stackSize , uint8_t priority)
 {
 	TaskHandle_t xHandle=NULL;
@@ -59,7 +57,7 @@ void *os_create_task_FreeRTOS(char *taskName , void (*taskFunction)(void *apPara
 }
 
 #ifndef portEND_SWITCHING_ISR
-	#define portEND_SWITCHING_ISR(...)		portYIELD_FROM_ISR()
+	#define portEND_SWITCHING_ISR(...)   portYIELD_FROM_ISR()
 #endif
 
 uint8_t os_queue_send_immediate(os_queue_t queue ,  void * pData  )
@@ -68,7 +66,8 @@ uint8_t os_queue_send_immediate(os_queue_t queue ,  void * pData  )
 	BaseType_t xHigherPriorityTaskWoken ;
 
 	xHigherPriorityTaskWoken = pdFALSE ;
-	retVal = xQueueSendFromISR( queue, ( void * ) pData,  &xHigherPriorityTaskWoken );
+	retVal = xQueueSendFromISR( queue,
+			( void * ) pData,  &xHigherPriorityTaskWoken );
 	portEND_SWITCHING_ISR( xHigherPriorityTaskWoken );
 	return retVal;
 
@@ -102,7 +101,7 @@ void vApplicationIdleHook()
 #ifdef CONFIG_INCLUDE_HEARTBEAT
 	if(NULL != l_heartbeat_dev)
 	{
-		DEV_IOCTL_0_PARAMS(l_heartbeat_dev , HEARTBEAT_API_CALL_FROM_IDLE_TASK );
+		DEV_IOCTL_0_PARAMS(l_heartbeat_dev , HEARTBEAT_API_CALL_FROM_IDLE_TASK);
 	}
 #endif
 }
@@ -114,8 +113,9 @@ void vApplicationIdleHook()
  */
 void vPortSetupTimerInterrupt( void )
 {
-	DEV_IOCTL_1_PARAMS(l_timer_dev , IOCTL_TIMER_CALLBACK_SET , system_tick_callback);
-	DEV_IOCTL_0_PARAMS(l_timer_dev , IOCTL_DEVICE_START );
+	DEV_IOCTL_1_PARAMS(l_timer_dev,
+					IOCTL_TIMER_CALLBACK_SET, system_tick_callback);
+	DEV_IOCTL_0_PARAMS(l_timer_dev, IOCTL_DEVICE_START );
 }
 
 

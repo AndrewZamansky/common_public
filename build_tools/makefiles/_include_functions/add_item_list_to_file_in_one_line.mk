@@ -27,7 +27,7 @@ ifneq ($(LIST_FILE_NAME_TRUNCATE),)
     ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
         DUMMY:=$(shell echo|set /p=$(wordlist 1, 1,$(ITEMS))>$(LIST_FILE_NAME))
     else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX)
-        DUMMY:=$(shell echo >$(LIST_FILE_NAME))    
+        DUMMY:=$(shell echo >$(LIST_FILE_NAME))
     endif
     ITEMS :=$(wordlist  2,1000000,$(ITEMS))
 else    

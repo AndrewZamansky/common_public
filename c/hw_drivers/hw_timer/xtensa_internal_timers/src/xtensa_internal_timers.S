@@ -57,15 +57,15 @@
 
 /*
 ****************************************************************************
-*                void _tensa_internal_timer_timer_asm_rearm(void)
+*                void _xtensa_internal_timer_timer_asm_rearm(void)
 *
 *
 *******************************************************************************
 */
-    .globl  _tensa_internal_timer_timer_asm_rearm
-    .type   _tensa_internal_timer_timer_asm_rearm,@function
+    .globl  _xtensa_internal_timer_timer_asm_rearm
+    .type   _xtensa_internal_timer_timer_asm_rearm,@function
     .align  4
-_tensa_internal_timer_timer_asm_rearm:
+_xtensa_internal_timer_timer_asm_rearm:
 
     /*
     Xtensa timers work by comparing a cycle counter with a preset value.
@@ -102,7 +102,7 @@ _tensa_internal_timer_timer_asm_rearm:
 
 /*
 ****************************************************************************
-*                void _tensa_internal_timer_timer_asm_init(void)
+*                void _xtensa_internal_timer_timer_asm_init(void)
 *
 * Initialize timer and timer interrrupt
 * handler (_xt_tick_divisor_init() has already been been called).
@@ -110,10 +110,10 @@ _tensa_internal_timer_timer_asm_rearm:
 *
 *******************************************************************************
 */
-    .globl  _tensa_internal_timer_timer_asm_init
-    .type   _tensa_internal_timer_timer_asm_init,@function
+    .globl  _xtensa_internal_timer_timer_asm_init
+    .type   _xtensa_internal_timer_timer_asm_init,@function
     .align  4
-_tensa_internal_timer_timer_asm_init:
+_xtensa_internal_timer_timer_asm_init:
 
     ENTRY(16)
 

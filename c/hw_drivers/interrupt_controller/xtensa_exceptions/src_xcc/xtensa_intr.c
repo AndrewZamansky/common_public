@@ -34,7 +34,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "irq_api.h"
 #include "xtensa_ops.h"
 
-
+#ifdef CONFIG_FREE_RTOS
 /* Handler table is in xtensa_intr_asm.S */
 
 extern xt_exc_handler _xt_exception_table[XCHAL_EXCCAUSE_NUM];
@@ -124,6 +124,17 @@ xt_handler xt_set_interrupt_handler(int n, xt_handler f, void * arg)
 
     return ((old == &xt_unhandled_interrupt) ? 0 : old);
 }
+
+#else
+
+xt_handler xt_set_interrupt_handler(int n, xt_handler f, void * arg)
+{
+	_xtos_set_interrupt_handler_arg(n, f, arg);
+}
+
+
+#endif
+
 
 #define UNINITIALIZED_INT_ENABLE_VALUES	0xffffffff
 static uint32_t last_intenable_val = UNINITIALIZED_INT_ENABLE_VALUES;
