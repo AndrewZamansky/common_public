@@ -48,8 +48,18 @@
 
 /********  local defs *********************/
 
-
-
+/*
+ * to enable semihosting run following set of gdb commands,
+ * or add these commands to list of commands that are executed
+ * automatically on connection
+ *
+ * break main
+ * commands
+ * set var global_enable_semihosting=1
+ * end
+ *
+ */
+volatile uint8_t global_enable_semihosting = 0;
 
 /**
  * semihosting_pwrite()
@@ -62,9 +72,11 @@ size_t semihosting_pwrite( struct dev_desc_t *adev,
 	struct semihosting_instance_t *handle;
 	struct dev_desc_t *   callback_dev;
 
+	if (0 == global_enable_semihosting) return 0;
+
 	handle = DEV_GET_CONFIG_DATA_POINTER(adev);
 	callback_dev = handle->callback_dev;
-	printf(apData);
+	puts(apData);
 	if(NULL != callback_dev)
 	{
 		/* !!! to avoid recursivity in

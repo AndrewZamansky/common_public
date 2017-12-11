@@ -53,12 +53,6 @@ LOCAL_HEADER_FILES_DEPS := $(patsubst %,%/*.h,$(INCLUDE_DIR) $(CURRENT_COMPILE_D
 HEADER_FILES_DEPS := $(wildcard $(GLOBAL_HEADER_FILES_DEPS) $(LOCAL_HEADER_FILES_DEPS))
 
 
-ifdef CREATING_ARCHIVE
-    CURR_DIR := $(patsubst %/,%,$(dir $(abspath $(firstword $(MAKEFILE_LIST)))))
-    LOCAL_DIRS_FOR_EXPORTS := $(filter $(PARENT_OF_COMMON_PUBLIC_DIR)%,$(CURRENT_COMPILE_DIRS) $(INCLUDE_DIR))
-    LOCAL_DIRS_FOR_EXPORTS := $(patsubst $(CURR_DIR)/%,%,$(realpath $(LOCAL_DIRS_FOR_EXPORTS)))
-    LOCAL_DIRS_FOR_EXPORTS :=  $(patsubst $(PARENT_OF_COMMON_PUBLIC_DIR)/%,$(WORKSPACE_NAME)/%,$(LOCAL_DIRS_FOR_EXPORTS))#make folder relative to workspace
-endif
 
 CURR_OBJ_DIR := $(OBJ_DIR)/$(CURRENT_COMPILATION_DIR_NAME)
 ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS) 	 
@@ -102,6 +96,8 @@ ALL_INCLUDE_DIRS :=$(subst $(APP_ROOT_DIR),%APP_ROOT_DIR%,$(ALL_INCLUDE_DIRS))
 
 $(CURR_OBJ_DIR)/%.o: %.c $(HEADER_FILES_DEPS) $(APP_ROOT_DIR)/.config
 	$(info .    Compiling $<)
+	$(eval SRC_FILE := $(realpath $<))
+	$(info .    Compiling $(SRC_FILE))
 	$(SET_CC_ENV_VARS)& $(CC) $(GLOBAL_CFLAGS) $(CFLAGS) $(ALL_INCLUDE_DIRS) $(ALL_DEFINES) $(CC_OUTPUT_FLAG_AND_FILE) $<
 	
 #	open line to create preproccesor file

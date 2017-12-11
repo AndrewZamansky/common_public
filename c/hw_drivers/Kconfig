@@ -29,13 +29,13 @@ menuconfig INCLUDE_SEMIHOSTING
 
 config ARM_SEMIHOSTING_CONFIG_ENABLE_RX
 	bool   "enable rx of semihosting"
-	depends on INCLUDE_SEMIHOSTING
+	depends on INCLUDE_SEMIHOSTING || CORTEX_M3 || CORTEX_M4 || CORTEX_A9
 	select INCLUDE_PRINTF
 	default n
 	
 config ARM_SEMIHOSTING_RX_BUFFER
 	int   "semihostint rx buffer size"
-	depends on INCLUDE_SEMIHOSTING
+	depends on ARM_SEMIHOSTING_CONFIG_ENABLE_RX
 	default 32	
 ######## end of semihosting configurations #########	
 
