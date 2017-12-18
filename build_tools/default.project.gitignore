@@ -9,3 +9,4 @@ zOUT_history
 *.bak
 *.old
 .svn
+*.pyc
