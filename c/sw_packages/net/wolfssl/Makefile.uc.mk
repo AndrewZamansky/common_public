@@ -14,7 +14,7 @@ ifeq ($(strip $(CONFIG_INCLUDE_WOLFSSL)),y)
     endif
 
 	# test if current commit and branch of wolfssl git is the same as required by application
-	CURR_GIT_REPOSITORY_DIR :=$(WOLFSSL_PATH)
+	CURR_GIT_REPO_DIR :=$(WOLFSSL_PATH)
 	CURR_GIT_COMMIT_HASH_VARIABLE :=CONFIG_WOLFSSL_GIT_COMMIT_HASH
 	CURR_GIT_BUNDLE :=$(CURR_WOLFSSL_COMPONENT_LOCATION)/wolfssl.bundle
 	include $(MAKEFILES_ROOT_DIR)/_include_functions/git_prebuild_repo_check.mk

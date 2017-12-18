@@ -22,6 +22,10 @@ config REDEFINED_OUTPUT_NAME
 	depends on !OUTPUT_NAME_CHOOSEN_AUTOMATICALLY
 	default "out"
 
+config USE_SVN
+	bool "use SVN as additional source control"
+	default n
+
 choice
 	prompt "Architecture"
 	default HOST
@@ -73,10 +77,16 @@ menuconfig USE_COMMON_PRIVATE_PACKAGES
 	default n
 
 if 	USE_COMMON_PRIVATE_PACKAGES
+
 source "$KCONFIG_PRIVATE_START_DIR/Kconfig"
 config COMMON_PRIVATE_GIT_COMMIT_HASH
 	string "common private git commit hash"
+	
 	default ""
+config COMMON_PRIVATE_SVN_REVISION
+	string "common private svn revision"
+	default ""
+	
 endif
 
 
@@ -86,4 +96,8 @@ config CPU_CALCULATE_CRC32
 
 config COMMON_PUBLIC_GIT_COMMIT_HASH
 	string "common public git commit hash"
+	default ""
+
+config COMMON_PUBLIC_SVN_REVISION
+	string "common public svn revision"
 	default ""

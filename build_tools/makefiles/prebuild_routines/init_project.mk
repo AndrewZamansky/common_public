@@ -43,6 +43,10 @@ $(info ---- unique project name test passed ---- )
 
 include $(PREBUILD_ROUTINES_DIR)/git_prebuild_routines.mk
 
+ifeq (y,$(CONFIG_USE_SVN))
+    include $(PREBUILD_ROUTINES_DIR)/svn_prebuild_routines.mk
+endif
+
 
 ifneq ($(REDEFINE_OUTPUT_DIR),)
     OBJ_DIR :=$(REDEFINE_OUTPUT_DIR)/$(FULL_PROJECT_NAME)/zOBJ

@@ -1,12 +1,27 @@
+### C/C++ ###
 *.o
 *.o.asm
 *.O.asm
+
+### Python ###
+
+# Byte-compiled / optimized / DLL files
+
+__pycache__/
+*.py[cod]
+*$py.class
+
+# virtualenv
+.venv/
+venv/
+ENV/
+
 z_auto_generated_files
-zOBJ
-zOUT
-zIDE
-zOUT_history
+zOBJ/
+zOUT/
+zOUT_history/
+zIDE/
 *.bak
 *.old
 .svn
-*.pyc
+~$*

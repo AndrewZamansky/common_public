@@ -67,7 +67,7 @@ endif
 
 # test if current commit and branch of common_public
 # is the same as required by application
-CURR_GIT_REPOSITORY_DIR :=$(COMMON_PUBLIC_DIR)
+CURR_GIT_REPO_DIR :=$(COMMON_PUBLIC_DIR)
 CURR_GIT_COMMIT_HASH_VARIABLE :=CONFIG_COMMON_PUBLIC_GIT_COMMIT_HASH
 include $(MAKEFILES_ROOT_DIR)/_include_functions/git_prebuild_repo_check.mk
 
@@ -75,7 +75,7 @@ include $(MAKEFILES_ROOT_DIR)/_include_functions/git_prebuild_repo_check.mk
 ifdef CONFIG_USE_COMMON_PRIVATE_PACKAGES
     # test if current commit and branch of common_private
     # is the same as required by application
-    CURR_GIT_REPOSITORY_DIR :=$(COMMON_PRIVATE_DIR)
+    CURR_GIT_REPO_DIR :=$(COMMON_PRIVATE_DIR)
     CURR_GIT_COMMIT_HASH_VARIABLE :=CONFIG_COMMON_PRIVATE_GIT_COMMIT_HASH
     include $(MAKEFILES_ROOT_DIR)/_include_functions/git_prebuild_repo_check.mk
 else

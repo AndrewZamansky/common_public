@@ -14,7 +14,7 @@ ifdef CONFIG_INCLUDE_CURL
     endif
 
     #test if current commit and branch of curl git is the same as required by application
-    CURR_GIT_REPOSITORY_DIR :=$(CURL_PATH)
+    CURR_GIT_REPO_DIR :=$(CURL_PATH)
     CURR_GIT_COMMIT_HASH_VARIABLE :=CONFIG_CURL_GIT_COMMIT_HASH
     CURR_GIT_BUNDLE :=$(CURR_CURL_COMPONENT_LOCATION)/curl.bundle
     include $(MAKEFILES_ROOT_DIR)/_include_functions/git_prebuild_repo_check.mk
