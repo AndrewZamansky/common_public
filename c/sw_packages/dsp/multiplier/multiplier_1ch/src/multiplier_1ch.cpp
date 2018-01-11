@@ -109,7 +109,7 @@ uint8_t multiplier_1ch_ioctl(struct dsp_desc_t *adsp,
 		set_params->weight = (int16_t)0;
 		break;
 
-	case IOCTL_MULTIPLIER_SET_WEIGHT :
+	case IOCTL_MULTIPLIER_SET_WEIGHT_DB :
 		weight = *(float*)aIoctl_param1;
 		tmp = (float)10;
 		#ifdef CONFIG_DSP_REAL_NUMBER_FORMAT_FLOATING_POINT
@@ -120,6 +120,12 @@ uint8_t multiplier_1ch_ioctl(struct dsp_desc_t *adsp,
 			handle->weight = fix16_exp(tmp);
 		#endif
 		set_params->weight = weight;
+		break;
+
+	case IOCTL_MULTIPLIER_SET_WEIGHT :
+		weight = *(float*)aIoctl_param1;
+		set_params->weight = weight;
+		handle->weight = weight;
 		break;
 
 	case IOCTL_MULTIPLIER_GET_PARAMS :

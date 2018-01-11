@@ -328,6 +328,7 @@ void release_unused_buffers(struct dsp_pad_t **in_pads)
 			if ( 0 == curr_source_out_pad->sinks_processed_counter )
 			{
 				CRITICAL_ERROR("counter already reached zero");
+				CRITICAL_ERROR("possible cause: sink module processed before source module");
 			}
 
 			curr_source_out_pad->sinks_processed_counter--;
@@ -460,7 +461,7 @@ void DSP_PROCESS_CHAIN(struct dsp_chain_t *ap_chain)
 	for(i = 0; i < MAX_NUM_OF_OUTPUT_PADS; i++)
 	{
 		struct dsp_pad_t *curr_source_out_pad ;
-//		real_t *out_buff;
+
 		curr_source_out_pad = ap_chain->chain_out_pads[i];
 
 		if (NULL != curr_source_out_pad)
@@ -468,29 +469,6 @@ void DSP_PROCESS_CHAIN(struct dsp_chain_t *ap_chain)
 			curr_source_out_pad->buff = NULL;
 			curr_source_out_pad->buff_size = 0;
 		}
-//		if (NULL == curr_source_out_pad)
-//		{
-//			continue;
-//		}
-//
-//		out_buff = ap_chain->out_buffers[i];
-//		if (NULL != out_buff)
-//		{
-//			my_memcpy(out_buff, curr_source_out_pad->buff, len);
-//		}
-//
-//		if  (DSP_OUT_PAD_TYPE_NORMAL == curr_source_out_pad->pad_type)
-//		{
-//			if ( 0 == curr_source_out_pad->sinks_processed_counter )
-//			{
-//				CRITICAL_ERROR("counter already reached zero");
-//			}
-//			curr_source_out_pad->sinks_processed_counter--;
-//			if (0 == curr_source_out_pad->sinks_processed_counter)
-//			{
-//				memory_pool_free(dsp_buffers_pool, curr_source_out_pad->buff);
-//			}
-//		}
 	}
 }
 
