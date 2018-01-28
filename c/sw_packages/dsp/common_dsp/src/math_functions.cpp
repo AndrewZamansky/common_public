@@ -6,7 +6,6 @@
  */
 
 
-
 /********  includes *********************/
 
 #include "_project_typedefs.h"
@@ -34,14 +33,17 @@
 
 
 /***********   local variables    **************/
-#define USE_LOG2_FIFTH_ORDER
-#ifdef USE_LOG2_FIFTH_ORDER
+#define USE_LOG2_EIGHTH_ORDER
+#ifdef USE_LOG2_EIGHTH_ORDER
 	#define A0_log2 (-0.41503749927884381855f)
 	#define A1_log2 (1.92359338785195120981f)
 	#define A2_log2 (-1.28239559190130080654f)
 	#define A3_log2 (1.13990719280115627248f)
 	#define A4_log2 (-1.13990719280115627248f)
 	#define A5_log2 (1.21590100565456669065f)
+	#define A6_log2 (-1.35100111739396298961f)
+	#define A7_log2 (1.54400127702167198812f)
+	#define A8_log2 (-1.80133482319195065281f)
 #else
 	#define A2_log2		(-1.28239559190130080654f)
 	#define A1_log2		(3.84718677570390241963f)
@@ -54,7 +56,7 @@ static inline float b_mult_log2_of_a(float b, float a)
 	int exp;
 	uint32_t	a_in_raw_bit_represantation;
 	uint32_t	fraction_in_bit_represantation;
-	float	log2_of_fraction;
+	float	log2_of_fraction ;
 	float	log2_of_a;
 
 	a_in_raw_bit_represantation=*((uint32_t*)&a);
@@ -64,17 +66,26 @@ static inline float b_mult_log2_of_a(float b, float a)
 
 	/* calculation of (1 + fraction)/2  (by writing 0x7e into exponent part)*/
 	a_in_raw_bit_represantation = a_in_raw_bit_represantation & 0x7fffff;
-	fraction_in_bit_represantation = a_in_raw_bit_represantation | ((-1+127)<<23);
+	fraction_in_bit_represantation =
+			a_in_raw_bit_represantation | ( (-1 + 127)<<23 );
 
 	*(uint32_t*)&fraction = fraction_in_bit_represantation;
 
-#ifdef USE_LOG2_FIFTH_ORDER
+#ifdef USE_LOG2_EIGHTH_ORDER
 	/* log2(a) = exp + log2(fraction)
 	 * fraction = [0.5,1] so it can be approximated by taylor series around 0.75 :
 	 * log2(fraction) ~= sum( An_log2 * (fraction-0.75)^n )
 	 */
 	fraction -= 0.75;
-	log2_of_fraction = fraction * A5_log2;
+
+	log2_of_fraction = A8_log2;
+	log2_of_fraction *= fraction;
+	log2_of_fraction += A7_log2;
+	log2_of_fraction *= fraction;
+	log2_of_fraction += A6_log2;
+	log2_of_fraction *= fraction;
+	log2_of_fraction += A5_log2;
+	log2_of_fraction *= fraction;
 	log2_of_fraction += A4_log2;
 	log2_of_fraction *= fraction;
 	log2_of_fraction += A3_log2;
@@ -86,7 +97,8 @@ static inline float b_mult_log2_of_a(float b, float a)
 	log2_of_fraction +=  A0_log2 ;
 #else
 	/* log2(a) = exp + log2(fraction)
-	 * fraction = [0.5,1] so it can be approximated by taylor series around 0.75 :
+	 * fraction = [0.5,1] so it can be
+	 * approximated by taylor series around 0.75 :
 	 * log2(fraction) ~= A2_log2 * fraction^2 + A2_log1 * fraction  + A2_log0
 	 */
 	log2_of_fraction = fraction * A2_log2;
@@ -100,7 +112,7 @@ static inline float b_mult_log2_of_a(float b, float a)
 	return ( b * log2_of_a);
 }
 
-//#define USE_TAYLOR_AROUND_0_5  // for taylor around x=0.5 (not for neg numbers)
+//#define USE_TAYLOR_AROUND_0_5  //for taylor around x=0.5 (not for neg numbers)
 #define USE_SEVENTH_TAYLOR_POWER
 //#define USE_THIRD_TAYLOR_POWER
 #ifdef USE_THIRD_TAYLOR_POWER
@@ -168,12 +180,16 @@ float fast_pow_float(float a, float b)
 	int_of_z = (int32_t)z ;
 
 	// int_of_z may be negative
-	*(uint32_t*)&retVal = (int_of_z + 127) << 23; // calculation of integer part
+	*(uint32_t*)&retVal = (int_of_z + 127) << 23; //calculation of integer part
 	fraction_of_z = z - (float)int_of_z;
 
 #ifdef USE_THIRD_TAYLOR_POWER
-		// fraction_of_z = [0.5,1] so it can be approximated by taylor series around 0  :
-		// 2^fraction_of_z ~= A3_2_power_x * fraction_of_z^3 + A2_2_power_x * fraction_of_z^2 + A1_2_power_x * fraction_of_z  + A0_2_power_x
+	/* fraction_of_z = [0.5,1] so it can be
+	 * approximated by taylor series around 0  :
+	 * 2^fraction_of_z ~= A3_2_power_x * fraction_of_z^3 +
+	 *                    A2_2_power_x * fraction_of_z^2 +
+	 *                     A1_2_power_x * fraction_of_z  + A0_2_power_x
+	 */
 	power_of_fraction = fraction_of_z * A3_2_power_x;
 	power_of_fraction += A2_2_power_x;
 	power_of_fraction *= fraction_of_z ;
@@ -181,8 +197,10 @@ float fast_pow_float(float a, float b)
 	power_of_fraction *= fraction_of_z ;
 	power_of_fraction += A0_2_power_x;
 #elif defined(USE_SEVENTH_TAYLOR_POWER)
-	// fraction_of_z = [0,1] so it can be approximated by taylor series around 0.5  :
-	// 2^fraction_of_z ~= An_2_power_x * (fraction_of_z - 0.5)^n
+	/* fraction_of_z = [0,1] so it can be
+	 * approximated by taylor series around 0.5  :
+	 *  2^fraction_of_z ~= An_2_power_x * (fraction_of_z - 0.5)^n
+	 */
 #ifdef USE_TAYLOR_AROUND_0_5
 	fraction_of_z -= 0.5;
 #endif
@@ -203,8 +221,12 @@ float fast_pow_float(float a, float b)
 	power_of_fraction *= fraction_of_z ;
 	power_of_fraction += A0_2_power_x;
 #else
-	// fraction_of_z = [0.5,1] so it can be approximated by taylor series around 0  :
-	// 2^fraction_of_z ~= A3_2_power_x * fraction_of_z^3 + A2_2_power_x * fraction_of_z^2 + A1_2_power_x * fraction_of_z  + A0_2_power_x
+	/* fraction_of_z = [0.5,1] so it can be
+	 * approximated by taylor series around 0  :
+	 *  2^fraction_of_z ~= A3_2_power_x * fraction_of_z^3 +
+	 *                     A2_2_power_x * fraction_of_z^2 +
+	 *                     A1_2_power_x * fraction_of_z  + A0_2_power_x
+	 */
 	tmp = fraction_of_z * fraction_of_z;
 	power_of_fraction =  A2_2_power_x * tmp;
 	tmp = A1_2_power_x * fraction_of_z;
