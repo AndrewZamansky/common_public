@@ -49,7 +49,7 @@ char voice_3D_module_name[] = "voice_3D";
  *
  * return:
  */
-void voice_3D_dsp(struct dsp_desc_t *adsp,
+void voice_3D_dsp(struct dsp_module_inst_t *adsp,
 		struct dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS],
 		struct dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])
 {
@@ -69,10 +69,10 @@ void voice_3D_dsp(struct dsp_desc_t *adsp,
 
 	handle = (struct VOICE_3D_Instance_t *)adsp->handle;
 
-	DSP_GET_BUFFER(in_pads[0], &apCh1In, &in_data_len1);
-	DSP_GET_BUFFER(in_pads[1], &apCh2In, &in_data_len2);
-	DSP_GET_BUFFER(&out_pads[0], &apCh1Out, &out_data_len1);
-	DSP_GET_BUFFER(&out_pads[1], &apCh2Out, &out_data_len2);
+	dsp_get_buffer_from_pad(in_pads[0], &apCh1In, &in_data_len1);
+	dsp_get_buffer_from_pad(in_pads[1], &apCh2In, &in_data_len2);
+	dsp_get_buffer_from_pad(&out_pads[0], &apCh1Out, &out_data_len1);
+	dsp_get_buffer_from_pad(&out_pads[1], &apCh2Out, &out_data_len2);
 
 	if (in_data_len1 != in_data_len2 )
 	{
@@ -166,7 +166,7 @@ static void update_coefficients(struct VOICE_3D_Instance_t * handle)
  *
  * return:
  */
-uint8_t voice_3D_ioctl(struct dsp_desc_t *adsp,
+uint8_t voice_3D_ioctl(struct dsp_module_inst_t *adsp,
 		const uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2)
 {
 	struct VOICE_3D_Instance_t *handle;

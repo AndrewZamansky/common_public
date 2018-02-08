@@ -49,7 +49,7 @@ char dpwm_mixer_module_name[] = "dpwm_mixer";
  *
  * return:
  */
-void dpwm_mixer_dsp(struct dsp_desc_t *adsp,
+void dpwm_mixer_dsp(struct dsp_module_inst_t *adsp,
 		struct dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] ,
 		struct dsp_pad_t  out_pads[MAX_NUM_OF_OUTPUT_PADS])
 {
@@ -68,9 +68,9 @@ void dpwm_mixer_dsp(struct dsp_desc_t *adsp,
 
 	handle = (struct DPWM_MIXER_Instance_t *)adsp->handle;
 
-	DSP_GET_BUFFER(in_pads[0], &apCh1In, &in_data_len1);
-	DSP_GET_BUFFER(in_pads[1], &apCh2In, &in_data_len2);
-	DSP_GET_BUFFER(&out_pads[0], &pTxBuf, &out_data_len);
+	dsp_get_buffer_from_pad(in_pads[0], &apCh1In, &in_data_len1);
+	dsp_get_buffer_from_pad(in_pads[1], &apCh2In, &in_data_len2);
+	dsp_get_buffer_from_pad(&out_pads[0], &pTxBuf, &out_data_len);
 
 	if (in_data_len1 != in_data_len2 )
 	{
@@ -127,7 +127,7 @@ void dpwm_mixer_dsp(struct dsp_desc_t *adsp,
  *
  * return:
  */
-uint8_t dpwm_mixer_ioctl(struct dsp_desc_t *adsp,
+uint8_t dpwm_mixer_ioctl(struct dsp_module_inst_t *adsp,
 		uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
 {
 	struct DPWM_MIXER_Instance_t *handle;

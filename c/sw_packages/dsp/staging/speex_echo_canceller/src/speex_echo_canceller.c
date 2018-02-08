@@ -68,7 +68,7 @@
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-void speex_echo_canceller_dsp(struct dsp_desc_t *adsp , size_t data_len ,
+void speex_echo_canceller_dsp(struct dsp_module_inst_t *adsp , size_t data_len ,
 		struct dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] , struct dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])
 {
 
@@ -99,7 +99,7 @@ void speex_echo_canceller_dsp(struct dsp_desc_t *adsp , size_t data_len ,
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t speex_echo_canceller_ioctl(struct dsp_desc_t *adsp ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
+uint8_t speex_echo_canceller_ioctl(struct dsp_module_inst_t *adsp ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
 {
 	struct SPEEX_ECHO_CANCELLER_Instance_t *handle;
 	SpeexEchoState *echo_state;
@@ -141,7 +141,7 @@ uint8_t speex_echo_canceller_ioctl(struct dsp_desc_t *adsp ,const uint8_t aIoctl
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t  speex_echo_canceller_api_init_dsp_descriptor(struct dsp_desc_t aDspDescriptor)
+uint8_t  speex_echo_canceller_api_init_dsp_descriptor(struct dsp_module_inst_t aDspDescriptor)
 {
 	struct SPEEX_ECHO_CANCELLER_Instance_t *pInstance;
 	if(NULL == aDspDescriptor) return 1;

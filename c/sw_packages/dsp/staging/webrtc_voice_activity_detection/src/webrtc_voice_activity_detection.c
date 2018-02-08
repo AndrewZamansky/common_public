@@ -47,7 +47,7 @@ char webrtc_voice_activity_detection_module_name[] = "voice_activity_detection";
  *
  * return:
  */
-void webrtc_voice_activity_detection_dsp(struct dsp_desc_t *adsp,
+void webrtc_voice_activity_detection_dsp(struct dsp_module_inst_t *adsp,
 		size_t data_len ,
 		struct dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS],
 		struct dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])
@@ -82,7 +82,7 @@ void webrtc_voice_activity_detection_dsp(struct dsp_desc_t *adsp,
  *
  * return:
  */
-uint8_t webrtc_voice_activity_detection_ioctl(struct dsp_desc_t *adsp,
+uint8_t webrtc_voice_activity_detection_ioctl(struct dsp_module_inst_t *adsp,
 		const uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2)
 {
 	struct WEBRTC_VOICE_ACTIVITY_DETECTION_Instance_t *handle;

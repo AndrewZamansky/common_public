@@ -50,7 +50,7 @@ char multiplier_1ch_module_name[] = "multiplier_1ch";
  *
  * return:
  */
-void multiplier_1ch_dsp(struct dsp_desc_t *adsp,
+void multiplier_1ch_dsp(struct dsp_module_inst_t *adsp,
 		struct dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS],
 		struct dsp_pad_t  out_pads[MAX_NUM_OF_OUTPUT_PADS])
 {
@@ -66,8 +66,8 @@ void multiplier_1ch_dsp(struct dsp_desc_t *adsp,
 
 	weight = handle->weight;
 
-	DSP_GET_BUFFER(in_pads[0], &apCh1In, &in_data_len);
-	DSP_GET_BUFFER(&out_pads[0], &apCh1Out, &out_data_len);
+	dsp_get_buffer_from_pad(in_pads[0], &apCh1In, &in_data_len);
+	dsp_get_buffer_from_pad(&out_pads[0], &apCh1Out, &out_data_len);
 
 	if (in_data_len > out_data_len )
 	{
@@ -91,7 +91,7 @@ void multiplier_1ch_dsp(struct dsp_desc_t *adsp,
  *
  * return:
  */
-uint8_t multiplier_1ch_ioctl(struct dsp_desc_t *adsp,
+uint8_t multiplier_1ch_ioctl(struct dsp_module_inst_t *adsp,
 		const uint8_t aIoctl_num, void * aIoctl_param1 , void * aIoctl_param2)
 {
 	real_t weight;

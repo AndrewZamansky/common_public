@@ -34,7 +34,7 @@
 /***************************/
 /*** test type existence (suffix should be unique)***/
 
-typedef struct dsp_desc_t   			_if_fail_here_then___pdsp_descriptor___is_not_defined_in_voice_3D_config_h;
+typedef struct dsp_module_inst_t   			_if_fail_here_then___pdsp_descriptor___is_not_defined_in_voice_3D_config_h;
 
 
 

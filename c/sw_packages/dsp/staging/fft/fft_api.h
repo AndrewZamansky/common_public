@@ -13,6 +13,6 @@
 /**********  define API  functions  ************/
 
 
-uint8_t  fft_api_init_dsp_descriptor(struct dsp_desc_t aDspDescriptor);
+uint8_t  fft_api_init_dsp_descriptor(struct dsp_module_inst_t aDspDescriptor);
 
 #endif

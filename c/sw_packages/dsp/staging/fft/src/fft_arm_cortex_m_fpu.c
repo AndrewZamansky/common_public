@@ -54,7 +54,7 @@
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-void fft_dsp(struct dsp_desc_t *adsp, size_t data_len,
+void fft_dsp(struct dsp_module_inst_t *adsp, size_t data_len,
 		struct dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS],
 		struct dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])
 {
@@ -88,7 +88,7 @@ void fft_dsp(struct dsp_desc_t *adsp, size_t data_len,
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t fft_ioctl(struct dsp_desc_t *adsp,
+uint8_t fft_ioctl(struct dsp_module_inst_t *adsp,
 		const uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2)
 {
 	struct FFT_Instance_t *handle;
@@ -120,7 +120,7 @@ uint8_t fft_ioctl(struct dsp_desc_t *adsp,
 /* Description:                                                                                            */
 /*                                                            						 */
 /*---------------------------------------------------------------------------------------------------------*/
-uint8_t  fft_api_init_dsp_descriptor(struct dsp_desc_t aDspDescriptor)
+uint8_t  fft_api_init_dsp_descriptor(struct dsp_module_inst_t aDspDescriptor)
 {
 	struct FFT_Instance_t *pInstance;
 

@@ -73,7 +73,8 @@ static inline float b_mult_log2_of_a(float b, float a)
 
 #ifdef USE_LOG2_EIGHTH_ORDER
 	/* log2(a) = exp + log2(fraction)
-	 * fraction = [0.5,1] so it can be approximated by taylor series around 0.75 :
+	 * fraction = [0.5,1] so it can be
+	 * approximated by taylor series around 0.75 :
 	 * log2(fraction) ~= sum( An_log2 * (fraction-0.75)^n )
 	 */
 	fraction -= 0.75;
