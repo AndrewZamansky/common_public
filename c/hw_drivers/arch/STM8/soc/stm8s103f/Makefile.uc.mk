@@ -1,5 +1,5 @@
 
-ifdef CONFIG_STM8
+ifeq ($(sort $(CONFIG_STM8)),y)
 
 	BSP_STM8S_PATH :=$(EXTERNAL_SOURCE_ROOT_DIR)/ST/stm8s-periphs
     ifeq ("$(wildcard $(BSP_STM8S_PATH))","")

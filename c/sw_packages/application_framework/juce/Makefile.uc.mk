@@ -1,7 +1,6 @@
 
-INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_JUCE)
 
-ifdef CONFIG_INCLUDE_JUCE
+ifeq ($(sort $(CONFIG_XTENSA_FPGA_SIM)),y)
 
     JUCE_PATH :=$(EXTERNAL_SOURCE_ROOT_DIR)/JUCE
     ifeq ("$(wildcard $(JUCE_PATH))","")
@@ -16,11 +15,15 @@ ifdef CONFIG_INCLUDE_JUCE
     CURR_GIT_REPO_DIR :=$(JUCE_PATH)
     CURR_GIT_COMMIT_HASH_VARIABLE :=CONFIG_JUCE_GIT_COMMIT_HASH
     include $(MAKEFILES_ROOT_DIR)/_include_functions/git_prebuild_repo_check.mk
-    
+
     CURR_JUCE_COMPONENT_LOCATION := $(patsubst %/Makefile.uc.mk,%,$(realpath $(filter %juce/Makefile.uc.mk,$(MAKEFILE_LIST))))
     DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(JUCE_PATH))
     DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(CURR_JUCE_COMPONENT_LOCATION)/JuceLibraryCode)
+    INCLUDE_THIS_COMPONENT := y
+
 endif
+
+
 #DEFINES =
 
 
@@ -28,7 +31,7 @@ endif
 
 #INCLUDE_DIR =
 
-ifdef    CONFIG_JUCE_VST_PLUGIN
+ifeq ($(sort $(CONFIG_JUCE_VST_PLUGIN)),y)
     DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(EXTERNAL_SOURCE_ROOT_DIR)/VST3_SDK)
 endif
 
@@ -40,30 +43,30 @@ SRC += juce_audio_formats.cpp
 VPATH += | $(JUCE_PATH)/modules/juce_audio_formats
 SRC += juce_audio_processors.cpp
 VPATH += | $(JUCE_PATH)/modules/juce_audio_processors
-ifdef    CONFIG_JUCE_STANDALONE_APPLICATION
+ifeq ($(sort $(CONFIG_JUCE_STANDALONE_APPLICATION)),y)
     SRC += juce_audio_utils.cpp
     VPATH += | $(JUCE_PATH)/modules/juce_audio_utils
 endif
 
-ifdef CONFIG_COMPILE_FOR_DEBUG
+ifeq ($(sort $(CONFIG_COMPILE_FOR_DEBUG)),y)
     DBG_NAME :=.dbg
 else
     DBG_NAME :=
 endif
 
-ifdef CONFIG_MSVC_COMPILER_32
+ifeq ($(sort $(CONFIG_MSVC_COMPILER_32)),y)
     ARCH_NAME :=x86_32
-else ifdef CONFIG_MSVC_COMPILER_64
+else ifeq ($(sort $(CONFIG_MSVC_COMPILER_64)),y)
     ARCH_NAME :=x86_64
 endif
 
-ifdef    CONFIG_JUCE_VST_PLUGIN
+ifeq ($(sort $(CONFIG_JUCE_VST_PLUGIN)),y)
     SRC += juce_PluginUtilities.cpp
     VPATH += | $(JUCE_PATH)/modules/juce_audio_plugin_client/utility
     SRC += juce_VST_Wrapper.cpp
     VPATH += | $(JUCE_PATH)/modules/juce_audio_plugin_client/VST
     
-    ifdef CONFIG_USE_SAVI_HOST_VST_PLUGIN_TESTER
+    ifeq ($(sort $(CONFIG_USE_SAVI_HOST_VST_PLUGIN_TESTER)),y)
        ifeq ($(wildcard $(REDEFINE_SAVIHOST_VST_TESTER_DIR)),)
            $(info !--- $(PARENT_OF_COMMON_PUBLIC_DIR)/workspace_config.mk/REDEFINE_SAVIHOST_VST_TESTER_DIR = $(REDEFINE_SAVIHOST_VST_TESTER_DIR))
            $(info !--- $(REDEFINE_SAVIHOST_VST_TESTER_DIR) not found)
@@ -76,9 +79,9 @@ ifdef    CONFIG_JUCE_VST_PLUGIN
     SAVIHOST_DIR :=$(REDEFINE_SAVIHOST_VST_TESTER_DIR)
     #if VST tester dont exists then copy it tou output directory
     ifeq ($(wildcard $(VST_TESTER)),)
-        ifdef CONFIG_MSVC_COMPILER_32
+        ifeq ($(sort $(CONFIG_MSVC_COMPILER_32)),y)
             SAVIHOST :=$(SAVIHOST_DIR)\x32\savihost.exe
-        else ifdef CONFIG_MSVC_COMPILER_64
+        else ifeq ($(sort $(CONFIG_MSVC_COMPILER_64)),y)
             SAVIHOST :=$(SAVIHOST_DIR)\x64\savihost.exe
         endif
         SAVIHOST := $(subst /,\,$(SAVIHOST))

@@ -1,5 +1,5 @@
 
-ifdef CONFIG_STM32F103RC
+ifeq ($(sort $(CONFIG_STM32F103RC)),y)
 
 	BSP_STM32F10X_PATH :=$(EXTERNAL_SOURCE_ROOT_DIR)/ST/STM32F10x_StdPeriph_Driver
     ifeq ("$(wildcard $(BSP_STM32F10X_PATH))","")

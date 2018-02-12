@@ -60,6 +60,7 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
     OUT_DIR :=$(subst /,\,$(OUT_DIR))
 endif
 
+ALL_FOUND_COMPONENTS := $(AUTO_GENERATED_FILES_DIR)/all_found_components.mk
 COMPONENTS_MK := $(AUTO_GENERATED_FILES_DIR)/include_components.mk
 
 include $(PREBUILD_ROUTINES_DIR)/init_versions.mk

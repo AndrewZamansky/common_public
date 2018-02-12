@@ -35,13 +35,13 @@ ALL_CONFIG_FILES := $(patsubst \
 # clear file and add test for valid current location , for forcing
 # to rebuild $(COMPONENTS_MK) after copying project
 NEW_LINE :=WORKSPACE_ROOT_DIR_FOR_TEST :=$(PARENT_OF_COMMON_PUBLIC_DIR)
-FILE_CONTENT := echo $(NEW_LINE)>$(COMPONENTS_MK) $(SHELL_CMD_DELIMITER)
+FILE_CONTENT := echo $(NEW_LINE)>$(ALL_FOUND_COMPONENTS) $(SHELL_CMD_DELIMITER)
 NEW_LINE :=include $$(GENERATE_PRJ_FILES_DIR)/check_location.mk
-FILE_CONTENT += echo $(NEW_LINE) >>$(COMPONENTS_MK) $(SHELL_CMD_DELIMITER)
+FILE_CONTENT += echo $(NEW_LINE) >>$(ALL_FOUND_COMPONENTS) $(SHELL_CMD_DELIMITER)
 DUMMY:=$(shell $(FILE_CONTENT))
 
 # adding "include {PATH}/Makefile.uc.mk" lines to include_components.mk
-LIST_FILE_NAME_APPEND :=$(COMPONENTS_MK)
+LIST_FILE_NAME_APPEND :=$(ALL_FOUND_COMPONENTS)
 PREFIX_FOR_EACH_ITEM :=include 
 SUFFIX_LINE_FOR_EACH_ITEM :=
 ITEMS :=$(ALL_CONFIG_FILES)
@@ -49,20 +49,49 @@ include $(MAKEFILES_ROOT_DIR)/_include_functions/add_item_list_to_file.mk
 #end of file creation
 
 # init INCLUDE_THIS_FOR_H_FILES_PATH variable
-$(shell echo INCLUDE_THIS_FOR_H_FILES_PATH := NO>> $(COMPONENTS_MK))
+$(shell echo INCLUDE_THIS_FOR_H_FILES_PATH := NO>> $(ALL_FOUND_COMPONENTS))
 
 ADD_COMPONENT_UCONFIG_MK :=$$(GENERATE_PRJ_FILES_DIR)/add_component_uconfig.mk
 
 # adding following lines to include_components.mk 
 # "include $(MAKEFILES_ROOT_DIR)/add_component_uconfig.mk "
 # "COMPONENT_CONFIG_FILE := {PATH}/Makefile.uc.mk "
-LIST_FILE_NAME_APPEND :=$(COMPONENTS_MK)
+LIST_FILE_NAME_APPEND :=$(ALL_FOUND_COMPONENTS)
 PREFIX_FOR_EACH_ITEM := COMPONENT_CONFIG_FILE := 
 SUFFIX_LINE_FOR_EACH_ITEM := include $(ADD_COMPONENT_UCONFIG_MK)
 ITEMS :=$(ALL_CONFIG_FILES)
 include $(MAKEFILES_ROOT_DIR)/_include_functions/add_item_list_to_file.mk
 #end of file creation
 
+
+include $(ALL_FOUND_COMPONENTS)
+
+
+
+######### generating $(ALL_COMPONENTS) ###############
+SUBDIRS :=$(sort $(SUBDIRS))
+ALL_COMPONENTS :=$(patsubst %,SUBDIRS+=%, $(SUBDIRS))
+
+#create file with list of SUBDIRS
+LIST_FILE_NAME_TRUNCATE :=$(COMPONENTS_MK)
+PREFIX_FOR_EACH_ITEM :=
+SUFFIX_LINE_FOR_EACH_ITEM :=
+ITEMS := $(ALL_COMPONENTS)
+include $(MAKEFILES_INC_FUNC_DIR)/add_item_list_to_file.mk
+#end of file creation
+
+
+TMP :=$(sort $(AUTO_GLOBAL_INCLUDE_DIR))
+ALL_AUTO_INCLUDE_PATH :=$(patsubst %,AUTO_GLOBAL_INCLUDE_DIRS+=%, $(TMP))
+
+# adding following automated include paths 
+LIST_FILE_NAME_APPEND :=$(COMPONENTS_MK)
+PREFIX_FOR_EACH_ITEM :=
+SUFFIX_LINE_FOR_EACH_ITEM :=
+ITEMS :=$(ALL_AUTO_INCLUDE_PATH)
+include $(MAKEFILES_ROOT_DIR)/_include_functions/add_item_list_to_file.mk
+#end of file creation
+######### end of generating $(ALL_COMPONENTS) #############
 
 all :
 	$(info ---- auto generated include_components.mk created)

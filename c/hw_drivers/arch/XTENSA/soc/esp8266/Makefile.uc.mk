@@ -1,8 +1,10 @@
-ifdef CONFIG_ESP8266
-    ifdef CONFIG_SDK_NONOS
+
+ifeq ($(sort $(CONFIG_ESP8266)),y)
+
+    ifeq ($(sort $(CONFIG_SDK_NONOS)),y)
         ESP8266_SDK_VERSION :=2.1
         SDK_ESP8266_PATH :=$(EXTERNAL_SOURCE_ROOT_DIR)/ESP8266_NONOS_SDK
-    else ifdef CONFIG_SDK_RTOS
+    else ifeq ($(sort $(ifdef CONFIG_SDK_RTOS)),y)
         ESP8266_SDK_VERSION :=1.5
         SDK_ESP8266_PATH :=$(EXTERNAL_SOURCE_ROOT_DIR)/ESP8266_RTOS_SDK
     else
@@ -22,7 +24,8 @@ ifdef CONFIG_ESP8266
     endif
 
     DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(SDK_ESP8266_PATH)/include)
-    ifdef CONFIG_SDK_RTOS
+
+    ifeq ($(sort $(CONFIG_SDK_RTOS)),y)
         DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(SDK_ESP8266_PATH)/driver_lib/include)
         DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(SDK_ESP8266_PATH)/include/espressif)
         DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(SDK_ESP8266_PATH)/include/lwip)

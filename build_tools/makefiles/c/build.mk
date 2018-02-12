@@ -16,9 +16,12 @@ include $(MAKEFILES_ROOT_DIR)/common.mk
 include $(MAKEFILES_ROOT_DIR)/c/init_for_c.mk
 
 
-
-
+ALL_COMPONENT_MAKEFILES :=
 include $(COMPONENTS_MK)
+ALL_COMPONENTS_MAKEFILES :=$(patsubst %,%/Makefile.uc.mk, $(SUBDIRS))
+include $(ALL_COMPONENTS_MAKEFILES)
+DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(AUTO_GLOBAL_INCLUDE_DIRS))
+
 
 # clean following variables befor exporting to sub-makes
 DEFINES :=

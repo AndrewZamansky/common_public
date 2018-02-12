@@ -1,5 +1,5 @@
 
-ifdef CONFIG_POLEG
+ifeq ($(sort $(CONFIG_POLEG)),y)
 	INCLUDE_THIS_COMPONENT := y
 endif
 

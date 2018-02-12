@@ -1,5 +1,6 @@
-INCLUDE_THIS_COMPONENT := $(CONFIG_OSA)
-ifdef CONFIG_OSA
+
+ifeq ($(sort $(CONFIG_OSA)),y)
+	INCLUDE_THIS_COMPONENT := y
 
     OSA_RTOS_PATH :=$(EXTERNAL_SOURCE_ROOT_DIR)/osa_v110306
     ifeq ("$(wildcard $(OSA_RTOS_PATH))","")
