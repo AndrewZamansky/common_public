@@ -1,5 +1,4 @@
-
-ifdef CONFIG_NUC505
+ifeq ($(sort $(CONFIG_NUC505)),y)
     INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_INTERNAL_GPIO)
 endif
 

@@ -410,12 +410,12 @@ uint8_t shell_ioctl( struct dev_desc_t *adev,
 			task_is_running=1;
 			os_create_task("shell_task",Shell_Task,
 					NULL , SHELL_TASK_STACK_SIZE , SHELL_TASK_PRIORITY);
-			server_dev = config_handle->server_tx_dev;
-			DEV_IOCTL_0_PARAMS(server_dev , IOCTL_DEVICE_START );
-			server_dev = config_handle->server_rx_dev;
-			DEV_IOCTL_0_PARAMS(server_dev , IOCTL_DEVICE_START );
-
 		}
+		server_dev = config_handle->server_tx_dev;
+		DEV_IOCTL_0_PARAMS(server_dev , IOCTL_DEVICE_START );
+		server_dev = config_handle->server_rx_dev;
+		DEV_IOCTL_0_PARAMS(server_dev , IOCTL_DEVICE_START );
+
 		break;
 
 	default :

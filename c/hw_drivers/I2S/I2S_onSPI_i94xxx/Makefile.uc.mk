@@ -1,5 +1,5 @@
 
-ifdef CONFIG_I94XXX
+ifeq ($(sort $(CONFIG_I94XXX)),y)
     INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_INTERNAL_I2S)
 endif
 

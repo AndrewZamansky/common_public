@@ -44,6 +44,11 @@ config INCLUDE_INTERNAL_UART
 	depends on NUC505 || STM32F103RC || NPCE586 || STM8S103F || I94XXX
 	default n
 
+config INCLUDE_INTERNAL_I2C
+	bool   "internal i2c"
+	depends on I94XXX
+	default n
+
 config INCLUDE_INTERNAL_SPI
 	bool   "internal spi"
 	depends on NUC505 || STM32F103RC || NPCE586 || STM8S103F
@@ -152,6 +157,10 @@ config INCLUDE_CLOCK_CONTROL
 config INCLUDE_UART
 	def_bool  y
 	depends on CONFIG_INCLUDE_SEMIHOSTING || INCLUDE_INTERNAL_UART || INCLUDE_USB_VIRTUAL_COM  || INCLUDE_SEMIHOSTING
+
+config INCLUDE_I2C
+	def_bool  y
+	depends on INCLUDE_INTERNAL_I2C
 
 config INCLUDE_ADC
 	def_bool  y

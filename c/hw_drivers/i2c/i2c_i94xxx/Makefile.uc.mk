@@ -1,6 +1,5 @@
-
 ifeq ($(sort $(CONFIG_I94XXX)),y)
-    INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_INTERNAL_UART)
+    INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_INTERNAL_I2C)
 endif
 
 
@@ -14,11 +13,11 @@ endif
 
 
 
-SRC = uart_i94xxx.c
+SRC += i2c_i94xxx.c
 
 VPATH = src
 
-SRC += uart.c
+SRC += i2c.c
 
 VPATH += | $(I94XXX_SRC_DIR)
 
