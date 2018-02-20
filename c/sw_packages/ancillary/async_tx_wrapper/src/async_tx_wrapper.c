@@ -124,6 +124,7 @@ static void sw_uart_send_and_wait_for_end(struct dev_desc_t *adev,
 {
 
 	struct async_tx_wrapper_cfg_t *config_handle;
+	uint32_t char_timeout;
 
 	os_queue_t xTX_WaitQueue ;
 	struct dev_desc_t *   server_dev ;
@@ -138,6 +139,7 @@ static void sw_uart_send_and_wait_for_end(struct dev_desc_t *adev,
 
 	xTX_WaitQueue = runtime_handle->xTX_WaitQueue;
 	server_dev = config_handle->server_dev;
+	char_timeout = config_handle->char_timeout;
 
 	runtime_handle->sendData = pData;
 	runtime_handle->data_length = length;
@@ -151,7 +153,8 @@ static void sw_uart_send_and_wait_for_end(struct dev_desc_t *adev,
 			/* when setting timeout = length then for baud rate <8k we
 			 * should get only message only after transmission ends
 			 */
-			os_queue_receive_with_timeout( xTX_WaitQueue, &dummy_msg, length );
+			os_queue_receive_with_timeout(
+					xTX_WaitQueue, &dummy_msg, char_timeout );
 		}
 		else
 		{

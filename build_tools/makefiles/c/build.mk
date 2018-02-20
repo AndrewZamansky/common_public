@@ -32,7 +32,7 @@ ASMFLAGS :=
 DEFINES :=
 
 # move global prerequirements_check compilation to first place
-TMP :=$(filter %prerequirements_check,$(SUBDIRS))
+TMP :=$(sort $(filter %prerequirements_check,$(SUBDIRS)))
 SUBDIRS :=$(TMP) $(sort $(filter-out %prerequirements_check,$(SUBDIRS)))
 
 GLOBAL_HEADER_FILES_DEPS := $(patsubst %,%/*.h,$(GLOBAL_INCLUDE_DIR)) 

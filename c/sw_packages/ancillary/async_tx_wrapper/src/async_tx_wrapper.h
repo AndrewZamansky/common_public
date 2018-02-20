@@ -35,7 +35,8 @@
 #endif
 
 struct async_tx_wrapper_cfg_t {
-	struct dev_desc_t *   server_dev;
+	struct dev_desc_t *server_dev;
+	uint32_t           char_timeout; // max time to transmit one char
 };
 
 

@@ -36,11 +36,52 @@
 
 /* ------------------------ Exported variables --------*/
 
+static void transmit_byte(I2C_T *i2c,
+		struct i2c_i94xxx_runtime_t *runtime_handle)
+{
+	size_t tx_data_size;
+	uint8_t  const *tx_data;
+
+	tx_data_size = runtime_handle->tx_data_size;
+	if (tx_data_size)
+	{
+		tx_data = runtime_handle->tx_data;
+		I2C_SET_DATA(i2c, *tx_data++);
+		runtime_handle->tx_data = tx_data;
+		tx_data_size--;
+		runtime_handle->tx_data_size = tx_data_size;
+		runtime_handle->transmitted_data_size++;
+	}
+	else
+	{
+		I2C_SET_DATA(i2c, 0x00);
+	}
+	I2C_SET_CONTROL_REG(i2c, I2C_CTL_SI_AA);
+}
+
+static void end_of_transmition(struct i2c_i94xxx_cfg_t *cfg_hndl,
+		struct i2c_i94xxx_runtime_t *runtime_handle)
+{
+	size_t   transmitted_data_size;
+
+	transmitted_data_size = runtime_handle->transmitted_data_size;
+
+	if (transmitted_data_size)
+	{
+		struct dev_desc_t *callback_tx_dev;
+
+		callback_tx_dev = cfg_hndl->callback_tx_dev;
+		DEV_CALLBACK_1_PARAMS(callback_tx_dev ,
+				CALLBACK_TX_DONE, (void*)transmitted_data_size);
+		runtime_handle->transmitted_data_size = 0;
+	}
+}
 
 /*--------------------------------------------------------------------------*/
 /*  I2C TRx Callback Function                                                                               */
 /*--------------------------------------------------------------------------*/
-void I2C_SlaveTRx(uint32_t u32Status, I2C_T *i2c, struct dev_desc_t *adev)
+static void I2C_SlaveTRx(
+		uint32_t u32Status, I2C_T *i2c, struct dev_desc_t *adev)
 {
 	uint8_t *in_buff;
 	struct i2c_i94xxx_runtime_t *runtime_handle;
@@ -80,24 +121,18 @@ void I2C_SlaveTRx(uint32_t u32Status, I2C_T *i2c, struct dev_desc_t *adev)
 	}
 	else if(u32Status == 0xA8)
 	{/* Own SLA+R has been receive; ACK has been return */
-
-//			I2C_SET_DATA(i2c, g_au8SlvTxData[module][slave_buff_addr[module]]);
-//			slave_buff_addr[module]++;
-//
-//			I2C_SET_CONTROL_REG(i2c, I2C_CTL_SI_AA);
+		transmit_byte(i2c, runtime_handle);
 	}
 	else if(u32Status == 0xB8)
 	{/* Slave Transmit Data ACK, master wants more data */
-//			I2C_SET_DATA(i2c, g_au8SlvTxData[module][slave_buff_addr[module]]);
-//			slave_buff_addr[module]++;
-//
-//			I2C_SET_CONTROL_REG(i2c, I2C_CTL_SI_AA);
+		transmit_byte(i2c, runtime_handle);
 	}
 	else if(u32Status == 0xC0)
 	{
 		 /* Data byte or last data in I2CDAT has been transmitted
 		  *  Not ACK has been received */
-			I2C_SET_CONTROL_REG(i2c, I2C_CTL_SI_AA);
+		end_of_transmition(cfg_hndl, runtime_handle);
+		I2C_SET_CONTROL_REG(i2c, I2C_CTL_SI_AA);
 	}
 	else if(u32Status == 0x88)
 	{
@@ -110,11 +145,12 @@ void I2C_SlaveTRx(uint32_t u32Status, I2C_T *i2c, struct dev_desc_t *adev)
 	{
 		/* A STOP or repeated START has been received while still
 			addressed as Slave/Receiver*/
-		struct dev_desc_t * callback_rx_dev ;
+		struct dev_desc_t *callback_rx_dev ;
+
 		callback_rx_dev = cfg_hndl->callback_rx_dev;
 
 		DEV_CALLBACK_2_PARAMS(callback_rx_dev,
-				CALLBACK_DATA_RECEIVED,  in_buff,  (void*)curr_data_pos);
+				CALLBACK_DATA_RECEIVED, in_buff, (void*)(size_t)curr_data_pos);
 		I2C_SET_CONTROL_REG(i2c, I2C_CTL_SI_AA);
 	}
 	else
@@ -161,16 +197,22 @@ uint8_t i2c_i94xxx_callback(struct dev_desc_t *adev ,
 size_t i2c_i94xxx_pwrite(struct dev_desc_t *adev,
 			const uint8_t *apData, size_t aLength, size_t aOffset)
 {
+	struct i2c_i94xxx_runtime_t *runtime_handle;
 //	I2C_T *i2c_regs;
 //	struct i2c_i94xxx_cfg_t *cfg_hndl;
-//
+
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
+
+	runtime_handle->tx_data = apData;
+	runtime_handle->tx_data_size = aLength;
+	runtime_handle->transmitted_data_size = 0;
 //	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
 //	i2c_regs =(I2C_T *)cfg_hndl->base_address;
 //
 //	I2C_WRITE(i2c_regs, *apData);
 //    I2C_EnableInt(i2c_regs,  I2C_INTEN_THREIEN_Msk );
 
-	return aLength;
+	return 0;
 
 }
 
