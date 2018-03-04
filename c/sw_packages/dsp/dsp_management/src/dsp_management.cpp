@@ -122,12 +122,6 @@ static struct dsp_module_inst_t * find_dsp_by_name(
 		num_of_modules--;
 	}
 
-	/*added 'if' statement to ease debugging by correct placement of
-	 *  program counter on CRITICAL_ERROR line  */
-	if ( 0 == num_of_modules )
-	{
-		CRITICAL_ERROR("source module not found");
-	}
 	return NULL;
 }
 
@@ -138,6 +132,10 @@ uint8_t	dsp_management_api_ioctl_2_params(struct dsp_chain_t *p_chain,
 	struct dsp_module_inst_t *module_inst;
 
 	module_inst = find_dsp_by_name( p_chain, module_name);
+	if ( NULL == module_inst )
+	{
+		CRITICAL_ERROR("module not found");
+	}
 	if (DSP_MAGIC_NUMBER != module_inst->magic_num)
 	{
 		CRITICAL_ERROR("dsp module not initialized");
@@ -330,12 +328,21 @@ static void add_modules_to_chain(struct dsp_chain_t *p_chain,
 	uint32_t i;
 	struct static_dsp_component *curr_chain_component;
 	struct dsp_module_inst_t *curr_dsp;
+	const char *module_inst_name;
+	struct dsp_module_inst_t *found_module_inst;
 
 	curr_chain_component = &arr[1];
 	curr_dsp = &p_chain->module_inst_arr[0];
 	for (i = 1; i < (items_in_arr - 1); i++)
 	{
 		module_type_name = curr_chain_component->module_type_name;
+		module_inst_name = curr_chain_component->module_inst_name;
+		found_module_inst = find_dsp_by_name( p_chain, module_inst_name);
+		if ( NULL != found_module_inst )
+		{
+			CRITICAL_ERROR("module with same name already exists");
+		}
+
 		init_module_inst( module_type_name,
 				curr_chain_component->module_inst_name, curr_dsp );
 		curr_dsp++;
@@ -393,6 +400,10 @@ static void create_inter_module_link(
 		else
 		{
 			src_dsp = find_dsp_by_name( p_chain, src_module_inst_name);
+			if ( NULL == src_dsp )
+			{
+				CRITICAL_ERROR("module not found");
+			}
 
 			p_curr_out_pad_of_source = &(src_dsp->out_pads[src_output_pad_num]);
 			*p_curr_in_pad_of_sink = p_curr_out_pad_of_source;
@@ -450,6 +461,10 @@ static void create_module_to_chain_out_link( struct dsp_chain_t *p_chain,
 		else
 		{
 			src_dsp = find_dsp_by_name( p_chain, src_module_inst_name);
+			if ( NULL == src_dsp )
+			{
+				CRITICAL_ERROR("module not found");
+			}
 
 			p_curr_out_pad_of_source = &(src_dsp->out_pads[src_output_pad_num]);
 			if (DSP_OUT_PAD_TYPE_NOT_USED !=
@@ -614,11 +629,11 @@ void release_unused_buffers(struct dsp_pad_t **in_pads)
 
 
 /**
- * DSP_PROCESS()
+ * dsp_process()
  *
  * return:
  */
-void DSP_PROCESS(struct dsp_module_inst_t *dsp )
+void dsp_process(struct dsp_module_inst_t *dsp )
 {
 	dsp_management_api_module_control_t ctl;
 	struct dsp_pad_t *curr_out_pad ;
@@ -724,7 +739,7 @@ void dsp_management_api_process_chain(struct dsp_chain_t *ap_chain)
 
 	while (i--)
 	{
-		DSP_PROCESS( module_inst_arr);
+		dsp_process( module_inst_arr);
 		module_inst_arr++;
 	}
 
@@ -742,111 +757,6 @@ void dsp_management_api_process_chain(struct dsp_chain_t *ap_chain)
 	}
 }
 
-
-/**
- * DSP_CREATE_INTER_MODULES_LINK()
- *
- * return:
- */
-uint8_t DSP_CREATE_INTER_MODULES_LINK(struct dsp_module_inst_t *src_dsp,
-		DSP_OUTPUT_PADS_t src_dsp_pad, struct dsp_module_inst_t *sink_dsp,
-		DSP_INPUT_PADS_t sink_dsp_pad)
-{
-	struct dsp_pad_t *p_curr_out_pad_of_source;
-	struct dsp_pad_t **p_curr_in_pad_of_sink;
-
-	if (DSP_MAGIC_NUMBER != src_dsp->magic_num)
-	{
-		CRITICAL_ERROR("source module not initialized");
-	}
-	if (DSP_MAGIC_NUMBER != sink_dsp->magic_num)
-	{
-		CRITICAL_ERROR("sink module not initialized");
-	}
-
-	p_curr_in_pad_of_sink = &sink_dsp->in_pads[sink_dsp_pad];
-	if(&default_zero_buff != *p_curr_in_pad_of_sink)
-	{
-		CRITICAL_ERROR("sink pad already connected");
-	}
-
-	p_curr_out_pad_of_source = &(src_dsp->out_pads[src_dsp_pad]) ;
-	*p_curr_in_pad_of_sink = p_curr_out_pad_of_source;
-
-	p_curr_out_pad_of_source->pad_type = DSP_OUT_PAD_TYPE_NORMAL;
-	p_curr_out_pad_of_source->total_registered_sinks++;
-	return 0;
-}
-
-
-/**
- * DSP_CREATE_CHAIN_INPUT_TO_MODULE_LINK()
- *
- * return:
- */
-uint8_t DSP_CREATE_CHAIN_INPUT_TO_MODULE_LINK(struct dsp_chain_t *ap_chain,
-		DSP_INPUT_PADS_t src_dsp_pad, struct dsp_module_inst_t *sink_dsp,
-		DSP_INPUT_PADS_t sink_dsp_pad)
-{
-	struct dsp_pad_t *p_curr_out_pad_of_source;
-	struct dsp_pad_t **p_curr_in_pad_of_sink;
-
-	if (DSP_MAGIC_NUMBER != ap_chain->magic_num)
-	{
-		CRITICAL_ERROR("chain not initialized");
-	}
-	if (DSP_MAGIC_NUMBER != sink_dsp->magic_num)
-	{
-		CRITICAL_ERROR("sink module not initialized");
-	}
-
-	p_curr_in_pad_of_sink = &sink_dsp->in_pads[sink_dsp_pad];
-	if(&default_zero_buff != *p_curr_in_pad_of_sink)
-	{
-		CRITICAL_ERROR("sink pad already connected");
-	}
-
-	p_curr_out_pad_of_source = &(ap_chain->chain_in_pads[src_dsp_pad]) ;
-	*p_curr_in_pad_of_sink = p_curr_out_pad_of_source;
-
-	p_curr_out_pad_of_source->pad_type = DSP_PAD_TYPE_CHAIN_INPUT_BUFFER;
-	p_curr_out_pad_of_source->total_registered_sinks++;
-	return 0;
-
-}
-
-
-/**
- * DSP_CREATE_MODULE_TO_CHAIN_OUTPUT_LINK()
- *
- * return:
- */
-uint8_t DSP_CREATE_MODULE_TO_CHAIN_OUTPUT_LINK(struct dsp_chain_t *ap_chain,
-		DSP_OUTPUT_PADS_t sink_dsp_pad, struct dsp_module_inst_t *src_dsp,
-		DSP_OUTPUT_PADS_t src_dsp_pad)
-{
-	struct dsp_pad_t *p_curr_out_pad_of_source;
-
-	if (DSP_MAGIC_NUMBER != ap_chain->magic_num)
-	{
-		CRITICAL_ERROR("chain not initialized");
-	}
-	if (DSP_MAGIC_NUMBER != src_dsp->magic_num)
-	{
-		CRITICAL_ERROR("source module not initialized");
-	}
-
-	p_curr_out_pad_of_source = &(src_dsp->out_pads[src_dsp_pad]) ;
-	if(DSP_PAD_TYPE_CHAIN_OUTPUT_BUFFER == p_curr_out_pad_of_source->pad_type)
-	{
-		CRITICAL_ERROR("source pad already connected to chain output");
-	}
-
-	ap_chain->chain_out_pads[sink_dsp_pad] = p_curr_out_pad_of_source;
-	p_curr_out_pad_of_source->pad_type = DSP_PAD_TYPE_CHAIN_OUTPUT_BUFFER;
-	p_curr_out_pad_of_source->total_registered_sinks++;
-	return 0;
-}
 
 
 /**
@@ -900,6 +810,11 @@ void dsp_management_api_set_module_control(
 	struct dsp_module_inst_t *module_inst;
 
 	module_inst = find_dsp_by_name( p_chain, module_name);
+	if ( NULL == module_inst )
+	{
+		CRITICAL_ERROR("module not found");
+	}
+
 	module_inst->ctl = ctl ;
 }
 

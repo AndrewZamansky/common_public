@@ -113,8 +113,8 @@ uint8_t mixer2x1_ioctl(struct dsp_module_inst_t *adsp,
 	switch(aIoctl_num)
 	{
 		case IOCTL_DSP_INIT :
-			channels_weights[0] = (int16_t)0;
-			channels_weights[1] = (int16_t)0;
+			channels_weights[0] = 1.0f;
+			channels_weights[1] = 1.0f;
 			break;
 
 		case IOCTL_MIXER_SET_CHANNEL_WEIGHT :

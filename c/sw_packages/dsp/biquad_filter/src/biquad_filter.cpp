@@ -61,7 +61,7 @@ void biquad_filter_dsp(struct dsp_module_inst_t *adsp,
 
 	if(0 == handle->num_of_bands)
 	{
-		return;
+		CRITICAL_ERROR("at least 1 band should be set");
 	}
 
 	dsp_get_buffer_from_pad(in_pads[0], &apCh1In, &in_data_len);
