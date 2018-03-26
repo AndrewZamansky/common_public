@@ -19,6 +19,9 @@ struct I2S_i94xxx_cfg_t {
 	uint8_t   	clock_mode;
 	uint32_t	sample_rate;
 	uint8_t		num_of_bytes_in_word;
+	uint8_t		DI_pin;
+	uint8_t		DO_pin;
+	uint8_t		MCLK_pin;
 } ;
 
 struct I2S_i94xxx_runtime_t {

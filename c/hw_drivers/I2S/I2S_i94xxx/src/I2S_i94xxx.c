@@ -36,6 +36,10 @@
 #define SYS_GPD_MFPL_PD4MFP_I2S0_DI     (0x03UL<<SYS_GPD_MFPL_PD4MFP_Pos) /*  */
 #define SYS_GPD_MFPL_PD5MFP_I2S0_DO     (0x03UL<<SYS_GPD_MFPL_PD5MFP_Pos) /*  */
 
+#define SYS_GPB_MFPH_PB15MFP_I2S0_MCLK   (0x02UL<<SYS_GPB_MFPH_PB15MFP_Msk)/* */
+#define SYS_GPB_MFPH_PB13MFP_I2S0_DI     (0x02UL<<SYS_GPB_MFPH_PB13MFP_Msk)/* */
+#define SYS_GPB_MFPH_PB14MFP_I2S0_DO     (0x02UL<<SYS_GPB_MFPH_PB14MFP_Msk)/* */
+
 
 /* ------------- External variables --------------------------*/
 
@@ -93,20 +97,45 @@ uint8_t I2S_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 	switch(aIoctl_num)
 	{
 	case IOCTL_DEVICE_START :
-#if 0
-		/* BCLK:PD0[12.36], MCLK:PB15[13.61],
-		 * LR:PD1[12.38], DO:PB14[23.97], DI:PB13[23.95] */
-		SYS->GPB_MFPH = (SYS->GPB_MFPH & (~0xFFF00000)) | 0x22200000;//ok
-		SYS->GPD_MFPL = (SYS->GPD_MFPL & (~0x0FF)) | 0x044;//ok
-#else
-        /*    MCLK   GPD2, BCLK  GPD0, FS GPD1  , DI  GPD4 , DO   GPD5 */
-        SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD0MFP_Msk | SYS_GPD_MFPL_PD1MFP_Msk |
-        		SYS_GPD_MFPL_PD2MFP_Msk | SYS_GPD_MFPL_PD4MFP_Msk |
-        		SYS_GPD_MFPL_PD5MFP_Msk);
+		if (I2S_I94XXX_API_DI_PIN_B13 == cfg_hndl->DI_pin)
+		{
+			SYS->GPB_MFPH &= ~(SYS_GPB_MFPH_PB13MFP_Msk);
+			SYS->GPB_MFPH |= SYS_GPB_MFPH_PB13MFP_I2S0_DI;
+		}
+		else if (I2S_I94XXX_API_DI_PIN_D4 == cfg_hndl->DI_pin)
+		{
+			SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD4MFP_Msk);
+			SYS->GPD_MFPL |= SYS_GPD_MFPL_PD4MFP_I2S0_DI;
+		}
+
+		if (I2S_I94XXX_API_DO_PIN_B14 == cfg_hndl->DO_pin)
+		{
+			SYS->GPB_MFPH &= ~(SYS_GPB_MFPH_PB14MFP_Msk);
+			SYS->GPB_MFPH |= SYS_GPB_MFPH_PB14MFP_I2S0_DO;
+		}
+		else if (I2S_I94XXX_API_DO_PIN_D5 == cfg_hndl->DO_pin)
+		{
+			SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD5MFP_Msk);
+			SYS->GPD_MFPL |= SYS_GPD_MFPL_PD5MFP_I2S0_DO;
+		}
+
+		if (I2S_I94XXX_API_MCLK_PIN_B15 == cfg_hndl->MCLK_pin)
+		{
+			SYS->GPB_MFPH &= ~(SYS_GPB_MFPH_PB15MFP_Msk);
+			SYS->GPB_MFPH |= SYS_GPB_MFPH_PB15MFP_I2S0_MCLK;
+		}
+		else if (I2S_I94XXX_API_MCLK_PIN_D2 == cfg_hndl->MCLK_pin)
+		{
+			SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD2MFP_Msk);
+			SYS->GPD_MFPL |= SYS_GPD_MFPL_PD2MFP_I2S0_MCLK;
+		}
+
+
+        /*    BCLK  GPD0, FS(LR) GPD1  */
+        SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD0MFP_Msk | SYS_GPD_MFPL_PD1MFP_Msk);
         SYS->GPD_MFPL |= (SYS_GPD_MFPL_PD0MFP_I2S0_BCLK |
-        		SYS_GPD_MFPL_PD1MFP_I2S0_LRCLK | SYS_GPD_MFPL_PD2MFP_I2S0_MCLK |
-        		SYS_GPD_MFPL_PD4MFP_I2S0_DI |  SYS_GPD_MFPL_PD5MFP_I2S0_DO);
-#endif
+        		SYS_GPD_MFPL_PD1MFP_I2S0_LRCLK);
+
 		clk_dev = i94xxx_i2s_clk_dev;
 
 		DEV_IOCTL_1_PARAMS(clk_dev,	CLK_IOCTL_SET_PARENT, src_clock);
