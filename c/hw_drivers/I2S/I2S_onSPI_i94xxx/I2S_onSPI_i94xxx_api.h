@@ -6,11 +6,11 @@
 #include "spi.h"
 
 /*****************  defines  **************/
-#define I2S_onSPI_I94XXX_API_BASE_ADDRESS_SPI1	(size_t)SPI1_BASE
-#define I2S_onSPI_I94XXX_API_BASE_ADDRESS_SPI2	(size_t)SPI2_BASE
+#define I2S_onSPI_I94XXX_API_BASE_ADDRESS_SPI1 (size_t)SPI1_BASE
+#define I2S_onSPI_I94XXX_API_BASE_ADDRESS_SPI2 (size_t)SPI2_BASE
 
-#define I2S_onSPI_I94XXX_API_MASTER_MODE		I2S_MODE_MASTER
-#define I2S_onSPI_I94XXX_API_SLAVE_MODE		I2S_MODE_SLAVE
+#define I2S_onSPI_I94XXX_API_MASTER_MODE   I2S_MODE_MASTER
+#define I2S_onSPI_I94XXX_API_SLAVE_MODE    I2S_MODE_SLAVE
 
 /**********  define API  types ************/
 

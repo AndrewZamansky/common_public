@@ -24,13 +24,11 @@
 /********  defines *********************/
 
 #if (2 == NUM_OF_BYTES_PER_AUDIO_WORD)
-	#define	FLOAT_NORMALIZER	0x7fff
 	typedef int16_t	buffer_type_t	;
-#endif
-#if (4 == NUM_OF_BYTES_PER_AUDIO_WORD)
-	#error "TODO"
-	#define	FLOAT_NORMALIZER	0x7fffffff
+#elif (4 == NUM_OF_BYTES_PER_AUDIO_WORD)
 	typedef int32_t	buffer_type_t	;
+#else
+	#error "TODO : "
 #endif
 
 /********  types  *********************/
@@ -71,6 +69,10 @@ void I2S_splitter_dsp(struct dsp_module_inst_t *adsp,
 	buffer_type_t *pRxBuf;
 	real_t in_real;
 
+	/*
+	 * casting here is just to avoid warning as we are aware that
+	 * pRxBuf has some INT type
+	 */
 	dsp_get_buffer_from_pad(in_pads[0], (real_t**)&pRxBuf, &in_data_len);
 	dsp_get_buffer_from_pad(&out_pads[0], &apCh1Out, &out_data_len1);
 	dsp_get_buffer_from_pad(&out_pads[1], &apCh2Out, &out_data_len2);
@@ -79,7 +81,6 @@ void I2S_splitter_dsp(struct dsp_module_inst_t *adsp,
 	{
 		CRITICAL_ERROR("bad output buffer size");
 	}
-
 
 	in_data_len /= ( 2 * NUM_OF_BYTES_PER_AUDIO_WORD); // 2 ch
 
@@ -128,11 +129,24 @@ uint8_t I2S_splitter_ioctl(struct dsp_module_inst_t *adsp ,
 
 void  I2S_splitter_init(void)
 {
-#if (2 == NUM_OF_BYTES_PER_AUDIO_WORD)
-	normalizer = (float)(1.0f / (float)0x7fff);
+#if defined(CONFIG_DSP_REAL_NUMBER_FORMAT_FLOATING_POINT)
+	#if (2 == NUM_OF_BYTES_PER_AUDIO_WORD)
+		normalizer = (float)(1.0f / (float)0x7fff);
+	#elif (4 == NUM_OF_BYTES_PER_AUDIO_WORD)
+		normalizer = (float)(1.0f / (float)0x7fffffff);
+	#else
+		#error "TODO : "
+	#endif
+#elif defined(CONFIG_DSP_REAL_NUMBER_FORMAT_FIXED_POINT)
+	#if (2 == NUM_OF_BYTES_PER_AUDIO_WORD)
+		normalizer = (float)(1.0f / (float)0x7fff);
+	#else
+		#error "TODO : for audio word with 4 bytes devision by  0x7fffffff is wrong because integer part is 16 bit only "
+	#endif
 #else
-	#error "TODO : for audio word with 4 bytes devision by  0x7fffffff is wrong because integer part is 16 bit only "
+	#error "undefined real numbers format"
 #endif
+
 	DSP_REGISTER_NEW_MODULE("I2S_splitter",	I2S_splitter_ioctl,
 					I2S_splitter_dsp , struct I2S_SPLITTER_Instance_t);
 }

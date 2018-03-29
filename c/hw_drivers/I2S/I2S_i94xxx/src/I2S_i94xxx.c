@@ -131,9 +131,9 @@ uint8_t I2S_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 		}
 
 
-        /*    BCLK  GPD0, FS(LR) GPD1  */
-        SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD0MFP_Msk | SYS_GPD_MFPL_PD1MFP_Msk);
-        SYS->GPD_MFPL |= (SYS_GPD_MFPL_PD0MFP_I2S0_BCLK |
+		/*    BCLK  GPD0, FS(LR) GPD1  */
+		SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD0MFP_Msk | SYS_GPD_MFPL_PD1MFP_Msk);
+		SYS->GPD_MFPL |= (SYS_GPD_MFPL_PD0MFP_I2S0_BCLK |
         		SYS_GPD_MFPL_PD1MFP_I2S0_LRCLK);
 
 		clk_dev = i94xxx_i2s_clk_dev;
@@ -142,17 +142,17 @@ uint8_t I2S_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 		DEV_IOCTL_0_PARAMS(clk_dev, CLK_IOCTL_ENABLE);
 
 
-	    /*
+		/*
 	     *  Master mode, 16-bit word width, stereo mode, I2S format.
 	     *  Set TX and RX FIFO threshold to middle value.
 	     */
 
-	    num_of_bytes_in_word = cfg_hndl->num_of_bytes_in_word;
+		num_of_bytes_in_word = cfg_hndl->num_of_bytes_in_word;
 //	    num_of_bytes_in_word=1;
 
-	    runtime_handle->actual_sample_rate = I2S_Open(
-	    		I2S, cfg_hndl->clock_mode, cfg_hndl->sample_rate,
-	    		(num_of_bytes_in_word-1)<<SPI_I2SCTL_WDWIDTH_Pos,
+		runtime_handle->actual_sample_rate = I2S_Open(
+				I2S, cfg_hndl->clock_mode, cfg_hndl->sample_rate,
+				(num_of_bytes_in_word-1)<<SPI_I2SCTL_WDWIDTH_Pos,
 				I2S_STEREO, I2S_FORMAT_I2S_STD);
 
 		I2S_DISABLE_TX(I2S);
@@ -166,9 +166,9 @@ uint8_t I2S_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 #else
 		I2S->CTL0 |= I2S_CTL0_RXPDMAEN_Msk;
 #endif
-	   // I2S_ENABLE_RX(I2S_module);
-//		I2S_module->FIFOCTL |= I2S_FIFO_RX_LEVEL_WORD_4;
-//	    I2S_module->FIFOCTL |= SPI_FIFOCTL_RXRST_Msk;
+		// I2S_ENABLE_RX(I2S_module);
+		// I2S_module->FIFOCTL |= I2S_FIFO_RX_LEVEL_WORD_4;
+		// I2S_module->FIFOCTL |= SPI_FIFOCTL_RXRST_Msk;
 		break;
 
 	case I2S_I94XXX_ENABLE_OUTPUT_IOCTL:

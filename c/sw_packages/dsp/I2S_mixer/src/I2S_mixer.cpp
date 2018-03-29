@@ -24,13 +24,11 @@
 
 /********  defines *********************/
 #if (2 == NUM_OF_BYTES_PER_AUDIO_WORD)
-	#define FLOAT_NORMALIZER    0x7fff
 	typedef int16_t	buffer_type_t;
-#endif
-#if (4 == NUM_OF_BYTES_PER_AUDIO_WORD)
-	#error "TODO"
-	#define FLOAT_NORMALIZER    0x7fffffff
+#elif (4 == NUM_OF_BYTES_PER_AUDIO_WORD)
 	typedef int32_t	buffer_type_t;
+#else
+	#error "TODO"
 #endif
 
 #if defined(CONFIG_DSP_REAL_NUMBER_FORMAT_FLOATING_POINT)
@@ -93,6 +91,11 @@ void I2S_mixer_dsp(struct dsp_module_inst_t *adsp,
 
 	dsp_get_buffer_from_pad(in_pads[0], &apCh1In, &in_data_len1);
 	dsp_get_buffer_from_pad(in_pads[1], &apCh2In, &in_data_len2);
+
+	/*
+	 * casting here is just to avoid warning as we are aware that
+	 * pRxBuf has some INT type
+	 */
 	dsp_get_buffer_from_pad(&out_pads[0], (real_t**)&pTxBuf, &out_data_len);
 
 	if (in_data_len1 != in_data_len2 )
@@ -104,7 +107,7 @@ void I2S_mixer_dsp(struct dsp_module_inst_t *adsp,
 
 	if (out_data_len != in_data_len1 )
 	{
-		CRITICAL_ERROR("bad input buffer size");
+		CRITICAL_ERROR("bad output buffer size");
 	}
 
 	while(in_data_len1--)
@@ -186,6 +189,8 @@ void  I2S_mixer_init(void)
 {
 #if (2 == NUM_OF_BYTES_PER_AUDIO_WORD)
 	normalizer = (int16_t)0x7fff;
+#elif (4 == NUM_OF_BYTES_PER_AUDIO_WORD)
+	normalizer = (int16_t)0x7fffffff;
 #else
 	#error "TODO : for audio word with 4 bytes devision by  0x7fffffff is wrong because integer part is 16 bit only "
 #endif

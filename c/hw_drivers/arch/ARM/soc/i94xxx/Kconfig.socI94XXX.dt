@@ -16,11 +16,12 @@ config DT_SOC_RAM_START_ADDR
     default 0x20000000
 
 #comment "sram size : 0x20000"
-comment "sram size : 0x16800"
+comment "max sram size :0x30000"
 config DT_SOC_RAM_SIZE
     hex
-    default 0x16800    
-#    default 0x20000    
+#    default 0x16800
+#    default 0x20000
+    default 0x30000
 
 comment "flash start : 0x0"
 config DT_SOC_FLASH_START_ADDR
