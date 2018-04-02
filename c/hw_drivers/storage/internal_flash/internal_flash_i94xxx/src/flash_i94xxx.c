@@ -13,7 +13,7 @@
 #include "dev_management_api.h"
 
 #include "internal_flash_i94xxx_api.h"
-#include "ISD94XXXSeries.h"
+#include "I94100.h"
 
 #include "fmc.h"
 

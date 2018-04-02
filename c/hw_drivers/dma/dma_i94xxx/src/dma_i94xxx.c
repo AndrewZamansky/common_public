@@ -14,7 +14,7 @@
 #include "dma_i94xxx.h"
 
 
-#include "ISD94XXXSeries.h"
+#include "I94100.h"
 
 #include "irq_api.h"
 #include "os_wrapper.h"
@@ -76,6 +76,7 @@ static void update_buffer(struct dma_i94xxx_cfg_t *cfg_hndl,
 	uint32_t reg_addr;
 	uint32_t reg_val;
 	struct dev_desc_t *callback_dev;
+	DSCT_T *DSCT;
 
 	channel_num = cfg_hndl->channel_num;
 	curr_dma_buff_indx = runtime_hndl->curr_dma_buff_indx;
@@ -134,8 +135,9 @@ static void update_buffer(struct dma_i94xxx_cfg_t *cfg_hndl,
 	}
 
 	/* reinit PDMA */
+	DSCT = &((PDMA)->DSCT[0]);
 	PDMA_SET_TRANS_CNT(channel_num, runtime_hndl->buff_size_in_transfer_words);
-	reg_addr = (uint32_t) &((PDMA)->DSCT0_CTL) + 16 * (channel_num);
+	reg_addr = (uint32_t) &(DSCT->CTL) + 16 * (channel_num);
 	reg_val = readRegU32(reg_addr);
 	reg_val |= 1;/* set BASIC MODE*/
 	writeRegU32(reg_addr, reg_val);
@@ -267,23 +269,23 @@ static uint8_t set_peripheral_dma(struct dma_i94xxx_cfg_t *cfg_hndl,
 		dma_peripheral_direction = DMA_TO_PERIPHERAL;
 		break;
 
-	case PDMA_I2S_RX :
-		src_addr =(void*) &I2S->RXFIFO;
+	case PDMA_I2S0_RX :
+		src_addr =(void*) &I2S0->RXFIFO;
 		src_ctrl = PDMA_SAR_FIX;
 		dest_ctrl = PDMA_DAR_INC;
 		dma_peripheral_direction = DMA_FROM_PERIPHERAL;
 		break;
 
-	case PDMA_I2S_TX :
+	case PDMA_I2S0_TX :
 		src_ctrl = PDMA_SAR_INC;
-		dest_addr = (void*)&I2S->TXFIFO;
+		dest_addr = (void*)&I2S0->TXFIFO;
 		dest_ctrl = PDMA_DAR_FIX;
 		dma_peripheral_direction = DMA_TO_PERIPHERAL;
 		break;
 
 	case PDMA_DPWM :
 		src_ctrl = PDMA_SAR_INC;
-		dest_addr = (void*)&DPWM->DATA;
+		dest_addr = (void*)&DPWM->FIFO;
 		dest_ctrl = PDMA_DAR_FIX;
 		dma_peripheral_direction = DMA_TO_PERIPHERAL;
 		break;
@@ -513,16 +515,16 @@ static void enable_peripheral_output(uint8_t peripheral_type)
 	switch (peripheral_type)
 	{
 
-	case PDMA_I2S_TX :
-		I2S->CTL0 &= ~(I2S_CTL0_TXEN_Msk | I2S_CTL0_TXPDMAEN_Msk);
-		I2S->CTL0 |= (I2S_CTL0_TXEN_Msk | I2S_CTL0_TXPDMAEN_Msk);
+	case PDMA_I2S0_TX :
+		I2S0->CTL0 &= ~(I2S_CTL0_TXEN_Msk | I2S_CTL0_TXPDMAEN_Msk);
+		I2S0->CTL0 |= (I2S_CTL0_TXEN_Msk | I2S_CTL0_TXPDMAEN_Msk);
 		break;
 
 	case PDMA_DPWM :
-		DPWM->CTL &= ~(DPWM_CTL_DPWMEN_Msk | DPWM_CTL_DWPMDRVEN_Msk);
-		DPWM->CTL |= (DPWM_CTL_DPWMEN_Msk | DPWM_CTL_DWPMDRVEN_Msk);
-		DPWM->DMACTL &= ~DPWM_DMACTL_DMAEN_Msk;
-		DPWM->DMACTL |= DPWM_DMACTL_DMAEN_Msk;
+		DPWM->CTL &= ~(DPWM_CTL_DPWMEN_Msk | DPWM_CTL_DRVEN_Msk);
+		DPWM->CTL |= (DPWM_CTL_DPWMEN_Msk | DPWM_CTL_DRVEN_Msk);
+		DPWM->PDMACTL &= ~DPWM_PDMACTL_PDMAEN_Msk;
+		DPWM->PDMACTL |= DPWM_PDMACTL_PDMAEN_Msk;
 		break;
 
 	default :

@@ -14,13 +14,18 @@ ifeq ($(sort $(CONFIG_I94XXX)),y)
         EXTERNAL_SRC_DIRS := $(EXTERNAL_SRC_DIRS) $(BSP_I94XXX_PATH)
     endif
 
-    DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(BSP_I94XXX_PATH)/Library/StdDriver/inc )
+    INC_PATH := $(BSP_I94XXX_PATH)/Library/StdDriver/inc
+    DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(INC_PATH))
+    INC_PATH := $(BSP_I94XXX_PATH)/Library/Device/Nuvoton/I94100/Include
+    DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(INC_PATH))
+    INC_PATH := $(BSP_I94XXX_PATH)/Library/Device/Nuvoton/Include
+    DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(INC_PATH))
 	I94XXX_SRC_DIR := $(BSP_I94XXX_PATH)/Library/StdDriver/src
 	INCLUDE_THIS_COMPONENT := y
 	
 endif
 
-SRC = board_init.c
+SRC += board_init.c
 VPATH = src
 
 SRC += sys.c

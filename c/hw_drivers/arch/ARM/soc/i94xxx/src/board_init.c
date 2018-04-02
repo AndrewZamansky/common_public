@@ -26,7 +26,7 @@
 
 uint32_t board_init_before_main_function()
 {
-	  UNLOCKREG();
+    SYS_UnlockReg();
    /* FPU settings -------------------*/
 #if (__FPU_PRESENT == 1) && (__FPU_USED == 1)
     SCB->CPACR |= ((3UL << 10*2) |                 /* set CP10 Full Access */

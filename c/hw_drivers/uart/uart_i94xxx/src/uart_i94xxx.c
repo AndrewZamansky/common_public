@@ -13,7 +13,7 @@
 #include "dev_management_api.h"
 
 #include "uart_i94xxx.h"
-#include "ISD94XXXSeries.h"
+#include "I94100.h"
 
 #include "irq_api.h"
 #include "uart_api.h"

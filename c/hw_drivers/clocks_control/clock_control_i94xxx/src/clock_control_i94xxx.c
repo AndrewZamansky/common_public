@@ -17,7 +17,7 @@
 #include "clock_control_i94xxx_api.h"
 #include "clock_control_i94xxx.h"
 
-#include "ISD94XXXSeries.h"
+#include "I94100.h"
 
 #include "clk.h"
 
@@ -35,7 +35,7 @@
 /********  local variables *********************/
 
 uint32_t SystemCoreClock, PllClock;
-uint32_t gau32ClkSrcTbl[] = {__HXT, __LXT, 0, __LIRC, 0, 0, 0, __HIRC};
+uint32_t gau32ClkSrcTbl[] = {__HXT, __LXT, 0, __LIRC, 0, 0, 0, 0};
 /*-----
   BSP required  function
  *------------------*/
@@ -378,19 +378,19 @@ uint8_t clock_i94xxx_i2s_ioctl( struct dev_desc_t *adev,
 		curr_val = (CLK->CLKSEL3 & ~ CLK_CLKSEL3_I2S0SEL_Msk);
 		if (i94xxx_xtal_clk_dev == aIoctl_param1)
 		{
-			CLK->CLKSEL3 = curr_val | CLK_CLKSEL3_I2S_SEL_HXT;
+			CLK->CLKSEL3 = curr_val | CLK_CLKSEL3_I2S0SEL_Pos;
 		}
 		else if (i94xxx_hirc_clk_dev == aIoctl_param1)
 		{
-			CLK->CLKSEL3 = curr_val | CLK_CLKSEL3_I2S_SEL_HIRC;
+			CLK->CLKSEL3 = curr_val | CLK_CLKSEL3_I2S0SEL_HIRC;
 		}
 		else if (i94xxx_pll_clk_dev == aIoctl_param1)
 		{
-			CLK->CLKSEL3 = curr_val | CLK_CLKSEL3_I2S_SEL_PLL;
+			CLK->CLKSEL3 = curr_val | CLK_CLKSEL3_I2S0SEL_PLL;
 		}
-		else if (i94xxx_hclk_clk_dev == aIoctl_param1)
+		else if (i94xxx_pclk0_clk_dev == aIoctl_param1)
 		{
-			CLK->CLKSEL3 = curr_val | CLK_CLKSEL3_I2S_SEL_HCLK;
+			CLK->CLKSEL3 = curr_val | CLK_CLKSEL3_I2S0SEL_PCLK0;
 		}
 		else
 		{

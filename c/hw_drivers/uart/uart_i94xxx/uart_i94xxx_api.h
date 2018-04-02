@@ -2,7 +2,7 @@
 #ifndef _UART_I94XXX_API_H_
 #define _UART_I94XXX_API_H_
 
-#include "ISD94XXXSeries.h"
+#include "I94100.h"
 
 /*****************  defines  **************/
 

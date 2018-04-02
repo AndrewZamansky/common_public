@@ -7,8 +7,8 @@
 
 /*****************  defines  **************/
 
-#define I2S_I94XXX_API_MASTER_MODE    I2S_MODE_MASTER
-#define I2S_I94XXX_API_SLAVE_MODE     I2S_MODE_SLAVE
+#define I2S_I94XXX_API_MASTER_MODE    I2S_MASTER
+#define I2S_I94XXX_API_SLAVE_MODE     I2S_SLAVE
 
 #define I2S_I94XXX_API_DI_PIN_B13    0
 #define I2S_I94XXX_API_DI_PIN_D4     1

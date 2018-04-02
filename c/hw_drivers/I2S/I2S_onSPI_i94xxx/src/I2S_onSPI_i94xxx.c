@@ -14,7 +14,7 @@
 #include "timer_wrapper_api.h"
 
 
-#include "ISD94XXXSeries.h"
+#include "I94100.h"
 
 #include "I2S_onSPI_i94xxx_add_component.h"
 
@@ -93,7 +93,7 @@ uint8_t I2S_onSPI_i94xxx_ioctl(struct dev_desc_t *adev,
 					SYS_GPD_MFPL_PD4MFP_SPI1_CLK |
 					SYS_GPD_MFPL_PD5MFP_SPI1_SS |
 					SYS_GPD_MFPL_PD6MFP_SPI1_I2SMCLK );
-			spi_irq = SPI1_INT;
+			spi_irq = SPI1_IRQn;
 		}
 		else if (SPI2_BASE == (size_t)I2S_module)
 		{
@@ -118,7 +118,7 @@ uint8_t I2S_onSPI_i94xxx_ioctl(struct dev_desc_t *adev,
 		      SYS->GPA_MFPL = (SYS->GPA_MFPL & (~0xF0000000)) | 0x40000000;
 					SYS->GPA_MFPH = (SYS->GPA_MFPH & (~0xF0FFF)) | 0x40444;
 #endif
-			spi_irq = SPI2_INT;
+			spi_irq = SPI2_IRQn;
 			clk_dev = i94xxx_spi2clk_clk_dev;
 		}
 		else
@@ -137,11 +137,11 @@ uint8_t I2S_onSPI_i94xxx_ioctl(struct dev_desc_t *adev,
 	    num_of_bytes_in_word = cfg_hndl->num_of_bytes_in_word;
 //	    num_of_bytes_in_word=1;
 
-		I2S_module->FIFOCTL = I2S_SPI_FIFO_RX_LEVEL_WORD_3;
+		I2S_module->FIFOCTL = SPI_I2S_FIFO_RX_LEVEL_3;
 #if 1
-	    I2S_SPI_Open(I2S_module, cfg_hndl->clock_mode, cfg_hndl->sample_rate,
+		SPI_I2SOpen(I2S_module, cfg_hndl->clock_mode, cfg_hndl->sample_rate,
 	    		(num_of_bytes_in_word-1)<<SPI_I2SCTL_WDWIDTH_Pos,
-				I2S_SPI_STEREO, I2S_SPI_FORMAT_I2S);
+	    		SPI_I2SSTEREO, SPI_I2SFORMAT_I2S);
 #else
 
 	   //  I2S_module->I2SCLK = 0x1f00;
@@ -161,19 +161,19 @@ uint8_t I2S_onSPI_i94xxx_ioctl(struct dev_desc_t *adev,
 		irq_register_interrupt(spi_irq , SPI_IRQHandler);
 		irq_set_priority(spi_irq , OS_MAX_INTERRUPT_PRIORITY_FOR_API_CALLS );
 		irq_enable_interrupt(spi_irq);
-	     I2S_SPI_EnableInt(I2S_module, 	I2S_SPI_FIFO_RXTH_INT_MASK);
+		SPI_I2SEnableInt(I2S_module, 	SPI_FIFO_RXTH_INT_MASK);
 
 #else
 		I2S_module->PDMACTL |= SPI_PDMACTL_PDMARST_Msk;
 	    SPI_TRIGGER_RX_PDMA(I2S_module) ;
 #endif
 	   // I2S_SPI_ENABLE_RX(I2S_module);
-		I2S_module->FIFOCTL |= I2S_SPI_FIFO_RX_LEVEL_WORD_4;
+		I2S_module->FIFOCTL |= SPI_I2S_FIFO_RX_LEVEL_4;
 	    I2S_module->FIFOCTL |= SPI_FIFOCTL_RXRST_Msk;
 		break;
 
 	case I2S_ENABLE_OUTPUT_IOCTL:
-		I2S_SPI_ENABLE_TX(I2S_module);
+		SPI_I2S_ENABLE_TX(I2S_module);
 	    SPI_TRIGGER_TX_PDMA(I2S_module) ;
 		break;
 

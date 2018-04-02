@@ -12,11 +12,11 @@
 
 #include "dev_management_api.h"
 
+#include "I94100.h"
 #include "gpio_api.h"
 #include "gpio_i94xxx_api.h"
 #include "gpio_i94xxx.h"
 
-#include "ISD94XXXSeries.h"
 #include "gpio.h"
 
 #include "_gpio_i94xxx_prerequirements_check.h"
@@ -57,7 +57,7 @@ uint8_t gpio_i94xxx_ioctl( struct dev_desc_t *adev, const uint8_t aIoctl_num,
 	config_handle = DEV_GET_CONFIG_DATA_POINTER(adev);
 	GPIOx = (GPIO_T*)config_handle->port_num;
 	pin_num_mask = config_handle->pin_num_mask;
-	pDOUT = &GPIOx->PA_DOUT;
+	pDOUT = &GPIOx->DOUT;
 
 	switch(aIoctl_num)
 	{
@@ -91,7 +91,7 @@ uint8_t gpio_i94xxx_ioctl( struct dev_desc_t *adev, const uint8_t aIoctl_num,
 		break;
 
 	case IOCTL_GPIO_PIN_READ :
-		*((uint8_t*)aIoctl_param1) = GPIOx->PA_PIN &  pin_num_mask ;
+		*((uint8_t*)aIoctl_param1) = GPIOx->PIN &  pin_num_mask ;
 		break;
 
 	default :
