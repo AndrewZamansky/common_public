@@ -82,11 +82,14 @@ uint8_t I2S_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 	uint8_t		num_of_bytes_in_word;
 	struct dev_desc_t	*clk_dev;
 	struct dev_desc_t	*src_clock;
+	uint32_t	sample_rate;
+	uint32_t	i2s_format;
 
 	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
 	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
 	src_clock = cfg_hndl->src_clock;
-
+	sample_rate = cfg_hndl->sample_rate;
+	i2s_format = cfg_hndl->i2s_format;
 
 	switch(aIoctl_num)
 	{
@@ -124,11 +127,28 @@ uint8_t I2S_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 			SYS->GPD_MFPL |= SYS_GPD_MFPL_PD2MFP_I2S0_MCLK;
 		}
 
+		if (I2S_I94XXX_API_LRCLK_PIN_D1 == cfg_hndl->LRCLK_pin)
+		{
+			SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD1MFP_Msk);
+			SYS->GPD_MFPL |= SYS_GPD_MFPL_PD1MFP_I2S0_LRCLK;
+		}
+		else if (I2S_I94XXX_API_LRCLK_PIN_D3 == cfg_hndl->LRCLK_pin)
+		{
+			SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD3MFP_Msk);
+			SYS->GPD_MFPL |= SYS_GPD_MFPL_PD3MFP_I2S0_LRCK;
+		}
 
-		/*    BCLK  GPD0, FS(LR) GPD1  */
-		SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD0MFP_Msk | SYS_GPD_MFPL_PD1MFP_Msk);
-		SYS->GPD_MFPL |= (SYS_GPD_MFPL_PD0MFP_I2S0_BCLK |
-        		SYS_GPD_MFPL_PD1MFP_I2S0_LRCLK);
+		if (I2S_I94XXX_API_BCLK_PIN_D0 == cfg_hndl->BCLK_pin)
+		{
+			SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD0MFP_Msk);
+			SYS->GPD_MFPL |= SYS_GPD_MFPL_PD0MFP_I2S0_BCLK;
+		}
+		else if (I2S_I94XXX_API_BCLK_PIN_D6 == cfg_hndl->BCLK_pin)
+		{
+			SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD6MFP_Msk);
+			SYS->GPD_MFPL |= SYS_GPD_MFPL_PD6MFP_I2S0_BCLK;
+		}
+
 
 		clk_dev = i94xxx_i2s_clk_dev;
 
@@ -145,10 +165,22 @@ uint8_t I2S_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 //	    num_of_bytes_in_word=1;
 
 		runtime_handle->actual_sample_rate = I2S_Open(
-				I2S0, cfg_hndl->clock_mode, cfg_hndl->sample_rate,
+				I2S0, cfg_hndl->clock_mode, sample_rate,
 				(num_of_bytes_in_word-1) << SPI_I2SCTL_WDWIDTH_Pos,
-				I2S_TDMCHNUM_4CH, I2S_STEREO, I2S_FORMAT_I2S);
+				I2S_TDMCHNUM_4CH, I2S_STEREO, i2s_format);
 
+		I2S_EnableMCLK(I2S0, sample_rate * 256);
+
+		if ( I2S_FORMAT_PCMMSB == i2s_format )
+		{
+			/* I2S Configuration. */
+			I2S_SET_PCMSYNC(I2S0, I2S_PCMSYNC_BCLK);
+			I2S_SET_MONO_RX_CHANNEL(I2S0, I2S_MONO_RX_RIGHT);
+			I2S_SET_STEREOORDER(I2S0, I2S_ORDER_EVENLOW);
+
+			/* Set channel width. */
+			I2S_SET_CHWIDTH(I2S0, I2S_CHWIDTH_32);
+		}
 		I2S_ENABLE_RX(I2S0);
 		I2S_ENABLE(I2S0);
 

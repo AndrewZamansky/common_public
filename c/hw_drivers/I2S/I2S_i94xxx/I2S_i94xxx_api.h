@@ -20,6 +20,15 @@
 #define I2S_I94XXX_API_MCLK_PIN_D2     1
 #define I2S_I94XXX_API_MCLK_PIN_NONE   2
 
+#define I2S_I94XXX_API_LRCLK_PIN_D1    0
+#define I2S_I94XXX_API_LRCLK_PIN_D3    1
+
+#define I2S_I94XXX_API_BCLK_PIN_D0     0
+#define I2S_I94XXX_API_BCLK_PIN_D6     1
+
+#define I2S_I94XXX_FORMAT_I2S          I2S_FORMAT_I2S
+#define I2S_I94XXX_FORMAT_PCMMSB       I2S_FORMAT_PCMMSB
+
 /**********  define API  types ************/
 
 typedef enum

@@ -24,6 +24,19 @@
 		#error "I2S_I94XXX_DT_NUM_OF_BYTES_IN_WORD should be defined"
 	#endif
 
+	#ifndef I2S_I94XXX_DT_I2S_FORMAT
+		#error "I2S_I94XXX_DT_I2S_FORMAT should be defined"
+	#endif
+
+	#ifndef I2S_I94XXX_DT_BCLK_PIN
+		#error "I2S_I94XXX_DT_BCLK_PIN should be defined"
+	#endif
+
+	#ifndef I2S_I94XXX_DT_LRCLK_PIN
+		#error "I2S_I94XXX_DT_LRCLK_PIN should be defined"
+	#endif
+
+
 	#ifndef I2S_I94XXX_DT_DI_PIN
 		#error "I2S_I94XXX_DT_DI_PIN should be defined"
 	#endif
@@ -49,7 +62,10 @@
 			POINTER_TO_SRC_CLOCK_PDEV,           \
 			I2S_I94XXX_DT_MASTER_OR_SLAVE_MODE,  \
 			I2S_I94XXX_DT_SAMPLE_RATE,           \
+			I2S_I94XXX_DT_I2S_FORMAT,            \
 			I2S_I94XXX_DT_NUM_OF_BYTES_IN_WORD,  \
+			I2S_I94XXX_DT_BCLK_PIN,              \
+			I2S_I94XXX_DT_LRCLK_PIN,             \
 			I2S_I94XXX_DT_DI_PIN,                \
 			I2S_I94XXX_DT_DO_PIN,                \
 			I2S_I94XXX_DT_MCLK_PIN               \
@@ -73,3 +89,6 @@
 #undef I2S_I94XXX_DT_DI_PIN
 #undef I2S_I94XXX_DT_DO_PIN
 #undef I2S_I94XXX_DT_MCLK_PIN
+#undef I2S_I94XXX_DT_BCLK_PIN
+#undef I2S_I94XXX_DT_LRCLK_PIN
+#undef I2S_I94XXX_DT_I2S_FORMAT

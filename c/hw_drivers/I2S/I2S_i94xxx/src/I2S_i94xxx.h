@@ -18,7 +18,10 @@ struct I2S_i94xxx_cfg_t {
 	struct dev_desc_t *   src_clock;
 	uint32_t   	clock_mode;
 	uint32_t	sample_rate;
+	uint32_t	i2s_format;
 	uint8_t		num_of_bytes_in_word;
+	uint8_t		BCLK_pin;
+	uint8_t		LRCLK_pin;
 	uint8_t		DI_pin;
 	uint8_t		DO_pin;
 	uint8_t		MCLK_pin;
