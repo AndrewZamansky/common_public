@@ -16,8 +16,8 @@
 /***************   typedefs    *******************/
 
 
-struct I2S_SPLITTER_Instance_t {
-	uint8_t dummy ;
+struct I2S_splitter_instance_t {
+	uint8_t num_of_channels ;
 };
 
 

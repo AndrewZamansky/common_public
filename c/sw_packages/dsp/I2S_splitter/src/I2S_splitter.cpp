@@ -60,41 +60,55 @@ void I2S_splitter_dsp(struct dsp_module_inst_t *adsp,
 		struct dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] ,
 		struct dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])
 {
-	real_t *apCh1Out;
-
-	real_t *apCh2Out;
+	real_t *apChOut[MAX_NUM_OF_OUTPUT_PADS];
 	size_t in_data_len;
-	size_t out_data_len1 ;
-	size_t out_data_len2 ;
+	size_t out_data_len[MAX_NUM_OF_OUTPUT_PADS] ;
 	buffer_type_t *pRxBuf;
 	real_t in_real;
+	uint8_t num_of_channels ;
+	struct I2S_splitter_instance_t *handle;
+	uint8_t i;
+
+
+	handle = (struct I2S_splitter_instance_t *)adsp->handle;
+	num_of_channels = handle->num_of_channels;
 
 	/*
 	 * casting here is just to avoid warning as we are aware that
 	 * pRxBuf has some INT type
 	 */
 	dsp_get_buffer_from_pad(in_pads[0], (real_t**)&pRxBuf, &in_data_len);
-	dsp_get_buffer_from_pad(&out_pads[0], &apCh1Out, &out_data_len1);
-	dsp_get_buffer_from_pad(&out_pads[1], &apCh2Out, &out_data_len2);
 
-	if (out_data_len1 != out_data_len2 )
+
+	for (i = 0; i < num_of_channels; i++)
+	{
+		dsp_get_buffer_from_pad(&out_pads[i], &apChOut[i], &out_data_len[i]);
+	}
+
+
+	if (out_data_len[0] != out_data_len[1] )
 	{
 		CRITICAL_ERROR("bad output buffer size");
 	}
 
-	in_data_len /= ( 2 * NUM_OF_BYTES_PER_AUDIO_WORD); // 2 ch
+	in_data_len /= ( num_of_channels * NUM_OF_BYTES_PER_AUDIO_WORD);
 
-	if (in_data_len != out_data_len1 )
+	if (in_data_len != out_data_len[0] )
 	{
 		CRITICAL_ERROR("bad input buffer size");
 	}
 
 	while (in_data_len--)
 	{
-		in_real = *pRxBuf++;
-		*apCh1Out++ = in_real * normalizer;
-		in_real = *pRxBuf++;
-		*apCh2Out++ = in_real * normalizer;
+		for (i = 0; i < num_of_channels; i++)
+		{
+			real_t *curr_ChOut;
+
+			curr_ChOut = apChOut[i];
+			in_real = *pRxBuf++;
+			*curr_ChOut++ = in_real * normalizer;
+			apChOut[i] = curr_ChOut;
+		}
 	}
 
 }
@@ -111,15 +125,21 @@ void I2S_splitter_dsp(struct dsp_module_inst_t *adsp,
 uint8_t I2S_splitter_ioctl(struct dsp_module_inst_t *adsp ,
 		uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
 {
+	struct I2S_splitter_instance_t *handle;
+
+	handle = (struct I2S_splitter_instance_t *)adsp->handle;
+
 	switch(aIoctl_num)
 	{
-		case IOCTL_DSP_INIT :
+	case IOCTL_DSP_INIT :
+		handle->num_of_channels = 2;
+		break;
+	case IOCTL_I2S_SPLITTER_SET_NUM_OF_CHANNELS :
+		handle->num_of_channels = *(uint8_t*)aIoctl_param1;
+		break;
 
-
-			break;
-
-		default :
-			return 1;
+	default :
+		return 1;
 	}
 	return 0;
 }
@@ -148,7 +168,7 @@ void  I2S_splitter_init(void)
 #endif
 
 	DSP_REGISTER_NEW_MODULE("I2S_splitter",	I2S_splitter_ioctl,
-					I2S_splitter_dsp , struct I2S_SPLITTER_Instance_t);
+					I2S_splitter_dsp , struct I2S_splitter_instance_t);
 }
 
 AUTO_INIT_FUNCTION(I2S_splitter_init);
