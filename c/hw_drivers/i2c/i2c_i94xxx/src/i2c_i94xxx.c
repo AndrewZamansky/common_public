@@ -36,7 +36,7 @@
 
 /* ------------------------ Exported variables --------*/
 
-static void transmit_byte(I2C_T *i2c,
+static void transmit_byte(I2C_T *i2c, struct i2c_i94xxx_cfg_t *cfg_hndl,
 		struct i2c_i94xxx_runtime_t *runtime_handle)
 {
 	size_t tx_data_size;
@@ -54,9 +54,23 @@ static void transmit_byte(I2C_T *i2c,
 	}
 	else
 	{
-		I2C_SET_DATA(i2c, 0x00);
+		if (I2C_I94XXX_API_SLAVE_MODE == cfg_hndl->master_slave_mode)
+		{
+			I2C_SET_DATA(i2c, 0x00);
+		}
+		else
+		{
+			I2C_SET_CONTROL_REG(I2C1, I2C_CTL_STO_SI);
+		}
 	}
-	I2C_SET_CONTROL_REG(i2c, I2C_CTL_SI_AA);
+	if (I2C_I94XXX_API_SLAVE_MODE == cfg_hndl->master_slave_mode)
+	{
+		I2C_SET_CONTROL_REG(i2c, I2C_CTL_SI_AA);
+	}
+	else
+	{
+		I2C_SET_CONTROL_REG(i2c, I2C_CTL_SI);
+	}
 }
 
 static void end_of_transmition(struct i2c_i94xxx_cfg_t *cfg_hndl,
@@ -71,15 +85,19 @@ static void end_of_transmition(struct i2c_i94xxx_cfg_t *cfg_hndl,
 		struct dev_desc_t *callback_tx_dev;
 
 		callback_tx_dev = cfg_hndl->callback_tx_dev;
-		DEV_CALLBACK_1_PARAMS(callback_tx_dev ,
-				CALLBACK_TX_DONE, (void*)transmitted_data_size);
-		runtime_handle->transmitted_data_size = 0;
+		if (NULL != callback_tx_dev)
+		{
+			DEV_CALLBACK_1_PARAMS(callback_tx_dev ,
+					CALLBACK_TX_DONE, (void*)transmitted_data_size);
+			runtime_handle->transmitted_data_size = 0;
+		}
 	}
 }
 
-/*--------------------------------------------------------------------------*/
-/*  I2C TRx Callback Function                                                                               */
-/*--------------------------------------------------------------------------*/
+/*
+ * function : I2C_SlaveTRx
+ *
+ */
 static void I2C_SlaveTRx(
 		uint32_t u32Status, I2C_T *i2c, struct dev_desc_t *adev)
 {
@@ -121,11 +139,11 @@ static void I2C_SlaveTRx(
 	}
 	else if(u32Status == 0xA8)
 	{/* Own SLA+R has been receive; ACK has been return */
-		transmit_byte(i2c, runtime_handle);
+		transmit_byte(i2c, cfg_hndl, runtime_handle);
 	}
 	else if(u32Status == 0xB8)
 	{/* Slave Transmit Data ACK, master wants more data */
-		transmit_byte(i2c, runtime_handle);
+		transmit_byte(i2c, cfg_hndl, runtime_handle);
 	}
 	else if(u32Status == 0xC0)
 	{
@@ -149,8 +167,11 @@ static void I2C_SlaveTRx(
 
 		callback_rx_dev = cfg_hndl->callback_rx_dev;
 
-		DEV_CALLBACK_2_PARAMS(callback_rx_dev,
+		if (NULL != callback_rx_dev)
+		{
+			DEV_CALLBACK_2_PARAMS(callback_rx_dev,
 				CALLBACK_DATA_RECEIVED, in_buff, (void*)(size_t)curr_data_pos);
+		}
 		I2C_SET_CONTROL_REG(i2c, I2C_CTL_SI_AA);
 	}
 	else
@@ -161,31 +182,88 @@ static void I2C_SlaveTRx(
 
 }
 
+/*
+ * function : I2C_MasterTRx
+ *
+ */
+static void I2C_MasterTRx(
+		uint32_t u32Status, I2C_T *i2c, struct dev_desc_t *adev)
+{
+//	uint8_t *in_buff;
+	struct i2c_i94xxx_runtime_t *runtime_handle;
+	struct i2c_i94xxx_cfg_t *cfg_hndl;
+//	uint16_t curr_data_pos;
+	uint8_t  notify_callback;
+
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
+
+//	in_buff = runtime_handle->rcv_data;
+//	curr_data_pos = runtime_handle->curr_data_pos;
+
+	notify_callback = 0;
+	switch(u32Status)
+	{
+	/* START has been transmitted and Write SLA+W to Register I2CDAT. */
+	case 0x08:
+		I2C_SET_DATA(I2C1, runtime_handle->remote_slave_addr << 1);
+		I2C_SET_CONTROL_REG(I2C1, I2C_CTL_SI);
+		break;
+	/* SLA+W has been transmitted and ACK has been received. */
+	case 0x18:
+		transmit_byte(i2c, cfg_hndl, runtime_handle);
+		notify_callback = 1;
+		break;
+	/* SLA+W has been transmitted and NACK has been received. */
+	case 0x20:
+		I2C_STOP(I2C1);
+		I2C_START(I2C1);
+		notify_callback = 1;
+		break;
+	/* DATA has been transmitted and ACK has been received. */
+	case 0x28:
+		transmit_byte(i2c, cfg_hndl, runtime_handle);
+		notify_callback = 1;
+		break;
+	}
+
+	if ( notify_callback && (0 == runtime_handle->tx_data_size))
+	{
+		end_of_transmition(cfg_hndl, runtime_handle);
+	}
+}
 
 uint8_t i2c_i94xxx_callback(struct dev_desc_t *adev ,
 		uint8_t aCallback_num , void * aCallback_param1,
 		void * aCallback_param2)
 {
 	struct i2c_i94xxx_cfg_t *cfg_hndl;
-    uint32_t u32Status;
+	uint32_t u32Status;
 	I2C_T *i2c_regs;
 
 	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
 	i2c_regs =(I2C_T *)cfg_hndl->base_address;
 
 
-    u32Status = I2C_GET_STATUS(i2c_regs);
-    if(I2C_GET_TIMEOUT_FLAG(i2c_regs))
-    {
-        /* Clear I2C0 Timeout Flag */
-        I2C_ClearTimeoutFlag(i2c_regs);
-    }
-    else
-    {
-       	I2C_SlaveTRx(u32Status, i2c_regs, adev);
-    }
+	u32Status = I2C_GET_STATUS(i2c_regs);
+	if(I2C_GET_TIMEOUT_FLAG(i2c_regs))
+	{
+		/* Clear I2C0 Timeout Flag */
+		I2C_ClearTimeoutFlag(i2c_regs);
+	}
+	else
+	{
+		if (I2C_I94XXX_API_SLAVE_MODE == cfg_hndl->master_slave_mode)
+		{
+			I2C_SlaveTRx(u32Status, i2c_regs, adev);
+		}
+		else
+		{
+			I2C_MasterTRx(u32Status, i2c_regs, adev);
+		}
+	}
 
-    return 0;
+	return 0;
 }
 
 
@@ -197,20 +275,44 @@ uint8_t i2c_i94xxx_callback(struct dev_desc_t *adev ,
 size_t i2c_i94xxx_pwrite(struct dev_desc_t *adev,
 			const uint8_t *apData, size_t aLength, size_t aOffset)
 {
+	struct i2c_i94xxx_cfg_t *cfg_hndl;
 	struct i2c_i94xxx_runtime_t *runtime_handle;
+	size_t   tx_data_size;
+	size_t   transmitted_data_size;
+	uint8_t  const *tx_data;
 //	I2C_T *i2c_regs;
 //	struct i2c_i94xxx_cfg_t *cfg_hndl;
 
+	if (0 == aLength)
+	{
+		return 0;
+	}
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
 	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
 
-	runtime_handle->tx_data = apData;
-	runtime_handle->tx_data_size = aLength;
-	runtime_handle->transmitted_data_size = 0;
+	if (I2C_I94XXX_API_MASTER_MODE == cfg_hndl->master_slave_mode)
+	{
+		// first byte is address of slave
+		tx_data_size = aLength - 1;
+		transmitted_data_size = 1;
+		tx_data = &apData[1];
+		runtime_handle->remote_slave_addr = apData[0];
+		I2C_START(I2C1);
+	}
+	else
+	{
+		tx_data_size = aLength;
+		transmitted_data_size = 0;
+		tx_data = apData;
+	}
+	runtime_handle->tx_data = tx_data;
+	runtime_handle->tx_data_size = tx_data_size;
+	runtime_handle->transmitted_data_size = transmitted_data_size;
 //	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
 //	i2c_regs =(I2C_T *)cfg_hndl->base_address;
 //
 //	I2C_WRITE(i2c_regs, *apData);
-//    I2C_EnableInt(i2c_regs,  I2C_INTEN_THREIEN_Msk );
+//	I2C_EnableInt(i2c_regs,  I2C_INTEN_THREIEN_Msk );
 
 	return 0;
 
@@ -248,17 +350,32 @@ uint8_t i2c_i94xxx_ioctl( struct dev_desc_t *adev, uint8_t aIoctl_num,
 			* Init I/O Multi-function
 			* Set PA multi-function pins for I2C0 RXD(PA.8) and TXD(PA.7)
 			*/
-			switch (cfg_hndl->pinout)
+			switch (cfg_hndl->SCL_pinout)
 			{
-			case I2C_I94XXX_I2C1_SCL_SDA_PINS_PORT_D_PINS_2_1:
-			    SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD1MFP_Msk);
-			    SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD2MFP_Msk);
-			    SYS->GPD_MFPL |=  (0x02UL<<SYS_GPD_MFPL_PD1MFP_Pos);
-			    SYS->GPD_MFPL |=  (0x04UL<<SYS_GPD_MFPL_PD2MFP_Pos);
+			case I2C_I94XXX_API_I2C1_SCL_PIN_PORT_D_PIN_2:
+				SYS->GPD_MFPL &= SYS_GPD_MFPL_PD2MFP_Msk;
+				SYS->GPD_MFPL |=  (0x04UL<<SYS_GPD_MFPL_PD2MFP_Pos);
+				break;
+			case I2C_I94XXX_API_I2C1_SCL_PIN_PORT_D_PIN_14:
+				SYS->GPD_MFPL &= SYS_GPD_MFPH_PD14MFP_Msk;
+				SYS->GPD_MFPL |=  SYS_GPD_MFPH_PD14MFP_I2C1_SCL;
 				break;
 			default :
 				return 1;
+			}
 
+			switch (cfg_hndl->SDA_pinout)
+			{
+			case I2C_I94XXX_API_I2C1_SDA_PIN_PORT_D_PIN_1:
+				SYS->GPD_MFPL &= SYS_GPD_MFPL_PD1MFP_Msk;
+				SYS->GPD_MFPL |=  SYS_GPD_MFPL_PD1MFP_I2C1_SDA;
+				break;
+			case I2C_I94XXX_API_I2C1_SDA_PIN_PORT_D_PIN_15:
+				SYS->GPD_MFPL &= SYS_GPD_MFPH_PD15MFP_Msk;
+				SYS->GPD_MFPL |=  SYS_GPD_MFPH_PD15MFP_I2C1_SDA;
+				break;
+			default :
+				return 1;
 			}
 		}
 		else
@@ -275,14 +392,14 @@ uint8_t i2c_i94xxx_ioctl( struct dev_desc_t *adev, uint8_t aIoctl_num,
 		/* Configure I2C and set I2C baud rate */
 		I2C_Open(i2c_regs, cfg_hndl->baud_rate);
 
-	    /* Set I2C 4 Slave Addresses */
-	    I2C_SetSlaveAddr(i2c_regs, 0, (cfg_hndl->slave_address) >> 1 , 0);
+		if (I2C_I94XXX_API_SLAVE_MODE == cfg_hndl->master_slave_mode)
+		{
+			I2C_SetSlaveAddr(i2c_regs, 0, (cfg_hndl->slave_address) >> 1 , 0);
+			I2C_SetSlaveAddrMask(i2c_regs, 0, 0x01);
 
-	    /* Set I2C 4 Slave Addresses Mask */
-	    I2C_SetSlaveAddrMask(i2c_regs, 0, 0x01);
-
-	    /* I2C enter no address SLV mode */
-	    I2C_SET_CONTROL_REG(i2c_regs, I2C_CTL_SI_AA);
+			/* I2C enter no address SLV mode */
+			I2C_SET_CONTROL_REG(i2c_regs, I2C_CTL_SI_AA);
+		}
 
 		I2C_EnableInt(i2c_regs);
 
@@ -304,7 +421,8 @@ uint8_t i2c_i94xxx_ioctl( struct dev_desc_t *adev, uint8_t aIoctl_num,
 	case IOCTL_I2C_SET_ISR_CALLBACK_RX_DEV:
 		cfg_hndl->callback_rx_dev =(struct dev_desc_t *) aIoctl_param1;
 		break;
-
+	case IOCTL_I2C_SET_MASTER_CLOCK_RATE_HZ:
+		I2C_SetBusClockFreq(i2c_regs, *(uint32_t*)aIoctl_param1);
 	default :
 		return 1;
 	}
