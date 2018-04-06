@@ -14,8 +14,7 @@ endif
 #ASMFLAGS =  
 
 
-SRC = dpwm_i94xxx.c
-SRC += dpwm.c
+SRC += dpwm_i94xxx.c
 
 
 ifdef CONFIG_INTERNAL_PWM_IS_SPEED_CRITICAL
@@ -24,6 +23,9 @@ endif
 
 
 VPATH = src
+
+SRC += dpwm.c
+VPATH += | $(I94XXX_SRC_DIR)
 
 
 include $(COMMON_CC)

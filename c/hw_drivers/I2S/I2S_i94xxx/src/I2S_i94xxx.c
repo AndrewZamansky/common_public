@@ -19,6 +19,8 @@
 #include "I94100.h"
 
 #include "i2s.h"
+#include "dpwm.h"
+
 #include "clock_control_i94xxx_api.h"
 
 #include "_I2S_i94xxx_prerequirements_check.h"
@@ -90,6 +92,8 @@ uint8_t I2S_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 	src_clock = cfg_hndl->src_clock;
 	sample_rate = cfg_hndl->sample_rate;
 	i2s_format = cfg_hndl->i2s_format;
+	num_of_bytes_in_word = cfg_hndl->num_of_bytes_in_word;
+	clk_dev = i94xxx_i2s_clk_dev;
 
 	switch(aIoctl_num)
 	{
@@ -150,24 +154,17 @@ uint8_t I2S_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 		}
 
 
-		clk_dev = i94xxx_i2s_clk_dev;
 
 		DEV_IOCTL_1_PARAMS(clk_dev,	CLK_IOCTL_SET_PARENT, src_clock);
 		DEV_IOCTL_0_PARAMS(clk_dev, CLK_IOCTL_ENABLE);
-
-
-		/*
-	     *  Master mode, 16-bit word width, stereo mode, I2S format.
-	     *  Set TX and RX FIFO threshold to middle value.
-	     */
-
-		num_of_bytes_in_word = cfg_hndl->num_of_bytes_in_word;
-//	    num_of_bytes_in_word=1;
 
 		runtime_handle->actual_sample_rate = I2S_Open(
 				I2S0, cfg_hndl->clock_mode, sample_rate,
 				(num_of_bytes_in_word-1) << SPI_I2SCTL_WDWIDTH_Pos,
 				I2S_TDMCHNUM_4CH, I2S_STEREO, i2s_format);
+
+		I2S_SET_TXTH(I2S0, I2S_FIFO_TX_LEVEL_WORD_4);
+		I2S_SET_RXTH(I2S0, I2S_FIFO_RX_LEVEL_WORD_4);
 
 		I2S_EnableMCLK(I2S0, sample_rate * 256);
 
@@ -205,6 +202,43 @@ uint8_t I2S_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 
 	case I2S_I94XXX_GET_MEASURED_SAMPLE_RATE:
 		*((uint32_t*)aIoctl_param1) = runtime_handle->actual_sample_rate;
+		break;
+
+	case I2S_I94XXX_SYNC_FS_TO_DPWM_FS_RATE:
+		{
+			uint32_t clock_div;
+			uint32_t dpwm_zohdiv;
+			uint32_t dpwm_clock_div;
+			uint32_t dpwm_k;
+			uint8_t channel_num = 2;
+			uint32_t dpwm_total_div_to_get_FS;
+			uint32_t i2s_total_div_to_get_FS;
+
+			if ( 2 != channel_num)
+			{
+				CRITICAL_ERROR("only 2 channels supported");
+			}
+			dpwm_clock_div = DPWM_GET_CLOCKDIV(DPWM);
+			dpwm_zohdiv = DPWM_GET_ZOHDIV(DPWM);
+			dpwm_k = (DPWM->CTL & DPWM_CLKSET_500FS) ? 125 : 128;
+
+
+			dpwm_total_div_to_get_FS =
+					(dpwm_clock_div + 1) * dpwm_zohdiv * dpwm_k;
+			clock_div = ( ( dpwm_total_div_to_get_FS ) /
+					(2 * channel_num * num_of_bytes_in_word * 8) ) - 1;
+
+			i2s_total_div_to_get_FS = (clock_div + 1) *
+					(2 * channel_num * num_of_bytes_in_word * 8);
+
+			if (dpwm_total_div_to_get_FS != i2s_total_div_to_get_FS)
+			{
+				CRITICAL_ERROR("same FS for I2S and DPWM cannot be achived");
+			}
+	        I2S0->CLKDIV = (I2S0->CLKDIV & ~I2S_CLKDIV_BCLKDIV_Msk) |
+				(clock_div << I2S_CLKDIV_BCLKDIV_Pos);
+
+		}
 		break;
 
 	default :
