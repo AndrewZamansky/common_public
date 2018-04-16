@@ -14,7 +14,7 @@ endif
 #ASMFLAGS =  
 
 
-SRC = I2S_onSPI_i94xxx.c
+SRC += I2S_onSPI_i94xxx.c
 
 
 ifdef CONFIG_INTERNAL_I2S_SPEED_CRITICAL
@@ -22,9 +22,12 @@ ifdef CONFIG_INTERNAL_I2S_SPEED_CRITICAL
 endif
 
 
-VPATH = src
+VPATH += src
 
-SRC += spi.c
-VPATH += | $(I94XXX_SRC_DIR)
+#check if spi.c should not be compile in another Makefile.uc.mk
+ifneq ($(sort $(CONFIG_INCLUDE_INTERNAL_SPI)),y)
+    SRC += spi.c
+    VPATH += | $(I94XXX_SRC_DIR)
+endif
 
 include $(COMMON_CC)

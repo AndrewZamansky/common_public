@@ -42,33 +42,33 @@ uint32_t gau32ClkSrcTbl[] = {__HXT, __LXT, 0, __LIRC, 0, 0, 0, 0};
 void SystemCoreClockUpdate(void)
 {
 #if 1
-    uint32_t u32Freq, u32ClkSrc;
-    uint32_t u32HclkDiv;
+	uint32_t u32Freq, u32ClkSrc;
+	uint32_t u32HclkDiv;
 
-    /* Update PLL Clock */
-    PllClock = CLK_GetPLLClockFreq();
+	/* Update PLL Clock */
+	PllClock = CLK_GetPLLClockFreq();
 
-    u32ClkSrc = CLK->CLKSEL0 & CLK_CLKSEL0_HCLKSEL_Msk;
+	u32ClkSrc = CLK->CLKSEL0 & CLK_CLKSEL0_HCLKSEL_Msk;
 
-    if(u32ClkSrc == CLK_CLKSEL0_HCLKSEL_PLL)
-    {
-        /* Use PLL clock */
-        u32Freq = PllClock;
-    }
-    else
-    {
-        /* Use the clock sources directly */
-        u32Freq = gau32ClkSrcTbl[u32ClkSrc];
-    }
+	if(u32ClkSrc == CLK_CLKSEL0_HCLKSEL_PLL)
+	{
+		/* Use PLL clock */
+		u32Freq = PllClock;
+	}
+	else
+	{
+		/* Use the clock sources directly */
+		u32Freq = gau32ClkSrcTbl[u32ClkSrc];
+	}
 
-    u32HclkDiv = (CLK->CLKDIV0 & CLK_CLKDIV0_HCLKDIV_Msk) + 1;
+	u32HclkDiv = (CLK->CLKDIV0 & CLK_CLKDIV0_HCLKDIV_Msk) + 1;
 
-    /* Update System Core Clock */
-    SystemCoreClock = u32Freq / u32HclkDiv;
+	/* Update System Core Clock */
+	SystemCoreClock = u32Freq / u32HclkDiv;
 
 
-    //if(SystemCoreClock == 0)
-    //    __BKPT(0);
+	//if(SystemCoreClock == 0)
+	//	__BKPT(0);
 
  //   CyclesPerUs = (SystemCoreClock + 500000) / 1000000;
 #endif
@@ -143,7 +143,7 @@ uint8_t clock_i94xxx_pll_ioctl( struct dev_desc_t *adev,
 		}
 		else if (i94xxx_hirc_clk_dev == aIoctl_param1)
 		{
-	        CLK->PWRCTL |= CLK_PWRCTL_HIRCEN_Msk;
+			CLK->PWRCTL |= CLK_PWRCTL_HIRCEN_Msk;
 		}
 		else
 		{
@@ -154,14 +154,14 @@ uint8_t clock_i94xxx_pll_ioctl( struct dev_desc_t *adev,
 		rate = *(uint32_t*)aIoctl_param1;
 		if (CLK->PWRCTL & CLK_PWRCTL_HXTEN_Msk)
 		{
-	        CLK_EnablePLL(CLK_PLLCTL_PLLSRC_HXT, rate);
+			CLK_EnablePLL(CLK_PLLCTL_PLLSRC_HXT, rate);
 		}
-	    else
-	    {
-	        CLK_EnablePLL(CLK_PLLCTL_PLLSRC_HIRC, rate );
-	    }
+		else
+		{
+			CLK_EnablePLL(CLK_PLLCTL_PLLSRC_HIRC, rate );
+		}
 		cfg_clk->rate = rate;
-	    break;
+		break;
 	case CLK_IOCTL_GET_FREQ :
 		*(uint32_t*)aIoctl_param1 = CLK_GetPLLClockFreq();
 		break;
@@ -186,15 +186,15 @@ uint8_t clock_i94xxx_hclk_ioctl( struct dev_desc_t *adev,
 	case CLK_IOCTL_SET_PARENT :
 		if (i94xxx_xtal_clk_dev == aIoctl_param1)
 		{
-		    CLK_SetHCLK(CLK_CLKSEL0_HCLKSEL_HIRC, CLK_CLKDIV0_HCLK(1));
+			CLK_SetHCLK(CLK_CLKSEL0_HCLKSEL_HIRC, CLK_CLKDIV0_HCLK(1));
 		}
 		else if (i94xxx_hirc_clk_dev == aIoctl_param1)
 		{
-		    CLK_SetHCLK(CLK_CLKSEL0_HCLKSEL_HIRC, CLK_CLKDIV0_HCLK(1));
+			CLK_SetHCLK(CLK_CLKSEL0_HCLKSEL_HIRC, CLK_CLKDIV0_HCLK(1));
 		}
 		else if (i94xxx_pll_clk_dev == aIoctl_param1)
 		{
-		    CLK_SetHCLK(CLK_CLKSEL0_HCLKSEL_PLL, CLK_CLKDIV0_HCLK(1));
+			CLK_SetHCLK(CLK_CLKSEL0_HCLKSEL_PLL, CLK_CLKDIV0_HCLK(1));
 		}
 		else
 		{
@@ -206,10 +206,10 @@ uint8_t clock_i94xxx_hclk_ioctl( struct dev_desc_t *adev,
 		rate = *(uint32_t*)aIoctl_param1;
 		//TODO :
 		cfg_clk->rate = rate;
-	    break;
+		break;
 	case CLK_IOCTL_GET_FREQ :
 		DEV_IOCTL_1_PARAMS(cfg_clk->parent_clk,	CLK_IOCTL_GET_FREQ, &rate);
-	    u32HclkDiv = (CLK->CLKDIV0 & CLK_CLKDIV0_HCLKDIV_Msk) + 1;
+		u32HclkDiv = (CLK->CLKDIV0 & CLK_CLKDIV0_HCLKDIV_Msk) + 1;
 		*(uint32_t*)aIoctl_param1 = rate / u32HclkDiv;
 		break;
 	default :
@@ -241,7 +241,7 @@ uint8_t clock_i94xxx_pclk0_ioctl( struct dev_desc_t *adev,
 			div--;
 		}
 		CLK->PCLKDIV = (CLK->PCLKDIV & (~CLK_PCLKDIV_APB0DIV_Msk))
-			    			| (div << CLK_PCLKDIV_APB0DIV_Pos);
+							| (div << CLK_PCLKDIV_APB0DIV_Pos);
 		cfg_clk->rate = req_rate;
 		break;
 	case CLK_IOCTL_GET_FREQ :
@@ -276,7 +276,7 @@ uint8_t clock_i94xxx_pclk1_ioctl( struct dev_desc_t *adev,
 			div--;
 		}
 		CLK->PCLKDIV = (CLK->PCLKDIV & (~CLK_PCLKDIV_APB1DIV_Msk))
-			    			| (div << CLK_PCLKDIV_APB1DIV_Pos);
+							| (div << CLK_PCLKDIV_APB1DIV_Pos);
 		cfg_clk->rate = req_rate;
 		break;
 	case CLK_IOCTL_GET_FREQ :
@@ -327,23 +327,23 @@ uint8_t clock_i94xxx_spi2clk_ioctl( struct dev_desc_t *adev,
 	case CLK_IOCTL_SET_PARENT :
 		if (i94xxx_xtal_clk_dev == aIoctl_param1)
 		{
-		    CLK_SetModuleClock(SPI2_MODULE,
-		    		CLK_CLKSEL2_SPI2SEL_HXT, MODULE_NoMsk);
+			CLK_SetModuleClock(SPI2_MODULE,
+					CLK_CLKSEL2_SPI2SEL_HXT, MODULE_NoMsk);
 		}
 		else if (i94xxx_hirc_clk_dev == aIoctl_param1)
 		{
-		    CLK_SetModuleClock(SPI2_MODULE,
-		    		CLK_CLKSEL2_SPI2SEL_HIRC, MODULE_NoMsk);
+			CLK_SetModuleClock(SPI2_MODULE,
+					CLK_CLKSEL2_SPI2SEL_HIRC, MODULE_NoMsk);
 		}
 		else if (i94xxx_pll_clk_dev == aIoctl_param1)
 		{
-		    CLK_SetModuleClock(SPI2_MODULE,
-		    		CLK_CLKSEL2_SPI2SEL_PLL, MODULE_NoMsk);
+			CLK_SetModuleClock(SPI2_MODULE,
+					CLK_CLKSEL2_SPI2SEL_PLL, MODULE_NoMsk);
 		}
 		else if (i94xxx_pclk1_clk_dev == aIoctl_param1)
 		{
-		    CLK_SetModuleClock(SPI2_MODULE,
-		    		CLK_CLKSEL2_SPI2SEL_PCLK0, MODULE_NoMsk);
+			CLK_SetModuleClock(SPI2_MODULE,
+					CLK_CLKSEL2_SPI2SEL_PCLK0, MODULE_NoMsk);
 		}
 		else
 		{
@@ -352,7 +352,7 @@ uint8_t clock_i94xxx_spi2clk_ioctl( struct dev_desc_t *adev,
 		cfg_clk->parent_clk = aIoctl_param1;
 		break;
 	case CLK_IOCTL_ENABLE :
-	    CLK_EnableModuleClock(SPI2_MODULE);
+		CLK_EnableModuleClock(SPI2_MODULE);
 		break;
 	case CLK_IOCTL_GET_FREQ :
 		get_parent_clock_rate(cfg_clk, aIoctl_param1);
@@ -471,18 +471,18 @@ uint8_t clock_i94xxx_uart0clk_ioctl( struct dev_desc_t *adev,
 	case CLK_IOCTL_SET_PARENT :
 		if (i94xxx_xtal_clk_dev == aIoctl_param1)
 		{
-		    CLK_SetModuleClock(UART0_MODULE,
-		    		CLK_CLKSEL1_UART0SEL_HXT, CLK_CLKDIV0_UART0(1));
+			CLK_SetModuleClock(UART0_MODULE,
+					CLK_CLKSEL1_UART0SEL_HXT, CLK_CLKDIV0_UART0(1));
 		}
 		else if (i94xxx_hirc_clk_dev == aIoctl_param1)
 		{
-		    CLK_SetModuleClock(UART0_MODULE,
-		    		CLK_CLKSEL1_UART0SEL_HIRC, CLK_CLKDIV0_UART0(1));
+			CLK_SetModuleClock(UART0_MODULE,
+					CLK_CLKSEL1_UART0SEL_HIRC, CLK_CLKDIV0_UART0(1));
 		}
 		else if (i94xxx_pll_clk_dev == aIoctl_param1)
 		{
-		    CLK_SetModuleClock(UART0_MODULE,
-		    		CLK_CLKSEL1_UART0SEL_PLL, CLK_CLKDIV0_UART0(1));
+			CLK_SetModuleClock(UART0_MODULE,
+					CLK_CLKSEL1_UART0SEL_PLL, CLK_CLKDIV0_UART0(1));
 		}
 		else
 		{
@@ -491,7 +491,7 @@ uint8_t clock_i94xxx_uart0clk_ioctl( struct dev_desc_t *adev,
 		cfg_clk->parent_clk = aIoctl_param1;
 		break;
 	case CLK_IOCTL_ENABLE :
-	    CLK_EnableModuleClock(UART0_MODULE);
+		CLK_EnableModuleClock(UART0_MODULE);
 		break;
 	case CLK_IOCTL_GET_FREQ :
 		get_parent_clock_rate(cfg_clk, aIoctl_param1);
@@ -513,7 +513,58 @@ uint8_t clock_i94xxx_i2c1_ioctl( struct dev_desc_t *adev,
 	switch(aIoctl_num)
 	{
 	case CLK_IOCTL_ENABLE :
-	    CLK_EnableModuleClock(I2C1_MODULE);
+		CLK_EnableModuleClock(I2C1_MODULE);
+		break;
+	case CLK_IOCTL_GET_FREQ :
+		DEV_IOCTL_1_PARAMS(i94xxx_pclk1_clk_dev,
+						CLK_IOCTL_GET_FREQ, aIoctl_param1);
+		break;
+	default :
+		return 1;
+	}
+	return 0;
+}
+
+
+
+uint8_t clock_i94xxx_spi0_ioctl( struct dev_desc_t *adev,
+		const uint8_t aIoctl_num, void * aIoctl_param1,
+		void * aIoctl_param2)
+{
+	struct cfg_clk_t *cfg_clk;
+
+	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(adev);
+	switch(aIoctl_num)
+	{
+	case CLK_IOCTL_SET_PARENT :
+		if (i94xxx_xtal_clk_dev == aIoctl_param1)
+		{
+			CLK_SetModuleClock(SPI0_MODULE,
+					CLK_CLKSEL2_SPI0SEL_HXT, MODULE_NoMsk);
+		}
+		else if (i94xxx_pclk0_clk_dev == aIoctl_param1)
+		{
+			CLK_SetModuleClock(SPI0_MODULE,
+					CLK_CLKSEL2_SPI0SEL_PCLK0, MODULE_NoMsk);
+		}
+		else if (i94xxx_pll_clk_dev == aIoctl_param1)
+		{
+			CLK_SetModuleClock(SPI0_MODULE,
+					CLK_CLKSEL2_SPI0SEL_PLL, MODULE_NoMsk);
+		}
+		else if (i94xxx_hirc_clk_dev == aIoctl_param1)
+		{
+			CLK_SetModuleClock(SPI0_MODULE,
+					CLK_CLKSEL2_SPI0SEL_HIRC, MODULE_NoMsk);
+		}
+		else
+		{
+			CRITICAL_ERROR("bad parent clock \n");
+		}
+		cfg_clk->parent_clk = aIoctl_param1;
+		break;
+	case CLK_IOCTL_ENABLE :
+		CLK_EnableModuleClock(SPI0_MODULE);
 		break;
 	case CLK_IOCTL_GET_FREQ :
 		DEV_IOCTL_1_PARAMS(i94xxx_pclk1_clk_dev,
@@ -545,14 +596,14 @@ uint8_t clock_control_i94xxx_ioctl( struct dev_desc_t *adev,
 	{
 	case IOCTL_DEVICE_START :
 		/* Enable HIRC, HXT and LXT clock */
-	    CLK_EnableXtalRC(CLK_PWRCTL_HIRCEN_Msk);
-	    CLK_EnableXtalRC(CLK_PWRCTL_HXTEN_Msk);
-	    CLK_EnableXtalRC(CLK_PWRCTL_LXTEN_Msk);
+		CLK_EnableXtalRC(CLK_PWRCTL_HIRCEN_Msk);
+		CLK_EnableXtalRC(CLK_PWRCTL_HXTEN_Msk);
+		CLK_EnableXtalRC(CLK_PWRCTL_LXTEN_Msk);
 
-	    /* Wait for HIRC, HXT and LXT clock ready */
-	    CLK_WaitClockReady(CLK_STATUS_HIRCSTB_Msk);
-	    CLK_WaitClockReady(CLK_STATUS_HXTSTB_Msk);
-	    CLK_WaitClockReady(CLK_STATUS_LXTSTB_Msk);
+		/* Wait for HIRC, HXT and LXT clock ready */
+		CLK_WaitClockReady(CLK_STATUS_HIRCSTB_Msk);
+		CLK_WaitClockReady(CLK_STATUS_HXTSTB_Msk);
+		CLK_WaitClockReady(CLK_STATUS_LXTSTB_Msk);
 
 		DEV_IOCTL_1_PARAMS(i94xxx_xtal_clk_dev,	CLK_IOCTL_GET_FREQ, &rate);
 
@@ -578,14 +629,14 @@ uint8_t clock_control_i94xxx_ioctl( struct dev_desc_t *adev,
 		DEV_IOCTL_1_PARAMS(i94xxx_hclk_clk_dev,	CLK_IOCTL_GET_FREQ, &rate);
 
 		/* PCLK cannot be greater than 80mhz*/
-	    if (160000000 < rate)
-	    {
-	    	rate = rate / 4;
-	    }
-	    else if (8000000 < rate)
-	    {
-	    	rate = rate / 2;
-	    }
+		if (160000000 < rate)
+		{
+			rate = rate / 4;
+		}
+		else if (8000000 < rate)
+		{
+			rate = rate / 2;
+		}
 		DEV_IOCTL_1_PARAMS(i94xxx_pclk0_clk_dev, CLK_IOCTL_SET_FREQ, &rate);
 		DEV_IOCTL_1_PARAMS(i94xxx_pclk1_clk_dev, CLK_IOCTL_SET_FREQ, &rate);
 

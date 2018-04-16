@@ -16,6 +16,7 @@
 #include "I94100.h"
 
 #include "fmc.h"
+#include "string.h"
 
 #include "flash_wrapper_api.h"
 

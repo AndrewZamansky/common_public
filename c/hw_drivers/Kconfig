@@ -51,7 +51,7 @@ config INCLUDE_INTERNAL_I2C
 
 config INCLUDE_INTERNAL_SPI
 	bool   "internal spi"
-	depends on NUC505 || STM32F103RC || NPCE586 || STM8S103F
+	depends on STM32F103RC || STM8S103F || I94XXX
 	default n
 
 config INCLUDE_INTERNAL_ADC

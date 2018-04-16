@@ -163,7 +163,6 @@ uint8_t uart_i94xxx_ioctl( struct dev_desc_t *adev, uint8_t aIoctl_num,
 		DEV_IOCTL_1_PARAMS(uart_clk_dev, CLK_IOCTL_SET_PARENT, src_clock);
 		DEV_IOCTL_0_PARAMS(uart_clk_dev, CLK_IOCTL_ENABLE);
 
-		/* Reset UART module */
 		SYS_ResetModule(uart_module_rst);
 
 		/* Configure UART and set UART baud rate */

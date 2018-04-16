@@ -6,8 +6,8 @@
 
 /*****************  defines  **************/
 
-#define UART_I94XXX_API_BASE_ADDRESS_UART0	(size_t)UART0_BASE
-#define UART_I94XXX_API_BASE_ADDRESS_UART1	(size_t)UART1_BASE
+#define UART_I94XXX_API_BASE_ADDRESS_UART0  (size_t)UART0_BASE
+#define UART_I94XXX_API_BASE_ADDRESS_UART1  (size_t)UART1_BASE
 
 typedef enum {
 	UART_I94XXX_UART0_TX_RX_PINS_PORT_B_PINS_8_9,

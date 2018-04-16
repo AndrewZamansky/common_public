@@ -68,6 +68,66 @@ void I2S_IRQHandler()
 #endif
 
 
+static void configure_pinout(struct I2S_i94xxx_cfg_t *cfg_hndl)
+{
+	if (I2S_I94XXX_API_DI_PIN_B13 == cfg_hndl->DI_pin)
+	{
+		SYS->GPB_MFPH &= ~(SYS_GPB_MFPH_PB13MFP_Msk);
+		SYS->GPB_MFPH |= SYS_GPB_MFPH_PB13MFP_I2S0_DI;
+	}
+	else if (I2S_I94XXX_API_DI_PIN_D4 == cfg_hndl->DI_pin)
+	{
+		SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD4MFP_Msk);
+		SYS->GPD_MFPL |= SYS_GPD_MFPL_PD4MFP_I2S0_DI;
+	}
+
+	if (I2S_I94XXX_API_DO_PIN_B14 == cfg_hndl->DO_pin)
+	{
+		SYS->GPB_MFPH &= ~(SYS_GPB_MFPH_PB14MFP_Msk);
+		SYS->GPB_MFPH |= SYS_GPB_MFPH_PB14MFP_I2S0_DO;
+	}
+	else if (I2S_I94XXX_API_DO_PIN_D5 == cfg_hndl->DO_pin)
+	{
+		SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD5MFP_Msk);
+		SYS->GPD_MFPL |= SYS_GPD_MFPL_PD5MFP_I2S0_DO;
+	}
+
+	if (I2S_I94XXX_API_MCLK_PIN_B15 == cfg_hndl->MCLK_pin)
+	{
+		SYS->GPB_MFPH &= ~(SYS_GPB_MFPH_PB15MFP_Msk);
+		SYS->GPB_MFPH |= SYS_GPB_MFPH_PB15MFP_I2S0_MCLK;
+	}
+	else if (I2S_I94XXX_API_MCLK_PIN_D2 == cfg_hndl->MCLK_pin)
+	{
+		SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD2MFP_Msk);
+		SYS->GPD_MFPL |= SYS_GPD_MFPL_PD2MFP_I2S0_MCLK;
+	}
+
+	if (I2S_I94XXX_API_LRCLK_PIN_D1 == cfg_hndl->LRCLK_pin)
+	{
+		SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD1MFP_Msk);
+		SYS->GPD_MFPL |= SYS_GPD_MFPL_PD1MFP_I2S0_LRCLK;
+	}
+	else if (I2S_I94XXX_API_LRCLK_PIN_D3 == cfg_hndl->LRCLK_pin)
+	{
+		SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD3MFP_Msk);
+		SYS->GPD_MFPL |= SYS_GPD_MFPL_PD3MFP_I2S0_LRCK;
+	}
+
+	if (I2S_I94XXX_API_BCLK_PIN_D0 == cfg_hndl->BCLK_pin)
+	{
+		SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD0MFP_Msk);
+		SYS->GPD_MFPL |= SYS_GPD_MFPL_PD0MFP_I2S0_BCLK;
+	}
+	else if (I2S_I94XXX_API_BCLK_PIN_D6 == cfg_hndl->BCLK_pin)
+	{
+		SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD6MFP_Msk);
+		SYS->GPD_MFPL |= SYS_GPD_MFPL_PD6MFP_I2S0_BCLK;
+	}
+}
+
+
+
 /**
  * I2S_i94xxx_ioctl()
  *
@@ -94,67 +154,13 @@ uint8_t I2S_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 	switch(aIoctl_num)
 	{
 	case IOCTL_DEVICE_START :
-		if (I2S_I94XXX_API_DI_PIN_B13 == cfg_hndl->DI_pin)
-		{
-			SYS->GPB_MFPH &= ~(SYS_GPB_MFPH_PB13MFP_Msk);
-			SYS->GPB_MFPH |= SYS_GPB_MFPH_PB13MFP_I2S0_DI;
-		}
-		else if (I2S_I94XXX_API_DI_PIN_D4 == cfg_hndl->DI_pin)
-		{
-			SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD4MFP_Msk);
-			SYS->GPD_MFPL |= SYS_GPD_MFPL_PD4MFP_I2S0_DI;
-		}
-
-		if (I2S_I94XXX_API_DO_PIN_B14 == cfg_hndl->DO_pin)
-		{
-			SYS->GPB_MFPH &= ~(SYS_GPB_MFPH_PB14MFP_Msk);
-			SYS->GPB_MFPH |= SYS_GPB_MFPH_PB14MFP_I2S0_DO;
-		}
-		else if (I2S_I94XXX_API_DO_PIN_D5 == cfg_hndl->DO_pin)
-		{
-			SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD5MFP_Msk);
-			SYS->GPD_MFPL |= SYS_GPD_MFPL_PD5MFP_I2S0_DO;
-		}
-
-		if (I2S_I94XXX_API_MCLK_PIN_B15 == cfg_hndl->MCLK_pin)
-		{
-			SYS->GPB_MFPH &= ~(SYS_GPB_MFPH_PB15MFP_Msk);
-			SYS->GPB_MFPH |= SYS_GPB_MFPH_PB15MFP_I2S0_MCLK;
-		}
-		else if (I2S_I94XXX_API_MCLK_PIN_D2 == cfg_hndl->MCLK_pin)
-		{
-			SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD2MFP_Msk);
-			SYS->GPD_MFPL |= SYS_GPD_MFPL_PD2MFP_I2S0_MCLK;
-		}
-
-		if (I2S_I94XXX_API_LRCLK_PIN_D1 == cfg_hndl->LRCLK_pin)
-		{
-			SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD1MFP_Msk);
-			SYS->GPD_MFPL |= SYS_GPD_MFPL_PD1MFP_I2S0_LRCLK;
-		}
-		else if (I2S_I94XXX_API_LRCLK_PIN_D3 == cfg_hndl->LRCLK_pin)
-		{
-			SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD3MFP_Msk);
-			SYS->GPD_MFPL |= SYS_GPD_MFPL_PD3MFP_I2S0_LRCK;
-		}
-
-		if (I2S_I94XXX_API_BCLK_PIN_D0 == cfg_hndl->BCLK_pin)
-		{
-			SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD0MFP_Msk);
-			SYS->GPD_MFPL |= SYS_GPD_MFPL_PD0MFP_I2S0_BCLK;
-		}
-		else if (I2S_I94XXX_API_BCLK_PIN_D6 == cfg_hndl->BCLK_pin)
-		{
-			SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD6MFP_Msk);
-			SYS->GPD_MFPL |= SYS_GPD_MFPL_PD6MFP_I2S0_BCLK;
-		}
-
 
 		clk_dev = i94xxx_i2s_clk_dev;
 
 		DEV_IOCTL_1_PARAMS(clk_dev,	CLK_IOCTL_SET_PARENT, src_clock);
 		DEV_IOCTL_0_PARAMS(clk_dev, CLK_IOCTL_ENABLE);
 
+		configure_pinout(cfg_hndl);
 
 		/*
 	     *  Master mode, 16-bit word width, stereo mode, I2S format.

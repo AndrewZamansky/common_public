@@ -68,6 +68,7 @@
  *  device specific defines should be undefined
  *  after calling #include "add_static_dev.h"
  */
+#undef UART_I94XXX_DT_BASE_ADDRESS
 #undef POINTER_TO_SRC_CLOCK_PDEV
 #undef POINTER_TO_TX_CALLBACK_PDEV
 #undef POINTER_TO_RX_CALLBACK_PDEV
