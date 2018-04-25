@@ -43,7 +43,7 @@
 
 /* ------------------------ Exported variables ---------------*/
 
-//#define 	 DEBUG_USE_INTERRUPT
+//#define  DEBUG_USE_INTERRUPT
 
 #ifdef 	DEBUG_USE_INTERRUPT
 volatile int g_u32DataCount = 0;

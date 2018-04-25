@@ -353,12 +353,12 @@ uint8_t i2c_i94xxx_ioctl( struct dev_desc_t *adev, uint8_t aIoctl_num,
 			switch (cfg_hndl->SCL_pinout)
 			{
 			case I2C_I94XXX_API_I2C1_SCL_PIN_PORT_D_PIN_2:
-				SYS->GPD_MFPL &= SYS_GPD_MFPL_PD2MFP_Msk;
+				SYS->GPD_MFPL &= ~SYS_GPD_MFPL_PD2MFP_Msk;
 				SYS->GPD_MFPL |=  (0x04UL<<SYS_GPD_MFPL_PD2MFP_Pos);
 				break;
 			case I2C_I94XXX_API_I2C1_SCL_PIN_PORT_D_PIN_14:
-				SYS->GPD_MFPL &= SYS_GPD_MFPH_PD14MFP_Msk;
-				SYS->GPD_MFPL |=  SYS_GPD_MFPH_PD14MFP_I2C1_SCL;
+				SYS->GPD_MFPH &= ~SYS_GPD_MFPH_PD14MFP_Msk;
+				SYS->GPD_MFPH |=  SYS_GPD_MFPH_PD14MFP_I2C1_SCL;
 				break;
 			default :
 				return 1;
@@ -367,12 +367,12 @@ uint8_t i2c_i94xxx_ioctl( struct dev_desc_t *adev, uint8_t aIoctl_num,
 			switch (cfg_hndl->SDA_pinout)
 			{
 			case I2C_I94XXX_API_I2C1_SDA_PIN_PORT_D_PIN_1:
-				SYS->GPD_MFPL &= SYS_GPD_MFPL_PD1MFP_Msk;
+				SYS->GPD_MFPL &= ~SYS_GPD_MFPL_PD1MFP_Msk;
 				SYS->GPD_MFPL |=  SYS_GPD_MFPL_PD1MFP_I2C1_SDA;
 				break;
 			case I2C_I94XXX_API_I2C1_SDA_PIN_PORT_D_PIN_15:
-				SYS->GPD_MFPL &= SYS_GPD_MFPH_PD15MFP_Msk;
-				SYS->GPD_MFPL |=  SYS_GPD_MFPH_PD15MFP_I2C1_SDA;
+				SYS->GPD_MFPH &= ~SYS_GPD_MFPH_PD15MFP_Msk;
+				SYS->GPD_MFPH |=  SYS_GPD_MFPH_PD15MFP_I2C1_SDA;
 				break;
 			default :
 				return 1;
