@@ -11,11 +11,6 @@
 #include "_project_func_declarations.h"
 
 #include "diskio.h"		/* FatFs lower layer API */
-//#include "BuiltInFlash_API.h"
-#include "SPI_FLASH_api.h"
-//#include "usbdisk.h"	/* Example: USB drive control */
-//#include "atadrive.h"	/* Example: ATA drive control */
-//#include "sdcard.h"		/* Example: MMC/SDC contorl */
 
 /* Definitions of physical drive number for each drive */
 
@@ -23,6 +18,8 @@
 //#define MMC		1	/* Example: Map MMC/SD card to drive number 1 */
 //#define USB		2	/* Example: Map USB drive to drive number 2 */
 
+
+extern struct dev_desc_t * storage_dev ;
 
 /*-----------------------------------------------------------------------*/
 /* Get Drive Status                                                      */
@@ -119,43 +116,7 @@ DRESULT disk_read (
 	UINT count		/* Number of sectors to read */
 )
 {
-#if 0
-	BuiltInFlash_API_ReadData(pBuiltInFlashHandle,sector*512,buff,count*512);
-#else
-	DEV_PREAD(spi_flash_manager_dev,buff,count*512,sector*512);
-//	SPI_FLASH_API_ReadData(spiFlashHandle,sector*512,buff,count*512);
-#endif
-//	DRESULT res;
-//	int result;
-//
-//	switch (pdrv) {
-//	case ATA :
-//		// translate the arguments here
-//
-//		result = ATA_disk_read(buff, sector, count);
-//
-//		// translate the reslut code here
-//
-//		return res;
-//
-//	case MMC :
-//		// translate the arguments here
-//
-//		result = MMC_disk_read(buff, sector, count);
-//
-//		// translate the reslut code here
-//
-//		return res;
-//
-//	case USB :
-//		// translate the arguments here
-//
-//		result = USB_disk_read(buff, sector, count);
-//
-//		// translate the reslut code here
-//
-//		return res;
-//	}
+	DEV_PREAD(storage_dev, buff, count * 512, sector * 512);
 
 	return RES_OK;
 }
@@ -174,44 +135,8 @@ DRESULT disk_write (
 	UINT count			/* Number of sectors to write */
 )
 {
-//	DRESULT res;
-//	int result;
-//
-#if 0
-	BuiltInFlash_API_WriteData(pBuiltInFlashHandle,sector*512,buff,count*512);
-#else
-	DEV_PWRITE(spi_flash_manager_dev,buff,count*512,sector*512);
-//	SPI_FLASH_API_WriteData(spiFlashHandle,sector*512,buff,count*512);
-#endif
+	DEV_PWRITE(storage_dev, buff, count * 512, sector * 512);
 
-//	switch (pdrv) {
-//	case ATA :
-//		// translate the arguments here
-//
-//		result = ATA_disk_write(buff, sector, count);
-//
-//		// translate the reslut code here
-//
-//		return res;
-//
-//	case MMC :
-//		// translate the arguments here
-//
-//		result = MMC_disk_write(buff, sector, count);
-//
-//		// translate the reslut code here
-//
-//		return res;
-//
-//	case USB :
-//		// translate the arguments here
-//
-//		result = USB_disk_write(buff, sector, count);
-//
-//		// translate the reslut code here
-//
-//		return res;
-//	}
 
 	return RES_OK;
 }
