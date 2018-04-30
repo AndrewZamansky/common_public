@@ -116,13 +116,8 @@ ifeq ("","$(filter $(CURR_GIT_REPO_DIR),$(EXTERNAL_SRC_GIT_DIRS))")
         $(info ---: current commit   : "$(CURR_GIT_COMMIT)")
         $(info ---: requested commit : $(GIT_REQUESTED_COMMIT))
         $(info ---: checkout requested commit and)
-        $(info ---: move branch $(CURR_APP_GIT_BRANCH) to this commit)
-        $(info ---: you can use following command :)
-        CMD_TO_RUN := $(SHELL_GO_TO_GIT_DIR) $(GIT) checkout
-        CMD_TO_RUN += $(GIT_REQUESTED_COMMIT) -B $(CURR_APP_GIT_BRANCH)
-        $(info ---: $(CMD_TO_RUN))
-        $(call exit,1)
-    else
+        NEED_TO_SWITCH_BRANCH_OR_COMMIT :=y
+    else ifeq ($(GIT_CHECK_BRANCH_NAME),y)
         #if  $(CURR_APP_GIT_BRANCH) is not in $(CURR_GIT_BRANCH) list
         ifeq (n,$(BRANCH_NAME_MATCH))
             # for now we are doing manual checkout as it usefull in case when
@@ -131,17 +126,28 @@ ifeq ("","$(filter $(CURR_GIT_REPO_DIR),$(EXTERNAL_SRC_GIT_DIRS))")
             $(info ---: current branch is : $(CURR_GIT_BRANCH) )
             $(info ---: current commit is OK but current branch)
             $(info ---: should be $(CURR_APP_GIT_BRANCH) .)
+            NEED_TO_SWITCH_BRANCH_OR_COMMIT :=y
+        endif
+    else
+    endif
+
+    ifeq ($(NEED_TO_SWITCH_BRANCH_OR_COMMIT),y)
+        CMD_TO_RUN := $(SHELL_GO_TO_GIT_DIR) $(GIT) checkout
+        CMD_TO_RUN += $(GIT_REQUESTED_COMMIT) -B $(CURR_APP_GIT_BRANCH)
+        ifneq ($(FORCE_PROJECT_SWITCH),y)
             $(info ---: move branch $(CURR_APP_GIT_BRANCH) to requested commit)
             $(info ---: you can use following command :)
-            CMD_TO_RUN := $(SHELL_GO_TO_GIT_DIR) $(GIT) checkout
-            CMD_TO_RUN += $(GIT_REQUESTED_COMMIT) -B $(CURR_APP_GIT_BRANCH)
             $(info ---: $(CMD_TO_RUN))
             $(call exit,1)
+        else
+            CURR_GIT_BRANCH := $(shell $(CMD_TO_RUN))
         endif
+    else
+        $(info ---- git repository $(CURR_GIT_REPO_DIR) is synchronized)
     endif
-    $(info ---- git repository $(CURR_GIT_REPO_DIR) is synchronized)
 endif
 #clear arguments for next function usage
 CURR_GIT_REPO_DIR:=
 CURR_GIT_COMMIT_HASH_VARIABLE:=
 CURR_GIT_BUNDLE:=
+GIT_CHECK_BRANCH_NAME:=

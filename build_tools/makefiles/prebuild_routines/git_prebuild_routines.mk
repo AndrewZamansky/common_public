@@ -69,6 +69,7 @@ endif
 # is the same as required by application
 CURR_GIT_REPO_DIR :=$(COMMON_PUBLIC_DIR)
 CURR_GIT_COMMIT_HASH_VARIABLE :=CONFIG_COMMON_PUBLIC_GIT_COMMIT_HASH
+GIT_CHECK_BRANCH_NAME :=y
 include $(MAKEFILES_ROOT_DIR)/_include_functions/git_prebuild_repo_check.mk
 
 
