@@ -112,7 +112,7 @@ ifeq ("","$(filter $(CURR_GIT_REPO_DIR),$(EXTERNAL_SRC_GIT_DIRS))")
             endif
         endif
 
-        $(info err: git repository test failed : $(CURR_GIT_REPO_DIR))
+        $(info info/err: git repository test failed : $(CURR_GIT_REPO_DIR))
         $(info ---: current commit   : "$(CURR_GIT_COMMIT)")
         $(info ---: requested commit : $(GIT_REQUESTED_COMMIT))
         $(info ---: checkout requested commit and)
@@ -122,7 +122,7 @@ ifeq ("","$(filter $(CURR_GIT_REPO_DIR),$(EXTERNAL_SRC_GIT_DIRS))")
         ifeq (n,$(BRANCH_NAME_MATCH))
             # for now we are doing manual checkout as it usefull in case when
             # we try mistakenly compile non-related project 
-            $(info err: git repository test failed : $(CURR_GIT_REPO_DIR))
+            $(info info/err: git repository test failed : $(CURR_GIT_REPO_DIR))
             $(info ---: current branch is : $(CURR_GIT_BRANCH) )
             $(info ---: current commit is OK but current branch)
             $(info ---: should be $(CURR_APP_GIT_BRANCH) .)
