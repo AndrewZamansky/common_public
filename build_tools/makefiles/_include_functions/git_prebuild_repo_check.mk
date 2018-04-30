@@ -115,9 +115,8 @@ ifeq ("","$(filter $(CURR_GIT_REPO_DIR),$(EXTERNAL_SRC_GIT_DIRS))")
         $(info info/err: git repository test failed : $(CURR_GIT_REPO_DIR))
         $(info ---: current commit   : "$(CURR_GIT_COMMIT)")
         $(info ---: requested commit : $(GIT_REQUESTED_COMMIT))
-        $(info ---: checkout requested commit and)
         NEED_TO_SWITCH_BRANCH_OR_COMMIT :=y
-    else ifeq ($(GIT_CHECK_BRANCH_NAME),y)
+    else ifeq ($(CHECKING_COMMON_PUBLIC_GIT),y)
         #if  $(CURR_APP_GIT_BRANCH) is not in $(CURR_GIT_BRANCH) list
         ifeq (n,$(BRANCH_NAME_MATCH))
             # for now we are doing manual checkout as it usefull in case when
@@ -134,13 +133,21 @@ ifeq ("","$(filter $(CURR_GIT_REPO_DIR),$(EXTERNAL_SRC_GIT_DIRS))")
     ifeq ($(NEED_TO_SWITCH_BRANCH_OR_COMMIT),y)
         CMD_TO_RUN := $(SHELL_GO_TO_GIT_DIR) $(GIT) checkout
         CMD_TO_RUN += $(GIT_REQUESTED_COMMIT) -B $(CURR_APP_GIT_BRANCH)
-        ifneq ($(FORCE_PROJECT_SWITCH),y)
+
+        DO_AUTO_CHECKOUT :=y
+        ifeq ($(CHECKING_COMMON_PUBLIC_GIT),y)
+            ifneq ($(FORCE_PROJECT_SWITCH),y)
+                DO_AUTO_CHECKOUT :=n
+            endif
+        endif
+
+        ifeq ($(DO_AUTO_CHECKOUT),y)
+            CURR_GIT_BRANCH := $(shell $(CMD_TO_RUN))
+        else
             $(info ---: move branch $(CURR_APP_GIT_BRANCH) to requested commit)
             $(info ---: you can use following command :)
             $(info ---: $(CMD_TO_RUN))
             $(call exit,1)
-        else
-            CURR_GIT_BRANCH := $(shell $(CMD_TO_RUN))
         endif
     else
         $(info ---- git repository $(CURR_GIT_REPO_DIR) is synchronized)
@@ -150,4 +157,4 @@ endif
 CURR_GIT_REPO_DIR:=
 CURR_GIT_COMMIT_HASH_VARIABLE:=
 CURR_GIT_BUNDLE:=
-GIT_CHECK_BRANCH_NAME:=
+CHECKING_COMMON_PUBLIC_GIT:=
