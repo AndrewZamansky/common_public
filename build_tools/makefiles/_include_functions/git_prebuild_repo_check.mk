@@ -142,7 +142,13 @@ ifeq ("","$(filter $(CURR_GIT_REPO_DIR),$(EXTERNAL_SRC_GIT_DIRS))")
         endif
 
         ifeq ($(DO_AUTO_CHECKOUT),y)
-            CURR_GIT_BRANCH := $(shell $(CMD_TO_RUN))
+            SHELL_OUT := $(shell $(CMD_TO_RUN) 2>&1)
+            $(info $(SHELL_OUT))
+            ifeq ($(findstring fatal:,$(SHELL_OUT)),fatal:)
+                $(info err: git repository test failed : $(CURR_GIT_REPO_DIR))
+                $(info ---: maybe commit $(GIT_REQUESTED_COMMIT) doesn't exists)
+                $(call exit,1)
+            endif
         else
             $(info ---: move branch $(CURR_APP_GIT_BRANCH) to requested commit)
             $(info ---: you can use following command :)
