@@ -2,6 +2,8 @@
 #ifndef _GPIO_API_H_
 #define _GPIO_API_H_
 
+#include "dev_management_api.h"
+
 /*****************  defines  **************/
 
 

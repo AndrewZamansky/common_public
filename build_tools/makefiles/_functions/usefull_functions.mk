@@ -33,3 +33,12 @@ endif
 define exit
     $(if $(1),$(shell echo dummy ) $(error stopping ...),)
 endef
+
+
+# function : check_if_selected
+# usage    : $(call check_if_selected,1)
+#
+# return 'y' if all of words are 'y'. returns empty string in other case
+define eval_config
+$(if $(strip $(filter-out y,$(1))),,$(filter y,$(1)))
+endef

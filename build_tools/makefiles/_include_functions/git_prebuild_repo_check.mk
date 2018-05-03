@@ -112,36 +112,55 @@ ifeq ("","$(filter $(CURR_GIT_REPO_DIR),$(EXTERNAL_SRC_GIT_DIRS))")
             endif
         endif
 
-        $(info err: git repository test failed : $(CURR_GIT_REPO_DIR))
+        $(info info/err: git repository test failed : $(CURR_GIT_REPO_DIR))
         $(info ---: current commit   : "$(CURR_GIT_COMMIT)")
         $(info ---: requested commit : $(GIT_REQUESTED_COMMIT))
-        $(info ---: checkout requested commit and)
-        $(info ---: move branch $(CURR_APP_GIT_BRANCH) to this commit)
-        $(info ---: you can use following command :)
-        CMD_TO_RUN := $(SHELL_GO_TO_GIT_DIR) $(GIT) checkout
-        CMD_TO_RUN += $(GIT_REQUESTED_COMMIT) -B $(CURR_APP_GIT_BRANCH)
-        $(info ---: $(CMD_TO_RUN))
-        $(call exit,1)
-    else
+        NEED_TO_SWITCH_BRANCH_OR_COMMIT :=y
+    else ifeq ($(CHECKING_COMMON_PUBLIC_GIT),y)
         #if  $(CURR_APP_GIT_BRANCH) is not in $(CURR_GIT_BRANCH) list
         ifeq (n,$(BRANCH_NAME_MATCH))
             # for now we are doing manual checkout as it usefull in case when
             # we try mistakenly compile non-related project 
-            $(info err: git repository test failed : $(CURR_GIT_REPO_DIR))
+            $(info info/err: git repository test failed : $(CURR_GIT_REPO_DIR))
             $(info ---: current branch is : $(CURR_GIT_BRANCH) )
             $(info ---: current commit is OK but current branch)
             $(info ---: should be $(CURR_APP_GIT_BRANCH) .)
+            NEED_TO_SWITCH_BRANCH_OR_COMMIT :=y
+        endif
+    else
+    endif
+
+    ifeq ($(NEED_TO_SWITCH_BRANCH_OR_COMMIT),y)
+        CMD_TO_RUN := $(SHELL_GO_TO_GIT_DIR) $(GIT) checkout
+        CMD_TO_RUN += $(GIT_REQUESTED_COMMIT) -B $(CURR_APP_GIT_BRANCH)
+
+        DO_AUTO_CHECKOUT :=y
+        ifeq ($(CHECKING_COMMON_PUBLIC_GIT),y)
+            ifneq ($(FORCE_PROJECT_SWITCH),y)
+                DO_AUTO_CHECKOUT :=n
+            endif
+        endif
+
+        ifeq ($(DO_AUTO_CHECKOUT),y)
+            SHELL_OUT := $(shell $(CMD_TO_RUN) 2>&1)
+            $(info $(SHELL_OUT))
+            ifeq ($(findstring fatal:,$(SHELL_OUT)),fatal:)
+                $(info err: git repository test failed : $(CURR_GIT_REPO_DIR))
+                $(info ---: maybe commit $(GIT_REQUESTED_COMMIT) doesn't exists)
+                $(call exit,1)
+            endif
+        else
             $(info ---: move branch $(CURR_APP_GIT_BRANCH) to requested commit)
             $(info ---: you can use following command :)
-            CMD_TO_RUN := $(SHELL_GO_TO_GIT_DIR) $(GIT) checkout
-            CMD_TO_RUN += $(GIT_REQUESTED_COMMIT) -B $(CURR_APP_GIT_BRANCH)
             $(info ---: $(CMD_TO_RUN))
             $(call exit,1)
         endif
+    else
+        $(info ---- git repository $(CURR_GIT_REPO_DIR) is synchronized)
     endif
-    $(info ---- git repository $(CURR_GIT_REPO_DIR) is synchronized)
 endif
 #clear arguments for next function usage
 CURR_GIT_REPO_DIR:=
 CURR_GIT_COMMIT_HASH_VARIABLE:=
 CURR_GIT_BUNDLE:=
+CHECKING_COMMON_PUBLIC_GIT:=

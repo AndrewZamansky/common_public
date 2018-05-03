@@ -73,6 +73,11 @@ void I2S_splitter_dsp(struct dsp_module_inst_t *adsp,
 	handle = (struct I2S_splitter_instance_t *)adsp->handle;
 	num_of_channels = handle->num_of_channels;
 
+	if (num_of_channels > MAX_NUM_OF_OUTPUT_PADS )
+	{
+		CRITICAL_ERROR("to many channels");
+	}
+
 	/*
 	 * casting here is just to avoid warning as we are aware that
 	 * pRxBuf has some INT type

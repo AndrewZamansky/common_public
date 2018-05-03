@@ -5,7 +5,7 @@
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 
-#define MAX_NUM_OF_OUTPUT_PADS  3
+#define MAX_NUM_OF_OUTPUT_PADS  4
 #define DSP_MAGIC_NUMBER        0xa2b6
 
 /**********  define API  types ************/
