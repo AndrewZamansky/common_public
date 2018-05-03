@@ -107,7 +107,7 @@ ifdef CONFIG_INCLUDE_TOOLCHAIN_LIBRARIES
     ifdef CONFIG_USE_NANO_STD_LIBS
         STD_LIBRARIES := libc_nano.a
     else
-        STD_LIBRARIES := libc.a
+        STD_LIBRARIES := libc.a libstdc++.a
     endif
     STD_LIBRARIES +=libm.a libgcc.a
     GLOBAL_LIBS += $(STD_LIBRARIES)

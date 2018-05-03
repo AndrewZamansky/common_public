@@ -19,4 +19,9 @@
 
 /**********  define API  functions  ************/
 
+typedef enum
+{
+	IOCTL_SPI_API_SET_CS_HIGH = IOCTL_LAST_COMMON_IOCTL + 1,
+	IOCTL_SPI_API_SET_CS_LOW,
+}SPI_I94XXX_API_ioctl_t;
 #endif

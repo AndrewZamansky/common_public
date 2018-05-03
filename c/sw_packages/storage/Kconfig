@@ -13,5 +13,13 @@ config INCLUDE_FAT_FS
 	depends on INCLUDE_SPI_FLASH_PARTITION_MANAGER
 	default n
 
+menuconfig INCLUDE_ARDUINO_SD_SPI
+	bool   "arduino sd over spi"
+	depends on INCLUDE_INTERNAL_SPI
+	default n
+
+if INCLUDE_ARDUINO_SD_SPI
+source "$KCONFIG_PUBLIC_START_DIR/sw_packages/storage/ArduinoSdSpi/Kconfig"
+endif
 	
 endmenu

@@ -20,6 +20,7 @@ struct spi_i94xxx_cfg_t {
 	uint8_t    SS_pin;
 	uint8_t    MISO_pin;
 	uint8_t    MOSI_pin;
+	uint8_t    data_width;
 };
 
 
