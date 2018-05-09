@@ -10,10 +10,10 @@ DATE_STR := $(subst $(SPACE),.,$(DATE_STR))#replace ' ' with '.'
 ### calculating version number 
 TIME_STR := $(subst :,.,$(strip $(TIME)))#replace ':' with '.'
 
-CURR_GIT_VERSION :=$(patsubst $(PROJECT_NAME)%,%,$(CURR_GIT_BRANCH))
-CURR_GIT_VERSION :=$(patsubst _%,%,$(CURR_GIT_VERSION))
-ifeq ($(CURR_GIT_VERSION),) # if empty then we are on main branch     
-    CURR_GIT_VERSION :=MasterV0.0
+CURR_GIT_VERSION :=$(patsubst $(PROJECT_NAME)%,%,$(CURR_APP_GIT_BRANCH))
+MAIN_VERSION_STR :=$(patsubst _%,%,$(CURR_GIT_VERSION))
+ifeq ($(MAIN_VERSION_STR),) # if empty then we are on main branch
+    MAIN_VERSION_STR :=MasterV0.0
 endif
-MAIN_VERSION_STR := $(CURR_GIT_VERSION)
-FULL_VERSION_STR := $(CURR_GIT_VERSION)r$(DATE_STR).$(TIME_STR)
+
+FULL_VERSION_STR := $(CURR_APP_GIT_BRANCH)r$(DATE_STR).$(TIME_STR)

@@ -146,66 +146,26 @@ static uint32_t actualSamplingRate;
 
 
 uint32_t try_to_calclulate_clk_div(uint32_t needed_sample_rate,
-		uint32_t src_clk_rate, uint8_t clkset,
-		uint8_t *zohdiv, uint16_t *clkdiv)
+		uint32_t src_clk_rate, uint16_t work_clock, uint16_t *clkdiv)
 {
 	uint16_t l_clkdiv;
-	uint8_t l_zohdiv;
-	uint32_t total_div;
 	uint32_t u32Error1;
 	uint32_t u32Error2;
 
-	total_div = (src_clk_rate / needed_sample_rate) / clkset;
+	l_clkdiv = (src_clk_rate / needed_sample_rate) / work_clock;
 
 	/* Adjust Error */
-	u32Error1 = ((src_clk_rate / clkset) / total_div) - needed_sample_rate;
-	u32Error2 = needed_sample_rate - ((src_clk_rate / clkset)/(total_div + 1));
+	u32Error1 = ((src_clk_rate / work_clock) / l_clkdiv) - needed_sample_rate;
+	u32Error2 =
+			needed_sample_rate - ((src_clk_rate / work_clock)/(l_clkdiv + 1));
 	if (u32Error1 > u32Error2)
 	{
-		total_div = total_div + 1;
+		l_clkdiv = l_clkdiv + 1;
 		u32Error1 = u32Error2;
 	}
 
-	/*
-	 * according to dpem spec, clocks src_clk/clkdiv should be 24 or 24.576
-	 * so for 196608000 l_zohdiv=4 and l_clkdiv = 7 . so total_div = 4*(7+1)
-	 * l_zohdiv=32  l_clkdiv = 0 should also give the same result BUT measured
-	 * THD is very high . maybe because of HW implementation
-	 */
-	if(needed_sample_rate == 48000 || needed_sample_rate == 96000)
-	{
-		l_zohdiv = 4;
-		l_clkdiv =
-				src_clk_rate / ((clkset * l_zohdiv) * needed_sample_rate) - 1;
-	}
-	else
-	{
-		if ((total_div >= DPWM_ZOHDIV_MIN))
-		{
-			if(total_div <= DPWM_ZOHDIV_MAX)
-			{
-				l_zohdiv = total_div;
-				l_clkdiv = 0;
-			}
-			else
-			{
-				l_clkdiv = 0;
-				do
-				{
-					l_clkdiv++;
-					l_zohdiv = total_div / (l_clkdiv + 1);
-				}
-				while(l_zohdiv > DPWM_ZOHDIV_MAX);
-			}
-		}
-		else
-		{
-			l_zohdiv = DPWM_ZOHDIV_MIN;
-			l_clkdiv = 0;
-		}
-	}
-	*clkdiv = l_clkdiv;
-	*zohdiv = l_zohdiv;
+
+	*clkdiv = (l_clkdiv - 1);
 
 	return u32Error1;
 }
@@ -229,7 +189,6 @@ uint8_t dpwm_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 	uint8_t clkset;
 	uint8_t zohdiv;
 	uint16_t clkdiv;
-	uint8_t zohdiv2;
 	uint16_t clkdiv2;
 
 	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
@@ -250,15 +209,20 @@ uint8_t dpwm_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 
 		SYS_ResetModule(DPWM_RST);
 
+		/*
+		*  DPWM clk must be 512fs or 500fs (125*4 or 128*4)fs so ZOHDIV = 4
+		*  otherwise high THD will be received . ( for example for ZOHDIV = 32
+		*  THD will be high )
+		*/
+		zohdiv = 4;
 		err1 = try_to_calclulate_clk_div(
-				sample_rate, src_clk_rate, 125, &zohdiv, &clkdiv);
+				sample_rate, src_clk_rate, 500,  &clkdiv);
 
 		err2 = try_to_calclulate_clk_div(
-				sample_rate, src_clk_rate, 128, &zohdiv2, &clkdiv2);
+				sample_rate, src_clk_rate, 512, &clkdiv2);
 
 		if (err1 > err2)
 		{
-			zohdiv = zohdiv2;
 			clkdiv = clkdiv2;
 			clkset = 128;
 			DPWM_SET_CLKSET(DPWM, DPWM_CLKSET_512FS);
