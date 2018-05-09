@@ -37,7 +37,7 @@ CFLAGS =
 
 #ASMFLAGS =
 
-INCLUDE_DIR = ./src
+INCLUDE_DIR = src
 
 SRC += ArduinoSdSpi.cpp
 VPATH = src

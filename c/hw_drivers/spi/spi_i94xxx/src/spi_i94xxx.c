@@ -251,6 +251,7 @@ uint8_t spi_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 	struct dev_desc_t	*spi_clk_dev;
 	struct dev_desc_t	*src_clock;
 	uint32_t spi_module_rst;
+	uint32_t clk_freq;
 	SPI_T *spi_regs;
 	int spi_irq;
 
@@ -282,10 +283,10 @@ uint8_t spi_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 			/* Configure SPI0 as a master, SPI clock rate 2 MHz,
 			 *  clock idle low, 32-bit transaction, drive output on
 			 * falling clock edge and latch input on rising edge. */
-			SPI_Open(spi_regs, SPI_MASTER, SPI_MODE_0, 32, 250000);
+			SPI_Open(spi_regs, SPI_MASTER, SPI_MODE_0, 8, 250000);
 			/* Enable the automatic hardware slave selection function.
 		     *  Select the SPI0_SS pin and configure as low-active. */
-			SPI_EnableAutoSS(spi_regs, SPI_SS0, SPI_SS_ACTIVE_LOW);
+			//SPI_EnableAutoSS(spi_regs, SPI_SS0, SPI_SS_ACTIVE_LOW);
 
 			SPI_SET_DATA_WIDTH(spi_regs, cfg_hndl->data_width);
 
@@ -325,6 +326,13 @@ uint8_t spi_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 			{
 				SPI_SET_SS_LOW_SPI1();
 			}
+			break;
+
+
+		case IOCTL_SPI_API_SET_CLK :
+			clk_freq = (uint32_t)aIoctl_param1;
+			SPI_Open(spi_regs, SPI_MASTER, SPI_MODE_0, 8, clk_freq);
+			SPI_SET_DATA_WIDTH(spi_regs, cfg_hndl->data_width);
 			break;
 
 		default :

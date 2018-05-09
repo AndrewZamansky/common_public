@@ -46,6 +46,7 @@ extern "C" {
 static struct dev_desc_t *l_spi_dev;
 
 
+
 extern "C" {
 
 
@@ -62,41 +63,76 @@ extern "C" {
 	}
 
 
-	uint8_t cSdSpiCardEX_syncBlocks()
+
+	uint8_t ArduinoSdSpi_pwrite(struct dev_desc_t *adev,  //Device in .h file
+			const uint8_t *apData,  /* Data buffer to write data from */
+			uint32_t aLength, 		/* Amount of data to write in blocks*512 */
+			uint32_t  aOffset)   		/* Position*512 to write into device*/
 	{
-		if(SdSpiCard_inst->syncBlocks())
+		struct arduino_sd_spi_cfg_t *config_handle;
+
+		config_handle =
+			(struct arduino_sd_spi_cfg_t *)DEV_GET_CONFIG_DATA_POINTER(adev);
+
+		// This should be handled by setup
+		//config_handle->sd_spi_inst = (void*) (new SdSpiCardEX);
+
+		SdSpiCard_inst = (SdSpiCardEX*)config_handle->sd_spi_inst;
+
+
+		/**  bool writeBlocks(uint32_t block, const uint8_t* src, size_t nb);
+		* Write multiple 512 byte blocks to an SD card.
+		*
+		* \param[in] block Logical block to be written.
+		* \param[in] nb Number of blocks to be written.
+		* \param[in] src Pointer to the location of the data to be written.
+		* \return The value true is returned for success and
+		* the value false is returned for failure.
+		*/
+
+		if (SdSpiCard_inst->writeBlocks(
+				aOffset / 512, (uint8_t *)apData, (size_t)(aLength / 512)))
+		{
 			return 1;
+		}
 		else return 0;
+
+
 	}
 
-	uint8_t cSdSpiCardEX_readBlock(uint32_t block, uint8_t *dst)
+	uint8_t ArduinoSdSpi_pread(struct dev_desc_t *adev,  //Device in .h file
+			const uint8_t *apData,  /* Data buffer to read data into */
+			uint32_t aLength, 		/* Amount of data to read in blocks*512 */
+			uint32_t  aOffset)   		/* Position*512 to read from device*/
 	{
-		if(SdSpiCard_inst->readBlock(block, dst))
+		struct arduino_sd_spi_cfg_t *config_handle;
+
+		config_handle =
+			(struct arduino_sd_spi_cfg_t *)DEV_GET_CONFIG_DATA_POINTER(adev);
+
+		// This should be handled by setup
+		//config_handle->sd_spi_inst = (void*) (new SdSpiCardEX);
+
+		SdSpiCard_inst = (SdSpiCardEX*)config_handle->sd_spi_inst;
+
+
+		/**  bool readBlocks(uint32_t block, uint8_t* dst, size_t nb);
+		* Read multiple 512 byte blocks from an SD card.
+		*
+		* \param[in] block Logical block to be read.
+		* \param[in] nb Number of blocks to be read.
+		* \param[out] dst Pointer to the location that will receive the data.
+		* \return The value true is returned for success and
+		* the value false is returned for failure.
+		*/
+
+		if (SdSpiCard_inst->readBlocks(
+				aOffset / 512, (uint8_t *)apData, (size_t)(aLength / 512)))
+		{
 			return 1;
+		}
 		else return 0;
 	}
-
-	uint8_t cSdSpiCardEX_readBlocks(uint32_t block, uint8_t *dst, size_t nb)
-	{
-		if(SdSpiCard_inst->readBlocks(block, dst, nb))
-			return 1;
-		else return 0;
-	}
-
-	uint8_t cSdSpiCardEX_writeBlock(uint32_t block, const uint8_t *src)
-	{
-		if(SdSpiCard_inst->writeBlock(block, src))
-			return 1;
-		else return 0;
-	}
-
-	uint8_t cSdSpiCardEX_writeBlocks(uint32_t block, const uint8_t *src, size_t nb)
-	{
-		if(SdSpiCard_inst->writeBlocks(block, src, nb))
-			return 1;
-		else return 0;
-	}
-
 }
 
 Particle_class Particle;
@@ -202,32 +238,29 @@ uint8_t ArduinoSdSpi_ioctl( struct dev_desc_t *adev ,
 {
 	struct arduino_sd_spi_cfg_t *config_handle;
 	struct dev_desc_t *spi_dev;
-	//SPI_T *spi_sd;
 
 	config_handle =
 			(struct arduino_sd_spi_cfg_t *)DEV_GET_CONFIG_DATA_POINTER(adev);
 	spi_dev = config_handle->spi_dev;
-	//spi_sd = (SPI_T *)config_handle->base_address;
+	uint32_t clk_freq = (uint32_t)config_handle->clk_freq;
 
 
 	switch(aIoctl_num)
 	{
 	case IOCTL_DEVICE_START :
 		l_spi_dev = spi_dev;
-		config_handle->sd_spi_inst = (void*) (new SdSpiCardEX);
+		DEV_IOCTL_0_PARAMS(l_spi_dev , IOCTL_DEVICE_START );
+		if (NULL == config_handle->sd_spi_inst)
+		{
+			config_handle->sd_spi_inst = (void*) (new SdSpiCardEX);
+		}
 		SdSpiCard_inst = (SdSpiCardEX*)config_handle->sd_spi_inst;
 
 		{
 			SPISettings spiSettings(0, 0, 0);
 			cSdSpiCardEX_begin(NULL, 0, spiSettings);
 		}
-
-
-		//SPI_DisableAutoSS(spi_sd);	//doesn't work
-
-		//defined in
-//		SPI_SET_SS_LOW_SPI0();
-//		SPI_SET_SS_HIGH_SPI0();
+		DEV_IOCTL_1_PARAMS(l_spi_dev , IOCTL_SPI_API_SET_CLK, (void *)clk_freq );
 		break;
 
 	default :

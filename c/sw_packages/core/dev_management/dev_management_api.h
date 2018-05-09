@@ -180,16 +180,19 @@ uint8_t DEV_CALLBACK_1_PARAMS(struct dev_desc_t * dev,
 			dev->callback(dev, callback_num,(void*)param1, (void*)param2)
 
 
-#define DEV_PWRITE(dev, data, len, offset)  dev->pwrite(dev, data, len, offset)
-#define DEV_PWRITE32(dev, data, len, offset)    \
-				((dev_pwrite32_func_t)(dev)->pwrite)(dev, data, len, offset)
-size_t  DEV_WRITE(struct dev_desc_t *adev,
-			const uint8_t *apData, size_t aLength);
-#define DEV_PREAD(dev, data, len, offset)    dev->pread(dev, data, len, offset)
-#define DEV_PREAD32(dev, data, len, offset)  \
-					((dev_pread32_func_t)(dev)->pread)(dev, data, len, offset)
-#define DEV_READ(dev, data, len)    \
-						((dev_read_func_t)(dev)->pread)(dev, data, len)
+size_t	DEV_PWRITE(struct dev_desc_t *adev,
+			const uint8_t *apData, size_t aLength, size_t aOffset);
+size_t	DEV_PWRITE32(struct dev_desc_t *adev,
+			const uint8_t *apData, uint32_t aLength, uint32_t aOffset);
+#define	DEV_WRITE(adev, apData, aLength)   \
+					DEV_PWRITE(adev, apData, aLength, 0)
+
+size_t	DEV_PREAD(struct dev_desc_t *adev,
+			uint8_t *apData, size_t aLength, size_t aOffset);
+size_t	DEV_PREAD32(struct dev_desc_t *adev,
+			uint8_t *apData, uint32_t aLength, uint32_t aOffset);
+#define	DEV_READ(adev, apData, aLength)   \
+					DEV_PREAD(adev, apData, aLength, 0)
 
 uint8_t DEV_API_dummy_ioctl_func( struct dev_desc_t *adev,
 		uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2);

@@ -12,11 +12,11 @@
 #include "_project_defines.h"
 
 #include "dev_management_api.h"
+#include "management_api.h"
 
 #include "FatFs_api.h"
 
 #include "FatFs.h"
-
 
 
 
@@ -50,7 +50,6 @@ uint8_t FatFs_ioctl( struct dev_desc_t *adev ,
 		const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
 {
 	struct FatFs_instance_t *config_handle;
-	struct dev_desc_t *   storage_dev ;
 
 	config_handle = DEV_GET_CONFIG_DATA_POINTER(adev);
 

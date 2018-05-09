@@ -4,8 +4,8 @@
  *
  */
 
-#ifndef _ArduinoSdSpi_prerequirements_check_H
-#define _ArduinoSdSpi_prerequirements_check_H
+#ifndef _FatFs_prerequirements_check_H
+#define _FatFs_prerequirements_check_H
 
 
 /***************************/
