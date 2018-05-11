@@ -19,6 +19,7 @@
 class SPISettings {
 public:
 	SPISettings(int, int,int) {}
+	SPISettings() {}
 };
 
 // called from yield function. should not be used, but needs to be implemented

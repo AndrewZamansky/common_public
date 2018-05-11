@@ -9,6 +9,7 @@
 #define	MODULE_PREAD_FUNCTION             ArduinoSdSpi_pread
 #define	MODULE_IOCTL_FUNCTION             ArduinoSdSpi_ioctl
 #define MODULE_CONFIG_DATA_STRUCT_TYPE    struct arduino_sd_spi_cfg_t
+#define MODULE_RUNTIME_DATA_STRUCT_TYPE   struct arduino_sd_spi_runtime_t
 
 
 #ifdef DT_DEV_MODULE

@@ -58,7 +58,7 @@ uint8_t FatFs_ioctl( struct dev_desc_t *adev ,
 
 	case IOCTL_DEVICE_START :
 		storage_dev = config_handle->storage_dev;
-		DEV_IOCTL_0_PARAMS(storage_dev , IOCTL_DEVICE_START );
+		DEV_IOCTL_0_PARAMS(storage_dev, IOCTL_DEVICE_START);
 
 		break;
 

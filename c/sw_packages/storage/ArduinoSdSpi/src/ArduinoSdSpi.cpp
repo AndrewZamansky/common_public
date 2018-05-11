@@ -36,16 +36,19 @@ extern "C" {
 /********  defines *********************/
 
 
+#define MAX_NUMBER_OF_ARDUINO_SPI_SD_INSTANCES   2
+uint8_t g_num_dev_inst = 0;
+
 /********  types  *********************/
 
+struct lookup_table_t {
+	SdSpiAltDriver *p_SpiAltDriver;
+	struct dev_desc_t *spi_dev;
+};
 
-
+lookup_table_t lookup_table[MAX_NUMBER_OF_ARDUINO_SPI_SD_INSTANCES] = {NULL};
 
 /********  externals *********************/
-
-static struct dev_desc_t *l_spi_dev;
-
-
 
 extern "C" {
 
@@ -66,18 +69,18 @@ extern "C" {
 
 	uint8_t ArduinoSdSpi_pwrite(struct dev_desc_t *adev,  //Device in .h file
 			const uint8_t *apData,  /* Data buffer to write data from */
-			uint32_t aLength, 		/* Amount of data to write in blocks*512 */
-			uint32_t  aOffset)   		/* Position*512 to write into device*/
+			size_t aLength, 		/* Amount of data to write in blocks*512 */
+			size_t  aOffset)   		/* Position*512 to write into device*/
 	{
-		struct arduino_sd_spi_cfg_t *config_handle;
+		struct arduino_sd_spi_runtime_t *runtime_handle;
 
-		config_handle =
-			(struct arduino_sd_spi_cfg_t *)DEV_GET_CONFIG_DATA_POINTER(adev);
+		runtime_handle = (struct arduino_sd_spi_runtime_t *)
+							    DEV_GET_RUNTIME_DATA_POINTER(adev);
 
 		// This should be handled by setup
 		//config_handle->sd_spi_inst = (void*) (new SdSpiCardEX);
 
-		SdSpiCard_inst = (SdSpiCardEX*)config_handle->sd_spi_inst;
+		SdSpiCard_inst = (SdSpiCardEX *)runtime_handle->sd_spi_inst;
 
 
 		/**  bool writeBlocks(uint32_t block, const uint8_t* src, size_t nb);
@@ -101,19 +104,19 @@ extern "C" {
 	}
 
 	uint8_t ArduinoSdSpi_pread(struct dev_desc_t *adev,  //Device in .h file
-			const uint8_t *apData,  /* Data buffer to read data into */
-			uint32_t aLength, 		/* Amount of data to read in blocks*512 */
-			uint32_t  aOffset)   		/* Position*512 to read from device*/
+			uint8_t *apData,  /* Data buffer to read data into */
+			size_t aLength, 		/* Amount of data to read in blocks*512 */
+			size_t  aOffset)   		/* Position*512 to read from device*/
 	{
-		struct arduino_sd_spi_cfg_t *config_handle;
+		struct arduino_sd_spi_runtime_t *runtime_handle;
 
-		config_handle =
-			(struct arduino_sd_spi_cfg_t *)DEV_GET_CONFIG_DATA_POINTER(adev);
+		runtime_handle = (struct arduino_sd_spi_runtime_t *)
+							    DEV_GET_RUNTIME_DATA_POINTER(adev);
 
 		// This should be handled by setup
 		//config_handle->sd_spi_inst = (void*) (new SdSpiCardEX);
 
-		SdSpiCard_inst = (SdSpiCardEX*)config_handle->sd_spi_inst;
+		SdSpiCard_inst = (SdSpiCardEX *)runtime_handle->sd_spi_inst;
 
 
 		/**  bool readBlocks(uint32_t block, uint8_t* dst, size_t nb);
@@ -139,19 +142,21 @@ Particle_class Particle;
 
 SPI_class arduino_spi_inst;
 
+
 // should not be used, but needs to be implemented
 bool digitalWrite(int pin, int logic)
 {
-	if(HIGH == logic)
+	if (HIGH == logic)
 	{
-		DEV_IOCTL_0_PARAMS(l_spi_dev, IOCTL_SPI_API_SET_CS_HIGH);
+		DEV_IOCTL_0_PARAMS(
+				lookup_table[pin].spi_dev, IOCTL_SPI_API_SET_CS_HIGH);
 	}
-	else
+	else if (LOW == logic)
 	{
-		DEV_IOCTL_0_PARAMS(l_spi_dev, IOCTL_SPI_API_SET_CS_LOW);
+		DEV_IOCTL_0_PARAMS(
+				lookup_table[pin].spi_dev, IOCTL_SPI_API_SET_CS_LOW);
 	}
 	return 1;
-
 }
 
 // should not be used, but needs to be implemented
@@ -181,6 +186,7 @@ uint32_t micros()
 
 void SdSpiAltDriver::begin(uint8_t csPin)
 {
+	m_csPin = csPin;
 }
 
 
@@ -192,32 +198,48 @@ void SdSpiAltDriver::deactivate()
 {
 }
 
+
 uint8_t SdSpiAltDriver::receive()
 {
 	uint8_t data;
-
-	DEV_READ(l_spi_dev, &data, 1);
+	receive(&data, 1);
 	return data;
 }
 
 
 uint8_t SdSpiAltDriver::receive(uint8_t* buf, size_t n)
 {
-	DEV_READ(l_spi_dev, buf, n);
+	uint8_t i;
+
+	for (i = 0; i < MAX_NUMBER_OF_ARDUINO_SPI_SD_INSTANCES ; i++)
+	{
+		if (this == lookup_table[i].p_SpiAltDriver)
+		{
+			DEV_READ(lookup_table[i].spi_dev, buf, n);
+		}
+	}
 	return 0;
 }
 
 
 void SdSpiAltDriver::send(uint8_t data)
 {
-	DEV_WRITE(l_spi_dev, &data, 1);
+	send(&data, 1);
 }
 
 
 
 void SdSpiAltDriver::send(const uint8_t* buf, size_t n)
 {
-	DEV_WRITE(l_spi_dev, buf, n);
+	uint8_t i;
+
+	for (i = 0; i < MAX_NUMBER_OF_ARDUINO_SPI_SD_INSTANCES ; i++)
+	{
+		if (this == lookup_table[i].p_SpiAltDriver)
+		{
+			DEV_WRITE(lookup_table[i].spi_dev, buf, n);
+		}
+	}
 }
 
 
@@ -237,10 +259,14 @@ uint8_t ArduinoSdSpi_ioctl( struct dev_desc_t *adev ,
 		const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
 {
 	struct arduino_sd_spi_cfg_t *config_handle;
+	struct arduino_sd_spi_runtime_t *runtime_handle;
 	struct dev_desc_t *spi_dev;
+	uint8_t num_dev_inst;
 
 	config_handle =
-			(struct arduino_sd_spi_cfg_t *)DEV_GET_CONFIG_DATA_POINTER(adev);
+		(struct arduino_sd_spi_cfg_t *)DEV_GET_CONFIG_DATA_POINTER(adev);
+	runtime_handle =
+		(struct arduino_sd_spi_runtime_t *)DEV_GET_RUNTIME_DATA_POINTER(adev);
 	spi_dev = config_handle->spi_dev;
 	uint32_t clk_freq = (uint32_t)config_handle->clk_freq;
 
@@ -248,19 +274,32 @@ uint8_t ArduinoSdSpi_ioctl( struct dev_desc_t *adev ,
 	switch(aIoctl_num)
 	{
 	case IOCTL_DEVICE_START :
-		l_spi_dev = spi_dev;
-		DEV_IOCTL_0_PARAMS(l_spi_dev , IOCTL_DEVICE_START );
-		if (NULL == config_handle->sd_spi_inst)
+		DEV_IOCTL_0_PARAMS(spi_dev , IOCTL_DEVICE_START );
+		if ((NULL == runtime_handle->sd_spi_inst) &&
+				 (MAX_NUMBER_OF_ARDUINO_SPI_SD_INSTANCES > g_num_dev_inst))
 		{
-			config_handle->sd_spi_inst = (void*) (new SdSpiCardEX);
+			SdSpiAltDriver *SdSpiAltDriver_obj;
+
+			num_dev_inst = g_num_dev_inst++;
+			runtime_handle->num_dev_inst = num_dev_inst;
+			runtime_handle->sd_spi_inst = (void *) (new SdSpiCardEX);
+			runtime_handle->SdSpiAltDriver_obj = (void *) (new SdSpiAltDriver);
+
+			SdSpiAltDriver_obj =
+					(SdSpiAltDriver *)runtime_handle->SdSpiAltDriver_obj;
+			lookup_table[num_dev_inst].p_SpiAltDriver = SdSpiAltDriver_obj;
+			lookup_table[num_dev_inst].spi_dev = spi_dev;
+			SdSpiCard_inst = (SdSpiCardEX *)runtime_handle->sd_spi_inst;
 		}
-		SdSpiCard_inst = (SdSpiCardEX*)config_handle->sd_spi_inst;
+		num_dev_inst = runtime_handle->num_dev_inst ;
 
 		{
-			SPISettings spiSettings(0, 0, 0);
-			cSdSpiCardEX_begin(NULL, 0, spiSettings);
+		SPISettings spiSettings(0,0,0);
+		cSdSpiCardEX_begin(
+				(SdSpiDriver *)runtime_handle->SdSpiAltDriver_obj,
+				num_dev_inst, spiSettings);
 		}
-		DEV_IOCTL_1_PARAMS(l_spi_dev , IOCTL_SPI_API_SET_CLK, (void *)clk_freq );
+		DEV_IOCTL_1_PARAMS(spi_dev , IOCTL_SPI_API_SET_CLK, (void *)clk_freq );
 		break;
 
 	default :
