@@ -38,36 +38,86 @@ struct dev_param_t const *get_config_param(struct dev_desc_t * pdev,
 	struct dev_desc_t  dev_descriptors[CONFIG_MAX_NUM_OF_DYNAMIC_DEVICES];
 #endif
 
-uint8_t	DEV_IOCTL_0_PARAMS(struct dev_desc_t * dev,uint8_t ioctl_num)
+uint8_t	DEV_IOCTL_0_PARAMS(struct dev_desc_t *adev, uint8_t ioctl_num)
 {
-	return ((dev)->ioctl)(dev, ioctl_num, NULL, NULL);
+	if ( NULL == adev )
+	{
+		CRITICAL_ERROR("access NULL device");
+	}
+	return ((adev)->ioctl)(adev, ioctl_num, NULL, NULL);
 }
 
-uint8_t	DEV_IOCTL_1_PARAMS(struct dev_desc_t * dev,
+uint8_t	DEV_IOCTL_1_PARAMS(struct dev_desc_t *adev,
 						uint8_t ioctl_num, void *param1)
 {
-	return ((dev)->ioctl)(dev, ioctl_num, param1, NULL);
+	if ( NULL == adev )
+	{
+		CRITICAL_ERROR("access NULL device");
+	}
+	return ((adev)->ioctl)(adev, ioctl_num, param1, NULL);
 }
 
 
-uint8_t	DEV_CALLBACK_0_PARAMS(struct dev_desc_t * dev,uint8_t ioctl_num)
+uint8_t	DEV_CALLBACK_0_PARAMS(struct dev_desc_t *adev, uint8_t ioctl_num)
 {
-	return ((dev)->callback)(dev, ioctl_num, NULL, NULL);
+	if ( NULL == adev )
+	{
+		CRITICAL_ERROR("access NULL device");
+	}
+	return ((adev)->callback)(adev, ioctl_num, NULL, NULL);
 }
 
-uint8_t	DEV_CALLBACK_1_PARAMS(struct dev_desc_t * dev,
+uint8_t	DEV_CALLBACK_1_PARAMS(struct dev_desc_t *adev,
 						uint8_t ioctl_num, void *param1)
 {
-	return ((dev)->callback)(dev, ioctl_num, param1, NULL);
+	if ( NULL == adev )
+	{
+		CRITICAL_ERROR("access NULL device");
+	}
+	return ((adev)->callback)(adev, ioctl_num, param1, NULL);
 }
 
-
-
-size_t	DEV_WRITE(struct dev_desc_t *adev,
-			const uint8_t *apData, size_t aLength )
+size_t	DEV_PWRITE(struct dev_desc_t *adev,
+			const uint8_t *apData, size_t aLength, size_t aOffset)
 {
-	return (adev->pwrite)(adev, apData, aLength, 0);
+	if ( NULL == adev )
+	{
+		CRITICAL_ERROR("access NULL device");
+	}
+	return (adev->pwrite)(adev, apData, aLength, aOffset);
 }
+
+size_t	DEV_PWRITE32(struct dev_desc_t *adev,
+			const uint8_t *apData, uint32_t aLength, uint32_t aOffset)
+{
+	if ( NULL == adev )
+	{
+		CRITICAL_ERROR("access NULL device");
+	}
+	return ((dev_pwrite32_func_t)adev->pwrite)(adev, apData, aLength, aOffset);
+}
+
+
+size_t	DEV_PREAD(struct dev_desc_t *adev,
+			uint8_t *apData, size_t aLength, size_t aOffset)
+{
+	if ( NULL == adev )
+	{
+		CRITICAL_ERROR("access NULL device");
+	}
+	return (adev->pread)(adev, apData, aLength, aOffset);
+}
+
+size_t	DEV_PREAD32(struct dev_desc_t *adev,
+			uint8_t *apData, uint32_t aLength, uint32_t aOffset)
+{
+	if ( NULL == adev )
+	{
+		CRITICAL_ERROR("access NULL device");
+	}
+	return ((dev_pread32_func_t)adev->pread)(adev, apData, aLength, aOffset);
+}
+
 
 /*
  * function : DEV_API_dummy_init_func()
@@ -170,7 +220,7 @@ struct dev_desc_t * DEV_API_add_device(const char* module_name_str,
 											const char *device_name_str)
 {
 	uint32_t i;
-	struct dev_desc_t * dev;
+	struct dev_desc_t *adev;
 
 	if (NULL == device_name_str)
 	{

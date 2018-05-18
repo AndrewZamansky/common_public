@@ -41,6 +41,10 @@
 		#error "SPI_I94XXX_DT_MOSI_PIN should be defined"
 	#endif
 
+	#ifndef SPI_I94XXX_DT_DATA_WIDTH_BITS
+		#error "SPI_I94XXX_DT_DATA_WIDTH_BITS should be defined"
+	#endif
+
 	#define STATIC_DEV_DATA_STRUCT      \
 		{                               \
 			POINTER_TO_SRC_CLOCK_PDEV,  \
@@ -49,6 +53,7 @@
 			SPI_I94XXX_DT_SS_PIN,       \
 			SPI_I94XXX_DT_MISO_PIN,     \
 			SPI_I94XXX_DT_MOSI_PIN,     \
+			SPI_I94XXX_DT_DATA_WIDTH_BITS    \
 		}
 #endif
 

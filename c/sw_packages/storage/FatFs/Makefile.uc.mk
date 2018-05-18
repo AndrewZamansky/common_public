@@ -26,6 +26,7 @@ INCLUDE += src
 
 SRC += ff.c
 SRC += diskio_implemented.c
+SRC += FatFs.c
 
 VPATH =  src | $(FAT_FS_PATH)/src
 
