@@ -7,4 +7,8 @@ config INCLUDE_UGFX
 	depends on !GCC_TARGET_OS_LINUX && !HOST
 	default n
 	
+config INCLUDE_USB_AUDIO_CLASS
+	bool   "usb audio class"
+	default n
+	
 endmenu

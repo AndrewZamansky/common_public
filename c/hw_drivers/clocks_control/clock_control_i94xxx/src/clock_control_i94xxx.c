@@ -289,6 +289,50 @@ uint8_t clock_i94xxx_pclk1_ioctl( struct dev_desc_t *adev,
 }
 
 
+uint8_t clock_i94xxx_usb_ioctl( struct dev_desc_t *adev,
+		const uint8_t aIoctl_num, void * aIoctl_param1,
+		void * aIoctl_param2)
+{
+	struct cfg_clk_t *cfg_clk;
+	uint32_t parent_rate;
+	uint32_t div;
+	uint32_t req_rate;
+
+	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(adev);
+	switch(aIoctl_num)
+	{
+	case CLK_IOCTL_ENABLE :
+		CLK_EnableModuleClock(USBD_MODULE);
+		break;
+	case CLK_IOCTL_SET_FREQ :
+		req_rate = *(uint32_t*)aIoctl_param1;
+		DEV_IOCTL_1_PARAMS(i94xxx_pll_clk_dev,
+						CLK_IOCTL_GET_FREQ, &parent_rate);
+
+		div = (parent_rate / req_rate);
+		if (div)
+		{
+			div--;
+		}
+		CLK->CLKDIV0 = (CLK->CLKDIV0 & (~CLK_CLKDIV0_USBDIV_Msk))
+							| (div << CLK_CLKDIV0_USBDIV_Pos);
+		cfg_clk->rate = req_rate;
+		break;
+	case CLK_IOCTL_GET_FREQ :
+		DEV_IOCTL_1_PARAMS(i94xxx_pll_clk_dev,
+						CLK_IOCTL_GET_FREQ, &parent_rate);
+		div = ((CLK->CLKDIV0 & CLK_CLKDIV0_USBDIV_Msk) >>
+				CLK_CLKDIV0_USBDIV_Pos) + 1;
+		*(uint32_t*)aIoctl_param1 = parent_rate / div;
+			;
+		break;
+	default :
+		return 1;
+	}
+	return 0;
+}
+
+
 uint8_t i94xxx_systick_clk_ioctl( struct dev_desc_t *adev,
 		const uint8_t aIoctl_num, void * aIoctl_param1,
 		void * aIoctl_param2)

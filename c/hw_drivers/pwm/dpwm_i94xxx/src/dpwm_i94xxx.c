@@ -39,9 +39,16 @@
 
 /* ------------------------ Exported variables ---------------*/
 
-//#define 	 DEBUG_USE_INTERRUPT
+//#define   DEBUG_USE_INTERRUPT
 
 #ifdef 	DEBUG_USE_INTERRUPT
+
+//#define DEBUG_USB_TO_DPWM
+
+#include "os_wrapper.h"
+extern void DPWM_IRQHandler();
+
+#ifndef DEBUG_USB_TO_DPWM
 static volatile int g_u32DataCount = 0;
 static volatile int status = 0;
 #define TEST_COUNT	100
@@ -64,9 +71,10 @@ void DPWM_IRQHandler()
     g_u32DataCount += 2;
 }
 #endif
+#endif
 
 
-//extern uint32_t dpwm_actualSamplingRate;
+//extern uint32_t actualSamplingRate;
 #define SYS_GPA_MFPL_PA4MFP_DPWM_MINUS_L     (0x03UL<<SYS_GPA_MFPL_PA4MFP_Pos)
 #define SYS_GPA_MFPL_PA5MFP_DPWM_PLUS_L      (0x03UL<<SYS_GPA_MFPL_PA5MFP_Pos)
 #define SYS_GPA_MFPH_PA10MFP_DPWM_MINUS_R     (0x03UL<<SYS_GPA_MFPH_PA10MFP_Pos)
@@ -139,89 +147,37 @@ void DPWM_MuxPins(struct dpwm_i94xxx_cfg_t *cfg_hndl)
 
 }
 
-uint32_t DPWM_GetSourceClk( void )
+
+
+static uint32_t actualSamplingRate;
+
+
+
+uint32_t try_to_calclulate_clk_div(uint32_t needed_sample_rate,
+		uint32_t src_clk_rate, uint16_t work_clock, uint16_t *clkdiv)
 {
-	uint32_t clkSel, retVal;
+	uint16_t l_clkdiv;
+	uint32_t u32Error1;
+	uint32_t u32Error2;
 
-	clkSel = (CLK->CLKSEL2 & CLK_CLKSEL2_DPWMSEL_Msk);
+	l_clkdiv = (src_clk_rate / needed_sample_rate) / work_clock;
 
-	switch (clkSel)
+	/* Adjust Error */
+	u32Error1 = ((src_clk_rate / work_clock) / l_clkdiv) - needed_sample_rate;
+	u32Error2 =
+			needed_sample_rate - ((src_clk_rate / work_clock)/(l_clkdiv + 1));
+	if (u32Error1 > u32Error2)
 	{
-		case CLK_CLKSEL2_DPWMSEL_HXT:
-			retVal = __HXT;
-		break;
-
-		case CLK_CLKSEL2_DPWMSEL_PLL:
-			retVal = CLK_GetPLLClockFreq();
-		break;
-
-		case CLK_CLKSEL2_DPWMSEL_PCLK0:
-			retVal = CLK_GetPCLK0Freq();
-		break;
-
-		case CLK_CLKSEL2_DPWMSEL_HIRC:
-			retVal = __HIRC;
-		break;
-
-		default:
-			return 0;
+		l_clkdiv = l_clkdiv + 1;
+		u32Error1 = u32Error2;
 	}
 
-	return retVal;
+
+	*clkdiv = (l_clkdiv - 1);
+
+	return u32Error1;
 }
 
-static uint32_t dpwm_actualSamplingRate;
-
-void 	DPWM_calc_rate(uint32_t samplingRateHz)
-{
-	uint32_t zohDiv, clkDiv, k, actualSamplingRate, moduleClk, targetClk;
-	//DPWM_CLK_TYPE_E clkType;
-
-
-	//CLK_EnableModuleClock(DPWM_MODULE);
-
-	/* Reset Module */
-	//SYS_ResetModule(DPWM_RST);
-
-
-	/* get clock type according to module clock */
-	moduleClk = DPWM_GetSourceClk();
-
-	/* calculate dividers */
-	if ( (moduleClk&0x3FF) == 0) // reference clock is a mulltiple of 1024
-	{
-		//clkType = DPWM_CLK_512_TIMES_FS;
-		k = 128;
-		//k = 64; // fixing dpwm switching freq issue
-		targetClk = (samplingRateHz > 48000) ? (48 * 1024 * 1000) : (24 * 1024 * 1000);
-		//targetClk = (samplingRateHz > 48000) ? (48 * 1024 * 1000) : (12 * 1024 * 1000);
-
-	}
-	else
-	{
-		//clkType = DPWM_CLK_500_TIMES_FS;
-		k = 125;
-		targetClk = (samplingRateHz > 48000) ? (48 * 1000 * 1000) : (24 * 1000 * 1000);
-	}
-
-	clkDiv = moduleClk / targetClk - 1;
-
-	zohDiv = (moduleClk / (clkDiv + 1)) / (samplingRateHz * k);
-
-	if (zohDiv < 4)
-	{
-		//DRV_PRINT("WARNING! ZOH_DIV < 4 (%u)\n",zohDiv);
-		actualSamplingRate = 0;
-
-	}
-
-
-	{
-		actualSamplingRate = moduleClk / (clkDiv + 1) / zohDiv / k;
-	}
-
-	dpwm_actualSamplingRate = actualSamplingRate;
-}
 
 /**
  * dpwm_i94xxx_ioctl()
@@ -234,10 +190,18 @@ uint8_t dpwm_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 	struct dpwm_i94xxx_cfg_t *cfg_hndl;
 	struct dev_desc_t	*clk_dev;
 	struct dev_desc_t	*src_clock;
+	uint32_t sample_rate;
+	uint32_t src_clk_rate;
+	uint32_t err1;
+	uint32_t err2;
+	uint8_t clkset;
+	uint8_t zohdiv;
+	uint16_t clkdiv;
+	uint16_t clkdiv2;
 
 	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
 	src_clock = cfg_hndl->src_clock;
-
+	sample_rate = cfg_hndl->sample_rate;
 
 	switch(aIoctl_num)
 	{
@@ -248,27 +212,60 @@ uint8_t dpwm_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 		clk_dev = i94xxx_dpwm_clk_dev;
 
 		DEV_IOCTL_1_PARAMS(clk_dev,	CLK_IOCTL_SET_PARENT, src_clock);
+		DEV_IOCTL_1_PARAMS(clk_dev,	CLK_IOCTL_GET_FREQ, &src_clk_rate);
 		DEV_IOCTL_0_PARAMS(clk_dev, CLK_IOCTL_ENABLE);
 
 		SYS_ResetModule(DPWM_RST);
 
-		/* open module */
-        DPWM_SetSampleRate(cfg_hndl->sample_rate);
-        DPWM_calc_rate(cfg_hndl->sample_rate);
-        DPWM_ENABLE_FLOAT(DPWM);
+#ifndef DEBUG_USB_TO_DPWM
+		/*
+		*  DPWM clk must be 512fs or 500fs (125*4 or 128*4)fs so ZOHDIV = 4
+		*  otherwise high THD will be received . ( for example for ZOHDIV = 32
+		*  THD will be high )
+		*/
+		zohdiv = 4;
+		err1 = try_to_calclulate_clk_div(
+				sample_rate, src_clk_rate, 500,  &clkdiv);
 
+		err2 = try_to_calclulate_clk_div(
+				sample_rate, src_clk_rate, 512, &clkdiv2);
 
-		DPWM->CTL &= ~(1 << DPWM_CTL_CLKSET_Pos); //force K=128 for now
-		dpwm_actualSamplingRate = (dpwm_actualSamplingRate * 125) / 128;
+		if (err1 > err2)
+		{
+			clkdiv = clkdiv2;
+			clkset = 128;
+			DPWM_SET_CLKSET(DPWM, DPWM_CLKSET_512FS);
+		}
+		else
+		{
+			clkset = 125;
+			DPWM_SET_CLKSET(DPWM, DPWM_CLKSET_500FS);
+		}
 
+		DPWM_SET_CLOCKDIV(DPWM, clkdiv);
+		DPWM_SET_ZOHDIV(DPWM, zohdiv);
+		actualSamplingRate = src_clk_rate / (clkset * (clkdiv + 1) * zohdiv);
+
+		DPWM_ENABLE_FLOAT(DPWM);
+
+#else
+		/* Set DPWM sampling rate */
+		// HIRC=48MHz,Fs=24.576MHz/(128x4)=48kHz.
+		DPWM_SET_CLKSET(DPWM, DPWM_CLKSET_500FS);
+		DPWM_SetSampleRate(cfg_hndl->sample_rate); //Set sample rate
+		/* Set Datawidth */
+		DPWM_SET_FIFODATAWIDTH(DPWM, DPWM_FIFO_DATAWIDTH_16BITS);
+
+#endif
 		DPWM_DISABLE_DRIVER(DPWM);
 		DPWM_STOP_PLAY(DPWM);
+
 
 #ifdef DEBUG_USE_INTERRUPT
 		irq_register_interrupt(DPWM_IRQn , DPWM_IRQHandler);
 		irq_set_priority(DPWM_IRQn , OS_MAX_INTERRUPT_PRIORITY_FOR_API_CALLS );
 		irq_enable_interrupt(DPWM_IRQn);
-		DPWM_InterruptEnable(1);
+		DPWM_ENABLE_FIFOTHRESHOLDINT(DPWM, 16);
 
 #endif
 	   // I2S_ENABLE_RX(I2S_module);
@@ -279,11 +276,11 @@ uint8_t dpwm_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 	case DPWM_I94XXX_ENABLE_OUTPUT_IOCTL:
 		DPWM_ENABLE_DRIVER(DPWM);
 		DPWM_START_PLAY(DPWM);
-		DPWM_ENABLE_PDMA(DPWM);
+
 		break;
 
 	case DPWM_I94XXX_GET_MEASURED_SAMPLE_RATE:
-		//*((uint32_t*)aIoctl_param1) = dpwm_actualSamplingRate;
+		*((uint32_t*)aIoctl_param1) = actualSamplingRate;
 		break;
 
 	default :
