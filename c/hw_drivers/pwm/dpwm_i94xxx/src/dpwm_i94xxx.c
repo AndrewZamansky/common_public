@@ -39,30 +39,32 @@
 
 /* ------------------------ Exported variables ---------------*/
 
-//#define 	 DEBUG_USE_INTERRUPT
+//#define   DEBUG_USE_INTERRUPT
 
 #ifdef 	DEBUG_USE_INTERRUPT
-static volatile int g_u32DataCount = 0;
-static volatile int status = 0;
-#define TEST_COUNT	100
-static uint32_t data[TEST_COUNT+1] = {0};
-static volatile int pos = 0;
-void DPWM_IRQHandler()
-{
-    /* Write 2 TX values to TX FIFO */
-  //  I2S_WRITE_TX_FIFO(SPI1, g_u32TxValue);
- //   I2S_WRITE_TX_FIFO(SPI1, g_u32TxValue);
-    if((I2S->STATUS0 & I2S_STATUS0_RXEMPTY_Msk) == 0)
-    {
-		status = I2S->STATUS0;
-		if (pos < TEST_COUNT)
-		{
-			pos++;
-		}
-		data[pos] = I2S->RXFIFO;
-    }
-    g_u32DataCount += 2;
-}
+#include "os_wrapper.h"
+extern void DPWM_IRQHandler();
+//static volatile int g_u32DataCount = 0;
+//static volatile int status = 0;
+//#define TEST_COUNT	100
+//static uint32_t data[TEST_COUNT+1] = {0};
+//static volatile int pos = 0;
+//void DPWM_IRQHandler()
+//{
+//    /* Write 2 TX values to TX FIFO */
+//  //  I2S_WRITE_TX_FIFO(SPI1, g_u32TxValue);
+// //   I2S_WRITE_TX_FIFO(SPI1, g_u32TxValue);
+//    if((I2S->STATUS0 & I2S_STATUS0_RXEMPTY_Msk) == 0)
+//    {
+//		status = I2S->STATUS0;
+//		if (pos < TEST_COUNT)
+//		{
+//			pos++;
+//		}
+//		data[pos] = I2S->RXFIFO;
+//    }
+//    g_u32DataCount += 2;
+//}
 #endif
 
 
@@ -223,6 +225,7 @@ void 	DPWM_calc_rate(uint32_t samplingRateHz)
 	dpwm_actualSamplingRate = actualSamplingRate;
 }
 
+
 /**
  * dpwm_i94xxx_ioctl()
  *
@@ -251,24 +254,36 @@ uint8_t dpwm_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 		DEV_IOCTL_0_PARAMS(clk_dev, CLK_IOCTL_ENABLE);
 
 		SYS_ResetModule(DPWM_RST);
-
+#if 1
 		/* open module */
-        DPWM_SetSampleRate(cfg_hndl->sample_rate);
+//		DPWM->CTL &= ~(1 << DPWM_CTL_CLKSET_Pos); //force K=128 for now
+		DPWM->CTL |= (1 << DPWM_CTL_CLKSET_Pos); //force K=125 for now
+
+		DPWM_SetSampleRate(cfg_hndl->sample_rate);
         DPWM_calc_rate(cfg_hndl->sample_rate);
         DPWM_ENABLE_FLOAT(DPWM);
 
 
-		DPWM->CTL &= ~(1 << DPWM_CTL_CLKSET_Pos); //force K=128 for now
-		dpwm_actualSamplingRate = (dpwm_actualSamplingRate * 125) / 128;
+//		dpwm_actualSamplingRate = (dpwm_actualSamplingRate * 125) / 128;
+#else
+		/* Set DPWM sampling rate */
+		// HIRC=48MHz,Fs=24.576MHz/(128x4)=48kHz.
+		DPWM_SET_CLKSET(DPWM, DPWM_CLKSET_500FS);
+		DPWM_SetSampleRate(cfg_hndl->sample_rate); //Set sample rate
+		/* Set Datawidth */
+		DPWM_SET_FIFODATAWIDTH(DPWM, DPWM_FIFO_DATAWIDTH_16BITS);
+
+#endif
 
 		DPWM_DISABLE_DRIVER(DPWM);
 		DPWM_STOP_PLAY(DPWM);
+
 
 #ifdef DEBUG_USE_INTERRUPT
 		irq_register_interrupt(DPWM_IRQn , DPWM_IRQHandler);
 		irq_set_priority(DPWM_IRQn , OS_MAX_INTERRUPT_PRIORITY_FOR_API_CALLS );
 		irq_enable_interrupt(DPWM_IRQn);
-		DPWM_InterruptEnable(1);
+		DPWM_ENABLE_FIFOTHRESHOLDINT(DPWM, 16);
 
 #endif
 	   // I2S_ENABLE_RX(I2S_module);
@@ -279,8 +294,16 @@ uint8_t dpwm_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 	case DPWM_I94XXX_ENABLE_OUTPUT_IOCTL:
 		DPWM_ENABLE_DRIVER(DPWM);
 		DPWM_START_PLAY(DPWM);
+#ifndef DEBUG_USE_INTERRUPT
 		DPWM_ENABLE_PDMA(DPWM);
+#endif
 		break;
+//	case DPWM_I94XXX_DEVICE_STOP :
+//
+//		// put module to reset
+//	    *(volatile uint32_t *)((uint32_t)&SYS->IPRST0 + (DPWM_RST >> 24)) |=
+//	    		1 << (DPWM_RST & 0x00ffffff);
+//	    break;
 
 	case DPWM_I94XXX_GET_MEASURED_SAMPLE_RATE:
 		//*((uint32_t*)aIoctl_param1) = dpwm_actualSamplingRate;

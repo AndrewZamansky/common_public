@@ -74,15 +74,16 @@ config INCLUDE_INTERNAL_GPIO
 	depends on NUC505 || STM32F103RC || NPCE586 || STM8S103F || PIC32MX575 || I94XXX
 	default n
 
+
 menuconfig INCLUDE_INTERNAL_DMA
 	bool   "internal dma"
 	depends on I94XXX
 	default n
 
-config INTERNAL_DMA_IS_SPEED_CRITICAL
-	bool   "internal dma is speed critical"
-	depends on INCLUDE_INTERNAL_DMA
-	default n
+if INCLUDE_INTERNAL_DMA
+source "$KCONFIG_PUBLIC_START_DIR/hw_drivers/dma/Kconfig"
+endif
+
 	
 config INCLUDE_INTERNAL_SERIAL_NUMBER
 	bool   "internal serial number"
@@ -107,6 +108,12 @@ menuconfig INCLUDE_INTERNAL_PWM
 config INTERNAL_PWM_IS_SPEED_CRITICAL
 	bool   "internal pwm is speed critical"
 	depends on INCLUDE_INTERNAL_PWM
+	default n
+
+
+config INCLUDE_INTERNAL_USB_DEVICE
+	bool   "internal usb device"
+	depends on STM32F103RC || STM8S103F || I94XXX
 	default n
 
 
@@ -157,6 +164,10 @@ config INCLUDE_CLOCK_CONTROL
 config INCLUDE_UART
 	def_bool  y
 	depends on CONFIG_INCLUDE_SEMIHOSTING || INCLUDE_INTERNAL_UART || INCLUDE_USB_VIRTUAL_COM  || INCLUDE_SEMIHOSTING
+
+config INCLUDE_USB_DEVICE
+	def_bool  y
+	depends on INCLUDE_INTERNAL_USB_DEVICE
 
 config INCLUDE_I2C
 	def_bool  y
