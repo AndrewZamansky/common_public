@@ -60,9 +60,11 @@
 
 #ifdef ENABLE_I94XX_SPI_INT
 
-//#define BUFF_SIZE	5000
-//static uint8_t tmp_buf[BUFF_SIZE] = { [0 ... 4999] = 0xcc };
-//uint32_t tmp_buf_pos = 0;
+static os_queue_t xTX_WaitQueue, xRX_WaitQueue ;
+static uint8_t dummy_msg;
+volatile size_t delay;
+
+/* Callback that Interrupt utilizes for read and write functions */
 
 uint8_t spi_i94xxx_callback(struct dev_desc_t *adev ,
 		uint8_t aCallback_num , void * aCallback_param1,
@@ -71,7 +73,6 @@ uint8_t spi_i94xxx_callback(struct dev_desc_t *adev ,
 	struct spi_i94xxx_cfg_t *cfg_hndl;
 	struct spi_i94xxx_runtime_t *runtime_handle;
 
-    uint8_t u8InChar;
 	SPI_T *spi_regs;
 
 	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
@@ -81,22 +82,33 @@ uint8_t spi_i94xxx_callback(struct dev_desc_t *adev ,
 	/* Check RX EMPTY flag */
 	if(SPI_GET_RX_FIFO_EMPTY_FLAG(spi_regs) == 0)
 	{
+		uint8_t u8InChar;
 		uint8_t *rx_buff;
-		uint32_t curr_rx_pos;
+		volatile uint32_t bytes_left_to_read;
 
 		rx_buff = runtime_handle->rx_buff;
-		curr_rx_pos = runtime_handle->curr_rx_pos;
-		/* Read RX FIFO */
+		bytes_left_to_read = runtime_handle->bytes_left_to_read;
 		u8InChar = SPI_READ_RX(spi_regs);
-		if (NULL != rx_buff)
+		/* Read RX FIFO */
+		if(bytes_left_to_read)
 		{
-			rx_buff[curr_rx_pos++] = u8InChar;
-//			if (BUFF_SIZE > tmp_buf_pos)
-//			{
-//				tmp_buf[tmp_buf_pos++] = u8InChar;
-//			}
+			*rx_buff++ = u8InChar;
+			runtime_handle->rx_buff = rx_buff;
+			bytes_left_to_read--;
+			runtime_handle->bytes_left_to_read = bytes_left_to_read;
+			SPI_WRITE_TX(spi_regs, 0xFF);
 		}
-		runtime_handle->curr_rx_pos = curr_rx_pos;
+		else if(NULL != rx_buff)
+		{
+			*rx_buff = u8InChar;
+			 runtime_handle->rx_buff = rx_buff;
+			if (NULL != xRX_WaitQueue)
+			{
+				os_queue_send_immediate( xRX_WaitQueue, ( void * ) &dummy_msg);
+			}
+		}
+
+
 	}
 
 	/* Check TX FULL flag and TX data count */
@@ -115,6 +127,11 @@ uint8_t spi_i94xxx_callback(struct dev_desc_t *adev ,
 			runtime_handle->bytes_left_to_transmit = bytes_left_to_transmit;
 			runtime_handle->tx_buff = tx_buff;
 		}
+		else if (NULL != xTX_WaitQueue)
+		{
+			os_queue_send_immediate( xTX_WaitQueue, ( void * ) &dummy_msg);
+			//break;
+		}
 	}
 	SPI_CLR_UNIT_TRANS_INT_FLAG(spi_regs);
 
@@ -131,45 +148,30 @@ uint8_t spi_i94xxx_callback(struct dev_desc_t *adev ,
  * return:
  */
 size_t spi_i94xxx_pread(struct dev_desc_t *adev,
-		uint8_t *apData, size_t aLength, size_t aOffset)
+			uint8_t *apData, size_t aLength, size_t aOffset)
 {
 	struct spi_i94xxx_cfg_t *cfg_hndl;
 	struct spi_i94xxx_runtime_t *runtime_handle;
-	volatile uint32_t curr_rx_pos;
-	uint32_t next_rx_pos;
 	SPI_T *spi_regs;
 
-	if (0 == aLength) return 0;
-
+	// Acquire handles and spi base address
 	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
 	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
 	spi_regs = (SPI_T *)cfg_hndl->base_address;
 
-	runtime_handle->curr_rx_pos = 0;
+	// Set up the bytes to read and get the rx_buff pointer
+	//  to be
+	if (0 == aLength) return 0;
+	else runtime_handle->bytes_left_to_read = aLength - 1;
 	runtime_handle->rx_buff = apData;
-	curr_rx_pos = 0;
-	next_rx_pos = 1;
-//	while (0 == SPI_GET_RX_FIFO_EMPTY_FLAG(spi_regs))
-//	{
-//		uint8_t dummy;
-//		dummy = SPI_READ_RX(spi_regs);
-//	}
-	while ( curr_rx_pos < aLength)
-	{
-		SPI_WRITE_TX(spi_regs, 0xFF);
-		while(curr_rx_pos != next_rx_pos)
-		{
-			os_delay_ms(1);
-			curr_rx_pos = runtime_handle->curr_rx_pos;
-		}
-		next_rx_pos++;
-	}
+
+	SPI_WRITE_TX(spi_regs, 0xFF);
+	os_queue_receive_infinite_wait( xRX_WaitQueue ,  &dummy_msg  );
+
 	runtime_handle->rx_buff = NULL;
 	return aLength;
 
 }
-
-
 /**
  * spi_i94xxx_pwrite()
  *
@@ -180,7 +182,6 @@ size_t spi_i94xxx_pwrite(struct dev_desc_t *adev ,
 {
 	struct spi_i94xxx_cfg_t *cfg_hndl;
 	struct spi_i94xxx_runtime_t *runtime_handle;
-	volatile uint32_t bytes_left_to_transmit;
 	SPI_T *spi_regs;
 
 	if (0 == aLength) return 0;
@@ -189,15 +190,26 @@ size_t spi_i94xxx_pwrite(struct dev_desc_t *adev ,
 	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
 	spi_regs = (SPI_T *)cfg_hndl->base_address;
 
-	bytes_left_to_transmit = aLength;
+#if 0
+	while ((0 == SPI_GET_TX_FIFO_FULL_FLAG(spi_regs) ) && (aLength) )
+	{
+		SPI_WRITE_TX(spi_regs, *apData++);
+		aLength--;
+//		apData++;
+	}
+	runtime_handle->tx_buff = &apData;
+	runtime_handle->bytes_left_to_transmit = aLength;
+#else
 	runtime_handle->tx_buff = &apData[1];
 	runtime_handle->bytes_left_to_transmit = aLength - 1;
+
 	SPI_WRITE_TX(spi_regs, *apData);
-	while (bytes_left_to_transmit)
-	{
-		os_delay_ms(2);
-		bytes_left_to_transmit = runtime_handle->bytes_left_to_transmit;
-	}
+#endif
+	//delay needed by ArduinoSDSPI due to SD card not being able to respond
+	// quickly. Change if needed.
+	delay = 1100;
+	while (delay--);
+	os_queue_receive_infinite_wait( xTX_WaitQueue ,  &dummy_msg  );
 	return aLength;
 }
 
@@ -320,11 +332,15 @@ uint8_t spi_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 			SPI_EnableInt(spi_regs, SPI_UNIT_INT_MASK);
 
 			irq_register_device_on_interrupt(spi_irq, adev);
-			irq_set_priority(spi_irq, INTERRUPT_LOWEST_PRIORITY - 1 );
+//			irq_set_priority(spi_irq, INTERRUPT_LOWEST_PRIORITY - 1 );
+			irq_set_priority(spi_irq, OS_MAX_INTERRUPT_PRIORITY_FOR_API_CALLS );
 			irq_enable_interrupt(spi_irq);
 
 			SPI_ENABLE(spi_regs);
 			#endif
+
+			xTX_WaitQueue = os_create_queue( 1 , sizeof(uint8_t ) );
+			xRX_WaitQueue = os_create_queue( 1 , sizeof(uint8_t ) );
 
 			break;
 

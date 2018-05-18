@@ -26,7 +26,7 @@ struct spi_i94xxx_cfg_t {
 
 struct spi_i94xxx_runtime_t {
 	uint8_t  *rx_buff;
-	uint32_t curr_rx_pos;
+	uint32_t bytes_left_to_read;
 	uint8_t  const *tx_buff;
 	uint32_t bytes_left_to_transmit;
 };
