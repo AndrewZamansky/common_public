@@ -42,7 +42,7 @@ static uint8_t audio_control_interface[] =
 {
     0x09,        // bLength
     0x04,        // bDescriptorType (Interface)
-    0x00,        // bInterfaceNumber 0
+    TO_BE_SET_AUTOMATICALLY,        // bInterfaceNumber 0
     0x00,        // bAlternateSetting
     0x00,        // bNumEndpoints 0
     0x01,        // bInterfaceClass (Audio)
@@ -391,35 +391,56 @@ static void start_audio_class(struct dev_desc_t *adev,
 		struct usb_audio_class_runtime_t *runtime_hndl)
 {
 	struct set_out_endpoint_callback_t set_out_endpoint_callback;
-	struct usb_descriptors_set_interface_t usb_desc_set_interface;
-	struct dev_desc_t *usb_hw;
+	struct usb_descriptors_add_interface_t usb_desc_add_interface;
+	struct usb_descriptors_alloc_interfaces_t usb_descriptors_alloc_interfaces;
 	struct dev_desc_t *usb_descriptors_dev;
+	struct dev_desc_t *usb_hw;
 	uint32_t buff_size;
 	uint8_t i;
 
 	usb_descriptors_dev = cfg_hndl->usb_descriptors_dev;
 
-	usb_desc_set_interface.interface_desc = audio_control_interface;
-	usb_desc_set_interface.interface_desc_size =
+	usb_descriptors_alloc_interfaces.num_of_interfaces = 3;
+	DEV_IOCTL_1_PARAMS(usb_descriptors_dev,
+			USB_DEVICE_DESCRIPTORS_ALLOC_INTERFACES_NUMBERS,
+			&usb_descriptors_alloc_interfaces);
+
+	audio_control_interface[2] =
+			usb_descriptors_alloc_interfaces.interfaces_num[0];
+	audio_control_interface[17] =
+			usb_descriptors_alloc_interfaces.interfaces_num[1];
+	audio_control_interface[18] =
+			usb_descriptors_alloc_interfaces.interfaces_num[2];
+	in_interface[2] =
+			usb_descriptors_alloc_interfaces.interfaces_num[1];
+	in_alt_interface[2] =
+			usb_descriptors_alloc_interfaces.interfaces_num[1];
+	out_interface[2] =
+			usb_descriptors_alloc_interfaces.interfaces_num[2];
+	out_alt_interface[2] =
+			usb_descriptors_alloc_interfaces.interfaces_num[2];
+
+	usb_desc_add_interface.interface_desc = audio_control_interface;
+	usb_desc_add_interface.interface_desc_size =
 								sizeof(audio_control_interface);
-	usb_desc_set_interface.alt_interface_desc = NULL;
+	usb_desc_add_interface.alt_interface_desc = NULL;
 	DEV_IOCTL_1_PARAMS(usb_descriptors_dev,
-			USB_DEVICE_DESCRIPTORS_ADD_INTERFACE, &usb_desc_set_interface);
+			USB_DEVICE_DESCRIPTORS_ADD_INTERFACE, &usb_desc_add_interface);
 
 
-	usb_desc_set_interface.interface_desc = in_interface;
-	usb_desc_set_interface.interface_desc_size = sizeof(in_interface);
-	usb_desc_set_interface.alt_interface_desc = in_alt_interface;
-	usb_desc_set_interface.alt_interface_desc_size = sizeof(in_alt_interface);
+	usb_desc_add_interface.interface_desc = in_interface;
+	usb_desc_add_interface.interface_desc_size = sizeof(in_interface);
+	usb_desc_add_interface.alt_interface_desc = in_alt_interface;
+	usb_desc_add_interface.alt_interface_desc_size = sizeof(in_alt_interface);
 	DEV_IOCTL_1_PARAMS(usb_descriptors_dev,
-			USB_DEVICE_DESCRIPTORS_ADD_INTERFACE, &usb_desc_set_interface);
+			USB_DEVICE_DESCRIPTORS_ADD_INTERFACE, &usb_desc_add_interface);
 
-	usb_desc_set_interface.interface_desc = out_interface;
-	usb_desc_set_interface.interface_desc_size = sizeof(out_interface);
-	usb_desc_set_interface.alt_interface_desc = out_alt_interface;
-	usb_desc_set_interface.alt_interface_desc_size = sizeof(out_alt_interface);
+	usb_desc_add_interface.interface_desc = out_interface;
+	usb_desc_add_interface.interface_desc_size = sizeof(out_interface);
+	usb_desc_add_interface.alt_interface_desc = out_alt_interface;
+	usb_desc_add_interface.alt_interface_desc_size = sizeof(out_alt_interface);
 	DEV_IOCTL_1_PARAMS(usb_descriptors_dev,
-			USB_DEVICE_DESCRIPTORS_ADD_INTERFACE, &usb_desc_set_interface);
+			USB_DEVICE_DESCRIPTORS_ADD_INTERFACE, &usb_desc_add_interface);
 
 	buff_size = cfg_hndl->buff_size;
 	usb_hw = cfg_hndl->usb_hw;

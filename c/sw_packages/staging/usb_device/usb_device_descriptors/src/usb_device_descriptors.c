@@ -73,7 +73,7 @@ static uint8_t gu8ConfigDescriptor[] =
     0x02,        // bDescriptorType (Configuration)
 //    0xC2, 0x00,  // wTotalLength 
     WBVAL(WILL_BE_CALC_LATER),  // wTotalLength
-    0x04,        // bNumInterfaces 4
+    WILL_BE_CALC_LATER,        // bNumInterfaces
     0x01,        // bConfigurationValue
     0x00,        // iConfiguration (String Index)
     0x80,        // bmAttributes
@@ -250,8 +250,6 @@ uint16_t interface_count;
 
 static void device_start()
 {
-	struct usb_descriptors_set_interface_t usb_desc_set_interface;
-
 	interface_count = 0;
 	configuration_desc_size = sizeof(gu8ConfigDescriptor);
 	configuration_desc = (uint8_t*)malloc(configuration_desc_size);
@@ -260,25 +258,24 @@ static void device_start()
 }
 
 static void add_interface(
-		struct usb_descriptors_set_interface_t *usb_desc_set_interface)
+		struct usb_descriptors_add_interface_t *usb_desc_add_interface)
 {
 	uint16_t interface_structure_size;
 	uint16_t new_desc_size;
 	uint8_t *interface_desc;
 
-	interface_desc = usb_desc_set_interface->interface_desc;
-	interface_structure_size = usb_desc_set_interface->interface_desc_size;
+	interface_desc = usb_desc_add_interface->interface_desc;
+	interface_structure_size = usb_desc_add_interface->interface_desc_size;
 
 	new_desc_size = configuration_desc_size + interface_structure_size;
 	configuration_desc =
 			(uint8_t*)realloc(configuration_desc, new_desc_size);
 	memcpy(&configuration_desc[configuration_desc_size],
 			interface_desc, interface_structure_size);
-	configuration_desc[configuration_desc_size + 2] = interface_count;
 	configuration_desc_size = new_desc_size;
 
-	interface_desc = usb_desc_set_interface->alt_interface_desc;
-	interface_structure_size = usb_desc_set_interface->alt_interface_desc_size;
+	interface_desc = usb_desc_add_interface->alt_interface_desc;
+	interface_structure_size = usb_desc_add_interface->alt_interface_desc_size;
 
 	if (NULL != interface_desc)
 	{
@@ -287,30 +284,30 @@ static void add_interface(
 				(uint8_t*)realloc(configuration_desc, new_desc_size);
 		memcpy(&configuration_desc[configuration_desc_size],
 				interface_desc, interface_structure_size);
-		configuration_desc[configuration_desc_size + 2] = interface_count;
 		configuration_desc_size = new_desc_size;
 	}
 
-	interface_count++;
 }
 
 
 static void usb_device_start(struct usb_device_descriptors_cfg_t *cfg_hndl)
 {
 	struct dev_desc_t *usb_hw;
-	struct usb_descriptors_set_interface_t usb_desc_set_interface;
+	struct usb_descriptors_add_interface_t usb_desc_add_interface;
 
 	usb_hw = cfg_hndl->usb_hw;
 
-	usb_desc_set_interface.interface_desc = hid_interface;
-	usb_desc_set_interface.interface_desc_size =
+	hid_interface[2] = interface_count++;
+	usb_desc_add_interface.interface_desc = hid_interface;
+	usb_desc_add_interface.interface_desc_size =
 								sizeof(hid_interface);
-	usb_desc_set_interface.alt_interface_desc = NULL;
-	add_interface(&usb_desc_set_interface);
+	usb_desc_add_interface.alt_interface_desc = NULL;
+	add_interface(&usb_desc_add_interface);
 
 	//set total size :
 	configuration_desc[2] = configuration_desc_size & 0xFF;
 	configuration_desc[3] = (configuration_desc_size >> 8) & 0xFF;
+	configuration_desc[4] = interface_count;
 
 	DEV_IOCTL(usb_hw, IOCTL_USB_DEVICE_SET_DEVICE_DESC, gu8DeviceDescriptor);
 	DEV_IOCTL(usb_hw, IOCTL_USB_DEVICE_SET_CONFIG_DESC, configuration_desc);
@@ -324,6 +321,23 @@ static void usb_device_start(struct usb_device_descriptors_cfg_t *cfg_hndl)
 	DEV_IOCTL_0_PARAMS(usb_hw, IOCTL_USB_DEVICE_START);
 
 }
+
+
+static void alloc_interfaces(
+		struct usb_descriptors_alloc_interfaces_t *usb_desc_alloc_interfaces)
+{
+	int i = 0;
+
+	while (i < usb_desc_alloc_interfaces->num_of_interfaces)
+	{
+		usb_desc_alloc_interfaces->interfaces_num[i++] = interface_count++;
+		if (i == MAX_NUM_OF_REQUESTED_INTERFACES)
+		{
+			CRITICAL_ERROR("too many interfaces were requested \n");
+		}
+	}
+}
+
 
 /**
  * usb_i94xxx_ioctl()
@@ -341,6 +355,9 @@ uint8_t usb_device_descriptors_ioctl(
 	{
 	case IOCTL_DEVICE_START :
 		device_start();
+		break;
+	case USB_DEVICE_DESCRIPTORS_ALLOC_INTERFACES_NUMBERS:
+		alloc_interfaces(aIoctl_param1);
 		break;
 	case USB_DEVICE_DESCRIPTORS_ADD_INTERFACE :
 		add_interface(aIoctl_param1);
