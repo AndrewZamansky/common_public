@@ -1,0 +1,5 @@
+
+
+config ARDUINO_SD_SPI_GIT_COMMIT_HASH
+	string "arduino SdSpi git commit hash"
+	default ""

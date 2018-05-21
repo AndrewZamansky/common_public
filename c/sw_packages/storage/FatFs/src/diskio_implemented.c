@@ -9,6 +9,7 @@
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 #include "_project_func_declarations.h"
+#include "dev_management_api.h"
 
 #include "diskio.h"		/* FatFs lower layer API */
 
@@ -19,7 +20,7 @@
 //#define USB		2	/* Example: Map USB drive to drive number 2 */
 
 
-extern struct dev_desc_t * storage_dev ;
+extern struct dev_desc_t *storage_dev;
 
 /*-----------------------------------------------------------------------*/
 /* Get Drive Status                                                      */
@@ -37,21 +38,21 @@ DSTATUS disk_status (
 //	case ATA :
 //		result = ATA_disk_status();
 //
-//		// translate the reslut code here
+//		// translate the result code here
 //
 //		return stat;
 //
 //	case MMC :
 //		result = MMC_disk_status();
 //
-//		// translate the reslut code here
+//		// translate the result code here
 //
 //		return stat;
 //
 //	case USB :
 //		result = USB_disk_status();
 //
-//		// translate the reslut code here
+//		// translate the result code here
 //
 //		return stat;
 //	}
@@ -76,21 +77,21 @@ DSTATUS disk_initialize (
 //	case ATA :
 //		result = ATA_disk_initialize();
 //
-//		// translate the reslut code here
+//		// translate the result code here
 //
 //		return stat;
 //
 //	case MMC :
 //		result = MMC_disk_initialize();
 //
-//		// translate the reslut code here
+//		// translate the result code here
 //
 //		return stat;
 //
 //	case USB :
 //		result = USB_disk_initialize();
 //
-//		// translate the reslut code here
+//		// translate the result code here
 //
 //		return stat;
 //	}
@@ -98,12 +99,6 @@ DSTATUS disk_initialize (
 }
 
 
-#if 0
-extern BuiltInFlash_API_Handle_t pBuiltInFlashHandle;
-#else
-//extern SPI_FLASH_API_Handle_t spiFlashHandle;
-extern struct dev_desc_t * spi_flash_manager_dev;
-#endif
 
 /*-----------------------------------------------------------------------*/
 /* Read Sector(s)                                                        */
@@ -116,6 +111,7 @@ DRESULT disk_read (
 	UINT count		/* Number of sectors to read */
 )
 {
+
 	DEV_PREAD(storage_dev, buff, count * 512, sector * 512);
 
 	return RES_OK;
@@ -135,6 +131,7 @@ DRESULT disk_write (
 	UINT count			/* Number of sectors to write */
 )
 {
+
 	DEV_PWRITE(storage_dev, buff, count * 512, sector * 512);
 
 

@@ -33,6 +33,19 @@
 /********  defines *********************/
 #define ENABLE_I94XX_SPI_INT
 
+/* replace original SPI_SET_SS_HIGH / SPI_SET_SS_LOW because SPI_SSCTL_SS_Msk
+ * is undefined
+ */
+#define SPI_SET_SS_HIGH_SPI0()     ((SPI0)->SSCTL = ((SPI0)->SSCTL & \
+		(~(SPI_SSCTL_AUTOSS_Msk | SPI_SSCTL_SSACTPOL_Msk | SPI_SSCTL_SS0_Msk))))
+#define SPI_SET_SS_HIGH_SPI1()     ((SPI1)->SSCTL = ((SPI1)->SSCTL & \
+		(~(SPI_SSCTL_AUTOSS_Msk | SPI_SSCTL_SSACTPOL_Msk | SPI_SSCTL_SS1_Msk))))
+
+#define SPI_SET_SS_LOW_SPI0()     ((SPI0)->SSCTL = ((SPI0)->SSCTL & \
+		(~(SPI_SSCTL_AUTOSS_Msk | SPI_SSCTL_SSACTPOL_Msk))) | SPI_SSCTL_SS0_Msk)
+#define SPI_SET_SS_LOW_SPI1()     ((SPI1)->SSCTL = ((SPI1)->SSCTL & \
+		(~(SPI_SSCTL_AUTOSS_Msk | SPI_SSCTL_SSACTPOL_Msk))) | SPI_SSCTL_SS1_Msk)
+
 /********  types  *********************/
 
 
@@ -46,6 +59,10 @@
 /********  local defs *********************/
 
 #ifdef ENABLE_I94XX_SPI_INT
+
+//#define BUFF_SIZE	5000
+//static uint8_t tmp_buf[BUFF_SIZE] = { [0 ... 4999] = 0xcc };
+//uint32_t tmp_buf_pos = 0;
 
 uint8_t spi_i94xxx_callback(struct dev_desc_t *adev ,
 		uint8_t aCallback_num , void * aCallback_param1,
@@ -74,6 +91,10 @@ uint8_t spi_i94xxx_callback(struct dev_desc_t *adev ,
 		if (NULL != rx_buff)
 		{
 			rx_buff[curr_rx_pos++] = u8InChar;
+//			if (BUFF_SIZE > tmp_buf_pos)
+//			{
+//				tmp_buf[tmp_buf_pos++] = u8InChar;
+//			}
 		}
 		runtime_handle->curr_rx_pos = curr_rx_pos;
 	}
@@ -115,7 +136,7 @@ size_t spi_i94xxx_pread(struct dev_desc_t *adev,
 	struct spi_i94xxx_cfg_t *cfg_hndl;
 	struct spi_i94xxx_runtime_t *runtime_handle;
 	volatile uint32_t curr_rx_pos;
-	uint32_t next_curr_rx_pos;
+	uint32_t next_rx_pos;
 	SPI_T *spi_regs;
 
 	if (0 == aLength) return 0;
@@ -126,17 +147,24 @@ size_t spi_i94xxx_pread(struct dev_desc_t *adev,
 
 	runtime_handle->curr_rx_pos = 0;
 	runtime_handle->rx_buff = apData;
-	next_curr_rx_pos = 1;
-	while ( (next_curr_rx_pos - 1) < aLength)
+	curr_rx_pos = 0;
+	next_rx_pos = 1;
+//	while (0 == SPI_GET_RX_FIFO_EMPTY_FLAG(spi_regs))
+//	{
+//		uint8_t dummy;
+//		dummy = SPI_READ_RX(spi_regs);
+//	}
+	while ( curr_rx_pos < aLength)
 	{
 		SPI_WRITE_TX(spi_regs, 0xFF);
-		while(curr_rx_pos != next_curr_rx_pos)
+		while(curr_rx_pos != next_rx_pos)
 		{
 			os_delay_ms(1);
 			curr_rx_pos = runtime_handle->curr_rx_pos;
 		}
-		next_curr_rx_pos++;
+		next_rx_pos++;
 	}
+	runtime_handle->rx_buff = NULL;
 	return aLength;
 
 }
@@ -202,7 +230,34 @@ static void configure_spi0_pinout(struct spi_i94xxx_cfg_t *cfg_hndl)
 		SYS->GPC_MFPL |= SYS_GPC_MFPL_PC7MFP_SPI0_SS0;
 	}
 
+	//Secondary pinout for SPI0
+
+	if (SPI_I94XXX_API_CLK_PIN_A5 == cfg_hndl->CLK_pin)
+	{
+		SYS->GPA_MFPL &= ~(SYS_GPA_MFPL_PA5MFP_Msk);
+		SYS->GPA_MFPL |= SYS_GPA_MFPL_PA5MFP_SPI0_CLK;
+	}
+
+	if (SPI_I94XXX_API_MISO_PIN_A4 == cfg_hndl->MISO_pin)
+	{
+		SYS->GPA_MFPL &= ~(SYS_GPA_MFPL_PA4MFP_Msk);
+		SYS->GPA_MFPL |= SYS_GPA_MFPL_PA4MFP_SPI0_MISO0;
+	}
+
+	if (SPI_I94XXX_API_MOSI_PIN_A3 == cfg_hndl->MOSI_pin)
+	{
+		SYS->GPA_MFPL &= ~(SYS_GPA_MFPL_PA3MFP_Msk);
+		SYS->GPA_MFPL |= SYS_GPA_MFPL_PA3MFP_SPI0_MOSI0;
+	}
+
+	if (SPI_I94XXX_API_SS_PIN_A6 == cfg_hndl->SS_pin)
+	{
+		SYS->GPA_MFPL &= ~(SYS_GPA_MFPL_PA6MFP_Msk);
+		SYS->GPA_MFPL |= SYS_GPA_MFPL_PA6MFP_SPI0_SS0;
+	}
+
 }
+
 
 
 /**
@@ -218,6 +273,7 @@ uint8_t spi_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 	struct dev_desc_t	*spi_clk_dev;
 	struct dev_desc_t	*src_clock;
 	uint32_t spi_module_rst;
+	uint32_t clk_freq;
 	SPI_T *spi_regs;
 	int spi_irq;
 
@@ -228,6 +284,7 @@ uint8_t spi_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 	switch(aIoctl_num)
 	{
 		case IOCTL_DEVICE_START :
+
 			if(SPI0 == spi_regs)
 			{
 				spi_clk_dev = i94xxx_spi0_clk_dev;
@@ -248,10 +305,12 @@ uint8_t spi_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 			/* Configure SPI0 as a master, SPI clock rate 2 MHz,
 			 *  clock idle low, 32-bit transaction, drive output on
 			 * falling clock edge and latch input on rising edge. */
-			SPI_Open(spi_regs, SPI_MASTER, SPI_MODE_0, 32, 2000000);
+			SPI_Open(spi_regs, SPI_MASTER, SPI_MODE_0, 8, 250000);
 			/* Enable the automatic hardware slave selection function.
 		     *  Select the SPI0_SS pin and configure as low-active. */
-			SPI_EnableAutoSS(spi_regs, SPI_SS0, SPI_SS_ACTIVE_LOW);
+			//SPI_EnableAutoSS(spi_regs, SPI_SS0, SPI_SS_ACTIVE_LOW);
+
+			SPI_SET_DATA_WIDTH(spi_regs, cfg_hndl->data_width);
 
 			#ifdef ENABLE_I94XX_SPI_INT
 			/* Config Suspend cycle */
@@ -263,9 +322,41 @@ uint8_t spi_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 			irq_register_device_on_interrupt(spi_irq, adev);
 			irq_set_priority(spi_irq, INTERRUPT_LOWEST_PRIORITY - 1 );
 			irq_enable_interrupt(spi_irq);
+
+			SPI_ENABLE(spi_regs);
 			#endif
 
 			break;
+
+		case IOCTL_SPI_API_SET_CS_HIGH :
+			if(SPI0 == spi_regs)
+			{
+				SPI_SET_SS_HIGH_SPI0();
+			}
+			else
+			{
+				SPI_SET_SS_HIGH_SPI1();
+			}
+			break;
+
+		case IOCTL_SPI_API_SET_CS_LOW :
+			if(SPI0 == spi_regs)
+			{
+				SPI_SET_SS_LOW_SPI0();
+			}
+			else
+			{
+				SPI_SET_SS_LOW_SPI1();
+			}
+			break;
+
+
+		case IOCTL_SPI_API_SET_CLK :
+			clk_freq = (uint32_t)aIoctl_param1;
+			SPI_Open(spi_regs, SPI_MASTER, SPI_MODE_0, 8, clk_freq);
+			SPI_SET_DATA_WIDTH(spi_regs, cfg_hndl->data_width);
+			break;
+
 		default :
 			return 1;
 	}

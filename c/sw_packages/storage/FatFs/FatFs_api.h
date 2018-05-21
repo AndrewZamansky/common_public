@@ -4,6 +4,7 @@
 
 
 #include "dev_management_api.h"
+#include "ff.h"
 
 /*****************  defines  **************/
 

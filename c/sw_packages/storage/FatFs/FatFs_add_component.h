@@ -4,9 +4,8 @@
 #include "src/FatFs.h"
 
 
-#define MODULE_NAME                      FatFs
+#define MODULE_NAME                      FatFs_dev
 #define MODULE_IOCTL_FUNCTION            FatFs_ioctl
-#define MODULE_CALLBACK_FUNCTION         FatFs_callback
 #define MODULE_CONFIG_DATA_STRUCT_TYPE   struct FatFs_instance_t
 
 #ifdef DT_DEV_MODULE
