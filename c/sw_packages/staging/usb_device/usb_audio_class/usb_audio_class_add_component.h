@@ -20,8 +20,12 @@
 	#endif
 
 
-	#ifndef USB_AUDIO_CLASS_DT_ENDPOINT_NUM
-		#error "USB_AUDIO_CLASS_DT_ENDPOINT_NUM should be defined"
+	#ifndef USB_AUDIO_CLASS_DT_IN_ENDPOINT_NUM
+		#error "USB_AUDIO_CLASS_DT_IN_ENDPOINT_NUM should be defined"
+	#endif
+
+	#ifndef USB_AUDIO_CLASS_DT_OUT_ENDPOINT_NUM
+		#error "USB_AUDIO_CLASS_DT_OUT_ENDPOINT_NUM should be defined"
 	#endif
 
 	#ifndef USB_AUDIO_CLASS_DT_NUM_OF_BYTES_PER_SAMPLE
@@ -50,7 +54,8 @@
 			_POINTER_TO_USB_PDEV ,           \
 			_USB_AUDIO_CLASS_CALLBACK_PDEV,  \
 			_POINTER_TO_USB_DESCRIPTOR_PDEV, \
-			USB_AUDIO_CLASS_DT_ENDPOINT_NUM, \
+			USB_AUDIO_CLASS_DT_IN_ENDPOINT_NUM, \
+			USB_AUDIO_CLASS_DT_OUT_ENDPOINT_NUM, \
 			USB_AUDIO_CLASS_DT_NUM_OF_BYTES_PER_SAMPLE \
 		}
 
@@ -62,7 +67,8 @@
  *  device specific defines should be undefined
  *  after calling #include "add_static_dev.h"
  */
-#undef USB_AUDIO_CLASS_DT_ENDPOINT_NUM
+#undef USB_AUDIO_CLASS_DT_IN_ENDPOINT_NUM
+#undef USB_AUDIO_CLASS_DT_OUT_ENDPOINT_NUM
 #undef USB_AUDIO_CLASS_DT_USB_PDEV
 #undef _POINTER_TO_USB_PDEV
 #undef _USB_AUDIO_CLASS_CALLBACK_PDEV
