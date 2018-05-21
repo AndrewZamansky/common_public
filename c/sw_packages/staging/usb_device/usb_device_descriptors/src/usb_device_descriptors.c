@@ -15,7 +15,9 @@
 #include "audio_class.h"
 #include "usb_device_api.h"
 #include "usb_device_descriptors.h"
-
+#include "string.h"
+#include "stdlib.h"
+#include "usb_device_descriptors_api.h"
 
 #define WBVAL(x) (x&0xFF), ((x >>8) & 0xFF) 
 #define B3VAL(x) (x&0xFF), ((x >>8) & 0xFF), ((x >>16) & 0xFF)  
@@ -63,210 +65,29 @@ const uint8_t gu8DeviceDescriptor[] =
 };
 
 	
-
+#define WILL_BE_CALC_LATER   0
 /*!<USB Configure Descriptor */
-const uint8_t gu8ConfigDescriptor[] = 
+static uint8_t gu8ConfigDescriptor[] =
 {
     0x09,        // bLength
     0x02,        // bDescriptorType (Configuration)
 //    0xC2, 0x00,  // wTotalLength 
-    WBVAL(226),  // wTotalLength
+    WBVAL(WILL_BE_CALC_LATER),  // wTotalLength
     0x04,        // bNumInterfaces 4
     0x01,        // bConfigurationValue
     0x00,        // iConfiguration (String Index)
     0x80,        // bmAttributes
     0x32,        // bMaxPower 100mA
+};
 
-    0x09,        // bLength
-    0x04,        // bDescriptorType (Interface)
-    0x00,        // bInterfaceNumber 0
-    0x00,        // bAlternateSetting
-    0x00,        // bNumEndpoints 0
-    0x01,        // bInterfaceClass (Audio)
-    0x01,        // bInterfaceSubClass (Audio Control)
-    0x00,        // bInterfaceProtocol
-    0x00,        // iInterface (String Index)
 
-    0x0A,        // bLength
-    0x24,        // bDescriptorType (See Next Line)
-    0x01,        // bDescriptorSubtype (CS_INTERFACE -> HEADER)
-    0x00, 0x01,  // bcdADC 1.00
-    0x48, 0x00,  // wTotalLength 72
-    0x02,        // binCollection 0x02
-    0x01,        // baInterfaceNr 1
-    0x02,        // baInterfaceNr 2
 
-    0x0C,        // bLength
-    0x24,        // bDescriptorType (See Next Line)
-    0x02,        // bDescriptorSubtype (CS_INTERFACE -> INPUT_TERMINAL)
-    0x01,        // bTerminalID
-    0x01, 0x01,  // wTerminalType (USB Streaming)
-    0x00,        // bAssocTerminal
-    0x02,        // bNrChannels 2
-    0x03, 0x00,  // wChannelConfig (Left and Right Front)
-    0x00,        // iChannelNames
-    0x00,        // iTerminal
-
-    0x0A,        // bLength
-    0x24,        // bDescriptorType (See Next Line)
-    0x06,        // bDescriptorSubtype (CS_INTERFACE -> FEATURE_UNIT)
-    0x06,        // bUnitID
-    0x01,        // bSourceID
-    0x01,        // bControlSize 1
-    0x01, 0x02,  // bmaControls[0] (Mute)
-    0x02, 0x00,  // bmaControls[1] (Volume)
-
-    0x09,        // bLength
-    0x24,        // bDescriptorType (See Next Line)
-    0x03,        // bDescriptorSubtype (CS_INTERFACE -> OUTPUT_TERMINAL)
-    0x03,        // bTerminalID
-    0x01, 0x03,  // wTerminalType (Speaker)
-    0x00,        // bAssocTerminal
-    0x06,        // bSourceID
-    0x00,        // iTerminal
-
-    0x0C,        // bLength
-    0x24,        // bDescriptorType (See Next Line)
-    0x02,        // bDescriptorSubtype (CS_INTERFACE -> INPUT_TERMINAL)
-    0x04,        // bTerminalID
-    0x01, 0x02,  // wTerminalType (Microphone)
-    0x00,        // bAssocTerminal
-    0x02,        // bNrChannels 2
-    0x03, 0x00,  // wChannelConfig (Left and Right Front)
-    0x00,        // iChannelNames
-    0x00,        // iTerminal
-
-    0x0A,        // bLength
-    0x24,        // bDescriptorType (See Next Line)
-    0x06,        // bDescriptorSubtype (CS_INTERFACE -> FEATURE_UNIT)
-    0x05,        // bUnitID
-    0x04,        // bSourceID
-    0x01,        // bControlSize 1
-    0x01, 0x02,  // bmaControls[0] (Mute)
-    0x02, 0x00,  // bmaControls[1] (Volume)
-
-    0x09,        // bLength
-    0x24,        // bDescriptorType (See Next Line)
-    0x03,        // bDescriptorSubtype (CS_INTERFACE -> OUTPUT_TERMINAL)
-    0x02,        // bTerminalID
-    0x01, 0x01,  // wTerminalType (USB Streaming)
-    0x00,        // bAssocTerminal
-    0x05,        // bSourceID
-    0x00,        // iTerminal
-
-    0x09,        // bLength
-    0x04,        // bDescriptorType (Interface)
-    0x01,        // bInterfaceNumber 1
-    0x00,        // bAlternateSetting
-    0x00,        // bNumEndpoints 0
-    0x01,        // bInterfaceClass (Audio)
-    0x02,        // bInterfaceSubClass (Audio Streaming)
-    0x00,        // bInterfaceProtocol
-    0x00,        // iInterface (String Index)
-
-    0x09,        // bLength
-    0x04,        // bDescriptorType (Interface)
-    0x01,        // bInterfaceNumber 1
-    0x01,        // bAlternateSetting
-    0x01,        // bNumEndpoints 1
-    0x01,        // bInterfaceClass (Audio)
-    0x02,        // bInterfaceSubClass (Audio Streaming)
-    0x00,        // bInterfaceProtocol
-    0x00,        // iInterface (String Index)
-
-    0x07,        // bLength
-    0x24,        // bDescriptorType (See Next Line)
-    0x01,        // bDescriptorSubtype (CS_INTERFACE -> AS_GENERAL)
-    0x02,        // bTerminalLink
-    0x01,        // bDelay 1
-    0x01, 0x00,  // wFormatTag (PCM)
-
-    0x0B,        // bLength
-    0x24,        // bDescriptorType (See Next Line)
-    0x02,        // bDescriptorSubtype (CS_INTERFACE -> FORMAT_TYPE)
-    0x01,        // bFormatType 1
-    0x02,        // bNrChannels (Stereo)
-    0x02,        // bSubFrameSize 2
-    0x10,        // bBitResolution 16
-    0x01,        // bSamFreqType 1
-    B3VAL(REC_RATE),
-
-    0x09,        // bLength
-    0x05,        // bDescriptorType (See Next Line)
-    0x82,        // bEndpointAddress (IN/D2H)
-    0x0D,        // bmAttributes (Isochronous, Sync, Data EP)
-    0xC0, 0x00,  // wMaxPacketSize 192
-    0x01,        // bInterval 1 (unit depends on device speed)
-    0x00,        // bRefresh
-    0x00,        // bSyncAddress
-
-    0x07,        // bLength
-    0x25,        // bDescriptorType (See Next Line)
-    0x01,        // bDescriptorSubtype (CS_ENDPOINT -> EP_GENERAL)
-    0x00,        // bmAttributes (None)
-    0x00,        // bLockDelayUnits
-    0x00, 0x00,  // wLockDelay 0
-
-    0x09,        // bLength
-    0x04,        // bDescriptorType (Interface)
-    0x02,        // bInterfaceNumber 2
-    0x00,        // bAlternateSetting
-    0x00,        // bNumEndpoints 0
-    0x01,        // bInterfaceClass (Audio)
-    0x02,        // bInterfaceSubClass (Audio Streaming)
-    0x00,        // bInterfaceProtocol
-    0x00,        // iInterface (String Index)
-
-    0x09,        // bLength
-    0x04,        // bDescriptorType (Interface)
-    0x02,        // bInterfaceNumber 2
-    0x01,        // bAlternateSetting
-    0x01,        // bNumEndpoints 1
-    0x01,        // bInterfaceClass (Audio)
-    0x02,        // bInterfaceSubClass (Audio Streaming)
-    0x00,        // bInterfaceProtocol
-    0x00,        // iInterface (String Index)
-
-    0x07,        // bLength
-    0x24,        // bDescriptorType (See Next Line)
-    0x01,        // bDescriptorSubtype (CS_INTERFACE -> AS_GENERAL)
-    0x01,        // bTerminalLink
-    0x01,        // bDelay 1
-    0x01, 0x00,  // wFormatTag (PCM)
-
-    0x0B,        // bLength
-    0x24,        // bDescriptorType (See Next Line)
-    0x02,        // bDescriptorSubtype (CS_INTERFACE -> FORMAT_TYPE)
-    0x01,        // bFormatType 1
-    0x02,        // bNrChannels (Stereo)
-    0x02,        // bSubFrameSize 2
-    0x10,        // bBitResolution 16
-    0x01,        // bSamFreqType 1
-    B3VAL(ALT2_PLAY_RATE),
-    //B3VAL(PLAY_RATE),
-    //B3VAL(ALT1_PLAY_RATE),
-    
-
-    0x09,        // bLength
-    0x05,        // bDescriptorType (See Next Line)
-    0x03,        // bEndpointAddress (OUT/H2D)
-    0x0D,        // bmAttributes (Isochronous, Sync, Data EP)
-    0x00, 0x03,  // wMaxPacketSize 768
-    0x01,        // bInterval 1 (unit depends on device speed)
-    0x00,        // bRefresh
-    0x00,        // bSyncAddress
-
-    0x07,        // bLength
-    0x25,        // bDescriptorType (See Next Line)
-    0x01,        // bDescriptorSubtype (CS_ENDPOINT -> EP_GENERAL)
-    0x80,        // bmAttributes (None)
-    0x00,        // bLockDelayUnits
-    0x00, 0x00,  // wLockDelay 0
-    
+static uint8_t hid_interface[] =
+{
     /* I/F descr: HID */
     LEN_INTERFACE,  /* bLength */
     DESC_INTERFACE, /* bDescriptorType */
-    0x03,           /* bInterfaceNumber */
+    0x01,           /* bInterfaceNumber */
     0x00,           /* bAlternateSetting */
     0x02,           /* bNumEndpoints */
     0x03,           /* bInterfaceClass */
@@ -304,8 +125,6 @@ const uint8_t gu8ConfigDescriptor[] =
     EP7_MAX_PKT_SIZE & 0x00FF,
     (EP7_MAX_PKT_SIZE & 0xFF00) >> 8,
     10     /* bInterval */
-    
-    
 };
 
 /*!<USB Language String Descriptor */
@@ -423,42 +242,112 @@ const uint32_t gu32ConfigHidDescIdx[4] = {
 //    (uint32_t *)gu32ConfigHidDescIdx
 //};
 
+
+static uint8_t *configuration_desc;
+uint16_t configuration_desc_size;
+uint16_t interface_count;
+
+
+static void device_start()
+{
+	struct usb_descriptors_set_interface_t usb_desc_set_interface;
+
+	interface_count = 0;
+	configuration_desc_size = sizeof(gu8ConfigDescriptor);
+	configuration_desc = (uint8_t*)malloc(configuration_desc_size);
+	memcpy(
+		configuration_desc, gu8ConfigDescriptor, configuration_desc_size);
+}
+
+static void add_interface(
+		struct usb_descriptors_set_interface_t *usb_desc_set_interface)
+{
+	uint16_t interface_structure_size;
+	uint16_t new_desc_size;
+	uint8_t *interface_desc;
+
+	interface_desc = usb_desc_set_interface->interface_desc;
+	interface_structure_size = usb_desc_set_interface->interface_desc_size;
+
+	new_desc_size = configuration_desc_size + interface_structure_size;
+	configuration_desc =
+			(uint8_t*)realloc(configuration_desc, new_desc_size);
+	memcpy(&configuration_desc[configuration_desc_size],
+			interface_desc, interface_structure_size);
+	configuration_desc[configuration_desc_size + 2] = interface_count;
+	configuration_desc_size = new_desc_size;
+
+	interface_desc = usb_desc_set_interface->alt_interface_desc;
+	interface_structure_size = usb_desc_set_interface->alt_interface_desc_size;
+
+	if (NULL != interface_desc)
+	{
+		new_desc_size = configuration_desc_size + interface_structure_size;
+		configuration_desc =
+				(uint8_t*)realloc(configuration_desc, new_desc_size);
+		memcpy(&configuration_desc[configuration_desc_size],
+				interface_desc, interface_structure_size);
+		configuration_desc[configuration_desc_size + 2] = interface_count;
+		configuration_desc_size = new_desc_size;
+	}
+
+	interface_count++;
+}
+
+
+static void usb_device_start(struct usb_device_descriptors_cfg_t *cfg_hndl)
+{
+	struct dev_desc_t *usb_hw;
+	struct usb_descriptors_set_interface_t usb_desc_set_interface;
+
+	usb_hw = cfg_hndl->usb_hw;
+
+	usb_desc_set_interface.interface_desc = hid_interface;
+	usb_desc_set_interface.interface_desc_size =
+								sizeof(hid_interface);
+	usb_desc_set_interface.alt_interface_desc = NULL;
+	add_interface(&usb_desc_set_interface);
+
+	//set total size :
+	configuration_desc[2] = configuration_desc_size & 0xFF;
+	configuration_desc[3] = (configuration_desc_size >> 8) & 0xFF;
+
+	DEV_IOCTL(usb_hw, IOCTL_USB_DEVICE_SET_DEVICE_DESC, gu8DeviceDescriptor);
+	DEV_IOCTL(usb_hw, IOCTL_USB_DEVICE_SET_CONFIG_DESC, configuration_desc);
+	DEV_IOCTL(usb_hw, IOCTL_USB_DEVICE_SET_STRING_DESC, gpu8UsbString);
+	DEV_IOCTL(usb_hw, IOCTL_USB_DEVICE_SET_HID_REPORT_DESC, gu8UsbHidReport);
+	DEV_IOCTL(usb_hw, IOCTL_USB_DEVICE_SET_BOS_DESC, gu8BOSDescriptor);
+	DEV_IOCTL(usb_hw, IOCTL_USB_DEVICE_SET_HID_REPORT_LEN, gu32UsbHidReportLen);
+	DEV_IOCTL(usb_hw,
+			IOCTL_USB_DEVICE_SET_HID_DESC_INDEX, gu32ConfigHidDescIdx);
+	DEV_IOCTL_0_PARAMS(usb_hw, IOCTL_DEVICE_START);
+	DEV_IOCTL_0_PARAMS(usb_hw, IOCTL_USB_DEVICE_START);
+
+}
+
 /**
  * usb_i94xxx_ioctl()
  *
  * return:
  */
-uint8_t usb_device_descriptors_ioctl( struct dev_desc_t *adev, uint8_t aIoctl_num,
+uint8_t usb_device_descriptors_ioctl(
+		struct dev_desc_t *adev, uint8_t aIoctl_num,
 		void * aIoctl_param1, void * aIoctl_param2)
 {
 	struct usb_device_descriptors_cfg_t *cfg_hndl;
-	struct dev_desc_t *usb_hw;
 
 	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
-	usb_hw = cfg_hndl->usb_hw;
 	switch(aIoctl_num)
 	{
-
-
 	case IOCTL_DEVICE_START :
-		DEV_IOCTL(usb_hw,
-				IOCTL_USB_DEVICE_SET_DEVICE_DESC, gu8DeviceDescriptor);
-		DEV_IOCTL(usb_hw,
-				IOCTL_USB_DEVICE_SET_CONFIG_DESC, gu8ConfigDescriptor);
-		DEV_IOCTL(usb_hw,
-				IOCTL_USB_DEVICE_SET_STRING_DESC, gpu8UsbString);
-		DEV_IOCTL(usb_hw,
-				IOCTL_USB_DEVICE_SET_HID_REPORT_DESC, gu8UsbHidReport);
-		DEV_IOCTL(usb_hw,
-				IOCTL_USB_DEVICE_SET_BOS_DESC, gu8BOSDescriptor);
-		DEV_IOCTL(usb_hw,
-				IOCTL_USB_DEVICE_SET_HID_REPORT_LEN, gu32UsbHidReportLen);
-		DEV_IOCTL(usb_hw,
-				IOCTL_USB_DEVICE_SET_HID_DESC_INDEX, gu32ConfigHidDescIdx);
-		DEV_IOCTL_0_PARAMS(usb_hw, IOCTL_DEVICE_START);
-		DEV_IOCTL_0_PARAMS(usb_hw, IOCTL_USB_DEVICE_START);
+		device_start();
 		break;
-
+	case USB_DEVICE_DESCRIPTORS_ADD_INTERFACE :
+		add_interface(aIoctl_param1);
+		break;
+	case USB_DEVICE_DESCRIPTORS_START:
+		usb_device_start(cfg_hndl);
+		break;
 	default :
 		return 1;
 	}
