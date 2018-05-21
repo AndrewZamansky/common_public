@@ -1,0 +1,20 @@
+INCLUDE_THIS_COMPONENT :=$(CONFIG_INCLUDE_USB_VIRTUAL_COM_CLASS)
+
+
+#INCLUDE_DIR =  
+
+#DEFINES = 
+
+#CFLAGS = 
+
+#ASMFLAGS =  
+
+
+
+SRC = usb_virtual_com_class.c
+
+VPATH = src
+
+
+
+include $(COMMON_CC)

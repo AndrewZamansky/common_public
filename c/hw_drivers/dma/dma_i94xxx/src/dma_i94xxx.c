@@ -84,11 +84,10 @@ struct dev_desc_t * channel_pdev[MAX_NUMBER_OF_CHANNELS] = {0};
 /* func : put_new_buffer_in_pdma
  *
  */
-static void put_new_buffer_in_pdma(uint8_t channel_num ,uint8_t *buff_status,
+static void put_new_buffer_in_pdma(uint8_t channel_num, uint8_t *buff_status,
 		struct dma_i94xxx_runtime_t *runtime_hndl, uint8_t next_dma_buff_indx)
 {
 	DSCT_T *DSCT;
-	uint8_t **buffers;
 	uint32_t reg_addr;
 	uint32_t reg_val;
 
@@ -97,11 +96,8 @@ static void put_new_buffer_in_pdma(uint8_t channel_num ,uint8_t *buff_status,
 		return;
 	}
 
-	buffers = runtime_hndl->buff;
-
 	/* reinit PDMA */
 	buff_status[next_dma_buff_indx] = DMA_I94XXX_BUFF_DMA_IN_PROCCESS;
-	PDMA_SET_SRC_ADDR(channel_num, (size_t)buffers[next_dma_buff_indx]);
 	runtime_hndl->curr_dma_buff_indx = next_dma_buff_indx;
 
 	PDMA_SET_TRANS_CNT(channel_num, runtime_hndl->buff_size_in_transfer_words);
@@ -125,6 +121,8 @@ static void update_tx_buffer(struct dev_desc_t * ch_pdev,
 	struct dev_desc_t *callback_dev;
 	struct dma_i94xxx_cfg_t *cfg_hndl;
 	uint8_t *buff_status;
+	uint8_t channel_num;
+	uint8_t **buffers;
 
 	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(ch_pdev);
 	buff_status = runtime_hndl->buff_status;
@@ -157,6 +155,9 @@ static void update_tx_buffer(struct dev_desc_t * ch_pdev,
 	buff_status[curr_dma_buff_indx] = DMA_I94XXX_BUFF_IDLE;
 	if (DMA_I94XXX_BUFF_TX_DATA_IS_READY == buff_status[next_dma_buff_indx])
 	{
+		channel_num = cfg_hndl->channel_num;
+		buffers = runtime_hndl->buff;
+		PDMA_SET_SRC_ADDR(channel_num, (size_t)buffers[next_dma_buff_indx]);
 		put_new_buffer_in_pdma(cfg_hndl->channel_num,
 				buff_status, runtime_hndl, next_dma_buff_indx);
 		return;
@@ -181,6 +182,8 @@ static void update_rx_buffer(struct dev_desc_t * ch_pdev,
 	struct dev_desc_t *callback_dev;
 	struct dma_i94xxx_cfg_t *cfg_hndl;
 	uint8_t *buff_status;
+	uint8_t channel_num;
+	uint8_t **buffers;
 
 	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(ch_pdev);
 	buff_status = runtime_hndl->buff_status;
@@ -205,7 +208,10 @@ static void update_rx_buffer(struct dev_desc_t * ch_pdev,
 		CRITICAL_ERROR("next rx buffer not ready\n");
 	}
 
-	put_new_buffer_in_pdma(cfg_hndl->channel_num,
+	channel_num = cfg_hndl->channel_num;
+	buffers = runtime_hndl->buff;
+	PDMA_SET_DST_ADDR(channel_num, (size_t)buffers[next_dma_buff_indx]);
+	put_new_buffer_in_pdma(channel_num,
 			buff_status, runtime_hndl, next_dma_buff_indx);
 }
 
@@ -377,13 +383,16 @@ static uint8_t set_peripheral_dma(struct dma_i94xxx_cfg_t *cfg_hndl,
 		runtime_hndl->buff_status[i] = DMA_I94XXX_BUFF_IDLE ;
 	}
 
+	runtime_hndl->next_supplied_tx_buffer = 0;
 	if (DMA_FROM_PERIPHERAL == dma_peripheral_direction)
 	{
 		dest_addr = runtime_hndl->buff[0];// TODO : redesign RX
+		runtime_hndl->curr_dma_buff_indx = 0;
 	}
 	else
 	{
 		runtime_hndl->needed_full_dma_start = 1;
+		runtime_hndl->curr_dma_buff_indx = CONFIG_DMA_I94XXX_NUM_OF_BUFFERS - 1;
 	}
 
 	/* Set source/destination address and attributes */
@@ -488,8 +497,6 @@ static uint8_t start_dma_i94xxx_device(struct dev_desc_t *adev,
 		irq_enable_interrupt(PDMA_IRQn);
 		PDMA_EnableInt(channel_num, PDMA_INT_TRANS_DONE);
 	}
-	runtime_hndl->next_supplied_tx_buffer = 0;
-	runtime_hndl->curr_dma_buff_indx = CONFIG_DMA_I94XXX_NUM_OF_BUFFERS - 1;
 
 	return ret;
 }
