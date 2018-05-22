@@ -17,7 +17,7 @@ ifeq ($(MAIN_VERSION_STR),) # if empty then we are on main branch
 endif
 
 ifeq ($(MODIFIED_GITS),)
-    REVISION_STR := r$(CURR_APP_SHORT_COMMIT)
+    REVISION_STR := r$(DATE_STR)c$(CURR_APP_SHORT_COMMIT)
     REVISION_FOR_FILE_STR :=$(REVISION_STR)
 else
     REVISION_STR :=r$(DATE_STR).$(TIME_STR)_DEV
