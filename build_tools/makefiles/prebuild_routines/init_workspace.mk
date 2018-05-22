@@ -97,6 +97,7 @@ else
     $(call exit,1)
 endif
 
+MODIFIED_GITS :=
 
 COMMON_INIT_SECTION_THAT_SHOULD_RUN_ONCE = dummy_value
 

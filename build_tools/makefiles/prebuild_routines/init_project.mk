@@ -63,8 +63,6 @@ endif
 ALL_FOUND_COMPONENTS := $(AUTO_GENERATED_FILES_DIR)/all_found_components.mk
 COMPONENTS_MK := $(AUTO_GENERATED_FILES_DIR)/include_components.mk
 
-include $(PREBUILD_ROUTINES_DIR)/init_versions.mk
-
 OUTPUT_APP_NAME := out
 ifdef CONFIG_OUTPUT_NAME
     OUTPUT_APP_NAME := $(CONFIG_OUTPUT_NAME)

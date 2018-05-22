@@ -13,6 +13,7 @@ ifeq ($(CURR_GIT_COMMIT_HASH_VARIABLE),)
     $(call exit,1)
 endif
 
+# enter only one time per build:
 ifeq ("","$(filter $(CURR_GIT_REPO_DIR),$(EXTERNAL_SRC_GIT_DIRS))")
     # adding new directory to external source directories list:
     EXTERNAL_SRC_GIT_DIRS := $(EXTERNAL_SRC_GIT_DIRS) $(CURR_GIT_REPO_DIR)
@@ -53,7 +54,16 @@ ifeq ("","$(filter $(CURR_GIT_REPO_DIR),$(EXTERNAL_SRC_GIT_DIRS))")
     else
         BRANCH_NAME_MATCH :=n
     endif
-    
+
+
+    SHELL_OUT := $(shell $(SHELL_GO_TO_GIT_DIR) $(GIT) status 2>&1)
+    TREE_CLEAN_STR :=nothing to commit, working tree clean
+    ifeq ($(findstring $(TREE_CLEAN_STR),$(SHELL_OUT)),)
+        $(info ---- $(CURR_GIT_REPO_DIR) git tree is modified)
+        MODIFIED_GITS +=$(CURR_GIT_REPO_DIR)
+    endif
+
+
     CURR_GIT_COMMIT := $(shell $(SHELL_GO_TO_GIT_DIR) $(GIT) rev-parse HEAD)
     ifneq ("$(CURR_GIT_COMMIT)",$(GIT_REQUESTED_COMMIT))
         SHELL_CMD :=$(SHELL_GO_TO_GIT_DIR) $(GIT) status --porcelain 2>&1

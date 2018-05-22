@@ -35,6 +35,17 @@ ifeq ($(findstring ./.git,$(GIT_DIR)),)      # if not found ./.git in $(GIT_DIR)
     $(call exit,1)
 endif
 
+
+CURR_APP_SHORT_COMMIT := $(shell $(GIT) rev-parse --short=8 HEAD)
+
+SHELL_OUT := $(shell $(GIT) status 2>&1)
+TREE_CLEAN_STR :=nothing to commit, working tree clean
+ifeq ($(findstring $(TREE_CLEAN_STR),$(SHELL_OUT)),)
+    $(info ---- $(PROJECT_NAME) git tree is modified)
+    MODIFIED_GITS +=$(PROJECT_NAME)
+endif
+
+
 CURR_APP_GIT_BRANCH := $(shell $(GIT) rev-parse --abbrev-ref HEAD 2>&1)
 # remove heads/ prefix if exists :
 CURR_APP_GIT_BRANCH := $(patsubst heads/%,%,$(CURR_APP_GIT_BRANCH))

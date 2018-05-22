@@ -22,6 +22,9 @@ ALL_COMPONENTS_MAKEFILES :=$(patsubst %,%/Makefile.uc.mk, $(SUBDIRS))
 include $(ALL_COMPONENTS_MAKEFILES)
 DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(AUTO_GLOBAL_INCLUDE_DIRS))
 
+# versioning should be after "include $(COMPONENTS_MK)"
+# because of git modifications checking
+include $(PREBUILD_ROUTINES_DIR)/init_versions.mk
 
 # clean following variables befor exporting to sub-makes
 DEFINES :=
