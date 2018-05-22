@@ -60,7 +60,8 @@ CLASS_REQ pfnClassReq;
 #define MAX_NUM_OF_ENDPOINTS    12
 static usb_dev_out_endpoint_callback_func_t
 				callback_functions[MAX_NUM_OF_ENDPOINTS];
-struct dev_desc_t *callback_devs[MAX_NUM_OF_ENDPOINTS];
+static struct dev_desc_t *callback_devs[MAX_NUM_OF_ENDPOINTS];
+static uint16_t max_pckt_sizes[MAX_NUM_OF_ENDPOINTS] = {0};
 
 /*--------------------------------------------------------------------------*/
 /* Global variables for Control Pipe */
@@ -562,41 +563,44 @@ void EP3_Handler(void)
 {
 	usb_dev_out_endpoint_callback_func_t callback_func;
 	uint32_t u32Len;
-    int32_t i;
-    uint8_t *pu8Buf;
     uint8_t *pu8Src;
-    uint32_t u32Idx;
 
     /* Get the address in USB buffer */
     pu8Src = (uint8_t *)((uint32_t)USBD_BUF_BASE + USBD_GET_EP_BUF_ADDR(EP3));
-
-    /* Prepare for nex OUT packet */
-    USBD_SET_PAYLOAD_LEN(EP3, EP3_MAX_PKT_SIZE);
-
-    /* Get the temp buffer */
-    pu8Buf = (uint8_t *)g_au32UsbTmpBuf;
-
-    /* Calculate byte size of play data */
-    u32Len = ALT2_PLAY_RATE / 1000 * PLAY_CHANNELS * 2;
-
-    /* Copy all data from USB buffer to SRAM buffer */
-    /* We assume the source data are 4 bytes alignment. */
-    for(i = 0; i < u32Len; i += 4)
-    {
-        pu8Buf[i] = pu8Src[i];
-        pu8Buf[i + 1] = pu8Src[i + 1];
-        pu8Buf[i + 2] = pu8Src[i + 2];
-        pu8Buf[i + 3] = pu8Src[i + 3];
-    }
+    u32Len = USBD_GET_PAYLOAD_LEN(EP3);
 #if 1
 	callback_func = callback_functions[3];
 	if (NULL != callback_functions)
 	{
-		callback_func(callback_devs[3], pu8Buf, u32Len);
+		callback_func(callback_devs[3], pu8Src, u32Len);
 	}
-
+    /* Prepare for nex OUT packet */
+    USBD_SET_PAYLOAD_LEN(EP3, max_pckt_sizes[3]);
 
 #else
+    {
+    int32_t i;
+    uint8_t *pu8Buf;
+    uint32_t u32Idx;
+
+    /* Prepare for nex OUT packet */
+    USBD_SET_PAYLOAD_LEN(EP3, max_pckt_sizes[3]);
+    /* Get the temp buffer */
+    pu8Buf = (uint8_t *)g_au32UsbTmpBuf;
+
+	/* Calculate byte size of play data */
+	u32Len = ALT2_PLAY_RATE / 1000 * PLAY_CHANNELS * 2;
+
+	/* Copy all data from USB buffer to SRAM buffer */
+	/* We assume the source data are 4 bytes alignment. */
+	for(i = 0; i < u32Len; i += 4)
+	{
+		pu8Buf[i] = pu8Src[i];
+		pu8Buf[i + 1] = pu8Src[i + 1];
+		pu8Buf[i + 2] = pu8Src[i + 2];
+		pu8Buf[i + 3] = pu8Src[i + 3];
+	}
+
     /* Calculate word length */
     u32Len = u32Len >> 2;
     for(i = 0; i < u32Len; i++)
@@ -622,6 +626,8 @@ void EP3_Handler(void)
         /* Start play data output through I2S only when we have enough data in buffer */
         if(GetSamplesInBuf() > BUF_LEN / 2)
             g_u8PlayEn = 1;
+    }
+
     }
 #endif
 }
@@ -667,13 +673,13 @@ void UAC_Init(void)
     /* Buffer range for EP2 */
     USBD_SET_EP_BUF_ADDR(EP2, EP2_BUF_BASE);
 
-    /* EP3 ==> Iso Out endpoint, address 3 */
-    USBD_CONFIG_EP(EP3, USBD_CFG_EPMODE_OUT | USBD_CFG_TYPE_ISO | ISO_OUT_EP_NUM);
-    /* Buffer range for EP3 */
-    USBD_SET_EP_BUF_ADDR(EP3, EP3_BUF_BASE);
-
-    /* trigger to receive OUT data */
-    USBD_SET_PAYLOAD_LEN(EP3, EP3_MAX_PKT_SIZE);
+//    /* EP3 ==> Iso Out endpoint, address 3 */
+//    USBD_CONFIG_EP(EP3, USBD_CFG_EPMODE_OUT | USBD_CFG_TYPE_ISO | ISO_OUT_EP_NUM);
+//    /* Buffer range for EP3 */
+//    USBD_SET_EP_BUF_ADDR(EP3, EP3_BUF_BASE);
+//
+//    /* trigger to receive OUT data */
+//    USBD_SET_PAYLOAD_LEN(EP3, EP3_MAX_PKT_SIZE);
 
     /*****************************************************/
     /* EP6 ==> Interrupt IN endpoint, address 6 */
@@ -969,7 +975,125 @@ void UAC_ClassRequest(void)
     }
 }
 
+uint8_t endpoints_count = 2;
+uint16_t available_buff_pointer = EP7_BUF_BASE + EP7_BUF_LEN;
 
+static void alloc_endpoints(
+		struct usb_device_alloc_endpoints_t *usb_device_alloc_endpoints)
+{
+	int i = 0;
+
+	while (i < usb_device_alloc_endpoints->num_of_endpoints)
+	{
+		usb_device_alloc_endpoints->endpoints_num[i++] = endpoints_count++;
+		if (i == MAX_NUM_OF_REQUESTED_ENDPOINTS)
+		{
+			CRITICAL_ERROR("too many endpoints were requested \n");
+		}
+	}
+}
+
+
+static void set_out_endpoint(struct set_out_endpoint_t *set_out_endpoint)
+{
+	uint8_t endpoint_num;
+	uint8_t max_pckt_size;
+
+	endpoint_num = set_out_endpoint->endpoint_num;
+	if ( MAX_NUM_OF_ENDPOINTS <= endpoint_num )
+	{
+		CRITICAL_ERROR("illegal endpoint");
+	}
+	callback_functions[endpoint_num] = set_out_endpoint->func;
+	callback_devs[endpoint_num] = set_out_endpoint->callback_dev;
+
+//    /* EP3 ==> Iso Out endpoint, address 3 */
+//    USBD_CONFIG_EP(EP3, USBD_CFG_EPMODE_OUT | USBD_CFG_TYPE_ISO | ISO_OUT_EP_NUM);
+    /* Buffer range for EP3 */
+//    USBD_SET_EP_BUF_ADDR(EP3, EP3_BUF_BASE);
+
+//    /* trigger to receive OUT data */
+//    USBD_SET_PAYLOAD_LEN(EP3, EP3_MAX_PKT_SIZE);
+
+	switch (set_out_endpoint->type)
+	{
+	case USB_DEVICE_API_EP_TYPE_ISO_OUT :
+		USBD_CONFIG_EP(endpoint_num,
+				USBD_CFG_EPMODE_OUT | USBD_CFG_TYPE_ISO | endpoint_num);
+		break;
+	default :
+		CRITICAL_ERROR("NOT EMPLEMENTED YET \n");
+	}
+
+	/* Buffer range for endpoint */
+	USBD_SET_EP_BUF_ADDR(endpoint_num, available_buff_pointer);
+
+	max_pckt_size = set_out_endpoint->max_pckt_size;
+	available_buff_pointer += max_pckt_size;
+	max_pckt_sizes[endpoint_num] = max_pckt_size;
+	/* trigger to receive OUT data */
+	USBD_SET_PAYLOAD_LEN(endpoint_num, max_pckt_size);
+}
+
+
+static void device_start()
+{
+	uint32_t freq;
+
+	SYS->GPB_MFPH &= ~(SYS_GPB_MFPH_PB13MFP_Msk | SYS_GPB_MFPH_PB14MFP_Msk |
+    		SYS_GPB_MFPH_PB15MFP_Msk);
+    SYS->GPB_MFPH |=  (SYS_GPB_MFPH_PB13MFP_USBD_DN |
+    		SYS_GPB_MFPH_PB14MFP_USBD_DP | SYS_GPB_MFPH_PB15MFP_USBD_VBUS);
+
+
+	DEV_IOCTL_0_PARAMS(i94xxx_usb_clk_dev, CLK_IOCTL_ENABLE);
+	freq = 48000000;
+	DEV_IOCTL_1_PARAMS(i94xxx_usb_clk_dev, CLK_IOCTL_SET_FREQ, &freq);
+	DEV_IOCTL_0_PARAMS(i94xxx_usb_clk_dev, CLK_IOCTL_ENABLE);
+
+	//irq_register_device_on_interrupt(USBD_IRQn, adev);
+	irq_register_interrupt(USBD_IRQn, USBD_IRQHandler);
+	irq_set_priority(USBD_IRQn, OS_MAX_INTERRUPT_PRIORITY_FOR_API_CALLS );
+	irq_enable_interrupt(USBD_IRQn);
+}
+
+
+static void usb_device_start()
+{
+	uint32_t *check_pointer;
+
+	check_pointer = (uint32_t *)&l_gsInfo;
+	while (check_pointer <
+			(uint32_t *)(((uint32_t)&l_gsInfo) + sizeof(l_gsInfo)))
+	{
+		if (NULL == (uint32_t *)(*check_pointer))
+		{
+			CRITICAL_ERROR("l_gsInfo structure should be initialized");
+		}
+		check_pointer++;
+	}
+	/* usb initial */
+	USBD_Open(&l_gsInfo, UAC_ClassRequest, NULL);
+	/* Endpoint configuration */
+	UAC_Init();
+
+
+	/* use following code instead of USBD_Start() because USBD_Start uses
+	* CLK_SysTickDelay function and it touches systick that is used in our
+	* framework as OS tick
+	*/
+	os_delay_ms(100);
+	/* Disable software-disconnect function */
+	USBD_CLR_SE0();
+
+	/* Clear USB-related interrupts before enable interrupt */
+	USBD_CLR_INT_FLAG(USBD_INT_BUS |
+			USBD_INT_USB | USBD_INT_FLDET | USBD_INT_WAKEUP);
+
+	/* Enable USB-related interrupts. */
+	USBD_ENABLE_INT(USBD_INT_BUS | USBD_INT_USB |
+			USBD_INT_FLDET | USBD_INT_WAKEUP | USBD_INTEN_SOFIEN_Msk);
+}
 
 /**
  * usb_i94xxx_ioctl()
@@ -980,28 +1104,12 @@ uint8_t usb_i94xxx_ioctl( struct dev_desc_t *adev, uint8_t aIoctl_num,
 		void * aIoctl_param1, void * aIoctl_param2)
 {
 //	struct usb_i94xxx_cfg_t *cfg_hndl;
-	uint32_t freq;
 
 //	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
 	switch(aIoctl_num)
 	{
 	case IOCTL_DEVICE_START :
-	    SYS->GPB_MFPH &= ~(SYS_GPB_MFPH_PB13MFP_Msk | SYS_GPB_MFPH_PB14MFP_Msk |
-	    		SYS_GPB_MFPH_PB15MFP_Msk);
-	    SYS->GPB_MFPH |=  (SYS_GPB_MFPH_PB13MFP_USBD_DN |
-	    		SYS_GPB_MFPH_PB14MFP_USBD_DP | SYS_GPB_MFPH_PB15MFP_USBD_VBUS);
-
-
-		DEV_IOCTL_0_PARAMS(i94xxx_usb_clk_dev, CLK_IOCTL_ENABLE);
-		freq = 48000000;
-		DEV_IOCTL_1_PARAMS(i94xxx_usb_clk_dev, CLK_IOCTL_SET_FREQ, &freq);
-		DEV_IOCTL_0_PARAMS(i94xxx_usb_clk_dev, CLK_IOCTL_ENABLE);
-
-
-		//irq_register_device_on_interrupt(USBD_IRQn, adev);
-		irq_register_interrupt(USBD_IRQn, USBD_IRQHandler);
-		irq_set_priority(USBD_IRQn, OS_MAX_INTERRUPT_PRIORITY_FOR_API_CALLS );
-		irq_enable_interrupt(USBD_IRQn);
+		device_start();
 		break;
 
 	case IOCTL_USB_DEVICE_SET_DEVICE_DESC :
@@ -1027,69 +1135,14 @@ uint8_t usb_i94xxx_ioctl( struct dev_desc_t *adev, uint8_t aIoctl_num,
 		break;
 
 	case IOCTL_USB_DEVICE_START :
-		{
-			uint32_t *check_pointer;
-
-			check_pointer = (uint32_t *)&l_gsInfo;
-			while (check_pointer <
-					(uint32_t *)(((uint32_t)&l_gsInfo) + sizeof(l_gsInfo)))
-			{
-				if (NULL == (uint32_t *)(*check_pointer))
-				{
-					CRITICAL_ERROR("l_gsInfo structure should be initialized");
-				}
-				check_pointer++;
-			}
-		}
-
-		/* usb initial */
-		USBD_Open(&l_gsInfo, UAC_ClassRequest, NULL);
-		/* Endpoint configuration */
-		UAC_Init();
-
-
-		/* use following code instead of USBD_Start() because USBD_Start uses
-		* CLK_SysTickDelay function and it touches systick that is used in our
-		* framework as OS tick
-		*/
-		{
-			os_delay_ms(100);
-			/* Disable software-disconnect function */
-			USBD_CLR_SE0();
-
-			/* Clear USB-related interrupts before enable interrupt */
-			USBD_CLR_INT_FLAG(USBD_INT_BUS | USBD_INT_USB | USBD_INT_FLDET | USBD_INT_WAKEUP);
-
-			/* Enable USB-related interrupts. */
-			USBD_ENABLE_INT(USBD_INT_BUS | USBD_INT_USB | USBD_INT_FLDET | USBD_INT_WAKEUP | USBD_INTEN_SOFIEN_Msk);
-		}
+		usb_device_start();
 		break;
-	case IOCTL_USB_DEVICE_SET_OUT_ENDPOINT_CALLBACK :
-		{
-			struct set_out_endpoint_callback_t *set_out_endpoint_callback;
-			uint8_t endpoint_num;
-
-			set_out_endpoint_callback =
-					(struct set_out_endpoint_callback_t*)aIoctl_param1;
-			endpoint_num = set_out_endpoint_callback->endpoint_num;
-			if ( MAX_NUM_OF_ENDPOINTS <= endpoint_num )
-			{
-				CRITICAL_ERROR("illegal endpoint");
-			}
-			callback_functions[endpoint_num] = set_out_endpoint_callback->func;
-			callback_devs[endpoint_num] =
-					set_out_endpoint_callback->callback_dev;
-		}
+	case IOCTL_USB_DEVICE_SET_OUT_ENDPOINT :
+		set_out_endpoint(aIoctl_param1);
 		break;
-//	case IOCTL_USB_SET_ISR_CALLBACK_TX_DEV:
-//		cfg_hndl->callback_tx_dev =(struct dev_desc_t *) aIoctl_param1;
-//		break;
-//
-//	case IOCTL_USB_SET_ISR_CALLBACK_RX_DEV:
-//		cfg_hndl->callback_rx_dev =(struct dev_desc_t *) aIoctl_param1;
-//		break;
-
-
+	case IOCTL_USB_DEVICE_ALLOC_ENDPOINTS_NUMBERS:
+		alloc_endpoints(aIoctl_param1);
+		break;
 
 	default :
 		return 1;

@@ -21,8 +21,6 @@ struct usb_audio_class_cfg_t {
 	struct dev_desc_t *usb_hw;
 	struct dev_desc_t *callback_dev;
 	struct dev_desc_t *usb_descriptors_dev;
-	uint8_t in_endpoint_num;
-	uint8_t out_endpoint_num;
 	uint8_t num_of_bytes_per_sample;
 } ;
 

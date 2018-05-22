@@ -12,7 +12,6 @@
 #include "I94100.h"
 //#include "usbd_audio.h"
 
-#include "audio_class.h"
 #include "usb_device_api.h"
 #include "usb_device_descriptors.h"
 #include "string.h"
@@ -42,6 +41,11 @@ const uint8_t gu8HidReportDescriptor[] =
 };
 
 #define HID_REPORT_DESCRIPTOR_SIZE  sizeof(gu8HidReportDescriptor) 
+
+#define EP0_MAX_PKT_SIZE    64
+/* Define the vendor id and product id */
+#define USBD_VID     0x0416
+#define USBD_PID     0x8230
 
 /*----------------------------------------------------------------------------*/
 /*!<USB Device Descriptor */
@@ -81,6 +85,10 @@ static uint8_t gu8ConfigDescriptor[] =
 };
 
 
+#define INT_IN_EP_NUM      0x06
+#define INT_OUT_EP_NUM     0x07
+#define EP6_MAX_PKT_SIZE    64
+#define EP7_MAX_PKT_SIZE    64
 
 static uint8_t hid_interface[] =
 {
@@ -248,13 +256,17 @@ uint16_t configuration_desc_size;
 uint16_t interface_count;
 
 
-static void device_start()
+static void device_start(struct usb_device_descriptors_cfg_t *cfg_hndl)
 {
+	struct dev_desc_t *usb_hw;
+
+	usb_hw = cfg_hndl->usb_hw;
 	interface_count = 0;
 	configuration_desc_size = sizeof(gu8ConfigDescriptor);
 	configuration_desc = (uint8_t*)malloc(configuration_desc_size);
 	memcpy(
 		configuration_desc, gu8ConfigDescriptor, configuration_desc_size);
+	DEV_IOCTL_0_PARAMS(usb_hw, IOCTL_DEVICE_START);
 }
 
 static void add_interface(
@@ -317,7 +329,6 @@ static void usb_device_start(struct usb_device_descriptors_cfg_t *cfg_hndl)
 	DEV_IOCTL(usb_hw, IOCTL_USB_DEVICE_SET_HID_REPORT_LEN, gu32UsbHidReportLen);
 	DEV_IOCTL(usb_hw,
 			IOCTL_USB_DEVICE_SET_HID_DESC_INDEX, gu32ConfigHidDescIdx);
-	DEV_IOCTL_0_PARAMS(usb_hw, IOCTL_DEVICE_START);
 	DEV_IOCTL_0_PARAMS(usb_hw, IOCTL_USB_DEVICE_START);
 
 }
@@ -354,7 +365,7 @@ uint8_t usb_device_descriptors_ioctl(
 	switch(aIoctl_num)
 	{
 	case IOCTL_DEVICE_START :
-		device_start();
+		device_start(cfg_hndl);
 		break;
 	case USB_DEVICE_DESCRIPTORS_ALLOC_INTERFACES_NUMBERS:
 		alloc_interfaces(aIoctl_param1);

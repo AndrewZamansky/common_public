@@ -36,7 +36,8 @@ typedef enum
 #define B3VAL(x) (x&0xFF), ((x >>8) & 0xFF), ((x >>16) & 0xFF)
 #define REC_RATE   48000
 #define ALT2_PLAY_RATE   48000
-
+#define AUTO_SET_PCKT_SIZE_MSB   0x00
+#define AUTO_SET_PCKT_SIZE_LSB   0x00
 
 static uint8_t audio_control_interface[] =
 {
@@ -162,7 +163,7 @@ static uint8_t in_alt_interface[] = {
 	    0x05,        // bDescriptorType (See Next Line)
 	    TO_BE_SET_AUTOMATICALLY,        // bEndpointAddress (IN/D2H)
 	    0x0D,        // bmAttributes (Isochronous, Sync, Data EP)
-	    0xC0, 0x00,  // wMaxPacketSize 192
+	    AUTO_SET_PCKT_SIZE_LSB, AUTO_SET_PCKT_SIZE_MSB,  // wMaxPacketSize
 	    0x01,        // bInterval 1 (unit depends on device speed)
 	    0x00,        // bRefresh
 	    0x00,        // bSyncAddress
@@ -222,7 +223,7 @@ static uint8_t out_alt_interface[] = {
 	    0x05,        // bDescriptorType (See Next Line)
 	    TO_BE_SET_AUTOMATICALLY,        // bEndpointAddress (OUT/H2D)
 	    0x0D,        // bmAttributes (Isochronous, Sync, Data EP)
-	    0x00, 0x03,  // wMaxPacketSize 768
+	    AUTO_SET_PCKT_SIZE_LSB, AUTO_SET_PCKT_SIZE_MSB,  // wMaxPacketSize
 	    0x01,        // bInterval 1 (unit depends on device speed)
 	    0x00,        // bRefresh
 	    0x00,        // bSyncAddress
@@ -390,19 +391,20 @@ static void start_audio_class(struct dev_desc_t *adev,
 		struct usb_audio_class_cfg_t *cfg_hndl,
 		struct usb_audio_class_runtime_t *runtime_hndl)
 {
-	struct set_out_endpoint_callback_t set_out_endpoint_callback;
+	struct set_out_endpoint_t set_out_endpoint;
 	struct usb_descriptors_add_interface_t usb_desc_add_interface;
 	struct usb_descriptors_alloc_interfaces_t usb_descriptors_alloc_interfaces;
+	struct usb_device_alloc_endpoints_t usb_device_alloc_endpoints;
 	struct dev_desc_t *usb_descriptors_dev;
 	struct dev_desc_t *usb_hw;
 	uint32_t buff_size;
 	uint8_t i;
 	uint8_t in_endpoint_num;
 	uint8_t out_endpoint_num;
+	uint8_t endpoint_packet_size;
 
 	usb_descriptors_dev = cfg_hndl->usb_descriptors_dev;
-	in_endpoint_num = cfg_hndl->in_endpoint_num;
-	out_endpoint_num = cfg_hndl->out_endpoint_num;
+	usb_hw = cfg_hndl->usb_hw;
 	usb_descriptors_alloc_interfaces.num_of_interfaces = 3;
 	DEV_IOCTL_1_PARAMS(usb_descriptors_dev,
 			USB_DEVICE_DESCRIPTORS_ALLOC_INTERFACES_NUMBERS,
@@ -418,12 +420,23 @@ static void start_audio_class(struct dev_desc_t *adev,
 			usb_descriptors_alloc_interfaces.interfaces_num[1];
 	in_alt_interface[2] =
 			usb_descriptors_alloc_interfaces.interfaces_num[1];
-	out_alt_interface[27 + 2] = 0x80 | in_endpoint_num;// 0x80 for IN endpoint
 	out_interface[2] =
 			usb_descriptors_alloc_interfaces.interfaces_num[2];
 	out_alt_interface[2] =
 			usb_descriptors_alloc_interfaces.interfaces_num[2];
+
+	usb_device_alloc_endpoints.num_of_endpoints = 2;
+	DEV_IOCTL_1_PARAMS(usb_hw, IOCTL_USB_DEVICE_ALLOC_ENDPOINTS_NUMBERS,
+			&usb_device_alloc_endpoints);
+	in_endpoint_num = usb_device_alloc_endpoints.endpoints_num[0];
+	out_endpoint_num = usb_device_alloc_endpoints.endpoints_num[1];
+	endpoint_packet_size = 192;//48000 * 2 * 2 / 1000;
+	in_alt_interface[27 + 2] = 0x80 | in_endpoint_num;// 0x80 for IN endpoint
+	in_alt_interface[27 + 4] = endpoint_packet_size & 0xFF;
+	in_alt_interface[27 + 5] = (endpoint_packet_size >> 8) & 0xFF;
 	out_alt_interface[27 + 2] = out_endpoint_num;
+	out_alt_interface[27 + 4] = endpoint_packet_size & 0xFF;
+	out_alt_interface[27 + 5] = (endpoint_packet_size >> 8) & 0xFF;
 
 	usb_desc_add_interface.interface_desc = audio_control_interface;
 	usb_desc_add_interface.interface_desc_size =
@@ -448,13 +461,14 @@ static void start_audio_class(struct dev_desc_t *adev,
 			USB_DEVICE_DESCRIPTORS_ADD_INTERFACE, &usb_desc_add_interface);
 
 	buff_size = cfg_hndl->buff_size;
-	usb_hw = cfg_hndl->usb_hw;
 
-	set_out_endpoint_callback.callback_dev = adev;
-	set_out_endpoint_callback.func = new_audio_received;
-	set_out_endpoint_callback.endpoint_num = out_endpoint_num;
-	DEV_IOCTL_1_PARAMS(usb_hw, IOCTL_USB_DEVICE_SET_OUT_ENDPOINT_CALLBACK,
-			&set_out_endpoint_callback);
+	set_out_endpoint.callback_dev = adev;
+	set_out_endpoint.func = new_audio_received;
+	set_out_endpoint.endpoint_num = out_endpoint_num;
+	set_out_endpoint.max_pckt_size = endpoint_packet_size;
+	set_out_endpoint.type = USB_DEVICE_API_EP_TYPE_ISO_OUT;
+	DEV_IOCTL_1_PARAMS(usb_hw, IOCTL_USB_DEVICE_SET_OUT_ENDPOINT,
+			&set_out_endpoint);
 
 
 	for (i = 0; i < USB_AUDIO_CLASS_NUM_OF_BUFFERS; i++)
