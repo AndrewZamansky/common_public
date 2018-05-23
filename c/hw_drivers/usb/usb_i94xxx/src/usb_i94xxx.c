@@ -361,56 +361,7 @@ uint32_t GetSamplesInBuf(void)
 volatile uint32_t fifo_ptr;
 volatile uint32_t systick_val_prev;
 volatile uint32_t systick_val;
-/*--------------------------------------------------------------------------*/
-void DPWM_IRQHandler(void)
-{
-	uint32_t u32Idx, u32Temp, i;
-	systick_val = SysTick->VAL;
 
-	/* Player buffer is not half-filled */
-	if( g_u8PlayEn == 0)
-	{
-		fifo_ptr = DPWM_GET_FIFOPOINTER(DPWM);
-//		if (fifo_ptr > 8)
-//		{
-//			CRITICAL_ERROR("test");
-//		}
-//		if( DPWM_IS_FIFOEMPTY(DPWM))
-		if (fifo_ptr < 16)
-		{
-			/* Fill 0x00 to DPWM FIFO */
-			for( i=0; i<8; i++)
-				DPWM_WRITE_INDATA(DPWM,0);
-		}
-		systick_val_prev = SysTick->VAL;
-	}
-	else
-	{
-		for(i=0; i<8; i++)
-		{
-                  u32Temp = g_u32PlayPos_In;
-			if(!DPWM_IS_FIFOFULL(DPWM) && (g_u32PlayPos_Out != u32Temp))
-			{
-				/* Check ring buffer turn around */
-				u32Idx = g_u32PlayPos_Out + 1;
-				if(u32Idx >= BUF_LEN)
-					u32Idx = 0;
-
-				/* Write two channels data to FIFO */
-				u32Temp = (g_au32PcmPlayBuf[u32Idx] & 0xFFFF0000) >> 16;
-				DPWM_WRITE_INDATA(DPWM, g_au32PcmPlayBuf[u32Idx] & 0x0000FFFF);
-				DPWM_WRITE_INDATA(DPWM, u32Temp);
-
-				/* Update OUT index */
-				g_u32PlayPos_Out = u32Idx;
-			}
-			else
-				break;
-		}
-	}
-}
-
-volatile uint32_t tmp2;
 
 /*--------------------------------------------------------------------------*/
 void USBD_IRQHandler(void)
@@ -545,9 +496,6 @@ void USBD_IRQHandler(void)
             USBD_ProcessSetupPacket();
         }
     }
-
-    tmp2 = USBD_GET_BUS_STATE();
-
 
 }
 
@@ -978,61 +926,48 @@ void UAC_ClassRequest(void)
 uint8_t endpoints_count = 2;
 uint16_t available_buff_pointer = EP7_BUF_BASE + EP7_BUF_LEN;
 
-static void alloc_endpoints(
-		struct usb_device_alloc_endpoints_t *usb_device_alloc_endpoints)
+static void set_endpoint_func(struct set_endpoints_t *set_endpoints)
 {
-	int i = 0;
-
-	while (i < usb_device_alloc_endpoints->num_of_endpoints)
-	{
-		usb_device_alloc_endpoints->endpoints_num[i++] = endpoints_count++;
-		if (i == MAX_NUM_OF_REQUESTED_ENDPOINTS)
-		{
-			CRITICAL_ERROR("too many endpoints were requested \n");
-		}
-	}
-}
-
-
-static void set_out_endpoint(struct set_out_endpoint_t *set_out_endpoint)
-{
-	uint8_t endpoint_num;
 	uint8_t max_pckt_size;
+	uint8_t endpoint_type;
+	int i;
 
-	endpoint_num = set_out_endpoint->endpoint_num;
-	if ( MAX_NUM_OF_ENDPOINTS <= endpoint_num )
+	for (i = 0; i < set_endpoints->num_of_endpoints; i++)
 	{
-		CRITICAL_ERROR("illegal endpoint");
+		if (MAX_NUM_OF_ENDPOINTS == endpoints_count)
+		{
+			CRITICAL_ERROR("no free endpoints left \n");
+		}
+		set_endpoints->endpoints_num_arr[i] = endpoints_count;
+		callback_functions[endpoints_count] = set_endpoints->func_arr[i];
+		callback_devs[endpoints_count] = set_endpoints->callback_dev;
+
+
+		endpoint_type = set_endpoints->endpoints_type_arr[i];
+		switch (endpoint_type)
+		{
+		case USB_DEVICE_API_EP_TYPE_ISO_OUT :
+			/* Buffer range for endpoint */
+			USBD_SET_EP_BUF_ADDR(endpoints_count, available_buff_pointer);
+
+			max_pckt_size = set_endpoints->max_pckt_size;
+			available_buff_pointer += max_pckt_size;
+			max_pckt_sizes[endpoints_count] = max_pckt_size;
+
+			USBD_CONFIG_EP(endpoints_count,
+					USBD_CFG_EPMODE_OUT | USBD_CFG_TYPE_ISO | endpoints_count);
+			/* trigger to receive OUT data */
+			USBD_SET_PAYLOAD_LEN(endpoints_count, max_pckt_size);
+			break;
+		case USB_DEVICE_API_EP_TYPE_ISO_IN :
+			// TODO
+			break;
+		default :
+			CRITICAL_ERROR("NOT EMPLEMENTED YET \n");
+		}
+
+		endpoints_count++;
 	}
-	callback_functions[endpoint_num] = set_out_endpoint->func;
-	callback_devs[endpoint_num] = set_out_endpoint->callback_dev;
-
-//    /* EP3 ==> Iso Out endpoint, address 3 */
-//    USBD_CONFIG_EP(EP3, USBD_CFG_EPMODE_OUT | USBD_CFG_TYPE_ISO | ISO_OUT_EP_NUM);
-    /* Buffer range for EP3 */
-//    USBD_SET_EP_BUF_ADDR(EP3, EP3_BUF_BASE);
-
-//    /* trigger to receive OUT data */
-//    USBD_SET_PAYLOAD_LEN(EP3, EP3_MAX_PKT_SIZE);
-
-	switch (set_out_endpoint->type)
-	{
-	case USB_DEVICE_API_EP_TYPE_ISO_OUT :
-		USBD_CONFIG_EP(endpoint_num,
-				USBD_CFG_EPMODE_OUT | USBD_CFG_TYPE_ISO | endpoint_num);
-		break;
-	default :
-		CRITICAL_ERROR("NOT EMPLEMENTED YET \n");
-	}
-
-	/* Buffer range for endpoint */
-	USBD_SET_EP_BUF_ADDR(endpoint_num, available_buff_pointer);
-
-	max_pckt_size = set_out_endpoint->max_pckt_size;
-	available_buff_pointer += max_pckt_size;
-	max_pckt_sizes[endpoint_num] = max_pckt_size;
-	/* trigger to receive OUT data */
-	USBD_SET_PAYLOAD_LEN(endpoint_num, max_pckt_size);
 }
 
 
@@ -1137,13 +1072,9 @@ uint8_t usb_i94xxx_ioctl( struct dev_desc_t *adev, uint8_t aIoctl_num,
 	case IOCTL_USB_DEVICE_START :
 		usb_device_start();
 		break;
-	case IOCTL_USB_DEVICE_SET_OUT_ENDPOINT :
-		set_out_endpoint(aIoctl_param1);
+	case IOCTL_USB_DEVICE_SET_ENDPOINTS :
+		set_endpoint_func(aIoctl_param1);
 		break;
-	case IOCTL_USB_DEVICE_ALLOC_ENDPOINTS_NUMBERS:
-		alloc_endpoints(aIoctl_param1);
-		break;
-
 	default :
 		return 1;
 	}
