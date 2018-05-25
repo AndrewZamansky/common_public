@@ -73,15 +73,14 @@ const uint8_t gu8DeviceDescriptor[] =
 /*!<USB Configure Descriptor */
 static uint8_t gu8ConfigDescriptor[] =
 {
-    0x09,        // bLength
-    0x02,        // bDescriptorType (Configuration)
-//    0xC2, 0x00,  // wTotalLength 
-    WBVAL(WILL_BE_CALC_LATER),  // wTotalLength
-    WILL_BE_CALC_LATER,        // bNumInterfaces
-    0x01,        // bConfigurationValue
-    0x00,        // iConfiguration (String Index)
-    0x80,        // bmAttributes
-    0x32,        // bMaxPower 100mA
+	0x09,        // bLength
+	0x02,        // bDescriptorType (Configuration)
+	WBVAL(WILL_BE_CALC_LATER),  // wTotalLength
+	WILL_BE_CALC_LATER,        // bNumInterfaces
+	0x01,        // bConfigurationValue
+	0x00,        // iConfiguration (String Index)
+	0x80,        // bmAttributes
+	0x32,        // bMaxPower 100mA
 };
 
 
@@ -269,6 +268,22 @@ static void device_start(struct usb_device_descriptors_cfg_t *cfg_hndl)
 	DEV_IOCTL_0_PARAMS(usb_hw, IOCTL_DEVICE_START);
 }
 
+
+static void add_interface_association_desc(uint8_t *iad_desc)
+{
+	uint16_t desc_size;
+	uint16_t new_desc_size;
+
+	desc_size = iad_desc[0];
+
+	new_desc_size = configuration_desc_size + desc_size;
+	configuration_desc =
+			(uint8_t*)realloc(configuration_desc, new_desc_size);
+	memcpy(&configuration_desc[configuration_desc_size], iad_desc, desc_size);
+	configuration_desc_size = new_desc_size;
+}
+
+
 static void add_interface(
 		struct usb_descriptors_add_interface_t *usb_desc_add_interface)
 {
@@ -372,6 +387,9 @@ uint8_t usb_device_descriptors_ioctl(
 		break;
 	case USB_DEVICE_DESCRIPTORS_ADD_INTERFACE :
 		add_interface(aIoctl_param1);
+		break;
+	case USB_DEVICE_DESCRIPTORS_ADD_INTERFACE_ASSOCIATION_DESCRIPTOR:
+		add_interface_association_desc(aIoctl_param1);
 		break;
 	case USB_DEVICE_DESCRIPTORS_START:
 		usb_device_start(cfg_hndl);

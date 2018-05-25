@@ -59,7 +59,9 @@ CLASS_REQ pfnClassReq;
 
 #define MAX_NUM_OF_ENDPOINTS    12
 static usb_dev_out_endpoint_callback_func_t
-				callback_functions[MAX_NUM_OF_ENDPOINTS];
+				out_callback_functions[MAX_NUM_OF_ENDPOINTS];
+static usb_dev_in_endpoint_callback_func_t
+				in_callback_functions[MAX_NUM_OF_ENDPOINTS];
 static struct dev_desc_t *callback_devs[MAX_NUM_OF_ENDPOINTS];
 static uint16_t max_pckt_sizes[MAX_NUM_OF_ENDPOINTS] = {0};
 
@@ -362,6 +364,44 @@ volatile uint32_t fifo_ptr;
 volatile uint32_t systick_val_prev;
 volatile uint32_t systick_val;
 
+#define GET_EP_CFG(ep)     \
+	(*((__IO uint32_t *) ((uint32_t)&USBD->EP[0].CFG + (uint32_t)((ep) << 4))))
+
+
+void EP_Handler(uint8_t ep_num)
+{
+	usb_dev_in_endpoint_callback_func_t callback_func_in;
+	usb_dev_out_endpoint_callback_func_t callback_func_out;
+	uint32_t u32Len;
+    uint8_t *pu8Src;
+	uint32_t ep_cfg_state;
+
+	ep_cfg_state = GET_EP_CFG(ep_num) & 0x60;
+	if (USBD_CFG_EPMODE_IN == ep_cfg_state)
+	{
+		callback_func_in = in_callback_functions[ep_num];
+		if (NULL != callback_func_in)
+		{
+			callback_func_in(callback_devs[ep_num]);
+		}
+	}
+	else
+	{
+		/* Get the address in USB buffer */
+		pu8Src = (uint8_t *)(
+				(uint32_t)USBD_BUF_BASE + USBD_GET_EP_BUF_ADDR(ep_num));
+		u32Len = USBD_GET_PAYLOAD_LEN(ep_num);
+
+		callback_func_out = out_callback_functions[ep_num];
+		if (NULL != callback_func_out)
+		{
+			callback_func_out(callback_devs[ep_num], pu8Src, u32Len);
+		}
+		/* Prepare for nex OUT packet */
+		USBD_SET_PAYLOAD_LEN(ep_num, max_pckt_sizes[ep_num]);
+	}
+}
+
 
 /*--------------------------------------------------------------------------*/
 void USBD_IRQHandler(void)
@@ -448,7 +488,7 @@ void USBD_IRQHandler(void)
             /* Clear event flag */
             USBD_CLR_INT_FLAG(USBD_INTSTS_EP2);
             //
-            EP2_Handler();
+            EP_Handler(2);
         }
 
         if(u32IntSts & USBD_INTSTS_EP3)
@@ -456,19 +496,21 @@ void USBD_IRQHandler(void)
             /* Clear event flag */
             USBD_CLR_INT_FLAG(USBD_INTSTS_EP3);
             //
-            EP3_Handler();
+            EP_Handler(3);
         }
 
         if(u32IntSts & USBD_INTSTS_EP4)
 		{
             /* Clear event flag */
             USBD_CLR_INT_FLAG(USBD_INTSTS_EP4);
+            EP_Handler(4);
         }
 
         if(u32IntSts & USBD_INTSTS_EP5)
 		{
             /* Clear event flag */
             USBD_CLR_INT_FLAG(USBD_INTSTS_EP5);
+            EP_Handler(5);
         }
 
         if(u32IntSts & USBD_INTSTS_EP6) {
@@ -481,6 +523,13 @@ void USBD_IRQHandler(void)
             /* Clear event flag */
             USBD_CLR_INT_FLAG(USBD_INTSTS_EP7);
             EP7_Handler();
+        }
+
+        if(u32IntSts & USBD_INTSTS_EP8)
+		{
+            /* Clear event flag */
+            USBD_CLR_INT_FLAG(USBD_INTSTS_EP8);
+            EP_Handler(8);
         }
 
         // USB event
@@ -506,6 +555,28 @@ void EP2_Handler(void)
     g_u8EP2Ready = 1;
 }
 
+void EP4_Handler(void)
+{
+	usb_dev_in_endpoint_callback_func_t callback_func;
+
+	callback_func = in_callback_functions[4];
+	if (NULL != callback_func)
+	{
+		callback_func(callback_devs[4]);
+	}
+}
+
+void EP5_Handler(void)
+{
+	uint32_t u32Len;
+    u32Len = USBD_GET_PAYLOAD_LEN(EP5);
+
+}
+
+void EP8_Handler(void)
+{
+}
+
 uint8_t RecLen, RecBuf[768];
 void EP3_Handler(void)
 {
@@ -517,8 +588,8 @@ void EP3_Handler(void)
     pu8Src = (uint8_t *)((uint32_t)USBD_BUF_BASE + USBD_GET_EP_BUF_ADDR(EP3));
     u32Len = USBD_GET_PAYLOAD_LEN(EP3);
 #if 1
-	callback_func = callback_functions[3];
-	if (NULL != callback_functions)
+	callback_func = out_callback_functions[3];
+	if (NULL != callback_func)
 	{
 		callback_func(callback_devs[3], pu8Src, u32Len);
 	}
@@ -615,11 +686,11 @@ void UAC_Init(void)
     /* Buffer range for EP1 */
     USBD_SET_EP_BUF_ADDR(EP1, EP1_BUF_BASE);
 
-    /*****************************************************/
-    /* EP2 ==> Iso IN endpoint, address 2 */
-    USBD_CONFIG_EP(EP2, USBD_CFG_EPMODE_IN | USBD_CFG_TYPE_ISO | ISO_IN_EP_NUM);
-    /* Buffer range for EP2 */
-    USBD_SET_EP_BUF_ADDR(EP2, EP2_BUF_BASE);
+//    /*****************************************************/
+//    /* EP2 ==> Iso IN endpoint, address 2 */
+//    USBD_CONFIG_EP(EP2, USBD_CFG_EPMODE_IN | USBD_CFG_TYPE_ISO | ISO_IN_EP_NUM);
+//    /* Buffer range for EP2 */
+//    USBD_SET_EP_BUF_ADDR(EP2, EP2_BUF_BASE);
 
 //    /* EP3 ==> Iso Out endpoint, address 3 */
 //    USBD_CONFIG_EP(EP3, USBD_CFG_EPMODE_OUT | USBD_CFG_TYPE_ISO | ISO_OUT_EP_NUM);
@@ -644,13 +715,63 @@ void UAC_Init(void)
 
 }
 
+#define SET_LINE_CODING             0x20
+#define GET_LINE_CODING             0x21
+#define SET_LINE_CONTROL            0x22
+
+typedef struct
+{
+  uint32_t bitrate;
+  uint8_t format;
+  uint8_t paritytype;
+  uint8_t datatype;
+}LINE_CODING;
+
+extern LINE_CODING linecoding;
+static void vcom_class_request(uint8_t *buf)
+{
+    uint8_t *dest;
+    uint8_t size;
+    uint32_t bit_rate;
+
+	  if (buf[1] == GET_LINE_CODING)
+	  {
+		  USBD_PrepareCtrlIn((uint8_t*)&linecoding, 7);
+          USBD_PrepareCtrlOut(0, 0); /* For status stage */
+	  }
+	  else if (buf[1] == SET_LINE_CODING)
+	  {
+		USBD_PrepareCtrlOut((uint8_t *)&linecoding, buf[6]);
+
+		 USBD_SET_DATA1(EP0);
+		 USBD_SET_PAYLOAD_LEN(EP0, 0);
+	  }
+	  else if (buf[1] == SET_LINE_CONTROL)
+	  {
+			 USBD_SET_DATA1(EP0);
+			 USBD_SET_PAYLOAD_LEN(EP0, 0);
+	  }
+	  else
+	  {
+			USBD_SetStall(0);
+	  }
+}
+
+
 void UAC_ClassRequest(void)
 {
     uint8_t buf[8];
     uint32_t u32Temp;
+    uint16_t USBwIndex;
 
     USBD_GetSetupPacket(buf);
 
+    USBwIndex = (buf[5] << 8) + buf[4];
+    if ((3 == USBwIndex) || (4 == USBwIndex))
+    {
+    	vcom_class_request(buf);
+    	return;
+    }
     if(buf[0] & 0x80)    /* request data transfer direction */
 	{
 		// Device to host
@@ -923,6 +1044,31 @@ void UAC_ClassRequest(void)
     }
 }
 
+
+static void set_data_to_in_endpoint_func(
+		struct set_data_to_in_endpoint_t *set_data_to_in_endpoint)
+{
+	uint8_t endpoint_num;
+	uint8_t *pu8Dest;
+	uint8_t *pu8Src;
+	size_t  size;
+	uint16_t i;
+
+	endpoint_num = set_data_to_in_endpoint->endpoint_num;
+	pu8Dest = (uint8_t *)((uint32_t)USBD_BUF_BASE +
+						USBD_GET_EP_BUF_ADDR(endpoint_num));
+
+	size = set_data_to_in_endpoint->size;
+	pu8Src = set_data_to_in_endpoint->data;
+	//memcpy(pu8Dest, set_data_to_in_endpoint->data, size);
+	for (i = 0; i < size; i++)
+	{
+		*pu8Dest++ = *pu8Src++;
+	}
+	USBD_SET_PAYLOAD_LEN(endpoint_num, size);
+}
+
+
 uint8_t endpoints_count = 2;
 uint16_t available_buff_pointer = EP7_BUF_BASE + EP7_BUF_LEN;
 
@@ -939,34 +1085,53 @@ static void set_endpoint_func(struct set_endpoints_t *set_endpoints)
 			CRITICAL_ERROR("no free endpoints left \n");
 		}
 		set_endpoints->endpoints_num_arr[i] = endpoints_count;
-		callback_functions[endpoints_count] = set_endpoints->func_arr[i];
 		callback_devs[endpoints_count] = set_endpoints->callback_dev;
 
+
+		/* Buffer range for endpoint */
+		USBD_SET_EP_BUF_ADDR(endpoints_count, available_buff_pointer);
+		max_pckt_size = set_endpoints->max_pckt_sizes[i];
+		available_buff_pointer += max_pckt_size;
+		max_pckt_sizes[endpoints_count] = max_pckt_size;
 
 		endpoint_type = set_endpoints->endpoints_type_arr[i];
 		switch (endpoint_type)
 		{
 		case USB_DEVICE_API_EP_TYPE_ISO_OUT :
-			/* Buffer range for endpoint */
-			USBD_SET_EP_BUF_ADDR(endpoints_count, available_buff_pointer);
-
-			max_pckt_size = set_endpoints->max_pckt_size;
-			available_buff_pointer += max_pckt_size;
-			max_pckt_sizes[endpoints_count] = max_pckt_size;
-
+			out_callback_functions[endpoints_count] =
+									set_endpoints->func_arr[i];
 			USBD_CONFIG_EP(endpoints_count,
 					USBD_CFG_EPMODE_OUT | USBD_CFG_TYPE_ISO | endpoints_count);
 			/* trigger to receive OUT data */
 			USBD_SET_PAYLOAD_LEN(endpoints_count, max_pckt_size);
 			break;
+		case USB_DEVICE_API_EP_TYPE_BULK_OUT :
+			out_callback_functions[endpoints_count] =
+									set_endpoints->func_arr[i];
+			USBD_CONFIG_EP(endpoints_count,
+					USBD_CFG_EPMODE_OUT | endpoints_count);
+			/* trigger to receive OUT data */
+			USBD_SET_PAYLOAD_LEN(endpoints_count, max_pckt_size);
+			break;
+		case USB_DEVICE_API_EP_TYPE_BULK_IN :
+		case USB_DEVICE_API_EP_TYPE_INTERRUPT_IN :
+			in_callback_functions[endpoints_count] =
+								set_endpoints->in_func_arr[i];
+			USBD_CONFIG_EP(endpoints_count,
+					USBD_CFG_EPMODE_IN | endpoints_count);
+			break;
 		case USB_DEVICE_API_EP_TYPE_ISO_IN :
-			// TODO
+			in_callback_functions[endpoints_count] =
+								set_endpoints->in_func_arr[i];
+			USBD_CONFIG_EP(endpoints_count,
+					USBD_CFG_EPMODE_IN | USBD_CFG_TYPE_ISO | endpoints_count);
 			break;
 		default :
 			CRITICAL_ERROR("NOT EMPLEMENTED YET \n");
 		}
 
 		endpoints_count++;
+		if (6 == endpoints_count) endpoints_count +=2; //TODO : to remove
 	}
 }
 
@@ -1074,6 +1239,9 @@ uint8_t usb_i94xxx_ioctl( struct dev_desc_t *adev, uint8_t aIoctl_num,
 		break;
 	case IOCTL_USB_DEVICE_SET_ENDPOINTS :
 		set_endpoint_func(aIoctl_param1);
+		break;
+	case IOCTL_USB_DEVICE_SENT_DATA_TO_IN_ENDPOINT :
+		set_data_to_in_endpoint_func(aIoctl_param1);
 		break;
 	default :
 		return 1;

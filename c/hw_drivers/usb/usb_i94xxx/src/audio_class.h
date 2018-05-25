@@ -111,10 +111,10 @@
 /* Define EP maximum packet size */
 #define EP0_MAX_PKT_SIZE    64     
 #define EP1_MAX_PKT_SIZE    EP0_MAX_PKT_SIZE
-#define EP2_MAX_PKT_SIZE    REC_RATE*REC_CHANNELS*2/1000			
+#define EP2_MAX_PKT_SIZE  0//  REC_RATE*REC_CHANNELS*2/1000
 #define EP3_MAX_PKT_SIZE  0// now set dynamically PLAY_RATE*PLAY_CHANNELS*2/1000
-#define EP4_MAX_PKT_SIZE    16 
-#define EP5_MAX_PKT_SIZE    16 
+#define EP4_MAX_PKT_SIZE  0// now set dynamically was 16
+#define EP5_MAX_PKT_SIZE  0// now set dynamically was 16
 #define EP6_MAX_PKT_SIZE    64 
 #define EP7_MAX_PKT_SIZE    64 
 
