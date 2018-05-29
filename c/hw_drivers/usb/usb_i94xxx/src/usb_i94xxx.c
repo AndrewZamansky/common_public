@@ -64,6 +64,10 @@ static usb_dev_in_endpoint_callback_func_t
 				in_callback_functions[MAX_NUM_OF_ENDPOINTS];
 static struct dev_desc_t *callback_devs[MAX_NUM_OF_ENDPOINTS];
 static uint16_t max_pckt_sizes[MAX_NUM_OF_ENDPOINTS] = {0};
+#define MAX_NUM_OF_ITERFACES    16
+static struct dev_desc_t *interface_callback_devs[MAX_NUM_OF_ITERFACES];
+usb_dev_interface_request_callback_func_t
+				interface_callback_functions[MAX_NUM_OF_ITERFACES];
 
 /*--------------------------------------------------------------------------*/
 /* Global variables for Control Pipe */
@@ -78,19 +82,34 @@ uint8_t g_u8BulkState;
 uint8_t g_u8Prevent = 0;
 uint8_t g_u8Size;
 
-volatile uint8_t g_usbd_RecMute       = 0x01;     /* Record MUTE control. 0 = normal. 1 = MUTE */
-volatile int16_t g_usbd_RecVolumeL    = 0x1000;   /* Record left channel volume. Range is -32768 ~ 32767 */
-volatile int16_t g_usbd_RecVolumeR    = 0x1000;   /* Record right channel volume. Range is -32768 ~ 32767 */
-volatile int16_t g_usbd_RecMaxVolume  = 0x7FFF;
-volatile int16_t g_usbd_RecMinVolume  = 0x8000;
-volatile int16_t g_usbd_RecResVolume  = 0x400;
+//volatile uint8_t g_usbd_RecMute       = 0x01;     /* Record MUTE control. 0 = normal. 1 = MUTE */
+//volatile int16_t g_usbd_RecVolumeL    = 0x1000;   /* Record left channel volume. Range is -32768 ~ 32767 */
+//volatile int16_t g_usbd_RecVolumeR    = 0x1000;   /* Record right channel volume. Range is -32768 ~ 32767 */
+//volatile int16_t g_usbd_RecMaxVolume  = 0x7FFF;
+//volatile int16_t g_usbd_RecMinVolume  = 0x8000;
+//volatile int16_t g_usbd_RecResVolume  = 0x400;
+//
+//volatile uint8_t g_usbd_PlayMute      = 0x01;     /* Play MUTE control. 0 = normal. 1 = MUTE */
+//volatile int16_t g_usbd_PlayVolumeL   = 0x1000;   /* Play left channel volume. Range is -32768 ~ 32767 */
+//volatile int16_t g_usbd_PlayVolumeR   = 0x1000;   /* Play right channel volume. Range is -32768 ~ 32767 */
+//volatile int16_t g_usbd_PlayMaxVolume = 0x7FFF;
+//volatile int16_t g_usbd_PlayMinVolume = 0x8000;
+//volatile int16_t g_usbd_PlayResVolume = 0x400;
 
-volatile uint8_t g_usbd_PlayMute      = 0x01;     /* Play MUTE control. 0 = normal. 1 = MUTE */
-volatile int16_t g_usbd_PlayVolumeL   = 0x1000;   /* Play left channel volume. Range is -32768 ~ 32767 */
-volatile int16_t g_usbd_PlayVolumeR   = 0x1000;   /* Play right channel volume. Range is -32768 ~ 32767 */
-volatile int16_t g_usbd_PlayMaxVolume = 0x7FFF;
-volatile int16_t g_usbd_PlayMinVolume = 0x8000;
-volatile int16_t g_usbd_PlayResVolume = 0x400;
+extern volatile uint8_t g_usbd_RecMute    ;
+extern volatile int16_t g_usbd_RecVolumeL  ;
+extern volatile int16_t g_usbd_RecVolumeR   ;
+extern volatile int16_t g_usbd_RecMaxVolume ;
+extern volatile int16_t g_usbd_RecMinVolume ;
+extern volatile int16_t g_usbd_RecResVolume ;
+
+extern volatile uint8_t g_usbd_PlayMute     ;
+extern volatile int16_t g_usbd_PlayVolumeL   ;
+extern volatile int16_t g_usbd_PlayVolumeR   ;
+extern volatile int16_t g_usbd_PlayMaxVolume ;
+extern volatile int16_t g_usbd_PlayMinVolume ;
+extern volatile int16_t g_usbd_PlayResVolume ;
+
 
 /* Status */
 static volatile uint8_t g_u8RecEn = 0;
@@ -730,31 +749,24 @@ typedef struct
 extern LINE_CODING linecoding;
 static void vcom_class_request(uint8_t *buf)
 {
-    uint8_t *dest;
-    uint8_t size;
-    uint32_t bit_rate;
-
-	  if (buf[1] == GET_LINE_CODING)
-	  {
-		  USBD_PrepareCtrlIn((uint8_t*)&linecoding, 7);
-          USBD_PrepareCtrlOut(0, 0); /* For status stage */
-	  }
-	  else if (buf[1] == SET_LINE_CODING)
-	  {
+	if (buf[1] == GET_LINE_CODING)
+	{
+		USBD_PrepareCtrlIn((uint8_t*)&linecoding, 7);
+		USBD_PrepareCtrlOut(0, 0); /* For status stage */
+	}
+	else if (buf[1] == SET_LINE_CODING)
+	{
 		USBD_PrepareCtrlOut((uint8_t *)&linecoding, buf[6]);
-
-		 USBD_SET_DATA1(EP0);
-		 USBD_SET_PAYLOAD_LEN(EP0, 0);
-	  }
-	  else if (buf[1] == SET_LINE_CONTROL)
-	  {
-			 USBD_SET_DATA1(EP0);
-			 USBD_SET_PAYLOAD_LEN(EP0, 0);
-	  }
-	  else
-	  {
-			USBD_SetStall(0);
-	  }
+		USBD_PrepareCtrlIn(NULL, 0);
+	}
+	else if (buf[1] == SET_LINE_CONTROL)
+	{
+		USBD_PrepareCtrlIn(NULL, 0);
+	}
+	else
+	{
+		USBD_SetStall(0);
+	}
 }
 
 
@@ -766,12 +778,27 @@ void UAC_ClassRequest(void)
 
     USBD_GetSetupPacket(buf);
 
-    USBwIndex = (buf[5] << 8) + buf[4];
-    if ((3 == USBwIndex) || (4 == USBwIndex))
-    {
-    	vcom_class_request(buf);
+    USBwIndex = buf[4];
+//    if (((3 == USBwIndex) || (4 == USBwIndex)) || (buf[0] & 0x80 == 0) ||
+//    		( (buf[0] & 0x80 == 1) ||
+//    		((buf[1] == UAC_GET_RES) || (buf[1] == UAC_GET_RES) || (buf[1] == UAC_GET_RES))))
+//    {
+    	usb_dev_interface_request_callback_func_t callback_func;
+
+		if (MAX_NUM_OF_ITERFACES < USBwIndex)
+		{
+			CRITICAL_ERROR("interface number is to high \n");
+		}
+
+		callback_func = interface_callback_functions[USBwIndex];
+		if (NULL != callback_func)
+		{
+			callback_func(interface_callback_devs[USBwIndex], buf);
+		}
+
+//    	vcom_class_request(buf);
     	return;
-    }
+//    }
     if(buf[0] & 0x80)    /* request data transfer direction */
 	{
 		// Device to host
@@ -923,40 +950,40 @@ void UAC_ClassRequest(void)
 				USBD_PrepareCtrlOut(0, 0);
 				break;
 			}
-			case UAC_GET_RES:
-			{
-				switch(buf[3])
-				{
-					case VOLUME_CONTROL:
-					{
-						if (REC_FEATURE_UNITID == buf[5])
-						{
-                                                  u32Temp = g_usbd_RecResVolume;
-							M8(USBD_BUF_BASE + USBD_GET_EP_BUF_ADDR(EP0)) = u32Temp;
-                                                        u32Temp = g_usbd_RecResVolume >> 8;
-							M8(USBD_BUF_BASE + USBD_GET_EP_BUF_ADDR(EP0) + 1) = u32Temp;
-						}
-						else if (PLAY_FEATURE_UNITID == buf[5])
-						{
-                                                  u32Temp = g_usbd_PlayResVolume;
-							M8(USBD_BUF_BASE + USBD_GET_EP_BUF_ADDR(EP0)) = u32Temp;
-                                                        u32Temp = g_usbd_PlayResVolume >> 8;
-							M8(USBD_BUF_BASE + USBD_GET_EP_BUF_ADDR(EP0) + 1) = u32Temp;
-						}
-						/* Data stage */
-						USBD_SET_DATA1(EP0);
-						USBD_SET_PAYLOAD_LEN(EP0, 2);
-						break;
-					}
-					default:
-						/* STALL control pipe */
-						USBD_SetStall(0);
-				}
-				// Trigger next Control Out DATA1 Transaction.
-				/* Status stage */
-				USBD_PrepareCtrlOut(0, 0);
-				break;
-			}
+//			case UAC_GET_RES:
+//			{
+//				switch(buf[3])
+//				{
+//					case VOLUME_CONTROL:
+//					{
+//						if (REC_FEATURE_UNITID == buf[5])
+//						{
+//                                                  u32Temp = g_usbd_RecResVolume;
+//							M8(USBD_BUF_BASE + USBD_GET_EP_BUF_ADDR(EP0)) = u32Temp;
+//                                                        u32Temp = g_usbd_RecResVolume >> 8;
+//							M8(USBD_BUF_BASE + USBD_GET_EP_BUF_ADDR(EP0) + 1) = u32Temp;
+//						}
+//						else if (PLAY_FEATURE_UNITID == buf[5])
+//						{
+//                                                  u32Temp = g_usbd_PlayResVolume;
+//							M8(USBD_BUF_BASE + USBD_GET_EP_BUF_ADDR(EP0)) = u32Temp;
+//                                                        u32Temp = g_usbd_PlayResVolume >> 8;
+//							M8(USBD_BUF_BASE + USBD_GET_EP_BUF_ADDR(EP0) + 1) = u32Temp;
+//						}
+//						/* Data stage */
+//						USBD_SET_DATA1(EP0);
+//						USBD_SET_PAYLOAD_LEN(EP0, 2);
+//						break;
+//					}
+//					default:
+//						/* STALL control pipe */
+//						USBD_SetStall(0);
+//				}
+//				// Trigger next Control Out DATA1 Transaction.
+//				/* Status stage */
+//				USBD_PrepareCtrlOut(0, 0);
+//				break;
+//			}
 			default:
 			{
 				/* Setup error, stall the device */
@@ -969,51 +996,51 @@ void UAC_ClassRequest(void)
         // Host to device
         switch(buf[1])
 		{
-			case UAC_SET_CUR:
-			{
-				switch(buf[3])
-				{
-					case MUTE_CONTROL:
-						if (REC_FEATURE_UNITID == buf[5])
-							USBD_PrepareCtrlOut((uint8_t *)&g_usbd_RecMute, buf[6]);
-						else if (PLAY_FEATURE_UNITID == buf[5])
-							USBD_PrepareCtrlOut((uint8_t *)&g_usbd_PlayMute, buf[6]);
-						/* Status stage */
-						USBD_SET_DATA1(EP0);
-						USBD_SET_PAYLOAD_LEN(EP0, 0);
-						break;
-					case VOLUME_CONTROL:
-						if (REC_FEATURE_UNITID == buf[5])
-						{
-							if (buf[2] == 1) {
-								/* Prepare the buffer for new record volume of left channel */
-								USBD_PrepareCtrlOut((uint8_t *)&g_usbd_RecVolumeL, buf[6]);
-							} else {
-								/* Prepare the buffer for new record volume of right channel */
-								USBD_PrepareCtrlOut((uint8_t *)&g_usbd_RecVolumeR, buf[6]);
-							}
-						}
-						else if (PLAY_FEATURE_UNITID == buf[5])
-						{
-							if (buf[2] == 1) {
-									/* Prepare the buffer for new play volume of left channel */
-									USBD_PrepareCtrlOut((uint8_t *)&g_usbd_PlayVolumeL, buf[6]);
-							} else {
-									/* Prepare the buffer for new play volume of right channel */
-									USBD_PrepareCtrlOut((uint8_t *)&g_usbd_PlayVolumeR, buf[6]);
-							}
-						}
-						/* Status stage */
-						USBD_SET_DATA1(EP0);
-						USBD_SET_PAYLOAD_LEN(EP0, 0);
-						break;
-					default:
-						/* STALL control pipe */
-						USBD_SetStall(0);
-						break;
-				}
-				break;
-			}
+//			case UAC_SET_CUR:
+//			{
+//				switch(buf[3])
+//				{
+//					case MUTE_CONTROL:
+//						if (REC_FEATURE_UNITID == buf[5])
+//							USBD_PrepareCtrlOut((uint8_t *)&g_usbd_RecMute, buf[6]);
+//						else if (PLAY_FEATURE_UNITID == buf[5])
+//							USBD_PrepareCtrlOut((uint8_t *)&g_usbd_PlayMute, buf[6]);
+//						/* Status stage */
+//						USBD_SET_DATA1(EP0);
+//						USBD_SET_PAYLOAD_LEN(EP0, 0);
+//						break;
+//					case VOLUME_CONTROL:
+//						if (REC_FEATURE_UNITID == buf[5])
+//						{
+//							if (buf[2] == 1) {
+//								/* Prepare the buffer for new record volume of left channel */
+//								USBD_PrepareCtrlOut((uint8_t *)&g_usbd_RecVolumeL, buf[6]);
+//							} else {
+//								/* Prepare the buffer for new record volume of right channel */
+//								USBD_PrepareCtrlOut((uint8_t *)&g_usbd_RecVolumeR, buf[6]);
+//							}
+//						}
+//						else if (PLAY_FEATURE_UNITID == buf[5])
+//						{
+//							if (buf[2] == 1) {
+//									/* Prepare the buffer for new play volume of left channel */
+//									USBD_PrepareCtrlOut((uint8_t *)&g_usbd_PlayVolumeL, buf[6]);
+//							} else {
+//									/* Prepare the buffer for new play volume of right channel */
+//									USBD_PrepareCtrlOut((uint8_t *)&g_usbd_PlayVolumeR, buf[6]);
+//							}
+//						}
+//						/* Status stage */
+//						USBD_SET_DATA1(EP0);
+//						USBD_SET_PAYLOAD_LEN(EP0, 0);
+//						break;
+//					default:
+//						/* STALL control pipe */
+//						USBD_SetStall(0);
+//						break;
+//				}
+//				break;
+//			}
 			case HID_SET_REPORT:
 			{
 				if(buf[3] == 2)
@@ -1042,6 +1069,45 @@ void UAC_ClassRequest(void)
 			}
         }
     }
+}
+
+
+static void register_interfaces(
+		struct register_interfaces_t *register_interfaces)
+{
+	uint8_t i;
+	struct register_interface_t *register_interface;
+	uint8_t interface_num;
+
+	for(i = 0; i < register_interfaces->num_of_interfaces; i++)
+	{
+		register_interface = &register_interfaces->register_interface_arr[i];
+		interface_num = register_interface->interfaces_num;
+		if (MAX_NUM_OF_ITERFACES < interface_num)
+		{
+			CRITICAL_ERROR("interface number is to high \n");
+		}
+		interface_callback_devs[interface_num] =
+								register_interfaces->callback_dev;
+		interface_callback_functions[interface_num] =
+								register_interface->interface_func;
+	}
+}
+
+
+static void set_request_out_buffer(
+		struct set_request_out_buffer_t *set_request_out_buffer)
+{
+	USBD_PrepareCtrlOut(
+			set_request_out_buffer->data, set_request_out_buffer->size);
+}
+
+
+static void set_request_in_buffer(
+		struct set_request_in_buffer_t *set_request_in_buffer)
+{
+	USBD_PrepareCtrlIn(
+			set_request_in_buffer->data, set_request_in_buffer->size);
 }
 
 
@@ -1242,6 +1308,18 @@ uint8_t usb_i94xxx_ioctl( struct dev_desc_t *adev, uint8_t aIoctl_num,
 		break;
 	case IOCTL_USB_DEVICE_SENT_DATA_TO_IN_ENDPOINT :
 		set_data_to_in_endpoint_func(aIoctl_param1);
+		break;
+	case IOCTL_USB_DEVICE_REGISTER_INTERFACES :
+		register_interfaces(aIoctl_param1);
+		break;
+	case IOCTL_USB_DEVICE_SET_REQUEST_IN_BUFFER :
+		set_request_in_buffer(aIoctl_param1);
+		break;
+	case IOCTL_USB_DEVICE_SET_REQUEST_OUT_BUFFER :
+		set_request_out_buffer(aIoctl_param1);
+		break;
+	case IOCTL_USB_DEVICE_SET_SATLL:
+		USBD_SetStall(0);
 		break;
 	default :
 		return 1;

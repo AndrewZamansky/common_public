@@ -14,6 +14,9 @@ typedef void (*usb_dev_out_endpoint_callback_func_t)(
 typedef void (*usb_dev_in_endpoint_callback_func_t)(
 							struct dev_desc_t *callback_dev);
 
+typedef void (*usb_dev_interface_request_callback_func_t)(
+					struct dev_desc_t   *callback_dev, uint8_t *request);
+
 
 typedef enum
 {
@@ -26,6 +29,10 @@ typedef enum
 	IOCTL_USB_DEVICE_SET_HID_DESC_INDEX,
 	IOCTL_USB_DEVICE_START,
 	IOCTL_USB_DEVICE_SET_ENDPOINTS,
+	IOCTL_USB_DEVICE_REGISTER_INTERFACES,
+	IOCTL_USB_DEVICE_SET_REQUEST_IN_BUFFER,
+	IOCTL_USB_DEVICE_SET_REQUEST_OUT_BUFFER,
+	IOCTL_USB_DEVICE_SET_SATLL,
 	IOCTL_USB_DEVICE_SENT_DATA_TO_IN_ENDPOINT
 } USB_DEVICE_COMMON_API_IOCTL_T;
 
@@ -55,6 +62,28 @@ struct set_data_to_in_endpoint_t {
 	uint8_t   endpoint_num;
 	uint8_t   const *data;
 	size_t    size;
+};
+
+struct set_request_in_buffer_t {
+	uint8_t   *data;
+	size_t    size;
+};
+
+struct set_request_out_buffer_t {
+	uint8_t   const *data;
+	size_t    size;
+};
+
+struct register_interface_t {
+	uint8_t   interfaces_num;
+	usb_dev_interface_request_callback_func_t interface_func;
+};
+
+// contains pointer to array of interfaces and corresponding callbacks
+struct register_interfaces_t {
+	uint8_t num_of_interfaces;
+	struct register_interface_t  *register_interface_arr;
+	struct dev_desc_t   *callback_dev;
 };
 
 /**********  define API  functions  ************/
