@@ -71,7 +71,7 @@ const uint8_t gu8DeviceDescriptor[] =
 	
 #define WILL_BE_CALC_LATER   0
 /*!<USB Configure Descriptor */
-static uint8_t gu8ConfigDescriptor[] =
+static uint8_t const gu8ConfigDescriptor[] =
 {
 	0x09,        // bLength
 	0x02,        // bDescriptorType (Configuration)

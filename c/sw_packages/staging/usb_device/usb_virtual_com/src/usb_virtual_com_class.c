@@ -61,7 +61,7 @@ typedef struct
 #define AUTO_SET_PCKT_SIZE_MSB   0x00
 #define AUTO_SET_PCKT_SIZE_LSB   0x00
 
-static uint8_t interface_association_descriptor[]=
+static uint8_t const interface_association_descriptor[]=
 {
 	/*  Interface Association Descriptor:  */
 	0x08,
@@ -74,7 +74,7 @@ static uint8_t interface_association_descriptor[]=
 	0x02    ,//  iFunction
 };
 
-static uint8_t cdc_interface[]=
+static uint8_t const cdc_interface[]=
 {
 	/*Interface Descriptor*/
 	0x09,   /* bLength: Interface Descriptor size */
@@ -122,7 +122,7 @@ static uint8_t cdc_interface[]=
 };
 
 
-static uint8_t vcom_interface[]=
+static uint8_t const vcom_interface[]=
 {
 	    /*Data class interface descriptor*/
 	    0x09,   /* bLength: Endpoint Descriptor size */
@@ -335,15 +335,20 @@ static void vcom_class_request(
 
 
 static void configure_endpoints(struct dev_desc_t *adev,
-		struct dev_desc_t *usb_hw,
-		struct usb_virtual_com_class_runtime_t *runtime_hndl)
+		struct usb_virtual_com_class_cfg_t *cfg_hndl,
+		uint8_t *i_cdc, uint8_t *i_vcom)
 {
+	struct usb_virtual_com_class_runtime_t *runtime_hndl;
 	struct set_endpoints_t set_endpoints;
+	struct dev_desc_t *usb_hw;
 	usb_dev_in_endpoint_callback_func_t   in_func_arr[3];
 	uint8_t   endpoints_num_arr[3];
 	usb_dev_out_endpoint_callback_func_t   func_arr[3];
 	uint8_t    endpoints_type_arr[3];
 	uint16_t   max_pckt_sizes[3];
+
+	runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(adev);
+	usb_hw = cfg_hndl->usb_hw;
 
 	set_endpoints.num_of_endpoints = 3;
 	set_endpoints.endpoints_num_arr = endpoints_num_arr;
@@ -366,34 +371,60 @@ static void configure_endpoints(struct dev_desc_t *adev,
 	set_endpoints.endpoints_type_arr = endpoints_type_arr;
 	DEV_IOCTL_1_PARAMS(usb_hw, IOCTL_USB_DEVICE_SET_ENDPOINTS, &set_endpoints);
 
-	cdc_interface[28 + 2] = 0x80 | endpoints_num_arr[0];// 0x80 for IN endpoint
-	vcom_interface[9 + 2] = endpoints_num_arr[1];
-	vcom_interface[16 + 2] = 0x80 | endpoints_num_arr[2];
+	i_cdc[28 + 2] = 0x80 | endpoints_num_arr[0];// 0x80 for IN endpoint
+	i_vcom[9 + 2] = endpoints_num_arr[1];
+	i_vcom[16 + 2] = 0x80 | endpoints_num_arr[2];
 	runtime_hndl->in_endpoint_num = endpoints_num_arr[2];
 }
 
 
-static void update_configuration_desc(struct dev_desc_t *usb_descriptors_dev)
+static void update_configuration_desc(struct dev_desc_t *adev,
+	struct usb_virtual_com_class_cfg_t *cfg_hndl,
+	struct usb_descriptors_alloc_interfaces_t *usb_descriptors_alloc_interfaces)
 {
+	struct dev_desc_t *usb_descriptors_dev;
 	struct usb_descriptors_add_interface_t usb_desc_add_interface;
+	uint8_t *iad;
+	uint8_t *i_cdc;
+	uint8_t *i_vcom;
 
+	usb_descriptors_dev = cfg_hndl->usb_descriptors_dev;
+
+	iad = (uint8_t*)malloc(sizeof(interface_association_descriptor)) ;
+	memcpy(iad, interface_association_descriptor,
+						sizeof(interface_association_descriptor));
+	iad[2] = usb_descriptors_alloc_interfaces->interfaces_num[0];
 	DEV_IOCTL_1_PARAMS(usb_descriptors_dev,
-			USB_DEVICE_DESCRIPTORS_ADD_INTERFACE_ASSOCIATION_DESCRIPTOR,
-			interface_association_descriptor);
+			USB_DEVICE_DESCRIPTORS_ADD_INTERFACE_ASSOCIATION_DESCRIPTOR, iad);
+	free(iad);
 
-	usb_desc_add_interface.interface_desc = cdc_interface;
-	usb_desc_add_interface.interface_desc_size =
-								sizeof(cdc_interface);
+	i_cdc = (uint8_t*)malloc(sizeof(cdc_interface)) ;
+	memcpy(i_cdc, cdc_interface, sizeof(cdc_interface));
+	i_vcom = (uint8_t*)malloc(sizeof(vcom_interface)) ;
+	memcpy(i_vcom, vcom_interface, sizeof(vcom_interface));
+
+	i_cdc[2] = usb_descriptors_alloc_interfaces->interfaces_num[0];
+	i_cdc[14 + 4] = usb_descriptors_alloc_interfaces->interfaces_num[1];
+	i_cdc[23 + 3] = usb_descriptors_alloc_interfaces->interfaces_num[0];
+	i_cdc[23 + 4] = usb_descriptors_alloc_interfaces->interfaces_num[1];
+	i_vcom[2] = usb_descriptors_alloc_interfaces->interfaces_num[1];
+
+	configure_endpoints(adev, cfg_hndl, i_cdc, i_vcom);
+
+	usb_desc_add_interface.interface_desc = i_cdc;
+	usb_desc_add_interface.interface_desc_size = sizeof(cdc_interface);
 	usb_desc_add_interface.alt_interface_desc = NULL;
 	DEV_IOCTL_1_PARAMS(usb_descriptors_dev,
 			USB_DEVICE_DESCRIPTORS_ADD_INTERFACE, &usb_desc_add_interface);
 
 
-	usb_desc_add_interface.interface_desc = vcom_interface;
+	usb_desc_add_interface.interface_desc = i_vcom;
 	usb_desc_add_interface.interface_desc_size = sizeof(vcom_interface);
 	usb_desc_add_interface.alt_interface_desc = NULL;
 	DEV_IOCTL_1_PARAMS(usb_descriptors_dev,
 			USB_DEVICE_DESCRIPTORS_ADD_INTERFACE, &usb_desc_add_interface);
+	free(i_cdc);
+	free(i_vcom);
 }
 
 
@@ -421,23 +452,9 @@ static void start_virtual_com_class(struct dev_desc_t *adev,
 			USB_DEVICE_DESCRIPTORS_ALLOC_INTERFACES_NUMBERS,
 			&usb_descriptors_alloc_interfaces);
 
-	interface_association_descriptor[2] =
-			usb_descriptors_alloc_interfaces.interfaces_num[0];
 
-	cdc_interface[2] =
-			usb_descriptors_alloc_interfaces.interfaces_num[0];
-	cdc_interface[14 + 4] =
-			usb_descriptors_alloc_interfaces.interfaces_num[1];
-	cdc_interface[23 + 3] =
-			usb_descriptors_alloc_interfaces.interfaces_num[0];
-	cdc_interface[23 + 4] =
-			usb_descriptors_alloc_interfaces.interfaces_num[1];
-	vcom_interface[2] =
-			usb_descriptors_alloc_interfaces.interfaces_num[1];
-
-	configure_endpoints(adev, usb_hw, runtime_hndl);
-
-	update_configuration_desc(usb_descriptors_dev);
+	update_configuration_desc(
+			adev, cfg_hndl, &usb_descriptors_alloc_interfaces);
 
 	register_interface[0].interfaces_num =
 			usb_descriptors_alloc_interfaces.interfaces_num[0];
