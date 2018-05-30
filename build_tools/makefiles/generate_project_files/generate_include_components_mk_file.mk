@@ -81,8 +81,8 @@ include $(MAKEFILES_INC_FUNC_DIR)/add_item_list_to_file.mk
 #end of file creation
 
 
-TMP :=$(sort $(AUTO_GLOBAL_INCLUDE_DIR))
-ALL_AUTO_INCLUDE_PATH :=$(patsubst %,AUTO_GLOBAL_INCLUDE_DIRS+=%, $(TMP))
+TEMP :=$(sort $(AUTO_GLOBAL_INCLUDE_DIR))
+ALL_AUTO_INCLUDE_PATH :=$(patsubst %,AUTO_GLOBAL_INCLUDE_DIRS+=%, $(TEMP))
 
 # adding following automated include paths 
 LIST_FILE_NAME_APPEND :=$(COMPONENTS_MK)

@@ -14,9 +14,9 @@ include $(MAKEFILES_ROOT_DIR)/common.mk
 
 COMMON_PUBLIC_DIR =$(abspath $(BUILD_TOOLS_ROOT_DIR)/..)
 
-TMP :=$(realpath $(COMMON_PUBLIC_DIR)/..)
+TEMP :=$(realpath $(COMMON_PUBLIC_DIR)/..)
 #remove prefix that appear on some machines :
-PARENT_OF_COMMON_PUBLIC_DIR := $(patsubst $(APP_ROOT_DIR)/%,%,$(TMP))
+PARENT_OF_COMMON_PUBLIC_DIR := $(patsubst $(APP_ROOT_DIR)/%,%,$(TEMP))
 
 # depricated. used for older projects
 WORKSPACE_ROOT_DIR :=$(PARENT_OF_COMMON_PUBLIC_DIR)
@@ -25,8 +25,8 @@ WORKSPACE_ROOT_DIR :=$(PARENT_OF_COMMON_PUBLIC_DIR)
 
 WORKSPACE_NAME := $(notdir $(abspath $(PARENT_OF_COMMON_PUBLIC_DIR)/..))
 
-TMP :=$(call calc_parent_dir,$(PARENT_OF_COMMON_PUBLIC_DIR))
-EXTERNAL_SOURCE_ROOT_DIR :=$(TMP)/external_source
+TEMP :=$(call calc_parent_dir,$(PARENT_OF_COMMON_PUBLIC_DIR))
+EXTERNAL_SOURCE_ROOT_DIR :=$(TEMP)/external_source
 $(call mkdir_if_not_exists, $(EXTERNAL_SOURCE_ROOT_DIR))
 
 WORKSPACE_CONFIG :=$(PARENT_OF_COMMON_PUBLIC_DIR)/workspace_config.mk
@@ -52,6 +52,7 @@ PUBLIC_DRIVERS_DIR := $(COMMON_PUBLIC_DIR)/c/hw_drivers
 PUBLIC_SW_PACKAGES_DIR := $(COMMON_PUBLIC_DIR)/c/sw_packages
 
 AUTO_GENERATED_FILES_DIR := $(APP_ROOT_DIR)/z_auto_generated_files
+MAKE_TEMPORARY_FILES_DIR := $(AUTO_GENERATED_FILES_DIR)/make_tmp
 OUT_DIR_HISTORY    :=    $(APP_ROOT_DIR)/zOUT_history
 
 COMMON_PRIVATE_DIR = $(PARENT_OF_COMMON_PUBLIC_DIR)/common_private
@@ -76,6 +77,7 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
 
     #replace backslash for slash
     AUTO_GENERATED_FILES_DIR := $(subst /,\,$(AUTO_GENERATED_FILES_DIR))
+    MAKE_TEMPORARY_FILES_DIR := $(subst /,\,$(MAKE_TEMPORARY_FILES_DIR))
     OUT_DIR_HISTORY := $(subst /,\,$(OUT_DIR_HISTORY))
     COMMON_PUBLIC_DIR := $(subst /,\,$(COMMON_PUBLIC_DIR))
     COMMON_PRIVATE_DIR := $(subst /,\,$(COMMON_PRIVATE_DIR))

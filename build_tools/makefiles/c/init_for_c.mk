@@ -82,7 +82,7 @@ endif
 #########################################################
 #####   components configuration includes folder :  #####  
 GLOBAL_INCLUDE_DIR += $(APP_ROOT_DIR)/project_config_includes
-GLOBAL_INCLUDE_DIR += $(APP_ROOT_DIR)/z_auto_generated_files
+GLOBAL_INCLUDE_DIR += $(AUTO_GENERATED_FILES_DIR)
 
 ### end of section that run just one time per build
 #####################################################

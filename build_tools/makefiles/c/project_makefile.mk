@@ -38,6 +38,7 @@ $(call mkdir_if_not_exists, $(OBJ_DIR))
 $(call mkdir_if_not_exists, $(OUT_DIR))
 $(call mkdir_if_not_exists, $(OUT_DIR_HISTORY))
 $(call mkdir_if_not_exists, $(AUTO_GENERATED_FILES_DIR))
+$(call mkdir_if_not_exists, $(MAKE_TEMPORARY_FILES_DIR))
 
 PROJECT_CONFIG_H_FILE := $(AUTO_GENERATED_FILES_DIR)/project_config.h
 SCAN_DIRS_FOR_CONFIG_FILES = $(APP_ROOT_DIR) $(PUBLIC_SW_PACKAGES_DIR)

@@ -35,8 +35,9 @@ ASMFLAGS :=
 DEFINES :=
 
 # move global prerequirements_check compilation to first place
-TMP :=$(sort $(filter %prerequirements_check,$(SUBDIRS)))
-SUBDIRS :=$(TMP) $(sort $(filter-out %prerequirements_check,$(SUBDIRS)))
+SUBDIRS :=$(sort $(SUBDIRS))
+TEMP :=$(filter %prerequirements_check,$(SUBDIRS))
+SUBDIRS :=$(TEMP) $(filter-out %prerequirements_check,$(SUBDIRS))
 
 GLOBAL_HEADER_FILES_DEPS := $(patsubst %,%/*.h,$(GLOBAL_INCLUDE_DIR)) 
 
@@ -47,6 +48,9 @@ GLOBAL_LIBS := $(sort $(GLOBAL_LIBS))
 GLOBAL_LIBS_PATH := $(sort $(GLOBAL_LIBS_PATH))
 GLOBAL_ARCHIVES := $(sort $(GLOBAL_ARCHIVES))
 
+# it looks like TMP variable is special variable for makefile
+# it should contain folder that make will put temporary files in it
+TMP :=$(MAKE_TEMPORARY_FILES_DIR)
 export #export all variables declared before
 
 

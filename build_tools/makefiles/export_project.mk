@@ -65,9 +65,9 @@ OUTPUT_TAR :=$(PROJECT_NAME).tar
 FINALL_OUTPUT :=$(PROJECT_NAME).tar.xz
 
 
-TMP :=$(realpath $(PARENT_OF_COMMON_PUBLIC_DIR))/workspace_config.mk.exported
+TEMP :=$(realpath $(PARENT_OF_COMMON_PUBLIC_DIR))/workspace_config.mk.exported
 # remove prefix that appear on some machines :
-NEW_WORKSPACE_CONFIG :=$(patsubst $(APP_ROOT_DIR)/%,%,$(TMP))
+NEW_WORKSPACE_CONFIG :=$(patsubst $(APP_ROOT_DIR)/%,%,$(TEMP))
 
 # workspace_config.mk.exported still not exists, so it 
 # should be added AFTER execution of  $(realpath $(EXPORTS))

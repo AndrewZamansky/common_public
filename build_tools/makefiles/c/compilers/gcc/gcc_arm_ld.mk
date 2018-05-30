@@ -188,7 +188,7 @@ include $(MAKEFILES_INC_FUNC_DIR)/add_item_list_to_file_in_one_line.mk
 ifdef CONFIG_USE_APPLICATION_SPECIFIC_SCATTER_FILE
     CREATE_LDS_CMD += echo using application specifc scatter file
 else
-    CREATE_LDS_CMD =$(CC) -E -P -x c -I z_auto_generated_files
+    CREATE_LDS_CMD =$(CC) -E -P -x c -I $(AUTO_GENERATED_FILES_DIR)
     CREATE_LDS_CMD += $(LDS_PREPROCESSOR_DEFS)
     CREATE_LDS_CMD += $(SCATTER_FILE_PATTERN) -o $(SCATTER_FILE)
 endif
