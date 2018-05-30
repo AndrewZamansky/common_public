@@ -69,7 +69,7 @@ static uint8_t interface_association_descriptor[]=
 	TO_BE_SET_AUTOMATICALLY, // bFirstInterface
 	0x02    , // bInterfaceCount
 	0x02    , // bFunctionClass
-	0x00    , // bFunctionSubClass
+	0x02   , // bFunctionSubClass
 	0x00    , // bFunctionProtocol
 	0x02    ,//  iFunction
 };
@@ -242,29 +242,6 @@ size_t usb_virtual_com_pwrite(struct dev_desc_t *adev,
 }
 
 
-
-static void disable_output_request_endpoint(struct dev_desc_t *usb_hw)
-{
-	struct set_request_out_buffer_t set_request_out_buffer;
-
-	set_request_out_buffer.data = NULL;
-	set_request_out_buffer.size = 0;
-	DEV_IOCTL_1_PARAMS(usb_hw,
-			IOCTL_USB_DEVICE_SET_REQUEST_OUT_BUFFER, &set_request_out_buffer);
-}
-
-
-static void disable_input_request_endpoint(struct dev_desc_t *usb_hw)
-{
-	struct set_request_in_buffer_t set_request_in_buffer;
-
-	set_request_in_buffer.data = NULL;
-	set_request_in_buffer.size = 0;
-	DEV_IOCTL_1_PARAMS(usb_hw,
-			IOCTL_USB_DEVICE_SET_REQUEST_IN_BUFFER, &set_request_in_buffer);
-}
-
-
 /* uac_class_in_request()
  *
  */
@@ -280,24 +257,22 @@ static void cdc_class_in_request( struct dev_desc_t *usb_hw, uint8_t *request)
 	case GET_LINE_CODING:
 		set_request_in_buffer.data = (uint8_t*)&linecoding;
 		set_request_in_buffer.size = 7;
-		DEV_IOCTL_1_PARAMS(usb_hw,
-				IOCTL_USB_DEVICE_SET_REQUEST_IN_BUFFER, &set_request_in_buffer);
-
 		break;
 	default:
 		ret = 1;
 		break;
 	}
 
-	if (0 != ret)
+	if (0 == ret)
+	{
+		DEV_IOCTL_1_PARAMS(usb_hw,
+				IOCTL_USB_DEVICE_SET_REQUEST_IN_BUFFER, &set_request_in_buffer);
+	}
+	else
 	{
 		/* Setup error, stall the device */
 		DEV_IOCTL_0_PARAMS(usb_hw, IOCTL_USB_DEVICE_SET_SATLL);
 	}
-
-	// Trigger next Control Out DATA1 Transaction.
-	/* Status stage */
-	disable_output_request_endpoint(usb_hw);
 }
 
 
@@ -316,11 +291,10 @@ static void cdc_class_out_request( struct dev_desc_t *usb_hw, uint8_t *request)
 	case SET_LINE_CODING:
 		set_request_out_buffer.data = (uint8_t *)&linecoding;
 		set_request_out_buffer.size = 7;
-		DEV_IOCTL_1_PARAMS(usb_hw,
-			IOCTL_USB_DEVICE_SET_REQUEST_OUT_BUFFER, &set_request_out_buffer);
 		break;
 	case SET_LINE_CONTROL:
-		disable_input_request_endpoint(usb_hw);
+		set_request_out_buffer.data = NULL;
+		set_request_out_buffer.size = 0;
 		break;
 	default:
 		ret = 1;
@@ -329,8 +303,8 @@ static void cdc_class_out_request( struct dev_desc_t *usb_hw, uint8_t *request)
 
     if (0 == ret)
     {
-		/* Status stage */
-		disable_input_request_endpoint(usb_hw);
+		DEV_IOCTL_1_PARAMS(usb_hw,
+			IOCTL_USB_DEVICE_SET_REQUEST_OUT_BUFFER, &set_request_out_buffer);
     }
 	else
 	{

@@ -1100,6 +1100,7 @@ static void set_request_out_buffer(
 {
 	USBD_PrepareCtrlOut(
 			set_request_out_buffer->data, set_request_out_buffer->size);
+	USBD_PrepareCtrlIn(0, 0);
 }
 
 
@@ -1108,6 +1109,9 @@ static void set_request_in_buffer(
 {
 	USBD_PrepareCtrlIn(
 			set_request_in_buffer->data, set_request_in_buffer->size);
+	// Trigger next Control Out DATA1 Transaction.
+	/* Status stage */
+	USBD_PrepareCtrlOut(0, 0);
 }
 
 

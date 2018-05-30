@@ -447,31 +447,12 @@ static uint8_t release_rx_buffer(struct usb_audio_class_cfg_t *cfg_hndl,
 
 
 
-static void disable_output_request_endpoint(struct dev_desc_t *usb_hw)
+
+
+
+static uint8_t get_mute(
+	struct set_request_in_buffer_t *set_request_in_buffer, uint8_t *request)
 {
-	struct set_request_out_buffer_t set_request_out_buffer;
-
-	set_request_out_buffer.data = NULL;
-	set_request_out_buffer.size = 0;
-	DEV_IOCTL_1_PARAMS(usb_hw,
-			IOCTL_USB_DEVICE_SET_REQUEST_OUT_BUFFER, &set_request_out_buffer);
-}
-
-
-static void disable_input_request_endpoint(struct dev_desc_t *usb_hw)
-{
-	struct set_request_in_buffer_t set_request_in_buffer;
-
-	set_request_in_buffer.data = NULL;
-	set_request_in_buffer.size = 0;
-	DEV_IOCTL_1_PARAMS(usb_hw,
-			IOCTL_USB_DEVICE_SET_REQUEST_IN_BUFFER, &set_request_in_buffer);
-}
-
-
-static uint8_t get_mute(struct dev_desc_t *usb_hw, uint8_t *request)
-{
-	struct set_request_in_buffer_t set_request_in_buffer;
 	uint8_t *data;
 
 	if (REC_FEATURE_UNITID == request[5])
@@ -486,43 +467,27 @@ static uint8_t get_mute(struct dev_desc_t *usb_hw, uint8_t *request)
 	{
 		return 1;
 	}
-	set_request_in_buffer.data = data;
-	set_request_in_buffer.size = 1;
-	DEV_IOCTL_1_PARAMS(usb_hw,
-			IOCTL_USB_DEVICE_SET_REQUEST_IN_BUFFER, &set_request_in_buffer);
+	set_request_in_buffer->data = data;
+	set_request_in_buffer->size = 1;
 	return 0;
 }
 
 
-
-static void send_uint16(struct dev_desc_t *usb_hw, uint16_t u16data)
+static uint8_t get_volume(
+	struct set_request_in_buffer_t *set_request_in_buffer, uint8_t *request)
 {
-	uint8_t data[2];
-	struct set_request_in_buffer_t set_request_in_buffer;
-
-	data[0] = u16data & 0xff;
-	data[1] = (u16data >> 8) & 0xff;
-	set_request_in_buffer.size = 2;
-	set_request_in_buffer.data = data;
-	DEV_IOCTL_1_PARAMS(usb_hw,
-			IOCTL_USB_DEVICE_SET_REQUEST_IN_BUFFER, &set_request_in_buffer);
-}
-
-
-static uint8_t get_volume(struct dev_desc_t *usb_hw, uint8_t *request)
-{
-	uint16_t val;
+	uint8_t *data;
 
 	if (REC_FEATURE_UNITID == request[5])
 	{
 		/* Left or right channel */
 		if(request[2] == 1)
 		{
-			val = g_usbd_RecVolumeL;
+			data = (uint8_t*)&g_usbd_RecVolumeL;
 		}
 		else
 		{
-			val = g_usbd_RecVolumeR;
+			data = (uint8_t*)&g_usbd_RecVolumeR;
 		}
 	}
 	else if (PLAY_FEATURE_UNITID == request[5])
@@ -530,81 +495,88 @@ static uint8_t get_volume(struct dev_desc_t *usb_hw, uint8_t *request)
 		/* Left or right channel */
 		if(request[2] == 1)
 		{
-			val = g_usbd_PlayVolumeL;
+			data = (uint8_t*)&g_usbd_PlayVolumeL;
 		}
 		else
 		{
-			val = g_usbd_PlayVolumeR;
+			data = (uint8_t*)&g_usbd_PlayVolumeR;
 		}
 	}
 	else
 	{
 		return 1;
 	}
-	send_uint16(usb_hw, val);
+	set_request_in_buffer->data = data;
+	set_request_in_buffer->size = 2;
 	return 0;
 }
 
 
-static uint8_t get_min_volume(struct dev_desc_t *usb_hw, uint8_t *request)
+static uint8_t get_min_volume(
+	struct set_request_in_buffer_t *set_request_in_buffer, uint8_t *request)
 {
-	uint16_t val;
+	uint8_t *data;
 
 	if (REC_FEATURE_UNITID == request[5])
 	{
-		val = g_usbd_RecMinVolume;
+		data = (uint8_t*)&g_usbd_RecMinVolume;
 	}
 	else if (PLAY_FEATURE_UNITID == request[5])
 	{
-		val = g_usbd_PlayMinVolume;
+		data = (uint8_t*)&g_usbd_PlayMinVolume;
 	}
 	else
 	{
 		return 1;
 	}
-	send_uint16(usb_hw, val);
+	set_request_in_buffer->data = data;
+	set_request_in_buffer->size = 2;
 	return 0;
 }
 
 
-static uint8_t get_max_volume(struct dev_desc_t *usb_hw, uint8_t *request)
+static uint8_t get_max_volume(
+	struct set_request_in_buffer_t *set_request_in_buffer, uint8_t *request)
 {
-	uint16_t val;
+	uint8_t *data;
 
 	if (REC_FEATURE_UNITID == request[5])
 	{
-		val = g_usbd_RecMaxVolume;
+		data = (uint8_t*)&g_usbd_RecMaxVolume;
 	}
 	else if (PLAY_FEATURE_UNITID == request[5])
 	{
-		val = g_usbd_PlayMaxVolume;
+		data = (uint8_t*)&g_usbd_PlayMaxVolume;
 	}
 	else
 	{
 		return 1;
 	}
-	send_uint16(usb_hw, val);
+	set_request_in_buffer->data = data;
+	set_request_in_buffer->size = 2;
 	return 0;
 }
 
 
-static uint8_t get_res_volume(struct dev_desc_t *usb_hw, uint8_t *request)
+static uint8_t get_res_volume(
+	struct set_request_in_buffer_t *set_request_in_buffer, uint8_t *request)
 {
-	uint16_t val;
+	uint8_t *data;
 
 	if (REC_FEATURE_UNITID == request[5])
 	{
-		val = g_usbd_RecResVolume;
+		data = (uint8_t*)&g_usbd_RecResVolume;
 	}
 	else if (PLAY_FEATURE_UNITID == request[5])
 	{
-		val = g_usbd_PlayResVolume;
+		data = (uint8_t*)&g_usbd_PlayResVolume;
 	}
 	else
 	{
 		return 1;
 	}
-	send_uint16(usb_hw, val);
+	set_request_in_buffer->data = data;
+	set_request_in_buffer->size = 2;
 	return 0;
 }
 
@@ -614,7 +586,9 @@ static uint8_t get_res_volume(struct dev_desc_t *usb_hw, uint8_t *request)
  */
 static void uac_class_in_request( struct dev_desc_t *usb_hw, uint8_t *request)
 {
+	struct set_request_in_buffer_t set_request_in_buffer;
 	uint8_t ret;
+
 	// Device to host
 	switch(request[1])
 	{
@@ -622,10 +596,10 @@ static void uac_class_in_request( struct dev_desc_t *usb_hw, uint8_t *request)
 		switch(request[3])
 		{
 		case MUTE_CONTROL:
-			ret = get_mute(usb_hw, request);
+			ret = get_mute(&set_request_in_buffer, request);
 			break;
 		case VOLUME_CONTROL:
-			ret = get_volume(usb_hw, request);
+			ret = get_volume(&set_request_in_buffer, request);
 			break;
 		default:
 			ret = 1;
@@ -636,7 +610,7 @@ static void uac_class_in_request( struct dev_desc_t *usb_hw, uint8_t *request)
 		switch(request[3])
 		{
 		case VOLUME_CONTROL:
-			ret = get_min_volume(usb_hw, request);
+			ret = get_min_volume(&set_request_in_buffer, request);
 			break;
 		default:
 			ret = 1;
@@ -647,7 +621,7 @@ static void uac_class_in_request( struct dev_desc_t *usb_hw, uint8_t *request)
 		switch(request[3])
 		{
 		case VOLUME_CONTROL:
-			ret = get_max_volume(usb_hw, request);
+			ret = get_max_volume(&set_request_in_buffer, request);
 			break;
 		default:
 			ret = 1;
@@ -658,7 +632,7 @@ static void uac_class_in_request( struct dev_desc_t *usb_hw, uint8_t *request)
 		switch(request[3])
 		{
 		case VOLUME_CONTROL:
-			ret = get_res_volume(usb_hw, request);
+			ret = get_res_volume(&set_request_in_buffer, request);
 			break;
 		default:
 			ret = 1;
@@ -670,23 +644,24 @@ static void uac_class_in_request( struct dev_desc_t *usb_hw, uint8_t *request)
 		break;
 	}
 
-	if (0 != ret)
+	if (0 == ret)
+	{
+		DEV_IOCTL_1_PARAMS(usb_hw,
+				IOCTL_USB_DEVICE_SET_REQUEST_IN_BUFFER, &set_request_in_buffer);
+	}
+	else
 	{
 		/* Setup error, stall the device */
 		DEV_IOCTL_0_PARAMS(usb_hw, IOCTL_USB_DEVICE_SET_SATLL);
 	}
-
-	// Trigger next Control Out DATA1 Transaction.
-	/* Status stage */
-	disable_output_request_endpoint(usb_hw);
 }
 
 
 
 
-static uint8_t set_mute(struct dev_desc_t *usb_hw, uint8_t *request)
+static uint8_t set_mute(
+	struct set_request_out_buffer_t *set_request_out_buffer, uint8_t *request)
 {
-	struct set_request_out_buffer_t set_request_out_buffer;
 	uint8_t *data;
 
 	if (REC_FEATURE_UNITID == request[5])
@@ -701,17 +676,15 @@ static uint8_t set_mute(struct dev_desc_t *usb_hw, uint8_t *request)
 	{
 		return 1;
 	}
-	set_request_out_buffer.data = data;
-	set_request_out_buffer.size = 1;
-	DEV_IOCTL_1_PARAMS(usb_hw,
-		IOCTL_USB_DEVICE_SET_REQUEST_OUT_BUFFER, &set_request_out_buffer);
+	set_request_out_buffer->data = data;
+	set_request_out_buffer->size = 1;
 	return 0;
 }
 
 
-static uint8_t set_volume(struct dev_desc_t *usb_hw, uint8_t *request)
+static uint8_t set_volume(
+	struct set_request_out_buffer_t *set_request_out_buffer, uint8_t *request)
 {
-	struct set_request_out_buffer_t set_request_out_buffer;
 	uint8_t *data;
 
 	if (REC_FEATURE_UNITID == request[5])
@@ -741,10 +714,8 @@ static uint8_t set_volume(struct dev_desc_t *usb_hw, uint8_t *request)
 		return 1;
 	}
 
-	set_request_out_buffer.data = data;
-	set_request_out_buffer.size = 2;
-	DEV_IOCTL_1_PARAMS(usb_hw,
-		IOCTL_USB_DEVICE_SET_REQUEST_OUT_BUFFER, &set_request_out_buffer);
+	set_request_out_buffer->data = data;
+	set_request_out_buffer->size = 2;
 	return 0;
 }
 
@@ -754,6 +725,7 @@ static uint8_t set_volume(struct dev_desc_t *usb_hw, uint8_t *request)
  */
 static void uac_class_out_request( struct dev_desc_t *usb_hw, uint8_t *request)
 {
+	struct set_request_out_buffer_t set_request_out_buffer;
 	uint8_t ret;
 
     switch(request[1])
@@ -762,10 +734,10 @@ static void uac_class_out_request( struct dev_desc_t *usb_hw, uint8_t *request)
 		switch(request[3])
 		{
 		case MUTE_CONTROL:
-			ret = set_mute(usb_hw, request);
+			ret = set_mute(&set_request_out_buffer, request);
 			break;
 		case VOLUME_CONTROL:
-			ret = set_volume(usb_hw, request);
+			ret = set_volume(&set_request_out_buffer, request);
 			break;
 		default:
 			ret = 1;
@@ -779,8 +751,8 @@ static void uac_class_out_request( struct dev_desc_t *usb_hw, uint8_t *request)
 
     if (0 == ret)
     {
-		/* Status stage */
-		disable_input_request_endpoint(usb_hw);
+    	DEV_IOCTL_1_PARAMS(usb_hw,
+    		IOCTL_USB_DEVICE_SET_REQUEST_OUT_BUFFER, &set_request_out_buffer);
     }
 	else
 	{
