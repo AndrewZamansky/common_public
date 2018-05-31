@@ -296,6 +296,11 @@ volatile int16_t g_usbd_PlayMinVolume = 0x8000;
 volatile int16_t g_usbd_PlayResVolume = 0x400;
 
 
+//#define DEBUG
+
+int dbg_force_over_or_underflow = 0;
+#define SMOOTH_VALUE    10
+uint8_t skip_repeat_smooth = 0;
 
 
 static void new_audio_received(
@@ -341,8 +346,18 @@ static void new_audio_received(
 	buffers = runtime_hndl->buff;
 	curr_buff = buffers[curr_buff_indx];
 
-	if ( 0 < sample_to_skip_or_repeat )
+#ifdef DEBUG
+	if (dbg_force_over_or_underflow > 0)
 	{
+		size = size - num_of_bytes_per_sample_all_channels;
+		dbg_force_over_or_underflow--;
+	}
+#endif
+
+	if (( 0 < sample_to_skip_or_repeat ) &&
+			(SMOOTH_VALUE == skip_repeat_smooth++) && (0 == dbg_force_over_or_underflow))
+	{
+		skip_repeat_smooth = 0;
 		size = size - num_of_bytes_per_sample_all_channels;
 		sample_to_skip_or_repeat--;
 	}
@@ -354,16 +369,32 @@ static void new_audio_received(
 
 	memcpy(&curr_buff[curr_pos_in_buffer], buff, bytes_to_copy);
 	curr_pos_in_buffer = curr_pos_in_buffer + bytes_to_copy;
-	if (( 0 > sample_to_skip_or_repeat) && (buff_size >=
+	if ((( 0 > sample_to_skip_or_repeat) &&
+			(SMOOTH_VALUE == skip_repeat_smooth++) &&
+			(buff_size >=
 				(curr_pos_in_buffer + num_of_bytes_per_sample_all_channels)))
+			&& (0 == dbg_force_over_or_underflow))
 	{
-		memcpy(&curr_buff[
-				curr_pos_in_buffer - num_of_bytes_per_sample_all_channels],
-				curr_buff, num_of_bytes_per_sample_all_channels);
-		curr_pos_in_buffer =
-				curr_pos_in_buffer + num_of_bytes_per_sample_all_channels;
+		skip_repeat_smooth = 0;
+		memcpy(&curr_buff[curr_pos_in_buffer],
+				&curr_buff[curr_pos_in_buffer -
+				           num_of_bytes_per_sample_all_channels],
+				num_of_bytes_per_sample_all_channels);
+		curr_pos_in_buffer += num_of_bytes_per_sample_all_channels;
 		sample_to_skip_or_repeat++;
 	}
+#ifdef DEBUG
+	if ( (dbg_force_over_or_underflow < 0) && (buff_size >=
+			(curr_pos_in_buffer + num_of_bytes_per_sample_all_channels)))
+	{
+		memcpy(&curr_buff[curr_pos_in_buffer],
+				&curr_buff[curr_pos_in_buffer -
+				           num_of_bytes_per_sample_all_channels],
+				num_of_bytes_per_sample_all_channels);
+		curr_pos_in_buffer += num_of_bytes_per_sample_all_channels;
+		dbg_force_over_or_underflow++;
+	}
+#endif
 
 	if (curr_pos_in_buffer == buff_size)
 	{
@@ -397,7 +428,7 @@ static void new_audio_received(
 		}
 	}
 	runtime_hndl->curr_pos_in_buffer = curr_pos_in_buffer;
-	sample_to_skip_or_repeat = runtime_hndl->sample_to_skip_or_repeat;
+	runtime_hndl->sample_to_skip_or_repeat = sample_to_skip_or_repeat;
 
 }
 
@@ -984,11 +1015,18 @@ uint8_t usb_audio_class_ioctl( struct dev_desc_t *adev, uint8_t aIoctl_num,
 		break;
 
 	case USB_AUDIO_CLASS_IOCTL_SLOWDOWN_BY_SKIPING_SAMPLES :
-		runtime_hndl->sample_to_skip_or_repeat = *(uint32_t*)aIoctl_param1;
+		if (0 >= runtime_hndl->sample_to_skip_or_repeat)
+		{
+			runtime_hndl->sample_to_skip_or_repeat = *(uint32_t*)aIoctl_param1;
+		}
 		break;
 
 	case USB_AUDIO_CLASS_IOCTL_ACCELERATE_BY_REPEATING_SAMPLES :
-		runtime_hndl->sample_to_skip_or_repeat = -(*(uint32_t*)aIoctl_param1);
+		if (0 <= runtime_hndl->sample_to_skip_or_repeat)
+		{
+			runtime_hndl->sample_to_skip_or_repeat =
+										-(*(uint32_t*)aIoctl_param1);
+		}
 		break;
 
 	case USB_AUDIO_CLASS_IOCTL_SOFT_RESET :
