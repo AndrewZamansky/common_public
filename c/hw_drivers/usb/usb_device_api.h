@@ -20,13 +20,7 @@ typedef void (*usb_dev_interface_request_callback_func_t)(
 
 typedef enum
 {
-	IOCTL_USB_DEVICE_SET_DEVICE_DESC = IOCTL_LAST_COMMON_IOCTL + 1,
-	IOCTL_USB_DEVICE_SET_CONFIG_DESC,
-	IOCTL_USB_DEVICE_SET_STRING_DESC,
-	IOCTL_USB_DEVICE_SET_HID_REPORT_DESC,
-	IOCTL_USB_DEVICE_SET_BOS_DESC,
-	IOCTL_USB_DEVICE_SET_HID_REPORT_LEN,
-	IOCTL_USB_DEVICE_SET_HID_DESC_INDEX,
+	IOCTL_USB_DEVICE_SET_DESCRIPTORS = IOCTL_LAST_COMMON_IOCTL + 1,
 	IOCTL_USB_DEVICE_START,
 	IOCTL_USB_DEVICE_SET_ENDPOINTS,
 	IOCTL_USB_DEVICE_REGISTER_INTERFACES,
@@ -50,7 +44,7 @@ enum USB_DEVICE_API_OUT_EP_TYPE_T
 struct set_endpoints_t {
 	uint8_t   num_of_endpoints;
 	uint8_t   *endpoints_num_arr;
-	usb_dev_out_endpoint_callback_func_t   *func_arr;
+	usb_dev_out_endpoint_callback_func_t   *out_func_arr;
 	usb_dev_in_endpoint_callback_func_t   *in_func_arr;
 	struct dev_desc_t   *callback_dev;
 	uint16_t   *max_pckt_sizes;
@@ -85,6 +79,19 @@ struct register_interfaces_t {
 	struct register_interface_t  *register_interface_arr;
 	struct dev_desc_t   *callback_dev;
 };
+
+
+struct set_device_descriptors_t
+{
+	const uint8_t *device_desc;
+	const uint8_t *config_desc;
+	const uint8_t **pointers_to_strings_descs;
+	const uint8_t **hid_report_desc;
+	const uint8_t *BOS_desc;
+	const uint32_t *hid_report_size;
+	const uint32_t *config_hid_desc_index;
+};
+
 
 /**********  define API  functions  ************/
 

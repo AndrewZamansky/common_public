@@ -115,8 +115,8 @@
 #define EP3_MAX_PKT_SIZE  0// now set dynamically PLAY_RATE*PLAY_CHANNELS*2/1000
 #define EP4_MAX_PKT_SIZE  0// now set dynamically was 16
 #define EP5_MAX_PKT_SIZE  0// now set dynamically was 16
-#define EP6_MAX_PKT_SIZE    64 
-#define EP7_MAX_PKT_SIZE    64 
+#define EP6_MAX_PKT_SIZE    0// now set dynamically was  64
+#define EP7_MAX_PKT_SIZE    0// now set dynamically was  64
 
 /* Define EP buffer base and length */
 #define SETUP_BUF_BASE      0

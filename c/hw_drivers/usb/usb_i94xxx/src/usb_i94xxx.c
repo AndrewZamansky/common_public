@@ -302,6 +302,8 @@ int32_t HIDTrans_ProcessCommand(uint8_t *pu8Buffer, uint32_t u32BufferLen)
     }
     return 0;
 }
+
+
 void HIDTrans_GetOutReport(uint8_t *pu8EpBuf, uint32_t u32Size)
 {
     // Check if it is in the data phase of write command
@@ -535,13 +537,13 @@ void USBD_IRQHandler(void)
         if(u32IntSts & USBD_INTSTS_EP6) {
             /* Clear event flag */
             USBD_CLR_INT_FLAG(USBD_INTSTS_EP6);
-            EP6_Handler();
+            EP_Handler(6);
         }
 
         if(u32IntSts & USBD_INTSTS_EP7) {
             /* Clear event flag */
             USBD_CLR_INT_FLAG(USBD_INTSTS_EP7);
-            EP7_Handler();
+            EP_Handler(7);
         }
 
         if(u32IntSts & USBD_INTSTS_EP8)
@@ -720,17 +722,17 @@ void UAC_Init(void)
 //    USBD_SET_PAYLOAD_LEN(EP3, EP3_MAX_PKT_SIZE);
 
     /*****************************************************/
-    /* EP6 ==> Interrupt IN endpoint, address 6 */
-    USBD_CONFIG_EP(EP6, USBD_CFG_EPMODE_IN | INT_IN_EP_NUM);
-    /* Buffer range for EP6 */
-    USBD_SET_EP_BUF_ADDR(EP6, EP6_BUF_BASE);
-
-    /* EP7 ==> Interrupt Out endpoint, address 7 */
-    USBD_CONFIG_EP(EP7, USBD_CFG_EPMODE_OUT | INT_OUT_EP_NUM);
-    /* Buffer range for EP7 */
-    USBD_SET_EP_BUF_ADDR(EP7, EP7_BUF_BASE);
-    /* trigger to receive OUT data */
-    USBD_SET_PAYLOAD_LEN(EP7, EP7_MAX_PKT_SIZE);
+//    /* EP6 ==> Interrupt IN endpoint, address 6 */
+//    USBD_CONFIG_EP(EP6, USBD_CFG_EPMODE_IN | INT_IN_EP_NUM);
+//    /* Buffer range for EP6 */
+//    USBD_SET_EP_BUF_ADDR(EP6, EP6_BUF_BASE);
+//
+//    /* EP7 ==> Interrupt Out endpoint, address 7 */
+//    USBD_CONFIG_EP(EP7, USBD_CFG_EPMODE_OUT | INT_OUT_EP_NUM);
+//    /* Buffer range for EP7 */
+//    USBD_SET_EP_BUF_ADDR(EP7, EP7_BUF_BASE);
+//    /* trigger to receive OUT data */
+//    USBD_SET_PAYLOAD_LEN(EP7, EP7_MAX_PKT_SIZE);
 
 }
 
@@ -1169,15 +1171,16 @@ static void set_endpoint_func(struct set_endpoints_t *set_endpoints)
 		{
 		case USB_DEVICE_API_EP_TYPE_ISO_OUT :
 			out_callback_functions[endpoints_count] =
-									set_endpoints->func_arr[i];
+									set_endpoints->out_func_arr[i];
 			USBD_CONFIG_EP(endpoints_count,
 					USBD_CFG_EPMODE_OUT | USBD_CFG_TYPE_ISO | endpoints_count);
 			/* trigger to receive OUT data */
 			USBD_SET_PAYLOAD_LEN(endpoints_count, max_pckt_size);
 			break;
 		case USB_DEVICE_API_EP_TYPE_BULK_OUT :
+		case USB_DEVICE_API_EP_TYPE_INTERRUPT_OUT :
 			out_callback_functions[endpoints_count] =
-									set_endpoints->func_arr[i];
+									set_endpoints->out_func_arr[i];
 			USBD_CONFIG_EP(endpoints_count,
 					USBD_CFG_EPMODE_OUT | endpoints_count);
 			/* trigger to receive OUT data */
@@ -1201,7 +1204,7 @@ static void set_endpoint_func(struct set_endpoints_t *set_endpoints)
 		}
 
 		endpoints_count++;
-		if (6 == endpoints_count) endpoints_count +=2; //TODO : to remove
+		//if (6 == endpoints_count) endpoints_count +=2; //TODO : to remove
 	}
 }
 
@@ -1230,18 +1233,12 @@ static void device_start()
 
 static void usb_device_start()
 {
-	uint32_t *check_pointer;
-
-	check_pointer = (uint32_t *)&l_gsInfo;
-	while (check_pointer <
-			(uint32_t *)(((uint32_t)&l_gsInfo) + sizeof(l_gsInfo)))
+	if ((NULL == l_gsInfo.gu8DevDesc) || (NULL == l_gsInfo.gu8ConfigDesc) ||
+		(NULL == l_gsInfo.gu8StringDesc)  || (NULL == l_gsInfo.gu32BOSDesc))
 	{
-		if (NULL == (uint32_t *)(*check_pointer))
-		{
-			CRITICAL_ERROR("l_gsInfo structure should be initialized");
-		}
-		check_pointer++;
+		CRITICAL_ERROR("l_gsInfo structure should be initialized");
 	}
+
 	/* usb initial */
 	USBD_Open(&l_gsInfo, UAC_ClassRequest, NULL);
 	/* Endpoint configuration */
@@ -1265,6 +1262,19 @@ static void usb_device_start()
 			USBD_INT_FLDET | USBD_INT_WAKEUP | USBD_INTEN_SOFIEN_Msk);
 }
 
+
+static void set_descriptors(struct set_device_descriptors_t *descriptors)
+{
+	l_gsInfo.gu8DevDesc = descriptors->device_desc;
+	l_gsInfo.gu8ConfigDesc = descriptors->config_desc;
+	l_gsInfo.gu8StringDesc = descriptors->pointers_to_strings_descs;
+	l_gsInfo.gu8HidReportDesc = descriptors->hid_report_desc;
+	l_gsInfo.gu32BOSDesc = descriptors->BOS_desc;
+	l_gsInfo.gu32HidReportSize = descriptors->hid_report_size;
+	l_gsInfo.gu32ConfigHidDescIdx = descriptors->config_hid_desc_index;
+}
+
+
 /**
  * usb_i94xxx_ioctl()
  *
@@ -1281,29 +1291,9 @@ uint8_t usb_i94xxx_ioctl( struct dev_desc_t *adev, uint8_t aIoctl_num,
 	case IOCTL_DEVICE_START :
 		device_start();
 		break;
-
-	case IOCTL_USB_DEVICE_SET_DEVICE_DESC :
-		l_gsInfo.gu8DevDesc = aIoctl_param1;
+	case IOCTL_USB_DEVICE_SET_DESCRIPTORS :
+		set_descriptors(aIoctl_param1);
 		break;
-	case IOCTL_USB_DEVICE_SET_CONFIG_DESC :
-		l_gsInfo.gu8ConfigDesc = aIoctl_param1;
-		break;
-	case IOCTL_USB_DEVICE_SET_STRING_DESC :
-		l_gsInfo.gu8StringDesc = aIoctl_param1;
-		break;
-	case IOCTL_USB_DEVICE_SET_HID_REPORT_DESC :
-		l_gsInfo.gu8HidReportDesc = aIoctl_param1;
-		break;
-	case IOCTL_USB_DEVICE_SET_BOS_DESC :
-		l_gsInfo.gu32BOSDesc = aIoctl_param1;
-		break;
-	case IOCTL_USB_DEVICE_SET_HID_REPORT_LEN :
-		l_gsInfo.gu32HidReportSize = aIoctl_param1;
-		break;
-	case IOCTL_USB_DEVICE_SET_HID_DESC_INDEX :
-		l_gsInfo.gu32ConfigHidDescIdx = aIoctl_param1;
-		break;
-
 	case IOCTL_USB_DEVICE_START :
 		usb_device_start();
 		break;

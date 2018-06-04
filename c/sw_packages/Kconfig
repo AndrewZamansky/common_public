@@ -16,4 +16,6 @@ source "$KCONFIG_PUBLIC_START_DIR/sw_packages/dsp/Kconfig"
 
 source "$KCONFIG_PUBLIC_START_DIR/sw_packages/net/Kconfig"
 
+source "$KCONFIG_PUBLIC_START_DIR/sw_packages/usb_device/Kconfig"
+
 source "$KCONFIG_PUBLIC_START_DIR/sw_packages/staging/Kconfig"

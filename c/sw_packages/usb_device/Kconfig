@@ -1,0 +1,21 @@
+#
+
+if INCLUDE_INTERNAL_USB_DEVICE
+
+menu "usb devices"
+
+config INCLUDE_USB_AUDIO_CLASS
+	bool   "usb audio class"
+	default n
+	
+config INCLUDE_USB_VIRTUAL_COM_CLASS
+	bool   "usb virtual com class"
+	default n
+
+config INCLUDE_USB_HID_CLASS
+	bool   "usb hid class"
+	default n
+
+endmenu
+
+endif

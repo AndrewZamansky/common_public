@@ -281,16 +281,26 @@ static uint8_t const out_alt_interface[] = {
 };
 
 
-volatile uint8_t g_usbd_RecMute       = 0x01;     /* Record MUTE control. 0 = normal. 1 = MUTE */
-volatile int16_t g_usbd_RecVolumeL    = 0x1000;   /* Record left channel volume. Range is -32768 ~ 32767 */
-volatile int16_t g_usbd_RecVolumeR    = 0x1000;   /* Record right channel volume. Range is -32768 ~ 32767 */
+/* Record MUTE control. 0 = normal. 1 = MUTE */
+volatile uint8_t g_usbd_RecMute       = 0x01;
+
+/* Record left channel volume. Range is -32768 ~ 32767 */
+volatile int16_t g_usbd_RecVolumeL    = 0x1000;
+
+/* Record right channel volume. Range is -32768 ~ 32767 */
+volatile int16_t g_usbd_RecVolumeR    = 0x1000;
 volatile int16_t g_usbd_RecMaxVolume  = 0x7FFF;
 volatile int16_t g_usbd_RecMinVolume  = 0x8000;
 volatile int16_t g_usbd_RecResVolume  = 0x400;
 
-volatile uint8_t g_usbd_PlayMute      = 0x01;     /* Play MUTE control. 0 = normal. 1 = MUTE */
-volatile int16_t g_usbd_PlayVolumeL   = 0x1000;   /* Play left channel volume. Range is -32768 ~ 32767 */
-volatile int16_t g_usbd_PlayVolumeR   = 0x1000;   /* Play right channel volume. Range is -32768 ~ 32767 */
+/* Play MUTE control. 0 = normal. 1 = MUTE */
+volatile uint8_t g_usbd_PlayMute      = 0x01;
+
+/* Play left channel volume. Range is -32768 ~ 32767 */
+volatile int16_t g_usbd_PlayVolumeL   = 0x1000;
+
+/* Play right channel volume. Range is -32768 ~ 32767 */
+volatile int16_t g_usbd_PlayVolumeR   = 0x1000;
 volatile int16_t g_usbd_PlayMaxVolume = 0x7FFF;
 volatile int16_t g_usbd_PlayMinVolume = 0x8000;
 volatile int16_t g_usbd_PlayResVolume = 0x400;
@@ -355,7 +365,8 @@ static void new_audio_received(
 #endif
 
 	if (( 0 < sample_to_skip_or_repeat ) &&
-			(SMOOTH_VALUE == skip_repeat_smooth++) && (0 == dbg_force_over_or_underflow))
+			(SMOOTH_VALUE == skip_repeat_smooth++) &&
+			(0 == dbg_force_over_or_underflow))
 	{
 		skip_repeat_smooth = 0;
 		size = size - num_of_bytes_per_sample_all_channels;
@@ -818,11 +829,11 @@ static void configure_endpoints(struct dev_desc_t *adev,
 {
 	struct dev_desc_t *usb_hw;
 	struct set_endpoints_t set_endpoints;
-	usb_dev_in_endpoint_callback_func_t   in_func_arr[3];
-	uint8_t   endpoints_num_arr[3];
-	usb_dev_out_endpoint_callback_func_t   func_arr[3];
-	uint8_t    endpoints_type_arr[3];
-	uint16_t   max_pckt_sizes[3];
+	usb_dev_in_endpoint_callback_func_t   in_func_arr[2];
+	uint8_t   endpoints_num_arr[2];
+	usb_dev_out_endpoint_callback_func_t   out_func_arr[2];
+	uint8_t    endpoints_type_arr[2];
+	uint16_t   max_pckt_sizes[2];
 	uint8_t in_endpoint_num;
 	uint8_t out_endpoint_num;
 	uint8_t endpoint_packet_size;
@@ -833,11 +844,11 @@ static void configure_endpoints(struct dev_desc_t *adev,
 
 	set_endpoints.num_of_endpoints = 2;
 	set_endpoints.endpoints_num_arr = endpoints_num_arr;
-	func_arr[0] = NULL;
-	func_arr[1] = new_audio_received;
+	out_func_arr[0] = NULL;
+	out_func_arr[1] = new_audio_received;
 	in_func_arr[0] = NULL;
 	in_func_arr[1] = NULL;
-	set_endpoints.func_arr = func_arr;
+	set_endpoints.out_func_arr = out_func_arr;
 	set_endpoints.in_func_arr = in_func_arr;
 	set_endpoints.callback_dev = adev;
 	max_pckt_sizes[0] = endpoint_packet_size;
@@ -918,6 +929,7 @@ static void update_configuration_desc(struct dev_desc_t *adev,
 	usb_desc_add_interface.interface_desc_size = sizeof(in_interface);
 	usb_desc_add_interface.alt_interface_desc = i_in_alt1;
 	usb_desc_add_interface.alt_interface_desc_size = sizeof(in_alt_interface);
+	usb_desc_add_interface.is_hid_interface = 0;
 	DEV_IOCTL_1_PARAMS(usb_descriptors_dev,
 			USB_DEVICE_DESCRIPTORS_ADD_INTERFACE, &usb_desc_add_interface);
 
@@ -926,6 +938,7 @@ static void update_configuration_desc(struct dev_desc_t *adev,
 	usb_desc_add_interface.interface_desc_size = sizeof(out_interface);
 	usb_desc_add_interface.alt_interface_desc = i_out_alt1;
 	usb_desc_add_interface.alt_interface_desc_size = sizeof(out_alt_interface);
+	usb_desc_add_interface.is_hid_interface = 0;
 	DEV_IOCTL_1_PARAMS(usb_descriptors_dev,
 			USB_DEVICE_DESCRIPTORS_ADD_INTERFACE, &usb_desc_add_interface);
 	free(i_in_alt0);
@@ -940,7 +953,7 @@ static void start_audio_class(struct dev_desc_t *adev,
 		struct usb_audio_class_runtime_t *runtime_hndl)
 {
 	struct register_interfaces_t register_interfaces;
-	struct register_interface_t register_interface[2];
+	struct register_interface_t register_interface[3];
 	struct usb_descriptors_alloc_interfaces_t usb_descriptors_alloc_interfaces;
 	struct dev_desc_t *usb_descriptors_dev;
 	struct dev_desc_t *usb_hw;

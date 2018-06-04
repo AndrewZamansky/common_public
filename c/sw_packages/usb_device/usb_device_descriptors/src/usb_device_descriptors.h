@@ -16,7 +16,7 @@
 
 struct usb_device_descriptors_cfg_t {
 	struct dev_desc_t *usb_hw;
-} ;
+};
 
 
 #endif
