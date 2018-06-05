@@ -14,8 +14,7 @@
 /********  types  *********************/
 
 struct usb_i94xxx_cfg_t {
-	struct dev_desc_t *   callback_tx_dev;
-	struct dev_desc_t *   callback_rx_dev;
+	uint8_t dummy;
 };
 
 
