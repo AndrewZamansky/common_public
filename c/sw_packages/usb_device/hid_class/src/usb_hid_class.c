@@ -350,7 +350,7 @@ static void update_configuration_desc(struct dev_desc_t *adev,
 	struct usb_descriptors_add_interface_t usb_desc_add_interface;
 	uint8_t *iad;
 	uint8_t *interface;
-	struct usb_descriptors_add_hid_report_descriptor_t hid_des;
+	struct usb_descriptors_hid_descriptor_t  *p_hid_descriptor;
 
 	usb_descriptors_dev = cfg_hndl->usb_descriptors_dev;
 
@@ -361,8 +361,6 @@ static void update_configuration_desc(struct dev_desc_t *adev,
 	DEV_IOCTL_1_PARAMS(usb_descriptors_dev,
 			USB_DEVICE_DESCRIPTORS_ADD_INTERFACE_ASSOCIATION_DESCRIPTOR, iad);
 	free(iad);
-
-
 
 
 
@@ -377,17 +375,13 @@ static void update_configuration_desc(struct dev_desc_t *adev,
 	usb_desc_add_interface.alt_interface_desc = NULL;
 	usb_desc_add_interface.alt_interface_desc_size = 0;
 	usb_desc_add_interface.is_hid_interface = 1;
-	usb_desc_add_interface.hid_desc_pos = INTERFACE_LEN;
+	p_hid_descriptor = &usb_desc_add_interface.hid_descriptor;
+	p_hid_descriptor->hid_desc_position_in_config_desc = INTERFACE_LEN;
+	p_hid_descriptor->report_descriptor = default_hid_report_desc;
+	p_hid_descriptor->size = sizeof(default_hid_report_desc);
 	DEV_IOCTL_1_PARAMS(usb_descriptors_dev,
 			USB_DEVICE_DESCRIPTORS_ADD_INTERFACE, &usb_desc_add_interface);
 	free(interface);
-
-	hid_des.report_descriptor = default_hid_report_desc;
-	hid_des.size = sizeof(default_hid_report_desc);
-	hid_des.interface_num = usb_descriptors_alloc_interfaces->interfaces_num[0];
-	DEV_IOCTL_1_PARAMS(usb_descriptors_dev,
-			USB_DEVICE_DESCRIPTORS_ADD_HID_REPORT_DESCRIPTOR, &hid_des);
-
 }
 
 

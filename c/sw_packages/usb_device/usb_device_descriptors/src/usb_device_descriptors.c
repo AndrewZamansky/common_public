@@ -193,13 +193,18 @@ static void add_interface(
 
 	if (1 == usb_desc_add_interface->is_hid_interface)
 	{
+		struct usb_descriptors_hid_descriptor_t  *hid_descriptor;
+
 		interface_num = interface_desc[2];
+		hid_descriptor = &usb_desc_add_interface->hid_descriptor;
 		if (MAX_INTERFACE_NUM_FOR_HID <= interface_num)
 		{
 			CRITICAL_ERROR("interface number to big for HID interface \n");
 		}
 		gu32ConfigHidDescIdx[interface_num] = configuration_desc_size +
-										usb_desc_add_interface->hid_desc_pos;
+							hid_descriptor->hid_desc_position_in_config_desc;
+		gu8UsbHidReport[interface_num] = hid_descriptor->report_descriptor;
+		gu32UsbHidReportLen[interface_num] = hid_descriptor->size;
 	}
 
 	interface_structure_size = usb_desc_add_interface->interface_desc_size;
@@ -267,16 +272,6 @@ static void alloc_interfaces(
 }
 
 
-static void add_hid_report_descriptor(
-		struct usb_descriptors_add_hid_report_descriptor_t *hid_desc)
-{
-	uint8_t interface_num;
-
-	interface_num = hid_desc->interface_num;
-	gu8UsbHidReport[interface_num] = hid_desc->report_descriptor;
-	gu32UsbHidReportLen[interface_num] = hid_desc->size;
-}
-
 
 /**
  * usb_i94xxx_ioctl()
@@ -306,9 +301,6 @@ uint8_t usb_device_descriptors_ioctl(
 		break;
 	case USB_DEVICE_DESCRIPTORS_START :
 		usb_device_start(cfg_hndl);
-		break;
-	case USB_DEVICE_DESCRIPTORS_ADD_HID_REPORT_DESCRIPTOR :
-		add_hid_report_descriptor(aIoctl_param1);
 		break;
 	default :
 		return 1;
