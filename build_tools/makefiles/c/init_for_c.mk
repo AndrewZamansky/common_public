@@ -2,9 +2,6 @@
 ### the following section we need to run just one time per build
 
 
-GLOBAL_DEFINES += VERSION_STR="$(FULL_VERSION_STR)"
-
-
 #####   global compiler and linker flags :  #####
 
 ifdef CONFIG_DATA_LOCATION_INTERNAL_SRAM

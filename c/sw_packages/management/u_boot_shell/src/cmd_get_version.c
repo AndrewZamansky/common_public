@@ -7,7 +7,7 @@
 #include "u_boot_shell_api.h"
 #include "version_management_api.h"
 
-#define MAX_RET_BUFF_SIZE 31
+#define MAX_RET_BUFF_SIZE 64
 /*
  * Subroutine:  do_get_version
  *

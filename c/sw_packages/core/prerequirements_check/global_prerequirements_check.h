@@ -16,10 +16,6 @@
 /***************************/
 /******** test defines *****/
 
-#ifndef VERSION_STR
-    #error "VERSION_STR should be defined in project header files or in compile command line"
-#endif
-
 
 #ifndef NULL
 	#error  "NULL is not defined in in project header files "

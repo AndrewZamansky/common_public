@@ -16,7 +16,7 @@ ifeq ($(MAIN_VERSION_STR),) # if empty then we are on main branch
     MAIN_VERSION_STR :=MasterV0.0
 endif
 
-ifeq ($(MODIFIED_GITS),)
+ifeq ($(MODIFIED_GITS),)# if NONE of git repos is modified 
     REVISION_STR := r$(DATE_STR)_$(CURR_APP_SHORT_COMMIT)
     REVISION_FOR_FILE_STR :=$(REVISION_STR)
 else

@@ -32,8 +32,8 @@
 
 /***********************************/
 /********** ver_dev ********/
-#define DT_DEV_NAME							ver_dev
-#define DT_DEV_MODULE						version_management
+#define DT_DEV_NAME    ver_dev
+#define DT_DEV_MODULE  version_management
 
 #include ADD_CURRENT_DEV
 
