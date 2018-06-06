@@ -42,7 +42,6 @@ uint8_t g_num_dev_inst = 0;
 /********  types  *********************/
 
 struct lookup_table_t {
-	SdSpiAltDriver *p_SpiAltDriver;
 	struct dev_desc_t *spi_dev;
 };
 
@@ -209,15 +208,9 @@ uint8_t SdSpiAltDriver::receive()
 
 uint8_t SdSpiAltDriver::receive(uint8_t* buf, size_t n)
 {
-	uint8_t i;
 
-	for (i = 0; i < MAX_NUMBER_OF_ARDUINO_SPI_SD_INSTANCES ; i++)
-	{
-		if (this == lookup_table[i].p_SpiAltDriver)
-		{
-			DEV_READ(lookup_table[i].spi_dev, buf, n);
-		}
-	}
+	DEV_READ(lookup_table[this->m_csPin].spi_dev, buf, n);
+
 	return 0;
 }
 
@@ -231,15 +224,9 @@ void SdSpiAltDriver::send(uint8_t data)
 
 void SdSpiAltDriver::send(const uint8_t* buf, size_t n)
 {
-	uint8_t i;
 
-	for (i = 0; i < MAX_NUMBER_OF_ARDUINO_SPI_SD_INSTANCES ; i++)
-	{
-		if (this == lookup_table[i].p_SpiAltDriver)
-		{
-			DEV_WRITE(lookup_table[i].spi_dev, buf, n);
-		}
-	}
+	DEV_WRITE(lookup_table[this->m_csPin].spi_dev, buf, n);
+
 }
 
 
@@ -278,16 +265,12 @@ uint8_t ArduinoSdSpi_ioctl( struct dev_desc_t *adev ,
 		if ((NULL == runtime_handle->sd_spi_inst) &&
 				 (MAX_NUMBER_OF_ARDUINO_SPI_SD_INSTANCES > g_num_dev_inst))
 		{
-			SdSpiAltDriver *SdSpiAltDriver_obj;
 
 			num_dev_inst = g_num_dev_inst++;
 			runtime_handle->num_dev_inst = num_dev_inst;
 			runtime_handle->sd_spi_inst = (void *) (new SdSpiCardEX);
 			runtime_handle->SdSpiAltDriver_obj = (void *) (new SdSpiAltDriver);
 
-			SdSpiAltDriver_obj =
-					(SdSpiAltDriver *)runtime_handle->SdSpiAltDriver_obj;
-			lookup_table[num_dev_inst].p_SpiAltDriver = SdSpiAltDriver_obj;
 			lookup_table[num_dev_inst].spi_dev = spi_dev;
 			SdSpiCard_inst = (SdSpiCardEX *)runtime_handle->sd_spi_inst;
 		}

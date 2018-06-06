@@ -46,10 +46,29 @@
 #define SPI_SET_SS_LOW_SPI1()     ((SPI1)->SSCTL = ((SPI1)->SSCTL & \
 		(~(SPI_SSCTL_AUTOSS_Msk | SPI_SSCTL_SSACTPOL_Msk))) | SPI_SSCTL_SS1_Msk)
 
+/**
+  * @brief      Get the count of available data in TX FIFO.
+  * @param[in]  spi The pointer of the specified SPI module.
+  * @return     The count of available data in TX FIFO.
+  * @details    Read TXCNT(SPI_STATUS[27:24]) the count of available data in TX FIFO.
+  */
+#define SPI_GET_TX_FIFO_COUNT(spi)   	\
+		(((spi)->STATUS & SPI_STATUS_TXCNT_Msk) >> SPI_STATUS_TXCNT_Pos)
+
+/**
+  * @brief      Get the RX FIFO full flag.
+  * @param[in]  spi The pointer of the specified SPI module.
+  * @retval     0 RX FIFO is not full.
+  * @retval     1 RX FIFO is full.
+  * @details    Read RXFULL bit flag of SPI_STATUS register
+  */
+#define SPI_GET_RX_FIFO_FULL_FLAG(spi)	\
+		(((spi)->STATUS & SPI_STATUS_RXFULL_Msk) >> SPI_STATUS_RXFULL_Pos)
+
 /********  types  *********************/
 
 
-/* ---------------------------- External variables ---------------------------------*/
+/* ------------------------ External variables ------------------------------*/
 
 /* ------------------------ External functions ------------------------------*/
 
@@ -60,63 +79,142 @@
 
 #ifdef ENABLE_I94XX_SPI_INT
 
-//#define BUFF_SIZE	5000
-//static uint8_t tmp_buf[BUFF_SIZE] = { [0 ... 4999] = 0xcc };
-//uint32_t tmp_buf_pos = 0;
+static uint8_t dummy_msg;
+
+
+static void spi_i94xxx_pwrite_callback(SPI_T *spi_regs,
+					struct spi_i94xxx_runtime_t *runtime_handle)
+{
+	volatile uint32_t bytes_left_to_transmit;
+	uint8_t const *tx_buff;
+	os_queue_t xTX_WaitQueue;
+
+	tx_buff = runtime_handle->tx_buff;
+
+	if (NULL == tx_buff)
+	{
+		return;
+	}
+
+	xTX_WaitQueue = runtime_handle->xTX_WaitQueue;
+	bytes_left_to_transmit = runtime_handle->bytes_left_to_transmit;
+
+	while (bytes_left_to_transmit && (0 == SPI_GET_TX_FIFO_FULL_FLAG(spi_regs)))
+	{
+		SPI_WRITE_TX(spi_regs, *tx_buff++);
+		bytes_left_to_transmit--;
+	}
+
+	if (0 == bytes_left_to_transmit)
+	{
+		SPI_DisableInt(spi_regs, SPI_FIFO_TXTH_INT_MASK);
+		SPI_EnableInt(spi_regs, SPI_UNIT_INT_MASK);
+
+		if (SPI_GET_TX_FIFO_EMPTY_FLAG(spi_regs) && !SPI_IS_BUSY(spi_regs))
+		{
+			tx_buff = NULL;
+			if (NULL != xTX_WaitQueue)
+			{
+				os_queue_send_immediate( xTX_WaitQueue, ( void * ) &dummy_msg);
+			}
+		}
+	}
+	runtime_handle->bytes_left_to_transmit = bytes_left_to_transmit;
+	runtime_handle->tx_buff = tx_buff;
+}
+
+static void spi_i94xxx_pread_callback(SPI_T *spi_regs,
+					struct spi_i94xxx_runtime_t *runtime_handle)
+{
+	uint8_t *rx_buff;
+	volatile uint32_t bytes_left_to_read;
+	os_queue_t xRX_WaitQueue;
+
+	rx_buff = runtime_handle->rx_buff;
+
+	if (NULL == rx_buff)
+	{
+		SPI_ClearRxFIFO(spi_regs);
+		return;
+	}
+
+	xRX_WaitQueue = runtime_handle->xRX_WaitQueue;
+	bytes_left_to_read = runtime_handle->bytes_left_to_read;
+
+
+	// Fill the TX FIFO with the amount we wish to read
+	while (bytes_left_to_read && (6 > SPI_GET_TX_FIFO_COUNT(spi_regs)))
+	{
+
+		while (0 == SPI_GET_RX_FIFO_EMPTY_FLAG(spi_regs))
+		{
+			*rx_buff++ = SPI_READ_RX(spi_regs);
+		}
+		SPI_WRITE_TX(spi_regs, 0xFF);
+		bytes_left_to_read--;
+		// Read from RX FIFO until empty
+
+	}
+
+
+
+	if (0 == bytes_left_to_read)
+	{
+		SPI_DisableInt(spi_regs, SPI_FIFO_TXTH_INT_MASK);
+		SPI_EnableInt(spi_regs, SPI_UNIT_INT_MASK);
+		if (SPI_GET_TX_FIFO_EMPTY_FLAG(spi_regs) && !SPI_IS_BUSY(spi_regs))
+		{
+			// Read from RX FIFO until empty
+			while (0 == SPI_GET_RX_FIFO_EMPTY_FLAG(spi_regs))
+			{
+				*rx_buff++ = SPI_READ_RX(spi_regs);
+			}
+			rx_buff = NULL;
+			if (NULL != xRX_WaitQueue)
+			{
+				os_queue_send_immediate( xRX_WaitQueue, ( void * ) &dummy_msg);
+			}
+		}
+	}
+
+	runtime_handle->rx_buff = rx_buff;
+	runtime_handle->bytes_left_to_read = bytes_left_to_read;
+}
+
+/**
+ * spi_i94xxx_callback()
+ *
+ * Initial function that is called during spi read. This function starts an
+ *		interrupt scheme that triggers on FIFO threshold, that needs to be
+ *		specified in the Device Tree, located in the main folder.
+ *
+ * return: aLength minus number of bytes read. Should be 0.
+ */
 
 uint8_t spi_i94xxx_callback(struct dev_desc_t *adev ,
 		uint8_t aCallback_num , void * aCallback_param1,
 		void * aCallback_param2)
 {
+
 	struct spi_i94xxx_cfg_t *cfg_hndl;
 	struct spi_i94xxx_runtime_t *runtime_handle;
 
-    uint8_t u8InChar;
 	SPI_T *spi_regs;
 
 	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
 	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
 	spi_regs =(SPI_T *)cfg_hndl->base_address;
 
-	/* Check RX EMPTY flag */
-	if(SPI_GET_RX_FIFO_EMPTY_FLAG(spi_regs) == 0)
-	{
-		uint8_t *rx_buff;
-		uint32_t curr_rx_pos;
-
-		rx_buff = runtime_handle->rx_buff;
-		curr_rx_pos = runtime_handle->curr_rx_pos;
-		/* Read RX FIFO */
-		u8InChar = SPI_READ_RX(spi_regs);
-		if (NULL != rx_buff)
-		{
-			rx_buff[curr_rx_pos++] = u8InChar;
-//			if (BUFF_SIZE > tmp_buf_pos)
-//			{
-//				tmp_buf[tmp_buf_pos++] = u8InChar;
-//			}
-		}
-		runtime_handle->curr_rx_pos = curr_rx_pos;
-	}
-
-	/* Check TX FULL flag and TX data count */
-	if (SPI_GET_TX_FIFO_FULL_FLAG(spi_regs) == 0)
-	{
-		uint8_t  const *tx_buff;
-		volatile uint32_t bytes_left_to_transmit;
-
-		bytes_left_to_transmit = runtime_handle->bytes_left_to_transmit;
-		tx_buff = runtime_handle->tx_buff;
-
-		if (bytes_left_to_transmit)
-		{
-			SPI_WRITE_TX(spi_regs, *tx_buff++);
-			bytes_left_to_transmit--;
-			runtime_handle->bytes_left_to_transmit = bytes_left_to_transmit;
-			runtime_handle->tx_buff = tx_buff;
-		}
-	}
+	//Clear all flags before read/write to prevent previous flag
+	// from interfering with flag that would be set by sending.
 	SPI_CLR_UNIT_TRANS_INT_FLAG(spi_regs);
+	spi_regs->STATUS = SPI_STATUS_TXTHIF_Msk;
+
+	spi_i94xxx_pread_callback(spi_regs, runtime_handle);
+
+	spi_i94xxx_pwrite_callback(spi_regs, runtime_handle);
+
+
 
     return 0;
 }
@@ -128,51 +226,74 @@ uint8_t spi_i94xxx_callback(struct dev_desc_t *adev ,
 /**
  * spi_i94xxx_pread()
  *
- * return:
+ * Standardized function that follows uProject protocol (adev) that requires a
+ * 		specific input structure:
+ *
+ * 	struct dev_desc_t *adev - Device structure to be used, defined in .h file
+ * 	uint8_t *apData			- Address of data to be either transmitted or
+ * 								received
+ * 	size_t aLength
+ * 	size_t aOffset
+ *
+ * Initial function that is called during spi read. This function starts an
+ *		interrupt scheme that triggers on FIFO threshold, that needs to be
+ *		specified in the Device Tree, located in the main folder.
+ *
+ * return: size_t aLength minus number of bytes read. Should be 0.
  */
 size_t spi_i94xxx_pread(struct dev_desc_t *adev,
-		uint8_t *apData, size_t aLength, size_t aOffset)
+			uint8_t *apData, size_t aLength, size_t aOffset)
 {
 	struct spi_i94xxx_cfg_t *cfg_hndl;
 	struct spi_i94xxx_runtime_t *runtime_handle;
-	volatile uint32_t curr_rx_pos;
-	uint32_t next_rx_pos;
+
 	SPI_T *spi_regs;
+	os_queue_t xRX_WaitQueue;
+	os_mutex_t  spi_mutex;
+
+	// Acquire handles and spi base address
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
+
+	spi_regs = (SPI_T *)cfg_hndl->base_address;
+	xRX_WaitQueue = runtime_handle->xRX_WaitQueue;
+	spi_mutex = runtime_handle->spi_mutex;
+
+	os_mutex_take_infinite_wait(spi_mutex);
+
+	//Clear the RX FIFO from previous writes
+	SPI_ClearRxFIFO(spi_regs);
 
 	if (0 == aLength) return 0;
 
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
-	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
-	spi_regs = (SPI_T *)cfg_hndl->base_address;
-
-	runtime_handle->curr_rx_pos = 0;
+	runtime_handle->bytes_left_to_read = aLength - 1;
 	runtime_handle->rx_buff = apData;
-	curr_rx_pos = 0;
-	next_rx_pos = 1;
-//	while (0 == SPI_GET_RX_FIFO_EMPTY_FLAG(spi_regs))
-//	{
-//		uint8_t dummy;
-//		dummy = SPI_READ_RX(spi_regs);
-//	}
-	while ( curr_rx_pos < aLength)
-	{
-		SPI_WRITE_TX(spi_regs, 0xFF);
-		while(curr_rx_pos != next_rx_pos)
-		{
-			os_delay_ms(1);
-			curr_rx_pos = runtime_handle->curr_rx_pos;
-		}
-		next_rx_pos++;
-	}
-	runtime_handle->rx_buff = NULL;
+
+
+	SPI_DisableInt(spi_regs, SPI_UNIT_INT_MASK);
+
+	SPI_WRITE_TX(spi_regs, 0xFF);
+
+	SPI_EnableInt(spi_regs, SPI_FIFO_TXTH_INT_MASK);
+
+	os_queue_receive_infinite_wait( xRX_WaitQueue ,  &dummy_msg  );
+
+	os_mutex_give(spi_mutex);
+
 	return aLength;
 
 }
 
-
 /**
  * spi_i94xxx_pwrite()
  *
+ * Standardized function that follows uProject protocol that requires the
+ * 		specific input structure:
+ * 	(struct dev_desc_t *adev, uint8_t *apData, size_t aLength, size_t aOffset)
+ *
+ * Initial function that is called during spi write. This function starts an
+ *		interrupt scheme that triggers on FIFO threshold, that needs to be
+ *		specified in the Device Tree, located in the main folder.
  * return:
  */
 size_t spi_i94xxx_pwrite(struct dev_desc_t *adev ,
@@ -180,24 +301,33 @@ size_t spi_i94xxx_pwrite(struct dev_desc_t *adev ,
 {
 	struct spi_i94xxx_cfg_t *cfg_hndl;
 	struct spi_i94xxx_runtime_t *runtime_handle;
-	volatile uint32_t bytes_left_to_transmit;
 	SPI_T *spi_regs;
+	os_queue_t xTX_WaitQueue;
+	os_mutex_t  spi_mutex;
 
 	if (0 == aLength) return 0;
 
 	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
 	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
-	spi_regs = (SPI_T *)cfg_hndl->base_address;
 
-	bytes_left_to_transmit = aLength;
+	spi_regs = (SPI_T *)cfg_hndl->base_address;
+	xTX_WaitQueue = runtime_handle->xTX_WaitQueue;
+	spi_mutex = runtime_handle->spi_mutex;
+
+	os_mutex_take_infinite_wait(spi_mutex);
+
+	SPI_DisableInt(spi_regs, SPI_UNIT_INT_MASK);
+
 	runtime_handle->tx_buff = &apData[1];
 	runtime_handle->bytes_left_to_transmit = aLength - 1;
 	SPI_WRITE_TX(spi_regs, *apData);
-	while (bytes_left_to_transmit)
-	{
-		os_delay_ms(2);
-		bytes_left_to_transmit = runtime_handle->bytes_left_to_transmit;
-	}
+
+	SPI_EnableInt(spi_regs, SPI_FIFO_TXTH_INT_MASK);
+
+	os_queue_receive_infinite_wait( xTX_WaitQueue ,  &dummy_msg  );
+
+	os_mutex_give(spi_mutex);
+
 	return aLength;
 }
 
@@ -269,6 +399,7 @@ uint8_t spi_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
 	struct spi_i94xxx_cfg_t *cfg_hndl;
+	struct spi_i94xxx_runtime_t *runtime_handle;
 
 	struct dev_desc_t	*spi_clk_dev;
 	struct dev_desc_t	*src_clock;
@@ -278,87 +409,96 @@ uint8_t spi_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 	int spi_irq;
 
 	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
 	src_clock = cfg_hndl->src_clock;
 	spi_regs = (SPI_T *)cfg_hndl->base_address;
 
 	switch(aIoctl_num)
 	{
-		case IOCTL_DEVICE_START :
+	case IOCTL_DEVICE_START :
 
-			if(SPI0 == spi_regs)
-			{
-				spi_clk_dev = i94xxx_spi0_clk_dev;
-				spi_module_rst = SPI0_RST;
-				spi_irq = SPI0_IRQn;
-				configure_spi0_pinout(cfg_hndl);
-			}
-			else
-			{
-				return 1;
-			}
-
-			DEV_IOCTL_1_PARAMS(spi_clk_dev, CLK_IOCTL_SET_PARENT, src_clock);
-			DEV_IOCTL_0_PARAMS(spi_clk_dev, CLK_IOCTL_ENABLE);
-
-			SYS_ResetModule(spi_module_rst);
-
-			/* Configure SPI0 as a master, SPI clock rate 2 MHz,
-			 *  clock idle low, 32-bit transaction, drive output on
-			 * falling clock edge and latch input on rising edge. */
-			SPI_Open(spi_regs, SPI_MASTER, SPI_MODE_0, 8, 250000);
-			/* Enable the automatic hardware slave selection function.
-		     *  Select the SPI0_SS pin and configure as low-active. */
-			//SPI_EnableAutoSS(spi_regs, SPI_SS0, SPI_SS_ACTIVE_LOW);
-
-			SPI_SET_DATA_WIDTH(spi_regs, cfg_hndl->data_width);
-
-			#ifdef ENABLE_I94XX_SPI_INT
-			/* Config Suspend cycle */
-			SPI_SET_SUSPEND_CYCLE(spi_regs, 5);
-
-			/* Enable UART RDA/RLS/Time-out interrupt */
-			SPI_EnableInt(spi_regs, SPI_UNIT_INT_MASK);
-
-			irq_register_device_on_interrupt(spi_irq, adev);
-			irq_set_priority(spi_irq, INTERRUPT_LOWEST_PRIORITY - 1 );
-			irq_enable_interrupt(spi_irq);
-
-			SPI_ENABLE(spi_regs);
-			#endif
-
-			break;
-
-		case IOCTL_SPI_API_SET_CS_HIGH :
-			if(SPI0 == spi_regs)
-			{
-				SPI_SET_SS_HIGH_SPI0();
-			}
-			else
-			{
-				SPI_SET_SS_HIGH_SPI1();
-			}
-			break;
-
-		case IOCTL_SPI_API_SET_CS_LOW :
-			if(SPI0 == spi_regs)
-			{
-				SPI_SET_SS_LOW_SPI0();
-			}
-			else
-			{
-				SPI_SET_SS_LOW_SPI1();
-			}
-			break;
-
-
-		case IOCTL_SPI_API_SET_CLK :
-			clk_freq = (uint32_t)aIoctl_param1;
-			SPI_Open(spi_regs, SPI_MASTER, SPI_MODE_0, 8, clk_freq);
-			SPI_SET_DATA_WIDTH(spi_regs, cfg_hndl->data_width);
-			break;
-
-		default :
+		if(SPI0 == spi_regs)
+		{
+			spi_clk_dev = i94xxx_spi0_clk_dev;
+			spi_module_rst = SPI0_RST;
+			spi_irq = SPI0_IRQn;
+			configure_spi0_pinout(cfg_hndl);
+		}
+		else
+		{
 			return 1;
+		}
+
+		DEV_IOCTL_1_PARAMS(spi_clk_dev, CLK_IOCTL_SET_PARENT, src_clock);
+		DEV_IOCTL_0_PARAMS(spi_clk_dev, CLK_IOCTL_ENABLE);
+
+		SYS_ResetModule(spi_module_rst);
+
+		/* Configure SPI0 as a master, SPI clock rate 2 MHz,
+		 *  clock idle low, 32-bit transaction, drive output on
+		 * falling clock edge and latch input on rising edge. */
+		SPI_Open(spi_regs, SPI_MASTER, SPI_MODE_0, 8, 250000);
+		/* Enable the automatic hardware slave selection function.
+		 *  Select the SPI0_SS pin and configure as low-active. */
+		//SPI_EnableAutoSS(spi_regs, SPI_SS0, SPI_SS_ACTIVE_LOW);
+
+		/* Config Data Width - Supports 8-32bit */
+		SPI_SET_DATA_WIDTH(spi_regs, cfg_hndl->data_width);
+
+		SPI_I2S_SET_TXTH(spi_regs, SPI_I2S_FIFO_TX_LEVEL_0);
+		/* Config Suspend Cycle (arg# + 0.5) clock cycles  */
+		SPI_SET_SUSPEND_CYCLE(spi_regs, 0);
+
+		#ifdef ENABLE_I94XX_SPI_INT
+
+
+		/* Enable UART RDA/RLS/Time-out interrupt */
+//		SPI_EnableInt(spi_regs, SPI_UNIT_INT_MASK);
+
+		irq_register_device_on_interrupt(spi_irq, adev);
+		irq_set_priority(spi_irq, INTERRUPT_LOWEST_PRIORITY - 1 );
+		irq_enable_interrupt(spi_irq);
+
+		SPI_ENABLE(spi_regs);
+		#endif
+
+		runtime_handle->xTX_WaitQueue = os_create_queue( 1 , sizeof(uint8_t ) );
+		runtime_handle->xRX_WaitQueue = os_create_queue( 1 , sizeof(uint8_t ) );
+		runtime_handle->spi_mutex = os_create_mutex();
+
+		break;
+
+	case IOCTL_SPI_API_SET_CS_HIGH :
+		if(SPI0 == spi_regs)
+		{
+			SPI_SET_SS_HIGH_SPI0();
+		}
+		else
+		{
+			SPI_SET_SS_HIGH_SPI1();
+		}
+		break;
+
+	case IOCTL_SPI_API_SET_CS_LOW :
+		if(SPI0 == spi_regs)
+		{
+			SPI_SET_SS_LOW_SPI0();
+		}
+		else
+		{
+			SPI_SET_SS_LOW_SPI1();
+		}
+		break;
+
+
+	case IOCTL_SPI_API_SET_CLK :
+		clk_freq = (uint32_t)aIoctl_param1;
+		SPI_Open(spi_regs, SPI_MASTER, SPI_MODE_0, 8, clk_freq);
+		SPI_SET_DATA_WIDTH(spi_regs, cfg_hndl->data_width);
+		break;
+
+	default :
+		return 1;
 	}
 	return 0;
 }

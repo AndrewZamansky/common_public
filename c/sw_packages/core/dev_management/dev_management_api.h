@@ -199,7 +199,7 @@ uint8_t DEV_API_dummy_ioctl_func( struct dev_desc_t *adev,
 uint8_t DEV_API_dummy_callback_func( struct dev_desc_t *adev,
 			 uint8_t aCallback_num, void * param1, void * param2);
 size_t DEV_API_dummy_pread_func(struct dev_desc_t *adev,
-					uint8_t *apData, size_t aLength, size_t aOffset);
+				uint8_t *apData, size_t aLength, size_t aOffset);
 size_t DEV_API_dummy_pwrite_func(struct dev_desc_t *adev,
 				const uint8_t *apData , size_t aLength, size_t aOffset);
 size_t DEV_API_dummy_init_func(struct dev_desc_t *aDevDescriptor);

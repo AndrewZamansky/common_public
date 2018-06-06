@@ -45,6 +45,14 @@
 		#error "SPI_I94XXX_DT_DATA_WIDTH_BITS should be defined"
 	#endif
 
+	#ifndef SPI_I94XXX_DT_RX_FIFO_THRESHOLD
+		#error "SPI_I94XXX_DT_RX_FIFO_THRESHOLD should be defined"
+	#endif
+
+	#ifndef SPI_I94XXX_DT_TX_FIFO_THRESHOLD
+		#error "SPI_I94XXX_DT_TX_FIFO_THRESHOLD should be defined"
+	#endif
+
 	#define STATIC_DEV_DATA_STRUCT      \
 		{                               \
 			POINTER_TO_SRC_CLOCK_PDEV,  \
@@ -53,7 +61,9 @@
 			SPI_I94XXX_DT_SS_PIN,       \
 			SPI_I94XXX_DT_MISO_PIN,     \
 			SPI_I94XXX_DT_MOSI_PIN,     \
-			SPI_I94XXX_DT_DATA_WIDTH_BITS    \
+			SPI_I94XXX_DT_DATA_WIDTH_BITS,    \
+			SPI_I94XXX_DT_RX_FIFO_THRESHOLD,     \
+			SPI_I94XXX_DT_TX_FIFO_THRESHOLD    \
 		}
 #endif
 
@@ -66,3 +76,6 @@
 #undef  SPI_I94XXX_DT_SS_PIN
 #undef  SPI_I94XXX_DT_MISO_PIN
 #undef  SPI_I94XXX_DT_MOSI_PIN
+#undef  SPI_I94XXX_DT_DATA_WIDTH_BITS
+#undef  SPI_I94XXX_DT_RX_FIFO_THRESHOLD
+#undef  SPI_I94XXX_DT_TX_FIFO_THRESHOLD
