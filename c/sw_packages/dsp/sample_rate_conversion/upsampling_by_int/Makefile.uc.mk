@@ -24,7 +24,7 @@ SRC = upsampling_by_int.c
 
 ifneq ($(and $(CONFIG_CORTEX_M4),$(CONFIG_INCLUDE_CORTEX_M_FPU)),)
 	SRC += upsampling_by_int_arm_cortex_m_fpu.c
-	ifdef CONFIG_UPSAMPLING_BY_INT_IS_SPEED_CRITICAL
+	ifdef CONFIG_DSP_IS_SPEED_CRITICAL
 		SPEED_CRITICAL_FILES += upsampling_by_int_arm_cortex_m_fpu.c
 		SPEED_CRITICAL_FILES += libarm_cortexM4lf_math.a
 	endif
@@ -37,7 +37,7 @@ VPATH = src
 
 
 
-ifdef CONFIG_UPSAMPLING_BY_INT_IS_SPEED_CRITICAL
+ifdef CONFIG_DSP_IS_SPEED_CRITICAL
     SPEED_CRITICAL_FILES += upsampling_by_int.c
 endif
 

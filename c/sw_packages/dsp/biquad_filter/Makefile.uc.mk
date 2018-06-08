@@ -28,7 +28,7 @@ USE_CORTEX_M_FPU := $(and $(USE_CORTEX_M_FPU),$(CONFIG_DSP_REAL_NUMBER_FORMAT_FL
 ifneq ($(USE_CORTEX_M_FPU),)
 	SRC += biquads_arm_cortex_m_fpu.cpp
 #    SRC += biquads.cpp
-	ifdef CONFIG_BIQUAD_FILTER_IS_SPEED_CRITICAL
+	ifdef CONFIG_DSP_IS_SPEED_CRITICAL
 		SPEED_CRITICAL_FILES += biquads_arm_cortex_m_fpu.cpp
 		SPEED_CRITICAL_FILES += libarm_cortexM4lf_math.a
 	endif
@@ -40,7 +40,7 @@ ifneq ($(USE_CORTEX_M_FPU),)
 	#SRC += arm_abs_f32.c
 	#VPATH += | $(ARM_CMSIS_PATH)/CMSIS/DSP_Lib/Source/FilteringFunctions
 	#VPATH += | $(ARM_CMSIS_PATH)/CMSIS/DSP_Lib/Source/BasicMathFunctions
-	#ifdef CONFIG_BIQUAD_FILTER_IS_SPEED_CRITICAL
+	#ifdef CONFIG_DSP_IS_SPEED_CRITICAL
 	#	SPEED_CRITICAL_FILES += biquads.c
 	#	SPEED_CRITICAL_FILES += arm_biquad_cascade_df2T_f32.c
 	#	SPEED_CRITICAL_FILES += arm_biquad_cascade_df2T_init_f32.c
@@ -48,7 +48,7 @@ ifneq ($(USE_CORTEX_M_FPU),)
 	#endif
 else
     SRC += biquads_c_calc.cpp
-    ifdef CONFIG_BIQUAD_FILTER_IS_SPEED_CRITICAL
+    ifdef CONFIG_DSP_IS_SPEED_CRITICAL
         SPEED_CRITICAL_FILES += biquads.cpp
     endif
 endif
@@ -59,7 +59,7 @@ VPATH = src
 
 
 
-ifdef CONFIG_BIQUAD_FILTER_IS_SPEED_CRITICAL
+ifdef CONFIG_DSP_IS_SPEED_CRITICAL
     SPEED_CRITICAL_FILES += biquad_filter.c
 endif
 

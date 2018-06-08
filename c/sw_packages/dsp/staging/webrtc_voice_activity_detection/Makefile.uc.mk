@@ -52,7 +52,7 @@ SRC += energy.c
 SRC += get_scaling_square.c
 VPATH += | $(WEBRTC_PATH)/webrtc/common_audio/signal_processing
 
-ifdef CONFIG_WEBRTC_IS_SPEED_CRITICAL
+ifdef CONFIG_DSP_IS_SPEED_CRITICAL
     SPEED_CRITICAL_FILES +=  webrtc_voice_activity_detection.c
 
     SPEED_CRITICAL_FILES += webrtc_vad.c

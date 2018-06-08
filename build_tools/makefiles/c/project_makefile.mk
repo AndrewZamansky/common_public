@@ -1,6 +1,6 @@
 # test for valid target 
 VALID_TARGETS := all clean rebuild export_project list_var  menuconfig
-ifeq ($(findstring $(MAKECMDGOALS),$(VALID_TARGETS)),)
+ifeq ($(filter $(MAKECMDGOALS),$(VALID_TARGETS)),)
 
 default : 
     $(info  )

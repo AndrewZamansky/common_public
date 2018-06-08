@@ -30,14 +30,13 @@ SRC += fftwrap.c
 SRC += filterbank.c
 VPATH += | $(EXTERNAL_SOURCE_ROOT_DIR)/speex/speexdsp/libspeexdsp
 
-ifeq ($(findstring AS_SPEED_CRITICAL,$(CONFIG_INCLUDE_SPEEX_ECHO_CANCELLER)),AS_SPEED_CRITICAL) 
+ifdef CONFIG_DSP_IS_SPEED_CRITICAL
     SPEED_CRITICAL_FILES += speex_echo_canceller.c
     SPEED_CRITICAL_FILES += mdf.c
     SPEED_CRITICAL_FILES += preprocess.c
     SPEED_CRITICAL_FILES += fftwrap.c
 #    SPEED_CRITICAL_FILES += kiss_fft.c
     SPEED_CRITICAL_FILES += filterbank.c
-    _COMMON_DSP_IS_SPEED_CRITICAL := YES
 endif
 
 

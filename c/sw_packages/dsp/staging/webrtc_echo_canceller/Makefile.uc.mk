@@ -78,7 +78,7 @@ VPATH += | $(WEBRTC_PATH)/webrtc/common_audio/signal_processing
 VPATH += | $(WEBRTC_PATH)/webrtc/common_audio/resampler
 VPATH += | $(WEBRTC_PATH)/webrtc/system_wrappers/source
 
-ifdef CONFIG_WEBRTC_IS_SPEED_CRITICAL
+ifdef CONFIG_DSP_IS_SPEED_CRITICAL
     SPEED_CRITICAL_FILES +=  webrtc_echo_canceller.cc
 
     SPEED_CRITICAL_FILES += audio_processing_impl.cc
