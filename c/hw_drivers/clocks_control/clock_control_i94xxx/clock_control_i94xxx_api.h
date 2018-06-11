@@ -10,6 +10,7 @@
 
 /**********  define API  functions  ************/
 extern struct dev_desc_t  *i94xxx_xtal_clk_dev;
+extern struct dev_desc_t  *i94xxx_lxtal_clk_dev;
 extern struct dev_desc_t  *i94xxx_hirc_clk_dev;
 extern struct dev_desc_t  *i94xxx_pll_clk_dev;
 extern struct dev_desc_t  *i94xxx_hclk_clk_dev;

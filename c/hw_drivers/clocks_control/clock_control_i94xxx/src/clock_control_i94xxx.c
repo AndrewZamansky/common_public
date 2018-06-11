@@ -34,8 +34,12 @@
 
 /********  local variables *********************/
 
-uint32_t SystemCoreClock, PllClock;
-uint32_t gau32ClkSrcTbl[] = {__HXT, __LXT, 0, __LIRC, 0, 0, 0, 0};
+uint32_t SystemCoreClock;
+uint32_t  PllClock;
+uint32_t __HXT;
+uint32_t __LXT;
+uint32_t __HIRC;
+static uint32_t gau32ClkSrcTbl[] = {0, 0, 0, __LIRC, 0, 0, 0, 0};
 /*-----
   BSP required  function
  *------------------*/
@@ -90,12 +94,50 @@ uint8_t clock_i94xxx_xtal_ioctl( struct dev_desc_t *adev,
 		void * aIoctl_param2)
 {
 	struct cfg_clk_t *cfg_clk;
+	uint32_t rate;
 
 	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(adev);
 	switch(aIoctl_num)
 	{
+	case CLK_IOCTL_ENABLE :
+		CLK_EnableXtalRC(CLK_PWRCTL_HXTEN_Msk);
+		CLK_WaitClockReady(CLK_STATUS_HXTSTB_Msk);
+		break;
 	case CLK_IOCTL_SET_FREQ :
+		rate = *(uint32_t*)aIoctl_param1;
+		cfg_clk->rate = rate;
+		__HXT = rate;
+		gau32ClkSrcTbl[0] = rate;
+		break;
+	case CLK_IOCTL_GET_FREQ :
+		*(uint32_t*)aIoctl_param1 = cfg_clk->rate;
+		break;
+	default :
 		return 1;
+	}
+	return 0;
+}
+
+
+uint8_t clock_i94xxx_lxtal_ioctl( struct dev_desc_t *adev,
+		const uint8_t aIoctl_num, void * aIoctl_param1,
+		void * aIoctl_param2)
+{
+	struct cfg_clk_t *cfg_clk;
+	uint32_t rate;
+
+	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(adev);
+	switch(aIoctl_num)
+	{
+	case CLK_IOCTL_ENABLE :
+		CLK_EnableXtalRC(CLK_PWRCTL_LXTEN_Msk);
+		CLK_WaitClockReady(CLK_STATUS_LXTSTB_Msk);
+		break;
+	case CLK_IOCTL_SET_FREQ :
+		rate = *(uint32_t*)aIoctl_param1;
+		cfg_clk->rate = rate;
+		__LXT = rate;
+		gau32ClkSrcTbl[1] = rate;
 		break;
 	case CLK_IOCTL_GET_FREQ :
 		*(uint32_t*)aIoctl_param1 = cfg_clk->rate;
@@ -111,13 +153,36 @@ uint8_t clock_i94xxx_hirc_ioctl( struct dev_desc_t *adev,
 		const uint8_t aIoctl_num, void * aIoctl_param1,
 		void * aIoctl_param2)
 {
+	struct cfg_clk_t *cfg_clk;
+	uint32_t rate;
+
+	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(adev);
+
 	switch(aIoctl_num)
 	{
+	case CLK_IOCTL_ENABLE :
+		CLK_EnableXtalRC(CLK_PWRCTL_HIRCEN_Msk);
+		CLK_WaitClockReady(CLK_STATUS_HIRCSTB_Msk);
+		break;
 	case CLK_IOCTL_SET_FREQ :
-		return 1;
+		rate = *(uint32_t*)aIoctl_param1;
+		if (48000000 != rate)
+		{
+			CLK_SELECT_TRIM_HIRC(CLK_CLKSEL0_HIRCFSEL_48M);
+		}
+		else if (49152000 != rate)
+		{
+			CLK_SELECT_TRIM_HIRC(CLK_CLKSEL0_HIRCFSEL_49M);
+		}
+		else
+		{
+			CRITICAL_ERROR("bad clock rate \n");
+		}
+		__HIRC = rate;
+		cfg_clk->rate = rate;
 		break;
 	case CLK_IOCTL_GET_FREQ :
-		*(uint32_t*)aIoctl_param1 = 50000000;
+		*(uint32_t*)aIoctl_param1 = cfg_clk->rate;
 		break;
 	default :
 		return 1;
@@ -632,35 +697,29 @@ uint8_t clock_control_i94xxx_ioctl( struct dev_desc_t *adev,
 {
 	struct clk_cntl_i94xxx_cfg_t *cfg_hndl;
 	uint32_t rate;
-	struct dev_desc_t	*parent_clk_dev;
 
 	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
 
 	switch(aIoctl_num)
 	{
 	case IOCTL_DEVICE_START :
-		/* Enable HIRC, HXT and LXT clock */
-		CLK_EnableXtalRC(CLK_PWRCTL_HIRCEN_Msk);
-		CLK_EnableXtalRC(CLK_PWRCTL_HXTEN_Msk);
-		CLK_EnableXtalRC(CLK_PWRCTL_LXTEN_Msk);
 
-		/* Wait for HIRC, HXT and LXT clock ready */
-		CLK_WaitClockReady(CLK_STATUS_HIRCSTB_Msk);
-		CLK_WaitClockReady(CLK_STATUS_HXTSTB_Msk);
-		CLK_WaitClockReady(CLK_STATUS_LXTSTB_Msk);
-
-		DEV_IOCTL_1_PARAMS(i94xxx_xtal_clk_dev,	CLK_IOCTL_GET_FREQ, &rate);
-
-		if (0 != rate)/*using XTAL if possible*/
+		if (0 != cfg_hndl->xtal_rate)
 		{
-			parent_clk_dev = i94xxx_xtal_clk_dev;
+			DEV_IOCTL_0_PARAMS(i94xxx_xtal_clk_dev, CLK_IOCTL_ENABLE);
+			DEV_IOCTL_1_PARAMS(i94xxx_xtal_clk_dev,
+					CLK_IOCTL_SET_FREQ, &cfg_hndl->xtal_rate);
 		}
-		else
+
+		if (0 != cfg_hndl->hirc_rate)
 		{
-			parent_clk_dev = i94xxx_hirc_clk_dev;
+			DEV_IOCTL_0_PARAMS(i94xxx_hirc_clk_dev, CLK_IOCTL_ENABLE);
+			DEV_IOCTL_1_PARAMS(i94xxx_hirc_clk_dev,
+					CLK_IOCTL_SET_FREQ, &cfg_hndl->hirc_rate);
 		}
+
 		DEV_IOCTL_1_PARAMS(i94xxx_pll_clk_dev,
-				CLK_IOCTL_SET_PARENT, parent_clk_dev);
+				CLK_IOCTL_SET_PARENT, cfg_hndl->pll_src_clk_dev);
 		DEV_IOCTL_1_PARAMS(i94xxx_pll_clk_dev,
 				CLK_IOCTL_SET_FREQ, &cfg_hndl->pll_rate);
 

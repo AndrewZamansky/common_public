@@ -29,13 +29,18 @@ extern "C" {
 /*----------------------------------------------------------------------------
   Define clocks
  *----------------------------------------------------------------------------*/
-#define __HXT       (CONFIG_CRYSTAL_CLOCK)    /*!< External Crystal Clock Frequency     */
-#define __LXT       (32768UL)       /*!< External Crystal Clock Frequency 32.768KHz */
-#define __HIRC      ((CLK->CLKSEL0&CLK_CLKSEL0_HIRCFSEL_Msk)?(48000000UL):(49152000UL))    /*< Internal 49.152M/48.000 RC Oscillator Frequency */
+//#define __HXT       (CONFIG_CRYSTAL_CLOCK)    /*!< External Crystal Clock Frequency     */
+extern uint32_t __HXT;
+
+//#define __LXT       (32768UL)       /*!< External Crystal Clock Frequency 32.768KHz */
+extern uint32_t __LXT;
+//#define __HIRC      ((CLK->CLKSEL0&CLK_CLKSEL0_HIRCFSEL_Msk)?(48000000UL):(49152000UL))    /*< Internal 49.152M/48.000 RC Oscillator Frequency */
+extern uint32_t __HIRC;
+
 #define __LIRC      (10000UL)       /*!< Internal 10K RC Oscillator Frequency */
 #define __HSI       (__HIRC)    	/*!< Factory Default is internal __HIRC */
 
-#define __SYSTEM_CLOCK    (1*__HXT)
+//#define __SYSTEM_CLOCK    (1*__HXT)
 
 extern uint32_t SystemCoreClock;     /*!< System Clock Frequency (Core Clock)  */
 extern uint32_t CyclesPerUs;         /*!< Cycles per micro second              */

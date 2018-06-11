@@ -1,12 +1,5 @@
 menu "`---> MCP SVB board"
 
-
-config CRYSTAL_CLOCK
-    int "crystal clock in Hz"
-    default 12000000 
-    
-    
 source "$KCONFIG_PUBLIC_START_DIR/hw_drivers/arch/ARM/soc/i94xxx/Kconfig.socI94XXX.dt"
-
 
 endmenu
