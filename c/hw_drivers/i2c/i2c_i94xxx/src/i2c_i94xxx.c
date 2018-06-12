@@ -182,6 +182,7 @@ static void I2C_SlaveTRx(
 
 }
 
+
 /*
  * function : I2C_MasterTRx
  *
@@ -204,34 +205,44 @@ static void I2C_MasterTRx(
 	notify_callback = 0;
 	switch(u32Status)
 	{
-	/* START has been transmitted and Write SLA+W to Register I2CDAT. */
 	case 0x08:
+		/* START has been transmitted and Write SLA+W to Register I2CDAT. */
 		I2C_SET_DATA(I2C1, runtime_handle->remote_slave_addr << 1);
 		I2C_SET_CONTROL_REG(I2C1, I2C_CTL_SI);
 		break;
-	/* SLA+W has been transmitted and ACK has been received. */
 	case 0x18:
+		/* SLA+W has been transmitted and ACK has been received. */
 		transmit_byte(i2c, cfg_hndl, runtime_handle);
-		notify_callback = 1;
+		if (0 == runtime_handle->tx_data_size)
+		{
+			notify_callback = 1;
+		}
 		break;
-	/* SLA+W has been transmitted and NACK has been received. */
 	case 0x20:
+		/* SLA+W has been transmitted and NACK has been received. */
 		I2C_STOP(I2C1);
 		I2C_START(I2C1);
-		notify_callback = 1;
 		break;
-	/* DATA has been transmitted and ACK has been received. */
 	case 0x28:
+		/* DATA has been transmitted and ACK has been received. */
 		transmit_byte(i2c, cfg_hndl, runtime_handle);
-		notify_callback = 1;
+		if (0 == runtime_handle->tx_data_size)
+		{
+			notify_callback = 1;
+		}
+		break;
+	default:
+		CRITICAL_ERROR("unknown status\n");
 		break;
 	}
 
-	if ( notify_callback && (0 == runtime_handle->tx_data_size))
+	if (notify_callback)
 	{
+		I2C_STOP(I2C1);
 		end_of_transmition(cfg_hndl, runtime_handle);
 	}
 }
+
 
 uint8_t i2c_i94xxx_callback(struct dev_desc_t *adev ,
 		uint8_t aCallback_num , void * aCallback_param1,
@@ -246,10 +257,12 @@ uint8_t i2c_i94xxx_callback(struct dev_desc_t *adev ,
 
 
 	u32Status = I2C_GET_STATUS(i2c_regs);
+
 	if(I2C_GET_TIMEOUT_FLAG(i2c_regs))
 	{
 		/* Clear I2C0 Timeout Flag */
 		I2C_ClearTimeoutFlag(i2c_regs);
+		CRITICAL_ERROR("TO DO\n");
 	}
 	else
 	{
@@ -280,15 +293,24 @@ size_t i2c_i94xxx_pwrite(struct dev_desc_t *adev,
 	size_t   tx_data_size;
 	size_t   transmitted_data_size;
 	uint8_t  const *tx_data;
-//	I2C_T *i2c_regs;
-//	struct i2c_i94xxx_cfg_t *cfg_hndl;
+	I2C_T *i2c_regs;
 
 	if (0 == aLength)
 	{
 		return 0;
 	}
+
 	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
 	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
+
+	i2c_regs =(I2C_T *)cfg_hndl->base_address;
+
+	if (runtime_handle->tx_data_size)
+	{
+		CRITICAL_ERROR("still running\n");
+	}
+
+	while (0xf8 != I2C_GET_STATUS(i2c_regs)); //wait till bus is not released
 
 	if (I2C_I94XXX_API_MASTER_MODE == cfg_hndl->master_slave_mode)
 	{
@@ -297,7 +319,7 @@ size_t i2c_i94xxx_pwrite(struct dev_desc_t *adev,
 		transmitted_data_size = 1;
 		tx_data = &apData[1];
 		runtime_handle->remote_slave_addr = apData[0];
-		I2C_START(I2C1);
+		I2C_START(i2c_regs);
 	}
 	else
 	{
@@ -308,11 +330,7 @@ size_t i2c_i94xxx_pwrite(struct dev_desc_t *adev,
 	runtime_handle->tx_data = tx_data;
 	runtime_handle->tx_data_size = tx_data_size;
 	runtime_handle->transmitted_data_size = transmitted_data_size;
-//	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
-//	i2c_regs =(I2C_T *)cfg_hndl->base_address;
-//
-//	I2C_WRITE(i2c_regs, *apData);
-//	I2C_EnableInt(i2c_regs,  I2C_INTEN_THREIEN_Msk );
+
 
 	return 0;
 
