@@ -46,8 +46,12 @@ MSVC_SET_ADDITIONAL_PATHS :=set "PATH=$(ADDITIONAL_PATH)" &
 
 $(info ---- Visual studio version :  $(VS_VERSION))
 
-GLOBAL_CFLAGS += /I"$(MSVC_BIN_DIR)/../include"
-GLOBAL_CFLAGS += /I"$(MSVC_BIN_DIR)/../../../include"#for VS2017(community)
+ifeq ($(VS_VERSION),2017)
+    GLOBAL_CFLAGS += /I"$(MSVC_BIN_DIR)/../../../include"
+else
+    GLOBAL_CFLAGS += /I"$(MSVC_BIN_DIR)/../include"
+endif
+
 
 ifdef CONFIG_USE_WINDOWS_KITS
 
