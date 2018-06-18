@@ -1,43 +1,53 @@
-MSVC_ROOT_DIR :=
+MSVC_BIN_DIR :=
 
-#{{{{{{{{   test for existence of microsoft compiler   {{{{{{{{
-   # MSVC_ROOT_DIR will contain directry of microsoft compiler
-SEARCHED_TOOL:=cl
-SEARCHED_DIR_VARIABLE:=MSVC_ROOT_DIR
+#######   test for existence of microsoft compiler   ###########
+   # MSVC_BIN_DIR will contain directry of microsoft compiler
+SEARCHED_TOOL:=cl.exe
+SEARCHED_DIR_VARIABLE:=MSVC_BIN_DIR
 MANUALLY_DEFINED_DIR_VARIABLE:=REDEFINE_VISUAL_STUDIO_DIR
-TEST_FILE_IN_SEARCHED_DIR:=bin\cl.exe
+TEST_FILE_IN_SEARCHED_DIR:=cl.exe
 include $(MAKEFILES_INC_FUNC_DIR)/tool_existence_check.mk
-#}}}}}}}}  #}}}}}}}}  END OF LDFLAGS PREPARATIONS }}}}}}}}
+############ end of tool existence test #####
 
-MSVC_BIN_DIR	:=$(MSVC_ROOT_DIR)\bin
 MSVC_BIN_DIR := $(subst /,\,$(MSVC_BIN_DIR))
 
 SHELL_OUT :=$(shell "$(MSVC_BIN_DIR)\cl.exe" 2>&1)
 ifneq ($(findstring Version 18,$(SHELL_OUT)),)
-    MSVC_SET_ADDITIONAL_PATHS :=set "PATH=$(MSVC_BIN_DIR)\bin" &
+    ADDITIONAL_PATH :=$(MSVC_BIN_DIR)
     VS_VERSION :=2013
     MSVC_VERSION :=18
-else ifneq ($(findstring Version 19,$(SHELL_OUT)),)
-    MSVC_SET_ADDITIONAL_PATHS :=set "PATH=$(MSVC_BIN_DIR)\bin" &
+else ifneq ($(findstring Version 19.14,$(SHELL_OUT)),)
+    ADDITIONAL_PATH :=$(MSVC_BIN_DIR)
+    ifdef CONFIG_MSC_TARGET_ARCH_X64
+        ADDITIONAL_PATH +=;$(MSVC_BIN_DIR)\..\x64
+    endif
+    VS_VERSION :=2017
+    MSVC_VERSION :=19.14
+else ifneq ($(findstring Version 19.00,$(SHELL_OUT)),)
+    ADDITIONAL_PATH :=$(MSVC_BIN_DIR)
     VS_VERSION :=2015
-    MSVC_VERSION :=19
+    MSVC_VERSION :=19.00
 else
-    SHEL_CMD :=set "PATH=$(MSVC_ROOT_DIR)\..\Common7\IDE" &
+    ADDITIONAL_PATH :=$(MSVC_BIN_DIR)\..\..\Common7\IDE
+    SHEL_CMD :=set "PATH=$(ADDITIONAL_PATH)" &
     SHEL_CMD +=$(MSVC_BIN_DIR)\cl.exe" 2>&1
     SHELL_OUT :=$(shell $(SHEL_CMD))
     ifneq ($(findstring Version 17,$(SHELL_OUT)),)
-        MSVC_SET_ADDITIONAL_PATHS :=set "PATH=$(MSVC_ROOT_DIR)\..\Common7\IDE" &
+        MSVC_SET_ADDITIONAL_PATHS :=set "PATH=$(ADDITIONAL_PATH)" &
         VS_VERSION :=2012
         MSVC_VERSION :=17
     else
         $(info err: unsupported version of visual studio)
-        $(info err: install one of following versions : VS2012, VS2013, VS2015)
+        $(info err: install one of following versions : VS2012, VS2013, VS2015, VS2017(community))
         $(call exit,1)
     endif
 endif
+MSVC_SET_ADDITIONAL_PATHS :=set "PATH=$(ADDITIONAL_PATH)" &
+
 $(info ---- Visual studio version :  $(VS_VERSION))
 
-GLOBAL_CFLAGS += /I"$(MSVC_ROOT_DIR)/include"
+GLOBAL_CFLAGS += /I"$(MSVC_BIN_DIR)/../include"
+GLOBAL_CFLAGS += /I"$(MSVC_BIN_DIR)/../../../include"#for VS2017(community)
 
 ifdef CONFIG_USE_WINDOWS_KITS
 
@@ -50,6 +60,9 @@ ifdef CONFIG_USE_WINDOWS_KITS
     endif
 
     ifeq ($(VS_VERSION),2015)
+        WDK_DIR :=C:\Program Files (x86)\WINDOWS KITS\10
+    endif
+    ifeq ($(VS_VERSION),2017)
         WDK_DIR :=C:\Program Files (x86)\WINDOWS KITS\10
     endif
 
@@ -77,34 +90,27 @@ ifdef CONFIG_USE_WINDOWS_KITS
         GLOBAL_CFLAGS += /I"$(WDK_DIR)\INCLUDE\SHARED"
     endif
 
-    ifeq ($(VS_VERSION),2015)
-        WDK_10_VERSION:=
-        WDK_10_DIR :=$(WDK_DIR)\Include\10.0.10586.0
-        TEST_DIR :=$(subst $(SPACE),\$(SPACE),$(WDK_10_DIR))
-        ifneq ("$(wildcard $(TEST_WDK_10_DIR))","")
-            WDK_10_VERSION :=10.0.10586.0
-            WDK_10_DIR :=
-        endif
-        ifeq ($(WDK_10_VERSION),)
-            WDK_10_DIR :=$(WDK_DIR)\Include\10.0.10240.0
-            TEST_WDK_10_DIR :=$(subst $(SPACE),\$(SPACE),$(WDK_10_DIR))
-            ifneq ("$(wildcard $(TEST_WDK_10_DIR))","")
-                WDK_10_VERSION :=10.0.10240.0
-            endif
-        endif
-        ifeq ($(WDK_10_VERSION),)
-            WDK_10_DIR :=$(WDK_DIR)\Include\10.0.10150.0
-            TEST_WDK_10_DIR :=$(subst $(SPACE),\$(SPACE),$(WDK_10_DIR))
-            ifneq ("$(wildcard $(TEST_WDK_10_DIR))","")
-                WDK_10_VERSION :=10.0.10150.0
-            endif
-        endif
+    ifneq ($(filter 2015 2017,$(VS_VERSION)),)# if 2015 or 2017
+
+        # must be sorted from newer to older order
+        SUPPORTED_WDK := 10.0.17134.0
+        SUPPORTED_WDK += 10.0.10586.0
+        SUPPORTED_WDK += 10.0.10240.0
+        SUPPORTED_WDK += 10.0.10150.0
+
+        WDK_DIR_FOR_SHELL :=$(subst $(SPACE),\$(SPACE),$(WDK_DIR))\Include
+        _WDK_FOLDERS :=$(patsubst %,$(WDK_DIR_FOR_SHELL)\\%,$(SUPPORTED_WDK))
+        FOUND_WDK_DIR_LIST :=$(wildcard $(_WDK_FOLDERS))
+        FOUND_WDK_LIST :=$(subst $(WDK_DIR)\Include\,,$(FOUND_WDK_DIR_LIST))
+        WDK_10_VERSION := $(firstword $(FOUND_WDK_LIST))
+        WDK_10_DIR :=$(WDK_DIR)\Include\$(WDK_10_VERSION)
+
         ifeq ($(WDK_10_VERSION),)
              $(info err: no supported WDK 10 version found.)
-             $(info ---: supported versions are 10.0.10586.0 , 10.0.10240.0 , 10.0.10150.0)
+             $(info ---: supported versions are $(SUPPORTED_WDK))
              $(call exit,1)
         endif
-        
+
         # cannot use $(call ADD_TO_GLOBAL_INCLUDE_PATH) because
         # of spaces in folder name
         GLOBAL_CFLAGS += /I"$(WDK_10_DIR)\ucrt"
@@ -163,6 +169,7 @@ endif
 
 GLOBAL_CFLAGS += /wd4100 #disable unused parameter warning
 
+
 #}}}}}}}}  END OF GLOBAL_CFLAGS PREPARATIONS }}}}}}}}
 
 
@@ -179,10 +186,19 @@ endif
 #end of flags definitions
 
 
-ifdef CONFIG_MSVC_COMPILER_32
-    CC   := $(MSVC_SET_ADDITIONAL_PATHS) "$(MSVC_BIN_DIR)\cl.exe" /c
-    ASM  := $(MSVC_SET_ADDITIONAL_PATHS) "$(MSVC_BIN_DIR)\cl.exe" /c
-else ifdef CONFIG_MSVC_COMPILER_64
-    CC   := $(MSVC_SET_ADDITIONAL_PATHS) "$(MSVC_BIN_DIR)\x86_amd64\cl.exe" /c
-    ASM  := $(MSVC_SET_ADDITIONAL_PATHS) "$(MSVC_BIN_DIR)\x86_amd64\cl.exe" /c
+ifdef CONFIG_MSC_TARGET_ARCH_X86
+    ifeq ($(VS_VERSION),2017)
+        CL_BIN_DIR := $(MSVC_BIN_DIR)\..\x86
+    else
+        CL_BIN_DIR := $(MSVC_BIN_DIR)
+    endif
+else ifdef CONFIG_MSC_TARGET_ARCH_X64
+    ifeq ($(VS_VERSION),2017)
+        CL_BIN_DIR := $(MSVC_BIN_DIR)\..\x64
+    else
+        CL_BIN_DIR := $(MSVC_BIN_DIR)\x86_amd64
+    endif
 endif
+
+CC   := $(MSVC_SET_ADDITIONAL_PATHS) "$(CL_BIN_DIR)\cl.exe" /c
+ASM  := $(MSVC_SET_ADDITIONAL_PATHS) "$(CL_BIN_DIR)\cl.exe" /c

@@ -1,8 +1,9 @@
 
-ifdef CONFIG_MSVC_COMPILER_32
+
+ifdef CONFIG_MSC_TARGET_ARCH_X86
     LD := $(MSVC_SET_ADDITIONAL_PATHS) "$(MSVC_BIN_DIR)\link"
-else ifdef CONFIG_MSVC_COMPILER_64
-    LD := $(MSVC_SET_ADDITIONAL_PATHS) "$(MSVC_BIN_DIR)\x86_amd64\link"
+else ifdef CONFIG_MSC_TARGET_ARCH_X64
+    LD := $(MSVC_SET_ADDITIONAL_PATHS) "$(MSVC_BIN_DIR)\link"
 endif
 
 LIBS := $(sort $(GLOBAL_LIBS))
@@ -14,7 +15,7 @@ endif
 
 
 
-ifdef CONFIG_MSVC_COMPILER_32
+ifdef CONFIG_MSC_TARGET_ARCH_X86
     ARCH_NAME :=x86_32
 else
     ARCH_NAME :=x86_64
@@ -55,7 +56,7 @@ LDFLAGS :=
 
 #LDFLAGS += -fno-builtin-printf
 
-ifdef CONFIG_MSVC_COMPILER_32
+ifdef CONFIG_MSC_TARGET_ARCH_X86
     LDFLAGS += /MACHINE:X86
 else
     LDFLAGS += /MACHINE:X64
@@ -97,7 +98,7 @@ else
     LDFLAGS += /OPT:ICF
     
     LDFLAGS += /LTCG
-    ifdef CONFIG_MSVC_COMPILER_32
+    ifdef CONFIG_MSC_TARGET_ARCH_X86
         LDFLAGS += /SAFESEH
     endif
 endif
@@ -119,10 +120,12 @@ LDFLAGS += /ManifestFile:"$(MANIFEST_FILE)"
 LDFLAGS += /ERRORREPORT:PROMPT /NOLOGO /TLBID:1
 
 ifdef CONFIG_INCLUDE_TOOLCHAIN_LIBRARIES
-    ifdef CONFIG_MSVC_COMPILER_32
-        LDFLAGS += /LIBPATH:"$(MSVC_ROOT_DIR)\lib"
+    ifdef CONFIG_MSC_TARGET_ARCH_X86
+        LDFLAGS += /LIBPATH:"$(MSVC_BIN_DIR)\..\lib"#for MSVC <= 2015
+        LDFLAGS += /LIBPATH:"$(MSVC_BIN_DIR)\..\..\..\lib\x86"#for MSVC >= 2017
     else
-        LDFLAGS += /LIBPATH:"$(MSVC_ROOT_DIR)\lib\amd64"
+        LDFLAGS += /LIBPATH:"$(MSVC_BIN_DIR)\..\lib\amd64"#for MSVC <= 2015
+        LDFLAGS += /LIBPATH:"$(MSVC_BIN_DIR)\..\..\..\lib\x64"#for MSVC >= 2017
     endif
 endif
 
@@ -134,7 +137,7 @@ ifdef CONFIG_USE_WINDOWS_KITS
     LIBS := $(sort $(LIBS))
 
     ifeq ($(VS_VERSION),2012)
-        ifdef CONFIG_MSVC_COMPILER_32
+        ifdef CONFIG_MSC_TARGET_ARCH_X86
             LDFLAGS += /LIBPATH:"$(WDK_DIR)\LIB\WIN8\UM\X86"
         else
             LDFLAGS += /LIBPATH:"$(WDK_DIR)\LIB\WIN8\UM\X64"
@@ -142,15 +145,15 @@ ifdef CONFIG_USE_WINDOWS_KITS
     endif
 
     ifeq ($(VS_VERSION),2013)
-        ifdef CONFIG_MSVC_COMPILER_32
+        ifdef CONFIG_MSC_TARGET_ARCH_X86
             LDFLAGS += /LIBPATH:"$(WDK_DIR)\LIB\WINV6.3\UM\X86"
         else
             LDFLAGS += /LIBPATH:"$(WDK_DIR)\LIB\WINV6.3\UM\X64"
         endif
     endif
     
-    ifeq ($(VS_VERSION),2015)
-        ifdef CONFIG_MSVC_COMPILER_32
+    ifneq ($(filter 2015 2017,$(VS_VERSION)),)# if 2015 or 2017
+        ifdef CONFIG_MSC_TARGET_ARCH_X86
             LDFLAGS += /LIBPATH:"$(WDK_DIR)\LIB\$(WDK_10_VERSION)\ucrt\x86"
             LDFLAGS += /LIBPATH:"$(WDK_DIR)\LIB\$(WDK_10_VERSION)\um\x86"
         else
