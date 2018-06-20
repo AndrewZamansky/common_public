@@ -21,6 +21,7 @@ ifeq ($(MODIFIED_GITS),)# if NONE of git repos is modified
     REVISION_FOR_FILE_STR :=$(REVISION_STR)
 else
     REVISION_STR :=r$(DATE_STR).$(TIME_STR)_DEV
+	# no need to create a files with different timestamp each compilation:
     REVISION_FOR_FILE_STR :=rDEV
 endif
 FULL_VERSION_STR := $(CURR_APP_GIT_BRANCH)$(REVISION_STR)
