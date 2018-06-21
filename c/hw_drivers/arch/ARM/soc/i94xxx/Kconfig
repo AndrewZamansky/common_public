@@ -28,15 +28,11 @@ endmenu
 =======
 config I94XXX_SVB
 	def_bool y
-	select INTERNAL_SRAM 
-	select INTERNAL_FLASH 
 	select CORTEX_M4 
 	select SOC_HAS_DSP
 
 config MCP_SVB
 	def_bool y
-	select INTERNAL_SRAM 
-	select INTERNAL_FLASH 
 	select CORTEX_M4 
 	select SOC_HAS_DSP
 	

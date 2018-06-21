@@ -540,9 +540,6 @@ static void master_write(struct dev_desc_t *adev,
 {
 	struct i2c_i94xxx_cfg_t *cfg_hndl;
 	struct i2c_i94xxx_runtime_t *runtime_handle;
-	size_t   tx_data_size;
-	size_t   transmitted_data_size;
-	uint8_t  const *tx_data;
 	I2C_T *i2c_regs;
 	os_queue_t WaitQueue;
 	os_mutex_t  mutex;

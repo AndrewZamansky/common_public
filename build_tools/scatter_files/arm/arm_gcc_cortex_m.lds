@@ -1,4 +1,5 @@
 #include "project_config.h"
+#include "dt_memory_layout.h"
 
 ENTRY(_secondary_rom_vector_table_startup_entry)
 
@@ -10,27 +11,27 @@ SECONDARY_RAM_VECTOR_AREA_SIZE  = 0x40;//with some extra for future use
 
 SECTIONS
 {
-#ifdef CONFIG_DATA_LOCATION_INTERNAL_SRAM
+#ifdef DATA_SECTION_LOCATION_INTERNAL_SRAM
 	#define DATA_LOCATION internal_sram
 	__RAM_START__ = ORIGIN(internal_sram);
 #endif
-#ifdef CONFIG_DATA_LOCATION_DDR
+#ifdef DATA_SECTION_LOCATION_EXTERNAL_DDR
 	#define DATA_LOCATION ddr
 	__RAM_START__ = ORIGIN(ddr);
 #endif
 
-#ifdef CONFIG_CODE_LOCATION_INTERNAL_FLASH
+#ifdef CODE_SECTION_LOCATION_INTERNAL_FLASH
 	#define CODE_LOCATION internal_flash
 	__ROM_START__ = ORIGIN(internal_flash);
 	__tables_relocation_section_start_on_ROM__ =  __ROM_START__ ;
 #endif
 
-#ifdef CONFIG_CODE_LOCATION_INTERNAL_SRAM
+#ifdef CODE_SECTION_LOCATION_INTERNAL_SRAM
 	#define CODE_LOCATION internal_sram
 	__tables_relocation_section_start_on_ROM__ = __RAM_START__ ;
 #endif
 
-#ifdef CONFIG_CODE_LOCATION_DDR
+#ifdef CODE_SECTION_LOCATION_EXTERNAL_DDR
 	#define CODE_LOCATION ddr
 	__tables_relocation_section_start_on_ROM__ = __RAM_START__ ;
 #endif
@@ -146,7 +147,7 @@ SECTIONS
 	__relocation_section_start_on_ROM__ = __end_of_text__;
 	__critical_text_section_start_on_ROM__ = __relocation_section_start_on_ROM__;
 
-#ifdef CONFIG_CODE_LOCATION_INTERNAL_FLASH
+#ifdef CODE_SECTION_LOCATION_INTERNAL_FLASH
 	__relocation_section_start_on_RAM__ = __tables_relocation_section_end_on_RAM__ ;
 #else
 	__relocation_section_start_on_RAM__ = __end_of_text__ ;

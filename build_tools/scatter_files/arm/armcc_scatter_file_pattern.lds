@@ -12,6 +12,9 @@ LR_ROM      FLASH_START_ADDR  0x00200000  ; 2MB (SPI FLash)
 		*(+RO)
 	}
 
+
+TODO :  RAM_START_ADDR doesn't exist already
+
     ; Relocate vector table in SRAM for fast interrupt handling.
     ER_VECTOR2  RAM_START_ADDR  EMPTY   0x00000100
     {

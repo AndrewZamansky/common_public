@@ -4,8 +4,6 @@
  *
  */
 
-
-
 /********  includes *********************/
 
 #include "_project_typedefs.h"
@@ -20,7 +18,14 @@
 
 #include "_nvic_prerequirements_check.h"
 
-#define START_OF_EXTERNAL_INTERRUPT_VECTOR_TABLE 		(RAM_START_ADDR + 64)
+#include "dt_memory_layout.h"
+
+#ifdef USE_INTERNAL_SRAM
+	#define RAM_START_ADDR   MEM_BASE_ADDR(internal_sram)
+#endif
+
+// offset of 64 because of 16 built in exceptions : 16*4 = 64
+#define START_OF_EXTERNAL_INTERRUPT_VECTOR_TABLE    (RAM_START_ADDR + 64)
 
 
 
@@ -35,9 +40,9 @@
 /********  defines *********************/
 
 #if defined(__GNUC__)
-  #define IRQ_ATTR	__attribute__((interrupt("IRQ")))
+  #define IRQ_ATTR  __attribute__((interrupt("IRQ")))
 #elif defined(__arm)
-  #define IRQ_ATTR	__irq
+  #define IRQ_ATTR  __irq
 #endif
 
 /*!< 0 bits for pre-emption priority 4 bits for subpriority */
@@ -51,8 +56,8 @@
 /*!< 4 bits for pre-emption priority 0 bits for subpriority */
 #define NVIC_PriorityGroup_4         ((uint32_t)0x3)
 
-#define NVIC_writeRegU32(addr,val)	( (*(volatile uint32_t *)(addr)) = (val) )
-#define NVIC_readRegU32(addr)		( *(volatile uint32_t *)(addr) )
+#define NVIC_writeRegU32(addr,val)  ( (*(volatile uint32_t *)(addr)) = (val) )
+#define NVIC_readRegU32(addr)       ( *(volatile uint32_t *)(addr) )
 
 static int16_t total_number_of_external_interrupts;
 
@@ -61,17 +66,16 @@ static int16_t total_number_of_external_interrupts;
 #define IRQn_Type IRQn_Type_local
 
 typedef enum IRQn_local {
-    /******  Cortex-M4 Processor Exceptions Numbers ********/
-    NonMaskableInt_IRQn_local    = -14, /*!<  2 Non Maskable Interrupt      */
-    HardFault_IRQn_local         = -13, /*!<  2 Hard Fault Interrupt      */
-    MemoryManagement_IRQn_local  = -12, /*!<  4 Memory Management Interrupt */
-    BusFault_IRQn_local          = -11, /*!<  5 Bus Fault Interrupt         */
-    UsageFault_IRQn_local        = -10, /*!<  6 Usage Fault Interrupt       */
-    SVCall_IRQn_local            = -5,  /*!< 11 SV Call Interrupt           */
-    DebugMonitor_IRQn_local      = -4,  /*!< 12 Debug Monitor Interrupt     */
-    PendSV_IRQn_local            = -2,  /*!< 14 Pend SV Interrupt           */
-    SysTick_IRQn_local           = -1,  /*!< 15 System Tick Interrupt       */
-
+	/******  Cortex-M4 Processor Exceptions Numbers ********/
+	NonMaskableInt_IRQn_local    = -14, /*!<  2 Non Maskable Interrupt      */
+	HardFault_IRQn_local         = -13, /*!<  2 Hard Fault Interrupt      */
+	MemoryManagement_IRQn_local  = -12, /*!<  4 Memory Management Interrupt */
+	BusFault_IRQn_local          = -11, /*!<  5 Bus Fault Interrupt         */
+	UsageFault_IRQn_local        = -10, /*!<  6 Usage Fault Interrupt       */
+	SVCall_IRQn_local            = -5,  /*!< 11 SV Call Interrupt           */
+	DebugMonitor_IRQn_local      = -4,  /*!< 12 Debug Monitor Interrupt     */
+	PendSV_IRQn_local            = -2,  /*!< 14 Pend SV Interrupt           */
+	SysTick_IRQn_local           = -1,  /*!< 15 System Tick Interrupt       */
 } IRQn_Type_local;
 
 /********  externals *********************/
@@ -79,7 +83,7 @@ typedef enum IRQn_local {
 
 /********  local variables *********************/
 struct dev_desc_t * callback_devs[
-                         CONFIG_DT_NUMBER_OF_EXTERNAL_INTERRUPTS + 16] = {NULL};
+						CONFIG_DT_NUMBER_OF_EXTERNAL_INTERRUPTS + 16] = {NULL};
 
 
 
@@ -136,7 +140,7 @@ void __attribute__((interrupt("IRQ"))) __attribute__((naked)) isr_hard_fault()
 	LR_r = *stack++;
 	PC_r = *stack++;
 	PSR_r = *stack++;
-    while (1);
+	while (1);
 }
 
 
@@ -152,9 +156,9 @@ int irq_register_interrupt(int int_num, isr_t pIsr)
 {
 
 	// +16 offset becouse IRQn_Type starts from -16
-    NVIC_writeRegU32( (uint32_t*)START_OF_EXTERNAL_INTERRUPT_VECTOR_TABLE +
+	NVIC_writeRegU32( (uint32_t*)START_OF_EXTERNAL_INTERRUPT_VECTOR_TABLE +
 		int_num, (unsigned int)pIsr);// ( int_num  ) * 4
-    return 0;
+	return 0;
 }
 
 
@@ -169,7 +173,7 @@ int irq_register_interrupt(int int_num, isr_t pIsr)
 int irq_register_device_on_interrupt(int int_num, struct dev_desc_t * pdev)
 {
 	callback_devs[int_num + 16] = pdev;
-    return  irq_register_interrupt(int_num, common_interrupt_handler);
+	return  irq_register_interrupt(int_num, common_interrupt_handler);
 }
 
 
@@ -185,9 +189,8 @@ int irq_register_device_on_interrupt(int int_num, struct dev_desc_t * pdev)
 int irq_disable_interrupt(int int_num)
 {
 	NVIC_DisableIRQ(int_num);
-    NVIC_ClearPendingIRQ(int_num);
-
-    return 0;
+	NVIC_ClearPendingIRQ(int_num);
+	return 0;
 }
 
 
@@ -203,9 +206,9 @@ void  NVIC_API_Init(void)
 
 	// get number of external interrupts
 	i = SCnSCB->ICTR ;
-    /*
-     * Disable all interrupts.
-     */
+	/*
+	 * Disable all interrupts.
+	 */
 
 	/*
 	 * SCnSCB->ICTR   shows number of interrupts in chunks of 32
@@ -215,32 +218,33 @@ void  NVIC_API_Init(void)
 		CRITICAL_ERROR("total number of interrupts defined in HW not match to maximal interrupt number defined in project configuration");
 	}
 
-    total_number_of_external_interrupts = 32 * (i+1);
-    while ( 0 <= i )
+	total_number_of_external_interrupts = 32 * (i+1);
+	while ( 0 <= i )
 	{
-    	NVIC->ICER[i] = 0xffffffff;
-    	NVIC->ICPR[i] = 0xffffffff;
-    	i--;
-    }
+		NVIC->ICER[i] = 0xffffffff;
+		NVIC->ICPR[i] = 0xffffffff;
+		i--;
+	}
 
-    for (i=-14 ; i < total_number_of_external_interrupts ; i++)
-    {
-    	NVIC_writeRegU32((uint32_t*)START_OF_EXTERNAL_INTERRUPT_VECTOR_TABLE +
-    			 i, (unsigned int)common_interrupt_handler);
-    }
+	for (i=-14 ; i < total_number_of_external_interrupts ; i++)
+	{
+		NVIC_writeRegU32((uint32_t*)START_OF_EXTERNAL_INTERRUPT_VECTOR_TABLE +
+				 i, (unsigned int)common_interrupt_handler);
+	}
 #if (1 == CONFIG_CORTEX_M3 ) && (__CM3_REV < 0x0201)  /* core<r2p1 */
     /*set base to start of RAM*/
     SCB->VTOR = RAM_START_ADDR & SCB_VTOR_TBLBASE_Msk;
 #else
-    // make sure that in cortex-m3 with revision < r2p1 bit 29 is 1
-    SCB->VTOR = RAM_START_ADDR;
+	// make sure that in cortex-m3 with revision < r2p1 bit 29 is 1
+	SCB->VTOR = RAM_START_ADDR;
 #endif
 
-    NVIC_SetPriorityGrouping(NVIC_PriorityGroup_4);
+	NVIC_SetPriorityGrouping(NVIC_PriorityGroup_4);
 
-    irq_register_interrupt(HardFault_IRQn_local, isr_hard_fault);
+	irq_register_interrupt(HardFault_IRQn_local, isr_hard_fault);
 
 
 }
+
 
 AUTO_INIT_FUNCTION(NVIC_API_Init);
