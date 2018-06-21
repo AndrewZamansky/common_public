@@ -1,5 +1,0 @@
-menu "`---> MCP SVB board"
-
-source "$KCONFIG_PUBLIC_START_DIR/hw_drivers/arch/ARM/soc/i94xxx/Kconfig.socI94XXX.dt"
-
-endmenu
