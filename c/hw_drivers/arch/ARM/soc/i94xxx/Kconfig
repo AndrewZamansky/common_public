@@ -1,38 +1,16 @@
-menu "`--->  I94XXX board configurations"
-
-choice
-	prompt "Board"
-	default I94XXX_SVB
-
-config I94XXX_SVB
-	bool "I94XXX SVB board"
-
-config MCP_SVB
-	bool "MCP SVB board"
-
-endchoice
-
-if I94XXX_SVB
-source "$KCONFIG_PUBLIC_START_DIR/hw_drivers/arch/ARM/soc/i94xxx/Kconfig.svbI94120.dt"
-endif
+menu "`--->  I94XXX configurations"
 
 
-if MCP_SVB
-source "$KCONFIG_PUBLIC_START_DIR/hw_drivers/arch/ARM/soc/i94xxx/Kconfig.svbMCP.dt"
-endif
-
-
+config I94XXX_BSP_VERSION
+	string "nuc bsp version in form : xx.xx[.xx]"
+	default "00.01"
 
 endmenu
 
 =======
-config I94XXX_SVB
+config I94XXX
 	def_bool y
 	select CORTEX_M4 
 	select SOC_HAS_DSP
 
-config MCP_SVB
-	def_bool y
-	select CORTEX_M4 
-	select SOC_HAS_DSP
 	

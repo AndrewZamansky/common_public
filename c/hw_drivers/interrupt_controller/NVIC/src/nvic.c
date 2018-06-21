@@ -24,8 +24,11 @@
 	#define RAM_START_ADDR   MEM_BASE_ADDR(internal_sram)
 #endif
 
-// offset of 64 because of 16 built in exceptions : 16*4 = 64
-#define START_OF_EXTERNAL_INTERRUPT_VECTOR_TABLE    (RAM_START_ADDR + 64)
+#define INTERNAL_EXCEPTION_NUM   16
+
+
+#define START_OF_EXTERNAL_INTERRUPT_VECTOR_TABLE    \
+						(RAM_START_ADDR + (INTERNAL_EXCEPTION_NUM * 4))
 
 
 
@@ -59,13 +62,10 @@
 #define NVIC_writeRegU32(addr,val)  ( (*(volatile uint32_t *)(addr)) = (val) )
 #define NVIC_readRegU32(addr)       ( *(volatile uint32_t *)(addr) )
 
-static int16_t total_number_of_external_interrupts;
 
 /********  types  *********************/
-//locally disable IRQn_Type defined in soc
-#define IRQn_Type IRQn_Type_local
 
-typedef enum IRQn_local {
+enum IRQn_Type_local {
 	/******  Cortex-M4 Processor Exceptions Numbers ********/
 	NonMaskableInt_IRQn_local    = -14, /*!<  2 Non Maskable Interrupt      */
 	HardFault_IRQn_local         = -13, /*!<  2 Hard Fault Interrupt      */
@@ -76,14 +76,14 @@ typedef enum IRQn_local {
 	DebugMonitor_IRQn_local      = -4,  /*!< 12 Debug Monitor Interrupt     */
 	PendSV_IRQn_local            = -2,  /*!< 14 Pend SV Interrupt           */
 	SysTick_IRQn_local           = -1,  /*!< 15 System Tick Interrupt       */
-} IRQn_Type_local;
+};
 
 /********  externals *********************/
 
 
 /********  local variables *********************/
 struct dev_desc_t * callback_devs[
-						CONFIG_DT_NUMBER_OF_EXTERNAL_INTERRUPTS + 16] = {NULL};
+		NUMBER_OF_NVIC_EXTERNAL_INTERRUPTS + INTERNAL_EXCEPTION_NUM] = {NULL};
 
 
 
@@ -98,7 +98,8 @@ void  IRQ_ATTR common_interrupt_handler()
 	struct dev_desc_t * pdev ;
 
 	curr_isr = __get_IPSR();
-	if ( (CONFIG_DT_NUMBER_OF_EXTERNAL_INTERRUPTS + 16) <= curr_isr )
+	if ( curr_isr >=
+			(NUMBER_OF_NVIC_EXTERNAL_INTERRUPTS + INTERNAL_EXCEPTION_NUM))
 	{
 		CRITICAL_ERROR("received interrupt is larger then maximal interrupt number defined in project configuration");
 	}
@@ -172,7 +173,7 @@ int irq_register_interrupt(int int_num, isr_t pIsr)
  */
 int irq_register_device_on_interrupt(int int_num, struct dev_desc_t * pdev)
 {
-	callback_devs[int_num + 16] = pdev;
+	callback_devs[int_num + INTERNAL_EXCEPTION_NUM] = pdev;
 	return  irq_register_interrupt(int_num, common_interrupt_handler);
 }
 
@@ -201,7 +202,7 @@ int irq_disable_interrupt(int int_num)
  */
 void  NVIC_API_Init(void)
 {
-
+	uint16_t  number_of_external_interrupts_read_from_hw;
 	int16_t  i;
 
 	// get number of external interrupts
@@ -213,12 +214,12 @@ void  NVIC_API_Init(void)
 	/*
 	 * SCnSCB->ICTR   shows number of interrupts in chunks of 32
 	 */
-	if ( (CONFIG_DT_NUMBER_OF_EXTERNAL_INTERRUPTS / 32) != i )
+	if ( (NUMBER_OF_NVIC_EXTERNAL_INTERRUPTS / 32) != i )
 	{
 		CRITICAL_ERROR("total number of interrupts defined in HW not match to maximal interrupt number defined in project configuration");
 	}
 
-	total_number_of_external_interrupts = 32 * (i+1);
+	number_of_external_interrupts_read_from_hw = 32 * (i + 1);
 	while ( 0 <= i )
 	{
 		NVIC->ICER[i] = 0xffffffff;
@@ -226,7 +227,7 @@ void  NVIC_API_Init(void)
 		i--;
 	}
 
-	for (i=-14 ; i < total_number_of_external_interrupts ; i++)
+	for (i=-14 ; i < number_of_external_interrupts_read_from_hw ; i++)
 	{
 		NVIC_writeRegU32((uint32_t*)START_OF_EXTERNAL_INTERRUPT_VECTOR_TABLE +
 				 i, (unsigned int)common_interrupt_handler);

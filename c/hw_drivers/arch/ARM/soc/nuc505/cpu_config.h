@@ -17,7 +17,7 @@
 
 /*IRQn_Type can be defined in different files describing different socs .
  so it needs to be disabled in api functions */
-#define IRQn_Type IRQn_Type_GPIO_NUC505_API_H_
+#define IRQn_Type IRQn_Type_TMP
 #include "NUC505Series.h"
 #undef IRQn_Type
 
