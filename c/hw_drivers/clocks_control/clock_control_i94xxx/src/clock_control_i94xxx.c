@@ -472,6 +472,54 @@ uint8_t clock_i94xxx_spi2clk_ioctl( struct dev_desc_t *adev,
 	return 0;
 }
 
+uint8_t clock_i94xxx_spi1clk_ioctl( struct dev_desc_t *adev,
+		const uint8_t aIoctl_num, void * aIoctl_param1,
+		void * aIoctl_param2)
+{
+	struct cfg_clk_t *cfg_clk;
+
+	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(adev);
+	switch(aIoctl_num)
+	{
+	case CLK_IOCTL_SET_PARENT :
+		if (i94xxx_xtal_clk_dev == aIoctl_param1)
+		{
+			CLK_SetModuleClock(SPI1_MODULE,
+					CLK_CLKSEL2_SPI1SEL_HXT, MODULE_NoMsk);
+		}
+		else if (i94xxx_hirc_clk_dev == aIoctl_param1)
+		{
+			CLK_SetModuleClock(SPI1_MODULE,
+					CLK_CLKSEL2_SPI1SEL_HIRC, MODULE_NoMsk);
+		}
+		else if (i94xxx_pll_clk_dev == aIoctl_param1)
+		{
+			CLK_SetModuleClock(SPI1_MODULE,
+					CLK_CLKSEL2_SPI1SEL_PLL, MODULE_NoMsk);
+		}
+		else if (i94xxx_pclk1_clk_dev == aIoctl_param1)
+		{
+			CLK_SetModuleClock(SPI1_MODULE,
+					CLK_CLKSEL2_SPI1SEL_PCLK1, MODULE_NoMsk);
+		}
+		else
+		{
+			CRITICAL_ERROR("bad parent clock \n");
+		}
+		cfg_clk->parent_clk = aIoctl_param1;
+		break;
+	case CLK_IOCTL_ENABLE :
+		CLK_EnableModuleClock(SPI1_MODULE);
+		break;
+	case CLK_IOCTL_GET_FREQ :
+		get_parent_clock_rate(cfg_clk, aIoctl_param1);
+		break;
+	default :
+		return 1;
+	}
+	return 0;
+}
+
 
 uint8_t clock_i94xxx_i2s_ioctl( struct dev_desc_t *adev,
 		const uint8_t aIoctl_num, void * aIoctl_param1,
@@ -736,7 +784,7 @@ uint8_t clock_control_i94xxx_ioctl( struct dev_desc_t *adev,
 		{
 			rate = rate / 4;
 		}
-		else if (8000000 < rate)
+		else if (80000000 < rate)
 		{
 			rate = rate / 2;
 		}

@@ -408,10 +408,16 @@ uint8_t spi_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 	SPI_T *spi_regs;
 	int spi_irq;
 
+	uint8_t tx_fifo_threshold;
+	uint8_t rx_fifo_threshold;
+
 	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
 	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
 	src_clock = cfg_hndl->src_clock;
 	spi_regs = (SPI_T *)cfg_hndl->base_address;
+
+	tx_fifo_threshold = cfg_hndl->tx_fifo_threshold;
+	rx_fifo_threshold = cfg_hndl->rx_fifo_threshold;
 
 	switch(aIoctl_num)
 	{
@@ -445,7 +451,7 @@ uint8_t spi_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 		/* Config Data Width - Supports 8-32bit */
 		SPI_SET_DATA_WIDTH(spi_regs, cfg_hndl->data_width);
 
-		SPI_I2S_SET_TXTH(spi_regs, SPI_I2S_FIFO_TX_LEVEL_0);
+		SPI_SetFIFO(spi_regs, tx_fifo_threshold, rx_fifo_threshold);
 		/* Config Suspend Cycle (arg# + 0.5) clock cycles  */
 		SPI_SET_SUSPEND_CYCLE(spi_regs, 0);
 

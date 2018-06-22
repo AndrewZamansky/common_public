@@ -5,6 +5,7 @@
 
 /*****************  defines  **************/
 #define SPI_I94XXX_API_BASE_ADDRESS_SPI0    (size_t)SPI0_BASE
+#define SPI_I94XXX_API_BASE_ADDRESS_SPI1    (size_t)SPI1_BASE
 
 
 #define SPI_I94XXX_API_CLK_PIN_C12     0
