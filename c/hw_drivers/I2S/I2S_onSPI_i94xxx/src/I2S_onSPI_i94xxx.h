@@ -19,10 +19,17 @@
 
 struct I2S_onSPI_i94xxx_cfg_t {
 	struct dev_desc_t *   src_clock;
-	size_t   base_address;
-	uint8_t   	clock_mode;
+	size_t      base_address;
+	uint32_t	clk_mode;
 	uint32_t	sample_rate;
-	uint8_t		num_of_bytes_in_word;
-} ;
+	uint32_t	data_width;
+	uint32_t	audio_format;
+	uint32_t	txrx_format;
+	uint8_t		spi_bus;
+};
+
+struct I2S_onSPI_i94xxx_runtime_t {
+	size_t		empty;
+};
 
 #endif

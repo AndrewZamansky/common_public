@@ -5,7 +5,9 @@
 
 #define	MODULE_NAME						I2S_onSPI_i94xxx
 #define	MODULE_IOCTL_FUNCTION			I2S_onSPI_i94xxx_ioctl
+#define MODULE_CALLBACK_FUNCTION		I2S_onSPI_i94xxx_callback
 #define MODULE_CONFIG_DATA_STRUCT_TYPE	struct I2S_onSPI_i94xxx_cfg_t
+#define MODULE_RUNTIME_DATA_STRUCT_TYPE	struct I2S_onSPI_i94xxx_runtime_t
 
 #ifdef DT_DEV_MODULE
 
@@ -19,18 +21,30 @@
 		#endif
 	#endif
 
-	#ifndef I2S_onSPI_I94XXX_DT_NUM_OF_BYTES_IN_WORD
-		#error "I2S_onSPI_I94XXX_DT_NUM_OF_BYTES_IN_WORD should be defined"
+	#ifndef I2S_onSPI_I94XXX_DT_DATA_WIDTH
+		#error "I2S_onSPI_I94XXX_DT_DATA_WIDTH should be defined"
 	#endif
 
 	#ifndef I2S_onSPI_I94XXX_DT_BASE_ADDRESS
 		#error "I2S_onSPI_I94XXX_DT_BASE_ADDRESS should be defined"
 	#endif
 
-
 	#ifndef I2S_onSPI_I94XXX_DT_SRC_CLOCK_PDEV
 		#error "I2S_onSPI_I94XXX_DT_SRC_CLOCK_PDEV should be defined"
 	#endif
+
+	#ifndef I2S_onSPI_I94XXX_DT_AUDIO_FORMAT
+		#error "I2S_onSPI_I94XXX_DT_AUDIO_FORMAT should be defined"
+	#endif
+
+	#ifndef I2S_onSPI_I94XXX_DT_TXRX_FORMAT
+		#error "I2S_onSPI_I94XXX_DT_TXRX_FORMAT should be defined"
+	#endif
+
+	#ifndef I2S_onSPI_I94XXX_DT_SPI_BUS
+		#error "I2S_onSPI_I94XXX_DT_SPI_BUS should be defined"
+	#endif
+
 	#define POINTER_TO_SRC_CLOCK_PDEV	 \
 			P_TO_STATIC_DEVICE_INST(I2S_onSPI_I94XXX_DT_SRC_CLOCK_PDEV)
 
@@ -38,11 +52,14 @@
 
 	#define STATIC_DEV_DATA_STRUCT						\
 		{												\
-			POINTER_TO_SRC_CLOCK_PDEV,					\
-			I2S_onSPI_I94XXX_DT_BASE_ADDRESS	,				\
-			I2S_onSPI_I94XXX_DT_MASTER_OR_SLAVE_MODE	,		\
-			I2S_onSPI_I94XXX_DT_SAMPLE_RATE ,					\
-			I2S_onSPI_I94XXX_DT_NUM_OF_BYTES_IN_WORD			\
+			POINTER_TO_SRC_CLOCK_PDEV,			        \
+			I2S_onSPI_I94XXX_DT_BASE_ADDRESS,			\
+			I2S_onSPI_I94XXX_DT_MASTER_OR_SLAVE_MODE,	\
+			I2S_onSPI_I94XXX_DT_SAMPLE_RATE,			\
+			I2S_onSPI_I94XXX_DT_DATA_WIDTH,				\
+			I2S_onSPI_I94XXX_DT_AUDIO_FORMAT,			\
+			I2S_onSPI_I94XXX_DT_TXRX_FORMAT,			\
+			I2S_onSPI_I94XXX_DT_SPI_BUS,				\
 		}
 
 #endif
@@ -54,5 +71,8 @@
     #undef I2S_onSPI_I94XXX_DT_SAMPLE_RATE
 #endif
 #undef I2S_onSPI_I94XXX_DT_MASTER_OR_SLAVE_MODE
-#undef I2S_onSPI_I94XXX_DT_NUM_OF_BYTES_IN_WORD
+#undef I2S_onSPI_I94XXX_DT_DATA_WIDTH
 #undef I2S_onSPI_I94XXX_DT_BASE_ADDRESS
+#undef I2S_onSPI_I94XXX_DT_AUDIO_FORMAT
+#undef I2S_onSPI_I94XXX_DT_TXRX_FORMAT
+#undef I2S_onSPI_I94XXX_DT_SPI_BUS

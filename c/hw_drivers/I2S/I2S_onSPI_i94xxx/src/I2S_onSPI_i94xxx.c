@@ -11,6 +11,7 @@
 #include "I2S_onSPI_i94xxx_api.h"
 #include "I2S_onSPI_i94xxx.h"
 #include "irq_api.h"
+
 #include "timer_wrapper_api.h"
 
 
@@ -22,159 +23,282 @@
 
 /********  defines *********************/
 
+#define SPI1_PD_MSK     SYS_GPD_MFPL_PD2MFP_Msk  | \
+						SYS_GPD_MFPL_PD3MFP_Msk  | \
+						SYS_GPD_MFPL_PD4MFP_Msk  | \
+						SYS_GPD_MFPL_PD5MFP_Msk  | \
+						SYS_GPD_MFPL_PD6MFP_Msk
+
+#define SPI1_PD_POS     SYS_GPD_MFPL_PD2MFP_SPI1_MOSI     | \
+						SYS_GPD_MFPL_PD3MFP_SPI1_MISO     | \
+						SYS_GPD_MFPL_PD4MFP_SPI1_CLK      | \
+						SYS_GPD_MFPL_PD5MFP_SPI1_SS       | \
+						SYS_GPD_MFPL_PD6MFP_SPI1_I2SMCLK
+
+
+#define SPI1_PC_MSK     SYS_GPC_MFPL_PC0MFP_Msk  | \
+						SYS_GPC_MFPL_PC1MFP_Pos  | \
+						SYS_GPC_MFPL_PC2MFP_Pos  | \
+						SYS_GPC_MFPL_PC3MFP_Pos  | \
+						SYS_GPC_MFPL_PC4MFP_Pos
+
+#define SPI1_PC_POS
+
+#define SPI2_PA_MSK
+
+#define SPI2_PA_POS
+
+#define SPI2_PC_MSK
+
+#define SPI2_PC_POS
 
 /********  types  *********************/
 
 
-/* ------------- External variables --------------------------*/
+/* ---------------- External variables --------------------------*/
 
-/* ------------------------ External functions --------------*/
+/* ---------------- External functions --------------------------*/
 
-/* ------------------------ Exported variables ---------------*/
+/* ---------------- Exported variables --------------------------*/
 
-volatile int g_u32DataCount1 = 0;
-volatile int status1 = 0;
-#define TEST_COUNT	100
-int data1[TEST_COUNT+1] = {0};
-volatile int pos1 = 0;
-void SPI_IRQHandler()
+/* ---------------- Main variables ------------------------------*/
+#define TEST_COUNT	128
+
+static volatile int g_u32DataCount = 0;
+static uint32_t data[TEST_COUNT] = {0};
+
+/* ---------------- Interrupt Routine ---------------------------*/
+
+/*
+ * Currently I2S_onSPI_i94xxx_callback() is a loopback function, TX = RX.
+ * TODO: Make a data transfer interface.
+ */
+
+
+static uint32_t u32RxValue[2];
+
+uint8_t I2S_onSPI_i94xxx_callback(struct dev_desc_t *adev ,
+		uint8_t aCallback_num , void * aCallback_param1,
+		void * aCallback_param2)
 {
-    /* Write 2 TX values to TX FIFO */
-  //  I2S_SPI_WRITE_TX_FIFO(SPI1, g_u32TxValue);
- //   I2S_SPI_WRITE_TX_FIFO(SPI1, g_u32TxValue);
-    if((SPI2->I2SSTS & SPI_I2SSTS_RXEMPTY_Msk) == 0)
-    {
-		status1 = ((SPI_T *)SPI2_BASE)->I2SSTS;
-		if (pos1 < TEST_COUNT)
+	struct I2S_onSPI_i94xxx_cfg_t *cfg_hndl;
+	SPI_T	*I2S_SPI_module;
+
+	uint32_t audio_format, data_width;
+
+	uint8_t i;
+
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
+	I2S_SPI_module = (SPI_T*)cfg_hndl->base_address;
+	audio_format = cfg_hndl->audio_format;
+	data_width = cfg_hndl->data_width;
+
+
+	SPI_I2S_CLR_INT_FLAG(I2S_SPI_module, SPI_I2S_TXTH_INT_MASK);
+	if (SPI_I2SMONO == audio_format)
+	{
+		switch (data_width)
 		{
-			pos1++;
+		case SPI_I2SDATABIT_8 :
+			/*  TODO: Not working.
+			 * FIFO Data Seperation : MONO 8-bit
+			 * |7  N+3  0|7  N+2  0|7  N+1  0|7   N   0|
+			 */
+			if(!SPI_I2S_IS_RX_EMPTY(I2S_SPI_module))
+			{
+				u32RxValue[0] = (uint8_t)SPI_I2S_READ_RX_FIFO(I2S_SPI_module);
+			}
+			SPI_I2S_WRITE_TX_FIFO(I2S_SPI_module, (uint8_t)u32RxValue[0]);
+
+			break;
+
+		case SPI_I2SDATABIT_16 :
+			/*
+			 * FIFO Data Seperation : MONO 16-bit
+			 * |15       N+1       0|15       N       0|
+			 */
+			if(!SPI_I2S_IS_RX_EMPTY(I2S_SPI_module))
+			{
+				u32RxValue[0] = (uint16_t)SPI_I2S_READ_RX_FIFO(I2S_SPI_module);
+			}
+			SPI_I2S_WRITE_TX_FIFO(I2S_SPI_module, (uint16_t)u32RxValue[0]);
+
+			break;
+
+		case SPI_I2SDATABIT_24 | SPI_I2SDATABIT_32:
+			/*
+			 * FIFO Data Seperation : MONO 24-bit
+			 * |              |23          N          0|
+			 * FIFO Data Seperation : MONO 32-bit
+			 * |31                 N                  0|
+			 */
+			if(!SPI_I2S_IS_RX_EMPTY(I2S_SPI_module))
+			{
+				u32RxValue[0] = SPI_I2S_READ_RX_FIFO(I2S_SPI_module);
+			}
+			SPI_I2S_WRITE_TX_FIFO(I2S_SPI_module, u32RxValue[0]);
+
+			break;
+
 		}
-		data1[pos1] = ((SPI_T *)SPI2_BASE)->RX;
-    }
-    g_u32DataCount1 += 2;
+	}
+	else if (SPI_I2SSTEREO == audio_format)
+	{
+		switch (data_width)
+		{
+		case SPI_I2SDATABIT_8 :
+			/*
+			 * FIFO Data Seperation : STEREO 8-bit
+			 * |7  L+1  0|7  R+1  0|7   L   0|7   R   0|
+			 */
+			if(!SPI_I2S_IS_RX_EMPTY(I2S_SPI_module))
+			{
+				u32RxValue[0] = (uint16_t)SPI_I2S_READ_RX_FIFO(I2S_SPI_module);
+			}
+			SPI_I2S_WRITE_TX_FIFO(I2S_SPI_module, (uint16_t)u32RxValue[0]);
+
+			break;
+
+		case SPI_I2SDATABIT_16 :
+			/*
+			 * FIFO Data Seperation : STEREO 16-bit
+			 * |15       L        0|15       R        0|
+			 */
+			if(!SPI_I2S_IS_RX_EMPTY(I2S_SPI_module))
+			{
+				u32RxValue[0] = SPI_I2S_READ_RX_FIFO(I2S_SPI_module);
+			}
+			SPI_I2S_WRITE_TX_FIFO(I2S_SPI_module, u32RxValue[0]);
+			break;
+
+		case SPI_I2SDATABIT_24 | SPI_I2SDATABIT_32 :
+			/*
+			 * FIFO Data Seperation : STEREO 24-bit
+			 * |              |23          L          0|
+			 * |              |23          R          0|
+			 * FIFO Data Seperation : STEREO 32-bit
+			 * |31                 L                  0|
+			 * |31                 R                  0|
+			 */
+			for(i = 0; i < 2; i++)
+			{
+				if(!SPI_I2S_IS_RX_EMPTY(I2S_SPI_module))
+				{
+					u32RxValue[i] = SPI_I2S_READ_RX_FIFO(I2S_SPI_module);
+				}
+				SPI_I2S_WRITE_TX_FIFO(I2S_SPI_module, u32RxValue[i]);
+			}
+
+			break;
+
+		}
+	}
+	else {
+		CRITICAL_ERROR("Audio Format not set in Device Tree.")
+	}
+
+	for(i = 0; i < 2; i++)
+	{
+		SPI_I2S_WRITE_TX_FIFO(I2S_SPI_module, u32RxValue[i]);
+	}
+
+	return 1;
 }
+
+static void configure_i2s_spi_pinout(uint8_t spi_bus)
+{
+	switch(spi_bus)
+	{
+	case SPI1_PD :
+		SYS->GPD_MFPL &= ~SPI1_PD_MSK;
+		SYS->GPD_MFPL |= SPI1_PD_POS;
+		PD->SMTEN = GPIO_SMTEN_SMTEN2_Msk |
+					GPIO_SMTEN_SMTEN3_Msk |
+					GPIO_SMTEN_SMTEN4_Msk |
+					GPIO_SMTEN_SMTEN5_Msk |
+					GPIO_SMTEN_SMTEN6_Msk;
+		break;
+
+	case SPI1_PC :
+		break;
+	case SPI2_PA :
+		break;
+	case SPI2_PC :
+		break;
+	}
+}
+
+
+/* ---------------- I/O Control (IOCTL) Function ----------------*/
 
 /**
  * I2S_onSPI_i94xxx_ioctl()
  *
  * return:
  */
-uint8_t I2S_onSPI_i94xxx_ioctl(struct dev_desc_t *adev,
-		const uint8_t aIoctl_num, void * aIoctl_param1 , void * aIoctl_param2)
+uint8_t I2S_onSPI_i94xxx_ioctl( struct dev_desc_t *adev,
+			const uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2)
 {
 	struct I2S_onSPI_i94xxx_cfg_t *cfg_hndl;
-	SPI_T	*I2S_module;
-//	uint8_t   	clock_mode;
-	uint8_t		num_of_bytes_in_word;
-	int spi_irq;
+	SPI_T	*I2S_SPI_module;
+	int i2s_spi_irq;
 	struct dev_desc_t	*clk_dev;
 	struct dev_desc_t	*src_clock;
 
 	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
-	I2S_module = (SPI_T*)cfg_hndl->base_address;
+	I2S_SPI_module = (SPI_T*)cfg_hndl->base_address;
 	src_clock = cfg_hndl->src_clock;
 
 
 	switch(aIoctl_num)
 	{
 	case IOCTL_DEVICE_START :
-		if (SPI1_BASE == (size_t)I2S_module)
-		{
-			/* Configure SPI1 related multi-function pins.
-			 * GPD[2:6] : SPI1_CLK (I2S1_BCLK), SPI1_MISO (I2S1_DI), SPI1_MOSI
-			 *  (I2S1_DO), SPI1_SS (I2S1_LRCLK).
-			 */
-			while(1); //TODO
-			SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD2MFP_Msk |
-					SYS_GPD_MFPL_PD3MFP_Msk | SYS_GPD_MFPL_PD4MFP_Msk |
-					SYS_GPD_MFPL_PD5MFP_Msk | SYS_GPD_MFPL_PD6MFP_Msk);
-			SYS->GPD_MFPL |= (SYS_GPD_MFPL_PD2MFP_SPI1_MOSI |
-					SYS_GPD_MFPL_PD3MFP_SPI1_MISO |
-					SYS_GPD_MFPL_PD4MFP_SPI1_CLK |
-					SYS_GPD_MFPL_PD5MFP_SPI1_SS |
-					SYS_GPD_MFPL_PD6MFP_SPI1_I2SMCLK );
-			spi_irq = SPI1_IRQn;
-		}
-		else if (SPI2_BASE == (size_t)I2S_module)
-		{
-#if 0
-			/* Configure SPI2 related multi-function pins.
-			 * GPC[5:9] : SPI2_CLK (I2S2_BCLK), SPI2_MISO (I2S2_DI), SPI2_MOSI
-			 *  (I2S2_DO), SPI2_SS (I2S2_LRCLK).
-			 */
-			SYS->GPC_MFPL &= ~(SYS_GPC_MFPL_PC5MFP_Msk |
-					SYS_GPC_MFPL_PC6MFP_Msk | SYS_GPC_MFPL_PC7MFP_Msk |
-					SYS_GPC_MFPH_PC8MFP_Msk | SYS_GPC_MFPH_PC9MFP_Msk);
-			SYS->GPC_MFPH |= (SYS_GPC_MFPL_PC5MFP_SPI2_MOSI |
-					SYS_GPC_MFPL_PC6MFP_SPI2_MISO |
-					SYS_GPC_MFPL_PC7MFP_SPI2_CLK |
-					SYS_GPC_MFPH_PC8MFP_SPI2_SS |
-					SYS_GPC_MFPH_PC9MFP_SPI2_I2SMCLK );
-#else
-		    SYS->IPRST1 |= 0x00007000;
-		    SYS->IPRST1 &= (~0x00007000);
-			/* GPA[7] : SPI2_MISO */
-			/* GPA[12] : SPI2_I2SMCLK,GPA[10:8] : SPI2_BCLK,SPI2_SS, SPI2_MOSI*/
-		      SYS->GPA_MFPL = (SYS->GPA_MFPL & (~0xF0000000)) | 0x40000000;
-					SYS->GPA_MFPH = (SYS->GPA_MFPH & (~0xF0FFF)) | 0x40444;
-#endif
-			spi_irq = SPI2_IRQn;
-			clk_dev = i94xxx_spi2clk_clk_dev;
-		}
-		else
-		{
-			return 1;
-		}
+		if (SPI1_BASE == I2S_SPI_module) clk_dev = i94xxx_spi1clk_clk_dev;
+		else if (SPI2_BASE == I2S_SPI_module) clk_dev = i94xxx_spi2clk_clk_dev;
+
+		clk_dev = i94xxx_spi1clk_clk_dev;
+
+		configure_i2s_spi_pinout(cfg_hndl->spi_bus);
+
 		DEV_IOCTL_1_PARAMS(clk_dev,	CLK_IOCTL_SET_PARENT, src_clock);
 		DEV_IOCTL_0_PARAMS(clk_dev, CLK_IOCTL_ENABLE);
 
+		SPI_I2SOpen(I2S_SPI_module,
+					cfg_hndl->clk_mode,
+					cfg_hndl->sample_rate,
+					cfg_hndl->data_width,
+					cfg_hndl->audio_format,
+					cfg_hndl->txrx_format);
 
-	    /*
-	     *  Master mode, 16-bit word width, stereo mode, I2S format.
-	     *  Set TX and RX FIFO threshold to middle value.
-	     */
+//		SPI_I2S_SET_RXTH(SPI1, SPI_I2S_FIFO_RX_LEVEL_1);
+		SPI_I2S_SET_TXTH(SPI1, SPI_I2S_FIFO_TX_LEVEL_2);
 
-	    num_of_bytes_in_word = cfg_hndl->num_of_bytes_in_word;
-//	    num_of_bytes_in_word=1;
+//		SPI_I2SEnableInt(I2S_module,
+//						(SPI_FIFO_RXTH_INT_MASK | SPI_I2S_TXTH_INT_MASK));
 
-		I2S_module->FIFOCTL = SPI_I2S_FIFO_RX_LEVEL_3;
-#if 1
-		SPI_I2SOpen(I2S_module, cfg_hndl->clock_mode, cfg_hndl->sample_rate,
-	    		(num_of_bytes_in_word-1)<<SPI_I2SCTL_WDWIDTH_Pos,
-	    		SPI_I2SSTEREO, SPI_I2SFORMAT_I2S);
-#else
+		SPI_I2SEnableInt(I2S_SPI_module, SPI_I2S_TXTH_INT_MASK);
+		SPI_I2S_RST_TX_FIFO(I2S_SPI_module);
+		SPI_I2S_RST_RX_FIFO(I2S_SPI_module);
 
-	   //  I2S_module->I2SCLK = 0x1f00;
-	     I2S_module->I2SCLK = 0x10006;
-//	    I2S_module->I2SCTL = (num_of_bytes_in_word-1)<<SPI_I2SCTL_WDWIDTH_Pos |
-	//    		SPI_I2SCTL_I2SEN_Msk;
-	    I2S_module->I2SCTL = SPI_I2SCTL_I2SEN_Msk;
-#endif
-//	I2S_CLR_INT_FLAG(I2S_module, I2S_SPI_STATUS_LZCIF_Msk | I2S_SPI_STATUS_RZCIF_Msk |
-//				I2S_SPI_STATUS_TXOVIF_Msk | I2S_SPI_STATUS_TXUDIF_Msk |
-//				I2S_SPI_STATUS_RXOVIF_Msk | I2S_SPI_STATUS_RXUDIF_Msk |
-//				I2S_SPI_STATUS_TDMATIF_Msk | I2S_SPI_STATUS_TDMAEIF_Msk |
-//				I2S_SPI_STATUS_RDMATIF_Msk|I2S_SPI_STATUS_RDMAEIF_Msk);
+		if (SPI1_BASE == I2S_SPI_module) i2s_spi_irq = SPI1_IRQn;
+		else if (SPI2_BASE == I2S_SPI_module) i2s_spi_irq = SPI2_IRQn;
 
-#define 	 USE_INTERRUPT
-#ifdef USE_INTERRUPT
-		irq_register_interrupt(spi_irq , SPI_IRQHandler);
-		irq_set_priority(spi_irq , OS_MAX_INTERRUPT_PRIORITY_FOR_API_CALLS );
-		irq_enable_interrupt(spi_irq);
-		SPI_I2SEnableInt(I2S_module, 	SPI_FIFO_RXTH_INT_MASK);
+		irq_register_device_on_interrupt(i2s_spi_irq , adev);
+		irq_set_priority(i2s_spi_irq , OS_MAX_INTERRUPT_PRIORITY_FOR_API_CALLS );
+		irq_enable_interrupt(i2s_spi_irq);
+		SPI_I2SEnableControl(I2S_SPI_module);
 
-#else
-		I2S_module->PDMACTL |= SPI_PDMACTL_PDMARST_Msk;
-	    SPI_TRIGGER_RX_PDMA(I2S_module) ;
-#endif
-	   // I2S_SPI_ENABLE_RX(I2S_module);
-		I2S_module->FIFOCTL |= SPI_I2S_FIFO_RX_LEVEL_4;
-	    I2S_module->FIFOCTL |= SPI_FIFOCTL_RXRST_Msk;
 		break;
 
 	case I2S_ENABLE_OUTPUT_IOCTL:
-		SPI_I2S_ENABLE_TX(I2S_module);
-	    SPI_TRIGGER_TX_PDMA(I2S_module) ;
+		SPI_I2S_ENABLE_TX(I2S_SPI_module);
+		SPI_I2S_ENABLE_RX(I2S_SPI_module);
+	    //SPI_TRIGGER_TX_PDMA(I2S_SPI_module) ;
+		break;
+
+	case I2S_DISABLE_OUTPUT_IOCTL:
+		SPI_I2S_DISABLE_TX(I2S_SPI_module);
+		SPI_I2S_DISABLE_RX(I2S_SPI_module);
 		break;
 
 	default :
