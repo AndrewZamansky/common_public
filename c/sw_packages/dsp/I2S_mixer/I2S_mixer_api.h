@@ -21,7 +21,7 @@ typedef enum
 /**********  define API  functions  ************/
 
 extern char I2S_mixer_module_name[] ;
-#define I2S_MIXER_API_MODULE_NAME	I2S_mixer_module_name
+#define I2S_MIXER_DSPT	I2S_mixer_module_name
 
 
 

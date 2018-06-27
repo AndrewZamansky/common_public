@@ -29,7 +29,7 @@ typedef struct _fir_filter_api_band_set_t
 
 
 extern char fir_filter_module_name[] ;
-#define FIR_FILTER_API_MODULE_NAME	fir_filter_module_name
+#define FIR_FILTER_DSPT	fir_filter_module_name
 
 
 #endif

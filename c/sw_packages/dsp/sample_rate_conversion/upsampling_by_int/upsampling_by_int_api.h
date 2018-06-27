@@ -30,7 +30,7 @@ typedef struct _upsampling_by_int_filter_api_band_set_t
 
 
 extern char upsampling_by_int_module_name[] ;
-#define UPSAMPLING_BY_INT_API_MODULE_NAME	upsampling_by_int_module_name
+#define UPSAMPLING_BY_INT_DSPT	upsampling_by_int_module_name
 
 
 #endif

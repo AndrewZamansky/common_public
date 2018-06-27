@@ -153,7 +153,7 @@ void once(void (*func)(void)) {
  */
 void  webrtc_voice_activity_detection_init(void)
 {
-	DSP_REGISTER_NEW_MODULE(WEBRTC_VOICE_ACTIVITY_DETECTION_API_MODULE_NAME,
+	DSP_REGISTER_NEW_MODULE(WEBRTC_VOICE_ACTIVITY_DETECTION_DSPT,
 			webrtc_voice_activity_detection_ioctl,
 			webrtc_voice_activity_detection_dsp,
 			struct WEBRTC_VOICE_ACTIVITY_DETECTION_Instance_t);

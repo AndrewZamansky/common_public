@@ -124,12 +124,12 @@ char p_filter_all_pass_1_pole[] = "p_filter_all_pass_1_pole";
 
 static struct static_dsp_component chain_1_pole[] =
 {
-	{"chain_inputs", CHAIN_INPUTS_MODULE_NAME, { } },
+	{"chain_inputs", CHAIN_INPUTS_DSPT, { } },
 
 	{p_filter_all_pass_1_pole,
-			BIQUAD_FILTER_API_MODULE_NAME, {{"chain_inputs", 0}}},
+			BIQUAD_FILTER_DSPT, {{"chain_inputs", 0}}},
 
-	{"chain_outputs", CHAIN_OUTPUTS_MODULE_NAME,
+	{"chain_outputs", CHAIN_OUTPUTS_DSPT,
 			{ {p_filter_all_pass_1_pole, 0} } },
 };
 
@@ -137,12 +137,12 @@ char p_filter_all_pass_2_poles[] = "p_filter_all_pass_2_poles";
 
 static struct static_dsp_component chain_2_poles[] =
 {
-	{"chain_inputs", CHAIN_INPUTS_MODULE_NAME, { } },
+	{"chain_inputs", CHAIN_INPUTS_DSPT, { } },
 
 	{p_filter_all_pass_2_poles,
-			BIQUAD_FILTER_API_MODULE_NAME, {{"chain_inputs", 0}}},
+			BIQUAD_FILTER_DSPT, {{"chain_inputs", 0}}},
 
-	{"chain_outputs", CHAIN_OUTPUTS_MODULE_NAME,
+	{"chain_outputs", CHAIN_OUTPUTS_DSPT,
 			{ {p_filter_all_pass_2_poles, 0} } },
 };
 

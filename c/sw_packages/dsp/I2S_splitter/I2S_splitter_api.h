@@ -20,6 +20,6 @@ typedef enum
 
 
 extern char I2S_splitter_module_name[] ;
-#define I2S_SPLITTER_API_MODULE_NAME	I2S_splitter_module_name
+#define I2S_SPLITTER_DSPT	I2S_splitter_module_name
 
 #endif

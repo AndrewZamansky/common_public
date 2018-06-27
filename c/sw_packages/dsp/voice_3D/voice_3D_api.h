@@ -30,7 +30,7 @@ typedef enum
 /**********  define API  functions  ************/
 
 extern char voice_3D_module_name[] ;
-#define VOICE_3D_API_MODULE_NAME	voice_3D_module_name
+#define VOICE_3D_DSPT	voice_3D_module_name
 
 
 #endif

@@ -30,7 +30,7 @@ typedef struct _downsampling_by_int_filter_api_band_set_t
 
 
 extern char downsampling_by_int_module_name[] ;
-#define DOWNSAMPLING_BY_INT_API_MODULE_NAME	downsampling_by_int_module_name
+#define DOWNSAMPLING_BY_INT_DSPT	downsampling_by_int_module_name
 
 
 #endif

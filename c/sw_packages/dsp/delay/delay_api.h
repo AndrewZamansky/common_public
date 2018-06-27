@@ -21,7 +21,7 @@ typedef enum
 /**********  define API  functions  ************/
 
 extern char delay_module_name[] ;
-#define DELAY_API_MODULE_NAME	delay_module_name
+#define DELAY_DSPT	delay_module_name
 
 
 #endif

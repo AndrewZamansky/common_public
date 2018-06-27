@@ -21,7 +21,7 @@
 /**********  define API  functions  ************/
 
 extern char rms_module_name[] ;
-#define RMS_API_MODULE_NAME	rms_module_name
+#define RMS_DSPT	rms_module_name
 
 
 #endif

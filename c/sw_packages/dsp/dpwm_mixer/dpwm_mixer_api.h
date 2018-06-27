@@ -21,7 +21,7 @@ typedef enum
 /**********  define API  functions  ************/
 
 extern char dpwm_mixer_module_name[] ;
-#define DPWM_MIXER_API_MODULE_NAME	dpwm_mixer_module_name
+#define DPWM_MIXER_DSPT	dpwm_mixer_module_name
 
 
 

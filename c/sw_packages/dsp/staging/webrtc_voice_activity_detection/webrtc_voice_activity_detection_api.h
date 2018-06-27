@@ -22,7 +22,7 @@ typedef enum
 
 extern char webrtc_voice_activity_detection_module_name[] ;
 
-#define WEBRTC_VOICE_ACTIVITY_DETECTION_API_MODULE_NAME	\
+#define WEBRTC_VOICE_ACTIVITY_DETECTION_DSPT	\
 								webrtc_voice_activity_detection_module_name
 
 

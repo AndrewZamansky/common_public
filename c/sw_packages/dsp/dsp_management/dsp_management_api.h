@@ -126,9 +126,9 @@ struct dsp_chain_t {
 };
 
 extern char chain_outputs_module_name[] ;
-#define CHAIN_OUTPUTS_MODULE_NAME	chain_outputs_module_name
+#define CHAIN_OUTPUTS_DSPT  chain_outputs_module_name
 extern char chain_inputs_module_name[] ;
-#define CHAIN_INPUTS_MODULE_NAME	chain_inputs_module_name
+#define CHAIN_INPUTS_DSPT   chain_inputs_module_name
 
 /**********  define API  functions  ************/
 

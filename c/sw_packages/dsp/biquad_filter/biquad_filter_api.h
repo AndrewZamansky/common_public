@@ -57,7 +57,7 @@ struct biquad_filter_api_band_set_t
 
 
 extern char biquad_filter_module_name[] ;
-#define BIQUAD_FILTER_API_MODULE_NAME	biquad_filter_module_name
+#define BIQUAD_FILTER_DSPT	biquad_filter_module_name
 
 
 #endif

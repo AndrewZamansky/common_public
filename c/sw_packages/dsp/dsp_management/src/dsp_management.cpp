@@ -541,7 +541,7 @@ struct dsp_chain_t *_dsp_management_create_static_chain(
 
 	curr_chain_component = &arr[0];
 	if (0 != strncmp(curr_chain_component->module_type_name,
-			CHAIN_INPUTS_MODULE_NAME, sizeof(CHAIN_INPUTS_MODULE_NAME)))
+			CHAIN_INPUTS_DSPT, sizeof(CHAIN_INPUTS_DSPT)))
 	{
 		CRITICAL_ERROR("first chain element must be input element");
 		return NULL;
@@ -551,16 +551,16 @@ struct dsp_chain_t *_dsp_management_create_static_chain(
 		curr_chain_component++;
 		module_type_name = curr_chain_component->module_type_name;
 		if ( (0 == strncmp(module_type_name,
-				CHAIN_INPUTS_MODULE_NAME, sizeof(CHAIN_INPUTS_MODULE_NAME))) ||
+				CHAIN_INPUTS_DSPT, sizeof(CHAIN_INPUTS_DSPT))) ||
 			(0 == strncmp(module_type_name,
-				CHAIN_OUTPUTS_MODULE_NAME, sizeof(CHAIN_OUTPUTS_MODULE_NAME))) )
+				CHAIN_OUTPUTS_DSPT, sizeof(CHAIN_OUTPUTS_DSPT))) )
 		{
 			CRITICAL_ERROR("inputs and outputs must be first and last elements respectively");
 		}
 	}
 	curr_chain_component++;
 	if (0 != strncmp(curr_chain_component->module_type_name,
-			CHAIN_OUTPUTS_MODULE_NAME, sizeof(CHAIN_OUTPUTS_MODULE_NAME)))
+			CHAIN_OUTPUTS_DSPT, sizeof(CHAIN_OUTPUTS_DSPT)))
 	{
 		CRITICAL_ERROR("last chain element must be output element");
 		return NULL;

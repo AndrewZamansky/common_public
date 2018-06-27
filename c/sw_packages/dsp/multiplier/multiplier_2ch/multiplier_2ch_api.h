@@ -14,7 +14,7 @@
 /**********  define API  functions  ************/
 
 extern char multiplier_2ch_module_name[] ;
-#define MULTIPLIER_2CH_API_MODULE_NAME	multiplier_2ch_module_name
+#define MULTIPLIER_2CH_DSPT	multiplier_2ch_module_name
 
 
 
