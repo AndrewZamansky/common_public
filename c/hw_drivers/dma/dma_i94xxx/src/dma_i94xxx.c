@@ -332,8 +332,8 @@ static uint8_t set_peripheral_dma(struct dma_i94xxx_cfg_t *cfg_hndl,
 		break;
 
 	case PDMA_SPI1_TX :
-		src_ctrl = PDMA_SAR_INC;
 		dest_addr = (void*)&SPI1->TX;
+		src_ctrl = PDMA_SAR_INC;
 		dest_ctrl = PDMA_DAR_FIX;
 		dma_peripheral_direction = DMA_TO_PERIPHERAL;
 		break;
@@ -626,8 +626,42 @@ static uint8_t get_empty_tx_buffer(struct dev_desc_t *ch_pdev,
 static void enable_peripheral_output(
 		uint8_t peripheral_type, struct dev_desc_t *peripheral_dev)
 {
+	// Need to use these variables to keep modularity and abstraction.
+//	struct I2S_onSPI_i94xxx_cfg_t *cfg_hndl;
+//	SPI_T	*I2S_SPI_module;
+
 	switch (peripheral_type)
 	{
+	case PDMA_SPI1_TX :
+
+		//TODO: Doesn't work, using direct bit access
+
+//		cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(peripheral_dev);
+//		I2S_SPI_module = (SPI_T *)cfg_hndl->base_address;
+//		SPI_I2S_ENABLE_TX(I2S_SPI_module);
+//		SPI_I2S_ENABLE_TXDMA(I2S_SPI_module);
+
+		//Currently using I2S protocol on SPI bus.
+		// TODO: Need identifier for different protocols.
+		SPI1->I2SCTL &= ~SPI_I2SCTL_TXEN_Msk;
+		SPI1->I2SCTL |= SPI_I2SCTL_TXEN_Msk;
+
+		SPI1->PDMACTL &= ~SPI_PDMACTL_TXPDMAEN_Msk;
+		SPI1->PDMACTL |= SPI_PDMACTL_TXPDMAEN_Msk;
+
+		break;
+
+	case PDMA_SPI2_TX :
+
+		//Currently using I2S protocol on SPI bus.
+		// TODO: Need identifier for different protocols.
+		SPI2->I2SCTL &= ~SPI_I2SCTL_TXEN_Msk;
+		SPI2->I2SCTL |= SPI_I2SCTL_TXEN_Msk;
+
+		SPI2->PDMACTL &= ~SPI_PDMACTL_TXPDMAEN_Msk;
+		SPI2->PDMACTL |= SPI_PDMACTL_TXPDMAEN_Msk;
+
+		break;
 
 	case PDMA_I2S0_TX :
 		I2S0->CTL0 &= ~(I2S_CTL0_TXEN_Msk | I2S_CTL0_TXPDMAEN_Msk);

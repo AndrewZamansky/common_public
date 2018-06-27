@@ -24,6 +24,10 @@
 		#error "I2S_I94XXX_DT_NUM_OF_BYTES_IN_WORD should be defined"
 	#endif
 
+	#ifndef I2S_I94XXX_DT_TDM_CH
+		#error "I2S_I94XXX_DT_TDM_CH should be defined"
+	#endif
+
 	#ifndef I2S_I94XXX_DT_I2S_FORMAT
 		#error "I2S_I94XXX_DT_I2S_FORMAT should be defined"
 	#endif
@@ -64,6 +68,8 @@
 			I2S_I94XXX_DT_SAMPLE_RATE,           \
 			I2S_I94XXX_DT_I2S_FORMAT,            \
 			I2S_I94XXX_DT_NUM_OF_BYTES_IN_WORD,  \
+			I2S_I94XXX_DT_TDM_CH,                \
+			I2S_I94XXX_DT_AUDIO_FORMAT,          \
 			I2S_I94XXX_DT_BCLK_PIN,              \
 			I2S_I94XXX_DT_LRCLK_PIN,             \
 			I2S_I94XXX_DT_DI_PIN,                \

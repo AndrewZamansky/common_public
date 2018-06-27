@@ -140,19 +140,26 @@ uint8_t I2S_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 {
 	struct I2S_i94xxx_cfg_t *cfg_hndl;
 	struct I2S_i94xxx_runtime_t *runtime_handle;
-//	uint8_t   	clock_mode;
+	uint32_t   	clock_mode;
 	uint8_t		num_of_bytes_in_word;
 	struct dev_desc_t	*clk_dev;
 	struct dev_desc_t	*src_clock;
 	uint32_t	sample_rate;
 	uint32_t	i2s_format;
+	uint32_t    tdm_ch_num;
+	uint32_t    audio_format;
 
 	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
 	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
+
 	src_clock = cfg_hndl->src_clock;
+	clock_mode = cfg_hndl->clock_mode;
 	sample_rate = cfg_hndl->sample_rate;
 	i2s_format = cfg_hndl->i2s_format;
 	num_of_bytes_in_word = cfg_hndl->num_of_bytes_in_word;
+	tdm_ch_num = cfg_hndl->tdm_ch_num;
+	audio_format = cfg_hndl->audio_format;
+
 	clk_dev = i94xxx_i2s_clk_dev;
 
 	switch(aIoctl_num)
@@ -171,15 +178,21 @@ uint8_t I2S_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 	     */
 
 		num_of_bytes_in_word = cfg_hndl->num_of_bytes_in_word;
-//	    num_of_bytes_in_word=1;
 
 		runtime_handle->actual_sample_rate = I2S_Open(
-				I2S0, cfg_hndl->clock_mode, sample_rate,
-				(num_of_bytes_in_word-1) << SPI_I2SCTL_WDWIDTH_Pos,
-				I2S_TDMCHNUM_4CH, I2S_STEREO, i2s_format);
+							I2S0,
+							clock_mode,
+							sample_rate,
+							(num_of_bytes_in_word-1) << I2S_CTL0_DATWIDTH_Pos,
+							tdm_ch_num,
+							audio_format,
+							i2s_format);
 
 		I2S_SET_TXTH(I2S0, I2S_FIFO_TX_LEVEL_WORD_4);
 		I2S_SET_RXTH(I2S0, I2S_FIFO_RX_LEVEL_WORD_4);
+
+		I2S_CLR_TX_FIFO(I2S0);
+		I2S_CLR_RX_FIFO(I2S0);
 
 		I2S_EnableMCLK(I2S0, sample_rate * 256);
 
@@ -193,6 +206,7 @@ uint8_t I2S_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 			/* Set channel width. */
 			I2S_SET_CHWIDTH(I2S0, I2S_CHWIDTH_32);
 		}
+
 		I2S_ENABLE_RX(I2S0);
 		I2S_ENABLE(I2S0);
 
