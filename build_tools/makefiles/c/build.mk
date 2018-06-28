@@ -75,9 +75,8 @@ $(SUBDIRS):
 	$(eval export DEFINES)
 	$(eval export ASMFLAGS)
 	$(eval export VPATH)
-	$(eval export TARGET)
-	@echo - $(patsubst $(PARENT_OF_COMMON_PUBLIC_DIR)/%,%,$@)
-	$(MAKE) -C $@ -f Makefile.uc.mk $(TARGET)
+	$(info - $(patsubst $(PARENT_OF_COMMON_PUBLIC_DIR)/%,%,$@))
+	$(MAKE) -r -C $@ -f Makefile.uc.mk all
 
 
 .PHONY: default  archive clean all $(SUBDIRS)

@@ -53,7 +53,7 @@ menuconfig:
 
 
 all: $(COMPONENTS_MK) $(PROJECT_CONFIG_H_FILE)
-	$(MAKE) -f $(MAKEFILES_ROOT_DIR)/c/build.mk build_all
+	$(MAKE) -r -f $(MAKEFILES_ROOT_DIR)/c/build.mk build_all
 
 $(COMPONENTS_MK) : $(APP_ROOT_DIR)/.config
 	$(MAKE) -f $(GENERATE_PRJ_FILES_DIR)/generate_include_components_mk_file.mk
