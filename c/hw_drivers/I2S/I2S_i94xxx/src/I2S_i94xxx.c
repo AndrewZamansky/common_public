@@ -126,6 +126,7 @@ static void configure_pinout(struct I2S_i94xxx_cfg_t *cfg_hndl)
 		SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD6MFP_Msk);
 		SYS->GPD_MFPL |= SYS_GPD_MFPL_PD6MFP_I2S0_BCLK;
 	}
+
 }
 
 
@@ -166,18 +167,16 @@ uint8_t I2S_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 	{
 	case IOCTL_DEVICE_START :
 
+		configure_pinout(cfg_hndl);
 
 		DEV_IOCTL_1_PARAMS(clk_dev, CLK_IOCTL_SET_PARENT, src_clock);
 		DEV_IOCTL_0_PARAMS(clk_dev, CLK_IOCTL_ENABLE);
 
-		configure_pinout(cfg_hndl);
 
 		/*
 	     *  Master mode, 16-bit word width, stereo mode, I2S format.
 	     *  Set TX and RX FIFO threshold to middle value.
 	     */
-
-		num_of_bytes_in_word = cfg_hndl->num_of_bytes_in_word;
 
 		runtime_handle->actual_sample_rate = I2S_Open(
 							I2S0,
@@ -206,6 +205,15 @@ uint8_t I2S_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 			/* Set channel width. */
 			I2S_SET_CHWIDTH(I2S0, I2S_CHWIDTH_32);
 		}
+//		else if ( I2S_FORMAT_I2S == i2s_format )
+//		{
+//			// I2S0 Configuration
+//			I2S_SET_PCMSYNC(I2S0, I2S_PCMSYNC_BCLK);
+//			I2S_SET_MONO_RX_CHANNEL(I2S0, I2S_MONO_RX_RIGHT);
+//			I2S_SET_STEREOORDER(I2S0, I2S_ORDER_EVENLOW);
+//			// Set channel width.
+//			I2S_SET_CHWIDTH(I2S0, I2S_CHWIDTH_32);
+//		}
 
 		I2S_ENABLE_RX(I2S0);
 		I2S_ENABLE(I2S0);

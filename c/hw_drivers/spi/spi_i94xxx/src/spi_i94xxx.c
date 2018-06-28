@@ -261,7 +261,7 @@ size_t spi_i94xxx_pread(struct dev_desc_t *adev,
 
 	os_mutex_take_infinite_wait(spi_mutex);
 
-	//Clear the RX FIFO from previous writes
+	//Clear the RX FIFO from previous reads
 	SPI_ClearRxFIFO(spi_regs);
 
 	if (0 == aLength) return 0;

@@ -283,8 +283,6 @@ uint8_t I2S_onSPI_i94xxx_ioctl( struct dev_desc_t *adev,
 		if ((SPI_T*)SPI1_BASE == I2S_SPI_module) clk_dev = i94xxx_spi1clk_clk_dev;
 		else if ((SPI_T*)SPI2_BASE == I2S_SPI_module) clk_dev = i94xxx_spi2clk_clk_dev;
 
-		clk_dev = i94xxx_spi1clk_clk_dev;
-
 		configure_i2s_spi_pinout(cfg_hndl->spi_bus);
 
 		DEV_IOCTL_1_PARAMS(clk_dev,	CLK_IOCTL_SET_PARENT, src_clock);
@@ -313,7 +311,6 @@ uint8_t I2S_onSPI_i94xxx_ioctl( struct dev_desc_t *adev,
 //		irq_register_device_on_interrupt(i2s_spi_irq , adev);
 //		irq_set_priority(i2s_spi_irq , OS_MAX_INTERRUPT_PRIORITY_FOR_API_CALLS );
 //		irq_enable_interrupt(i2s_spi_irq);
-
 
 
 		SPI_I2SEnableControl(I2S_SPI_module);
