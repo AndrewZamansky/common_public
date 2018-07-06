@@ -20,6 +20,8 @@ struct I2S_i94xxx_cfg_t {
 	uint32_t    sample_rate;
 	uint32_t    i2s_format;
 	uint8_t     num_of_bytes_in_word;
+	uint32_t    tdm_ch_num;
+	uint32_t    audio_format;
 	uint8_t     BCLK_pin;
 	uint8_t     LRCLK_pin;
 	uint8_t     DI_pin;
