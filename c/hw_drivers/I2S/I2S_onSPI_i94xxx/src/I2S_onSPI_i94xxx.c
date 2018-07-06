@@ -324,7 +324,7 @@ uint8_t I2S_onSPI_i94xxx_ioctl( struct dev_desc_t *adev,
 		SPI_I2SOpen(I2S_SPI_module, clk_mode, sample_rate, data_width,
 											audio_format, txrx_format);
 
-		if(NULL != cfg_hndl->MCLK_pin)
+		if(0 != cfg_hndl->MCLK_pin)
 		{
 			SPI_I2SEnableMCLK(I2S_SPI_module, sample_rate * 256 );
 		}
