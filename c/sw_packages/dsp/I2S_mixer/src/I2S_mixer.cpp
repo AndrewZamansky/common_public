@@ -190,7 +190,7 @@ void  I2S_mixer_init(void)
 #if (2 == NUM_OF_BYTES_PER_AUDIO_WORD)
 	normalizer = (int16_t)0x7fff;
 #elif (4 == NUM_OF_BYTES_PER_AUDIO_WORD)
-	normalizer = (int16_t)0x7fffffff;
+	normalizer = (int32_t)0x7fffffff;
 #else
 	#error "TODO : for audio word with 4 bytes devision by  0x7fffffff is wrong because integer part is 16 bit only "
 #endif
