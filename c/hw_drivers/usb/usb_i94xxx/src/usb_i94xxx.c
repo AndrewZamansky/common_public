@@ -68,9 +68,11 @@ usb_dev_interface_request_callback_func_t
 
 static uint8_t endpoints_count = 2;
 static uint16_t available_buff_pointer = EP1_BUF_BASE + EP1_BUF_LEN;
-
 /*--------------------------------------------------------------------------*/
 
+//Windows 10 Compiler failed without this variable even though called in an
+// 		unused function.
+uint32_t CyclesPerUs      = 0;
 
 #define DBG_PRINTF(...)
 

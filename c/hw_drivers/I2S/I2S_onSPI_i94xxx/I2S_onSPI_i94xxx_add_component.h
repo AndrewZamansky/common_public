@@ -41,8 +41,25 @@
 		#error "I2S_onSPI_I94XXX_DT_TXRX_FORMAT should be defined"
 	#endif
 
-	#ifndef I2S_onSPI_I94XXX_DT_SPI_BUS
-		#error "I2S_onSPI_I94XXX_DT_SPI_BUS should be defined"
+	#ifndef I2S_onSPI_I94XXX_DT_BCLK_PIN
+		#error "I2S_onSPI_I94XXX_DT_BCLK_PIN should be defined"
+	#endif
+
+	#ifndef I2S_onSPI_I94XXX_DT_LRCLK_PIN
+		#error "I2S_onSPI_I94XXX_DT_LRCLK_PIN should be defined"
+	#endif
+
+	#ifndef I2S_onSPI_I94XXX_DT_DI_PIN
+		#error "I2S_onSPI_I94XXX_DT_DI_PIN should be defined"
+	#endif
+
+	#ifndef I2S_onSPI_I94XXX_DT_DO_PIN
+		#error "I2S_onSPI_I94XXX_DT_DO_PIN should be defined"
+	#endif
+
+	#ifndef I2S_onSPI_I94XXX_DT_MCLK_PIN
+		#warning "I2S_onSPI_I94XXX_DT_MCLK_PIN is not defined"
+		#define I2S_onSPI_I94XXX_DT_MCLK_PIN  0
 	#endif
 
 	#define POINTER_TO_SRC_CLOCK_PDEV	 \
@@ -59,7 +76,11 @@
 			I2S_onSPI_I94XXX_DT_DATA_WIDTH,				\
 			I2S_onSPI_I94XXX_DT_AUDIO_FORMAT,			\
 			I2S_onSPI_I94XXX_DT_TXRX_FORMAT,			\
-			I2S_onSPI_I94XXX_DT_SPI_BUS,				\
+			I2S_onSPI_I94XXX_DT_BCLK_PIN,               \
+			I2S_onSPI_I94XXX_DT_LRCLK_PIN,              \
+			I2S_onSPI_I94XXX_DT_DI_PIN,                 \
+			I2S_onSPI_I94XXX_DT_DO_PIN,                 \
+			I2S_onSPI_I94XXX_DT_MCLK_PIN,               \
 		}
 
 #endif

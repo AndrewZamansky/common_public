@@ -25,7 +25,12 @@ struct I2S_onSPI_i94xxx_cfg_t {
 	uint32_t	data_width;
 	uint32_t	audio_format;
 	uint32_t	txrx_format;
-	uint8_t		spi_bus;
+	uint8_t     BCLK_pin;
+	uint8_t     LRCLK_pin;
+	uint8_t     DI_pin;
+	uint8_t     DO_pin;
+	uint8_t     MCLK_pin;
+
 };
 
 struct I2S_onSPI_i94xxx_runtime_t {

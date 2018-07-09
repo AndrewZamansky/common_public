@@ -24,8 +24,26 @@
 		#error "I2S_I94XXX_DT_NUM_OF_BYTES_IN_WORD should be defined"
 	#endif
 
+	#ifndef I2S_I94XXX_DT_STEREO_OR_MONO
+		#error "I2S_I94XXX_DT_STEREO_OR_MONO should be defined"
+	#endif
+
 	#ifndef I2S_I94XXX_DT_I2S_FORMAT
 		#error "I2S_I94XXX_DT_I2S_FORMAT should be defined"
+	#else
+		#if ( I2S_I94XXX_FORMAT_I2S != I2S_I94XXX_DT_I2S_FORMAT)
+			#ifndef I2S_I94XXX_DT_TDM_CH
+				#error "I2S_I94XXX_DT_TDM_CH should be defined"
+			#endif
+		#else
+			#undef  I2S_I94XXX_DT_TDM_CH
+			#if ( I2S_I94XXX_API_AUDIO_FORMAT_MONO == \
+										I2S_I94XXX_DT_STEREO_OR_MONO)
+				#define I2S_I94XXX_DT_TDM_CH  1
+			#else
+				#define I2S_I94XXX_DT_TDM_CH  2
+			#endif
+		#endif
 	#endif
 
 	#ifndef I2S_I94XXX_DT_BCLK_PIN
@@ -64,6 +82,8 @@
 			I2S_I94XXX_DT_SAMPLE_RATE,           \
 			I2S_I94XXX_DT_I2S_FORMAT,            \
 			I2S_I94XXX_DT_NUM_OF_BYTES_IN_WORD,  \
+			I2S_I94XXX_DT_TDM_CH,                \
+			I2S_I94XXX_DT_STEREO_OR_MONO,        \
 			I2S_I94XXX_DT_BCLK_PIN,              \
 			I2S_I94XXX_DT_LRCLK_PIN,             \
 			I2S_I94XXX_DT_DI_PIN,                \

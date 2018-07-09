@@ -76,56 +76,77 @@ static void configure_pinout(struct I2S_i94xxx_cfg_t *cfg_hndl)
 	{
 		SYS->GPB_MFPH &= ~(SYS_GPB_MFPH_PB13MFP_Msk);
 		SYS->GPB_MFPH |= SYS_GPB_MFPH_PB13MFP_I2S0_DI;
+
+//		PB->SMTEN = GPIO_SMTEN_SMTEN13_Msk;
 	}
 	else if (I2S_I94XXX_API_DI_PIN_D4 == cfg_hndl->DI_pin)
 	{
 		SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD4MFP_Msk);
 		SYS->GPD_MFPL |= SYS_GPD_MFPL_PD4MFP_I2S0_DI;
+
+//		PD->SMTEN = GPIO_SMTEN_SMTEN4_Msk;
 	}
 
 	if (I2S_I94XXX_API_DO_PIN_B14 == cfg_hndl->DO_pin)
 	{
 		SYS->GPB_MFPH &= ~(SYS_GPB_MFPH_PB14MFP_Msk);
 		SYS->GPB_MFPH |= SYS_GPB_MFPH_PB14MFP_I2S0_DO;
+
+//		PB->SMTEN = GPIO_SMTEN_SMTEN14_Msk;
 	}
 	else if (I2S_I94XXX_API_DO_PIN_D5 == cfg_hndl->DO_pin)
 	{
 		SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD5MFP_Msk);
 		SYS->GPD_MFPL |= SYS_GPD_MFPL_PD5MFP_I2S0_DO;
+
+//		PD->SMTEN = GPIO_SMTEN_SMTEN5_Msk;
 	}
 
 	if (I2S_I94XXX_API_MCLK_PIN_B15 == cfg_hndl->MCLK_pin)
 	{
 		SYS->GPB_MFPH &= ~(SYS_GPB_MFPH_PB15MFP_Msk);
 		SYS->GPB_MFPH |= SYS_GPB_MFPH_PB15MFP_I2S0_MCLK;
+
+//		PB->SMTEN = GPIO_SMTEN_SMTEN15_Msk;
 	}
 	else if (I2S_I94XXX_API_MCLK_PIN_D2 == cfg_hndl->MCLK_pin)
 	{
 		SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD2MFP_Msk);
 		SYS->GPD_MFPL |= SYS_GPD_MFPL_PD2MFP_I2S0_MCLK;
+
+//		PD->SMTEN = GPIO_SMTEN_SMTEN2_Msk;
 	}
 
 	if (I2S_I94XXX_API_LRCLK_PIN_D1 == cfg_hndl->LRCLK_pin)
 	{
 		SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD1MFP_Msk);
 		SYS->GPD_MFPL |= SYS_GPD_MFPL_PD1MFP_I2S0_LRCLK;
+
+//		PD->SMTEN = GPIO_SMTEN_SMTEN1_Msk;
 	}
 	else if (I2S_I94XXX_API_LRCLK_PIN_D3 == cfg_hndl->LRCLK_pin)
 	{
 		SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD3MFP_Msk);
 		SYS->GPD_MFPL |= SYS_GPD_MFPL_PD3MFP_I2S0_LRCK;
+
+//		PD->SMTEN = GPIO_SMTEN_SMTEN3_Msk;
 	}
 
 	if (I2S_I94XXX_API_BCLK_PIN_D0 == cfg_hndl->BCLK_pin)
 	{
 		SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD0MFP_Msk);
 		SYS->GPD_MFPL |= SYS_GPD_MFPL_PD0MFP_I2S0_BCLK;
+
+//		PD->SMTEN = GPIO_SMTEN_SMTEN0_Msk;
 	}
 	else if (I2S_I94XXX_API_BCLK_PIN_D6 == cfg_hndl->BCLK_pin)
 	{
 		SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD6MFP_Msk);
 		SYS->GPD_MFPL |= SYS_GPD_MFPL_PD6MFP_I2S0_BCLK;
+
+//		PD->SMTEN = GPIO_SMTEN_SMTEN6_Msk;
 	}
+
 }
 
 
@@ -140,46 +161,57 @@ uint8_t I2S_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 {
 	struct I2S_i94xxx_cfg_t *cfg_hndl;
 	struct I2S_i94xxx_runtime_t *runtime_handle;
-//	uint8_t   	clock_mode;
+	uint32_t   	clock_mode;
 	uint8_t		num_of_bytes_in_word;
 	struct dev_desc_t	*clk_dev;
 	struct dev_desc_t	*src_clock;
 	uint32_t	sample_rate;
 	uint32_t	i2s_format;
+	uint32_t    tdm_ch_num;
+	uint32_t    audio_format;
 
 	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
 	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
+
 	src_clock = cfg_hndl->src_clock;
+	clock_mode = cfg_hndl->clock_mode;
 	sample_rate = cfg_hndl->sample_rate;
 	i2s_format = cfg_hndl->i2s_format;
 	num_of_bytes_in_word = cfg_hndl->num_of_bytes_in_word;
+	tdm_ch_num = cfg_hndl->tdm_ch_num;
+	audio_format = cfg_hndl->audio_format;
+
 	clk_dev = i94xxx_i2s_clk_dev;
 
 	switch(aIoctl_num)
 	{
 	case IOCTL_DEVICE_START :
 
+		configure_pinout(cfg_hndl);
 
 		DEV_IOCTL_1_PARAMS(clk_dev, CLK_IOCTL_SET_PARENT, src_clock);
 		DEV_IOCTL_0_PARAMS(clk_dev, CLK_IOCTL_ENABLE);
 
-		configure_pinout(cfg_hndl);
 
 		/*
 	     *  Master mode, 16-bit word width, stereo mode, I2S format.
 	     *  Set TX and RX FIFO threshold to middle value.
 	     */
 
-		num_of_bytes_in_word = cfg_hndl->num_of_bytes_in_word;
-//	    num_of_bytes_in_word=1;
-
 		runtime_handle->actual_sample_rate = I2S_Open(
-				I2S0, cfg_hndl->clock_mode, sample_rate,
-				(num_of_bytes_in_word-1) << SPI_I2SCTL_WDWIDTH_Pos,
-				I2S_TDMCHNUM_4CH, I2S_STEREO, i2s_format);
+							I2S0,
+							clock_mode,
+							sample_rate,
+							(num_of_bytes_in_word-1) << I2S_CTL0_DATWIDTH_Pos,
+							tdm_ch_num,
+							audio_format,
+							i2s_format);
 
 		I2S_SET_TXTH(I2S0, I2S_FIFO_TX_LEVEL_WORD_4);
 		I2S_SET_RXTH(I2S0, I2S_FIFO_RX_LEVEL_WORD_4);
+
+		I2S_CLR_TX_FIFO(I2S0);
+		I2S_CLR_RX_FIFO(I2S0);
 
 		I2S_EnableMCLK(I2S0, sample_rate * 256);
 
@@ -193,6 +225,16 @@ uint8_t I2S_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 			/* Set channel width. */
 			I2S_SET_CHWIDTH(I2S0, I2S_CHWIDTH_32);
 		}
+//		else if ( I2S_FORMAT_I2S == i2s_format )
+//		{
+//			// I2S0 Configuration
+//			I2S_SET_PCMSYNC(I2S0, I2S_PCMSYNC_BCLK);
+//			I2S_SET_MONO_RX_CHANNEL(I2S0, I2S_MONO_RX_RIGHT);
+//			I2S_SET_STEREOORDER(I2S0, I2S_ORDER_EVENLOW);
+//			// Set channel width.
+//			I2S_SET_CHWIDTH(I2S0, I2S_CHWIDTH_32);
+//		}
+
 		I2S_ENABLE_RX(I2S0);
 		I2S_ENABLE(I2S0);
 
