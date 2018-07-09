@@ -23,9 +23,9 @@
 
 /********  defines *********************/
 
-#if (2 == NUM_OF_BYTES_PER_AUDIO_WORD)
+#if (2 == BYTES_PER_PCM_CHANNEL)
 	typedef int16_t	buffer_type_t	;
-#elif (4 == NUM_OF_BYTES_PER_AUDIO_WORD)
+#elif (4 == BYTES_PER_PCM_CHANNEL)
 	typedef int32_t	buffer_type_t	;
 #else
 	#error "TODO : "
@@ -96,7 +96,7 @@ void I2S_splitter_dsp(struct dsp_module_inst_t *adsp,
 		CRITICAL_ERROR("bad output buffer size");
 	}
 
-	in_data_len /= ( num_of_channels * NUM_OF_BYTES_PER_AUDIO_WORD);
+	in_data_len /= ( num_of_channels * BYTES_PER_PCM_CHANNEL);
 
 	if (in_data_len != out_data_len[0] )
 	{
@@ -155,15 +155,15 @@ uint8_t I2S_splitter_ioctl(struct dsp_module_inst_t *adsp ,
 void  I2S_splitter_init(void)
 {
 #if defined(CONFIG_DSP_REAL_NUMBER_FORMAT_FLOATING_POINT)
-	#if (2 == NUM_OF_BYTES_PER_AUDIO_WORD)
+	#if (2 == BYTES_PER_PCM_CHANNEL)
 		normalizer = (float)(1.0f / (float)0x7fff);
-	#elif (4 == NUM_OF_BYTES_PER_AUDIO_WORD)
+	#elif (4 == BYTES_PER_PCM_CHANNEL)
 		normalizer = (float)(1.0f / (float)0x7fffffff);
 	#else
 		#error "TODO : "
 	#endif
 #elif defined(CONFIG_DSP_REAL_NUMBER_FORMAT_FIXED_POINT)
-	#if (2 == NUM_OF_BYTES_PER_AUDIO_WORD)
+	#if (2 == BYTES_PER_PCM_CHANNEL)
 		normalizer = (float)(1.0f / (float)0x7fff);
 	#else
 		#error "TODO : for audio word with 4 bytes devision by  0x7fffffff is wrong because integer part is 16 bit only "

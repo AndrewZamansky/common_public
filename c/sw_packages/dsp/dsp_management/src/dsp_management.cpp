@@ -201,16 +201,15 @@ void dsp_management_api_delete_modules()
  *
  * return:
  */
-void dsp_management_api_init(size_t max_num_of_allocated_buffers,
-							size_t size_of_items_in_buffer)
+void dsp_management_api_init(size_t size_of_items_in_buffer)
 {
 	if (NULL != dsp_buffers_pool)
 	{
 		CRITICAL_ERROR("DSP already initialized");
 	}
 
-	dsp_buffers_pool = memory_pool_init(max_num_of_allocated_buffers,
-			size_of_items_in_buffer * sizeof(real_t));
+	dsp_buffers_pool =
+			memory_pool_init( size_of_items_in_buffer * sizeof(real_t));
 
 	default_zero_buff.buff = (real_t*)memory_pool_zmalloc(dsp_buffers_pool);
 	default_zero_buff.buff_size =

@@ -23,9 +23,9 @@
 #include "_I2S_mixer_prerequirements_check.h"
 
 /********  defines *********************/
-#if (2 == NUM_OF_BYTES_PER_AUDIO_WORD)
+#if (2 == BYTES_PER_PCM_CHANNEL)
 	typedef int16_t	buffer_type_t;
-#elif (4 == NUM_OF_BYTES_PER_AUDIO_WORD)
+#elif (4 == BYTES_PER_PCM_CHANNEL)
 	typedef int32_t	buffer_type_t;
 #else
 	#error "TODO"
@@ -34,7 +34,7 @@
 #if defined(CONFIG_DSP_REAL_NUMBER_FORMAT_FLOATING_POINT)
 	#define real_to_i2s_word(real)   ((buffer_type_t) ((real) * normalizer))
 #elif defined(CONFIG_DSP_REAL_NUMBER_FORMAT_FIXED_POINT)
-	#if (2 == NUM_OF_BYTES_PER_AUDIO_WORD)
+	#if (2 == BYTES_PER_PCM_CHANNEL)
 		#define real_to_i2s_word(real)  ((buffer_type_t)((real) * normalizer))
 	#else
 		#error "TODO : for audio word with 4 bytes multiplication by  0x7fffffff is wrong because integer part is 16 bit only "
@@ -103,7 +103,7 @@ void I2S_mixer_dsp(struct dsp_module_inst_t *adsp,
 		CRITICAL_ERROR("bad input buffer size");
 	}
 
-	out_data_len /= ( 2 * NUM_OF_BYTES_PER_AUDIO_WORD); // 2 ch
+	out_data_len /= ( 2 * BYTES_PER_PCM_CHANNEL); // 2 ch
 
 	if (out_data_len != in_data_len1 )
 	{
@@ -187,9 +187,9 @@ uint8_t I2S_mixer_ioctl(struct dsp_module_inst_t *adsp,
 
 void  I2S_mixer_init(void)
 {
-#if (2 == NUM_OF_BYTES_PER_AUDIO_WORD)
+#if (2 == BYTES_PER_PCM_CHANNEL)
 	normalizer = (int16_t)0x7fff;
-#elif (4 == NUM_OF_BYTES_PER_AUDIO_WORD)
+#elif (4 == BYTES_PER_PCM_CHANNEL)
 	normalizer = (int16_t)0x7fffffff;
 #else
 	#error "TODO : for audio word with 4 bytes devision by  0x7fffffff is wrong because integer part is 16 bit only "
