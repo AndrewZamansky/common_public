@@ -20,7 +20,7 @@
 
 	#define STATIC_DEV_DATA_STRUCT      \
 		{                               \
-				_POINTER_TO_STORAGE_DEV,\
+				_POINTER_TO_STORAGE_DEV \
 		};
 
 #endif

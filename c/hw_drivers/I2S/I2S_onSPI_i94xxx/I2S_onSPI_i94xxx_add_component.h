@@ -80,7 +80,7 @@
 			I2S_onSPI_I94XXX_DT_LRCLK_PIN,              \
 			I2S_onSPI_I94XXX_DT_DI_PIN,                 \
 			I2S_onSPI_I94XXX_DT_DO_PIN,                 \
-			I2S_onSPI_I94XXX_DT_MCLK_PIN,               \
+			I2S_onSPI_I94XXX_DT_MCLK_PIN                \
 		}
 
 #endif
@@ -96,4 +96,8 @@
 #undef I2S_onSPI_I94XXX_DT_BASE_ADDRESS
 #undef I2S_onSPI_I94XXX_DT_AUDIO_FORMAT
 #undef I2S_onSPI_I94XXX_DT_TXRX_FORMAT
-#undef I2S_onSPI_I94XXX_DT_SPI_BUS
+#undef I2S_onSPI_I94XXX_DT_BCLK_PIN
+#undef I2S_onSPI_I94XXX_DT_LRCLK_PIN
+#undef I2S_onSPI_I94XXX_DT_DI_PIN
+#undef I2S_onSPI_I94XXX_DT_DO_PIN
+#undef I2S_onSPI_I94XXX_DT_MCLK_PIN
