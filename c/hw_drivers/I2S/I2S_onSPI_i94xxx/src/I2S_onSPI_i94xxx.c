@@ -347,24 +347,25 @@ uint8_t I2S_onSPI_i94xxx_ioctl( struct dev_desc_t *adev,
 		SPI_I2S_RST_TX_FIFO(I2S_SPI_module);
 		SPI_I2S_RST_RX_FIFO(I2S_SPI_module);
 
-		if (SPI1_BASE == (uint32_t)I2S_SPI_module)
-		{
-			i2s_spi_irq = SPI1_IRQn;
-		}
-		else if (SPI2_BASE == (uint32_t)I2S_SPI_module)
-		{
-			i2s_spi_irq = SPI2_IRQn;
-		}
-		else
-		{
-			return 1;
-		}
+
 		/*
 		 * Commented lines activate the interrupt which follows the callback
 		 *   function. Currently using the DMA so interrupt is not needed.
 		 *   Please refer to device tree for current set up to comment or
 		 *   uncomment these lines.
 		 */
+//		if (SPI1_BASE == (uint32_t)I2S_SPI_module)
+//		{
+//			i2s_spi_irq = SPI1_IRQn;
+//		}
+//		else if (SPI2_BASE == (uint32_t)I2S_SPI_module)
+//		{
+//			i2s_spi_irq = SPI2_IRQn;
+//		}
+//		else
+//		{
+//			return 1;
+//		}
 //		SPI_I2SEnableInt(I2S_SPI_module, SPI_I2S_RXTH_INT_MASK);
 //		irq_register_device_on_interrupt(i2s_spi_irq , adev);
 //		irq_set_priority(i2s_spi_irq , OS_MAX_INTERRUPT_PRIORITY_FOR_API_CALLS );
