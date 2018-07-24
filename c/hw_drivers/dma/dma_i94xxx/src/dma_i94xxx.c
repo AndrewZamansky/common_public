@@ -575,11 +575,13 @@ static uint8_t get_empty_tx_buffer(struct dev_desc_t *ch_pdev,
 	dma_i94xxx_dbg_cnt4++;
 	#endif
 	callback_dev = cfg_hndl->callback_dev;
+
 	next_supplied_tx_buffer = runtime_hndl->next_supplied_tx_buffer ;
 	look_foward_tx_buffer =
 			(next_supplied_tx_buffer + 2) % CONFIG_DMA_I94XXX_NUM_OF_BUFFERS;
-	if (DMA_I94XXX_BUFF_IDLE !=
-			runtime_hndl->buff_status[look_foward_tx_buffer])
+
+	buffer_state = &runtime_hndl->buff_status[look_foward_tx_buffer];
+	if (DMA_I94XXX_BUFF_IDLE != *buffer_state)
 	{
 		#ifdef DMA_I94XXX_DEBUG
 		dma_i94xxx_dbg_cnt5++;

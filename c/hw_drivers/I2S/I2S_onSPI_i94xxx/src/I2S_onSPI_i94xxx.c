@@ -203,7 +203,7 @@ static void configure_i2s_spi_pinout(struct dev_desc_t *adev)
 			SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD5MFP_Msk);
 			SYS->GPD_MFPL |= SYS_GPD_MFPL_PD5MFP_SPI1_SS;
 
-			PD->SMTEN = GPIO_SMTEN_SMTEN3_Msk;
+			PD->SMTEN |= GPIO_SMTEN_SMTEN3_Msk;
 		}
 
 		if(cfg_hndl->DI_pin == I2S_onSPI_I94XXX_API_DI_PIN_D3)
@@ -211,7 +211,7 @@ static void configure_i2s_spi_pinout(struct dev_desc_t *adev)
 			SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD3MFP_Msk);
 			SYS->GPD_MFPL |= SYS_GPD_MFPL_PD3MFP_SPI1_MISO;
 
-			PD->SMTEN = GPIO_SMTEN_SMTEN4_Msk;
+			PD->SMTEN |= GPIO_SMTEN_SMTEN4_Msk;
 		}
 
 		if(cfg_hndl->DO_pin == I2S_onSPI_I94XXX_API_DO_PIN_D2)
@@ -219,7 +219,7 @@ static void configure_i2s_spi_pinout(struct dev_desc_t *adev)
 			SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD2MFP_Msk);
 			SYS->GPD_MFPL |= SYS_GPD_MFPL_PD2MFP_SPI1_MOSI;
 
-			PD->SMTEN = GPIO_SMTEN_SMTEN5_Msk;
+			PD->SMTEN |= GPIO_SMTEN_SMTEN5_Msk;
 		}
 
 		if(cfg_hndl->MCLK_pin == I2S_onSPI_I94XXX_API_MCLK_PIN_D6)
@@ -227,7 +227,7 @@ static void configure_i2s_spi_pinout(struct dev_desc_t *adev)
 			SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD6MFP_Msk);
 			SYS->GPD_MFPL |= SYS_GPD_MFPL_PD6MFP_SPI1_I2SMCLK;
 
-			PD->SMTEN = GPIO_SMTEN_SMTEN2_Msk;
+			PD->SMTEN |= GPIO_SMTEN_SMTEN2_Msk;
 		}
 
 		if(cfg_hndl->BCLK_pin == I2S_onSPI_I94XXX_API_BCLK_PIN_C2)
@@ -235,7 +235,7 @@ static void configure_i2s_spi_pinout(struct dev_desc_t *adev)
 			SYS->GPC_MFPL &= ~(SYS_GPC_MFPL_PC2MFP_Msk);
 			SYS->GPC_MFPL |= SYS_GPC_MFPL_PC2MFP_SPI1_CLK;
 
-			PC->SMTEN = GPIO_SMTEN_SMTEN2_Msk;
+			PC->SMTEN |= GPIO_SMTEN_SMTEN2_Msk;
 		}
 
 		if(cfg_hndl->LRCLK_pin == I2S_onSPI_I94XXX_API_LRCLK_PIN_C3)
@@ -251,7 +251,7 @@ static void configure_i2s_spi_pinout(struct dev_desc_t *adev)
 			SYS->GPC_MFPL &= ~(SYS_GPC_MFPL_PC1MFP_Msk);
 			SYS->GPC_MFPL |= SYS_GPC_MFPL_PC1MFP_SPI1_MISO;
 
-			PC->SMTEN = GPIO_SMTEN_SMTEN1_Msk;
+			PC->SMTEN |= GPIO_SMTEN_SMTEN1_Msk;
 		}
 
 		if(cfg_hndl->DO_pin == I2S_onSPI_I94XXX_API_DO_PIN_C0)
@@ -267,7 +267,7 @@ static void configure_i2s_spi_pinout(struct dev_desc_t *adev)
 			SYS->GPC_MFPL &= ~(SYS_GPC_MFPL_PC4MFP_Msk);
 			SYS->GPC_MFPL |= SYS_GPC_MFPL_PC4MFP_SPI1_I2SMCLK;
 
-			PC->SMTEN = GPIO_SMTEN_SMTEN4_Msk;
+			PC->SMTEN |= GPIO_SMTEN_SMTEN4_Msk;
 		}
 		break;
 	case I2S_onSPI_I94XXX_API_BASE_ADDRESS_SPI2 :
@@ -315,6 +315,10 @@ uint8_t I2S_onSPI_i94xxx_ioctl( struct dev_desc_t *adev,
 	case IOCTL_DEVICE_START :
 		if ((SPI_T*)SPI1_BASE == I2S_SPI_module) clk_dev = i94xxx_spi1clk_clk_dev;
 		else if ((SPI_T*)SPI2_BASE == I2S_SPI_module) clk_dev = i94xxx_spi2clk_clk_dev;
+		else
+		{
+			CRITICAL_ERROR("SPI Base Address not defined.");
+		}
 
 		configure_i2s_spi_pinout(adev);
 
@@ -330,7 +334,7 @@ uint8_t I2S_onSPI_i94xxx_ioctl( struct dev_desc_t *adev,
 		}
 
 		SPI_I2S_SET_RXTH(SPI1, SPI_I2S_FIFO_RX_LEVEL_4);
-		SPI_I2S_SET_TXTH(SPI1, SPI_I2S_FIFO_TX_LEVEL_1);
+		SPI_I2S_SET_TXTH(SPI1, SPI_I2S_FIFO_TX_LEVEL_4);
 
 		SPI_I2S_RST_TX_FIFO(I2S_SPI_module);
 		SPI_I2S_RST_RX_FIFO(I2S_SPI_module);

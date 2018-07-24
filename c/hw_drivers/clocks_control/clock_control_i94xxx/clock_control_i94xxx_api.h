@@ -22,6 +22,7 @@ extern struct dev_desc_t  *i94xxx_uart0clk_clk_dev;
 extern struct dev_desc_t  *i94xxx_systick_clk_dev;
 extern struct dev_desc_t  *i94xxx_i2s_clk_dev;
 extern struct dev_desc_t  *i94xxx_dpwm_clk_dev;
+extern struct dev_desc_t  *i94xxx_i2c0_clk_dev;
 extern struct dev_desc_t  *i94xxx_i2c1_clk_dev;
 extern struct dev_desc_t  *i94xxx_spi0_clk_dev;
 extern struct dev_desc_t  *i94xxx_usb_clk_dev;

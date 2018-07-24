@@ -682,6 +682,25 @@ uint8_t clock_i94xxx_i2c1_ioctl( struct dev_desc_t *adev,
 	return 0;
 }
 
+uint8_t clock_i94xxx_i2c0_ioctl( struct dev_desc_t *adev,
+		const uint8_t aIoctl_num, void * aIoctl_param1,
+		void * aIoctl_param2)
+{
+	switch(aIoctl_num)
+	{
+	case CLK_IOCTL_ENABLE :
+		CLK_EnableModuleClock(I2C0_MODULE);
+		break;
+	case CLK_IOCTL_GET_FREQ :
+		DEV_IOCTL_1_PARAMS(i94xxx_pclk0_clk_dev,
+						CLK_IOCTL_GET_FREQ, aIoctl_param1);
+		break;
+	default :
+		return 1;
+	}
+	return 0;
+}
+
 
 
 uint8_t clock_i94xxx_spi0_ioctl( struct dev_desc_t *adev,
@@ -751,6 +770,8 @@ uint8_t clock_control_i94xxx_ioctl( struct dev_desc_t *adev,
 	switch(aIoctl_num)
 	{
 	case IOCTL_DEVICE_START :
+
+		*((uint32_t *)0x40000224) |= (0x1UL<<24);
 
 		if (0 != cfg_hndl->xtal_rate)
 		{

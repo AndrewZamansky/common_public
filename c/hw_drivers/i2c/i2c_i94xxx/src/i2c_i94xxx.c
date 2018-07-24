@@ -574,7 +574,6 @@ static void master_write(struct dev_desc_t *adev,
 
 	runtime_handle->remote_slave_addr = wr_struct->device_addr;
 	reg_addr_size = wr_struct->reg_addr_size;
-	runtime_handle->tx_data_size = reg_addr_size;
 	reg_addr = wr_struct->reg_addr;
 	runtime_handle->reg_addr_left_to_transmit = reg_addr_size;
 	while(reg_addr_size)
@@ -645,7 +644,6 @@ static void master_read(struct dev_desc_t *adev,
 	runtime_handle->rx_data = rd_struct->rx_data;
 	runtime_handle->remote_slave_addr = rd_struct->device_addr;
 	reg_addr_size = rd_struct->reg_addr_size;
-	runtime_handle->tx_data_size = reg_addr_size;
 	reg_addr = rd_struct->reg_addr;
 	runtime_handle->reg_addr_left_to_transmit = reg_addr_size;
 	while(reg_addr_size)
@@ -719,6 +717,37 @@ static uint8_t  device_start(struct dev_desc_t *adev)
 		case I2C_I94XXX_API_I2C1_SDA_PIN_PORT_D_PIN_15:
 			SYS->GPD_MFPH &= ~SYS_GPD_MFPH_PD15MFP_Msk;
 			SYS->GPD_MFPH |=  SYS_GPD_MFPH_PD15MFP_I2C1_SDA;
+			break;
+		default :
+			return 1;
+		}
+	}
+	else if(I2C0 == i2c_regs)
+	{
+		i2c_irq = I2C0_IRQn;
+		i2c_module_rst = I2C0_MODULE;
+		i2c_clk_dev = i94xxx_i2c0_clk_dev;
+
+		//i2c_clk_src = CLK_I2C0_SRC_EXT;
+		/*
+		* Init I/O Multi-function
+		* Set PA multi-function pins for I2C0 RXD(PA.8) and TXD(PA.7)
+		*/
+		switch (cfg_hndl->SCL_pinout)
+		{
+		case I2C_I94XXX_API_I2C0_SCL_PIN_PORT_B_PIN_0:
+			SYS->GPB_MFPL &= ~SYS_GPB_MFPL_PB0MFP_Msk;
+			SYS->GPB_MFPL |=  SYS_GPB_MFPL_PB0MFP_I2C0_SCL;
+			break;
+		default :
+			return 1;
+		}
+
+		switch (cfg_hndl->SDA_pinout)
+		{
+		case I2C_I94XXX_API_I2C0_SDA_PIN_PORT_B_PIN_1:
+			SYS->GPB_MFPL &= ~SYS_GPB_MFPL_PB1MFP_Msk;
+			SYS->GPB_MFPL |=  SYS_GPB_MFPL_PB1MFP_I2C0_SDA;
 			break;
 		default :
 			return 1;

@@ -123,6 +123,14 @@
 
 #include ADD_CURRENT_DEV
 
+/***********************************/
+/********** i94xxx_i2c0_clk_dev ********/
+#define DT_DEV_NAME                i94xxx_i2c0_clk_dev
+#define DT_DEV_MODULE              clk_cntl
+
+#define CLK_DT_IOCTL               clock_i94xxx_i2c0_ioctl
+
+#include ADD_CURRENT_DEV
 
 /***********************************/
 /********** i94xxx_i2c1_clk_dev ********/
