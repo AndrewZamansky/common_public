@@ -33,7 +33,7 @@
 /********  defines *********************/
 #define ENABLE_I94XX_SPI_INT
 
-//#define ENABLE_I94XX_SPI_MUTEX
+#define ENABLE_I94XX_SPI_MUTEX
 
 /* replace original SPI_SET_SS_HIGH / SPI_SET_SS_LOW because SPI_SSCTL_SS_Msk
  * is undefined
@@ -425,6 +425,7 @@ uint8_t spi_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 	struct dev_desc_t	*src_clock;
 	uint32_t spi_module_rst;
 	uint32_t clk_freq;
+	uint8_t data_width;
 	SPI_T *spi_regs;
 	int spi_irq;
 
@@ -438,6 +439,9 @@ uint8_t spi_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 
 	tx_fifo_threshold = cfg_hndl->tx_fifo_threshold;
 	rx_fifo_threshold = cfg_hndl->rx_fifo_threshold;
+
+	clk_freq = cfg_hndl->clk_freq;
+	data_width = cfg_hndl->data_width;
 
 	switch(aIoctl_num)
 	{
@@ -464,19 +468,20 @@ uint8_t spi_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 		/* Configure SPI0 as a master, SPI clock rate 2 MHz,
 		 *  clock idle low, 32-bit transaction, drive output on
 		 * falling clock edge and latch input on rising edge. */
-		SPI_Open(spi_regs, SPI_MASTER, SPI_MODE_0, 8, 250000);
+		SPI_Open(spi_regs, SPI_MASTER, SPI_MODE_0, data_width, clk_freq);
+
 		/* Enable the automatic hardware slave selection function.
 		 *  Select the SPI0_SS pin and configure as low-active. */
 		//SPI_EnableAutoSS(spi_regs, SPI_SS0, SPI_SS_ACTIVE_LOW);
 
 		/* Config Data Width - Supports 8-32bit */
-		SPI_SET_DATA_WIDTH(spi_regs, cfg_hndl->data_width);
+		SPI_SET_DATA_WIDTH(spi_regs, data_width);
 
 		SPI_SetFIFO(spi_regs, tx_fifo_threshold, rx_fifo_threshold);
 		/* Config Suspend Cycle (arg# + 0.5) clock cycles  */
 		SPI_SET_SUSPEND_CYCLE(spi_regs, 0);
 
-		#ifdef ENABLE_I94XX_SPI_INT
+#ifdef ENABLE_I94XX_SPI_INT
 
 
 		/* Enable UART RDA/RLS/Time-out interrupt */
@@ -487,7 +492,7 @@ uint8_t spi_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 		irq_enable_interrupt(spi_irq);
 
 		SPI_ENABLE(spi_regs);
-		#endif
+#endif
 
 		runtime_handle->xTX_WaitQueue = os_create_queue( 1 , sizeof(uint8_t ) );
 		runtime_handle->xRX_WaitQueue = os_create_queue( 1 , sizeof(uint8_t ) );
@@ -522,8 +527,9 @@ uint8_t spi_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 
 	case IOCTL_SPI_API_SET_CLK :
 		clk_freq = (uint32_t)aIoctl_param1;
-		SPI_Open(spi_regs, SPI_MASTER, SPI_MODE_0, 8, clk_freq);
-		SPI_SET_DATA_WIDTH(spi_regs, cfg_hndl->data_width);
+//		SPI_Open(spi_regs, SPI_MASTER, SPI_MODE_0, 8, clk_freq);
+//		SPI_SET_DATA_WIDTH(spi_regs, data_width);
+		SPI_SetBusClock(spi_regs, clk_freq);
 		break;
 
 	default :

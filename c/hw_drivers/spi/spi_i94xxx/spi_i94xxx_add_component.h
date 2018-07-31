@@ -19,6 +19,10 @@
 		#error "SPI_I94XXX_DT_BASE_ADDRESS should be defined"
 	#endif
 
+	#ifndef SPI_I94XXX_DT_CLK_FREQ
+		#error "SPI_I94XXX_DT_CLK_FREQ should be defined"
+	#endif
+
 	#ifndef SPI_I94XXX_DT_SRC_CLOCK_PDEV
 		#error "SPI_I94XXX_DT_SRC_CLOCK_PDEV should be defined"
 	#endif
@@ -56,6 +60,7 @@
 	#define STATIC_DEV_DATA_STRUCT      \
 		{                               \
 			POINTER_TO_SRC_CLOCK_PDEV,  \
+			SPI_I94XXX_DT_CLK_FREQ,     \
 			SPI_I94XXX_DT_BASE_ADDRESS, \
 			SPI_I94XXX_DT_CLK_PIN,      \
 			SPI_I94XXX_DT_SS_PIN,       \
@@ -69,6 +74,7 @@
 
 #include "add_component.h"
 
+#undef  SPI_I94XXX_DT_CLK_RATE
 #undef  SPI_I94XXX_DT_BASE_ADDRESS
 #undef  SPI_I94XXX_DT_SRC_CLOCK_PDEV
 #undef  POINTER_TO_SRC_CLOCK_PDEV

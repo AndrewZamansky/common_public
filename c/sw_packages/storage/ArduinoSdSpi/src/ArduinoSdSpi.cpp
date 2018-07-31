@@ -20,6 +20,7 @@ extern "C" {
 #include "application.h"
 #include "ArduinoSdSpi.h"
 #include "management_api.h"
+#include "os_wrapper.h"
 
 #include "_ArduinoSdSpi_prerequirements_check.h"
 
@@ -261,7 +262,12 @@ uint8_t ArduinoSdSpi_ioctl( struct dev_desc_t *adev ,
 	switch(aIoctl_num)
 	{
 	case IOCTL_DEVICE_START :
+
+		//Wait 1ms for sdcard to power up at minimum.
+		os_delay_ms(1);
+
 		DEV_IOCTL_0_PARAMS(spi_dev , IOCTL_DEVICE_START );
+
 		if ((NULL == runtime_handle->sd_spi_inst) &&
 				 (MAX_NUMBER_OF_ARDUINO_SPI_SD_INSTANCES > g_num_dev_inst))
 		{
