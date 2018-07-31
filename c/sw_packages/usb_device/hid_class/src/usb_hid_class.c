@@ -442,6 +442,9 @@ uint8_t usb_hid_class_ioctl( struct dev_desc_t *adev, uint8_t aIoctl_num,
 	case IOCTL_UART_DISABLE_TX :
 		runtime_hndl->tx_on = 0;
 		break;
+	case IOCTL_USB_HID_GET_IN_ENDPOINT_SIZE:
+		*(uint16_t *)aIoctl_param1 = IN_MAX_PKT_SIZE;
+		break;
 	default :
 		return 1;
 	}
