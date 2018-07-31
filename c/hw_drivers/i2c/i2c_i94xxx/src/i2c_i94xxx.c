@@ -574,7 +574,6 @@ static void master_write(struct dev_desc_t *adev,
 
 	runtime_handle->remote_slave_addr = wr_struct->device_addr;
 	reg_addr_size = wr_struct->reg_addr_size;
-	runtime_handle->tx_data_size = reg_addr_size;
 	reg_addr = wr_struct->reg_addr;
 	runtime_handle->reg_addr_left_to_transmit = reg_addr_size;
 	while(reg_addr_size)
@@ -593,7 +592,8 @@ static void master_write(struct dev_desc_t *adev,
 	{
 		num_of_bytes_to_write = 0;
 	}
-	wr_struct->num_of_bytes_that_was_written = num_of_bytes_to_write;
+	wr_struct->num_of_bytes_that_was_written =
+							runtime_handle->transmitted_data_size;
 
 	os_mutex_give(mutex);
 }
@@ -645,7 +645,6 @@ static void master_read(struct dev_desc_t *adev,
 	runtime_handle->rx_data = rd_struct->rx_data;
 	runtime_handle->remote_slave_addr = rd_struct->device_addr;
 	reg_addr_size = rd_struct->reg_addr_size;
-	runtime_handle->tx_data_size = reg_addr_size;
 	reg_addr = rd_struct->reg_addr;
 	runtime_handle->reg_addr_left_to_transmit = reg_addr_size;
 	while(reg_addr_size)
@@ -663,7 +662,8 @@ static void master_read(struct dev_desc_t *adev,
 	{
 		num_of_bytes_to_read = 0;
 	}
-	rd_struct->num_of_bytes_that_was_read = num_of_bytes_to_read;
+	rd_struct->num_of_bytes_that_was_read =
+			num_of_bytes_to_read - runtime_handle->size_of_data_to_receive;
 
 	os_mutex_give(mutex);
 }
