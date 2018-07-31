@@ -16,9 +16,17 @@
 	#define _POINTER_TO_USB_PDEV     \
 			P_TO_STATIC_DEVICE_INST(USB_DESC_DT_USB_PDEV)
 
-	#define STATIC_DEV_DATA_STRUCT          \
-		{                                   \
+	#ifndef USB_DESC_DT_USB_VID
+		#error "USB_DESC_DT_USB_VID should be defined"
+	#endif
+	#ifndef USB_DESC_DT_USB_PID
+		#error "USB_DESC_DT_USB_PID should be defined"
+	#endif
+	#define STATIC_DEV_DATA_STRUCT   \
+		{                            \
 			_POINTER_TO_USB_PDEV ,   \
+			USB_DESC_DT_USB_VID,     \
+			USB_DESC_DT_USB_PID      \
 		}
 
 	#endif
@@ -31,3 +39,5 @@
  */
 #undef USB_DESC_DT_USB_PDEV
 #undef _POINTER_TO_USB_PDEV
+#undef USB_DESC_DT_USB_VID
+#undef USB_DESC_DT_USB_PID

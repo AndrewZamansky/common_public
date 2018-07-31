@@ -15,19 +15,18 @@
 #include "stdlib.h"
 #include "usb_device_descriptors_api.h"
 
-#define WBVAL(x) (x&0xFF), ((x >>8) & 0xFF) 
+#define WBVAL(x) (x & 0xFF), ((x >>8) & 0xFF)
 
 #define EP0_MAX_PKT_SIZE    64
 /* Define the vendor id and product id */
 #define USBD_VID     0x0416
-#define USBD_PID     0x8230
+#define USBD_PID     0xDEAD
 
-#define LEN_ENDPOINT        7
-#define LEN_HID             9
-
+#define VID_POS      8
+#define PID_POS      10
 /*----------------------------------------------------------------------------*/
 /*!<USB Device Descriptor */
-const uint8_t gu8DeviceDescriptor[] = 
+uint8_t gu8DeviceDescriptor[] =
 {
 	0x12,        /* bLength */
 	0x01,       /* bDescriptorType */
@@ -155,11 +154,19 @@ uint16_t interface_count;
 static void device_start(struct usb_device_descriptors_cfg_t *cfg_hndl)
 {
 	struct dev_desc_t *usb_hw;
+	uint16_t VID;
+	uint16_t PID;
 
 	usb_hw = cfg_hndl->usb_hw;
 	interface_count = 0;
 	configuration_desc_size = sizeof(gu8ConfigDescriptor);
 	configuration_desc = (uint8_t*)malloc(configuration_desc_size);
+	VID = cfg_hndl->VID;
+	gu8DeviceDescriptor[VID_POS] = VID & 0xff;
+	gu8DeviceDescriptor[VID_POS + 1] = (VID >> 8) & 0xff;
+	PID = cfg_hndl->PID;
+	gu8DeviceDescriptor[PID_POS] = PID & 0xff;
+	gu8DeviceDescriptor[PID_POS + 1] = (PID >> 8) & 0xff;
 	memcpy(
 		configuration_desc, gu8ConfigDescriptor, configuration_desc_size);
 	DEV_IOCTL_0_PARAMS(usb_hw, IOCTL_DEVICE_START);
