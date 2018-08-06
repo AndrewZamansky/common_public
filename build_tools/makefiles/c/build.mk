@@ -39,7 +39,8 @@ SUBDIRS :=$(sort $(SUBDIRS))
 TEMP :=$(filter %prerequirements_check,$(SUBDIRS))
 SUBDIRS :=$(TEMP) $(filter-out %prerequirements_check,$(SUBDIRS))
 
-GLOBAL_HEADER_FILES_DEPS := $(patsubst %,%/*.h,$(GLOBAL_INCLUDE_DIR)) 
+GLOBAL_HEADER_FILES_DEPS := $(patsubst %,%/*.h,$(GLOBAL_INCLUDE_DIR))
+GLOBAL_HEADER_FILES_DEPS := $(wildcard $(GLOBAL_HEADER_FILES_DEPS))
 
 #remove duplicate entries :
 GLOBAL_INCLUDE_DIR := $(sort $(GLOBAL_INCLUDE_DIR))

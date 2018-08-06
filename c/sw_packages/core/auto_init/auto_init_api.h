@@ -10,20 +10,45 @@
 
 /**********  defines ************/
 
-#ifdef CONFIG_MICROSOFT_COMPILER/* in case we are using microsoft compiler*/
+#ifdef COMPILING_FOR_HOST
+	#ifdef COMPILING_FOR_WINDOWS_HOST
+		#ifdef CONFIG_MICROSOFT_COMPILER
+			#define USE_MSVC_AUTO_INIT_PLACEMENT  1
+		#endif
+	#elif defined(COMPILING_FOR_LINUX_HOST)
+		#if defined(CONFIG_LINUX_HOST_GCC)
+			#define USE_GCC_AUTO_INIT_PLACEMENT  1
+		#endif
+	#else
+		#error "unknown host"
+	#endif
+#else
+	#if defined(CONFIG_HEXAGON_COMPILER) || defined(CONFIG_ANDROID_NDK) || \
+	 defined(CONFIG_XTENSA_GCC) || (defined(CONFIG_ARM) && defined(CONFIG_GCC))
+		#define USE_GCC_AUTO_INIT_PLACEMENT  1
+	#endif
+	#if defined(CONFIG_XTENSA_XCC)
+		#define USE_XCC_AUTO_INIT_PLACEMENT  1
+	#endif
+#endif
+
+#ifdef USE_MSVC_AUTO_INIT_PLACEMENT/* in case we are using microsoft compiler*/
 	/* $a will be begining $c will be end of auto init functions*/
 	#pragma section("init_function_object_section$b", read)
 	#define AUTO_INIT_FUNCTION_PLACEMENT	 				\
 				__declspec(dllexport) __declspec(align(8)) 	\
 				__declspec(allocate("init_function_object_section$b"))
-#elif defined(CONFIG_HEXAGON_COMPILER) || defined(CONFIG_ANDROID_NDK) || \
-	 defined(CONFIG_XTENSA_GCC) || (defined(CONFIG_ARM) && defined(CONFIG_GCC) )
+
+#elif defined(USE_GCC_AUTO_INIT_PLACEMENT)
 
 	#define AUTO_INIT_FUNCTION_PLACEMENT	 	\
 							__attribute__((section("auto_init_section")))
-#elif defined(CONFIG_XTENSA_XCC)
+
+#elif defined(USE_XCC_AUTO_INIT_PLACEMENT)
+
 	#define AUTO_INIT_FUNCTION_PLACEMENT	 	\
 							const __attribute__((section(".rodata.autoinit")))
+
 #endif
 
 

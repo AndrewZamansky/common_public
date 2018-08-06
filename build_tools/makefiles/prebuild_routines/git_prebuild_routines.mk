@@ -21,7 +21,7 @@ include $(MAKEFILES_ROOT_DIR)/_include_functions/tool_existence_check.mk
 ####### end of tool existence test #####
 
         
-GIT ="$(GIT_ROOT_DIR)\bin\git.exe"
+GIT ="$(GIT_ROOT_DIR)/bin/git"
 
 
 ## test for validity of application git repository

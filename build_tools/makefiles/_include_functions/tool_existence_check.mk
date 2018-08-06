@@ -100,10 +100,11 @@ ifeq ($(FOUND_ROOT_DIR),)
             FOUND_TOOL_SYSTEM_DIR :=$(subst ?,$(SPACE),$(FOUND_TOOL_SYSTEM_DIR))
         endif
     else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX)
+        TEST_FILE :=$(TEST_FILE_IN_SEARCHED_DIR)
         TOOL_EXISTANCE_CHECK := $(shell whereis $(SEARCHED_TOOL))
-        FOUND_TOOL_CHECK :=$(filter %$(TEST_FILE_IN_SEARCHED_DIR),$(TOOL_EXISTANCE_CHECK_FMT))
+        FOUND_TOOL_CHECK :=$(filter %$(TEST_FILE),$(TOOL_EXISTANCE_CHECK))
         FOUND_TOOL_CHECK :=$(firstword $(FOUND_TOOL_CHECK))
-        FOUND_TOOL_SYSTEM_DIR :=$(subst /$(TEST_FILE_IN_SEARCHED_DIR),,$(FOUND_TOOL_CHECK))
+        FOUND_TOOL_SYSTEM_DIR :=$(subst /$(TEST_FILE),,$(FOUND_TOOL_CHECK))
     endif
     
     #$(info dbg : FOUND_TOOL_SYSTEM_DIR = $(FOUND_TOOL_SYSTEM_DIR))

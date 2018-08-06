@@ -7,8 +7,31 @@ endif
 ENTER_PROJECT_DIR += cd $(APP_ROOT_DIR)
 
 
+##   $(info err: $(SHELL_OUTPUT))
+##   $(info ---: you need to install kconfig frontends)
+##   $(info ---: example of installing in ubuntu  :)
+##   $(info ---: ----------------------------------)
+##   $(info ---: sudo apt-get install gperf libncurses5-dev)
+##   $(info ---: cd ~;git clone https://patacongo@bitbucket.org/nuttx/tools.git tools)
+##   $(info ---: cd tools/kconfig-frontends/)
+##   $(info ---: ./configure --enable-mconf --disable-shared --enable-static)
+##   $(info ---: make)
+##   $(info ---: sudo make install                    )
+##   $(info ---:                                      )
+##   $(info ---: OR install binaries from PPA         )
+##   $(info ---: sudo add-apt-repository ppa:george-hopkins/kconfig-frontends  )
+##   $(info ---: sudo apt-get update                  )
+##   $(info ---: sudo apt-get install kconfig-all     )
+##   $(info ---:                                      )
+##   $(info ---: ----------------------------------)
+##   $(info ---: after installing run kconfig-mconf in shell and check that you)
+##   $(info ---: get "can't find file ..." output only)
+
+
+
+
 ### test for existence of kconfig and put its directory name in GIT_ROOT_DIR ###
-SEARCHED_TOOL:=kconfig
+SEARCHED_TOOL:=kconfig-mconf
 SEARCHED_DIR_VARIABLE:=KCONFIG_ROOT_DIR
 MANUALLY_DEFINED_DIR_VARIABLE:=REDEFINE_KCONFIG_DIR
 ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
@@ -33,19 +56,17 @@ endif
 ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
 
     ERROR_LOG =  $(OUT_DIR)\kconfig.out
-    KCONFIG_START_DIR_PATH := $(subst /,\,$(KCONFIG_START_DIR_PATH))
 
     SET_ENV_CMD :=set "KCONFIG_PUBLIC_START_DIR=$(KCONFIG_PUBLIC_START_DIR)" &
     SET_ENV_CMD +=set "KCONFIG_PRIVATE_START_DIR=$(KCONFIG_PRIVATE_START_DIR)"
-    CHNG_DIR_CMD :=cd /d $(APP_ROOT_DIR)
 
     KCONFIG_BASIC_CMD :=$(KCONFIG_ROOT_DIR)/kconfig-mconf.exe $(MAIN_KCONFIG)
     KCONFIG_CMD :=$(KCONFIG_BASIC_CMD) 2>$(ERROR_LOG)
 
-    MANUAL_KCONFIG_CMD :=$(CHNG_DIR_CMD) & $(SET_ENV_CMD) &
+    MANUAL_KCONFIG_CMD :=cd /d $(APP_ROOT_DIR) & $(SET_ENV_CMD) &
     MANUAL_KCONFIG_CMD +=$(KCONFIG_BASIC_CMD)
 
-    MANUAL_KCONFIG_WARNING_CHECK_CMD :=$(CHNG_DIR_CMD) & $(SET_ENV_CMD) &
+    MANUAL_KCONFIG_WARNING_CHECK_CMD :=cd /d $(APP_ROOT_DIR) & $(SET_ENV_CMD) &
     MANUAL_KCONFIG_WARNING_CHECK_CMD +=$(KCONFIG_BASIC_CMD) 1>$(ERROR_LOG)
 
     NEW_WIN_KCONFIG_CMD :=$(SET_ENV_CMD) & start $(KCONFIG_CMD)
@@ -56,29 +77,21 @@ else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX)
 
     ERROR_LOG =  $(OUT_DIR)/kconfig.out
 
+    SET_ENV_CMD :=export KCONFIG_PUBLIC_START_DIR=$(KCONFIG_PUBLIC_START_DIR);
+    SET_ENV_CMD +=export KCONFIG_PRIVATE_START_DIR=$(KCONFIG_PRIVATE_START_DIR);
 
-##   $(info err: $(SHELL_OUTPUT))
-##   $(info ---: you need to install kconfig frontends)
-##   $(info ---: example of installing in ubuntu  :)
-##   $(info ---: ----------------------------------)
-##   $(info ---: sudo apt-get install gperf libncurses5-dev)
-##   $(info ---: cd ~;git clone https://patacongo@bitbucket.org/nuttx/tools.git tools)
-##   $(info ---: cd tools/kconfig-frontends/)
-##   $(info ---: ./configure --enable-mconf --disable-shared --enable-static)
-##   $(info ---: make)
-##   $(info ---: sudo make install )
-##   $(info ---: ----------------------------------)
-##   $(info ---: after installing run kconfig-mconf in shell and check that you)
-##   $(info ---: get "can't find file ..." output only)
+    KCONFIG_BASIC_CMD :=$(KCONFIG_ROOT_DIR)/kconfig-mconf $(MAIN_KCONFIG)
+    KCONFIG_CMD :=$(KCONFIG_BASIC_CMD) 2>$(ERROR_LOG)
 
+    MANUAL_KCONFIG_CMD :=cd $(APP_ROOT_DIR) ; $(SET_ENV_CMD) ;
+    MANUAL_KCONFIG_CMD +=$(KCONFIG_BASIC_CMD)
 
-	$(info err: TODO : add KCONFIG_START_DIR_PATH=$(KCONFIG_START_DIR_PATH) to shell environment)
-	$(call exit,1)
-    KCONFIG_CMD :=kconfig-mconf $(MAIN_KCONFIG) 2>$(ERROR_LOG)
-    KCONFIG_CMD_FOR_WARNING_CHECK_CMD :=kconfig-mconf $(MAIN_KCONFIG) 1>$(ERROR_LOG)
-    MANUAL_KCONFIG_CMD :=cd $(APP_ROOT_DIR) ; $(KCONFIG_CMD)
-    MANUAL_KCONFIG_WARNING_CHECK_CMD :=cd $(APP_ROOT_DIR) ; $(KCONFIG_CMD_FOR_WARNING_CHECK)
-    NEW_WIN_KCONFIG_CMD :=xterm -geometry 120x40 -fa DejaVuSansMono -fs 9 -e "$(KCONFIG_CMD)"
+    MANUAL_KCONFIG_WARNING_CHECK_CMD :=cd $(APP_ROOT_DIR) ; $(SET_ENV_CMD) ;
+    MANUAL_KCONFIG_WARNING_CHECK_CMD +=$(KCONFIG_BASIC_CMD) 1>$(ERROR_LOG)
+    
+    NEW_WIN_KCONFIG_CMD :=xterm -geometry 120x40 -fa DejaVuSansMono
+    NEW_WIN_KCONFIG_CMD +=  -fs 9 -e "$(KCONFIG_CMD)"
+
     KCONFIG_PRINT_ERRORS_CMD :=cat $(ERROR_LOG)
 
 endif
