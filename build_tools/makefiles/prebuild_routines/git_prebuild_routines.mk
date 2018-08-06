@@ -39,7 +39,7 @@ endif
 CURR_APP_SHORT_COMMIT := $(shell $(GIT) rev-parse --short=8 HEAD)
 
 SHELL_OUT := $(shell $(GIT) status 2>&1)
-TREE_CLEAN_STR :=nothing to commit, working tree clean
+TREE_CLEAN_STR :=nothing to commit, working
 ifeq ($(findstring $(TREE_CLEAN_STR),$(SHELL_OUT)),)
     $(info ---- $(PROJECT_NAME) git tree is modified)
     MODIFIED_GITS +=$(PROJECT_NAME)

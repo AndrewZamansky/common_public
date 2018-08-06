@@ -57,7 +57,7 @@ ifeq ("","$(filter $(CURR_GIT_REPO_DIR),$(EXTERNAL_SRC_GIT_DIRS))")
 
 
     SHELL_OUT := $(shell $(SHELL_GO_TO_GIT_DIR) $(GIT) status 2>&1)
-    TREE_CLEAN_STR :=nothing to commit, working tree clean
+    TREE_CLEAN_STR :=nothing to commit, working
     ifeq ($(findstring $(TREE_CLEAN_STR),$(SHELL_OUT)),)
         $(info ---- $(CURR_GIT_REPO_DIR) git tree is modified)
         MODIFIED_GITS +=$(CURR_GIT_REPO_DIR)
