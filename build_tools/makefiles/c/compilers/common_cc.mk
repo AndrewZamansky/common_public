@@ -106,10 +106,12 @@ ASM_COMPILATION_CMD := $(SET_CC_ENV_VARS)& $(ASM) $(GLOBAL_ASMFLAGS) $(ASMFLAGS)
 ASM_COMPILATION_CMD += $(ALL_ASM_INCLUDE_DIRS) $(ALL_ASM_DEFINES)
 $(CURR_OBJ_DIR)/%.o.asm: %.s
 	$(info .    Compiling $<)
+	$(call mkdir_if_not_exists, $(dir $@))
 	$(ASM_COMPILATION_CMD) $(ASM_OUTPUT_FLAG_AND_FILE) $<
 
 $(CURR_OBJ_DIR)/%.O.asm: %.S
 	$(info .    Compiling $<)
+	$(call mkdir_if_not_exists, $(dir $@))
 	$(ASM_COMPILATION_CMD) $(ASM_OUTPUT_FLAG_AND_FILE) $<
 
 
@@ -132,6 +134,7 @@ C_COMPILATION_CMD := $(SET_CC_ENV_VARS)& $(CC) $(ALL_CFLAGS)
 C_COMPILATION_CMD += $(ALL_INCLUDE_DIRS) $(ALL_DEFINES)
 $(CURR_OBJ_DIR)/%.o: %.c $(HEADER_FILES_DEPS) $(APP_ROOT_DIR)/.config
 	$(info .    Compiling $<)
+	$(call mkdir_if_not_exists, $(dir $@))
 	$(eval SRC_FILE := $(realpath $<))
 	$(info .    Compiling $(SRC_FILE))
 	$(C_COMPILATION_CMD) $(CC_OUTPUT_FLAG_AND_FILE) $<
@@ -141,12 +144,14 @@ $(CURR_OBJ_DIR)/%.o: %.c $(HEADER_FILES_DEPS) $(APP_ROOT_DIR)/.config
 
 $(CURR_OBJ_DIR)/%.oo: %.cc $(HEADER_FILES_DEPS) $(APP_ROOT_DIR)/.config
 	$(info .    Compiling $<)
+	$(call mkdir_if_not_exists, $(dir $@))
 	$(C_COMPILATION_CMD) $(CC_OUTPUT_FLAG_AND_FILE) $<
 #	open line to create preproccesor file
 #	$(CC) -E -P $(ALL_CFLAGS) $(ALL_INCLUDE_DIRS) $(ALL_DEFINES) $< -o  $@.pre 
 
 $(CURR_OBJ_DIR)/%.oop: %.cpp $(HEADER_FILES_DEPS) $(APP_ROOT_DIR)/.config
 	$(info .    Compiling $<)
+	$(call mkdir_if_not_exists, $(dir $@))
 	$(C_COMPILATION_CMD) $(CC_OUTPUT_FLAG_AND_FILE) $<
 #	open line to create preproccesor file
 #	$(CC) -E -P $(ALL_CFLAGS) $(ALL_INCLUDE_DIRS) $(ALL_DEFINES) $< -o  $@.pre 

@@ -10,4 +10,4 @@ DATE    :=$(shell date "+%Y-%m-%d")
 TIME    :=$(shell date "+%H:%M") 
 SHELL_CMD_DELIMITER = ;
 CD    := cd
-MKDIR := mkdir
+MKDIR := mkdir -p
