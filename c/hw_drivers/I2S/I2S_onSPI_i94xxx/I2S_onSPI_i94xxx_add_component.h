@@ -3,11 +3,11 @@
 #include  "I2S_onSPI_i94xxx_api.h"
 #include "src/I2S_onSPI_i94xxx.h"
 
-#define	MODULE_NAME						I2S_onSPI_i94xxx
-#define	MODULE_IOCTL_FUNCTION			I2S_onSPI_i94xxx_ioctl
-#define MODULE_CALLBACK_FUNCTION		I2S_onSPI_i94xxx_callback
-#define MODULE_CONFIG_DATA_STRUCT_TYPE	struct I2S_onSPI_i94xxx_cfg_t
-#define MODULE_RUNTIME_DATA_STRUCT_TYPE	struct I2S_onSPI_i94xxx_runtime_t
+#define MODULE_NAME                     I2S_onSPI_i94xxx
+#define MODULE_IOCTL_FUNCTION           I2S_onSPI_i94xxx_ioctl
+#define MODULE_CALLBACK_FUNCTION        I2S_onSPI_i94xxx_callback
+#define MODULE_CONFIG_DATA_STRUCT_TYPE  struct I2S_onSPI_i94xxx_cfg_t
+#define MODULE_RUNTIME_DATA_STRUCT_TYPE struct I2S_onSPI_i94xxx_runtime_t
 
 #ifdef DT_DEV_MODULE
 
@@ -23,6 +23,20 @@
 
 	#ifndef I2S_onSPI_I94XXX_DT_DATA_WIDTH
 		#error "I2S_onSPI_I94XXX_DT_DATA_WIDTH should be defined"
+	#else
+		#if (I2S_onSPI_I94XXX_DT_DATA_WIDTH == 1)
+			#define _I2S_onSPI_I94XXX_DT_DATA_WIDTH SPI_I2SDATABIT_8
+
+		#elif (I2S_onSPI_I94XXX_DT_DATA_WIDTH == 2)
+			#define _I2S_onSPI_I94XXX_DT_DATA_WIDTH SPI_I2SDATABIT_16
+
+		#elif (I2S_onSPI_I94XXX_DT_DATA_WIDTH == 3)
+			#define _I2S_onSPI_I94XXX_DT_DATA_WIDTH SPI_I2SDATABIT_24
+
+		#elif (I2S_onSPI_I94XXX_DT_DATA_WIDTH == 4)
+			#define _I2S_onSPI_I94XXX_DT_DATA_WIDTH SPI_I2SDATABIT_32
+
+		#endif
 	#endif
 
 	#ifndef I2S_onSPI_I94XXX_DT_BASE_ADDRESS
@@ -62,20 +76,20 @@
 		#define I2S_onSPI_I94XXX_DT_MCLK_PIN  0
 	#endif
 
-	#define POINTER_TO_SRC_CLOCK_PDEV	 \
+	#define POINTER_TO_SRC_CLOCK_PDEV  \
 			P_TO_STATIC_DEVICE_INST(I2S_onSPI_I94XXX_DT_SRC_CLOCK_PDEV)
 
 
 
-	#define STATIC_DEV_DATA_STRUCT						\
-		{												\
-			POINTER_TO_SRC_CLOCK_PDEV,			        \
-			I2S_onSPI_I94XXX_DT_BASE_ADDRESS,			\
-			I2S_onSPI_I94XXX_DT_MASTER_OR_SLAVE_MODE,	\
-			I2S_onSPI_I94XXX_DT_SAMPLE_RATE,			\
-			I2S_onSPI_I94XXX_DT_DATA_WIDTH,				\
-			I2S_onSPI_I94XXX_DT_AUDIO_FORMAT,			\
-			I2S_onSPI_I94XXX_DT_TXRX_FORMAT,			\
+	#define STATIC_DEV_DATA_STRUCT                      \
+		{                                               \
+			POINTER_TO_SRC_CLOCK_PDEV,                  \
+			I2S_onSPI_I94XXX_DT_BASE_ADDRESS,           \
+			I2S_onSPI_I94XXX_DT_MASTER_OR_SLAVE_MODE,   \
+			I2S_onSPI_I94XXX_DT_SAMPLE_RATE,            \
+			_I2S_onSPI_I94XXX_DT_DATA_WIDTH,            \
+			I2S_onSPI_I94XXX_DT_AUDIO_FORMAT,           \
+			I2S_onSPI_I94XXX_DT_TXRX_FORMAT,            \
 			I2S_onSPI_I94XXX_DT_BCLK_PIN,               \
 			I2S_onSPI_I94XXX_DT_LRCLK_PIN,              \
 			I2S_onSPI_I94XXX_DT_DI_PIN,                 \
@@ -93,6 +107,7 @@
 #endif
 #undef I2S_onSPI_I94XXX_DT_MASTER_OR_SLAVE_MODE
 #undef I2S_onSPI_I94XXX_DT_DATA_WIDTH
+#undef _I2S_onSPI_I94XXX_DT_DATA_WIDTH
 #undef I2S_onSPI_I94XXX_DT_BASE_ADDRESS
 #undef I2S_onSPI_I94XXX_DT_AUDIO_FORMAT
 #undef I2S_onSPI_I94XXX_DT_TXRX_FORMAT
