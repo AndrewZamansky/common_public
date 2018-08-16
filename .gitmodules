@@ -1,4 +1,4 @@
 [submodule "c/sw_packages/net/nghttp2_git"]
 	path = c/sw_packages/net/nghttp2_git
-	url = ../AndrewZamansky-external-repo-managers/nghttp2_git
+	url = ../../AndrewZamansky-external-repo-managers/nghttp2_git
 	ignore = all
