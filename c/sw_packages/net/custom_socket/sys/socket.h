@@ -1,6 +1,8 @@
 #ifndef __CUSTOM_SOCKET_H
 #define __CUSTOM_SOCKET_H
 
+#include <stdint.h>
+
 typedef uint32_t socklen_t ;
 
   typedef struct sockaddr
