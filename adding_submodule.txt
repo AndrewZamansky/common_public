@@ -1,0 +1,12 @@
+1)
+create new repo (WITH default readme.md [it will create first commit]) in https://github.com/AndrewZamansky-external-repo-managers/$(MODULE)_git.git
+
+2) (tested with only one remote  of common_public    pointing to github . TODO check --reference  argument to choose specific remote)
+cd $(PATH_TO_COMMON_PUBLIC)/common_public
+git submodule add ../../AndrewZamansky-external-repo-managers/$(MODULE)_git c/sw_packages/net/$(MODULE)_git
+(e.g.   :   git submodule add ../../AndrewZamansky-external-repo-managers/openssl_git c/sw_packages/net/openssl_git )
+
+
+3)
+	add following line to new entry in $(PATH_TO_COMMON_PUBLIC)/common_public/.gitmodules  :
+	ignore = all

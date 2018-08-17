@@ -2,3 +2,7 @@
 	path = c/sw_packages/net/nghttp2_git
 	url = ../../AndrewZamansky-external-repo-managers/nghttp2_git
 	ignore = all
+[submodule "c/sw_packages/net/openssl_git"]
+	path = c/sw_packages/net/openssl_git
+	url = ../../AndrewZamansky-external-repo-managers/openssl_git
+	ignore = all
