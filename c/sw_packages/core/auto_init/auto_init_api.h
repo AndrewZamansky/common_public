@@ -11,20 +11,16 @@
 /**********  defines ************/
 
 #ifdef COMPILING_FOR_HOST
-	#ifdef COMPILING_FOR_WINDOWS_HOST
-		#ifdef CONFIG_MICROSOFT_COMPILER
-			#define USE_MSVC_AUTO_INIT_PLACEMENT  1
-		#endif
-	#elif defined(COMPILING_FOR_LINUX_HOST)
-		#if defined(CONFIG_LINUX_HOST_GCC)
-			#define USE_GCC_AUTO_INIT_PLACEMENT  1
-		#endif
+	#if defined(_MSC_VER)  // microsoft compiler
+		#define USE_MSVC_AUTO_INIT_PLACEMENT  1
+	#elif defined(__GNUC__) // GCC compiler
+		#define USE_GCC_AUTO_INIT_PLACEMENT  1
 	#else
 		#error "unknown host"
 	#endif
 #else
 	#if defined(CONFIG_HEXAGON_COMPILER) || defined(CONFIG_ANDROID_NDK) || \
-	 defined(CONFIG_XTENSA_GCC) || (defined(CONFIG_ARM) && defined(CONFIG_GCC))
+	 defined(CONFIG_XTENSA_GCC) || (defined(__GNUC__))
 		#define USE_GCC_AUTO_INIT_PLACEMENT  1
 	#endif
 	#if defined(CONFIG_XTENSA_XCC)
