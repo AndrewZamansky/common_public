@@ -6,3 +6,7 @@
 	path = c/sw_packages/net/openssl_git
 	url = ../../AndrewZamansky-external-repo-managers/openssl_git
 	ignore = all
+[submodule "c/sw_packages/net/curl_git"]
+	path = c/sw_packages/net/curl_git
+	url = ../../AndrewZamansky-external-repo-managers/curl_git
+	ignore = all

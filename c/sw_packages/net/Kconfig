@@ -7,7 +7,7 @@ menuconfig INCLUDE_CURL
 	default n
 
 if INCLUDE_CURL
-source "$KCONFIG_PUBLIC_START_DIR/sw_packages/net/curl/Kconfig"
+source "$KCONFIG_PUBLIC_START_DIR/sw_packages/net/curl_git/Kconfig"
 endif
 
 menuconfig INCLUDE_OPENSSL
