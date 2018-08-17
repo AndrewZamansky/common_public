@@ -771,6 +771,11 @@ uint8_t clock_control_i94xxx_ioctl( struct dev_desc_t *adev,
 	{
 	case IOCTL_DEVICE_START :
 
+		/*
+		 * CLKDIV1[24] Something that should be in the BSP but is not.
+		 *    8/10/18 - Currently this affects the clock on the USB. If not
+		 *    set, the USB will not work.
+		 */
 		*((uint32_t *)0x40000224) |= (0x1UL<<24);
 
 		if (0 != cfg_hndl->xtal_rate)
