@@ -609,6 +609,7 @@ static void master_read(struct dev_desc_t *adev,
 	I2C_T *i2c_regs;
 	uint8_t  reg_addr_arr[4];
 	size_t   num_of_bytes_to_read;
+	size_t   num_of_bytes_that_was_read;
 	size_t   reg_addr_size;
 	size_t   reg_addr;
 
@@ -660,10 +661,14 @@ static void master_read(struct dev_desc_t *adev,
 	os_queue_receive_infinite_wait( WaitQueue ,  &dummy_msg  );
 	if (0 == runtime_handle->device_access_tries)
 	{
-		num_of_bytes_to_read = 0;
+		num_of_bytes_that_was_read = 0;
 	}
-	rd_struct->num_of_bytes_that_was_read =
-			num_of_bytes_to_read - runtime_handle->size_of_data_to_receive;
+	else
+	{
+		num_of_bytes_that_was_read =
+				num_of_bytes_to_read - runtime_handle->size_of_data_to_receive;
+	}
+	rd_struct->num_of_bytes_that_was_read = num_of_bytes_that_was_read;
 
 	os_mutex_give(mutex);
 }
