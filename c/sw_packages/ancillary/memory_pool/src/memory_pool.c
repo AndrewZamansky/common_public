@@ -35,10 +35,17 @@
 void *memory_pool_malloc(void *memory_pool_handle)
 {
 	size_t	i;
+	size_t	num_of_chunks;
 	struct mem_pool_chunck_t *pMemPool;
+	struct mem_pool_t* mem_pool;
+	void *mem;
+	struct mem_pool_chunck_t *pool_chunks;
+	struct mem_pool_chunck_t *pool_chunk;
 
-	i = ((struct mem_pool_t*)memory_pool_handle)->num_of_chunks;
-	pMemPool = ((struct mem_pool_t*)memory_pool_handle)->pool_chunks;
+	mem_pool = (struct mem_pool_t*)memory_pool_handle;
+	num_of_chunks = mem_pool->num_of_chunks;
+	pMemPool = mem_pool->pool_chunks;
+	i = num_of_chunks;
 	while( i--)
 	{
 		if(0 == pMemPool->inUse)
@@ -49,9 +56,18 @@ void *memory_pool_malloc(void *memory_pool_handle)
 		pMemPool++;
 	}
 
-	//error if we got here
-	CRITICAL_ERROR("no free memory chunks");
-	return NULL;
+	//no free blocks if we got here
+	num_of_chunks++;
+	mem_pool->num_of_chunks = num_of_chunks;
+	pool_chunks = mem_pool->pool_chunks;
+	pool_chunks = (struct mem_pool_chunck_t *)realloc(pool_chunks,
+					num_of_chunks * sizeof(struct mem_pool_chunck_t));
+	mem_pool->pool_chunks = pool_chunks;
+	pool_chunk = &pool_chunks[num_of_chunks - 1];
+	pool_chunk->inUse = 1;
+	mem = malloc(mem_pool->size_of_chunk);
+	pool_chunk->mem = mem;
+	return mem;
 }
 
 
@@ -109,27 +125,16 @@ void memory_pool_free(void *memory_pool_handle, void *mem)
  *
  * return:
  */
-void *memory_pool_init(size_t num_of_chunks, size_t size_of_chunk)
+void *memory_pool_init(size_t size_of_chunk)
 {
 	struct mem_pool_t *pInstance;
-	struct mem_pool_chunck_t *pool_chunk;
-
 
 	pInstance = (struct mem_pool_t *)malloc(sizeof(struct mem_pool_t));
 	if(NULL == pInstance) return NULL;
 
-	pool_chunk = (struct mem_pool_chunck_t *)malloc(
-					num_of_chunks * sizeof(struct mem_pool_chunck_t));
-	pInstance->num_of_chunks = num_of_chunks;
+	pInstance->num_of_chunks = 0;
 	pInstance->size_of_chunk = size_of_chunk;
-	pInstance->pool_chunks = pool_chunk;
-
-	while(num_of_chunks--)
-	{
-		pool_chunk->inUse = 0 ;
-		pool_chunk->mem = malloc(size_of_chunk);
-		pool_chunk++;
-	}
+	pInstance->pool_chunks = NULL;
 
 	return pInstance ;
 }

@@ -123,15 +123,15 @@ static void update_tx_buffer(struct dev_desc_t * ch_pdev,
 	uint8_t *buff_status;
 	uint8_t channel_num;
 	uint8_t **buffers;
+	uint8_t num_of_buffers;
 
 	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(ch_pdev);
 	buff_status = runtime_hndl->buff_status;
 	callback_dev = cfg_hndl->callback_dev;
 	curr_dma_buff_indx = runtime_hndl->curr_dma_buff_indx;
-	next_dma_buff_indx =
-			(curr_dma_buff_indx + 1) % CONFIG_DMA_I94XXX_NUM_OF_BUFFERS;
-	look_foward_tx_buffer =
-			(next_dma_buff_indx + 1) % CONFIG_DMA_I94XXX_NUM_OF_BUFFERS;
+	num_of_buffers = cfg_hndl->num_of_buffers;
+	next_dma_buff_indx = (curr_dma_buff_indx + 1) % num_of_buffers;
+	look_foward_tx_buffer = (next_dma_buff_indx + 1) % num_of_buffers;
 
 	#ifdef DMA_I94XXX_DEBUG
 	dma_i94xxx_dbg_cnt1++;
@@ -184,13 +184,14 @@ static void update_rx_buffer(struct dev_desc_t * ch_pdev,
 	uint8_t *buff_status;
 	uint8_t channel_num;
 	uint8_t **buffers;
+	uint8_t num_of_buffers;
 
 	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(ch_pdev);
 	buff_status = runtime_hndl->buff_status;
 	callback_dev = cfg_hndl->callback_dev;
 	curr_dma_buff_indx = runtime_hndl->curr_dma_buff_indx;
-	next_dma_buff_indx =
-			(curr_dma_buff_indx + 1) % CONFIG_DMA_I94XXX_NUM_OF_BUFFERS;
+	num_of_buffers = cfg_hndl->num_of_buffers;
+	next_dma_buff_indx = (curr_dma_buff_indx + 1) % num_of_buffers;
 
 	#ifdef DMA_I94XXX_DEBUG
 		dma_i94xxx_dbg_cnt2++;
@@ -314,10 +315,12 @@ static uint8_t set_peripheral_dma(struct dma_i94xxx_cfg_t *cfg_hndl,
 	uint8_t dma_peripheral_direction;
 	uint32_t buff_size;
 	uint8_t i;
+	uint8_t num_of_buffers;
 
 	channel_num = cfg_hndl->channel_num;
 	buff_size = cfg_hndl->buff_size;
 	peripheral_type = cfg_hndl->peripheral_type;
+	num_of_buffers = cfg_hndl->num_of_buffers;
 	runtime_hndl->curr_dma_buff_indx = 0;
 
 	src_addr = NULL;
@@ -377,7 +380,9 @@ static uint8_t set_peripheral_dma(struct dma_i94xxx_cfg_t *cfg_hndl,
 		return 1;
 	}
 
-	for (i = 0; i < CONFIG_DMA_I94XXX_NUM_OF_BUFFERS; i++)
+	runtime_hndl->buff = (uint8_t**)malloc(sizeof(uint8_t*) * num_of_buffers);
+	runtime_hndl->buff_status = (uint8_t*)malloc(num_of_buffers);
+	for (i = 0; i < num_of_buffers; i++)
 	{
 		runtime_hndl->buff[i] = (uint8_t*)malloc(buff_size);
 		runtime_hndl->buff_status[i] = DMA_I94XXX_BUFF_IDLE ;
@@ -392,7 +397,7 @@ static uint8_t set_peripheral_dma(struct dma_i94xxx_cfg_t *cfg_hndl,
 	else
 	{
 		runtime_hndl->needed_full_dma_start = 1;
-		runtime_hndl->curr_dma_buff_indx = CONFIG_DMA_I94XXX_NUM_OF_BUFFERS - 1;
+		runtime_hndl->curr_dma_buff_indx = num_of_buffers - 1;
 	}
 
 	/* Set source/destination address and attributes */
@@ -540,11 +545,12 @@ static uint8_t release_rx_buffer(struct dma_i94xxx_cfg_t *cfg_hndl,
 		struct dma_i94xxx_runtime_t *runtime_hndl)
 {
 	uint8_t next_supplied_rx_buffer;
+	uint8_t num_of_buffers;
 
 	next_supplied_rx_buffer = runtime_hndl->next_supplied_rx_buffer;
 	runtime_hndl->buff_status[next_supplied_rx_buffer] = DMA_I94XXX_BUFF_IDLE;
-	next_supplied_rx_buffer =
-			(next_supplied_rx_buffer + 1) % CONFIG_DMA_I94XXX_NUM_OF_BUFFERS;
+	num_of_buffers = cfg_hndl->num_of_buffers;
+	next_supplied_rx_buffer = (next_supplied_rx_buffer + 1) % num_of_buffers;
 	runtime_hndl->next_supplied_rx_buffer = next_supplied_rx_buffer;
 	return 0;
 }
@@ -560,6 +566,7 @@ static uint8_t get_empty_tx_buffer(struct dev_desc_t *ch_pdev,
 	uint8_t look_foward_tx_buffer;
 	uint8_t *buffer_state;
 	struct dev_desc_t *callback_dev;
+	uint8_t num_of_buffers;
 
 	if (DMA_TO_PERIPHERAL != runtime_hndl->dma_peripheral_direction)
 	{
@@ -693,6 +700,8 @@ static uint8_t release_tx_buffer(struct dma_i94xxx_cfg_t *cfg_hndl,
 	uint8_t	prefilled_buffers;
 	uint8_t **buffers;
 	struct dev_desc_t *peripheral_dev;
+	uint8_t num_of_buffers;
+	uint8_t    num_of_prefilled_buffer_before_tx_start;
 
 	if (DMA_TO_PERIPHERAL != runtime_hndl->dma_peripheral_direction)
 	{
@@ -716,8 +725,10 @@ static uint8_t release_tx_buffer(struct dma_i94xxx_cfg_t *cfg_hndl,
 	}
 
 	*supplied_tx_buffer_status = DMA_I94XXX_BUFF_TX_DATA_IS_READY;
-	next_supplied_tx_buffer =
-			(next_supplied_tx_buffer + 1) % CONFIG_DMA_I94XXX_NUM_OF_BUFFERS;
+	num_of_buffers = cfg_hndl->num_of_buffers;
+	num_of_prefilled_buffer_before_tx_start =
+			cfg_hndl->num_of_prefilled_buffer_before_tx_start;
+	next_supplied_tx_buffer = (next_supplied_tx_buffer + 1) % num_of_buffers;
 	runtime_hndl->next_supplied_tx_buffer = next_supplied_tx_buffer;
 
 
@@ -727,16 +738,13 @@ static uint8_t release_tx_buffer(struct dma_i94xxx_cfg_t *cfg_hndl,
 		prefilled_buffers++;
 		runtime_hndl->prefilled_buffers = prefilled_buffers;
 
-		if (prefilled_buffers <
-				CONFIG_DMA_I94XXX_NUM_OF_PREFFILED_BUFFERS_BEFORE_STARTING )
+		if (prefilled_buffers < num_of_prefilled_buffer_before_tx_start )
 		{
 			return 0;
 		}
 
-		next_dma_buff_indx =
-			( CONFIG_DMA_I94XXX_NUM_OF_BUFFERS + next_supplied_tx_buffer -
-				CONFIG_DMA_I94XXX_NUM_OF_PREFFILED_BUFFERS_BEFORE_STARTING ) %
-				CONFIG_DMA_I94XXX_NUM_OF_BUFFERS;
+		next_dma_buff_indx = ( num_of_buffers + next_supplied_tx_buffer -
+					num_of_prefilled_buffer_before_tx_start ) % num_of_buffers;
 		runtime_hndl->curr_dma_buff_indx = next_dma_buff_indx;
 		peripheral_type = cfg_hndl->peripheral_type;
 		channel_num = cfg_hndl->channel_num;

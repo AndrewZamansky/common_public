@@ -162,8 +162,7 @@ void dsp_management_api_set_chain_output_buffer(struct dsp_chain_t *ap_chain,
 						DSP_OUTPUT_PADS_t output_dsp_pad,
 						uint8_t *buffer, size_t buff_size);
 
-void dsp_management_api_init(size_t max_num_of_allocated_buffers,
-							size_t size_of_items_in_buffer);
+void dsp_management_api_init(size_t size_of_items_in_buffer);
 
 
 extern struct dsp_chain_t *_dsp_management_create_static_chain(

@@ -79,11 +79,6 @@ menuconfig INCLUDE_INTERNAL_DMA
 	bool   "internal dma"
 	depends on I94XXX
 	default n
-
-if INCLUDE_INTERNAL_DMA
-source "$KCONFIG_PUBLIC_START_DIR/hw_drivers/dma/Kconfig"
-endif
-
 	
 config INCLUDE_INTERNAL_SERIAL_NUMBER
 	bool   "internal serial number"

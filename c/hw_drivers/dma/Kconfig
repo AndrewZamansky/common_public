@@ -1,5 +1,0 @@
-#
-
-if I94XXX
-source "$KCONFIG_PUBLIC_START_DIR/hw_drivers/dma/dma_i94xxx/Kconfig"
-endif
