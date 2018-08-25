@@ -30,6 +30,7 @@ struct i2c_i94xxx_cfg_t {
 #define		I2C_I94XXX_RCV_DATA_SIZE_BUFFER	64
 
 struct i2c_i94xxx_runtime_t {
+	uint8_t  curr_state;
 	uint16_t curr_data_pos;
 	uint8_t  rcv_data[I2C_I94XXX_RCV_DATA_SIZE_BUFFER];
 	uint8_t  const  *tx_data;
@@ -45,3 +46,12 @@ struct i2c_i94xxx_runtime_t {
 	os_mutex_t mutex;
 };
 #endif
+
+typedef enum
+{
+	I2C_I94XXX_IDLE            = 0x01,
+	I2C_I94XXX_DEVICE_ACCESS   = 0x02,
+	I2C_I94XXX_ADDRESS_WRITE   = 0x03,
+	I2C_I94XXX_DATA_WRITE      = 0x04,
+	I2C_I94XXX_DATA_READ       = 0x05
+} I2C_I94XXX_STATES_t;

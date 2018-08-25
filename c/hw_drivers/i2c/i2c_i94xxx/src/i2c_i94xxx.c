@@ -9,7 +9,7 @@
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 
-#include "i2c_i94xxx.h"
+//#include "i2c_i94xxx.h"
 
 #include "i2c_api.h"
 #include "i2c_i94xxx_add_component.h"
@@ -38,6 +38,7 @@
 /* ------------------------ Exported variables --------*/
 
 static uint8_t dummy_msg;
+static size_t STATUS_DEBUG;
 
 static void transmit_byte(I2C_T *i2c, struct i2c_i94xxx_cfg_t *cfg_hndl,
 		struct i2c_i94xxx_runtime_t *runtime_handle)
@@ -76,18 +77,43 @@ static void transmit_byte(I2C_T *i2c, struct i2c_i94xxx_cfg_t *cfg_hndl,
 //	}
 }
 
+static void retransmit_byte(I2C_T *i2c, struct i2c_i94xxx_cfg_t *cfg_hndl,
+		struct i2c_i94xxx_runtime_t *runtime_handle)
+{
+	uint8_t  const *tx_data;
+
+	tx_data = runtime_handle->tx_data;
+	tx_data--;
+	I2C_SET_DATA(i2c, *tx_data++);
+	runtime_handle->tx_data = tx_data;
+
+	if (I2C_I94XXX_API_SLAVE_MODE == cfg_hndl->master_slave_mode)
+	{
+		I2C_SET_CONTROL_REG(i2c, I2C_CTL_SI_AA);
+	}
+}
+
 
 static void transmit_reg_addr_byte(I2C_T *i2c, struct i2c_i94xxx_cfg_t *cfg_hndl,
-		struct i2c_i94xxx_runtime_t *runtime_handle,
-		uint8_t  reg_addr_left_to_transmit)
+		struct i2c_i94xxx_runtime_t *runtime_handle)
 {
 	uint8_t  const *reg_addr_arr;
 
 	reg_addr_arr = runtime_handle->reg_addr_arr;
 	I2C_SET_DATA(i2c, *reg_addr_arr++);
 	runtime_handle->reg_addr_arr = reg_addr_arr;
-	reg_addr_left_to_transmit--;
-	runtime_handle->reg_addr_left_to_transmit = reg_addr_left_to_transmit;
+	runtime_handle->reg_addr_left_to_transmit--;
+}
+
+static void retransmit_reg_addr_byte(I2C_T *i2c, struct i2c_i94xxx_cfg_t *cfg_hndl,
+		struct i2c_i94xxx_runtime_t *runtime_handle)
+{
+	uint8_t  const *reg_addr_arr;
+
+	reg_addr_arr = runtime_handle->reg_addr_arr;
+	reg_addr_arr--;
+	I2C_SET_DATA(i2c, *reg_addr_arr++);
+	runtime_handle->reg_addr_arr = reg_addr_arr;
 }
 
 
@@ -210,30 +236,45 @@ static void I2C_MasterTX(struct i2c_i94xxx_cfg_t *cfg_hndl,
 		struct i2c_i94xxx_runtime_t *runtime_handle,
 		uint32_t u32Status, I2C_T *i2c)
 {
+	uint8_t  curr_state;
 	uint8_t  end_of_transmition;
 	uint8_t  reg_addr_left_to_transmit;
 
 	reg_addr_left_to_transmit = runtime_handle->reg_addr_left_to_transmit;
+	curr_state = runtime_handle->curr_state;
 
 	end_of_transmition = 0;
 	switch(u32Status)
 	{
 	case 0x08:
 		/* START has been transmitted and Write SLA+W to Register I2CDAT. */
+		if(I2C_I94XXX_DEVICE_ACCESS != curr_state)
+		{
+			runtime_handle->curr_state = I2C_I94XXX_DEVICE_ACCESS;
+		}
 		I2C_SET_DATA(i2c, runtime_handle->remote_slave_addr << 1);
 		I2C_SET_CONTROL_REG(i2c, I2C_CTL_SI);
 		runtime_handle->device_access_tries--;
 		break;
+
 	case 0x18:
 		/* SLA+W has been transmitted and ACK has been received. */
 		I2C_SET_CONTROL_REG(i2c, I2C_CTL_SI);
 		if (reg_addr_left_to_transmit)
 		{
+			if(I2C_I94XXX_ADDRESS_WRITE != curr_state)
+			{
+				runtime_handle->curr_state = I2C_I94XXX_ADDRESS_WRITE;
+			}
 			transmit_reg_addr_byte(
-					i2c, cfg_hndl, runtime_handle, reg_addr_left_to_transmit);
+					i2c, cfg_hndl, runtime_handle);
 		}
 		else if (runtime_handle->tx_data_size)
 		{
+			if(I2C_I94XXX_DATA_WRITE != curr_state)
+			{
+				runtime_handle->curr_state = I2C_I94XXX_DATA_WRITE;
+			}
 			transmit_byte(i2c, cfg_hndl, runtime_handle);
 		}
 		else
@@ -241,6 +282,7 @@ static void I2C_MasterTX(struct i2c_i94xxx_cfg_t *cfg_hndl,
 			end_of_transmition = 1;
 		}
 		break;
+
 	case 0x20:
 		/* SLA+W has been transmitted and NACK has been received. */
 		if (runtime_handle->device_access_tries)
@@ -254,16 +296,25 @@ static void I2C_MasterTX(struct i2c_i94xxx_cfg_t *cfg_hndl,
 			end_of_transmition = 1;
 		}
 		break;
+
 	case 0x28:
 		/* DATA has been transmitted and ACK has been received. */
 		I2C_SET_CONTROL_REG(i2c, I2C_CTL_SI);
 		if (reg_addr_left_to_transmit)
 		{
+			if(I2C_I94XXX_ADDRESS_WRITE != curr_state)
+			{
+				runtime_handle->curr_state = I2C_I94XXX_ADDRESS_WRITE;
+			}
 			transmit_reg_addr_byte(
-					i2c, cfg_hndl, runtime_handle, reg_addr_left_to_transmit);
+					i2c, cfg_hndl, runtime_handle);
 		}
 		else if (runtime_handle->tx_data_size)
 		{
+			if(I2C_I94XXX_DATA_WRITE != curr_state)
+			{
+				runtime_handle->curr_state = I2C_I94XXX_DATA_WRITE;
+			}
 			transmit_byte(i2c, cfg_hndl, runtime_handle);
 		}
 		else
@@ -271,7 +322,43 @@ static void I2C_MasterTX(struct i2c_i94xxx_cfg_t *cfg_hndl,
 			end_of_transmition = 1;
 		}
 		break;
+
+	case 0x30:
+		/* DATA has been transmitted and NACK has been received. */
+		I2C_SET_CONTROL_REG(i2c, I2C_CTL_SI);
+		if(I2C_I94XXX_ADDRESS_WRITE == curr_state)
+		{
+			retransmit_reg_addr_byte(i2c, cfg_hndl, runtime_handle);
+		}
+		else if(I2C_I94XXX_DATA_WRITE == curr_state)
+		{
+			retransmit_byte(i2c, cfg_hndl, runtime_handle);
+		}
+		else
+		{
+			end_of_transmition = 1;
+		}
+		break;
+
+	case 0x38:
+		/* Arbitration Lost */
+		I2C_SET_CONTROL_REG(i2c, I2C_CTL_SI);
+		I2C_STOP(i2c);
+		I2C_WAIT_READY(i2c);
+		I2C_START(i2c);
+		break;
+
+	case 0x00:
+		/* Bus Error */
+		I2C_SET_CONTROL_REG(i2c, I2C_CTL_SI);
+		I2C_STOP(i2c);
+		I2C_WAIT_READY(i2c);
+		I2C_START(i2c);
+		end_of_transmition = 1;
+		break;
+
 	default:
+		STATUS_DEBUG = u32Status;
 		CRITICAL_ERROR("unimplemented status\n");
 		break;
 	}
@@ -279,7 +366,7 @@ static void I2C_MasterTX(struct i2c_i94xxx_cfg_t *cfg_hndl,
 	if (end_of_transmition)
 	{
 		os_queue_t WaitQueue;
-
+		runtime_handle->curr_state = I2C_I94XXX_IDLE;
 		I2C_STOP(i2c);
 		WaitQueue = runtime_handle->WaitQueue;
 		runtime_handle->tx_data = NULL;
@@ -299,6 +386,7 @@ static void I2C_MasterRX(struct i2c_i94xxx_cfg_t *cfg_hndl,
 		struct i2c_i94xxx_runtime_t *runtime_handle,
 		uint32_t u32Status, I2C_T *i2c)
 {
+//	uint8_t curr_state;
 	uint8_t data;
 	uint8_t  *rx_data;
 	uint16_t curr_data_pos;
@@ -306,6 +394,7 @@ static void I2C_MasterRX(struct i2c_i94xxx_cfg_t *cfg_hndl,
 	uint8_t  reg_addr_left_to_transmit;
 	uint8_t end_of_transmition;
 
+//	curr_state = runtime_handle->curr_state;
 	curr_data_pos = runtime_handle->curr_data_pos;
 	reg_addr_left_to_transmit = runtime_handle->reg_addr_left_to_transmit;
 	rx_data = runtime_handle->rx_data;
@@ -320,19 +409,21 @@ static void I2C_MasterRX(struct i2c_i94xxx_cfg_t *cfg_hndl,
 		I2C_SET_CONTROL_REG(i2c, I2C_CTL_SI);
 		runtime_handle->device_access_tries--;
 		break;
+
 	case 0x18:
 		/* SLA+W has been transmitted and ACK has been received. */
 		I2C_SET_CONTROL_REG(i2c, I2C_CTL_SI);
 		if (reg_addr_left_to_transmit)
 		{
 			transmit_reg_addr_byte(
-					i2c, cfg_hndl, runtime_handle, reg_addr_left_to_transmit);
+					i2c, cfg_hndl, runtime_handle);
 		}
 		else
 		{
 			I2C_SET_CONTROL_REG(i2c, I2C_CTL_STA);
 		}
 		break;
+
 	case 0x20:
 		/* SLA+W has been transmitted and NACK has been received. */
 		if (runtime_handle->device_access_tries)
@@ -347,25 +438,34 @@ static void I2C_MasterRX(struct i2c_i94xxx_cfg_t *cfg_hndl,
 		}
 		//I2C_SET_CONTROL_REG(i2c, I2C_CTL_STA | I2C_CTL_STO | I2C_CTL_SI);
 		break;
+
 	case 0x28:
-		/* SLA+W has been transmitted and ACK has been received. */
+		/* DATA has been transmitted and ACK has been received. */
 		I2C_SET_CONTROL_REG(i2c, I2C_CTL_SI);
 		if (reg_addr_left_to_transmit)
 		{
 			transmit_reg_addr_byte(
-					i2c, cfg_hndl, runtime_handle, reg_addr_left_to_transmit);
+					i2c, cfg_hndl, runtime_handle);
 		}
 		else
 		{
 			I2C_SET_CONTROL_REG(i2c, I2C_CTL_STA);
 		}
 		break;
+
+	case 0x30:
+		/* DATA has been transmitted and NACK has been received. */
+		I2C_SET_CONTROL_REG(i2c, I2C_CTL_SI);
+		retransmit_reg_addr_byte(i2c, cfg_hndl, runtime_handle);
+		break;
+
 	case 0x10:
 		/* Repeat START has been transmitted and prepare SLA+R */
 		I2C_SET_DATA(i2c, (runtime_handle->remote_slave_addr << 1) | 0x01);
 		I2C_SET_CONTROL_REG(i2c, I2C_CTL_SI_AA);
 		runtime_handle->device_access_tries--;
 		break;
+
 	case 0x40:
 		/* SLA+R has been transmitted and ACK has been received. */
 		if ((curr_data_pos + 1) == runtime_handle->size_of_data_to_receive)
@@ -378,9 +478,11 @@ static void I2C_MasterRX(struct i2c_i94xxx_cfg_t *cfg_hndl,
 			I2C_SET_CONTROL_REG(i2c, I2C_CTL_SI_AA);
 		}
 		break;
+
 	case 0x48:
 		end_of_transmition = 1;
 		break;
+
 	case 0x50:
 		/* DATA has been received and NACK has been returned */
 		data = I2C_GET_DATA(i2c);
@@ -397,6 +499,7 @@ static void I2C_MasterRX(struct i2c_i94xxx_cfg_t *cfg_hndl,
 			I2C_SET_CONTROL_REG(i2c, I2C_CTL_SI_AA);
 		}
 		break;
+
 	case 0x58:
 		data = I2C_GET_DATA(i2c);
 		rx_data[curr_data_pos] = data;
@@ -410,7 +513,26 @@ static void I2C_MasterRX(struct i2c_i94xxx_cfg_t *cfg_hndl,
 			CRITICAL_ERROR("unexpected status\n");
 		}
 		break;
+
+	case 0x38:
+		/* Arbitration Lost, just ending transmission */
+		I2C_SET_CONTROL_REG(i2c, I2C_CTL_SI);
+		I2C_STOP(i2c);
+		I2C_WAIT_READY(i2c);
+		I2C_START(i2c);
+		break;
+
+	case 0x00:
+		/* Bus Error, release bus */
+		I2C_SET_CONTROL_REG(i2c, I2C_CTL_SI);
+		I2C_STOP(i2c);
+		I2C_WAIT_READY(i2c);
+		I2C_START(i2c);
+		end_of_transmition = 1;
+		break;
+
 	default:
+		STATUS_DEBUG = u32Status;
 		CRITICAL_ERROR("unimplemented status\n");
 		break;
 	}
@@ -551,7 +673,7 @@ static void master_write(struct dev_desc_t *adev,
 	num_of_bytes_to_write = wr_struct->num_of_bytes_to_write;
 	if (0 == num_of_bytes_to_write)
 	{
-		wr_struct->num_of_bytes_that_was_written = 0;
+		wr_struct->num_of_bytes_written = 0;
 		return ;
 	}
 
@@ -592,7 +714,7 @@ static void master_write(struct dev_desc_t *adev,
 	{
 		num_of_bytes_to_write = 0;
 	}
-	wr_struct->num_of_bytes_that_was_written =
+	wr_struct->num_of_bytes_written =
 							runtime_handle->transmitted_data_size;
 
 	os_mutex_give(mutex);
@@ -665,8 +787,7 @@ static void master_read(struct dev_desc_t *adev,
 	}
 	else
 	{
-		num_of_bytes_that_was_read =
-				num_of_bytes_to_read - runtime_handle->size_of_data_to_receive;
+		num_of_bytes_that_was_read = runtime_handle->curr_data_pos;
 	}
 	rd_struct->num_of_bytes_that_was_read = num_of_bytes_that_was_read;
 
