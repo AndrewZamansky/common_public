@@ -120,7 +120,7 @@ static void *receive_thread(void *adev)
 		if (NULL != callback_rx_dev)
 		{
 			DEV_CALLBACK_2_PARAMS( callback_rx_dev,
-					CALLBACK_DATA_RECEIVED, rd_buf, (void*)curr_read_num);
+				CALLBACK_DATA_RECEIVED, rd_buf, (void*)(size_t)curr_read_num);
 		}
 
 	}
