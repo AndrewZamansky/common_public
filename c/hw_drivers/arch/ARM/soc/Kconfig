@@ -19,6 +19,7 @@ config STM32F103RC
 config I94XXX
 	bool "I94XXX"
 	select PUBLIC_SOC_SELECTED
+	select I94XXX_ADDITIONAL_OPTIONS
 
 config GENERIC_SOC
 	bool "generic SOC"
