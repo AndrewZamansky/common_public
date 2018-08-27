@@ -11,6 +11,9 @@ config ATOM_THREADS
 config OSA
 	bool "osa (co-operative os)"
 
+config LINUX_OS_WRAPPER
+	bool "linux os wrapper"
+
 config NONE_RT_OS
 	bool "none"
 
