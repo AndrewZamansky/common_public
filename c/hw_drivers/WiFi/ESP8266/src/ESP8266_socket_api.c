@@ -1,6 +1,7 @@
 #include "_project.h"
 #include "sys/socket.h"
 #include "sys/time.h"
+//#include <sys/type.h>
 
 #include "dev_management_api.h" // for device manager defines and typedefs
 #include "ESP8266_api.h" // for device manager defines and typedefs
@@ -395,32 +396,66 @@ int select(int nfds, fd_set *readfds, fd_set *writefds,
 	struct dev_desc_t *  socket_dev;
 	uint8_t i;
 	uint8_t read_ready;
+	uint8_t event_happened;
 	uint8_t retVal;
+	fd_set orig_readfds;
+	fd_set orig_writefds;
+	uint32_t timeout_msec;
 
-	for(i=0; i<MAX_NUM_OF_SOCKETS ; i++)
+
+
+	if (NULL != timeout)
 	{
-		if ( 0 != FD_ISSET(i , readfds))
-		{
-			socket_dev = allocated_socket_dev[i];
-			retVal = DEV_IOCTL_1_PARAMS(socket_dev ,
-					IOCTL_ESP8266_SOCKET_IS_DATA_RECEIVED , &read_ready);
-			if(0 != retVal)
-			{
-				FD_SET(i , exceptfds);
-			}
-			if (0 == read_ready)
-			{
-				FD_CLR(i , readfds);
-				os_delay_ms( 1 );
-
-			}
-					//os_delay_ms( 1000 );
-
-		}
+		timeout_msec = timeout->tv_sec * 1000;
+		timeout_msec += timeout->tv_usec / 1000;
+	}
+	else
+	{
+		timeout_msec = 1;
 	}
 
+	orig_readfds = *readfds;
+	orig_writefds = *writefds;
 	FD_ZERO(exceptfds);
-	return 1;// STILL CAN BE BLOCKED IN ESP8266 TASK
+	FD_ZERO(readfds);
+	FD_ZERO(writefds);
+	event_happened = 0;
+	while (1)
+	{
+		for(i = 0; i < MAX_NUM_OF_SOCKETS; i++)
+		{
+			if ( 0 != FD_ISSET(i , &orig_readfds))
+			{
+				socket_dev = allocated_socket_dev[i];
+				retVal = DEV_IOCTL_1_PARAMS(socket_dev ,
+						IOCTL_ESP8266_SOCKET_IS_DATA_RECEIVED , &read_ready);
+				if(0 != retVal)
+				{
+					FD_SET(i , exceptfds);
+				}
+				if (read_ready)
+				{
+					FD_SET(i , readfds);
+					event_happened++;
+				}
+			}
+			if ( 0 != FD_ISSET(i , &orig_writefds))
+			{
+				FD_SET(i , writefds);
+				event_happened++;
+			}
+		}
+		if (event_happened || (0 == timeout_msec))
+		{
+			break;
+		}
+		if (NULL != timeout)
+		{
+			timeout_msec--;
+		}
+		os_delay_ms( 1 );
+	}
+	return event_happened;// STILL CAN BE BLOCKED IN ESP8266 TASK
 	//while(1);//temporary debug trap
 }
 

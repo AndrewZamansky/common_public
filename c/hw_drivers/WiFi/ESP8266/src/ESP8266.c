@@ -185,7 +185,7 @@ static size_t receiving_incoming_net_data(esp8266_instance_t *config_handle,
 	recvedData = curr_rcv_data_socket->recvedData;
 	bytes_to_copy = MAX_RCVD_BUFFER_SIZE - curr_data_size;
 
-	PRINTF_DBG("--rcv_data=%d\r\n" , total_length );
+	//PRINTF_DBG("--rcv_data=%d\r\n" , total_length );
 	if(total_length < leftDataToReceive)
 	{
 		if (total_length < bytes_to_copy)
@@ -1154,7 +1154,7 @@ static void no_new_message_received(esp8266_instance_t *config_handle,
 	case ESP8266_State_Resetting :
 		currentState = ESP8266_State_Setting_Mode ;
 		send_str_to_chip(tx_dev, "ATE0\r\n");// setting echo off
-		os_delay_ms( 1 );
+		os_delay_ms( 10 );
 		send_str_to_chip(tx_dev, "AT+CWMODE=1\r\n");
 		timeout = 2;
 		break;

@@ -7,6 +7,10 @@
 
 /**********  define API  types ************/
 
+#ifdef  __cplusplus
+extern "C" {
+#endif
+
 typedef void*  ESP8266_API_Handle_t;
 
 
@@ -77,5 +81,9 @@ typedef struct
 
 uint8_t ESP8266_api_init_dev_descriptor(struct dev_desc_t *aDevDescriptor);
 void set_esp8266_pdev_for_socket_api(struct dev_desc_t *a_esp8266_dev);
+
+#ifdef  __cplusplus
+}
+#endif
 
 #endif

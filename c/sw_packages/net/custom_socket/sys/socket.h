@@ -2,30 +2,35 @@
 #define __CUSTOM_SOCKET_H
 
 #include <stdint.h>
+#include <sys/types.h>
+
+#ifdef  __cplusplus
+extern "C" {
+#endif
 
 typedef uint32_t socklen_t ;
 
   typedef struct sockaddr
   {
-      ushort  sa_family;
+      unsigned short  sa_family;
       char    sa_data[14];
   }	SOCKADDR_T;
 
   typedef struct in_addr {
     union {
       struct {
-        u_char s_b1,s_b2,s_b3,s_b4;
+        unsigned char s_b1,s_b2,s_b3,s_b4;
       } S_un_b;
       struct {
-        u_short s_w1,s_w2;
+        unsigned short s_w1,s_w2;
       } S_un_w;
-      u_long S_addr;
+      unsigned long S_addr;
     } S_un;
   }IN_ADDR_T;
 
   struct sockaddr_in {
           short   sin_family;
-          u_short sin_port;
+          unsigned short sin_port;
           struct  in_addr sin_addr;
           char    sin_zero[8];
   }SOCKADDR_IN_T;
@@ -162,6 +167,27 @@ enum {
   IPPROTO_MAX
 };
 
+
+
+extern uint16_t htons(uint16_t n);
+ssize_t send(int socket, const void *buffer, size_t length, int flags);
+size_t recv(int sockfd, void *buf, size_t len, int flags);
+int select(int nfds, fd_set *readfds, fd_set *writefds,
+				  fd_set *exceptfds, struct timeval *timeout);
+struct hostent*  gethostbyname( const char *name);
+int getpeername(int sockfd, struct sockaddr *addr, socklen_t *addrlen);
+int getsockname(
+		int sockfd, struct sockaddr *local_addr, socklen_t *addrlen);
+int getsockopt(int sockfd, int level, int optname,
+					  void *optval, socklen_t *optlen);
+int connect(int sockfd, const struct sockaddr *addr, unsigned int addrlen);
+int socket(int socket_family, int socket_type, int protocol);
+uint16_t ntohs(uint16_t n);
+
+
+#ifdef  __cplusplus
+}
+#endif
 
 
 #endif /* __CUSTOM_SOCKET_H */
