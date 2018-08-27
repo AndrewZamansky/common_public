@@ -8,11 +8,19 @@ DEFINES =
 
 #ASMFLAGS =  
 
-ifdef CONFIG_MICROSOFT_COMPILER
-	DEFINES += _CRT_SECURE_NO_WARNINGS # to disable deprecation in windows compiler
+
+ifeq ($(CONFIG_HOST),y)
+    DEFINES += COMPILING_FOR_HOST
+    ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
+        ifdef CONFIG_MICROSOFT_COMPILER
+            # to disable deprecation in windows compiler
+            DEFINES += _CRT_SECURE_NO_WARNINGS
+        endif
+        DEFINES += COMPILING_FOR_WINDOWS_HOST
+    else
+        DEFINES += COMPILING_FOR_LINUX_HOST
+    endif
 endif
-
-
 SRC = PRINTF.c 
 
 

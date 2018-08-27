@@ -20,8 +20,9 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "_printf_prerequirements_check.h"
-
+#if defined(COMPILING_FOR_LINUX_HOST)
+	#include <unistd.h>
+#endif
 /********  defines *********************/
 #define MAX_NUM_OF_PRINTF_INSTANCES 4
 #define PRINTF_BUF_LENGTH  128
@@ -42,7 +43,7 @@ struct dev_desc_t const *print_dev;
 static struct dev_desc_t *debug_out_devs[MAX_NUM_OF_PRINTF_INSTANCES] = {NULL};
 static struct dev_desc_t *note_out_devs[MAX_NUM_OF_PRINTF_INSTANCES] = {NULL};
 
-static uint8_t sh_buffer[PRINTF_BUF_LENGTH]; //  define your own buffer’s size
+static uint8_t sh_buffer[PRINTF_BUF_LENGTH]; //  define your own bufferï¿½s size
 
 
 static uint8_t add_dev(
@@ -141,7 +142,6 @@ static void sendDebugOrNote(struct dev_desc_t  **out_devs,
 			DEV_WRITE(out_devs[i], pBuffer, aLen);
 		}
 	}
-
 }
 
 
@@ -157,6 +157,9 @@ static void common_sendData(
 	{
 		case PRINTF_TYPE_DBG :
 			sendDebugOrNote(debug_out_devs,pBuffer,aLen);
+			#if defined(COMPILING_FOR_HOST)
+				write(1, pBuffer, aLen);
+			#endif
 			break;
 		case PRINTF_TYPE_NOTE :
 			sendDebugOrNote(note_out_devs,pBuffer,aLen);

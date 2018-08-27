@@ -7,6 +7,11 @@
 #include "_project_defines.h"
 #include "dev_common_ioctl_and_types.h"
 
+
+#ifdef  __cplusplus
+extern "C" {
+#endif
+
 #define NOT_FOR_SAVE    0
 #define FOR_SAVE        1
 
@@ -210,5 +215,9 @@ uint8_t DEV_SET_PARAM(char *dev_name_str,
 
 struct dev_desc_t * DevManagment_API_GetAllDevsArray(void);
 
+
+#ifdef  __cplusplus
+}
+#endif
 
 #endif
