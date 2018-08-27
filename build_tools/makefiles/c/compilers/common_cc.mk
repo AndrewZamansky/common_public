@@ -102,7 +102,7 @@ ALL_ASM_INCLUDE_DIRS :=$(subst $(APP_ROOT_DIR),\
                           $(ENV_VAR_APP_ROOT_DIR),$(ALL_ASM_INCLUDE_DIRS))
 
 
-ASM_COMPILATION_CMD := $(SET_CC_ENV_VARS)& $(ASM) $(GLOBAL_ASMFLAGS) $(ASMFLAGS)
+ASM_COMPILATION_CMD := $(SET_CC_ENV_VARS) $(ASM) $(GLOBAL_ASMFLAGS) $(ASMFLAGS)
 ASM_COMPILATION_CMD += $(ALL_ASM_INCLUDE_DIRS) $(ALL_ASM_DEFINES)
 $(CURR_OBJ_DIR)/%.o.asm: %.s
 	$(info .    Compiling $<)
@@ -130,7 +130,7 @@ ALL_INCLUDE_DIRS :=$(subst $(APP_ROOT_DIR),\
                                  $(ENV_VAR_APP_ROOT_DIR),$(ALL_INCLUDE_DIRS))
 
 ALL_CFLAGS := $(GLOBAL_CFLAGS) $(CFLAGS)
-C_COMPILATION_CMD := $(SET_CC_ENV_VARS)& $(CC) $(ALL_CFLAGS)
+C_COMPILATION_CMD := $(SET_CC_ENV_VARS) $(CC) $(ALL_CFLAGS)
 C_COMPILATION_CMD += $(ALL_INCLUDE_DIRS) $(ALL_DEFINES)
 $(CURR_OBJ_DIR)/%.o: %.c $(HEADER_FILES_DEPS) $(APP_ROOT_DIR)/.config
 	$(info .    Compiling $<)
@@ -140,18 +140,18 @@ $(CURR_OBJ_DIR)/%.o: %.c $(HEADER_FILES_DEPS) $(APP_ROOT_DIR)/.config
 	$(C_COMPILATION_CMD) $(CC_OUTPUT_FLAG_AND_FILE) $<
 	
 #	open line to create preproccesor file
-#	$(CC) -E -P $(ALL_CFLAGS) $(ALL_INCLUDE_DIRS) $(ALL_DEFINES) $< -o  $@.pre 
+#	$(CC) -E -P $(ALL_CFLAGS) $(ALL_INCLUDE_DIRS) $(ALL_DEFINES) $< -o  $@.pre
 
 $(CURR_OBJ_DIR)/%.oo: %.cc $(HEADER_FILES_DEPS) $(APP_ROOT_DIR)/.config
 	$(info .    Compiling $<)
 	$(call mkdir_if_not_exists, $(dir $@))
 	$(C_COMPILATION_CMD) $(CC_OUTPUT_FLAG_AND_FILE) $<
 #	open line to create preproccesor file
-#	$(CC) -E -P $(ALL_CFLAGS) $(ALL_INCLUDE_DIRS) $(ALL_DEFINES) $< -o  $@.pre 
+#	$(CC) -E -P $(ALL_CFLAGS) $(ALL_INCLUDE_DIRS) $(ALL_DEFINES) $< -o  $@.pre
 
 $(CURR_OBJ_DIR)/%.oop: %.cpp $(HEADER_FILES_DEPS) $(APP_ROOT_DIR)/.config
 	$(info .    Compiling $<)
 	$(call mkdir_if_not_exists, $(dir $@))
 	$(C_COMPILATION_CMD) $(CC_OUTPUT_FLAG_AND_FILE) $<
 #	open line to create preproccesor file
-#	$(CC) -E -P $(ALL_CFLAGS) $(ALL_INCLUDE_DIRS) $(ALL_DEFINES) $< -o  $@.pre 
+#	$(CC) -E -P $(ALL_CFLAGS) $(ALL_INCLUDE_DIRS) $(ALL_DEFINES) $< -o  $@.pre

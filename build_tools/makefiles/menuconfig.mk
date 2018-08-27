@@ -50,6 +50,7 @@ COMMON_PRIVATE_KCONFIG_FILE :=$(KCONFIG_PRIVATE_START_DIR)/Kconfig
 ifeq ("$(wildcard $(COMMON_PRIVATE_KCONFIG_FILE))","")
     $(call mkdir_if_not_exists, $(dir $(COMMON_PRIVATE_KCONFIG_FILE)))
     DUMMY:=$(shell echo config PRIVATE_DUMMY>$(COMMON_PRIVATE_KCONFIG_FILE))
+    DUMMY:=$(shell echo     bool "dummy">>$(COMMON_PRIVATE_KCONFIG_FILE))
 endif
 
 

@@ -7,10 +7,11 @@
 ###########  checking host os #############
 $(info detecting host OS ... )
 $(info trying Windows ... )
+DUMMY :=$(shell echo . )#delay execution to output all prints in buffer
 SHELL := cmd
-OS_TEST	:= $(shell ver)
-ifeq ($(findstring Windows,$(OS_TEST)),Windows) 	 
-	COMPILER_HOST_OS := WINDOWS
+OS_TEST := $(shell ver)
+ifeq ($(findstring Windows,$(OS_TEST)),Windows)
+    COMPILER_HOST_OS := WINDOWS
     $(info Windows OS detected . )
     include $(PREBUILD_ROUTINES_DIR)/init_windows_environment.mk
 else # we are not in windows now
@@ -24,8 +25,9 @@ else # we are not in windows now
         include $(PREBUILD_ROUTINES_DIR)/init_linux_environment.mk
     else # we are not in linux now
         $(info err: UNKNOWN HOST OS)
-endif 
-	
+        $(call exit,1)
+    endif
+
 endif
 
 CALCULATED_SHELL :=$(SHELL)
