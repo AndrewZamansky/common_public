@@ -81,8 +81,8 @@ if 	USE_COMMON_PRIVATE_PACKAGES
 source "$KCONFIG_PRIVATE_START_DIR/Kconfig"
 config COMMON_PRIVATE_GIT_COMMIT_HASH
 	string "common private git commit hash"
-	
 	default ""
+
 config COMMON_PRIVATE_SVN_REVISION
 	string "common private svn revision"
 	default ""

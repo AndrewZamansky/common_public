@@ -6,10 +6,17 @@ config INCLUDE_CJSON
 	bool   "cJSON"
 	default n
 
+config INCLUDE_LINUX_TIMER
+	bool   "linux timer"
+	depends on HOST
+	default n
+
 
 menuconfig INCLUDE_ASYNC_TX_WRAPPER
 	bool   "async tx wrapper"
-	depends on INCLUDE_INTERNAL_UART || INCLUDE_USB_VIRTUAL_COM || INCLUDE_WIRELESS_UART || INCLUDE_SEMIHOSTING
+	depends on (INCLUDE_INTERNAL_UART || INCLUDE_USB_VIRTUAL_COM || \
+				INCLUDE_WIRELESS_UART || INCLUDE_SEMIHOSTING || \
+				INCLUDE_LINUX_UART)
 	default n
 
 if INCLUDE_ASYNC_TX_WRAPPER
@@ -18,7 +25,9 @@ endif
 
 menuconfig INCLUDE_ASYNC_RX_WRAPPER
 	bool   "async rx wrapper"
-	depends on INCLUDE_INTERNAL_UART || INCLUDE_USB_VIRTUAL_COM || INCLUDE_WIRELESS_UART || INCLUDE_SEMIHOSTING
+	depends on (INCLUDE_INTERNAL_UART || INCLUDE_USB_VIRTUAL_COM || \
+				INCLUDE_WIRELESS_UART || INCLUDE_SEMIHOSTING || \
+				INCLUDE_LINUX_UART)
 	default n
 
 if INCLUDE_ASYNC_RX_WRAPPER
@@ -27,7 +36,7 @@ endif
 
 config INCLUDE_TIMER_WRAPPER
 	bool   "timer wrapper"
-	depends on INCLUDE_CORTEXM_SYSTICK 
+	depends on INCLUDE_CORTEXM_SYSTICK || INCLUDE_LINUX_TIMER
 	default n
 
 

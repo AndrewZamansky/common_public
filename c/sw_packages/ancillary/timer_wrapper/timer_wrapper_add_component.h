@@ -27,4 +27,4 @@
  *  device specific defines should be undefined
  *  after calling #include "add_static_dev.h"
  */
-#undef TIMER_DT_HW_TIMER_PDEV
+#undef TIMER_WRAPPER_DT_HW_TIMER_PDEV
