@@ -44,8 +44,8 @@ uint8_t uart_i94xxx_callback(struct dev_desc_t *adev ,
 {
 	struct uart_i94xxx_cfg_t *cfg_hndl;
 
-    uint8_t u8InChar;
-    uint32_t u32IntSts ;
+	uint8_t u8InChar;
+	uint32_t u32IntSts ;
 	UART_T *uart_regs;
 
 	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
@@ -73,9 +73,9 @@ uint8_t uart_i94xxx_callback(struct dev_desc_t *adev ,
 		{
 			DEV_CALLBACK_1_PARAMS(callback_tx_dev , CALLBACK_TX_DONE, (void*)1);
 		}
-   }
+	}
 
-    return 0;
+	return 0;
 }
 
 
@@ -94,7 +94,7 @@ size_t uart_i94xxx_pwrite(struct dev_desc_t *adev,
 	uart_regs =(UART_T *)cfg_hndl->base_address;
 
 	UART_WRITE(uart_regs, *apData);
-    UART_EnableInt(uart_regs,  UART_INTEN_THREIEN_Msk );
+	UART_EnableInt(uart_regs,  UART_INTEN_THREIEN_Msk );
 
 	return 1;
 
@@ -138,13 +138,13 @@ uint8_t uart_i94xxx_ioctl( struct dev_desc_t *adev, uint8_t aIoctl_num,
 			switch (cfg_hndl->pinout)
 			{
 			case UART_I94XXX_UART0_TX_RX_PINS_PORT_B_PINS_8_9:
-			    SYS->GPB_MFPH &= ~(SYS_GPB_MFPH_PB8MFP_Msk);
-			    SYS->GPB_MFPH &= ~(SYS_GPB_MFPH_PB9MFP_Msk);
-			    SYS->GPB_MFPH |=  (SYS_GPB_MFPH_PB8MFP_UART0_TXD);
-			    SYS->GPB_MFPH |=  (SYS_GPB_MFPH_PB9MFP_UART0_RXD);
+				SYS->GPB_MFPH &= ~(SYS_GPB_MFPH_PB8MFP_Msk);
+				SYS->GPB_MFPH &= ~(SYS_GPB_MFPH_PB9MFP_Msk);
+				SYS->GPB_MFPH |=  (SYS_GPB_MFPH_PB8MFP_UART0_TXD);
+				SYS->GPB_MFPH |=  (SYS_GPB_MFPH_PB9MFP_UART0_RXD);
 				break;
 			case UART_I94XXX_UART0_TX_RX_PINS_PORT_D_PINS_14_15:
-				  SYS->GPD_MFPH = (SYS->GPD_MFPH & (~0xFF000000)) | 0x44000000;
+				SYS->GPD_MFPH = (SYS->GPD_MFPH & (~0xFF000000)) | 0x44000000;
 				break;
 			default :
 				return 1;
