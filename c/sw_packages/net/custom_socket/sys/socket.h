@@ -1,114 +1,126 @@
 #ifndef __CUSTOM_SOCKET_H
 #define __CUSTOM_SOCKET_H
 
-#include <stdint.h>
-#include <sys/types.h>
-
 #ifdef  __cplusplus
 extern "C" {
 #endif
 
+#include <stdint.h>
+#include <sys/types.h>
+#include <sys/select.h>
+
+
+
 typedef uint32_t socklen_t ;
 
-  typedef struct sockaddr
-  {
-      unsigned short  sa_family;
-      char    sa_data[14];
-  }	SOCKADDR_T;
+typedef struct sockaddr
+{
+  unsigned short  sa_family;
+  char    sa_data[14];
+}  SOCKADDR_T;
 
-  typedef struct in_addr {
-    union {
-      struct {
-        unsigned char s_b1,s_b2,s_b3,s_b4;
-      } S_un_b;
-      struct {
-        unsigned short s_w1,s_w2;
-      } S_un_w;
-      unsigned long S_addr;
-    } S_un;
-  }IN_ADDR_T;
+typedef struct in_addr {
+union {
+  struct {
+	unsigned char s_b1,s_b2,s_b3,s_b4;
+  } S_un_b;
+  struct {
+	unsigned short s_w1,s_w2;
+  } S_un_w;
+  unsigned long S_addr;
+} S_un;
+unsigned long s_addr;
+}IN_ADDR_T;
 
-  struct sockaddr_in {
-          short   sin_family;
-          unsigned short sin_port;
-          struct  in_addr sin_addr;
-          char    sin_zero[8];
-  }SOCKADDR_IN_T;
+struct sockaddr_in {
+	  short   sin_family;
+	  unsigned short sin_port;
+	  struct  in_addr sin_addr;
+	  char    sin_zero[8];
+};
 
-  typedef struct hostent {
-    char       *h_name;
-    char    **h_aliases;
-    short         h_addrtype;
-    short         h_length;
-    char    **h_addr_list;
-  }HOSTENT_T;
+typedef struct hostent {
+char       *h_name;
+char    **h_aliases;
+short         h_addrtype;
+short         h_length;
+char    **h_addr_list;
+}HOSTENT_T;
 
-  /*
-   * Types
-   */
-  #define	SOCK_STREAM	1		/* stream socket */
-  #define	SOCK_DGRAM	2		/* datagram socket */
-  #define	SOCK_RAW	3		/* raw-protocol interface */
-  #define	SOCK_RDM	4		/* reliably-delivered message */
-  #define	SOCK_SEQPACKET	5		/* sequenced packet stream */
-
-  /*
-   * Option flags per-socket.
-   */
-  #define	SO_DEBUG	0x0001		/* turn on debugging info recording */
-  #define	SO_ACCEPTCONN	0x0002		/* socket has had listen() */
-  #define	SO_REUSEADDR	0x0004		/* allow local address reuse */
-  #define	SO_KEEPALIVE	0x0008		/* keep connections alive */
-  #define	SO_DONTROUTE	0x0010		/* just use interface addresses */
-  #define	SO_BROADCAST	0x0020		/* permit sending of broadcast msgs */
-  #define	SO_USELOOPBACK	0x0040		/* bypass hardware when possible */
-  #define	SO_LINGER	0x0080		/* linger on close if data present */
-  #define	SO_OOBINLINE	0x0100		/* leave received OOB data in line */
-
-  /*
-   * Additional options, not kept in so_options.
-   */
-  #define SO_SNDBUF	0x1001		/* send buffer size */
-  #define SO_RCVBUF	0x1002		/* receive buffer size */
-  #define SO_SNDLOWAT	0x1003		/* send low-water mark */
-  #define SO_RCVLOWAT	0x1004		/* receive low-water mark */
-  #define SO_SNDTIMEO	0x1005		/* send timeout */
-  #define SO_RCVTIMEO	0x1006		/* receive timeout */
-  #define	SO_ERROR	0x1007		/* get error status and clear */
-  #define	SO_TYPE		0x1008		/* get socket type */
+struct servent {
+//    char  *s_name;       /* official service name */
+//    char **s_aliases;    /* alias list */
+    int    s_port;       /* port number */
+    char  *s_proto;      /* protocol to use */
+};
 
 
-  /*
-   * Level number for (get/set)sockopt() to apply to socket itself.
-   */
-  #define	SOL_SOCKET	0xffff		/* options for socket level */
+/*
+* Types
+*/
+#define  SOCK_STREAM  1    /* stream socket */
+#define  SOCK_DGRAM  2    /* datagram socket */
+#define  SOCK_RAW  3    /* raw-protocol interface */
+#define  SOCK_RDM  4    /* reliably-delivered message */
+#define  SOCK_SEQPACKET  5    /* sequenced packet stream */
 
-  /*
-   * Address families.
-   */
-  #define	AF_UNSPEC	0		/* unspecified */
-  #define	AF_UNIX		1		/* local to host (pipes, portals) */
-  #define	AF_INET		2		/* internetwork: UDP, TCP, etc. */
-  #define	AF_IMPLINK	3		/* arpanet imp addresses */
-  #define	AF_PUP		4		/* pup protocols: e.g. BSP */
-  #define	AF_CHAOS	5		/* mit CHAOS protocols */
-  #define	AF_NS		6		/* XEROX NS protocols */
-  #define	AF_ISO		7		/* ISO protocols */
-  #define	AF_OSI		AF_ISO
-  #define	AF_ECMA		8		/* european computer manufacturers */
-  #define	AF_DATAKIT	9		/* datakit protocols */
-  #define	AF_CCITT	10		/* CCITT protocols, X.25 etc */
-  #define	AF_SNA		11		/* IBM SNA */
-  #define AF_DECnet	12		/* DECnet */
-  #define AF_DLI		13		/* DEC Direct data link interface */
-  #define AF_LAT		14		/* LAT */
-  #define	AF_HYLINK	15		/* NSC Hyperchannel */
-  #define	AF_APPLETALK	16		/* Apple Talk */
-  #define	AF_ROUTE	17		/* Internal Routing Protocol */
-  #define	AF_LINK		18		/* Link layer interface */
-  #define	pseudo_AF_XTP	19		/* eXpress Transfer Protocol (no AF) */
+/*
+* Option flags per-socket.
+*/
+#define  SO_DEBUG  0x0001    /* turn on debugging info recording */
+#define  SO_ACCEPTCONN  0x0002    /* socket has had listen() */
+#define  SO_REUSEADDR  0x0004    /* allow local address reuse */
+#define  SO_KEEPALIVE  0x0008    /* keep connections alive */
+#define  SO_DONTROUTE  0x0010    /* just use interface addresses */
+#define  SO_BROADCAST  0x0020    /* permit sending of broadcast msgs */
+#define  SO_USELOOPBACK  0x0040    /* bypass hardware when possible */
+#define  SO_LINGER  0x0080    /* linger on close if data present */
+#define  SO_OOBINLINE  0x0100    /* leave received OOB data in line */
 
-  #define	AF_MAX		20
+/*
+* Additional options, not kept in so_options.
+*/
+#define SO_SNDBUF    1    /* send buffer size */
+#define SO_RCVBUF    2    /* receive buffer size */
+#define SO_SNDLOWAT  3    /* send low-water mark */
+#define SO_RCVLOWAT  4    /* receive low-water mark */
+#define SO_SNDTIMEO  5    /* send timeout */
+#define SO_RCVTIMEO  6    /* receive timeout */
+#define SO_ERROR     7    /* get error status and clear */
+#define SO_TYPE      8    /* get socket type */
+#define SO_NONBLOCK  9
+
+/*
+* Level number for (get/set)sockopt() to apply to socket itself.
+*/
+#define  SOL_SOCKET  0xffff    /* options for socket level */
+
+/*
+* Address families.
+*/
+#define  AF_UNSPEC  0    /* unspecified */
+#define  AF_UNIX    1    /* local to host (pipes, portals) */
+#define  AF_INET    2    /* internetwork: UDP, TCP, etc. */
+#define  AF_IMPLINK  3    /* arpanet imp addresses */
+#define  AF_PUP    4    /* pup protocols: e.g. BSP */
+#define  AF_CHAOS  5    /* mit CHAOS protocols */
+#define  AF_NS    6    /* XEROX NS protocols */
+#define  AF_ISO    7    /* ISO protocols */
+#define  AF_OSI    AF_ISO
+#define  AF_ECMA    8    /* european computer manufacturers */
+#define  AF_DATAKIT  9    /* datakit protocols */
+#define  AF_CCITT  10    /* CCITT protocols, X.25 etc */
+#define  AF_SNA    11    /* IBM SNA */
+#define  AF_DECnet  12    /* DECnet */
+#define  AF_DLI    13    /* DEC Direct data link interface */
+#define  AF_LAT    14    /* LAT */
+#define  AF_HYLINK  15    /* NSC Hyperchannel */
+#define  AF_APPLETALK  16    /* Apple Talk */
+#define  AF_ROUTE  17    /* Internal Routing Protocol */
+#define  AF_LINK    18    /* Link layer interface */
+#define  pseudo_AF_XTP  19    /* eXpress Transfer Protocol (no AF) */
+
+#define  AF_MAX    20
 
 
 
@@ -173,16 +185,17 @@ extern uint16_t htons(uint16_t n);
 ssize_t send(int socket, const void *buffer, size_t length, int flags);
 size_t recv(int sockfd, void *buf, size_t len, int flags);
 int select(int nfds, fd_set *readfds, fd_set *writefds,
-				  fd_set *exceptfds, struct timeval *timeout);
+                  fd_set *exceptfds, struct timeval *timeout);
 struct hostent*  gethostbyname( const char *name);
 int getpeername(int sockfd, struct sockaddr *addr, socklen_t *addrlen);
 int getsockname(
 		int sockfd, struct sockaddr *local_addr, socklen_t *addrlen);
 int getsockopt(int sockfd, int level, int optname,
-					  void *optval, socklen_t *optlen);
+			void *optval, socklen_t *optlen);
 int connect(int sockfd, const struct sockaddr *addr, unsigned int addrlen);
 int socket(int socket_family, int socket_type, int protocol);
 uint16_t ntohs(uint16_t n);
+struct servent *getservbyname(const char *name, const char *proto);
 
 
 #ifdef  __cplusplus

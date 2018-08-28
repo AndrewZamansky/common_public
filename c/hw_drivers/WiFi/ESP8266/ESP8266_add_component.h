@@ -7,8 +7,8 @@
 #define	MODULE_NAME                      esp8266
 #define	MODULE_IOCTL_FUNCTION            ESP8266_ioctl
 #define	MODULE_CALLBACK_FUNCTION         ESP8266_callback
-#define MODULE_CONFIG_DATA_STRUCT_TYPE   esp8266_instance_t
-#define MODULE_RUNTIME_DATA_STRUCT_TYPE  esp8266_state_instance_t
+#define MODULE_CONFIG_DATA_STRUCT_TYPE   struct esp8266_cfg_t
+#define MODULE_RUNTIME_DATA_STRUCT_TYPE  struct esp8266_runtime_t
 
 #ifdef DT_DEV_MODULE
 

@@ -7,6 +7,8 @@
 #include "ESP8266_api.h" // for device manager defines and typedefs
 #include "errno.h"
 #include "os_wrapper.h"
+#define DEBUG
+#include "PRINTF_api.h"
 
 static struct dev_desc_t * esp8266_dev = NULL;
 
@@ -75,7 +77,8 @@ int socket(int socket_family, int socket_type, int protocol)
 		case AF_INET:
 			break;
 		default:
-			while(1);
+			printf("socket_family = %d\n", socket_family);
+			CRITICAL_ERROR("this socket family not implemented yet");
 	}
 
 	switch (socket_type)
@@ -83,7 +86,7 @@ int socket(int socket_family, int socket_type, int protocol)
 		case SOCK_STREAM:
 			break;
 		default:
-			while(1);
+			CRITICAL_ERROR("this socket type not implemented yet");
 	}
 
 	switch (protocol)
@@ -92,14 +95,14 @@ int socket(int socket_family, int socket_type, int protocol)
 		case IPPROTO_TCP:
 			break;
 		default:
-			while(1);
+			CRITICAL_ERROR("this protocol not implemented yet");
 	}
 
 	for (i = 0 ; i< MAX_NUM_OF_SOCKETS ; i++)
 	{
 		if (NULL == allocated_socket_dev[i])
 		{
-			ESP8266_ioctl_socket_open_t ioctl_socket_open;
+			struct ESP8266_ioctl_socket_open_t ioctl_socket_open;
 			ioctl_socket_open.new_socket_descriptor = &allocated_socket_dev[i];
 			retVal = DEV_IOCTL_1_PARAMS(esp8266_dev ,
 					IOCTL_ESP8266_SOCKET_OPEN , &ioctl_socket_open);
@@ -126,7 +129,10 @@ int _close(int file)
 	retVal = DEV_IOCTL_0_PARAMS(socket_dev , IOCTL_ESP8266_SOCKET_CLOSE);
 
 	if ( (0 != retVal) &&
-			(ESP8266_ERR_SOCKET_NOT_AVAILABLE != retVal)) while(1);
+			(ESP8266_ERR_SOCKET_NOT_AVAILABLE != retVal))
+	{
+		CRITICAL_ERROR("unknown return");
+	}
 	return 0;
 }
 
@@ -134,7 +140,7 @@ int _close(int file)
 int connect(int sockfd, const struct sockaddr *addr, unsigned int addrlen)
 {
 	struct dev_desc_t *  socket_dev;
-	ESP8266_ioctl_socket_connect_t	ioctl_socket_connect;
+	struct ESP8266_ioctl_socket_connect_t	ioctl_socket_connect;
 	struct sockaddr_in   *lp_sockaddr;
 	struct  in_addr *sin_addr;
 	char addr_str[32]={0};
@@ -157,7 +163,10 @@ int connect(int sockfd, const struct sockaddr *addr, unsigned int addrlen)
 	retVal = DEV_IOCTL_1_PARAMS(socket_dev , IOCTL_ESP8266_SOCKET_CONNECT
 			, &ioctl_socket_connect);
 
-	if(0 != retVal) while(1);
+	if(0 != retVal)
+	{
+		CRITICAL_ERROR("socket cannot connect");
+	}
 
 	return 0;
 }
@@ -167,60 +176,149 @@ size_t recv(int sockfd, void *buf, size_t len, int flags)
 {
 	struct dev_desc_t *  socket_dev;
 	size_t size_received;
-	ESP8266_ioctl_data_received_t ESP8266_ioctl_data_received;
+	struct ESP8266_ioctl_data_received_t ESP8266_ioctl_data_received;
 	uint8_t retVal;
+	uint32_t socket_options;
+	uint8_t read_ready;
 
-	if (0 != flags) while(1);
+	if (0 != flags)
+	{
+		CRITICAL_ERROR("flags != 0 not implemented yet");
+	}
 
+	socket_dev = allocated_socket_dev[sockfd];
+
+	DEV_IOCTL_1_PARAMS(socket_dev ,
+				IOCTL_ESP8266_SOCKET_GET_OPTIONS, &socket_options);
+
+	if ( 0 == (socket_options & (1 << SO_NONBLOCK)))
+	{
+		while (read_ready)
+		{
+			retVal = DEV_IOCTL_1_PARAMS(socket_dev ,
+					IOCTL_ESP8266_SOCKET_IS_DATA_RECEIVED , &read_ready);
+			if(0 != retVal)
+			{
+				errno = ENOTCONN;
+				return -1;
+			}
+			os_delay_ms( 1 );
+		}
+	}
 	ESP8266_ioctl_data_received.buffer = buf;
 	ESP8266_ioctl_data_received.max_size = len;
 	ESP8266_ioctl_data_received.size_received = &size_received;
-	socket_dev = allocated_socket_dev[sockfd];
 	retVal = DEV_IOCTL_1_PARAMS(socket_dev ,
 			IOCTL_ESP8266_SOCKET_GET_RECEIVED_DATA ,
 			&ESP8266_ioctl_data_received);
 
+
 	if (0 != retVal)
 	{
 		errno = ENOTCONN;
+		return -1;
 	}
-	static volatile int xxx=0;
-	xxx++;
-	if(2 == xxx)
-	{
-		xxx++;
-	}
+
+
+//	static volatile int xxx=0;
+//	xxx++;
+//	if(2 == xxx)
+//	{
+//		xxx++;
+//	}
 	return size_received;
 }
 
 int getsockopt(int sockfd, int level, int optname,
                       void *optval, socklen_t *optlen)
 {
-	if(SOL_SOCKET != level) while(1);
+	struct dev_desc_t *  socket_dev;
+	uint32_t socket_options;
+	int  int_val;
+	long  long_val;
+
+	socket_dev = allocated_socket_dev[sockfd];
+	DEV_IOCTL_1_PARAMS(socket_dev ,
+			IOCTL_ESP8266_SOCKET_GET_OPTIONS, &socket_options);
+
+	if (SOL_SOCKET != level)
+	{
+		CRITICAL_ERROR("unknown option level");
+	}
+	if (sizeof(int) > *optlen)
+	{
+		CRITICAL_ERROR("bad option size");
+	}
 
 	switch(optname)
 	{
 		case SO_ERROR:
-			if(NULL != optval)
-			{
-				*(int*)optval = 0;
-				*optlen = sizeof(int);
-			}
-			return 0;
+			break;
+		case SO_NONBLOCK:
+			break;
 
 		default:
-			while(1);
+			CRITICAL_ERROR("this option not implemented yet");
 	}
+
+	int_val = (socket_options & ( 1 << optname)) ? 1 : 0;
+	if (sizeof(long) == *optlen)
+	{
+		*(long*)optval = int_val;
+	}
+	else
+	{
+		*(int*)optval = int_val;
+	}
+	return 0;
 }
 
-void setsockopt()
+int setsockopt(int sockfd, int level, int optname,
+					const void *optval, socklen_t optlen)
 {
-	while(1);//temporary debug trap
+	struct dev_desc_t *  socket_dev;
+	uint32_t socket_options;
+	uint32_t val;
+
+	socket_dev = allocated_socket_dev[sockfd];
+	DEV_IOCTL_1_PARAMS(socket_dev ,
+			IOCTL_ESP8266_SOCKET_GET_OPTIONS, &socket_options);
+
+	if(SOL_SOCKET != level)
+	{
+		CRITICAL_ERROR("unknown option level");
+	}
+
+	switch(optname)
+	{
+		case SO_ERROR:
+			break;
+		case SO_NONBLOCK:
+			break;
+
+		default:
+			CRITICAL_ERROR("this option not implemented yet");
+	}
+
+	if (sizeof(long) == optlen)
+	{
+		val = (*(long *)optval) ? 1 : 0 ;
+	}
+	else
+	{
+		val = (*(int *)optval) ? 1 : 0 ;
+	}
+
+	socket_options &= ~(1 << optname);
+	socket_options |= (val << optname);
+	DEV_IOCTL_1_PARAMS(socket_dev ,
+			IOCTL_ESP8266_SOCKET_SET_OPTIONS, &socket_options);
+
 }
 
 void bind()
 {
-	while(1);//temporary debug trap
+	CRITICAL_ERROR("bind not implemented yet");
 }
 
 int getsockname(int sockfd, struct sockaddr *local_addr, socklen_t *addrlen)
@@ -230,7 +328,7 @@ int getsockname(int sockfd, struct sockaddr *local_addr, socklen_t *addrlen)
 	char *ipAddrStr;
 	char ipAddr[20] = {0};
 	uint8_t retVal;
-	ESP8266_ioctl_socket_get_ip_t ESP8266_ioctl_socket_get_ip;
+	struct ESP8266_ioctl_socket_get_ip_t ESP8266_ioctl_socket_get_ip;
 
 	lp_sockaddr = (struct sockaddr_in   *)local_addr;
 	sin_addr = &(lp_sockaddr->sin_addr);
@@ -271,7 +369,7 @@ int getpeername(int sockfd, struct sockaddr *addr, socklen_t *addrlen)
 	char *ipAddrStr;
 	char ipAddr[20] = {0};
 	uint8_t retVal;
-	ESP8266_ioctl_get_conn_status_t	ioctl_socket_get_open_connection;
+	struct ESP8266_ioctl_get_conn_status_t	ioctl_socket_get_open_connection;
 	uint16_t port;
 
 	lp_sockaddr = (struct sockaddr_in   *)addr;
@@ -316,9 +414,9 @@ char curr_host_name[MAX_HOST_NAME] = {0};
 struct hostent*  gethostbyname( const char *name)
 {
 	struct dev_desc_t *  socket_dev;
-	ESP8266_ioctl_socket_open_t ioctl_socket_open;
-	ESP8266_ioctl_socket_connect_t	ioctl_socket_connect;
-	ESP8266_ioctl_get_conn_status_t	ioctl_socket_get_open_connection;
+	struct ESP8266_ioctl_socket_open_t ioctl_socket_open;
+	struct ESP8266_ioctl_socket_connect_t	ioctl_socket_connect;
+	struct ESP8266_ioctl_get_conn_status_t	ioctl_socket_get_open_connection;
 	uint16_t port;
 	char *ipAddrStr;
 	char ipAddr[20] = {0};
@@ -326,10 +424,12 @@ struct hostent*  gethostbyname( const char *name)
 
 	strncpy(curr_host_name , name , MAX_HOST_NAME-1);
 
-	if (NULL == esp8266_dev) CRITICAL_ERROR("");
+	if (NULL == esp8266_dev) CRITICAL_ERROR("esp8266_dev is NULL");
 	ioctl_socket_open.new_socket_descriptor = &socket_dev;
+
 	retVal = DEV_IOCTL_1_PARAMS(esp8266_dev ,
 			IOCTL_ESP8266_SOCKET_OPEN , &ioctl_socket_open);
+
 	if (0 != retVal) return NULL;
 
 	ioctl_socket_connect.strHostName = name;
@@ -377,6 +477,10 @@ struct hostent*  gethostbyname( const char *name)
 	ipAddrStr++;
 	curr_addr.S_un.S_un_b.s_b4 = atoi(ipAddrStr);
 
+	PRINTF_DBG("dbg : resolved address for %s:  %d.%d.%d.%d\n", name,
+			curr_addr.S_un.S_un_b.s_b1, curr_addr.S_un.S_un_b.s_b2,
+			curr_addr.S_un.S_un_b.s_b3, curr_addr.S_un.S_un_b.s_b4 );
+
 	curr_hostent.h_name = curr_host_name;
 	curr_hostent.h_aliases = NULL;
 	curr_hostent.h_addrtype = AF_INET;
@@ -386,6 +490,15 @@ struct hostent*  gethostbyname( const char *name)
 
 	return &curr_hostent;
 
+}
+
+
+struct servent  servent_obj = { 0 };
+char  port_no;
+struct servent *getservbyname(const char *name, const char *proto)
+{
+	//servent_obj.s_proto = &port_no;
+	return NULL;
 }
 
 
@@ -464,16 +577,22 @@ ssize_t send(int socket, const void *buffer, size_t length, int flags)
 	struct dev_desc_t *  socket_dev;
 	 size_t ret_length;
 
-	if(0 != flags) while(1);
+	if(0 != flags)
+	{
+		CRITICAL_ERROR("flags != 0 not implemented yet");
+	}
 
 	socket_dev = allocated_socket_dev[socket];
 	ret_length = DEV_WRITE(socket_dev , buffer , length) ;
-	if(0==ret_length) while(1);
+	if(0 == ret_length)
+	{
+		CRITICAL_ERROR(" return length on send is 0");
+	}
 	return ret_length;
 }
 
 void _stat()
 {
-	while(1);//temporary debug trap
+	CRITICAL_ERROR("not implemented yet");
 }
 
