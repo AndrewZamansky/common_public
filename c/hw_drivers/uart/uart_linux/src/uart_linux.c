@@ -36,6 +36,7 @@
 #define ALREADY_INITIALIZED  0x34
 
 //#define DEBUG_UART
+//#define PRINT_BIN_DATA
 
 /********  types  *********************/
 
@@ -47,6 +48,24 @@
 /* ------------------------ Exported variables --------*/
 
 char error_str[MAX_ERR_STR_LEN + 1];
+
+#ifdef DEBUG_UART
+static void dbg_print(uint8_t *data, size_t len)
+{
+	#ifdef PRINT_BIN_DATA
+		size_t i;
+		for (i = 0; i < len; i++)
+		{
+			printf("0x%02x ", *data);
+			data++;
+		}
+	#else
+		write(1, apData, aLength);
+	#endif
+	printf("\n");
+}
+#endif
+
 
 /**
  * uart_linux_pwrite()
@@ -68,8 +87,9 @@ size_t uart_linux_pwrite(struct dev_desc_t *adev,
 	callback_tx_dev = cfg_hndl->callback_tx_dev;
 
 #ifdef DEBUG_UART
-	printf("uart_linux sending:\n");
-	write(1, apData, aLength);
+	printf("uart_linux send start:\n");
+	dbg_print(apData, aLength);
+	printf("uart_linux send end:\n");
 #endif
 
 	write (tty_fd, apData, aLength);
@@ -110,12 +130,9 @@ static void *receive_thread(void *adev)
 			printf("-X0X-");
 		}
 		else
-			{
-			rd_buf[curr_read_num] = 0;
-			//printf("read %d bytes", curr_read_num);
-			printf("%s", rd_buf);
+		{
+			dbg_print(rd_buf, curr_read_num);
 		}
-		fflush(stdout);
 #endif
 		if (NULL != callback_rx_dev)
 		{

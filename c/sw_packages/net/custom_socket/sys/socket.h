@@ -5,6 +5,7 @@
 extern "C" {
 #endif
 
+
 #include <stdint.h>
 #include <sys/types.h>
 #include <sys/select.h>
@@ -54,6 +55,7 @@ struct servent {
     char  *s_proto;      /* protocol to use */
 };
 
+#ifdef USE_CUSTOM_SOCKET_IN_COMPILED_MODULE
 
 /*
 * Types
@@ -89,6 +91,9 @@ struct servent {
 #define SO_ERROR     7    /* get error status and clear */
 #define SO_TYPE      8    /* get socket type */
 #define SO_NONBLOCK  9
+
+
+#define TCP_NODELAY  0x1
 
 /*
 * Level number for (get/set)sockopt() to apply to socket itself.
@@ -182,21 +187,36 @@ enum {
 
 
 extern uint16_t htons(uint16_t n);
-ssize_t send(int socket, const void *buffer, size_t length, int flags);
-size_t recv(int sockfd, void *buf, size_t len, int flags);
-int select(int nfds, fd_set *readfds, fd_set *writefds,
+ssize_t send_uCprojects(int socket, const void *buffer, size_t length, int flags);
+size_t recv_uCprojects(int sockfd, void *buf, size_t len, int flags);
+int select_uCprojects(int nfds, fd_set *readfds, fd_set *writefds,
                   fd_set *exceptfds, struct timeval *timeout);
-struct hostent*  gethostbyname( const char *name);
-int getpeername(int sockfd, struct sockaddr *addr, socklen_t *addrlen);
-int getsockname(
+struct hostent*  gethostbyname_uCprojects( const char *name);
+int getpeername_uCprojects(int sockfd, struct sockaddr *addr, socklen_t *addrlen);
+int getsockname_uCprojects(
 		int sockfd, struct sockaddr *local_addr, socklen_t *addrlen);
-int getsockopt(int sockfd, int level, int optname,
+int getsockopt_uCprojects(int sockfd, int level, int optname,
 			void *optval, socklen_t *optlen);
-int connect(int sockfd, const struct sockaddr *addr, unsigned int addrlen);
-int socket(int socket_family, int socket_type, int protocol);
+int setsockopt_uCprojects(int sockfd, int level,
+		int optname, const void *optval, socklen_t optlen);
+int connect_uCprojects(int sockfd, const struct sockaddr *addr, unsigned int addrlen);
+int socket_uCprojects(int socket_family, int socket_type, int protocol);
 uint16_t ntohs(uint16_t n);
 struct servent *getservbyname(const char *name, const char *proto);
 
+#define socket  socket_uCprojects
+#define send  send_uCprojects
+#define recv  recv_uCprojects
+#define getpeername  getpeername_uCprojects
+#define getsockname  getsockname_uCprojects
+#define getsockopt  getsockopt_uCprojects
+#define setsockopt  setsockopt_uCprojects
+#define connect  connect_uCprojects
+#define select  select_uCprojects
+#define gethostbyname  gethostbyname_uCprojects
+
+
+#endif /* USE_CUSTOM_SOCKET_IN_COMPILED_MODULE */
 
 #ifdef  __cplusplus
 }

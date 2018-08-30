@@ -7,10 +7,12 @@
 #include "ESP8266_api.h" // for device manager defines and typedefs
 #include "errno.h"
 #include "os_wrapper.h"
-#define DEBUG
+//#define DEBUG
 #include "PRINTF_api.h"
 
 static struct dev_desc_t * esp8266_dev = NULL;
+
+
 
 /**
  * Convert an uint16_t from host- to network byte order.
@@ -67,7 +69,7 @@ void set_esp8266_pdev_for_socket_api(struct dev_desc_t *a_esp8266_dev)
 #define MAX_NUM_OF_SOCKETS	4
 struct dev_desc_t *  allocated_socket_dev[MAX_NUM_OF_SOCKETS]={0};
 
-int socket(int socket_family, int socket_type, int protocol)
+int socket_uCprojects(int socket_family, int socket_type, int protocol)
 {
 	uint8_t i;
 	uint8_t retVal;
@@ -77,7 +79,7 @@ int socket(int socket_family, int socket_type, int protocol)
 		case AF_INET:
 			break;
 		default:
-			printf("socket_family = %d\n", socket_family);
+			PRINTF_DBG("socket_family = %d\n", socket_family);
 			CRITICAL_ERROR("this socket family not implemented yet");
 	}
 
@@ -108,6 +110,7 @@ int socket(int socket_family, int socket_type, int protocol)
 					IOCTL_ESP8266_SOCKET_OPEN , &ioctl_socket_open);
 			if (0 == retVal)
 			{
+				PRINTF_DBG("%s : open socket fd = %d\n",__FUNCTION__, i);
 				return i;
 			}
 			else
@@ -120,12 +123,13 @@ int socket(int socket_family, int socket_type, int protocol)
 }
 
 
-int _close(int file)
+int closesocket(int sockfd)
 {
 	struct dev_desc_t *  socket_dev;
 	uint8_t retVal;
 
-	socket_dev = allocated_socket_dev[file];
+
+	socket_dev = allocated_socket_dev[sockfd];
 	retVal = DEV_IOCTL_0_PARAMS(socket_dev , IOCTL_ESP8266_SOCKET_CLOSE);
 
 	if ( (0 != retVal) &&
@@ -137,7 +141,17 @@ int _close(int file)
 }
 
 
-int connect(int sockfd, const struct sockaddr *addr, unsigned int addrlen)
+int _close(int file)
+{
+
+	PRINTF_DBG("%s :  fd = %d\n",__FUNCTION__, file);
+	CRITICAL_ERROR("_close not implemented yet");
+
+	return closesocket(file);
+}
+
+
+int connect_uCprojects(int sockfd, const struct sockaddr *addr, unsigned int addrlen)
 {
 	struct dev_desc_t *  socket_dev;
 	struct ESP8266_ioctl_socket_connect_t	ioctl_socket_connect;
@@ -149,6 +163,8 @@ int connect(int sockfd, const struct sockaddr *addr, unsigned int addrlen)
 
 	lp_sockaddr = (struct sockaddr_in   *)addr;
 	sin_addr = &(lp_sockaddr->sin_addr);
+
+	PRINTF_DBG("%s :  fd = %d\n",__FUNCTION__, sockfd);
 
 	snprintf((char*)addr_str, 32 ,"%d.%d.%d.%d",
 			sin_addr->S_un.S_un_b.s_b1,
@@ -172,7 +188,7 @@ int connect(int sockfd, const struct sockaddr *addr, unsigned int addrlen)
 }
 
 
-size_t recv(int sockfd, void *buf, size_t len, int flags)
+size_t recv_uCprojects(int sockfd, void *buf, size_t len, int flags)
 {
 	struct dev_desc_t *  socket_dev;
 	size_t size_received;
@@ -180,6 +196,8 @@ size_t recv(int sockfd, void *buf, size_t len, int flags)
 	uint8_t retVal;
 	uint32_t socket_options;
 	uint8_t read_ready;
+
+	PRINTF_DBG("%s :  fd = %d\n",__FUNCTION__, sockfd);
 
 	if (0 != flags)
 	{
@@ -191,20 +209,28 @@ size_t recv(int sockfd, void *buf, size_t len, int flags)
 	DEV_IOCTL_1_PARAMS(socket_dev ,
 				IOCTL_ESP8266_SOCKET_GET_OPTIONS, &socket_options);
 
-	if ( 0 == (socket_options & (1 << SO_NONBLOCK)))
+	while (1)
 	{
-		while (read_ready)
+		retVal = DEV_IOCTL_1_PARAMS(socket_dev ,
+				IOCTL_ESP8266_SOCKET_IS_DATA_RECEIVED , &read_ready);
+		if(0 != retVal)
 		{
-			retVal = DEV_IOCTL_1_PARAMS(socket_dev ,
-					IOCTL_ESP8266_SOCKET_IS_DATA_RECEIVED , &read_ready);
-			if(0 != retVal)
-			{
-				errno = ENOTCONN;
-				return -1;
-			}
-			os_delay_ms( 1 );
+			//printf("--%s : fd = %d connection  lost\n",__FUNCTION__, sockfd);
+			errno = ENOTCONN;
+			return -1;
 		}
+		if (read_ready)
+		{
+			break;
+		}
+		if (socket_options & (1 << SO_NONBLOCK))
+		{
+			errno = EAGAIN;
+			return -1;
+		}
+		os_delay_ms( 1 );
 	}
+
 	ESP8266_ioctl_data_received.buffer = buf;
 	ESP8266_ioctl_data_received.max_size = len;
 	ESP8266_ioctl_data_received.size_received = &size_received;
@@ -215,6 +241,7 @@ size_t recv(int sockfd, void *buf, size_t len, int flags)
 
 	if (0 != retVal)
 	{
+		//printf("--%s : fd = %d connection was lost\n",__FUNCTION__, sockfd);
 		errno = ENOTCONN;
 		return -1;
 	}
@@ -229,13 +256,15 @@ size_t recv(int sockfd, void *buf, size_t len, int flags)
 	return size_received;
 }
 
-int getsockopt(int sockfd, int level, int optname,
+int getsockopt_uCprojects(int sockfd, int level, int optname,
                       void *optval, socklen_t *optlen)
 {
 	struct dev_desc_t *  socket_dev;
 	uint32_t socket_options;
 	int  int_val;
 	long  long_val;
+
+	PRINTF_DBG("%s :  fd = %d\n",__FUNCTION__, sockfd);
 
 	socket_dev = allocated_socket_dev[sockfd];
 	DEV_IOCTL_1_PARAMS(socket_dev ,
@@ -273,21 +302,31 @@ int getsockopt(int sockfd, int level, int optname,
 	return 0;
 }
 
-int setsockopt(int sockfd, int level, int optname,
-					const void *optval, socklen_t optlen)
+
+static void set_tcp_level_option(int sockfd,
+		int optname, const void *optval, socklen_t optlen)
+{
+	switch(optname)
+	{
+		case TCP_NODELAY:
+			break;
+		default:
+			CRITICAL_ERROR("this tcp option is not implemented yet");
+	}
+}
+
+
+static void set_socket_level_option(int sockfd,
+		int optname, const void *optval, socklen_t optlen)
 {
 	struct dev_desc_t *  socket_dev;
 	uint32_t socket_options;
 	uint32_t val;
 
+
 	socket_dev = allocated_socket_dev[sockfd];
 	DEV_IOCTL_1_PARAMS(socket_dev ,
 			IOCTL_ESP8266_SOCKET_GET_OPTIONS, &socket_options);
-
-	if(SOL_SOCKET != level)
-	{
-		CRITICAL_ERROR("unknown option level");
-	}
 
 	switch(optname)
 	{
@@ -295,9 +334,12 @@ int setsockopt(int sockfd, int level, int optname,
 			break;
 		case SO_NONBLOCK:
 			break;
+		case SO_KEEPALIVE:
+			// TODO : ESP32 has keep alive parameter for port, ESP8266 doesn't
+			break;
 
 		default:
-			CRITICAL_ERROR("this option not implemented yet");
+			CRITICAL_ERROR("this socket option is not implemented yet");
 	}
 
 	if (sizeof(long) == optlen)
@@ -316,12 +358,38 @@ int setsockopt(int sockfd, int level, int optname,
 
 }
 
+int setsockopt_uCprojects(int sockfd, int level,
+		int optname, const void *optval, socklen_t optlen)
+{
+
+	PRINTF_DBG("%s :  fd = %d, optname = %d , *(int*)optval = %d\n",
+							__FUNCTION__, sockfd, optname, *(int*)optval);
+
+	switch(level)
+	{
+	case SOL_SOCKET:
+		set_socket_level_option(sockfd, optname, optval, optlen);
+		break;
+	case IPPROTO_TCP:
+		set_tcp_level_option(sockfd, optname, optval, optlen);
+		break;
+
+	default:
+		CRITICAL_ERROR("unknown option level");
+	}
+
+	return 0;
+}
+
+
 void bind()
 {
 	CRITICAL_ERROR("bind not implemented yet");
 }
 
-int getsockname(int sockfd, struct sockaddr *local_addr, socklen_t *addrlen)
+
+int getsockname_uCprojects(
+		int sockfd, struct sockaddr *local_addr, socklen_t *addrlen)
 {
 	struct sockaddr_in   *lp_sockaddr;
 	struct  in_addr *sin_addr;
@@ -411,7 +479,7 @@ char *h_addr_list[2] = {(char*)&curr_addr , NULL};
 #define MAX_HOST_NAME	32
 char curr_host_name[MAX_HOST_NAME] = {0};
 
-struct hostent*  gethostbyname( const char *name)
+struct hostent*  gethostbyname_uCprojects( const char *name)
 {
 	struct dev_desc_t *  socket_dev;
 	struct ESP8266_ioctl_socket_open_t ioctl_socket_open;
@@ -495,7 +563,7 @@ struct hostent*  gethostbyname( const char *name)
 
 struct servent  servent_obj = { 0 };
 char  port_no;
-struct servent *getservbyname(const char *name, const char *proto)
+struct servent *getservbyname_uCprojects(const char *name, const char *proto)
 {
 	//servent_obj.s_proto = &port_no;
 	return NULL;
@@ -516,6 +584,8 @@ int select(int nfds, fd_set *readfds, fd_set *writefds,
 	uint32_t timeout_msec;
 
 
+	PRINTF_DBG("%s : in *(uint32_t*)readfds= %ul, *(uint32_t*)writefds = %ul\n",
+			__FUNCTION__, *(uint32_t*)readfds, *(uint32_t*)writefds);
 
 	if (NULL != timeout)
 	{
@@ -544,16 +614,20 @@ int select(int nfds, fd_set *readfds, fd_set *writefds,
 						IOCTL_ESP8266_SOCKET_IS_DATA_RECEIVED , &read_ready);
 				if(0 != retVal)
 				{
+					printf("--%s : fd = %d connection was lost\n",__FUNCTION__, i);
+
 					FD_SET(i , exceptfds);
 				}
 				if (read_ready)
 				{
+					PRINTF_DBG("%s : readfds\n", __FUNCTION__);
 					FD_SET(i , readfds);
 					event_happened++;
 				}
 			}
 			if ( 0 != FD_ISSET(i , &orig_writefds))
 			{
+				PRINTF_DBG("%s : writefds\n", __FUNCTION__);
 				FD_SET(i , writefds);
 				event_happened++;
 			}
@@ -568,21 +642,27 @@ int select(int nfds, fd_set *readfds, fd_set *writefds,
 		}
 		os_delay_ms( 1 );
 	}
+
+	PRINTF_DBG("%s : out  event_happened = %d\n", __FUNCTION__, event_happened);
+
 	return event_happened;// STILL CAN BE BLOCKED IN ESP8266 TASK
 	//while(1);//temporary debug trap
 }
 
-ssize_t send(int socket, const void *buffer, size_t length, int flags)
+ssize_t send_uCprojects(
+		int sockfd, const void *buffer, size_t length, int flags)
 {
 	struct dev_desc_t *  socket_dev;
 	 size_t ret_length;
+
+	PRINTF_DBG("%s :  fd = %d\n",__FUNCTION__, sockfd);
 
 	if(0 != flags)
 	{
 		CRITICAL_ERROR("flags != 0 not implemented yet");
 	}
 
-	socket_dev = allocated_socket_dev[socket];
+	socket_dev = allocated_socket_dev[sockfd];
 	ret_length = DEV_WRITE(socket_dev , buffer , length) ;
 	if(0 == ret_length)
 	{
@@ -593,6 +673,22 @@ ssize_t send(int socket, const void *buffer, size_t length, int flags)
 
 void _stat()
 {
-	CRITICAL_ERROR("not implemented yet");
+	CRITICAL_ERROR("_stat not implemented yet");
+}
+
+
+int WSAGetLastError(void)
+{
+	return errno;
+}
+
+void WSASetLastError(int iError)
+{
+	errno = iError;
+}
+
+int ioctlsocket(int socket, long   cmd, u_long *argp)
+{
+	CRITICAL_ERROR("ioctlsocket not implemented yet");
 }
 
