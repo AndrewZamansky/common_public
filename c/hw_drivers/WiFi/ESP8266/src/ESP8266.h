@@ -29,7 +29,7 @@ struct esp8266_cfg_t {
 
 typedef enum
 {
-	ESP8266_State_StartReset,
+	ESP8266_State_HandShake,
 	ESP8266_State_Resetting,
 	ESP8266_State_Setting_Echo_Off,
 	ESP8266_State_Setting_Mode,
@@ -166,6 +166,8 @@ struct esp8266_runtime_t{
 	uint8_t  isMessagePending;
 	uint8_t  lCurrError;
 	uint8_t  lRequest_done;
+	uint8_t  handshake_counter;
+	uint8_t  need_to_reset;
 };
 
 #endif /* */

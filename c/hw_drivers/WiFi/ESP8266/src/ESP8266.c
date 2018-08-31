@@ -24,6 +24,7 @@
 #define MAX_RCVD_BUFFER_SIZE   8000
 
 #define SEND_TO_ESP8266(dev, data, len)    DEV_WRITE(dev , data , len)
+#define HANDSHAKE_TRIES  4
 
 /********  types  *********************/
 /********  externals *********************/
@@ -60,7 +61,7 @@ char* ESP8266_get_state_name(uint16_t state)
 {
 	switch (state)
 	{
-	case ESP8266_State_StartReset : return "StartReset";
+	case ESP8266_State_HandShake : return "HandShake";
 	case ESP8266_State_Resetting : return "Resetting";
 	case ESP8266_State_Setting_Echo_Off : return "Setting_Echo_Off";
 	case ESP8266_State_Setting_Mode : return "Setting_Mode";
@@ -237,7 +238,7 @@ static size_t receiving_incoming_net_data(struct esp8266_cfg_t *config_handle,
 		{
 			CRITICAL_ERROR("esp8266 input buffer overflow");
 		}
-		timeout=ESP8266_TIMEOUT;
+		timeout = ESP8266_TIMEOUT;
 		DEV_IOCTL(config_handle->timer_dev,
 			IOCTL_TIMER_WRAPPER_API_SET_COUNTDOWN_VALUE_AND_RESET, &timeout);
 	}
@@ -466,61 +467,79 @@ static size_t process_data_from_esp8266_on_wait_for_send_ready(
 }
 
 
-static void parse_wait_for_get_ip_response(
+static ESP8266_State_t parse_wait_for_get_ip_response(
 		struct esp8266_runtime_t *esp8266_dev_state_hndl,
 		uint8_t *pBufferStart, size_t line_length)
 {
 	struct esp8266_msg_getIP_t   *pmsg_getIP;
 	char *start_of_requested_str;
 	char *end_of_requested_str;
+	ESP8266_State_t currentState ;
 
-	if (0 != cmpBuff2Str(pBufferStart, line_length, "+CIFSR:STAIP,")) return;
+	currentState = esp8266_dev_state_hndl->currentState;
+
+	if (0 != cmpBuff2Str(pBufferStart, line_length, "+CIFSR:STAIP,"))
+	{
+		return currentState;
+	}
 
 	start_of_requested_str = strchr((char*)pBufferStart , '\"');
-	if (NULL == start_of_requested_str) return;
+	if (NULL == start_of_requested_str) return currentState;
 
 	start_of_requested_str++;
 	end_of_requested_str = strchr(start_of_requested_str , '\"');
-	if (NULL == end_of_requested_str) return;
+	if (NULL == end_of_requested_str) return currentState;
 
 	*end_of_requested_str = 0;
 	pmsg_getIP = &esp8266_dev_state_hndl->pendingMessage.msg_data.msg_getIP;
 	strncpy(pmsg_getIP->IPstr, start_of_requested_str, pmsg_getIP->strIPLen);
-	esp8266_dev_state_hndl->currentState = ESP8266_State_Wait_For_IP_Complete;
+
+	return ESP8266_State_Wait_For_IP_Complete;
 }
 
 
-static void parse_wait_for_send_complete(
+static ESP8266_State_t parse_wait_for_send_complete(
 		struct esp8266_runtime_t *esp8266_dev_state_hndl,
 		uint8_t *pBufferStart, size_t line_length)
 {
+	ESP8266_State_t currentState ;
+
+	currentState = esp8266_dev_state_hndl->currentState;
+
 	if (0 == cmpBuff2Str(pBufferStart, line_length, "SEND OK"))
 	{
 		esp8266_dev_state_hndl->lRequest_done = 1;
-		esp8266_dev_state_hndl->currentState = ESP8266_State_Idle;
+		currentState = ESP8266_State_Idle;
 	}
 	else if (0 == cmpBuff2Str(pBufferStart, line_length, "link is not"))
 	{
 		esp8266_dev_state_hndl->lCurrError = 1;
 		esp8266_dev_state_hndl->lRequest_done = 1;
-		esp8266_dev_state_hndl->currentState = ESP8266_State_Idle;
+		currentState = ESP8266_State_Idle;
 	}
+	return currentState;
 }
 
 
-static void parse_wait_for_get_socket_status_response(
+static ESP8266_State_t parse_wait_for_get_socket_status_response(
 		struct esp8266_runtime_t *esp8266_dev_state_hndl,
 		uint8_t *pBufferStart, size_t line_length)
 {
 	uint8_t receivedSocketNumber;
 	char *start_of_requested_str;
+	ESP8266_State_t currentState ;
 
-	if (18 > line_length) return;
+	currentState = esp8266_dev_state_hndl->currentState;
 
-	if (0 != cmpBuff2Str(pBufferStart, line_length, "+CIPSTATUS")) return;
+	if (18 > line_length) return currentState;
 
-	receivedSocketNumber = (uint8_t)strtoul((char*)&pBufferStart[11],
-			(char**)&start_of_requested_str,10);
+	if (0 != cmpBuff2Str(pBufferStart, line_length, "+CIPSTATUS"))
+	{
+		return currentState;
+	}
+
+	receivedSocketNumber = (uint8_t)strtoul(
+			(char*)&pBufferStart[11], (char**)&start_of_requested_str, 10);
 	if (esp8266_dev_state_hndl->currentSocketNumber == receivedSocketNumber)
 	{
 		struct esp8266_msg_get_open_connection_t   *pmsg_get_open_connection;
@@ -529,56 +548,63 @@ static void parse_wait_for_get_socket_status_response(
 				msg_data.msg_get_open_connection;
 
 		start_of_requested_str = strchr(start_of_requested_str , '\"');
-		if(NULL == start_of_requested_str) return;
+		if(NULL == start_of_requested_str) return currentState;
 		start_of_requested_str = strchr(start_of_requested_str + 1 , '\"');
-		if(NULL == start_of_requested_str) return;
+		if(NULL == start_of_requested_str) return currentState;
 		start_of_requested_str = strchr(start_of_requested_str + 1 , '\"');
-		if(NULL == start_of_requested_str) return;
+		if(NULL == start_of_requested_str) return currentState;
 		end_of_requested_str = strchr(start_of_requested_str + 1 , '\"');
-		if(NULL == end_of_requested_str) return;
+		if(NULL == end_of_requested_str) return currentState;
 		*end_of_requested_str = 0;
 		strncpy(pmsg_get_open_connection->strIP,start_of_requested_str + 1,
 				pmsg_get_open_connection->strIPLen);
 		*pmsg_get_open_connection->pPort =
 					strtoul(end_of_requested_str + 1,NULL,10);
-		esp8266_dev_state_hndl->currentState =
-				ESP8266_State_Wait_For_Socket_Status_Complete;
+		currentState = ESP8266_State_Wait_For_Socket_Status_Complete;
 	}
+	return currentState;
 }
 
 
-static void parse_wait_for_connecting_socket_response(
+static ESP8266_State_t parse_wait_for_connecting_socket_response(
 		struct esp8266_runtime_t *esp8266_dev_state_hndl,
 		uint8_t *pBufferStart, size_t line_length)
 {
+	ESP8266_State_t currentState ;
+
+	currentState = esp8266_dev_state_hndl->currentState;
 	if (0 == cmpBuff2Str(pBufferStart, line_length, "OK"))
 	{
 		esp8266_dev_state_hndl->lRequest_done = 1;
-		esp8266_dev_state_hndl->currentState = ESP8266_State_Idle;
+		currentState = ESP8266_State_Idle;
 	}
 	else if ( (0 == cmpBuff2Str(pBufferStart, line_length, "ERROR")) ||
 				(0 == cmpBuff2Str(pBufferStart, line_length, "ALREADY CONN")) )
 	{
 		esp8266_dev_state_hndl->lCurrError = 1;
 		esp8266_dev_state_hndl->lRequest_done = 1;
-		esp8266_dev_state_hndl->currentState = ESP8266_State_Idle;
+		currentState = ESP8266_State_Idle;
 	}
 	else if (0 == cmpBuff2Str(pBufferStart, line_length, "Link typ ERROR"))
 	{
 		esp8266_dev_state_hndl->lCurrError = 1;
 		esp8266_dev_state_hndl->lRequest_done = 1;
-		esp8266_dev_state_hndl->currentState = ESP8266_State_StartReset;
+		esp8266_dev_state_hndl->need_to_reset = 1;
+		currentState = ESP8266_State_HandShake;
 	}
+	return currentState;
 }
 
 
-static void parse_wait_for_close_socket_response(
+static ESP8266_State_t parse_wait_for_close_socket_response(
 		struct esp8266_runtime_t *esp8266_dev_state_hndl,
 		uint8_t *pBufferStart, size_t line_length)
 {
 	struct esp8266_socket_t  *curr_rcv_data_socket;
 	struct esp8266_socket_t  *sockets;
+	ESP8266_State_t currentState ;
 
+	currentState = esp8266_dev_state_hndl->currentState;
 	if (0 == cmpBuff2Str(pBufferStart, line_length, "OK"))
 	{
 		sockets = esp8266_dev_state_hndl->sockets;
@@ -589,29 +615,29 @@ static void parse_wait_for_close_socket_response(
 		curr_rcv_data_socket->recvedData = NULL ;
 		curr_rcv_data_socket->curr_data_size = 0;
 		esp8266_dev_state_hndl->lRequest_done = 1;
-		esp8266_dev_state_hndl->currentState = ESP8266_State_Idle;
+		currentState = ESP8266_State_Idle;
 	}
+	return currentState;
 }
 
 
-static void parse_wait_for_wifi_connect_response(
+static ESP8266_State_t parse_wait_for_wifi_connect_response(
 		struct esp8266_cfg_t *config_handle,
 		struct esp8266_runtime_t *esp8266_dev_state_hndl,
 		uint8_t *pBufferStart, size_t line_length)
 {
-	struct dev_desc_t *   uart_tx_dev;
+	struct dev_desc_t *   tx_dev;
 	ESP8266_State_t currentState ;
 
 	char *curr_ssid_name;
 	char *curr_ssid_pswrd;
 
 	currentState = esp8266_dev_state_hndl->currentState;
-	uart_tx_dev = config_handle->uart_tx_dev;
+	tx_dev = config_handle->uart_tx_dev;
 	if (0 == cmpBuff2Str(pBufferStart, line_length,"OK"))
 	{
-		send_str_to_chip(uart_tx_dev, "AT+CIPMUX=1\r\n");
-		esp8266_dev_state_hndl->currentState =
-				ESP8266_State_Setting_Connection_Type;
+		send_str_to_chip(tx_dev, "AT+CIPMUX=1\r\n");
+		currentState = ESP8266_State_Setting_Connection_Type;
 		PRINTF_DBG("wifi connected  \r\n");
 	}
 	else if (0 == cmpBuff2Str(pBufferStart, line_length,"FAIL"))
@@ -637,14 +663,10 @@ static void parse_wait_for_wifi_connect_response(
 		if ((ESP8266_State_Setting_AP == currentState) ||
 				(ESP8266_State_Setting_Redundent_Ap == currentState))
 		{
-			esp8266_dev_state_hndl->currentState = currentState;
-			send_str_to_chip(uart_tx_dev, "AT+CWJAP=\"" );
-			send_str_to_chip(uart_tx_dev, curr_ssid_name );
-			send_str_to_chip(uart_tx_dev, "\",\"" );
-			send_str_to_chip(uart_tx_dev, curr_ssid_pswrd );
-			send_str_to_chip(uart_tx_dev, "\"\r\n" );
+			set_AP(tx_dev, curr_ssid_name, curr_ssid_pswrd);
 		}
 	}
+	return currentState;
 }
 
 static size_t calculate_eol_chars(
@@ -668,7 +690,8 @@ static size_t process_data_from_esp8266_on_wait_for_response(
 {
 	size_t  line_length;
 	uint64_t timeout ;
-	struct dev_desc_t * uart_tx_dev;
+	struct dev_desc_t * tx_dev;
+	ESP8266_State_t  currentState ;
 
 	/*
 	* if no new data arrived then no new input arrive after reasonable
@@ -701,93 +724,108 @@ static size_t process_data_from_esp8266_on_wait_for_response(
 	}
 
 	pBufferStart[line_length] = 0;
-	uart_tx_dev = config_handle->uart_tx_dev;
+	tx_dev = config_handle->uart_tx_dev;
 	timeout = ESP8266_TIMEOUT;
-	switch(esp8266_dev_state_hndl->currentState)
+	currentState = esp8266_dev_state_hndl->currentState;
+	switch (currentState)
 	{
+	case ESP8266_State_HandShake:
+		if (0 == cmpBuff2Str(pBufferStart, line_length,"OK"))
+		{
+			if (esp8266_dev_state_hndl->need_to_reset)
+			{
+				send_str_to_chip(tx_dev, "AT+RST\r\n");
+				currentState = ESP8266_State_Resetting;
+			}
+		}
+		break;
+	case ESP8266_State_Resetting:
+		if (0 == cmpBuff2Str(pBufferStart, line_length,"ready"))
+		{
+			send_str_to_chip(tx_dev, "ATE0\r\n");// setting echo off
+			currentState = ESP8266_State_Setting_Echo_Off ;
+		}
+		break;
 	case ESP8266_State_Wait_For_IP:
-		parse_wait_for_get_ip_response(esp8266_dev_state_hndl,
-				pBufferStart, line_length);
+		currentState = parse_wait_for_get_ip_response(
+				esp8266_dev_state_hndl, pBufferStart, line_length);
 		break;
 	case ESP8266_State_Wait_For_IP_Complete:
 		if (0 == cmpBuff2Str(pBufferStart, line_length,"OK"))
 		{
 			esp8266_dev_state_hndl->lRequest_done = 1;
-			esp8266_dev_state_hndl->currentState = ESP8266_State_Idle;
+			currentState = ESP8266_State_Idle;
 		}
 		break;
 	case ESP8266_State_Wait_For_Socket_Status:
-		parse_wait_for_get_socket_status_response(esp8266_dev_state_hndl,
-				pBufferStart, line_length);
+		currentState = parse_wait_for_get_socket_status_response(
+					esp8266_dev_state_hndl, pBufferStart, line_length);
 		break;
 	case ESP8266_State_Wait_For_Socket_Status_Complete:
 		if (0 == cmpBuff2Str(pBufferStart, line_length,"OK"))
 		{
 			esp8266_dev_state_hndl->lRequest_done = 1;
-			esp8266_dev_state_hndl->currentState = ESP8266_State_Idle;
+			currentState = ESP8266_State_Idle;
 		}
 		break;
 	case ESP8266_State_Wait_Send_Complete:
-		parse_wait_for_send_complete(esp8266_dev_state_hndl,
-				pBufferStart, line_length);
+		currentState = parse_wait_for_send_complete(
+				esp8266_dev_state_hndl, pBufferStart, line_length);
 		break;
 	case ESP8266_State_Connecting_Socket :
-		parse_wait_for_connecting_socket_response(esp8266_dev_state_hndl,
-				pBufferStart, line_length);
+		currentState = parse_wait_for_connecting_socket_response(
+					esp8266_dev_state_hndl, pBufferStart, line_length);
 		break;
 	case ESP8266_State_Closing_Socket :
-		parse_wait_for_close_socket_response(esp8266_dev_state_hndl,
-				pBufferStart, line_length);
+		currentState = parse_wait_for_close_socket_response(
+					esp8266_dev_state_hndl, pBufferStart, line_length);
 		break;
 	case ESP8266_State_Setting_AP:
 	case ESP8266_State_Setting_Redundent_Ap:
-		parse_wait_for_wifi_connect_response(config_handle,
+		currentState = parse_wait_for_wifi_connect_response(config_handle,
 				esp8266_dev_state_hndl, pBufferStart, line_length);
 		timeout = AP_CONNECT_TIMEOUT;
 		break;
 	case ESP8266_State_Setting_Connection_Type:
 		if (0 == cmpBuff2Str(pBufferStart, line_length,"OK"))
 		{
-			send_str_to_chip(uart_tx_dev, "AT+CIPSERVER=1,80\r\n");
-			esp8266_dev_state_hndl->currentState =
-					ESP8266_State_Creating_Server;
+			send_str_to_chip(tx_dev, "AT+CIPSERVER=1,80\r\n");
+			currentState = ESP8266_State_Creating_Server;
 		}
 		break;
 	case ESP8266_State_Setting_Echo_Off :
 		if (0 == cmpBuff2Str(pBufferStart, line_length,"OK"))
 		{
-			send_str_to_chip(uart_tx_dev, "AT+CWMODE=1\r\n");
-
-			esp8266_dev_state_hndl->currentState = ESP8266_State_Setting_Mode ;
-			timeout = 10;
+			send_str_to_chip(tx_dev, "AT+CWMODE=1\r\n");
+			currentState = ESP8266_State_Setting_Mode ;
 		}
 		break;
 	case ESP8266_State_Setting_Mode:
 		if (0 == cmpBuff2Str(pBufferStart, line_length,"OK"))
 		{
-			set_AP(uart_tx_dev, esp8266_dev_state_hndl->ssid_name,
+			set_AP(tx_dev, esp8266_dev_state_hndl->ssid_name,
 								esp8266_dev_state_hndl->ssid_pswrd);
-			esp8266_dev_state_hndl->currentState = ESP8266_State_Setting_AP ;
+			currentState = ESP8266_State_Setting_AP ;
 			timeout = AP_CONNECT_TIMEOUT;
 		}
 		break;
 	case ESP8266_State_Creating_Server:
 		if (0 == cmpBuff2Str(pBufferStart, line_length,"OK"))
 		{
-			send_str_to_chip(uart_tx_dev, "AT+CIPSTO=200\r\n");
-			esp8266_dev_state_hndl->currentState =
-					ESP8266_State_Setting_Timeout;
+			send_str_to_chip(tx_dev, "AT+CIPSTO=200\r\n");
+			currentState = ESP8266_State_Setting_Timeout;
 		}
 		break;
 	case ESP8266_State_Setting_Timeout:
 		if (0 == cmpBuff2Str(pBufferStart, line_length,"OK"))
 		{
-			esp8266_dev_state_hndl->currentState = ESP8266_State_Idle;
+			currentState = ESP8266_State_Idle;
 		}
 		break;
 	default :
 		break;
 	}
+	esp8266_dev_state_hndl->currentState = currentState;
 
 	DEV_IOCTL(config_handle->timer_dev,
 			IOCTL_TIMER_WRAPPER_API_SET_COUNTDOWN_VALUE_AND_RESET, &timeout);
@@ -836,15 +874,12 @@ static void process_input_message(struct esp8266_cfg_t *config_handle,
 		if(0 == total_length) break;
 
 		currentState = esp8266_dev_state_hndl->currentState;
-//		PRINTF_DBG("\r\n--%d--\r\n" , esp8266_dev_state_hndl->currentState);
-//		PRINT_DATA_DBG(pBufferStart , total_length);
+		//PRINTF_DBG( "\r\n--%s--\r\n",
+		//				ESP8266_get_state_name(currentState));
+		//PRINT_DATA_DBG(pBufferStart , total_length);
 
 		switch(currentState)
 		{
-		case ESP8266_State_StartReset :
-		case ESP8266_State_Resetting :
-			bytes_consumed = total_length;
-			break;
 		case ESP8266_State_Receiving_Data :
 			bytes_consumed = receiving_incoming_net_data(config_handle,
 					esp8266_dev_state_hndl,	pBufferStart , total_length);
@@ -864,6 +899,8 @@ static void process_input_message(struct esp8266_cfg_t *config_handle,
 					pBufferStart , total_length);
 			break;
 		}
+		//PRINTF_DBG( "\r\n--new state : %s--\r\n",
+		//		ESP8266_get_state_name(esp8266_dev_state_hndl->currentState));
 
 		esp8266_dev_state_hndl->last_tested_length = total_length;
 		if (0 == bytes_consumed)
@@ -1209,24 +1246,16 @@ static void no_new_message_received(struct esp8266_cfg_t *config_handle,
 	timeout = ESP8266_TIMEOUT;
 	switch(currentState)
 	{
-	case ESP8266_State_StartReset :
-		//skip garbage on uart
-		//DEV_IOCTL(rx_server_device,IOCTL_SET_ISR_CALLBACK_DEV, NULL);
-		os_delay_ms( 1 );
-		send_str_to_chip(tx_dev, "AT+RST\r\n");// setting echo off
-		//DEV_IOCTL(rx_server_device,IOCTL_SET_ISR_CALLBACK_DEV, this_dev);
+	case ESP8266_State_HandShake :
+		esp8266_dev_state_hndl->handshake_counter--;
+		send_str_to_chip(config_handle->uart_tx_dev, "AT\r\n");
+		if (0 == esp8266_dev_state_hndl->handshake_counter)
+		{
+			PRINTF_DBG("handshake failed\r\n");
+			esp8266_dev_state_hndl->handshake_counter = HANDSHAKE_TRIES;
+		}
 
-		/*
-		 not using os_delay_ms() just not to stop the task and
-		 *  receive data from esp8266 module during wait
-		 */
-		timeout = 5000;
-		currentState = ESP8266_State_Resetting;
-		break;
-	case ESP8266_State_Resetting :
-		send_str_to_chip(tx_dev, "ATE0\r\n");// setting echo off
-		currentState = ESP8266_State_Setting_Echo_Off ;
-		timeout = 10;
+		timeout = 100;
 		break;
 	case ESP8266_State_Setting_AP:
 		set_AP(tx_dev, esp8266_dev_state_hndl->ssid_name_redandency,
@@ -1257,6 +1286,7 @@ static void no_new_message_received(struct esp8266_cfg_t *config_handle,
 	case ESP8266_State_Wait_For_Socket_Status_Complete :
 	case ESP8266_State_Setting_Mode:
 	case ESP8266_State_Setting_Echo_Off :
+	case ESP8266_State_Resetting :
 		esp8266_dev_state_hndl->lCurrError = 1;
 		esp8266_dev_state_hndl->lRequest_done=1;
 		currentState = ESP8266_State_Idle;
@@ -1286,6 +1316,7 @@ static void ESP8266_Task( void *pvParameters )
 	uint8_t isMessagePending;
 	os_queue_t xQueue;
 	struct esp8266_message_t *pendingMessage;
+	uint64_t timeout;
 
 	adev = pvParameters;
 	config_handle = DEV_GET_CONFIG_DATA_POINTER(adev);
@@ -1293,6 +1324,14 @@ static void ESP8266_Task( void *pvParameters )
 
 	xQueue = esp8266_dev_state_hndl->xQueue;
 	pendingMessage = &esp8266_dev_state_hndl->pendingMessage;
+
+	esp8266_dev_state_hndl->need_to_reset = 1;
+	esp8266_dev_state_hndl->currentState = ESP8266_State_HandShake;
+	esp8266_dev_state_hndl->handshake_counter = HANDSHAKE_TRIES;
+	send_str_to_chip(config_handle->uart_tx_dev, "AT\r\n");
+	timeout = 10;
+	DEV_IOCTL(config_handle->timer_dev ,
+			IOCTL_TIMER_WRAPPER_API_SET_COUNTDOWN_VALUE_AND_RESET, &timeout);
 
 	for( ;; )
 	{
@@ -1477,7 +1516,6 @@ static uint8_t ESP8266_device_start(struct dev_desc_t *adev)
 	esp8266_dev_state_hndl->xQueue = os_create_queue(
 			ESP8266_MAX_QUEUE_LEN, sizeof(struct esp8266_message_t ));
 	esp8266_dev_state_hndl->sendDataMutex = os_create_mutex();
-	esp8266_dev_state_hndl->currentState = ESP8266_State_StartReset;
 	sockets = esp8266_dev_state_hndl->sockets;
 	sockets_descriptors = esp8266_dev_state_hndl->sockets_descriptors;
 
