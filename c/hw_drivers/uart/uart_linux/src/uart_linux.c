@@ -60,7 +60,7 @@ static void dbg_print(uint8_t *data, size_t len)
 			data++;
 		}
 	#else
-		write(1, apData, aLength);
+		write(1, data, len);
 	#endif
 	printf("\n");
 }
@@ -196,6 +196,9 @@ static void uart_start(struct dev_desc_t *adev,
 	case 115200:
 		baud_rate_constant = B115200;
 		break;
+	case 921600:
+		baud_rate_constant = B921600;
+		break;
 	default :
 		CRITICAL_ERROR("not supported baud rate");
 		return;
@@ -268,6 +271,7 @@ uint8_t uart_linux_ioctl(struct dev_desc_t *adev, uint8_t aIoctl_num,
 	{
 	case IOCTL_UART_SET_BAUD_RATE :
 		cfg_hndl->baud_rate = *(uint32_t*)aIoctl_param1;
+		uart_start(adev, cfg_hndl, runtime_handle);
 		break;
 	case IOCTL_DEVICE_START :
 		uart_start(adev, cfg_hndl, runtime_handle);
