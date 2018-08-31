@@ -51,6 +51,47 @@ void update_dbg(uint8_t dbg_param)
 	}
 }
 
+
+static void set_AP(
+		struct dev_desc_t* tx_dev, char* ssid_name, char* ssid_pswrd);
+
+static char unknown_state[] = "unknown state XX";
+char* ESP8266_get_state_name(uint16_t state)
+{
+	switch (state)
+	{
+	case ESP8266_State_StartReset : return "StartReset";
+	case ESP8266_State_Resetting : return "Resetting";
+	case ESP8266_State_Setting_Echo_Off : return "Setting_Echo_Off";
+	case ESP8266_State_Setting_Mode : return "Setting_Mode";
+	case ESP8266_State_Setting_AP : return "Setting_AP";
+	case ESP8266_State_Setting_Redundent_Ap : return "Setting_Redundent_Ap";
+	case ESP8266_State_Setting_Connection_Type :
+		return "Setting_Connection_Type";
+	case ESP8266_State_Creating_Server : return "Creating_Server";
+	case ESP8266_State_Setting_Timeout : return "Setting_Timeout";
+	case ESP8266_State_Receiving_Data : return "Receiving_Data";
+	case ESP8266_State_Wait_For_Receiving_Data_Complete :
+		return "Wait_For_Receiving_Data_Complete";
+	case ESP8266_State_Wait_For_Send_Ready : return "Wait_For_Send_Ready";
+	case ESP8266_State_Wait_Send_Complete : return "Wait_Send_Complete";
+	case ESP8266_State_Wait_For_IP : return "Wait_For_IP";
+	case ESP8266_State_Wait_For_IP_Complete : return "Wait_For_IP_Complete";
+	case ESP8266_State_Connecting_Socket : return "Connecting_Socket";
+	case ESP8266_State_Closing_Socket : return "Closing_Socket";
+	case ESP8266_State_Wait_For_Socket_Status : return "Wait_For_Socket_Status";
+	case ESP8266_State_Wait_For_Socket_Status_Complete :
+		return "Wait_For_Socket_Status_Complete";
+	case ESP8266_State_Idle : return "Idle";
+	default :
+		unknown_state[14] = '0' + state / 10;
+		unknown_state[15] = '0' + state % 10;
+		return unknown_state;
+	}
+}
+
+
+
 /*
  * send_str_to_chip()
  *
@@ -712,6 +753,24 @@ static size_t process_data_from_esp8266_on_wait_for_response(
 					ESP8266_State_Creating_Server;
 		}
 		break;
+	case ESP8266_State_Setting_Echo_Off :
+		if (0 == cmpBuff2Str(pBufferStart, line_length,"OK"))
+		{
+			send_str_to_chip(uart_tx_dev, "AT+CWMODE=1\r\n");
+
+			esp8266_dev_state_hndl->currentState = ESP8266_State_Setting_Mode ;
+			timeout = 10;
+		}
+		break;
+	case ESP8266_State_Setting_Mode:
+		if (0 == cmpBuff2Str(pBufferStart, line_length,"OK"))
+		{
+			set_AP(uart_tx_dev, esp8266_dev_state_hndl->ssid_name,
+								esp8266_dev_state_hndl->ssid_pswrd);
+			esp8266_dev_state_hndl->currentState = ESP8266_State_Setting_AP ;
+			timeout = AP_CONNECT_TIMEOUT;
+		}
+		break;
 	case ESP8266_State_Creating_Server:
 		if (0 == cmpBuff2Str(pBufferStart, line_length,"OK"))
 		{
@@ -784,7 +843,6 @@ static void process_input_message(struct esp8266_cfg_t *config_handle,
 		{
 		case ESP8266_State_StartReset :
 		case ESP8266_State_Resetting :
-		case ESP8266_State_Setting_Mode :
 			bytes_consumed = total_length;
 			break;
 		case ESP8266_State_Receiving_Data :
@@ -1110,6 +1168,16 @@ static void process_output_message(struct esp8266_cfg_t *config_handle,
 }
 
 
+static void set_AP(struct dev_desc_t* tx_dev, char* ssid_name, char* ssid_pswrd)
+{
+	send_str_to_chip(tx_dev, "AT+CWJAP=\"");
+	send_str_to_chip(tx_dev, ssid_name);
+	send_str_to_chip(tx_dev, "\",\"");
+	send_str_to_chip(tx_dev, ssid_pswrd);
+	send_str_to_chip( tx_dev, "\"\r\n");
+}
+
+
 /*
  * no_new_message_received()
  *
@@ -1136,7 +1204,8 @@ static void no_new_message_received(struct esp8266_cfg_t *config_handle,
 
 	tx_dev = config_handle->uart_tx_dev;
 
-	PRINTF_DBG( "--esp timeout crSt=%d\r\n",currentState);
+	PRINTF_DBG(
+			"--esp timeout crSt=%s\r\n",ESP8266_get_state_name(currentState));
 	timeout = ESP8266_TIMEOUT;
 	switch(currentState)
 	{
@@ -1155,28 +1224,19 @@ static void no_new_message_received(struct esp8266_cfg_t *config_handle,
 		currentState = ESP8266_State_Resetting;
 		break;
 	case ESP8266_State_Resetting :
-		currentState = ESP8266_State_Setting_Mode ;
 		send_str_to_chip(tx_dev, "ATE0\r\n");// setting echo off
-		os_delay_ms( 10 );
-		send_str_to_chip(tx_dev, "AT+CWMODE=1\r\n");
-		timeout = 2;
+		currentState = ESP8266_State_Setting_Echo_Off ;
+		timeout = 10;
 		break;
 	case ESP8266_State_Setting_AP:
-		send_str_to_chip(tx_dev, "AT+CWJAP=\"");
-		send_str_to_chip(tx_dev, esp8266_dev_state_hndl->ssid_name_redandency );
-		send_str_to_chip(tx_dev, "\",\"");
-		send_str_to_chip(tx_dev, esp8266_dev_state_hndl->ssid_pswrd_redandency);
-		send_str_to_chip( tx_dev, "\"\r\n");
+		set_AP(tx_dev, esp8266_dev_state_hndl->ssid_name_redandency,
+							esp8266_dev_state_hndl->ssid_pswrd_redandency);
 		currentState = ESP8266_State_Setting_Redundent_Ap ;
 		timeout = AP_CONNECT_TIMEOUT;
 		break;
-	case ESP8266_State_Setting_Mode:
 	case ESP8266_State_Setting_Redundent_Ap :
-		send_str_to_chip(tx_dev, "AT+CWJAP=\"");
-		send_str_to_chip(tx_dev, esp8266_dev_state_hndl->ssid_name );
-		send_str_to_chip(tx_dev, "\",\"");
-		send_str_to_chip(tx_dev, esp8266_dev_state_hndl->ssid_pswrd );
-		send_str_to_chip( tx_dev, "\"\r\n");
+		set_AP(tx_dev, esp8266_dev_state_hndl->ssid_name,
+							esp8266_dev_state_hndl->ssid_pswrd);
 		currentState = ESP8266_State_Setting_AP ;
 		timeout = AP_CONNECT_TIMEOUT;
 		break;
@@ -1195,6 +1255,8 @@ static void no_new_message_received(struct esp8266_cfg_t *config_handle,
 	case ESP8266_State_Closing_Socket :
 	case ESP8266_State_Wait_For_Socket_Status :
 	case ESP8266_State_Wait_For_Socket_Status_Complete :
+	case ESP8266_State_Setting_Mode:
+	case ESP8266_State_Setting_Echo_Off :
 		esp8266_dev_state_hndl->lCurrError = 1;
 		esp8266_dev_state_hndl->lRequest_done=1;
 		currentState = ESP8266_State_Idle;
