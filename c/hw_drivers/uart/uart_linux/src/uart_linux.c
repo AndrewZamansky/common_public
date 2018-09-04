@@ -35,7 +35,7 @@
 #define MAX_ERR_STR_LEN   255
 #define ALREADY_INITIALIZED  0x34
 
-//#define DEBUG_UART
+#define DEBUG_UART
 //#define PRINT_BIN_DATA
 
 /********  types  *********************/
@@ -50,8 +50,11 @@
 char error_str[MAX_ERR_STR_LEN + 1];
 
 #ifdef DEBUG_UART
+uint8_t _do_uart_dbg_print = 0;
 static void dbg_print(uint8_t const *data, size_t len)
 {
+	if (0 == _do_uart_dbg_print) return;
+
 	#ifdef PRINT_BIN_DATA
 		size_t i;
 		for (i = 0; i < len; i++)
@@ -85,14 +88,20 @@ size_t uart_linux_pwrite(struct dev_desc_t *adev,
 
 	tty_fd = runtime_handle->tty_fd;
 	callback_tx_dev = cfg_hndl->callback_tx_dev;
-
 #ifdef DEBUG_UART
-	printf("uart_linux send start:\n");
-	dbg_print(apData, aLength);
-	printf("uart_linux send end:\n");
+	if (0 != _do_uart_dbg_print) printf("uart_linux send start:\n");
+	dbg_print(apData, aLength>16 ? 32 : aLength);//TODO : remove condition
 #endif
 
 	written_size = write (tty_fd, apData, aLength);
+
+#ifdef DEBUG_UART
+	if (0 != _do_uart_dbg_print)
+	{
+		printf("uart_linux send written_size = %lu\n", written_size);
+	}
+#endif
+
 	if (NULL != callback_tx_dev)
 	{
 		DEV_CALLBACK_1_PARAMS(
@@ -133,7 +142,7 @@ static void *receive_thread(void *adev)
 		{
 			dbg_print(rd_buf, curr_read_num);
 		}
-		printf("|e.rcv|\n");
+		if (0 != _do_uart_dbg_print) printf("|e.rcv|\n");
 #endif
 		if (NULL != callback_rx_dev)
 		{

@@ -29,7 +29,7 @@
 
 /********  types  *********************/
 /********  externals *********************/
-
+uint8_t _do_uart_dbg_print;
 /********  local defs *********************/
 
 /********  types  *********************/
@@ -500,6 +500,7 @@ static ESP8266_State_t parse_wait_for_get_ip_response(
 }
 
 
+
 static ESP8266_State_t parse_wait_for_send_complete(
 		struct esp8266_runtime_t *esp8266_dev_state_hndl,
 		uint8_t *pBufferStart, size_t line_length)
@@ -512,12 +513,14 @@ static ESP8266_State_t parse_wait_for_send_complete(
 	{
 		esp8266_dev_state_hndl->lRequest_done = 1;
 		currentState = ESP8266_State_Idle;
+		_do_uart_dbg_print = 0;
 	}
 	else if (0 == cmpBuff2Str(pBufferStart, line_length, "link is not"))
 	{
 		esp8266_dev_state_hndl->lCurrError = 1;
 		esp8266_dev_state_hndl->lRequest_done = 1;
 		currentState = ESP8266_State_Idle;
+		_do_uart_dbg_print = 0;
 	}
 	return currentState;
 }
@@ -1002,6 +1005,7 @@ static ESP8266_State_t process_send_data_message(
 	socket_handle = DEV_GET_CONFIG_DATA_POINTER(socket_pdev);
 	if(0 != socket_handle->socket_in_use)
 	{
+		_do_uart_dbg_print = 1;
 		snprintf(sendBuffer, ESP8266_SEND_BUFFER_LEN,
 				"AT+CIPSEND=%d,%d\r\n", socket_handle->socket_number,
 				pmsg_send_data_to_socket->data_length);
