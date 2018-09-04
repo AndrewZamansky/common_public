@@ -29,7 +29,7 @@
 
 /********  types  *********************/
 /********  externals *********************/
-uint8_t _do_uart_dbg_print;
+
 /********  local defs *********************/
 
 /********  types  *********************/
@@ -255,7 +255,8 @@ static size_t receiving_incoming_net_data(struct esp8266_cfg_t *config_handle,
 		{
 			CRITICAL_ERROR("esp8266 input buffer overflow");
 		}
-		esp8266_dev_state_hndl->currentState = ESP8266_State_Idle;
+		esp8266_dev_state_hndl->currentState =
+				esp8266_dev_state_hndl->returnFromDataReceiveState;
 	}
 
 	memcpy(&recvedData[curr_data_size],pBufferStart , bytes_to_copy);
@@ -270,7 +271,8 @@ static size_t receiving_incoming_net_data(struct esp8266_cfg_t *config_handle,
 static size_t process_new_incoming_net_data(
 		struct esp8266_cfg_t *config_handle,
 		struct esp8266_runtime_t *esp8266_dev_state_hndl,
-		uint8_t *pBufferStart, size_t total_length)
+		uint8_t *pBufferStart, size_t total_length,
+		uint8_t *is_NOT_incoming_data)
 {
 	char *start_of_requested_str;
 	char *end_of_requested_str;
@@ -279,10 +281,15 @@ static size_t process_new_incoming_net_data(
 	uint8_t receivedSocketNumber;
 	uint64_t timeout ;
 
+	*is_NOT_incoming_data = 0;
 	if (7 > total_length) return 0;
 
 	// check if buffer start "+IPD,nn,nnn:" or (TODO "+IPD,n,nnn")
-	if (0 != memcmp("+IPD,",pBufferStart,5)) return 1;
+	if (0 != memcmp("+IPD,",pBufferStart,5))
+	{
+		*is_NOT_incoming_data = 1;
+		return 1;
+	}
 
 	pBufferStart += 5;
 	total_length -= 5;
@@ -290,9 +297,14 @@ static size_t process_new_incoming_net_data(
 	if (NULL == start_of_data_str)
 	{
 		if (10 > total_length)
+		{
 			return 0;
+		}
 		else
+		{
+			*is_NOT_incoming_data = 1;
 			return 1;
+		}
 	}
 
 	header_size = start_of_data_str - (char*)pBufferStart;
@@ -304,6 +316,7 @@ static size_t process_new_incoming_net_data(
 			|| (start_of_requested_str == (char*)pBufferStart))
 	{
 		pBufferStart[header_size] = ':';
+		*is_NOT_incoming_data = 1;
 		return 1;
 	}
 	esp8266_dev_state_hndl->currentSocketNumber = receivedSocketNumber;
@@ -311,6 +324,7 @@ static size_t process_new_incoming_net_data(
 	if (',' != *start_of_requested_str)
 	{
 		pBufferStart[header_size] = ':';
+		*is_NOT_incoming_data = 1;
 		return 1;
 	}
 
@@ -321,12 +335,14 @@ static size_t process_new_incoming_net_data(
 	if (start_of_requested_str == end_of_requested_str)
 	{
 		pBufferStart[header_size] = ':';
+		*is_NOT_incoming_data = 1;
 		return 1;
 	}
 
 //	PRINTF_DBG("\r\nnew in=%d-\r\n" ,
 //			esp8266_dev_state_hndl->leftDataToReceive);
-
+	esp8266_dev_state_hndl->returnFromDataReceiveState =
+						esp8266_dev_state_hndl->currentState;
 	esp8266_dev_state_hndl->currentState = ESP8266_State_Receiving_Data;
 	timeout = ESP8266_TIMEOUT;
 	DEV_IOCTL(config_handle->timer_dev ,
@@ -408,9 +424,10 @@ static size_t process_data_from_esp8266_on_idle(
 
 	if ('+' == *pBufferStart)
 	{
+		uint8_t is_NOT_incoming_data;
 		bytes_consumed = process_new_incoming_net_data(config_handle,
 				esp8266_dev_state_hndl,
-				pBufferStart, total_length);
+				pBufferStart, total_length, &is_NOT_incoming_data);
 	}
 	else if (isdigit(*pBufferStart))
 	{
@@ -513,14 +530,12 @@ static ESP8266_State_t parse_wait_for_send_complete(
 	{
 		esp8266_dev_state_hndl->lRequest_done = 1;
 		currentState = ESP8266_State_Idle;
-		_do_uart_dbg_print = 0;
 	}
 	else if (0 == cmpBuff2Str(pBufferStart, line_length, "link is not"))
 	{
 		esp8266_dev_state_hndl->lCurrError = 1;
 		esp8266_dev_state_hndl->lRequest_done = 1;
 		currentState = ESP8266_State_Idle;
-		_do_uart_dbg_print = 0;
 	}
 	return currentState;
 }
@@ -721,6 +736,19 @@ static size_t process_data_from_esp8266_on_wait_for_response(
 		return total_length;
 	}
 
+	if ('+' == *pBufferStart)
+	{
+		size_t bytes_consumed;
+		uint8_t is_NOT_incoming_data;
+
+		bytes_consumed = process_new_incoming_net_data(config_handle,
+				esp8266_dev_state_hndl,
+				pBufferStart, total_length, &is_NOT_incoming_data);
+		if (0 == is_NOT_incoming_data)
+		{
+			return bytes_consumed;
+		}
+	}
 	line_length = 0;
 	while (line_length < total_length)
 	{
@@ -1005,7 +1033,6 @@ static ESP8266_State_t process_send_data_message(
 	socket_handle = DEV_GET_CONFIG_DATA_POINTER(socket_pdev);
 	if(0 != socket_handle->socket_in_use)
 	{
-		_do_uart_dbg_print = 1;
 		snprintf(sendBuffer, ESP8266_SEND_BUFFER_LEN,
 				"AT+CIPSEND=%d,%d\r\n", socket_handle->socket_number,
 				pmsg_send_data_to_socket->data_length);

@@ -35,7 +35,7 @@
 #define MAX_ERR_STR_LEN   255
 #define ALREADY_INITIALIZED  0x34
 
-#define DEBUG_UART
+//#define DEBUG_UART
 //#define PRINT_BIN_DATA
 
 /********  types  *********************/
@@ -50,7 +50,8 @@
 char error_str[MAX_ERR_STR_LEN + 1];
 
 #ifdef DEBUG_UART
-uint8_t _do_uart_dbg_print = 0;
+static char uart_send_dbg_str[] = "uart_linux send start:\n";
+uint8_t _do_uart_dbg_print = 1;
 static void dbg_print(uint8_t const *data, size_t len)
 {
 	if (0 == _do_uart_dbg_print) return;
@@ -59,7 +60,9 @@ static void dbg_print(uint8_t const *data, size_t len)
 		size_t i;
 		for (i = 0; i < len; i++)
 		{
-			printf("0x%02x ", *data);
+			char dbg_str[] = "0x00";
+			snprintf(dbg_str, sizeof(dbg_str), "0x%02x", *data);
+			write(1, dbg_str, size(dbg_str) - 1);
 			data++;
 		}
 	#else
@@ -89,7 +92,10 @@ size_t uart_linux_pwrite(struct dev_desc_t *adev,
 	tty_fd = runtime_handle->tty_fd;
 	callback_tx_dev = cfg_hndl->callback_tx_dev;
 #ifdef DEBUG_UART
-	if (0 != _do_uart_dbg_print) printf("uart_linux send start:\n");
+	if (0 != _do_uart_dbg_print)
+	{
+		write(1, uart_send_dbg_str, sizeof(uart_send_dbg_str) - 1);
+	}
 	dbg_print(apData, aLength>16 ? 32 : aLength);//TODO : remove condition
 #endif
 
@@ -98,7 +104,10 @@ size_t uart_linux_pwrite(struct dev_desc_t *adev,
 #ifdef DEBUG_UART
 	if (0 != _do_uart_dbg_print)
 	{
-		printf("uart_linux send written_size = %lu\n", written_size);
+		char uart_send_end_dbg_str[] = "uart_linux send written_size = 00000\n";
+		snprintf(uart_send_end_dbg_str, sizeof(uart_send_end_dbg_str),
+				"uart_linux send written_size = %05lu\n", written_size);
+		write(1, uart_send_end_dbg_str, sizeof(uart_send_end_dbg_str) - 1);
 	}
 #endif
 
@@ -136,13 +145,16 @@ static void *receive_thread(void *adev)
 #ifdef DEBUG_UART
 		if (0 == curr_read_num)
 		{
-			printf("-X0X-");
+			write(1, "-X0X-", sizeof("-X0X-" - 1));
 		}
 		else
 		{
 			dbg_print(rd_buf, curr_read_num);
 		}
-		if (0 != _do_uart_dbg_print) printf("|e.rcv|\n");
+		if (0 != _do_uart_dbg_print)
+		{
+			write(1, "|e.rcv|\n", sizeof("|e.rcv|\n" - 1));
+		}
 #endif
 		if (NULL != callback_rx_dev)
 		{
