@@ -50,7 +50,7 @@
 char error_str[MAX_ERR_STR_LEN + 1];
 
 #ifdef DEBUG_UART
-static void dbg_print(uint8_t *data, size_t len)
+static void dbg_print(uint8_t const *data, size_t len)
 {
 	#ifdef PRINT_BIN_DATA
 		size_t i;
@@ -62,7 +62,6 @@ static void dbg_print(uint8_t *data, size_t len)
 	#else
 		write(1, data, len);
 	#endif
-	printf("\n");
 }
 #endif
 
@@ -79,6 +78,7 @@ size_t uart_linux_pwrite(struct dev_desc_t *adev,
 	struct uart_linux_runtime_t *runtime_handle;
 	int tty_fd;
 	struct dev_desc_t * callback_tx_dev ;
+	size_t written_size;
 
 	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
 	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
@@ -92,11 +92,11 @@ size_t uart_linux_pwrite(struct dev_desc_t *adev,
 	printf("uart_linux send end:\n");
 #endif
 
-	write (tty_fd, apData, aLength);
+	written_size = write (tty_fd, apData, aLength);
 	if (NULL != callback_tx_dev)
 	{
 		DEV_CALLBACK_1_PARAMS(
-				callback_tx_dev, CALLBACK_TX_DONE, (void*)aLength);
+				callback_tx_dev, CALLBACK_TX_DONE, (void*)written_size);
 	}
 
 }
@@ -133,6 +133,7 @@ static void *receive_thread(void *adev)
 		{
 			dbg_print(rd_buf, curr_read_num);
 		}
+		printf("|e.rcv|\n");
 #endif
 		if (NULL != callback_rx_dev)
 		{
@@ -144,12 +145,50 @@ static void *receive_thread(void *adev)
 }
 
 
+static void set_baud_rate(
+		struct uart_linux_runtime_t *runtime_handle, uint32_t baud_rate)
+{
+	struct termios tty;
+	speed_t baud_rate_constant;
+	int tty_fd;
+
+	tty_fd = runtime_handle->tty_fd;
+	if (tcgetattr (tty_fd, &tty) != 0)
+	{
+		snprintf(error_str, MAX_ERR_STR_LEN, "error %d from tcgetattr", errno);
+		CRITICAL_ERROR(error_str);
+	}
+	switch (baud_rate)
+	{
+	case 9600:
+		baud_rate_constant = B9600;
+		break;
+	case 115200:
+		baud_rate_constant = B115200;
+		break;
+	case 921600:
+		baud_rate_constant = B921600;
+		break;
+	default :
+		CRITICAL_ERROR("not supported baud rate");
+		return;
+	}
+	cfsetospeed (&tty, baud_rate_constant);
+	cfsetispeed (&tty, baud_rate_constant);
+
+	if (tcsetattr (tty_fd, TCSANOW, &tty) != 0)
+	{
+		snprintf(error_str, MAX_ERR_STR_LEN, "error %d from tcsetattr", errno);
+		CRITICAL_ERROR(error_str);
+	}
+
+}
+
 
 static void uart_start(struct dev_desc_t *adev,
 		struct uart_linux_cfg_t *cfg_hndl,
 		struct uart_linux_runtime_t *runtime_handle)
 {
-	speed_t baud_rate_constant;
 	struct termios tty;
 	char *portname;
 	int tty_fd;
@@ -182,29 +221,13 @@ static void uart_start(struct dev_desc_t *adev,
 	}
 
 
+	set_baud_rate(runtime_handle, cfg_hndl->baud_rate);
+
 	if (tcgetattr (tty_fd, &tty) != 0)
 	{
 		snprintf(error_str, MAX_ERR_STR_LEN, "error %d from tcgetattr", errno);
 		CRITICAL_ERROR(error_str);
 	}
-
-	switch (cfg_hndl->baud_rate)
-	{
-	case 9600:
-		baud_rate_constant = B9600;
-		break;
-	case 115200:
-		baud_rate_constant = B115200;
-		break;
-	case 921600:
-		baud_rate_constant = B921600;
-		break;
-	default :
-		CRITICAL_ERROR("not supported baud rate");
-		return;
-	}
-	cfsetospeed (&tty, baud_rate_constant);
-	cfsetispeed (&tty, baud_rate_constant);
 
 	tty.c_lflag = 0;                // no signaling chars, no echo,
 									// no canonical processing
@@ -263,6 +286,7 @@ uint8_t uart_linux_ioctl(struct dev_desc_t *adev, uint8_t aIoctl_num,
 {
 	struct uart_linux_cfg_t *cfg_hndl;
 	struct uart_linux_runtime_t *runtime_handle;
+	struct termios tty;
 
 	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
 	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
@@ -271,7 +295,7 @@ uint8_t uart_linux_ioctl(struct dev_desc_t *adev, uint8_t aIoctl_num,
 	{
 	case IOCTL_UART_SET_BAUD_RATE :
 		cfg_hndl->baud_rate = *(uint32_t*)aIoctl_param1;
-		uart_start(adev, cfg_hndl, runtime_handle);
+		set_baud_rate(runtime_handle, cfg_hndl->baud_rate);
 		break;
 	case IOCTL_DEVICE_START :
 		uart_start(adev, cfg_hndl, runtime_handle);

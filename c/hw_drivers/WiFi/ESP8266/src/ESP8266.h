@@ -25,13 +25,17 @@ struct esp8266_cfg_t {
 	struct dev_desc_t *   timer_dev;
 	struct dev_desc_t *   uart_rx_dev;
 	struct dev_desc_t *  uart_tx_dev;
+	struct dev_desc_t *  uart_dev;
 };
 
 typedef enum
 {
-	ESP8266_State_HandShake,
+	ESP8266_State_InitialHandShake,
+	ESP8266_State_StartResetting,
 	ESP8266_State_Resetting,
 	ESP8266_State_Setting_Echo_Off,
+	ESP8266_State_ChangingBaudRate,
+	ESP8266_State_BaudChangeHandShake,
 	ESP8266_State_Setting_Mode,
 	ESP8266_State_Setting_AP,
 	ESP8266_State_Setting_Redundent_Ap,
@@ -168,6 +172,7 @@ struct esp8266_runtime_t{
 	uint8_t  lRequest_done;
 	uint8_t  handshake_counter;
 	uint8_t  need_to_reset;
+	uint32_t  interface_device_speed;
 };
 
 #endif /* */
