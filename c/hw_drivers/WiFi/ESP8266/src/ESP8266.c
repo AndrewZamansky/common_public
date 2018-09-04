@@ -598,27 +598,40 @@ static ESP8266_State_t parse_wait_for_connecting_socket_response(
 }
 
 
+static void close_socket(struct esp8266_runtime_t *esp8266_dev_state_hndl)
+{
+	struct esp8266_socket_t  *curr_socket;
+	struct esp8266_socket_t  *sockets;
+	sockets = esp8266_dev_state_hndl->sockets;
+	curr_socket = &sockets[esp8266_dev_state_hndl->currentSocketNumber];
+	curr_socket->socket_in_use = 0;
+	os_safe_free(curr_socket->recvedData);
+	curr_socket->recvedData = NULL ;
+	curr_socket->curr_data_size = 0;
+}
+
+
 static ESP8266_State_t parse_wait_for_close_socket_response(
 		struct esp8266_runtime_t *esp8266_dev_state_hndl,
 		uint8_t *pBufferStart, size_t line_length)
 {
-	struct esp8266_socket_t  *curr_rcv_data_socket;
-	struct esp8266_socket_t  *sockets;
 	ESP8266_State_t currentState ;
 
 	currentState = esp8266_dev_state_hndl->currentState;
 	if (0 == cmpBuff2Str(pBufferStart, line_length, "OK"))
 	{
-		sockets = esp8266_dev_state_hndl->sockets;
-		curr_rcv_data_socket =
-				&sockets[esp8266_dev_state_hndl->currentSocketNumber];
-		curr_rcv_data_socket->socket_in_use = 0;
-		os_safe_free(curr_rcv_data_socket->recvedData);
-		curr_rcv_data_socket->recvedData = NULL ;
-		curr_rcv_data_socket->curr_data_size = 0;
+		close_socket(esp8266_dev_state_hndl);
 		esp8266_dev_state_hndl->lRequest_done = 1;
 		currentState = ESP8266_State_Idle;
 	}
+	else if  (0 == cmpBuff2Str(pBufferStart, line_length, "ERROR"))
+	{
+		close_socket(esp8266_dev_state_hndl);
+		esp8266_dev_state_hndl->lCurrError = 1;
+		esp8266_dev_state_hndl->lRequest_done = 1;
+		currentState = ESP8266_State_Idle;
+	}
+
 	return currentState;
 }
 
