@@ -12,8 +12,10 @@
 
 static struct dev_desc_t * esp8266_dev = NULL;
 
+#define MAX_NUM_OF_SOCKETS	4
 
-
+#define  SOCKET_OFFSET   0//0x100
+#define  MAX_SOCKET_FD   (SOCKET_OFFSET + MAX_NUM_OF_SOCKETS)
 /**
  * Convert an uint16_t from host- to network byte order.
  *
@@ -66,7 +68,17 @@ void set_esp8266_pdev_for_socket_api(struct dev_desc_t *a_esp8266_dev)
 	esp8266_dev = a_esp8266_dev;
 }
 
-#define MAX_NUM_OF_SOCKETS	4
+static int calculate_socket_fd(int fd)
+{
+	if ((SOCKET_OFFSET > fd) || (MAX_SOCKET_FD <= fd))
+	{
+		PRINTF_DBG("%s :  fd = %d\n",__FUNCTION__, fd);
+		CRITICAL_ERROR("bad socket fd");
+	}
+	return fd - SOCKET_OFFSET;
+}
+
+
 struct dev_desc_t *  allocated_socket_dev[MAX_NUM_OF_SOCKETS]={0};
 
 int socket_uCprojects(int socket_family, int socket_type, int protocol)
@@ -100,7 +112,7 @@ int socket_uCprojects(int socket_family, int socket_type, int protocol)
 			CRITICAL_ERROR("this protocol not implemented yet");
 	}
 
-	for (i = 0 ; i< MAX_NUM_OF_SOCKETS ; i++)
+	for (i = 0; i < MAX_NUM_OF_SOCKETS; i++)
 	{
 		if (NULL == allocated_socket_dev[i])
 		{
@@ -111,7 +123,7 @@ int socket_uCprojects(int socket_family, int socket_type, int protocol)
 			if (0 == retVal)
 			{
 				PRINTF_DBG("%s : open socket fd = %d\n",__FUNCTION__, i);
-				return i;
+				return i + SOCKET_OFFSET;
 			}
 			else
 			{
@@ -123,11 +135,12 @@ int socket_uCprojects(int socket_family, int socket_type, int protocol)
 }
 
 
-int closesocket(int sockfd)
+int closesocket_uCprojects(int sockfd)
 {
 	struct dev_desc_t *  socket_dev;
 	uint8_t retVal;
 
+	sockfd = calculate_socket_fd(sockfd);
 
 	socket_dev = allocated_socket_dev[sockfd];
 	retVal = DEV_IOCTL_0_PARAMS(socket_dev , IOCTL_ESP8266_SOCKET_CLOSE);
@@ -141,17 +154,10 @@ int closesocket(int sockfd)
 }
 
 
-int _close(int file)
-{
-
-	PRINTF_DBG("%s :  fd = %d\n",__FUNCTION__, file);
-	CRITICAL_ERROR("_close not implemented yet");
-
-	return closesocket(file);
-}
 
 
-int connect_uCprojects(int sockfd, const struct sockaddr *addr, unsigned int addrlen)
+int connect_uCprojects(
+		int sockfd, const struct sockaddr *addr, unsigned int addrlen)
 {
 	struct dev_desc_t *  socket_dev;
 	struct ESP8266_ioctl_socket_connect_t	ioctl_socket_connect;
@@ -160,6 +166,8 @@ int connect_uCprojects(int sockfd, const struct sockaddr *addr, unsigned int add
 	char addr_str[32]={0};
 	char port_str[8]={0};
 	uint8_t retVal;
+
+	sockfd = calculate_socket_fd(sockfd);
 
 	lp_sockaddr = (struct sockaddr_in   *)addr;
 	sin_addr = &(lp_sockaddr->sin_addr);
@@ -197,6 +205,7 @@ size_t recv_uCprojects(int sockfd, void *buf, size_t len, int flags)
 	uint32_t socket_options;
 	uint8_t read_ready;
 
+	sockfd = calculate_socket_fd(sockfd);
 	PRINTF_DBG("%s :  fd = %d\n",__FUNCTION__, sockfd);
 
 	if (0 != flags)
@@ -264,6 +273,7 @@ int getsockopt_uCprojects(int sockfd, int level, int optname,
 	int  int_val;
 	long  long_val;
 
+	sockfd = calculate_socket_fd(sockfd);
 	PRINTF_DBG("%s :  fd = %d\n",__FUNCTION__, sockfd);
 
 	socket_dev = allocated_socket_dev[sockfd];
@@ -362,6 +372,7 @@ int setsockopt_uCprojects(int sockfd, int level,
 		int optname, const void *optval, socklen_t optlen)
 {
 
+	sockfd = calculate_socket_fd(sockfd);
 	PRINTF_DBG("%s :  fd = %d, optname = %d , *(int*)optval = %d\n",
 							__FUNCTION__, sockfd, optname, *(int*)optval);
 
@@ -382,9 +393,11 @@ int setsockopt_uCprojects(int sockfd, int level,
 }
 
 
-void bind()
+int bind_uCprojects(int sockfd, const struct sockaddr *addr, socklen_t addrlen)
 {
-	CRITICAL_ERROR("bind not implemented yet");
+	sockfd = calculate_socket_fd(sockfd);
+	CRITICAL_ERROR("bind_uCprojects not implemented yet");
+	return 0;
 }
 
 
@@ -398,6 +411,7 @@ int getsockname_uCprojects(
 	uint8_t retVal;
 	struct ESP8266_ioctl_socket_get_ip_t ESP8266_ioctl_socket_get_ip;
 
+	sockfd = calculate_socket_fd(sockfd);
 	lp_sockaddr = (struct sockaddr_in   *)local_addr;
 	sin_addr = &(lp_sockaddr->sin_addr);
 
@@ -440,6 +454,7 @@ int getpeername(int sockfd, struct sockaddr *addr, socklen_t *addrlen)
 	struct ESP8266_ioctl_get_conn_status_t	ioctl_socket_get_open_connection;
 	uint16_t port;
 
+	sockfd = calculate_socket_fd(sockfd);
 	lp_sockaddr = (struct sockaddr_in   *)addr;
 	sin_addr = &(lp_sockaddr->sin_addr);
 
@@ -607,7 +622,7 @@ int select(int nfds, fd_set *readfds, fd_set *writefds,
 	{
 		for(i = 0; i < MAX_NUM_OF_SOCKETS; i++)
 		{
-			if ( 0 != FD_ISSET(i , &orig_readfds))
+			if ( 0 != FD_ISSET(i + SOCKET_OFFSET, &orig_readfds))
 			{
 				socket_dev = allocated_socket_dev[i];
 				retVal = DEV_IOCTL_1_PARAMS(socket_dev ,
@@ -616,19 +631,19 @@ int select(int nfds, fd_set *readfds, fd_set *writefds,
 				{
 					printf("--%s : fd = %d connection was lost\n",__FUNCTION__, i);
 
-					FD_SET(i , exceptfds);
+					FD_SET(i + SOCKET_OFFSET, exceptfds);
 				}
 				if (read_ready)
 				{
 					PRINTF_DBG("%s : readfds\n", __FUNCTION__);
-					FD_SET(i , readfds);
+					FD_SET(i + SOCKET_OFFSET, readfds);
 					event_happened++;
 				}
 			}
-			if ( 0 != FD_ISSET(i , &orig_writefds))
+			if ( 0 != FD_ISSET(i + SOCKET_OFFSET, &orig_writefds))
 			{
 				PRINTF_DBG("%s : writefds\n", __FUNCTION__);
-				FD_SET(i , writefds);
+				FD_SET(i + SOCKET_OFFSET, writefds);
 				event_happened++;
 			}
 		}
@@ -655,6 +670,7 @@ ssize_t send_uCprojects(
 	struct dev_desc_t *  socket_dev;
 	 size_t ret_length;
 
+	sockfd = calculate_socket_fd(sockfd);
 	PRINTF_DBG("%s :  fd = %d\n",__FUNCTION__, sockfd);
 
 	if(0 != flags)
@@ -670,6 +686,28 @@ ssize_t send_uCprojects(
 	}
 	return ret_length;
 }
+
+
+int listen_uCprojects(int sockfd, int backlog)
+{
+	CRITICAL_ERROR("listen_uCprojects not implemented yet");
+	return 0;
+}
+
+
+int accept_uCprojects(int sockfd, struct sockaddr *addr, socklen_t *addrlen)
+{
+	CRITICAL_ERROR("accept_uCprojects not implemented yet");
+	return 0;
+}
+
+
+int shutdown_uCprojects(int socket, int how)
+{
+	CRITICAL_ERROR("accept_uCprojects not implemented yet");
+	return 0;
+}
+
 
 void _stat()
 {
@@ -687,7 +725,7 @@ void WSASetLastError(int iError)
 	errno = iError;
 }
 
-int ioctlsocket(int socket, long   cmd, u_long *argp)
+int ioctlsocket(int socket, long   cmd, unsigned long *argp)
 {
 	CRITICAL_ERROR("ioctlsocket not implemented yet");
 }

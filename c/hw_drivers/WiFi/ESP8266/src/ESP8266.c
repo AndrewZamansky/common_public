@@ -246,7 +246,7 @@ static size_t receiving_incoming_net_data(struct esp8266_cfg_t *config_handle,
 	}
 	else
 	{
-		PRINTF_DBG("--end rcv_data\r\n" );
+		//PRINTF_DBG("--end rcv_data\r\n" );
 		if (leftDataToReceive < bytes_to_copy)
 		{
 			bytes_to_copy = leftDataToReceive;

@@ -35,7 +35,7 @@ source "$KCONFIG_PUBLIC_START_DIR/sw_packages/net/nghttp2_git/Kconfig"
 endif
 
 
-config  CURL_CUSTOM_SOCKET_LAYER
+config  CUSTOM_SOCKET_LAYER
 	bool   "custom socket layer"
 	default n
 

@@ -185,24 +185,40 @@ enum {
 };
 
 
+int WSAGetLastError(void);
+void WSASetLastError(int iError);
+int ioctlsocket(int socket, long   cmd, unsigned long *argp);
+
 
 extern uint16_t htons(uint16_t n);
-ssize_t send_uCprojects(int socket, const void *buffer, size_t length, int flags);
+uint32_t htonl(uint32_t n);
+uint32_t ntohl(uint32_t n);
+
+
+ssize_t send_uCprojects(
+		int socket, const void *buffer, size_t length, int flags);
 size_t recv_uCprojects(int sockfd, void *buf, size_t len, int flags);
 int select_uCprojects(int nfds, fd_set *readfds, fd_set *writefds,
                   fd_set *exceptfds, struct timeval *timeout);
 struct hostent*  gethostbyname_uCprojects( const char *name);
-int getpeername_uCprojects(int sockfd, struct sockaddr *addr, socklen_t *addrlen);
+int getpeername_uCprojects(
+		int sockfd, struct sockaddr *addr, socklen_t *addrlen);
 int getsockname_uCprojects(
 		int sockfd, struct sockaddr *local_addr, socklen_t *addrlen);
 int getsockopt_uCprojects(int sockfd, int level, int optname,
 			void *optval, socklen_t *optlen);
 int setsockopt_uCprojects(int sockfd, int level,
 		int optname, const void *optval, socklen_t optlen);
-int connect_uCprojects(int sockfd, const struct sockaddr *addr, unsigned int addrlen);
+int connect_uCprojects(
+		int sockfd, const struct sockaddr *addr, unsigned int addrlen);
 int socket_uCprojects(int socket_family, int socket_type, int protocol);
 uint16_t ntohs(uint16_t n);
 struct servent *getservbyname(const char *name, const char *proto);
+int bind_uCprojects(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
+int listen_uCprojects(int sockfd, int backlog);
+int accept_uCprojects(int sockfd, struct sockaddr *addr, socklen_t *addrlen);
+int shutdown_uCprojects(int socket, int how);
+int closesocket_uCprojects(int sockfd);
 
 #define socket  socket_uCprojects
 #define send  send_uCprojects
@@ -214,6 +230,11 @@ struct servent *getservbyname(const char *name, const char *proto);
 #define connect  connect_uCprojects
 #define select  select_uCprojects
 #define gethostbyname  gethostbyname_uCprojects
+#define bind  bind_uCprojects
+#define accept  accept_uCprojects
+#define listen  listen_uCprojects
+#define shutdown  shutdown_uCprojects
+#define closesocket  closesocket_uCprojects
 
 
 #endif /* USE_CUSTOM_SOCKET_IN_COMPILED_MODULE */
