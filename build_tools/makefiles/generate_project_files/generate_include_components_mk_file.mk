@@ -22,21 +22,41 @@ r = $(wildcard $1/Makefile.uc.mk) $(foreach d, $(call ls,$1), $(call r,$d))
 ALL_CONFIG_FILES :=$(foreach d, $(SCAN_DIRS_FOR_CONFIG_FILES), $(call r,$d))
 $(info scan for Makefile.uc.mk done . creating include_components.mk)
 
+
+ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
+    GENERATE_PRJ_FILES_DIR_FOR_ECHO :=$$(GENERATE_PRJ_FILES_DIR)
+    APP_ROOT_DIR_FOR_ECHO :=$$(APP_ROOT_DIR)
+    PUBLIC_DRIVERS_DIR_FOR_ECHO :=$$(PUBLIC_DRIVERS_DIR)
+    PUBLIC_SW_PACKAGES_DIR_FOR_ECHO :=$$(PUBLIC_SW_PACKAGES_DIR)
+    COMMON_PRIVATE_DIR_FOR_ECHO :=$$(COMMON_PRIVATE_DIR)
+else
+    GENERATE_PRJ_FILES_DIR_FOR_ECHO :='$$(GENERATE_PRJ_FILES_DIR)'
+    APP_ROOT_DIR_FOR_ECHO :='$$(APP_ROOT_DIR)'
+    PUBLIC_DRIVERS_DIR_FOR_ECHO :='$$(PUBLIC_DRIVERS_DIR)'
+    PUBLIC_SW_PACKAGES_DIR_FOR_ECHO :='$$(PUBLIC_SW_PACKAGES_DIR)'
+    COMMON_PRIVATE_DIR_FOR_ECHO :='$$(COMMON_PRIVATE_DIR)'
+endif
+
+
 # replace long directory names with $(.._DIR) variables
 ALL_CONFIG_FILES := $(patsubst \
-                $(APP_ROOT_DIR)%,$$(APP_ROOT_DIR)%,$(ALL_CONFIG_FILES))
+                $(APP_ROOT_DIR)%,$(APP_ROOT_DIR_FOR_ECHO)%,$(ALL_CONFIG_FILES))
 ALL_CONFIG_FILES := $(patsubst \
-                $(PUBLIC_DRIVERS_DIR)%,$$(PUBLIC_DRIVERS_DIR)%,$(ALL_CONFIG_FILES))
+                $(PUBLIC_DRIVERS_DIR)%,\
+                $(PUBLIC_DRIVERS_DIR_FOR_ECHO)%,$(ALL_CONFIG_FILES))
 ALL_CONFIG_FILES := $(patsubst \
-        $(PUBLIC_SW_PACKAGES_DIR)%,$$(PUBLIC_SW_PACKAGES_DIR)%,$(ALL_CONFIG_FILES))
+        $(PUBLIC_SW_PACKAGES_DIR)%,\
+        $(PUBLIC_SW_PACKAGES_DIR_FOR_ECHO)%,$(ALL_CONFIG_FILES))
 ALL_CONFIG_FILES := $(patsubst \
-            $(COMMON_PRIVATE_DIR)%,$$(COMMON_PRIVATE_DIR)%,$(ALL_CONFIG_FILES))
+            $(COMMON_PRIVATE_DIR)%,\
+            $(COMMON_PRIVATE_DIR_FOR_ECHO)%,$(ALL_CONFIG_FILES))
+
 
 # clear file and add test for valid current location , for forcing
 # to rebuild $(COMPONENTS_MK) after copying project
 NEW_LINE :=WORKSPACE_ROOT_DIR_FOR_TEST :=$(PARENT_OF_COMMON_PUBLIC_DIR)
 FILE_CONTENT := echo $(NEW_LINE)>$(ALL_FOUND_COMPONENTS) $(SHELL_CMD_DELIMITER)
-NEW_LINE :=include $$(GENERATE_PRJ_FILES_DIR)/check_location.mk
+NEW_LINE :=include $(GENERATE_PRJ_FILES_DIR_FOR_ECHO)/check_location.mk
 FILE_CONTENT += echo $(NEW_LINE) >>$(ALL_FOUND_COMPONENTS) $(SHELL_CMD_DELIMITER)
 DUMMY:=$(shell $(FILE_CONTENT))
 
@@ -51,7 +71,7 @@ include $(MAKEFILES_ROOT_DIR)/_include_functions/add_item_list_to_file.mk
 # init INCLUDE_THIS_FOR_H_FILES_PATH variable
 $(shell echo INCLUDE_THIS_FOR_H_FILES_PATH := NO>> $(ALL_FOUND_COMPONENTS))
 
-ADD_COMPONENT_UCONFIG_MK :=$$(GENERATE_PRJ_FILES_DIR)/add_component_uconfig.mk
+ADD_COMPONENT_UCONFIG_MK :=$(GENERATE_PRJ_FILES_DIR_FOR_ECHO)/add_component_uconfig.mk
 
 # adding following lines to include_components.mk 
 # "include $(MAKEFILES_ROOT_DIR)/add_component_uconfig.mk "

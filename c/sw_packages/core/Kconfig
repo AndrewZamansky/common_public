@@ -27,8 +27,8 @@ config HEARTBEAT_IS_SPEED_CRITICAL
 endif
 
 
-menu "RT OS"
-depends on !GCC_TARGET_OS_LINUX && !HOST && !ANDROID_NDK
+menu "OS"
+depends on !ANDROID_NDK
 source "$KCONFIG_PUBLIC_START_DIR/sw_packages/core/os_wrapper/Kconfig"
 
 

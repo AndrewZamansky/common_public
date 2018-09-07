@@ -37,17 +37,17 @@ enum
 
 #if !defined(CONFIG_HOST) && !defined(CONFIG_ANDROID_NDK)
 	#ifndef os_stack_test
-		os_stack_test___not_declared_in_shell_config_h=sizeof((int)os_stack_test),
+		os_stack_test___not_declared_in_shell_config_h=sizeof((size_t)os_stack_test),
 	#endif
 #endif
 
 #ifdef GLOBAL_CONFIG_USE_MALLOC
-	memcpy___not_declared_in_project_header_files =sizeof((int)memcpy),
-	malloc___not_declared_in_project_header_files =sizeof((int)malloc),
-	free___not_declared_in_project_header_files =sizeof((int)free),
+	memcpy___not_declared_in_project_header_files =sizeof((size_t)memcpy),
+	malloc___not_declared_in_project_header_files =sizeof((size_t)malloc),
+	free___not_declared_in_project_header_files =sizeof((size_t)free),
 #endif
 
-	strcmp_not_declared_in_project_header_files =sizeof((int)strcmp)
+	strcmp_not_declared_in_project_header_files =sizeof((size_t)strcmp)
 
 
 

@@ -84,6 +84,7 @@ size_t	DEV_PWRITE(struct dev_desc_t *adev,
 	{
 		CRITICAL_ERROR("access NULL device");
 	}
+
 	return (adev->pwrite)(adev, apData, aLength, aOffset);
 }
 

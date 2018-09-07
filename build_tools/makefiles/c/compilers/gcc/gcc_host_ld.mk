@@ -1,3 +1,39 @@
+ifdef CONFIG_REDEFINED_OUTPUT_NAME
+
+    OUTPUT_NAME :=$(patsubst "%",%,$(CONFIG_REDEFINED_OUTPUT_NAME))
+
+    HISTORY_OUTPUT_NAME :=$(OUTPUT_NAME)_$(MAIN_VERSION_STR)
+    HISTORY_OUTPUT_NAME :=$(HISTORY_OUTPUT_NAME)$(REVISION_FOR_FILE_STR)
+
+else
+#    ifdef CONFIG_OUTPUT_TYPE_DYNAMIC_LIBRARY
+#        OUTPUT_NAME :=lib$(FULL_PROJECT_NAME).so
+#        HISTORY_OUTPUT_NAME :=lib$(FULL_PROJECT_NAME)_$(MAIN_VERSION_STR).so
+#    else ifdef CONFIG_OUTPUT_TYPE_APPLICATION
+        OUTPUT_NAME :=$(FULL_PROJECT_NAME)
+
+        HISTORY_OUTPUT_NAME :=$(FULL_PROJECT_NAME)_$(MAIN_VERSION_STR)
+        HISTORY_OUTPUT_NAME :=$(HISTORY_OUTPUT_NAME)$(REVISION_FOR_FILE_STR)
+#    else
+#        $(info err: unknown output type)
+#        $(call exit,1)
+#    endif
+endif
+
+LINKER_OUTPUT := $(OUT_DIR)/$(OUTPUT_NAME)
+MAP_FILE := $(OUT_DIR)/$(OUTPUT_NAME).map
+LINKER_HISTORY_OUTPUT :=$(OUT_DIR_HISTORY)/$(HISTORY_OUTPUT_NAME)
+OUTPUT_ASM :=  $(OUT_DIR)/$(OUTPUT_NAME).asm
+OUTPUT_BIN := $(OUT_DIR)/$(OUTPUT_NAME).stripped
+
+ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
+    ifdef CONFIG_OUTPUT_TYPE_APPLICATION
+        LINKER_OUTPUT :=$(LINKER_OUTPUT).exe
+        LINKER_HISTORY_OUTPUT :=$(LINKER_HISTORY_OUTPUT).exe
+        OUTPUT_BIN :=$(OUTPUT_BIN).exe
+    endif
+endif
+
 
 
 DISASSEMBLER	:=	$(FULL_GCC_PREFIX)objdump -d
@@ -17,12 +53,6 @@ LIBS := $(patsubst lib%,-l%,$(GLOBAL_LIBS))
 LIBS := $(patsubst %.a,%,$(LIBS))
 LIBRARIES_DIRS := $(patsubst %,-L%,$(GLOBAL_LIBS_PATH))
 
-#OUTPUT_HEX :=  $(OUT_DIR)/$(OUTPUT_APP_NAME).hex
-
-LINKER_OUTPUT := $(OUT_DIR)/$(OUTPUT_APP_NAME).exe
-OUTPUT_BIN := $(OUT_DIR)/$(OUTPUT_APP_NAME).stripped.exe
-
-
 
 #init LDFLAGS
 LDFLAGS := 
@@ -30,38 +60,27 @@ LDFLAGS :=
 #LDFLAGS += -fno-builtin-printf
 
 
-LDFLAGS += -Wl,-Map=$(OUT_DIR)/$(OUTPUT_APP_NAME).map   # -msoft-float -mfloat-abi=soft
+LDFLAGS += -Wl,-Map=$(OUT_DIR)/$(OUTPUT_APP_NAME).map
 LDFLAGS += -g -g3 -ggdb3
 
 LDFLAGS := $(GLOBAL_LDFLAGS) $(LDFLAGS)
 
 
-############   PREPROCESSOR FLAGS FOR LINKER SCRIPT #############
 
+GLOBAL_LIBS_PATH := $(GLOBAL_LIBS_PATH) $(GCC_LIB_ROOT_DIR)
 
-
-
-##########################################################
-
-
-ifeq ($(findstring cortex-m,$(CONFIG_CPU_TYPE)),cortex-m)
-#	GLOBAL_LIBS_PATH := $(GLOBAL_LIBS_PATH) $(GCC_LIB_ROOT_DIR)/fpu
-#	GLOBAL_LIBS_PATH := $(GLOBAL_LIBS_PATH) $(GCC_LIB_ROOT_DIR)/thumb
-else	
-    GLOBAL_LIBS_PATH := $(GLOBAL_LIBS_PATH) $(GCC_LIB_ROOT_DIR)
-endif
-
-
-LINKER_HISTORY_OUTPUT := $(OUT_DIR_HISTORY)/$(PROJECT_NAME)_$(MAIN_VERSION_STR).exe
-OUTPUT_HISTORY_BIN :=  $(OUT_DIR_HISTORY)/$(PROJECT_NAME)_$(MAIN_VERSION_STR)r$(DATE_STR).stripped.exe
 
 
 rwildcard=$(wildcard $1$2) $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2))
 
-#some time on windows .O.asm and .o.asm will appear as same files . so $(sort) will eliminate duplication
-
-
-ALL_OBJ_FILES := $(sort $(call rwildcard,$(OBJ_DIR)/,*.o) $(call rwildcard,$(OBJ_DIR)/,*.oo) $(call rwildcard,$(OBJ_DIR)/,*.o.asm) $(call rwildcard,$(OBJ_DIR)/,*.O.asm))
+ALL_OBJ_FILES := $(call rwildcard,$(OBJ_DIR)/,*.o)
+ALL_OBJ_FILES += $(call rwildcard,$(OBJ_DIR)/,*.oo)
+ALL_OBJ_FILES += $(call rwildcard,$(OBJ_DIR)/,*.oop) 
+ALL_OBJ_FILES += $(call rwildcard,$(OBJ_DIR)/,*.o.asm)
+ALL_OBJ_FILES += $(call rwildcard,$(OBJ_DIR)/,*.O.asm)
+# some time on windows .O.asm and .o.asm will appear as same files,
+# so $(sort) will eliminate duplication
+ALL_OBJ_FILES := $(sort $(ALL_OBJ_FILES))
 
 ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
     LINKER_OUTPUT := $(subst /,\,$(LINKER_OUTPUT))
@@ -78,7 +97,6 @@ build_outputs :
 	$(DISASSEMBLER) $(LINKER_OUTPUT) > $(OUT_DIR)/$(OUTPUT_APP_NAME).asm
 	$(CP)  $(LINKER_OUTPUT) $(OUTPUT_BIN)
 	$(STRIP) $(OUTPUT_BIN)
-	$(CP)  $(OUTPUT_BIN) $(OUTPUT_HISTORY_BIN)
 	$(CP)  $(LINKER_OUTPUT) $(LINKER_HISTORY_OUTPUT)
 ifeq ($(findstring y,$(CONFIG_CALCULATE_CRC32)),y)
 	$(CRC32CALC) $(OUTPUT_BIN) > $(OUTPUT_CRC32)

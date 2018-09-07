@@ -2,7 +2,8 @@
 ### the following section we need to run just one time per build
 ifndef INIT_FOR_QAIC_SECTION_THAT_SHOULD_RUN_ONCE
 
-KCONFIG_START_DIR_PATH :=$(COMMON_PUBLIC_DIR)/qaic
+#change to KCONFIG_PUBLIC_START_DIR
+#KCONFIG_START_DIR_PATH :=$(COMMON_PUBLIC_DIR)/qaic
 
 ifeq ($(findstring menuconfig,$(MAKECMDGOALS)),)
     #DONT enter if we are bulding .config file now

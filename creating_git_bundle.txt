@@ -1,1 +1,4 @@
-git bundle create $(GIT_NAME).bundle $(OFFICIAL_PARENT_COMMIT_TAG_OR_BRANCH)..$(LAST_TAG_OR_BRANCH)
+cd $(GIT_REPO_PATH)
+git branch -f "start_commit_for_bundle" $(COMMIT_HASH_OF_START_POINT)
+git branch -f "end_commit_for_bundle" $(COMMIT_HASH_OF_end_POINT)
+git bundle create $(GIT_NAME).bundle "start_commit_for_bundle".."end_commit_for_bundle"

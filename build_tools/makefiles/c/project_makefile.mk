@@ -20,7 +20,7 @@ $(MAKECMDGOALS) : default
 	$(info  )
 
 # cant use $(call exit) because additional function not included yet.
-DUMMY :=$(shell echo dummy )#used to delay execution of folloing exit:
+DUMMY :=$(shell echo dummy )#used to delay execution of following exit:
 $(error stopping ...)
 
 endif
