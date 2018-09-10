@@ -586,7 +586,7 @@ struct servent *getservbyname_uCprojects(const char *name, const char *proto)
 
 
 
-int select(int nfds, fd_set *readfds, fd_set *writefds,
+int select_uCprojects(int nfds, fd_set *readfds, fd_set *writefds,
                   fd_set *exceptfds, struct timeval *timeout)
 {
 	struct dev_desc_t *  socket_dev;
