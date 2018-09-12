@@ -91,7 +91,7 @@ static void transmit_reg_addr_byte(I2C_T *i2c, struct i2c_i94xxx_cfg_t *cfg_hndl
 }
 
 
-static void end_of_transmition(struct i2c_i94xxx_cfg_t *cfg_hndl,
+static void slave_end_of_transmition(struct i2c_i94xxx_cfg_t *cfg_hndl,
 		struct i2c_i94xxx_runtime_t *runtime_handle)
 {
 	size_t   transmitted_data_size;
@@ -103,7 +103,7 @@ static void end_of_transmition(struct i2c_i94xxx_cfg_t *cfg_hndl,
 		struct dev_desc_t *callback_tx_dev;
 
 		callback_tx_dev = cfg_hndl->callback_tx_dev;
-		if (NULL != callback_tx_dev)
+		if ((0 == runtime_handle->tx_data_size) && (NULL != callback_tx_dev))
 		{
 			DEV_CALLBACK_1_PARAMS(callback_tx_dev ,
 					CALLBACK_TX_DONE, (void*)transmitted_data_size);
@@ -168,7 +168,7 @@ static void I2C_SlaveTRx(
 	{
 		 /* Data byte or last data in I2CDAT has been transmitted
 		  *  Not ACK has been received */
-		end_of_transmition(cfg_hndl, runtime_handle);
+		slave_end_of_transmition(cfg_hndl, runtime_handle);
 		I2C_SET_CONTROL_REG(i2c, I2C_CTL_SI_AA);
 	}
 	else if(u32Status == 0x88)
