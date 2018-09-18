@@ -30,7 +30,6 @@ struct i2c_i94xxx_cfg_t {
 #define		I2C_I94XXX_RCV_DATA_SIZE_BUFFER	64
 
 struct i2c_i94xxx_runtime_t {
-	uint8_t  curr_state;
 	uint16_t curr_data_pos;
 	uint8_t  rcv_data[I2C_I94XXX_RCV_DATA_SIZE_BUFFER];
 	uint8_t  const  *tx_data;
@@ -44,6 +43,7 @@ struct i2c_i94xxx_runtime_t {
 	uint8_t   device_access_tries;
 	os_queue_t WaitQueue;
 	os_mutex_t mutex;
+	uint8_t   i2c_error;
 };
 #endif
 
