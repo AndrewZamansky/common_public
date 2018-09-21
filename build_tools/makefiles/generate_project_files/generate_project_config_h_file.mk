@@ -12,8 +12,8 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
     CONFIG_CONTENT := $(shell findstr /b /c:"CONFIG" .config)
     NEW_PATTERN := echo \#define % >> $(PROJECT_CONFIG_H_FILE) &
 else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX) 
-    $(shell echo "\#ifndef  project_config_h"> $(PROJECT_CONFIG_H_FILE))
-    $(shell echo "\#define  project_config_h">> $(PROJECT_CONFIG_H_FILE))
+    $(shell echo "#ifndef  project_config_h"> $(PROJECT_CONFIG_H_FILE))
+    $(shell echo "#define  project_config_h">> $(PROJECT_CONFIG_H_FILE))
     $(shell echo /*$(COMMENT)\*/  >> $(PROJECT_CONFIG_H_FILE))
     CONFIG_CONTENT := $(shell cat .config | grep '^CONFIG')
     CONFIG_CONTENT := $(subst ",\",$(CONFIG_CONTENT))
@@ -29,7 +29,7 @@ DUMMY:=$(shell $(CONFIG_CONTENT))
 ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS) 
     $(shell echo #endif>> $(PROJECT_CONFIG_H_FILE))
 else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX) 
-    $(shell echo "\#endif">> $(PROJECT_CONFIG_H_FILE))
+    $(shell echo "#endif">> $(PROJECT_CONFIG_H_FILE))
 endif
 
 all :

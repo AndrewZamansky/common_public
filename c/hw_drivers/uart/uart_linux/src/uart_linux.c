@@ -60,9 +60,9 @@ static void dbg_print(uint8_t const *data, size_t len)
 		size_t i;
 		for (i = 0; i < len; i++)
 		{
-			char dbg_str[] = "0x00";
-			snprintf(dbg_str, sizeof(dbg_str), "0x%02x", *data);
-			write(1, dbg_str, size(dbg_str) - 1);
+			char dbg_str[] = "0x00 ";
+			snprintf(dbg_str, sizeof(dbg_str), "0x%02x ", *data);
+			write(1, dbg_str, sizeof(dbg_str) - 1);
 			data++;
 		}
 	#else
@@ -268,7 +268,9 @@ static void uart_start(struct dev_desc_t *adev,
 //	tty.c_cflag |= CRTSCTS;
 	tty.c_cflag |= (CLOCAL | CREAD);// ignore modem controls,
 
-	tty.c_iflag &= ~IGNBRK;         // disable break processing
+	tty.c_iflag &= ~INLCR; // disable translate NL to CR on input
+	tty.c_iflag &= ~ICRNL; // disable translate carriage return to newline
+	tty.c_iflag &= ~IGNBRK;  // disable break processing
 	tty.c_iflag &= ~(IXON | IXOFF | IXANY); // shut off xon/xoff ctrl
 
 	//tty.c_iflag |= IGNPAR;
