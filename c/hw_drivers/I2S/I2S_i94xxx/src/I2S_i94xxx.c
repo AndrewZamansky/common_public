@@ -256,6 +256,11 @@ uint8_t I2S_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 		I2S_ENABLE_TX(I2S0);
 		I2S0->CTL0 |= I2S_CTL0_TXPDMAEN_Msk;
 		break;
+	case I2S_I94XXX_STOP_IOCTL:
+		I2S_DISABLE_TX(I2S0);
+		I2S_DISABLE_RX(I2S0);
+		I2S_DISABLE(I2S0);
+		break;
 
 	case I2S_I94XXX_GET_MEASURED_SAMPLE_RATE:
 		*((uint32_t*)aIoctl_param1) = runtime_handle->actual_sample_rate;
