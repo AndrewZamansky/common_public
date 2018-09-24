@@ -411,6 +411,8 @@ uint8_t i94xxx_systick_clk_ioctl( struct dev_desc_t *adev,
 		//TODO:
 		CRITICAL_ERROR("bad parent clock \n");
 		cfg_clk->parent_clk = aIoctl_param1;
+		break;
+
 	case CLK_IOCTL_SET_FREQ :
 		//TODO:
 		break;

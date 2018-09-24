@@ -188,9 +188,9 @@ uint8_t I2S_mixer_ioctl(struct dsp_module_inst_t *adsp,
 void  I2S_mixer_init(void)
 {
 #if (2 == BYTES_PER_PCM_CHANNEL)
-	normalizer = (int16_t)0x7fff;
+	normalizer = (buffer_type_t)0x7fff;
 #elif (4 == BYTES_PER_PCM_CHANNEL)
-	normalizer = (int16_t)0x7fffffff;
+	normalizer = (buffer_type_t)0x7fffffff;
 #else
 	#error "TODO : for audio word with 4 bytes devision by  0x7fffffff is wrong because integer part is 16 bit only "
 #endif
