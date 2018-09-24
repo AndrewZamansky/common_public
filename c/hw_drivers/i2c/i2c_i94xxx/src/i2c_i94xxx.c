@@ -729,6 +729,37 @@ static uint8_t  device_start(struct dev_desc_t *adev)
 			return 1;
 		}
 	}
+	else if(I2C0 == i2c_regs)
+	{
+		i2c_irq = I2C0_IRQn;
+		i2c_module_rst = I2C0_MODULE;
+		i2c_clk_dev = i94xxx_i2c0_clk_dev;
+
+		//i2c_clk_src = CLK_I2C0_SRC_EXT;
+		/*
+		* Init I/O Multi-function
+		* Set PA multi-function pins for I2C0 RXD(PA.8) and TXD(PA.7)
+		*/
+		switch (cfg_hndl->SCL_pinout)
+		{
+		case I2C_I94XXX_API_I2C0_SCL_PIN_PORT_B_PIN_0:
+			SYS->GPB_MFPL &= ~SYS_GPB_MFPL_PB0MFP_Msk;
+			SYS->GPB_MFPL |=  SYS_GPB_MFPL_PB0MFP_I2C0_SCL;
+			break;
+		default :
+			return 1;
+		}
+
+		switch (cfg_hndl->SDA_pinout)
+		{
+		case I2C_I94XXX_API_I2C0_SDA_PIN_PORT_B_PIN_1:
+			SYS->GPB_MFPL &= ~SYS_GPB_MFPL_PB1MFP_Msk;
+			SYS->GPB_MFPL |=  SYS_GPB_MFPL_PB1MFP_I2C0_SDA;
+			break;
+		default :
+			return 1;
+		}
+	}
 	else
 	{
 		return 1;

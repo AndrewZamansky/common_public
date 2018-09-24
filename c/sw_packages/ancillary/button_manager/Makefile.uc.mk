@@ -1,6 +1,5 @@
-
-ifeq ($(findstring YES,$(CONFIG_INCLUDE_BUTTON_MANAGER)),YES) 	 
-	INCLUDE_THIS_COMPONENT := YES
+ifeq ($(call eval_config,$(CONFIG_INCLUDE_BUTTON_MANAGER)),y)
+    INCLUDE_THIS_COMPONENT := y
 endif  
 
 
@@ -17,6 +16,5 @@ endif
 SRC = button_manager.c
 
 VPATH = src
-
 
 include $(COMMON_CC)

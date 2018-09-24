@@ -423,6 +423,17 @@ static void device_start()
     SYS->GPB_MFPH |=  (SYS_GPB_MFPH_PB13MFP_USBD_DN |
     		SYS_GPB_MFPH_PB14MFP_USBD_DP | SYS_GPB_MFPH_PB15MFP_USBD_VBUS);
 
+//    //Pull up enable for full speed transfers.
+//    PB->PUSEL |= (0x1UL << GPIO_PUSEL_PUSEL13_Pos);
+
+//    //Pull down enable for full speed transfers.
+//    PB->PUSEL |= (0x2UL << GPIO_PUSEL_PUSEL14_Pos);
+
+//    PB->PUSEL |= (0x2UL << GPIO_PUSEL_PUSEL13_Pos);
+
+//    PB->SMTEN |= GPIO_SMTEN_SMTEN13_Msk;
+//    PB->SMTEN |= GPIO_SMTEN_SMTEN14_Msk;
+
 
 	DEV_IOCTL_0_PARAMS(i94xxx_usb_clk_dev, CLK_IOCTL_ENABLE);
 	freq = 48000000;

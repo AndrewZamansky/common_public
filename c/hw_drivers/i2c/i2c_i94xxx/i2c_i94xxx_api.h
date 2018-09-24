@@ -6,7 +6,7 @@
 
 /*****************  defines  **************/
 
-//#define I2C_I94XXX_API_BASE_ADDRESS_I2C0	(size_t)I2C0_BASE
+#define I2C_I94XXX_API_BASE_ADDRESS_I2C0	(size_t)I2C0_BASE
 #define I2C_I94XXX_API_BASE_ADDRESS_I2C1	(size_t)I2C1_BASE
 
 #define  I2C_I94XXX_API_MASTER_MODE   0
@@ -15,11 +15,14 @@
 typedef enum {
 	I2C_I94XXX_API_I2C1_SCL_PIN_PORT_D_PIN_2,
 	I2C_I94XXX_API_I2C1_SCL_PIN_PORT_D_PIN_14,
+	I2C_I94XXX_API_I2C0_SCL_PIN_PORT_B_PIN_0
+
 } i2c_i94xxx_SCL_pinout;
 
 typedef enum {
 	I2C_I94XXX_API_I2C1_SDA_PIN_PORT_D_PIN_1,
 	I2C_I94XXX_API_I2C1_SDA_PIN_PORT_D_PIN_15,
+	I2C_I94XXX_API_I2C0_SDA_PIN_PORT_B_PIN_1
 } i2c_i94xxx_SDA_pinout;
 
 /**********  define API  types ************/

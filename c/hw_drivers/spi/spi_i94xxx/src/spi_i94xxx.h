@@ -16,7 +16,8 @@
 
 struct spi_i94xxx_cfg_t {
 	struct dev_desc_t *   src_clock;
-	size_t   base_address;
+	uint32_t   clk_freq;
+	size_t     base_address;
 	uint8_t    CLK_pin;
 	uint8_t    SS_pin;
 	uint8_t    MISO_pin;

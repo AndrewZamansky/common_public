@@ -26,18 +26,18 @@
 #define I2S_onSPI_I94XXX_API_TXRX_FORMAT_PCMLSB   SPI_I2SFORMAT_PCMB
 
 //SPI1 : Port D pins
-#define I2S_onSPI_I94XXX_API_BCLK_PIN_D4          1
-#define I2S_onSPI_I94XXX_API_LRCLK_PIN_D5         2
-#define I2S_onSPI_I94XXX_API_DI_PIN_D3            3
-#define I2S_onSPI_I94XXX_API_DO_PIN_D2            4
-#define I2S_onSPI_I94XXX_API_MCLK_PIN_D6          5
+//#define I2S_onSPI_I94XXX_API_BCLK_PIN_D4          1
+//#define I2S_onSPI_I94XXX_API_LRCLK_PIN_D5         2
+//#define I2S_onSPI_I94XXX_API_DI_PIN_D3            3
+//#define I2S_onSPI_I94XXX_API_DO_PIN_D2            4
+//#define I2S_onSPI_I94XXX_API_MCLK_PIN_D6          5
 
 //SPI1 : Port C pins
-#define I2S_onSPI_I94XXX_API_BCLK_PIN_C2          6
-#define I2S_onSPI_I94XXX_API_LRCLK_PIN_C3         7
-#define I2S_onSPI_I94XXX_API_DI_PIN_C1            8
-#define I2S_onSPI_I94XXX_API_DO_PIN_C0            9
-#define I2S_onSPI_I94XXX_API_MCLK_PIN_C4          10
+//#define I2S_onSPI_I94XXX_API_BCLK_PIN_C2          6
+//#define I2S_onSPI_I94XXX_API_LRCLK_PIN_C3         7
+//#define I2S_onSPI_I94XXX_API_DI_PIN_C1            8
+//#define I2S_onSPI_I94XXX_API_DO_PIN_C0            9
+//#define I2S_onSPI_I94XXX_API_MCLK_PIN_C4          10
 
 
 /**********  define API  types ************/
@@ -50,6 +50,25 @@ typedef enum
 	SPI_I2S_DISABLE_OUTPUT_IOCTL
 } I2SonSPI_API_ioctl_t;
 
+
+typedef enum
+{
+	I2S_onSPI_I94XXX_API_BCLK_PIN_C2,
+	I2S_onSPI_I94XXX_API_LRCLK_PIN_C3,
+	I2S_onSPI_I94XXX_API_DI_PIN_C1,
+	I2S_onSPI_I94XXX_API_DO_PIN_C0,
+	I2S_onSPI_I94XXX_API_MCLK_PIN_C4
+} I2SonSPI_API_C_pins_t;
+
+
+typedef enum
+{
+	I2S_onSPI_I94XXX_API_BCLK_PIN_D4,
+	I2S_onSPI_I94XXX_API_LRCLK_PIN_D5,
+	I2S_onSPI_I94XXX_API_DI_PIN_D3,
+	I2S_onSPI_I94XXX_API_DO_PIN_D2,
+	I2S_onSPI_I94XXX_API_MCLK_PIN_D6
+} I2SonSPI_API_D_pins_t;
 
 /**********  define API  functions  ************/
 

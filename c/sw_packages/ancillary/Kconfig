@@ -45,11 +45,10 @@ config INCLUDE_SW_GPIO_WRAPPER
 	depends on INCLUDE_INTERNAL_GPIO
 	default n
 
-
 	
 config INCLUDE_BUTTON_MANAGER
 	bool   "button manager"
-	depends on INCLUDE_SW_GPIO_WRAPPER
+	depends on INCLUDE_SW_GPIO_WRAPPER || INCLUDE_INTERNAL_GPIO
 	default n
 
 menuconfig INCLUDE_MEMORY_POOL
