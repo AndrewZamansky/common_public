@@ -43,5 +43,6 @@ struct i2c_i94xxx_runtime_t {
 	uint8_t   device_access_tries;
 	os_queue_t WaitQueue;
 	os_mutex_t mutex;
+	uint8_t   i2c_error;
 };
 #endif

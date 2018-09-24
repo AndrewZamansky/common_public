@@ -38,6 +38,7 @@
 /* ------------------------ Exported variables --------*/
 
 static uint8_t dummy_msg;
+static size_t status_debug;
 
 static void transmit_byte(I2C_T *i2c, struct i2c_i94xxx_cfg_t *cfg_hndl,
 		struct i2c_i94xxx_runtime_t *runtime_handle)
@@ -61,33 +62,24 @@ static void transmit_byte(I2C_T *i2c, struct i2c_i94xxx_cfg_t *cfg_hndl,
 		{
 			I2C_SET_DATA(i2c, 0x00);
 		}
-//		else
-//		{
-//			I2C_SET_CONTROL_REG(I2C1, I2C_CTL_STO_SI);
-//		}
 	}
 	if (I2C_I94XXX_API_SLAVE_MODE == cfg_hndl->master_slave_mode)
 	{
 		I2C_SET_CONTROL_REG(i2c, I2C_CTL_SI_AA);
 	}
-//	else
-//	{
-//		I2C_SET_CONTROL_REG(i2c, I2C_CTL_SI);
-//	}
 }
 
 
-static void transmit_reg_addr_byte(I2C_T *i2c, struct i2c_i94xxx_cfg_t *cfg_hndl,
-		struct i2c_i94xxx_runtime_t *runtime_handle,
-		uint8_t  reg_addr_left_to_transmit)
+static void transmit_reg_addr_byte(I2C_T *i2c,
+		struct i2c_i94xxx_cfg_t *cfg_hndl,
+		struct i2c_i94xxx_runtime_t *runtime_handle)
 {
 	uint8_t  const *reg_addr_arr;
 
 	reg_addr_arr = runtime_handle->reg_addr_arr;
 	I2C_SET_DATA(i2c, *reg_addr_arr++);
 	runtime_handle->reg_addr_arr = reg_addr_arr;
-	reg_addr_left_to_transmit--;
-	runtime_handle->reg_addr_left_to_transmit = reg_addr_left_to_transmit;
+	runtime_handle->reg_addr_left_to_transmit--;
 }
 
 
@@ -210,6 +202,7 @@ static void I2C_MasterTX(struct i2c_i94xxx_cfg_t *cfg_hndl,
 		struct i2c_i94xxx_runtime_t *runtime_handle,
 		uint32_t u32Status, I2C_T *i2c)
 {
+	os_queue_t WaitQueue;
 	uint8_t  end_of_transmition;
 	uint8_t  reg_addr_left_to_transmit;
 
@@ -224,13 +217,14 @@ static void I2C_MasterTX(struct i2c_i94xxx_cfg_t *cfg_hndl,
 		I2C_SET_CONTROL_REG(i2c, I2C_CTL_SI);
 		runtime_handle->device_access_tries--;
 		break;
+
 	case 0x18:
 		/* SLA+W has been transmitted and ACK has been received. */
 		I2C_SET_CONTROL_REG(i2c, I2C_CTL_SI);
 		if (reg_addr_left_to_transmit)
 		{
 			transmit_reg_addr_byte(
-					i2c, cfg_hndl, runtime_handle, reg_addr_left_to_transmit);
+					i2c, cfg_hndl, runtime_handle);
 		}
 		else if (runtime_handle->tx_data_size)
 		{
@@ -238,9 +232,11 @@ static void I2C_MasterTX(struct i2c_i94xxx_cfg_t *cfg_hndl,
 		}
 		else
 		{
+			runtime_handle->i2c_error = I2C_OK;
 			end_of_transmition = 1;
 		}
 		break;
+
 	case 0x20:
 		/* SLA+W has been transmitted and NACK has been received. */
 		if (runtime_handle->device_access_tries)
@@ -251,16 +247,18 @@ static void I2C_MasterTX(struct i2c_i94xxx_cfg_t *cfg_hndl,
 		}
 		else
 		{
+			runtime_handle->i2c_error = I2C_DEVICE_TIMEOUT;
 			end_of_transmition = 1;
 		}
 		break;
+
 	case 0x28:
 		/* DATA has been transmitted and ACK has been received. */
 		I2C_SET_CONTROL_REG(i2c, I2C_CTL_SI);
 		if (reg_addr_left_to_transmit)
 		{
 			transmit_reg_addr_byte(
-					i2c, cfg_hndl, runtime_handle, reg_addr_left_to_transmit);
+					i2c, cfg_hndl, runtime_handle);
 		}
 		else if (runtime_handle->tx_data_size)
 		{
@@ -268,18 +266,40 @@ static void I2C_MasterTX(struct i2c_i94xxx_cfg_t *cfg_hndl,
 		}
 		else
 		{
+			runtime_handle->i2c_error = I2C_OK;
 			end_of_transmition = 1;
 		}
 		break;
+
+	case 0x30:
+		/* DATA has been transmitted and NACK has been received. */
+		I2C_SET_CONTROL_REG(i2c, I2C_CTL_SI);
+		runtime_handle->i2c_error = I2C_DATA_NAK_ERROR;
+		end_of_transmition = 1;
+		break;
+
+	case 0x38:
+		/* Arbitration Lost */
+		I2C_SET_CONTROL_REG(i2c, I2C_CTL_SI);
+		runtime_handle->i2c_error = I2C_ARBITRATION_ERROR;
+		end_of_transmition = 1;
+		break;
+
+	case 0x00:
+		/* Bus Error */
+		I2C_SET_CONTROL_REG(i2c, I2C_CTL_SI);
+		runtime_handle->i2c_error = I2C_BUS_ERROR;
+		end_of_transmition = 1;
+		break;
+
 	default:
+		status_debug = u32Status;
 		CRITICAL_ERROR("unimplemented status\n");
 		break;
 	}
 
 	if (end_of_transmition)
 	{
-		os_queue_t WaitQueue;
-
 		I2C_STOP(i2c);
 		WaitQueue = runtime_handle->WaitQueue;
 		runtime_handle->tx_data = NULL;
@@ -320,19 +340,21 @@ static void I2C_MasterRX(struct i2c_i94xxx_cfg_t *cfg_hndl,
 		I2C_SET_CONTROL_REG(i2c, I2C_CTL_SI);
 		runtime_handle->device_access_tries--;
 		break;
+
 	case 0x18:
 		/* SLA+W has been transmitted and ACK has been received. */
 		I2C_SET_CONTROL_REG(i2c, I2C_CTL_SI);
 		if (reg_addr_left_to_transmit)
 		{
 			transmit_reg_addr_byte(
-					i2c, cfg_hndl, runtime_handle, reg_addr_left_to_transmit);
+					i2c, cfg_hndl, runtime_handle);
 		}
 		else
 		{
 			I2C_SET_CONTROL_REG(i2c, I2C_CTL_STA);
 		}
 		break;
+
 	case 0x20:
 		/* SLA+W has been transmitted and NACK has been received. */
 		if (runtime_handle->device_access_tries)
@@ -343,29 +365,33 @@ static void I2C_MasterRX(struct i2c_i94xxx_cfg_t *cfg_hndl,
 		}
 		else
 		{
+			runtime_handle->i2c_error = I2C_DEVICE_TIMEOUT;
 			end_of_transmition = 1;
 		}
 		//I2C_SET_CONTROL_REG(i2c, I2C_CTL_STA | I2C_CTL_STO | I2C_CTL_SI);
 		break;
+
 	case 0x28:
-		/* SLA+W has been transmitted and ACK has been received. */
+		/* DATA has been transmitted and ACK has been received. */
 		I2C_SET_CONTROL_REG(i2c, I2C_CTL_SI);
 		if (reg_addr_left_to_transmit)
 		{
 			transmit_reg_addr_byte(
-					i2c, cfg_hndl, runtime_handle, reg_addr_left_to_transmit);
+					i2c, cfg_hndl, runtime_handle);
 		}
 		else
 		{
 			I2C_SET_CONTROL_REG(i2c, I2C_CTL_STA);
 		}
 		break;
+
 	case 0x10:
 		/* Repeat START has been transmitted and prepare SLA+R */
 		I2C_SET_DATA(i2c, (runtime_handle->remote_slave_addr << 1) | 0x01);
 		I2C_SET_CONTROL_REG(i2c, I2C_CTL_SI_AA);
 		runtime_handle->device_access_tries--;
 		break;
+
 	case 0x40:
 		/* SLA+R has been transmitted and ACK has been received. */
 		if ((curr_data_pos + 1) == runtime_handle->size_of_data_to_receive)
@@ -378,9 +404,11 @@ static void I2C_MasterRX(struct i2c_i94xxx_cfg_t *cfg_hndl,
 			I2C_SET_CONTROL_REG(i2c, I2C_CTL_SI_AA);
 		}
 		break;
+
 	case 0x48:
 		end_of_transmition = 1;
 		break;
+
 	case 0x50:
 		/* DATA has been received and NACK has been returned */
 		data = I2C_GET_DATA(i2c);
@@ -397,12 +425,14 @@ static void I2C_MasterRX(struct i2c_i94xxx_cfg_t *cfg_hndl,
 			I2C_SET_CONTROL_REG(i2c, I2C_CTL_SI_AA);
 		}
 		break;
+
 	case 0x58:
 		data = I2C_GET_DATA(i2c);
 		rx_data[curr_data_pos] = data;
 		curr_data_pos++;
 		if (curr_data_pos == runtime_handle->size_of_data_to_receive)
 		{
+			runtime_handle->i2c_error = I2C_OK;
 			end_of_transmition = 1;
 		}
 		else
@@ -410,14 +440,37 @@ static void I2C_MasterRX(struct i2c_i94xxx_cfg_t *cfg_hndl,
 			CRITICAL_ERROR("unexpected status\n");
 		}
 		break;
+
+	case 0x30:
+		/* DATA has been transmitted and NACK has been received. */
+		I2C_SET_CONTROL_REG(i2c, I2C_CTL_SI);
+		runtime_handle->i2c_error = I2C_DATA_NAK_ERROR;
+		end_of_transmition = 1;
+		break;
+
+	case 0x38:
+		/* Arbitration Lost */
+		I2C_SET_CONTROL_REG(i2c, I2C_CTL_SI);
+		runtime_handle->i2c_error = I2C_ARBITRATION_ERROR;
+		end_of_transmition = 1;
+		break;
+
+	case 0x00:
+		/* Bus Error */
+		I2C_SET_CONTROL_REG(i2c, I2C_CTL_SI);
+		runtime_handle->i2c_error = I2C_BUS_ERROR;
+		end_of_transmition = 1;
+		break;
+
 	default:
+		status_debug = u32Status;
 		CRITICAL_ERROR("unimplemented status\n");
 		break;
 	}
 
 	if (end_of_transmition)
 	{
-		I2C_SET_CONTROL_REG(i2c, I2C_CTL_STO_SI);
+		I2C_STOP(i2c);
 		WaitQueue = runtime_handle->WaitQueue;
 		runtime_handle->rx_data = NULL;
 		if (NULL != WaitQueue)
@@ -458,7 +511,6 @@ uint8_t i2c_i94xxx_callback(struct dev_desc_t *adev ,
 		}
 		else
 		{
-			//I2C_SET_CONTROL_REG(i2c_regs, I2C_CTL_SI);
 			if (NULL != runtime_handle->rx_data)
 			{
 				I2C_MasterRX(cfg_hndl, runtime_handle, u32Status, i2c_regs);
@@ -551,7 +603,7 @@ static void master_write(struct dev_desc_t *adev,
 	num_of_bytes_to_write = wr_struct->num_of_bytes_to_write;
 	if (0 == num_of_bytes_to_write)
 	{
-		wr_struct->num_of_bytes_that_was_written = 0;
+		wr_struct->num_of_bytes_written = 0;
 		return ;
 	}
 
@@ -571,6 +623,7 @@ static void master_write(struct dev_desc_t *adev,
 	runtime_handle->tx_data = wr_struct->tx_data;
 	runtime_handle->tx_data_size = num_of_bytes_to_write;
 	runtime_handle->transmitted_data_size = 0;
+	runtime_handle->i2c_error = I2C_OK;
 
 	runtime_handle->remote_slave_addr = wr_struct->device_addr;
 	reg_addr_size = wr_struct->reg_addr_size;
@@ -587,13 +640,17 @@ static void master_write(struct dev_desc_t *adev,
 	I2C_START(i2c_regs);
 
 	os_queue_receive_infinite_wait( WaitQueue ,  &dummy_msg  );
+	wr_struct->i2c_error = runtime_handle->i2c_error;
 
 	if (0 == runtime_handle->device_access_tries)
 	{
-		num_of_bytes_to_write = 0;
+		wr_struct->num_of_bytes_written = 0;
 	}
-	wr_struct->num_of_bytes_that_was_written =
-							runtime_handle->transmitted_data_size;
+	else
+	{
+		wr_struct->num_of_bytes_written =
+					runtime_handle->transmitted_data_size;
+	}
 
 	os_mutex_give(mutex);
 }
@@ -641,6 +698,7 @@ static void master_read(struct dev_desc_t *adev,
 
 	// first byte is address of slave
 	runtime_handle->device_access_tries = NUM_OF_TRIES_TO_ACCESS_I2C_DEVICE;
+	runtime_handle->i2c_error = I2C_OK;
 	runtime_handle->curr_data_pos = 0;
 	runtime_handle->size_of_data_to_receive = num_of_bytes_to_read;
 	runtime_handle->rx_data = rd_struct->rx_data;
@@ -659,14 +717,16 @@ static void master_read(struct dev_desc_t *adev,
 	I2C_START(i2c_regs);
 
 	os_queue_receive_infinite_wait( WaitQueue ,  &dummy_msg  );
+
+	rd_struct->i2c_error = runtime_handle->i2c_error;
+
 	if (0 == runtime_handle->device_access_tries)
 	{
 		num_of_bytes_that_was_read = 0;
 	}
 	else
 	{
-		num_of_bytes_that_was_read =
-				num_of_bytes_to_read - runtime_handle->size_of_data_to_receive;
+		num_of_bytes_that_was_read = runtime_handle->curr_data_pos;
 	}
 	rd_struct->num_of_bytes_that_was_read = num_of_bytes_that_was_read;
 
@@ -738,13 +798,15 @@ static uint8_t  device_start(struct dev_desc_t *adev)
 		//i2c_clk_src = CLK_I2C0_SRC_EXT;
 		/*
 		* Init I/O Multi-function
-		* Set PA multi-function pins for I2C0 RXD(PA.8) and TXD(PA.7)
+		* Set PA multi-function pins for I2C0 SCL(PB.0) and SDA(PB.1)
 		*/
 		switch (cfg_hndl->SCL_pinout)
 		{
 		case I2C_I94XXX_API_I2C0_SCL_PIN_PORT_B_PIN_0:
 			SYS->GPB_MFPL &= ~SYS_GPB_MFPL_PB0MFP_Msk;
 			SYS->GPB_MFPL |=  SYS_GPB_MFPL_PB0MFP_I2C0_SCL;
+			PB->PUSEL |= 0x2UL << GPIO_PUSEL_PUSEL0_Pos;
+			PB->SMTEN |= GPIO_SMTEN_SMTEN0_Msk;
 			break;
 		default :
 			return 1;
@@ -755,6 +817,8 @@ static uint8_t  device_start(struct dev_desc_t *adev)
 		case I2C_I94XXX_API_I2C0_SDA_PIN_PORT_B_PIN_1:
 			SYS->GPB_MFPL &= ~SYS_GPB_MFPL_PB1MFP_Msk;
 			SYS->GPB_MFPL |=  SYS_GPB_MFPL_PB1MFP_I2C0_SDA;
+			PB->PUSEL |= 0x2UL << GPIO_PUSEL_PUSEL1_Pos;
+			PB->SMTEN |= GPIO_SMTEN_SMTEN1_Msk;
 			break;
 		default :
 			return 1;
@@ -762,7 +826,7 @@ static uint8_t  device_start(struct dev_desc_t *adev)
 	}
 	else
 	{
-		return 1;
+		CRITICAL_ERROR("I2C base has not been set");
 	}
 
 
