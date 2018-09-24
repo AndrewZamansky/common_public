@@ -9,7 +9,7 @@
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 
-//#include "i2c_i94xxx.h"
+#include "i2c_i94xxx.h"
 
 #include "i2c_api.h"
 #include "i2c_i94xxx_add_component.h"
@@ -38,7 +38,7 @@
 /* ------------------------ Exported variables --------*/
 
 static uint8_t dummy_msg;
-static size_t STATUS_DEBUG;
+static size_t status_debug;
 
 static void transmit_byte(I2C_T *i2c, struct i2c_i94xxx_cfg_t *cfg_hndl,
 		struct i2c_i94xxx_runtime_t *runtime_handle)
@@ -70,7 +70,8 @@ static void transmit_byte(I2C_T *i2c, struct i2c_i94xxx_cfg_t *cfg_hndl,
 }
 
 
-static void transmit_reg_addr_byte(I2C_T *i2c, struct i2c_i94xxx_cfg_t *cfg_hndl,
+static void transmit_reg_addr_byte(I2C_T *i2c,
+		struct i2c_i94xxx_cfg_t *cfg_hndl,
 		struct i2c_i94xxx_runtime_t *runtime_handle)
 {
 	uint8_t  const *reg_addr_arr;
@@ -292,7 +293,7 @@ static void I2C_MasterTX(struct i2c_i94xxx_cfg_t *cfg_hndl,
 		break;
 
 	default:
-		STATUS_DEBUG = u32Status;
+		status_debug = u32Status;
 		CRITICAL_ERROR("unimplemented status\n");
 		break;
 	}
@@ -300,7 +301,6 @@ static void I2C_MasterTX(struct i2c_i94xxx_cfg_t *cfg_hndl,
 	if (end_of_transmition)
 	{
 		I2C_STOP(i2c);
-		runtime_handle->device_access_tries = NUM_OF_TRIES_TO_ACCESS_I2C_DEVICE;
 		WaitQueue = runtime_handle->WaitQueue;
 		runtime_handle->tx_data = NULL;
 		if (NULL != WaitQueue)
@@ -319,7 +319,6 @@ static void I2C_MasterRX(struct i2c_i94xxx_cfg_t *cfg_hndl,
 		struct i2c_i94xxx_runtime_t *runtime_handle,
 		uint32_t u32Status, I2C_T *i2c)
 {
-//	uint8_t curr_state;
 	uint8_t data;
 	uint8_t  *rx_data;
 	uint16_t curr_data_pos;
@@ -327,7 +326,6 @@ static void I2C_MasterRX(struct i2c_i94xxx_cfg_t *cfg_hndl,
 	uint8_t  reg_addr_left_to_transmit;
 	uint8_t end_of_transmition;
 
-//	curr_state = runtime_handle->curr_state;
 	curr_data_pos = runtime_handle->curr_data_pos;
 	reg_addr_left_to_transmit = runtime_handle->reg_addr_left_to_transmit;
 	rx_data = runtime_handle->rx_data;
@@ -465,7 +463,7 @@ static void I2C_MasterRX(struct i2c_i94xxx_cfg_t *cfg_hndl,
 		break;
 
 	default:
-		STATUS_DEBUG = u32Status;
+		status_debug = u32Status;
 		CRITICAL_ERROR("unimplemented status\n");
 		break;
 	}
@@ -473,7 +471,6 @@ static void I2C_MasterRX(struct i2c_i94xxx_cfg_t *cfg_hndl,
 	if (end_of_transmition)
 	{
 		I2C_STOP(i2c);
-		runtime_handle->device_access_tries = NUM_OF_TRIES_TO_ACCESS_I2C_DEVICE;
 		WaitQueue = runtime_handle->WaitQueue;
 		runtime_handle->rx_data = NULL;
 		if (NULL != WaitQueue)
@@ -622,6 +619,7 @@ static void master_write(struct dev_desc_t *adev,
 
 	while (0xf8 != I2C_GET_STATUS(i2c_regs)); //wait till bus is not released
 
+	runtime_handle->device_access_tries = NUM_OF_TRIES_TO_ACCESS_I2C_DEVICE;
 	runtime_handle->tx_data = wr_struct->tx_data;
 	runtime_handle->tx_data_size = num_of_bytes_to_write;
 	runtime_handle->transmitted_data_size = 0;
@@ -650,7 +648,8 @@ static void master_write(struct dev_desc_t *adev,
 	}
 	else
 	{
-		wr_struct->num_of_bytes_written = runtime_handle->transmitted_data_size;
+		wr_struct->num_of_bytes_written =
+					runtime_handle->transmitted_data_size;
 	}
 
 	os_mutex_give(mutex);
@@ -698,6 +697,7 @@ static void master_read(struct dev_desc_t *adev,
 	while (0xf8 != I2C_GET_STATUS(i2c_regs)); //wait till bus is not released
 
 	// first byte is address of slave
+	runtime_handle->device_access_tries = NUM_OF_TRIES_TO_ACCESS_I2C_DEVICE;
 	runtime_handle->i2c_error = I2C_OK;
 	runtime_handle->curr_data_pos = 0;
 	runtime_handle->size_of_data_to_receive = num_of_bytes_to_read;

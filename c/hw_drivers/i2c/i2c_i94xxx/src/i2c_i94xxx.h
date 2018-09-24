@@ -46,12 +46,3 @@ struct i2c_i94xxx_runtime_t {
 	uint8_t   i2c_error;
 };
 #endif
-
-typedef enum
-{
-	I2C_I94XXX_IDLE            = 0x01,
-	I2C_I94XXX_DEVICE_ACCESS   = 0x02,
-	I2C_I94XXX_ADDRESS_WRITE   = 0x03,
-	I2C_I94XXX_DATA_WRITE      = 0x04,
-	I2C_I94XXX_DATA_READ       = 0x05
-} I2C_I94XXX_STATES_t;
