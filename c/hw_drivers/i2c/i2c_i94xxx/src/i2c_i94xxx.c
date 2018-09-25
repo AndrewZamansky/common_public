@@ -734,6 +734,79 @@ static void master_read(struct dev_desc_t *adev,
 }
 
 
+static void set_i2c_pinmux(struct i2c_i94xxx_cfg_t *cfg_hndl, I2C_T *i2c_regs)
+{
+	if(I2C1 == i2c_regs)
+	{
+		switch (cfg_hndl->SCL_pinout)
+		{
+		case I2C_I94XXX_API_I2C1_SCL_PIN_PORT_D_PIN_2:
+			SYS->GPD_MFPL &= ~SYS_GPD_MFPL_PD2MFP_Msk;
+			SYS->GPD_MFPL |=  (0x04UL<<SYS_GPD_MFPL_PD2MFP_Pos);
+			break;
+		case I2C_I94XXX_API_I2C1_SCL_PIN_PORT_D_PIN_14:
+			SYS->GPD_MFPH &= ~SYS_GPD_MFPH_PD14MFP_Msk;
+			SYS->GPD_MFPH |=  SYS_GPD_MFPH_PD14MFP_I2C1_SCL;
+			break;
+		default :
+			CRITICAL_ERROR("unknown pinmux");
+		}
+
+		switch (cfg_hndl->SDA_pinout)
+		{
+		case I2C_I94XXX_API_I2C1_SDA_PIN_PORT_D_PIN_1:
+			SYS->GPD_MFPL &= ~SYS_GPD_MFPL_PD1MFP_Msk;
+			SYS->GPD_MFPL |=  SYS_GPD_MFPL_PD1MFP_I2C1_SDA;
+			break;
+		case I2C_I94XXX_API_I2C1_SDA_PIN_PORT_D_PIN_15:
+			SYS->GPD_MFPH &= ~SYS_GPD_MFPH_PD15MFP_Msk;
+			SYS->GPD_MFPH |=  SYS_GPD_MFPH_PD15MFP_I2C1_SDA;
+			break;
+		default :
+			CRITICAL_ERROR("unknown pinmux");
+		}
+	}
+	else if(I2C0 == i2c_regs)
+	{
+		switch (cfg_hndl->SCL_pinout)
+		{
+		case I2C_I94XXX_API_I2C0_SCL_PIN_PORT_B_PIN_0:
+			SYS->GPB_MFPL &= ~SYS_GPB_MFPL_PB0MFP_Msk;
+			SYS->GPB_MFPL |=  SYS_GPB_MFPL_PB0MFP_I2C0_SCL;
+			PB->PUSEL |= 0x2UL << GPIO_PUSEL_PUSEL0_Pos;
+			PB->SMTEN |= GPIO_SMTEN_SMTEN0_Msk;
+			break;
+		case I2C_I94XXX_API_I2C0_SCL_PIN_PORT_A_PIN_9:
+			SYS->GPA_MFPH &= ~SYS_GPA_MFPH_PA9MFP_Msk;
+			SYS->GPA_MFPH |=  SYS_GPA_MFPH_PA9MFP_I2C0_SCL;
+			PA->PUSEL |= 0x2UL << GPIO_PUSEL_PUSEL9_Pos;
+			PA->SMTEN |= GPIO_SMTEN_SMTEN9_Msk;
+			break;
+		default :
+			CRITICAL_ERROR("unknown pinmux");
+		}
+
+		switch (cfg_hndl->SDA_pinout)
+		{
+		case I2C_I94XXX_API_I2C0_SDA_PIN_PORT_B_PIN_1:
+			SYS->GPB_MFPL &= ~SYS_GPB_MFPL_PB1MFP_Msk;
+			SYS->GPB_MFPL |=  SYS_GPB_MFPL_PB1MFP_I2C0_SDA;
+			PB->PUSEL |= 0x2UL << GPIO_PUSEL_PUSEL1_Pos;
+			PB->SMTEN |= GPIO_SMTEN_SMTEN1_Msk;
+			break;
+		case I2C_I94XXX_API_I2C0_SDA_PIN_PORT_A_PIN_10:
+			SYS->GPA_MFPH &= ~SYS_GPA_MFPH_PA10MFP_Msk;
+			SYS->GPA_MFPH |=  SYS_GPA_MFPH_PA10MFP_I2C0_SDA;
+			PA->PUSEL |= 0x2UL << GPIO_PUSEL_PUSEL10_Pos;
+			PA->SMTEN |= GPIO_SMTEN_SMTEN10_Msk;
+			break;
+		default :
+			CRITICAL_ERROR("unknown pinmux");
+		}
+	}
+}
+
+
 static uint8_t  device_start(struct dev_desc_t *adev)
 {
 	struct i2c_i94xxx_cfg_t *cfg_hndl;
@@ -749,80 +822,19 @@ static uint8_t  device_start(struct dev_desc_t *adev)
 
 	runtime_handle->WaitQueue = os_create_queue(1, sizeof(uint8_t ));
 	runtime_handle->mutex = os_create_mutex();
+	set_i2c_pinmux(cfg_hndl, i2c_regs);
 
 	if(I2C1 == i2c_regs)
 	{
 		i2c_irq = I2C1_IRQn;
 		i2c_module_rst = I2C1_MODULE;
 		i2c_clk_dev = i94xxx_i2c1_clk_dev;
-
-		//i2c_clk_src = CLK_I2C0_SRC_EXT;
-		/*
-		* Init I/O Multi-function
-		* Set PA multi-function pins for I2C0 RXD(PA.8) and TXD(PA.7)
-		*/
-		switch (cfg_hndl->SCL_pinout)
-		{
-		case I2C_I94XXX_API_I2C1_SCL_PIN_PORT_D_PIN_2:
-			SYS->GPD_MFPL &= ~SYS_GPD_MFPL_PD2MFP_Msk;
-			SYS->GPD_MFPL |=  (0x04UL<<SYS_GPD_MFPL_PD2MFP_Pos);
-			break;
-		case I2C_I94XXX_API_I2C1_SCL_PIN_PORT_D_PIN_14:
-			SYS->GPD_MFPH &= ~SYS_GPD_MFPH_PD14MFP_Msk;
-			SYS->GPD_MFPH |=  SYS_GPD_MFPH_PD14MFP_I2C1_SCL;
-			break;
-		default :
-			return 1;
-		}
-
-		switch (cfg_hndl->SDA_pinout)
-		{
-		case I2C_I94XXX_API_I2C1_SDA_PIN_PORT_D_PIN_1:
-			SYS->GPD_MFPL &= ~SYS_GPD_MFPL_PD1MFP_Msk;
-			SYS->GPD_MFPL |=  SYS_GPD_MFPL_PD1MFP_I2C1_SDA;
-			break;
-		case I2C_I94XXX_API_I2C1_SDA_PIN_PORT_D_PIN_15:
-			SYS->GPD_MFPH &= ~SYS_GPD_MFPH_PD15MFP_Msk;
-			SYS->GPD_MFPH |=  SYS_GPD_MFPH_PD15MFP_I2C1_SDA;
-			break;
-		default :
-			return 1;
-		}
 	}
 	else if(I2C0 == i2c_regs)
 	{
 		i2c_irq = I2C0_IRQn;
 		i2c_module_rst = I2C0_MODULE;
 		i2c_clk_dev = i94xxx_i2c0_clk_dev;
-
-		//i2c_clk_src = CLK_I2C0_SRC_EXT;
-		/*
-		* Init I/O Multi-function
-		* Set PA multi-function pins for I2C0 SCL(PB.0) and SDA(PB.1)
-		*/
-		switch (cfg_hndl->SCL_pinout)
-		{
-		case I2C_I94XXX_API_I2C0_SCL_PIN_PORT_B_PIN_0:
-			SYS->GPB_MFPL &= ~SYS_GPB_MFPL_PB0MFP_Msk;
-			SYS->GPB_MFPL |=  SYS_GPB_MFPL_PB0MFP_I2C0_SCL;
-			PB->PUSEL |= 0x2UL << GPIO_PUSEL_PUSEL0_Pos;
-			PB->SMTEN |= GPIO_SMTEN_SMTEN0_Msk;
-			break;
-		default :
-			return 1;
-		}
-
-		switch (cfg_hndl->SDA_pinout)
-		{
-		case I2C_I94XXX_API_I2C0_SDA_PIN_PORT_B_PIN_1:
-			SYS->GPB_MFPL &= ~SYS_GPB_MFPL_PB1MFP_Msk;
-			SYS->GPB_MFPL |=  SYS_GPB_MFPL_PB1MFP_I2C0_SDA;
-			PB->PUSEL |= 0x2UL << GPIO_PUSEL_PUSEL1_Pos;
-			PB->SMTEN |= GPIO_SMTEN_SMTEN1_Msk;
-			break;
-		default :
-			return 1;
-		}
 	}
 	else
 	{
