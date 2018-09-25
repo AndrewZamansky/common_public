@@ -118,6 +118,46 @@ uint8_t gpio_configure_pinout(GPIO_T *GPIOx, uint16_t pin_num_mask,
 		GPIOx->SMTEN = GPIO_SMTEN_SMTEN7_Msk;
 		break;
 
+	case GPIO_I94XXX_API_PIN_8 :
+		config_handle->pin_num = 8;
+		GPIOx->SMTEN = GPIO_SMTEN_SMTEN8_Msk;
+		break;
+
+	case GPIO_I94XXX_API_PIN_9 :
+		config_handle->pin_num = 9;
+		GPIOx->SMTEN = GPIO_SMTEN_SMTEN9_Msk;
+		break;
+
+	case GPIO_I94XXX_API_PIN_10 :
+		config_handle->pin_num = 10;
+		GPIOx->SMTEN = GPIO_SMTEN_SMTEN10_Msk;
+		break;
+
+	case GPIO_I94XXX_API_PIN_11 :
+		config_handle->pin_num = 11;
+		GPIOx->SMTEN = GPIO_SMTEN_SMTEN11_Msk;
+		break;
+
+	case GPIO_I94XXX_API_PIN_12 :
+		config_handle->pin_num = 12;
+		GPIOx->SMTEN = GPIO_SMTEN_SMTEN12_Msk;
+		break;
+
+	case GPIO_I94XXX_API_PIN_13 :
+		config_handle->pin_num = 13;
+		GPIOx->SMTEN = GPIO_SMTEN_SMTEN13_Msk;
+		break;
+
+	case GPIO_I94XXX_API_PIN_14 :
+		config_handle->pin_num = 14;
+		GPIOx->SMTEN = GPIO_SMTEN_SMTEN14_Msk;
+		break;
+
+	case GPIO_I94XXX_API_PIN_15 :
+		config_handle->pin_num = 15;
+		GPIOx->SMTEN = GPIO_SMTEN_SMTEN15_Msk;
+		break;
+
 	default:
 		CRITICAL_ERROR("GPIO Pin not set");
 		break;
