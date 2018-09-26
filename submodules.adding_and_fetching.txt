@@ -14,9 +14,9 @@ git submodule add ../../AndrewZamansky-external-repo-managers/$(MODULE)_git c/sw
 	ignore = all
 
 
-adding submodule
+fetching submodule
 ==================
-1) make sure that repository that you want tofetch from, is named "origin" as it is default
+1) make sure that common_public repository that you want to fetch from, is named "origin" as it is default
    repository that git use for relative pathes. if the desired repository has othe alias/name then
    rename it by following command:
 git remote rename $(OLD_REPO_NAME) origin
@@ -24,4 +24,4 @@ git remote rename $(OLD_REPO_NAME) origin
 git remote add origin $(URL_or_PATH_to_repo)
 
 2) 
-git submodule update --init --recurursive
+git submodule update --init
