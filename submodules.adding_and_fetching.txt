@@ -14,7 +14,7 @@ git submodule add ../../AndrewZamansky-external-repo-managers/$(MODULE)_git c/sw
 	ignore = all
 
 
-fetching submodule
+fetching submodules
 ==================
 1) make sure that common_public repository that you want to fetch from, is named "origin" as it is default
    repository that git use for relative pathes. if the desired repository has othe alias/name then
@@ -23,5 +23,14 @@ git remote rename $(OLD_REPO_NAME) origin
    if repository doesn't exist add it with name "origin"
 git remote add origin $(URL_or_PATH_to_repo)
 
-2) 
-git submodule update --init
+2) run: git submodule update --init --force --recursive
+
+
+upgrade copy of common_public to capability to be source for submodules repositories
+==================
+1) perfom fetching of submodules as described in "fetching submodule" section.
+2) cd $(PATH_TO_COMMON_PUBLIC_LOCATION)/common_public
+3) create folder ../../AndrewZamansky-external-repo-managers
+for each submodule(and ALL of them according to .gitmodules file !!) run:
+    a) git clone $(PATH_TO_SUBMODULE_LOCATION)/$(MODULE)_git ../../AndrewZamansky-external-repo-managers/$(MODULE)_git
+	  (e.g. : git clone c/sw_packages/net/openssl_git ../../AndrewZamansky-external-repo-managers/openssl_git)
