@@ -32,5 +32,28 @@ upgrade copy of common_public to capability to be source for submodules reposito
 2) cd $(PATH_TO_COMMON_PUBLIC_LOCATION)/common_public
 3) create folder ../../AndrewZamansky-external-repo-managers
 for each submodule(and ALL of them according to .gitmodules file !!) run:
-    a) git clone $(PATH_TO_SUBMODULE_LOCATION)/$(MODULE)_git ../../AndrewZamansky-external-repo-managers/$(MODULE)_git
-	  (e.g. : git clone c/sw_packages/net/openssl_git ../../AndrewZamansky-external-repo-managers/openssl_git)
+	a) cd $(PATH_TO_COMMON_PUBLIC_LOCATION)/common_public
+	b) clone repository.  (set ORIGIN environmantal variable. in windows we doing it by {for /f %i in ('git --git-dir $(PATH_TO_SUBMODULE_LOCATION)/$(MODULE)_git/.git remote get-url origin') do set "ORIGIN=%i"} ) :
+
+		windows)
+			cmd /v:on /c "set "MODULE=$(MODULE)"& for /f %i in ('git --git-dir c/sw_packages/net/$(MODULE)_git/.git remote get-url origin') do (set "ORIGIN=%i") & set "NEW_REPO=../../AndrewZamansky-external-repo-managers/!MODULE!_git" & rd /q /s "!NEW_REPO!" &  git clone !ORIGIN! !NEW_REPO!"
+
+		linux)
+			MODULE=$(MODULE); ORIGIN=$(git remote get-url origin); NEW_REPO=../../AndrewZamansky-external-repo-managers/$MODULE_git; rm -rf $NEW_REPO; git clone $ORIGIN $NEW_REPO
+
+		example:
+			windows)
+			cmd /v:on /c "set "MODULE=curl"& for /f %i in ('git --git-dir c/sw_packages/net/curl_git/.git remote get-url origin') do (set "ORIGIN=%i") & set "NEW_REPO=../../AndrewZamansky-external-repo-managers/!MODULE!_git" & rd /q /s "!NEW_REPO!" &  git clone !ORIGIN! !NEW_REPO!"
+
+			cmd /v:on /c "set "MODULE=openssl"& for /f %i in ('git --git-dir c/sw_packages/net/openssl_git/.git remote get-url origin') do (set "ORIGIN=%i") & set "NEW_REPO=../../AndrewZamansky-external-repo-managers/!MODULE!_git" & rd /q /s "!NEW_REPO!" &  git clone !ORIGIN! !NEW_REPO!"
+
+	c) create local branches according to remote branches:
+		windows)
+			cmd /v:on /c "set "MODULE=$"& set "NEW_REPO=../../AndrewZamansky-external-repo-managers/!MODULE!_git" & for /f "tokens=2 delims=/ " %i in ('git --git-dir !NEW_REPO!/.git branch -r ^| find /v "origin/HEAD"') do git --git-dir ../../AndrewZamansky-external-repo-managers/!MODULE!_git/.git branch -f %i origin/%i"
+
+		linux)
+			for i in `git branch -a | grep remote | grep -v HEAD | grep -v master`; do git branch --track ${i#remotes/origin/} $i; done
+
+		example:
+			windows)
+		cmd /v:on /c "set "MODULE=curl"& set "NEW_REPO=../../AndrewZamansky-external-repo-managers/!MODULE!_git" & for /f "tokens=2 delims=/ " %i in ('git --git-dir !NEW_REPO!/.git branch -r ^| find /v "origin/HEAD"') do git --git-dir ../../AndrewZamansky-external-repo-managers/!MODULE!_git/.git branch -f %i origin/%i"
