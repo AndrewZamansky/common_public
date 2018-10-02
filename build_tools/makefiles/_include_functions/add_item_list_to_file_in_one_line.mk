@@ -25,6 +25,7 @@ endif
 ifneq ($(LIST_FILE_NAME_TRUNCATE),)
     LIST_FILE_NAME:=$(LIST_FILE_NAME_TRUNCATE)
     ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
+        LIST_FILE_NAME := $(subst /,\,$(LIST_FILE_NAME))
         DUMMY:=$(shell echo|set /p=$(wordlist 1, 1,$(ITEMS))>$(LIST_FILE_NAME))
     else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX)
         DUMMY:=$(shell echo >$(LIST_FILE_NAME))

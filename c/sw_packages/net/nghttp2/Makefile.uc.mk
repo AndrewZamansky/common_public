@@ -6,6 +6,7 @@ ifdef CONFIG_INCLUDE_NGHTTP2
     EXPANDED_MAKEFILE_LIST := $(realpath $(MAKEFILE_LIST))
     CURR_FILE_SUFFIX :=nghttp2/Makefile.uc.mk
     CURR_MAKEFILE :=$(filter %$(CURR_FILE_SUFFIX), $(EXPANDED_MAKEFILE_LIST))
+    CURR_MAKEFILE :=$(sort $(CURR_MAKEFILE)) # remove dublicates
     CURR_COMPONENT_DIR := $(patsubst %/Makefile.uc.mk,%,$(CURR_MAKEFILE))
 
     # test if current commit and branch of nghttp2 git is the same
@@ -16,4 +17,7 @@ ifdef CONFIG_INCLUDE_NGHTTP2
 
     include $(CURR_COMPONENT_DIR)/nghttp2_git/Makefile.submodule.uc.mk
 
+    KCONFIG_DIRS += NGHTTP2_GIT_DIR=$(CURR_COMPONENT_DIR)/nghttp2_git
+else
+    KCONFIG_DIRS += NGHTTP2_GIT_DIR=$(KCONFIG_DUMMY)
 endif

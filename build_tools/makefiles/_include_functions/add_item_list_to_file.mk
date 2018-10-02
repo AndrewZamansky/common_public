@@ -29,6 +29,7 @@ endif
 ifneq ($(LIST_FILE_NAME_TRUNCATE),)
     LIST_FILE_NAME:=$(LIST_FILE_NAME_TRUNCATE)
     ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
+        LIST_FILE_NAME := $(subst /,\,$(LIST_FILE_NAME))
         DUMMY:=$(shell copy /b /y NUL $(LIST_FILE_NAME))
     else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX)
         DUMMY:=$(shell cat /dev/null >|$(LIST_FILE_NAME))

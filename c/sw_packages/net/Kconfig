@@ -5,33 +5,29 @@ menu "net"
 menuconfig INCLUDE_CURL
 	bool   "curl"
 	default n
-
 if INCLUDE_CURL
-source "$KCONFIG_PUBLIC_START_DIR/sw_packages/net/curl/Kconfig"
+source "$CURL_GIT_DIR/Kconfig"
 endif
 
 menuconfig INCLUDE_OPENSSL
 	bool   "OpenSSL"
 	default n
-
 if INCLUDE_OPENSSL
-source "$KCONFIG_PUBLIC_START_DIR/sw_packages/net/openssl/Kconfig"
+source "$OPENSSL_GIT_DIR/Kconfig"
 endif
 
 menuconfig INCLUDE_WOLFSSL
 	bool   "wolfSSL"
 	default n
-
 if INCLUDE_WOLFSSL
-source "$KCONFIG_PUBLIC_START_DIR/sw_packages/net/wolfssl/Kconfig"
+source "$WOLFSSL_GIT_DIR/Kconfig"
 endif
 
 menuconfig INCLUDE_NGHTTP2
 	bool   "nghttp2"
 	default n
-
 if INCLUDE_NGHTTP2
-source "$KCONFIG_PUBLIC_START_DIR/sw_packages/net/nghttp2/Kconfig"
+source "$NGHTTP2_GIT_DIR/Kconfig"
 endif
 
 

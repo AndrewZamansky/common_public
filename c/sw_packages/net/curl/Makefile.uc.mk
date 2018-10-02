@@ -6,6 +6,7 @@ ifeq ($(strip $(CONFIG_INCLUDE_CURL)),y)
     EXPANDED_MAKEFILE_LIST := $(realpath $(MAKEFILE_LIST))
     CURR_FILE_SUFFIX :=curl/Makefile.uc.mk
     CURR_MAKEFILE :=$(filter %$(CURR_FILE_SUFFIX), $(EXPANDED_MAKEFILE_LIST))
+    CURR_MAKEFILE :=$(sort $(CURR_MAKEFILE)) # remove dublicates
     CURR_COMPONENT_DIR := $(patsubst %/Makefile.uc.mk,%,$(CURR_MAKEFILE))
 
     # test if current commit and branch of nghttp2 git is
@@ -15,5 +16,8 @@ ifeq ($(strip $(CONFIG_INCLUDE_CURL)),y)
     include $(MAKEFILES_ROOT_DIR)/_include_functions/git_prebuild_repo_check.mk
 
     include $(CURR_COMPONENT_DIR)/curl_git/Makefile.submodule.uc.mk
- 
+
+    KCONFIG_DIRS += CURL_GIT_DIR=$(CURR_COMPONENT_DIR)/curl_git
+else
+    KCONFIG_DIRS += CURL_GIT_DIR=$(KCONFIG_DUMMY)
 endif
