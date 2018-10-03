@@ -8,8 +8,14 @@ extern "C" {
 
 #include <stdint.h>
 #include <sys/types.h>
-#include <sys/select.h>
+#include "sys/time.h"
+#include "errno.h"
 
+#if defined(CONFIG_HOST)
+	#include <sys/select.h>
+#else
+	#define R_OK  0
+#endif
 
 
 typedef uint32_t socklen_t ;

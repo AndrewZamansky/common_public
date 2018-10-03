@@ -5,12 +5,61 @@ config I94XXX_BSP_VERSION
 	string "nuc bsp version in form : xx.xx[.xx]"
 	default "00.01"
 
-endmenu
+choice
+	prompt "I94XXX flavors"
+	default I94130
+
+config I94124
+	bool "I94124"
+	select I9412X_512K_FLASH
+	select I941X4_196K_SRAM
+
+config I94113
+	bool "I94113"
+	select I9411X_256K_FLASH
+	select I941X3_128K_SRAM
+
+config I94131
+	bool "I94131"
+	select I9413X_128K_FLASH
+	select I941X1_64K_SRAM
+
+config I94130
+	bool "I94130"
+	select I9413X_128K_FLASH
+	select I941X0_48K_SRAM
+
+endchoice
+
 
 =======
 config I94XXX_ADDITIONAL_OPTIONS
 	def_bool n
 	select CORTEX_M4 
 	select SOC_HAS_DSP
+	
+config I9412X_512K_FLASH
+	def_bool n
+
+config I9411X_256K_FLASH
+	def_bool n
+
+config I9413X_128K_FLASH
+	def_bool n
+
+
+config I941X4_196K_SRAM
+	def_bool n
+
+config I941X3_128K_SRAM
+	def_bool n
+
+config I941X1_64K_SRAM
+	def_bool n
+
+config I941X0_48K_SRAM
+	def_bool n
+
+endmenu
 
 	

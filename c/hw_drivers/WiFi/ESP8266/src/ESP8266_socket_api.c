@@ -1,6 +1,5 @@
 #include "_project.h"
 #include "sys/socket.h"
-#include "sys/time.h"
 //#include <sys/type.h>
 
 #include "dev_management_api.h" // for device manager defines and typedefs
@@ -271,7 +270,6 @@ int getsockopt_uCprojects(int sockfd, int level, int optname,
 	struct dev_desc_t *  socket_dev;
 	uint32_t socket_options;
 	int  int_val;
-	long  long_val;
 
 	sockfd = calculate_socket_fd(sockfd);
 	PRINTF_DBG("%s :  fd = %d\n",__FUNCTION__, sockfd);
@@ -629,7 +627,8 @@ int select_uCprojects(int nfds, fd_set *readfds, fd_set *writefds,
 						IOCTL_ESP8266_SOCKET_IS_DATA_RECEIVED , &read_ready);
 				if(0 != retVal)
 				{
-					printf("--%s : fd = %d connection was lost\n",__FUNCTION__, i);
+					printf(
+						"--%s : fd = %d connection was lost\n",__FUNCTION__, i);
 
 					FD_SET(i + SOCKET_OFFSET, exceptfds);
 				}
