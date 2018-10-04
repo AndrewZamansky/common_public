@@ -14,43 +14,38 @@
 .thumb_func
 do_software_interrupt_asm:
 
+	/* on cortex-m3 stack on svc is : r0,r1,r2,r3,r12,lr,pc,xpsr  */
+	ldr r1,[sp, 6 * 4] /* load pc that was before SWI exception*/
 
-	ldr r1,[sp, 6*4] /* on cortex-m3 stack on svc is : r0,r1,r2,r3,r12,lr,pc,xpsr  */
-	LDRB r0, [r1, #-2]   /* save swi number in r0 . not_os_swi_handler: will depend on r0 */
-	LDR r4,=0xAB
+	/* [pc - 2] is pointing on 'bkpt imm' in code that caused this exception.
+	* bkpt imm = 0xDFXX; when XX is imm value. */
+	LDRB r0, [r1, #-2] /*load imm to r0*/
 
+	CMP r0,#0xAB
+	BNE not_semihosting_swi /*  if  not OS then skip :  */
+	LDR r4,=_semihosting_breakpoint  /* go to semihosting entry  */
+	BX r4
 
-	MOV r3,#0
-	CMP r4,r0
-	BEQ end_of_swi_handler 	/*  if  semihosting :  */
+not_semihosting_swi:
+
 
 /*.ifndef CORTEX_M   in cortex-a  swi 0 used for OS  */
 	CMP r0,#0x0
 	BNE not_os_swi_handler 	/*  if  not OS then skip :  */
 
-
-    ldr pc, _OS_Handle_text
-	MOV r3,#1				/* r3 = 1 then semihosting will not be executed */
+	ldr pc, _OS_Handle_text
 	B end_of_swi_handler
 /*.endif*/
 
 not_os_swi_handler:
-    LDR pc, =do_app_software_interrupt /* call do_app_software_interrupt . */
-     							      /* r0 contains swi number and visible as first argument  */
-	MOV r3,#1		/* r3 = 1 then semihosting will not be executed */
-
+	/* r0 contains swi number and visible as first argument  */
+	LDR pc, =do_app_software_interrupt /* call do_app_software_interrupt . */
 
 end_of_swi_handler:
-                            /* r3 = 1 if SWI handled */
-    CMP r3, #1              /* Test if SWI has been handled. */
-    BNE execute_semihosting
-    MOVS pc, lr           /* Return if SWI handled. */
-
-execute_semihosting:
-	LDR r4,=_secondary_ram_vector_table_semihosting_entry  /* go to semihosting entry  */
-    BX r4
+	MOVS pc, lr           /* Return if SWI handled. */
 
 
+/********* next function is called after JLINK finishs semihosting *********/
 .global return_from_semihosting
 .thumb_func
 return_from_semihosting:
@@ -65,5 +60,3 @@ bkpt_asm:
 
 
 _OS_Handle_text: .word OS_SWI_Handler
-
-

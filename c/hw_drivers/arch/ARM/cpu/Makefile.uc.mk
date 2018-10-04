@@ -6,8 +6,8 @@ ifneq ($(strip $(INCLUDE_THIS_COMPONENT) ),)
     ARM_CMSIS_PATH :=$(EXTERNAL_SOURCE_ROOT_DIR)/ARM-CMSIS_v3.01
     ifeq ("$(wildcard $(ARM_CMSIS_PATH))","")
         $(info !--- ARM CMSIS path $(ARM_CMSIS_PATH) dont exists )
-        $(info !--- download ARM CMSIS version 3.01 and unpack it to $(ARM_CMSIS_PATH)  )
-        $(info !--- make sure that file Version 3.01 is located in $(ARM_CMSIS_PATH)/  after unpacking   )
+        $(info !--- download ARM CMSIS version 3.01 and unpack it to $(ARM_CMSIS_PATH))
+        $(info !--- make sure that file Version 3.01 is located in $(ARM_CMSIS_PATH)/  after unpacking)
         $(error )
     endif
 
@@ -34,38 +34,42 @@ endif
 
 #ASMFLAGS =  
 
-SRC =
+SRC :=
 
-
+USING_GCC_COMPILER :=n
 ifdef CONFIG_GCC
-    SRC += SWI.s
-    SRC += low_level_calls.c
-    SRC += startup.s
-    SRC += vectors.s
-else ifdef CONFIG_GPP	 
-    SRC += SWI.s
-    SRC += low_level_calls.c
-    SRC += startup.s
-    SRC += vectors.s
-else ifdef CONFIG_ARMCC
-    SRC += startup_armcc.s
-    SRC += vectors_armcc.s
-    SRC += SWI_armcc.s
+    USING_GCC_COMPILER :=y
+else ifdef USING_GCC_COMPILER
+    GCC_COMPILER :=y
 endif
 
-
-VPATH = src
-
+CORTEX_M3_OR_M4 :=n
 ifdef CONFIG_CORTEX_M3
-	VPATH += src/Cortex_M3_M4
+    CORTEX_M3_OR_M4 :=y
 else ifdef CONFIG_CORTEX_M4
-	VPATH += src/Cortex_M3_M4
-else ifdef CONFIG_CORTEX_A9
-	INCLUDE_DIR += src/Cortex_A9
-	SRC += cache-pl310.c
-	VPATH += src/Cortex_A9
+    CORTEX_M3_OR_M4 :=y
 endif
 
 
+
+ifeq (y,$(CORTEX_M3_OR_M4))
+	CORTEX_DIR := src/Cortex_M3_M4
+else ifdef CONFIG_CORTEX_A9
+	CORTEX_DIR := src/Cortex_A9
+	INCLUDE_DIR += src/Cortex_A9
+	SRC += src/Cortex_A9/cache-pl310.c
+endif
+
+ifeq (y,$(USING_GCC_COMPILER))
+    SRC += $(CORTEX_DIR)/SWI.s
+    SRC += src/low_level_calls.c
+    SRC += src/SWI.c
+    SRC += $(CORTEX_DIR)/startup.s
+    SRC += $(CORTEX_DIR)/vectors.s
+else ifdef CONFIG_ARMCC
+    SRC += $(CORTEX_DIR)/startup_armcc.s
+    SRC += $(CORTEX_DIR)/vectors_armcc.s
+    SRC += $(CORTEX_DIR)/SWI_armcc.s
+endif
 
 include $(COMMON_CC)

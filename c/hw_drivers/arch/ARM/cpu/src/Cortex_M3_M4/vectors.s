@@ -36,7 +36,7 @@
 .section ._arm_vector_table,"ax"
 
 .word 	Top_Of_Stacks
-.word 	_secondary_rom_vector_table_startup_entry
+.word 	_startup
 .word 	_NmiSR  /* non maskable interrupt from RCC */
 .word 	_FaultIRQ
 .word 	_dummy_trap     /* Populate if using MemManage (MPU)*/
@@ -49,8 +49,55 @@
 .word 	_dummy_trap 	/* 		 Populate if using pendable service request */
 .word 	_dummy_trap 	/* 		 Populate if using SysTick */
 
-// external interrupts start here
-.space BYTES_TO_KEEP_FOR_VECTOR_SPACE,0     /*  not used for now */
+// external interrupts start here, will be filled by hadlers in RAM vector table
+.space BYTES_TO_KEEP_FOR_VECTOR_SPACE,0
+
+/*end of vector_table */
+
+.section ._arm_additional_table.1.start,"ax"
+.thumb
+.thumb_func
+.global _startup
+_startup:
+	ldr r0, =do_startup
+	blx r0
+	nop /* alignment for 8 bytes */
+	nop
+
+/* next section is used to be a starting point if we want to use semihosting.
+ * configure debugger to jump to this section on connection. look at map file
+ * for exact adsress of this section to set for debugger jumping
+ */
+.section ._arm_additional_table.2.start_with_semihosting,"ax"
+.thumb_func
+.global _startup_with_semihosting
+_startup_with_semihosting:
+	ldr r0, =do_startup_with_debugger
+	blx r0
+	nop /* alignment for 8 bytes */
+	nop
+
+/* next section is used to set semihosting breakpoint for JLINK.
+ * configure debugger semihosting breakpoint to this section on connection.
+ * look at map file for exact adsress of this section
+ */
+.section ._arm_additional_table.3.semihosting_breakpoint,"ax"
+.thumb_func
+.global _semihosting_breakpoint
+_semihosting_breakpoint:
+	ldr r0, =return_from_semihosting
+	blx r0
+	nop  /* alignment for 8 bytes */
+	nop
+
+
+.section ._arm_additional_table.9999.end_of_additional_table,"ax"
+.thumb_func
+_end_of_additional_table:
+	nop  /* alignment for 8 bytes */
+	nop
+	nop
+	nop
 
 
 /* default interrupts that are used before initialization of NIC */

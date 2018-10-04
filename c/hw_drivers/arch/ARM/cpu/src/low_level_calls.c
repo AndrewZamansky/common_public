@@ -36,28 +36,13 @@ extern uint32_t __relocation_section_end_on_RAM__;
 extern uint32_t __relocation_section_start_on_ROM__;
 
 extern void do_startup(void);
-extern void do_software_interrupt_asm(void);
 uint32_t board_init_before_main_function();
 
-int smihosting_is_active = 0 ;
 /***********   loacal variables    **************/
 
 
 /******************** default interrupt handlers ******************/
 
-EXTERN_C_FUNCTION void
-__attribute__((interrupt("SWI"))) do_app_software_interrupt(uint32_t int_num)
-{
-    //based on int_num, you can determine which system call is called
-    switch(int_num)
-    {
-    	case 1:
-    		break;
-    	default:
-    		break;
-
-    }
-}
 
 #if  defined(CONFIG_CORTEX_A9 )
 
@@ -107,13 +92,6 @@ void do_reserved_exception()
 
 #endif
 
-void __attribute__((weak)) OS_SWI_Handler(void)
-{
-#if (1 == CONFIG_FREE_RTOS)
-	EXTERN_C_FUNCTION void vPortSVCHandler( void ) __attribute__ (( naked ));
-	vPortSVCHandler();
-#endif
-}
 
 /******************-------------------*****************************/
 

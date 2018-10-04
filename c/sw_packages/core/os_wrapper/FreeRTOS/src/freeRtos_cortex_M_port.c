@@ -26,8 +26,8 @@ typedef enum IRQn_local {
 
 } IRQn_Type_local;
 
+
 void os_start_arch_related_components()
 {
-	irq_register_interrupt(SVCall_IRQn_local , vPortSVCHandler);
 	irq_register_interrupt(PendSV_IRQn_local , xPortPendSVHandler);
 }

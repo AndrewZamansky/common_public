@@ -79,6 +79,7 @@ enum IRQn_Type_local {
 };
 
 /********  externals *********************/
+extern void do_software_interrupt_asm(void);
 
 
 /********  local variables *********************/
@@ -243,6 +244,7 @@ void  NVIC_API_Init(void)
 	NVIC_SetPriorityGrouping(NVIC_PriorityGroup_4);
 
 	irq_register_interrupt(HardFault_IRQn_local, isr_hard_fault);
+	irq_register_interrupt(SVCall_IRQn_local, do_software_interrupt_asm);
 
 
 }

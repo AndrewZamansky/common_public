@@ -7,41 +7,10 @@
 
 .syntax unified
 
-
-.section ._secondary_rom_vector_table,"ax"
-.global _secondary_rom_vector_table
-.global _secondary_rom_vector_table_startup_entry
+.global do_startup
+.global do_startup_with_debugger
 
 
-
-.thumb
-.thumb_func
-_secondary_rom_vector_table_startup_entry:
-	ldr r0, =do_startup
- 	blx r0
- 	nop /* alignment for 8 bytes */
- 	nop
-.thumb_func
-_secondary_rom_vector_table_startup_with_debugger_entry:
-	ldr r0, =do_startup_with_debugger
- 	blx r0
- 	nop /* alignment for 8 bytes */
- 	nop
-/*end of _secondary_rom_vector_table */
-
-.section ._secondary_ram_vector_table,"ax"
-.global _secondary_ram_vector_table_semihosting_entry
-
-.extern return_from_semihosting
-
-.thumb
-.thumb_func
-_secondary_ram_vector_table_semihosting_entry:
-	ldr r0, =return_from_semihosting
- 	blx r0
- 	nop  /* alignment for 8 bytes */
- 	nop
-/*end of _secondary_ram_vector_table */
 .section .text.startup , "ax"
 
 .extern smihosting_is_active

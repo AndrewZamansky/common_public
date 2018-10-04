@@ -1,80 +1,82 @@
 #include "project_config.h"
 #include "dt_memory_layout.h"
 
-ENTRY(_secondary_rom_vector_table_startup_entry)
+ENTRY(_startup)
 
 #include "arm_memory_blocks.lds"
 
 STACK_SIZE = 1024;
 EXCEPTION_VECTOR_AREA_SIZE  	= 0x200;
-SECONDARY_RAM_VECTOR_AREA_SIZE  = 0x40;//with some extra for future use
 
 SECTIONS
 {
 #ifdef DATA_SECTION_LOCATION_INTERNAL_SRAM
 	#define DATA_LOCATION internal_sram
-	__RAM_START__ = ORIGIN(internal_sram);
+	ram_start = ORIGIN(internal_sram);
 #endif
 #ifdef DATA_SECTION_LOCATION_EXTERNAL_DDR
 	#define DATA_LOCATION ddr
-	__RAM_START__ = ORIGIN(ddr);
+	ram_start = ORIGIN(ddr);
 #endif
 
 #ifdef CODE_SECTION_LOCATION_INTERNAL_FLASH
 	#define CODE_LOCATION internal_flash
-	__ROM_START__ = ORIGIN(internal_flash);
-	__tables_relocation_section_start_on_ROM__ =  __ROM_START__ ;
+	rom_start = ORIGIN(internal_flash);
+	__tables_relocation_section_start_on_ROM__ =  rom_start ;
 #endif
 
 #ifdef CODE_SECTION_LOCATION_INTERNAL_SRAM
 	#define CODE_LOCATION internal_sram
-	__tables_relocation_section_start_on_ROM__ = __RAM_START__ ;
+	__tables_relocation_section_start_on_ROM__ = ram_start ;
 #endif
 
 #ifdef CODE_SECTION_LOCATION_EXTERNAL_DDR
 	#define CODE_LOCATION ddr
-	__tables_relocation_section_start_on_ROM__ = __RAM_START__ ;
+	__tables_relocation_section_start_on_ROM__ = ram_start ;
 #endif
 
-	__tables_relocation_section_start_on_RAM__ = __RAM_START__;
+	__tables_relocation_section_start_on_RAM__ = ram_start;
 
-	/* the AT process of first table is not used because it cause problem on nuc-link debugger to rom it : */
+	/* the AT process of first table is not used because it cause
+	 * problem on nuc-link debugger to rom it : */
 	/*.vector_table __tables_relocation_section_start_on_RAM__ : AT ( __tables_relocation_section_start_on_ROM__ ) */
 	.vector_table __tables_relocation_section_start_on_ROM__ :
 	{
 		KEEP(*(._arm_vector_table))
 	} > CODE_LOCATION
 
-	__secondary_RAM_vector_table_start_on_ROM__ = __tables_relocation_section_start_on_ROM__ + EXCEPTION_VECTOR_AREA_SIZE ;
-	__secondary_RAM_vector_table_start_on_RAM__ = __tables_relocation_section_start_on_RAM__ + EXCEPTION_VECTOR_AREA_SIZE ;
-	.secondary_ram_vector_table __secondary_RAM_vector_table_start_on_RAM__ : AT ( __secondary_RAM_vector_table_start_on_ROM__ ) 
+	.arm_additional_table . :
 	{
-	    KEEP(*(._secondary_ram_vector_table))
-	} > DATA_LOCATION
+		KEEP(*(._arm_additional_table*))
+	} > CODE_LOCATION
+
 
 	/********************************/
 	/*******  device tree **********/
-	__start_of_device_tree_on_ROM__ = __secondary_RAM_vector_table_start_on_ROM__  + SECONDARY_RAM_VECTOR_AREA_SIZE ;
-	__start_of_device_tree_on_RAM__ =  __secondary_RAM_vector_table_start_on_RAM__ + SECONDARY_RAM_VECTOR_AREA_SIZE ;
+	start_of_device_tree_on_ROM =
+		__tables_relocation_section_start_on_ROM__ + EXCEPTION_VECTOR_AREA_SIZE;
+	start_of_device_tree_on_RAM =
+		__tables_relocation_section_start_on_RAM__ + EXCEPTION_VECTOR_AREA_SIZE;
 
 #if 0 //TODO : used for creating dynamic device tree file
 #ifdef CONFIG_DYNAMIC_DEVICE_TREE
 	__actual_start_of_device_tree_on_ROM__ = CONFIG_DEVICE_TREE_LOCATION_ADDR ;
 #else
-	__actual_start_of_device_tree_on_ROM__ = __start_of_device_tree_on_ROM__ ;
+	__actual_start_of_device_tree_on_ROM__ = start_of_device_tree_on_ROM ;
 #endif
 #endif
-	. = __start_of_device_tree_on_RAM__;
+	. = start_of_device_tree_on_RAM;
 
 	__start_static_devs_section = .;
-	static_devs_section . : AT ( __start_of_device_tree_on_ROM__ )
+	static_devs_section . : AT ( start_of_device_tree_on_ROM )
 	{
 		KEEP(*(static_devs_section)) ;
 	}  > DATA_LOCATION
 	__stop_static_devs_section = .;
 
-	__static_devs_data_on_ROM__ = __start_of_device_tree_on_ROM__ + SIZEOF(static_devs_section);
-	.static_devs_data . : AT ( __static_devs_data_on_ROM__)
+	static_devs_data_on_ROM =
+			 start_of_device_tree_on_ROM + SIZEOF(static_devs_section);
+	.static_devs_data . : AT ( static_devs_data_on_ROM)
 	{
 		*(.static_devs_data) ;
 		. = ALIGN(4);
@@ -85,20 +87,17 @@ SECTIONS
 	/***********************************/
 
 #ifdef CONFIG_DYNAMIC_DEVICE_TREE
-	__tables_relocation_section_end_on_ROM__ = __start_of_device_tree_on_ROM__ + CONFIG_DEVICE_TREE_MAXIMAL_SIZE ;
-	__tables_relocation_section_end_on_RAM__ = __start_of_device_tree_on_RAM__ + CONFIG_DEVICE_TREE_MAXIMAL_SIZE ;
+	tables_relocation_section_end_on_ROM =
+		start_of_device_tree_on_ROM + CONFIG_DEVICE_TREE_MAXIMAL_SIZE ;
+	__tables_relocation_section_end_on_RAM__ =
+		start_of_device_tree_on_RAM + CONFIG_DEVICE_TREE_MAXIMAL_SIZE ;
 #else
-	__tables_relocation_section_end_on_ROM__ = __static_devs_data_on_ROM__ + SIZEOF(.static_devs_data) ;
+	tables_relocation_section_end_on_ROM =
+		static_devs_data_on_ROM + SIZEOF(.static_devs_data) ;
 	__tables_relocation_section_end_on_RAM__ = . ;
 #endif
 
-	. = __tables_relocation_section_end_on_ROM__ ;
-
-	.secondary_rom_vector_table . :
-	{
-	    KEEP(*(._secondary_rom_vector_table))
-		. = ALIGN(4);
-	} > CODE_LOCATION
+	. = tables_relocation_section_end_on_ROM ;
 
 	.text . :
 	{
@@ -145,7 +144,7 @@ SECTIONS
 	__end_of_text__ = .;
 
 	__relocation_section_start_on_ROM__ = __end_of_text__;
-	__critical_text_section_start_on_ROM__ = __relocation_section_start_on_ROM__;
+	critical_text_section_start_on_ROM = __relocation_section_start_on_ROM__;
 
 #ifdef CODE_SECTION_LOCATION_INTERNAL_FLASH
 	__relocation_section_start_on_RAM__ = __tables_relocation_section_end_on_RAM__ ;
@@ -153,7 +152,7 @@ SECTIONS
 	__relocation_section_start_on_RAM__ = __end_of_text__ ;
 #endif
 	. = __relocation_section_start_on_RAM__ ;
-	.critical_text . : AT ( __critical_text_section_start_on_ROM__ )
+	.critical_text . : AT ( critical_text_section_start_on_ROM )
 	{
 		*(.critical_text);
 		* (.text .text*);
@@ -161,8 +160,9 @@ SECTIONS
 		. = ALIGN(4);
 	}  > DATA_LOCATION
 
-	__data_section_start_on_ROM__ = __critical_text_section_start_on_ROM__ + SIZEOF(.critical_text);
-	.data . : AT ( __data_section_start_on_ROM__ )
+	data_section_start_on_ROM =
+			critical_text_section_start_on_ROM + SIZEOF(.critical_text);
+	.data . : AT ( data_section_start_on_ROM )
 	{
 		*(.data) ;
 		*(.data.*) ;
@@ -195,8 +195,9 @@ SECTIONS
 	/* debug sections */
 	#include "arm_gcc_debug_sections.lds"
 
-		/* arm build attributes like cpu type , eabi type , etc. that was configured during build
-	   can be added to text of code if this info is needed during run of program */
+	/* arm build attributes like cpu type , eabi type ,
+	 * etc. that was configured during build can be added to text
+	 * of code if this info is needed during run of program */
 	.ARM.attributes 0   : {
 	   __ARM.attributes_start = .;
 	   *(.ARM.attributes*)
