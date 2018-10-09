@@ -23,7 +23,6 @@ ifeq ($(strip $(CONFIG_INCLUDE_CJSON)),y)
     endif
 
 
-    #CURR_CJSON_COMPONENT_LOCATION := $(patsubst %/Makefile.uc.mk,%,$(realpath $(filter %cJSON/Makefile.uc.mk,$(MAKEFILE_LIST))))
     DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(CJSON_PATH))
 
 
@@ -31,11 +30,16 @@ endif
 
 DEFINES :=
 CFLAGS :=
+ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
+    ifeq ($(strip $(CONFIG_MICROSOFT_COMPILER)),y)
+        # disable warning C4232: nonstandard extension used : 'cJSON_malloc' :
+        # address of dllimport 'malloc' is not static, identity not guaranteed
+        CFLAGS := /wd4232
 
-ifdef CONFIG_MICROSOFT_COMPILER
-    CFLAGS := /wd4232 #disable warning C4232: nonstandard extension used : 'cJSON_malloc' : address of dllimport 'malloc' is not static, identity not guaranteed
-    CFLAGS := /wd4706 #disable warning C4706: assignment within conditional expression
-    DEFINES += _CRT_SECURE_NO_WARNINGS
+        # disable warning C4706: assignment within conditional expression
+        CFLAGS := /wd4706
+        DEFINES += _CRT_SECURE_NO_WARNINGS
+    endif
 endif
 
 SRC := cJSON.c
