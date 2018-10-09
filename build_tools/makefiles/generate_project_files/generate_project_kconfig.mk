@@ -45,7 +45,7 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
     START_POINT :=source "$$KCONFIG_PUBLIC_START_DIR/Kconfig"
 else
     FILE_CONTENT := $(subst ",\",$(FILE_CONTENT))
-    START_POINT :=source '\"$$KCONFIG_PUBLIC_START_DIR/Kconfig\"'
+    START_POINT :=source \"$$KCONFIG_PUBLIC_START_DIR/Kconfig\"
 endif
 # add start point
 FILE_CONTENT += echo $(START_POINT)>>$(PROJECT_KCONFIG) $(SHELL_CMD_DELIMITER)
