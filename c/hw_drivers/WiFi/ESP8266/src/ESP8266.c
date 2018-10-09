@@ -66,6 +66,8 @@ char* ESP8266_get_state_name(uint16_t state)
 	case ESP8266_State_StartResetting : return "StartResetting";
 	case ESP8266_State_Resetting : return "Resetting";
 	case ESP8266_State_Setting_Echo_Off : return "Setting_Echo_Off";
+	case ESP8266_State_ChangingBaudRate : return "ChangingBaudRate";
+	case ESP8266_State_BaudChangeHandShake : return "BaudChangeHandShake";
 	case ESP8266_State_Setting_Mode : return "Setting_Mode";
 	case ESP8266_State_Setting_AP : return "Setting_AP";
 	case ESP8266_State_Setting_Redundent_Ap : return "Setting_Redundent_Ap";
@@ -950,9 +952,9 @@ static void process_input_message(struct esp8266_cfg_t *config_handle,
 		if(0 == total_length) break;
 
 		currentState = esp8266_dev_state_hndl->currentState;
-		//PRINTF_DBG( "\r\n--%s--\r\n",
-		//				ESP8266_get_state_name(currentState));
-		//PRINT_DATA_DBG(pBufferStart , total_length);
+		/*PRINTF_DBG( "\r\n--%s--\r\n",
+						ESP8266_get_state_name(currentState));
+		PRINT_DATA_DBG(pBufferStart , total_length);*/
 
 		switch(currentState)
 		{
