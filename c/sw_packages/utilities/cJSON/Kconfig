@@ -1,0 +1,5 @@
+#
+
+config CJSON_GIT_COMMIT_HASH
+	string "curl git commit hash"
+	default ""

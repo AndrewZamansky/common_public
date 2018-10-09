@@ -2,10 +2,6 @@
 
 menu "ancillary"
 
-config INCLUDE_CJSON
-	bool   "cJSON"
-	default n
-
 config INCLUDE_LINUX_TIMER
 	bool   "linux timer"
 	depends on HOST

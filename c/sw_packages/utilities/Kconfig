@@ -2,6 +2,13 @@
 
 menu "utilities"
 
+menuconfig INCLUDE_CJSON
+	bool   "cJSON"
+	default n
+if INCLUDE_CJSON
+source "$KCONFIG_PUBLIC_START_DIR/sw_packages/utilities/cJSON/Kconfig"
+endif
+
 config INCLUDE_JSMN
 	bool   "jsmn"
 	default n
