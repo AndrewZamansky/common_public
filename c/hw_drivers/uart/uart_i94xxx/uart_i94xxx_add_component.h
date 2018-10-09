@@ -12,9 +12,6 @@
 
 #ifdef DT_DEV_MODULE
 
-	#ifndef UART_I94XXX_DT_BASE_ADDRESS
-		#error "UART_I94XXX_DT_BASE_ADDRESS should be defined"
-	#endif
 
 	#ifdef UART_I94XXX_DT_TX_CALLBACK_PDEV
 		EXTERN_DECLARATION_TO_STATIC_DEVICE_INST(
@@ -55,7 +52,6 @@
 			POINTER_TO_TX_CALLBACK_PDEV ,   \
 			POINTER_TO_RX_CALLBACK_PDEV ,   \
 			POINTER_TO_SRC_CLOCK_PDEV   ,   \
-			UART_I94XXX_DT_BASE_ADDRESS ,   \
 			UART_I94XXX_DT_BAUD_RATE,       \
 			UART_I94XXX_DT_PINOUT,          \
 		}
@@ -68,7 +64,6 @@
  *  device specific defines should be undefined
  *  after calling #include "add_static_dev.h"
  */
-#undef UART_I94XXX_DT_BASE_ADDRESS
 #undef POINTER_TO_SRC_CLOCK_PDEV
 #undef POINTER_TO_TX_CALLBACK_PDEV
 #undef POINTER_TO_RX_CALLBACK_PDEV

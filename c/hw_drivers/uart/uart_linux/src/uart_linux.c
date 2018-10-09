@@ -145,7 +145,7 @@ static void *receive_thread(void *adev)
 #ifdef DEBUG_UART
 		if (0 == curr_read_num)
 		{
-			write(1, "-X0X-", sizeof("-X0X-" - 1));
+			write(1, "-X0X-", sizeof("-X0X-") - 1);
 		}
 		else
 		{
@@ -153,7 +153,7 @@ static void *receive_thread(void *adev)
 		}
 		if (0 != _do_uart_dbg_print)
 		{
-			write(1, "|e.rcv|\n", sizeof("|e.rcv|\n" - 1));
+			write(1, "|e.rcv|\n", sizeof("|e.rcv|\n") - 1);
 		}
 #endif
 		if (NULL != callback_rx_dev)

@@ -23,9 +23,16 @@
 
 /*following line add module to available module list for dynamic device tree*/
 #include "uart_i94xxx_add_component.h"
+#define DEBUG
+#include "PRINTF_api.h"
 
 /********  defines *********************/
 
+
+//#define MAX_ERR_STR_LEN   255
+
+//#define DEBUG_UART
+//#define PRINT_BIN_DATA
 
 /********  types  *********************/
 
@@ -37,41 +44,97 @@
 /* ------------------------ Exported variables --------*/
 
 
+#ifdef DEBUG_UART
+//char error_str[MAX_ERR_STR_LEN + 1];
+//static char uart_send_dbg_str[] = "uart_linux send start:\n";
+uint8_t _do_uart_dbg_print = 1;
+static void dbg_print(uint8_t const *data, size_t len)
+{
+	if (0 == _do_uart_dbg_print) return;
+
+	#ifdef PRINT_BIN_DATA
+		size_t i;
+		for (i = 0; i < len; i++)
+		{
+			char dbg_str[] = "0x00 ";
+			snprintf(dbg_str, sizeof(dbg_str), "0x%02x ", *data);
+			PRINT_DATA_DBG(dbg_str, sizeof(dbg_str) - 1);
+			data++;
+		}
+	#else
+		PRINT_DATA_DBG( data, len);
+	#endif
+}
+#endif
+
+#define		UART_I94XXX_RCV_DATA_SIZE_BUFFER	32
+uint8_t	rcv_data[UART_I94XXX_RCV_DATA_SIZE_BUFFER];
+size_t send_data_len;
 
 uint8_t uart_i94xxx_callback(struct dev_desc_t *adev ,
 		uint8_t aCallback_num , void * aCallback_param1,
 		void * aCallback_param2)
 {
 	struct uart_i94xxx_cfg_t *cfg_hndl;
-
-	uint8_t u8InChar;
 	uint32_t u32IntSts ;
 	UART_T *uart_regs;
+	size_t rcv_data_len;
+	struct dev_desc_t * callback_rx_dev ;
 
 	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
-	uart_regs =(UART_T *)cfg_hndl->base_address;
+	uart_regs =(UART_T *)UART0_BASE;
 
 	u32IntSts = uart_regs->INTSTS;
 
-	if(u32IntSts & UART_INTSTS_RDAINT_Msk)
+	rcv_data_len = 0;
+
+	callback_rx_dev = cfg_hndl->callback_rx_dev;
+	while (0 == UART_GET_RX_EMPTY(uart_regs))
 	{
-		struct dev_desc_t * callback_rx_dev ;
-		callback_rx_dev = cfg_hndl->callback_rx_dev;
-		u8InChar = UART_READ(uart_regs);
-		if (NULL != callback_rx_dev)
+		rcv_data[rcv_data_len] = UART_READ(uart_regs);
+		rcv_data_len++;
+		if ( (UART_I94XXX_RCV_DATA_SIZE_BUFFER == rcv_data_len) &&
+				(NULL != callback_rx_dev))
 		{
 			DEV_CALLBACK_2_PARAMS(callback_rx_dev,
-					CALLBACK_DATA_RECEIVED,  &u8InChar,  1);
+					CALLBACK_DATA_RECEIVED,  rcv_data,  rcv_data_len);
+			rcv_data_len = 0;// start getting data again
 		}
 	}
-
-	if(u32IntSts & UART_INTSTS_THREINT_Msk)
+	if ( rcv_data_len && (NULL != callback_rx_dev))
 	{
+#ifdef DEBUG_UART
+		if (0 == rcv_data_len)
+		{
+			PRINT_DATA_DBG("-X0X-", sizeof("-X0X-") - 1);
+		}
+		else
+		{
+			dbg_print(rcv_data, rcv_data_len);
+		}
+		if (0 != _do_uart_dbg_print)
+		{
+			PRINT_DATA_DBG("|e.rcv|\n", sizeof("|e.rcv|\n") - 1);
+		}
+#endif
+		DEV_CALLBACK_2_PARAMS(callback_rx_dev,
+				CALLBACK_DATA_RECEIVED,  rcv_data,  (void*)rcv_data_len);
+	}
+
+
+	if ( send_data_len && (u32IntSts & UART_INTEN_TXENDIEN_Msk))
+	{
+		size_t  len_was_sent;
 		struct dev_desc_t * callback_tx_dev ;
+
+		len_was_sent = send_data_len;
 		callback_tx_dev = cfg_hndl->callback_tx_dev;
+		UART_DISABLE_INT(uart_regs,  UART_INTEN_TXENDIEN_Msk);
+		send_data_len = 0;
 		if (NULL != callback_tx_dev)
 		{
-			DEV_CALLBACK_1_PARAMS(callback_tx_dev , CALLBACK_TX_DONE, (void*)1);
+			DEV_CALLBACK_1_PARAMS(
+					callback_tx_dev , CALLBACK_TX_DONE, (void*)len_was_sent);
 		}
 	}
 
@@ -88,15 +151,37 @@ size_t uart_i94xxx_pwrite(struct dev_desc_t *adev,
 			const uint8_t *apData, size_t aLength, size_t aOffset)
 {
 	UART_T *uart_regs;
-	struct uart_i94xxx_cfg_t *cfg_hndl;
+#ifdef DEBUG_UART
+	const uint8_t *start_of_data = apData;
+#endif
 
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
-	uart_regs =(UART_T *)cfg_hndl->base_address;
+//	if (send_data_len)// still busy
+//	{
+//		CRITICAL_ERROR("resolution for this state not implemented yet\n");
+//		return 0;
+//	}
+	uart_regs =(UART_T *)UART0_BASE;
+	send_data_len = 0;
+	while ( aLength && (0 == UART_IS_TX_FULL(uart_regs)))
+	{
+		send_data_len++;
+		aLength--;
+		UART_WRITE(uart_regs, *apData++);
+	}
+	UART_EnableInt(uart_regs,  UART_INTEN_TXENDIEN_Msk );
 
-	UART_WRITE(uart_regs, *apData);
-	UART_EnableInt(uart_regs,  UART_INTEN_THREIEN_Msk );
+#ifdef DEBUG_UART
+	if (0 != _do_uart_dbg_print)
+	{
+		char uart_send_end_dbg_str[] = "uart send_data_len = 00000\n";
+		snprintf(uart_send_end_dbg_str, sizeof(uart_send_end_dbg_str),
+				"uart send_data_len = %05lu\n", send_data_len);
+		PRINT_DATA_DBG(start_of_data, send_data_len);
+		PRINT_DATA_DBG(uart_send_end_dbg_str, sizeof(uart_send_end_dbg_str)- 1);
+	}
+#endif
 
-	return 1;
+	return send_data_len;
 
 }
 
@@ -117,43 +202,37 @@ uint8_t uart_i94xxx_ioctl( struct dev_desc_t *adev, uint8_t aIoctl_num,
 	struct dev_desc_t	*uart_clk_dev;
 
 	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
-	uart_regs = (UART_T *)cfg_hndl->base_address;
+	uart_regs = (UART_T *)UART0_BASE;
 	src_clock = cfg_hndl->src_clock;
 	switch(aIoctl_num)
 	{
 	case IOCTL_UART_SET_BAUD_RATE :
 		cfg_hndl->baud_rate = *(uint32_t*)aIoctl_param1;
+		UART_Open(uart_regs, cfg_hndl->baud_rate);
 		break;
 	case IOCTL_DEVICE_START :
-		if(UART0 == uart_regs)
+		uart_irq = UART0_IRQn;
+		uart_module_rst = UART0_MODULE;
+		uart_clk_dev = i94xxx_uart0clk_clk_dev;
+		//uart_clk_src = CLK_UART0_SRC_EXT;
+		/*
+		* Init I/O Multi-function
+		* Set PA multi-function pins for UART0 RXD(PA.8) and TXD(PA.7)
+		*/
+		switch (cfg_hndl->pinout)
 		{
-			uart_irq = UART0_IRQn;
-			uart_module_rst = UART0_MODULE;
-			uart_clk_dev = i94xxx_uart0clk_clk_dev;
-			//uart_clk_src = CLK_UART0_SRC_EXT;
-			/*
-			* Init I/O Multi-function
-			* Set PA multi-function pins for UART0 RXD(PA.8) and TXD(PA.7)
-			*/
-			switch (cfg_hndl->pinout)
-			{
-			case UART_I94XXX_UART0_TX_RX_PINS_PORT_B_PINS_8_9:
-				SYS->GPB_MFPH &= ~(SYS_GPB_MFPH_PB8MFP_Msk);
-				SYS->GPB_MFPH &= ~(SYS_GPB_MFPH_PB9MFP_Msk);
-				SYS->GPB_MFPH |=  (SYS_GPB_MFPH_PB8MFP_UART0_TXD);
-				SYS->GPB_MFPH |=  (SYS_GPB_MFPH_PB9MFP_UART0_RXD);
-				break;
-			case UART_I94XXX_UART0_TX_RX_PINS_PORT_D_PINS_14_15:
-				SYS->GPD_MFPH = (SYS->GPD_MFPH & (~0xFF000000)) | 0x44000000;
-				break;
-			default :
-				return 1;
-
-			}
-		}
-		else
-		{
+		case UART_I94XXX_UART0_TX_RX_PINS_PORT_B_PINS_8_9:
+			SYS->GPB_MFPH &= ~(SYS_GPB_MFPH_PB8MFP_Msk);
+			SYS->GPB_MFPH &= ~(SYS_GPB_MFPH_PB9MFP_Msk);
+			SYS->GPB_MFPH |=  (SYS_GPB_MFPH_PB8MFP_UART0_TXD);
+			SYS->GPB_MFPH |=  (SYS_GPB_MFPH_PB9MFP_UART0_RXD);
+			break;
+		case UART_I94XXX_UART0_TX_RX_PINS_PORT_D_PINS_14_15:
+			SYS->GPD_MFPH = (SYS->GPD_MFPH & (~0xFF000000)) | 0x44000000;
+			break;
+		default :
 			return 1;
+
 		}
 
 		/*set in clock dev*/
@@ -178,7 +257,8 @@ uint8_t uart_i94xxx_ioctl( struct dev_desc_t *adev, uint8_t aIoctl_num,
 		break;
 
 	case IOCTL_UART_DISABLE_TX :
-		UART_DISABLE_INT(uart_regs,  UART_INTEN_THREIEN_Msk);
+		UART_DISABLE_INT(uart_regs,  UART_INTEN_TXENDIEN_Msk);
+		send_data_len = 0;
 		break;
 
 	case IOCTL_UART_ENABLE_TX :
