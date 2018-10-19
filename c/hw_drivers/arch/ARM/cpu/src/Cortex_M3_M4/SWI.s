@@ -13,9 +13,15 @@
 .thumb
 .thumb_func
 do_software_interrupt_asm:
+	/* bit 2 in EXC_RETURN value (in LR) shows what
+	 stack was used before exception happened*/
+	tst lr, #4
+	ite eq
+	mrseq r0, MSP
+	mrsne r0, PSP
 
 	/* on cortex-m3 stack on svc is : r0,r1,r2,r3,r12,lr,pc,xpsr  */
-	ldr r1,[sp, 6 * 4] /* load pc that was before SWI exception*/
+	ldr r1,[r0, 6 * 4] /* load pc that was before SWI exception*/
 
 	/* [pc - 2] is pointing on 'bkpt imm' in code that caused this exception.
 	* bkpt imm = 0xDFXX; when XX is imm value. */
@@ -28,21 +34,12 @@ do_software_interrupt_asm:
 
 not_semihosting_swi:
 
-
-/*.ifndef CORTEX_M   in cortex-a  swi 0 used for OS  */
-	CMP r0,#0x0
-	BNE not_os_swi_handler 	/*  if  not OS then skip :  */
-
-	ldr pc, _OS_Handle_text
-	B end_of_swi_handler
-/*.endif*/
-
-not_os_swi_handler:
 	/* r0 contains swi number and visible as first argument  */
-	LDR pc, =do_app_software_interrupt /* call do_app_software_interrupt . */
-
-end_of_swi_handler:
-	MOVS pc, lr           /* Return if SWI handled. */
+	push {lr}
+	ldr r1,=do_app_software_interrupt
+	/*orr r0 ,r0, #0x01*/  /*remain in thumb*/
+	blx r1
+	pop {pc}
 
 
 /********* next function is called after JLINK finishs semihosting *********/
@@ -57,6 +54,3 @@ bkpt_asm:
 	push {r4,lr}
 	bkpt #0xab
 	pop {r4,pc}
-
-
-_OS_Handle_text: .word OS_SWI_Handler
