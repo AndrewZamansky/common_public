@@ -17,6 +17,11 @@ endif
 NEW_LINE :=mainmenu "$(PROJECT_NAME) Configuration"
 FILE_CONTENT := echo $(NEW_LINE)>$(PROJECT_KCONFIG) $(SHELL_CMD_DELIMITER)
 
+# all pathes are dependant on host, so we don't want them in .config,
+# we are hiding them by adding 'if' for non-existant variable
+NEW_LINE :=if NON_EXISTANT_VARIABLE_FOR_HIDING_BUILD_DEPENDENT_CONFIGS
+FILE_CONTENT += echo $(NEW_LINE)>>$(PROJECT_KCONFIG) $(SHELL_CMD_DELIMITER)
+
 add_kconfig_string= echo config $(1)>>$(PROJECT_KCONFIG) $(SHELL_CMD_DELIMITER)\
         echo string>>$(PROJECT_KCONFIG) $(SHELL_CMD_DELIMITER)\
         echo default "$(2)">>$(PROJECT_KCONFIG) $(SHELL_CMD_DELIMITER)\
@@ -39,6 +44,11 @@ tmp1_func =  $(call add_kconfig_string,\
 tmp2_func = $(call tmp1_func,$(subst =, ,$(1))) # split 'f=path' to 'f path'
 _KCONFIG_DIRS := $(foreach KCONFIG,$(KCONFIG_DIRS),$(call tmp2_func,$(KCONFIG)))
 FILE_CONTENT := $(FILE_CONTENT) $(_KCONFIG_DIRS)
+
+
+# end of hiding pathes in .config file
+FILE_CONTENT += echo endif>>$(PROJECT_KCONFIG) $(SHELL_CMD_DELIMITER)
+
 
 ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
     FILE_CONTENT := $(subst \,/,$(FILE_CONTENT))
