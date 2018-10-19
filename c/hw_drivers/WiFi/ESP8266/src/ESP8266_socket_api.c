@@ -607,20 +607,41 @@ int select_uCprojects(int nfds, fd_set *readfds, fd_set *writefds,
 	}
 	else
 	{
-		timeout_msec = 1;
+		timeout_msec = 0;
 	}
 
-	orig_readfds = *readfds;
-	orig_writefds = *writefds;
-	FD_ZERO(exceptfds);
-	FD_ZERO(readfds);
-	FD_ZERO(writefds);
+	if ((0 == nfds) &&
+			(NULL == readfds) && (NULL == writefds) && (NULL == exceptfds))
+	{
+		if (0 != timeout_msec)
+		{
+			os_delay_ms( timeout_msec );
+		}
+		return 0;
+	}
+
+	if (NULL != readfds)
+	{
+		orig_readfds = *readfds;
+		FD_ZERO(readfds);
+	}
+	if (NULL != writefds)
+	{
+		orig_writefds = *writefds;
+		FD_ZERO(writefds);
+	}
+	if (NULL != exceptfds)
+	{
+		FD_ZERO(exceptfds);
+	}
+
 	event_happened = 0;
 	while (1)
 	{
 		for(i = 0; i < MAX_NUM_OF_SOCKETS; i++)
 		{
-			if ( 0 != FD_ISSET(i + SOCKET_OFFSET, &orig_readfds))
+			if ((NULL != readfds) &&
+					( 0 != FD_ISSET(i + SOCKET_OFFSET, &orig_readfds)))
 			{
 				socket_dev = allocated_socket_dev[i];
 				retVal = DEV_IOCTL_1_PARAMS(socket_dev ,
@@ -639,7 +660,8 @@ int select_uCprojects(int nfds, fd_set *readfds, fd_set *writefds,
 					event_happened++;
 				}
 			}
-			if ( 0 != FD_ISSET(i + SOCKET_OFFSET, &orig_writefds))
+			if ((NULL != writefds) &&
+					( 0 != FD_ISSET(i + SOCKET_OFFSET, &orig_writefds)))
 			{
 				PRINTF_DBG("%s : writefds\n", __FUNCTION__);
 				FD_SET(i + SOCKET_OFFSET, writefds);
