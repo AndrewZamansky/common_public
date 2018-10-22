@@ -625,7 +625,7 @@ static void master_write(struct dev_desc_t *adev,
 	runtime_handle->transmitted_data_size = 0;
 	runtime_handle->i2c_error = I2C_OK;
 
-	runtime_handle->remote_slave_addr = wr_struct->device_addr;
+	runtime_handle->remote_slave_addr = wr_struct->device_addr_7bit;
 	reg_addr_size = wr_struct->reg_addr_size;
 	reg_addr = wr_struct->reg_addr;
 	runtime_handle->reg_addr_left_to_transmit = reg_addr_size;
@@ -702,7 +702,7 @@ static void master_read(struct dev_desc_t *adev,
 	runtime_handle->curr_data_pos = 0;
 	runtime_handle->size_of_data_to_receive = num_of_bytes_to_read;
 	runtime_handle->rx_data = rd_struct->rx_data;
-	runtime_handle->remote_slave_addr = rd_struct->device_addr;
+	runtime_handle->remote_slave_addr = rd_struct->device_addr_7bit;
 	reg_addr_size = rd_struct->reg_addr_size;
 	reg_addr = rd_struct->reg_addr;
 	runtime_handle->reg_addr_left_to_transmit = reg_addr_size;
