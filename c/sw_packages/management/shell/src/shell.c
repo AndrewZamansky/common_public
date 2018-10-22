@@ -24,16 +24,6 @@
 /*following line add module to available module list for dynamic device tree*/
 #include "shell_add_component.h"
 
-#if SHELL_CONFIG_MAX_RX_BUFFER_SIZE <= (1<<8)
-	typedef uint8_t shel_rx_int_size_t;
-#else
-	#if SHELL_CONFIG_MAX_RX_BUFFER_SIZE <= (1<<16)
-		typedef uint16_t shel_rx_int_size_t;
-	#else
-		typedef uint32_t shel_rx_int_size_t;
-	#endif
-#endif
-
 
 /********  defines *********************/
 
@@ -111,16 +101,15 @@ static void reply_data(const char *data, size_t len)
 #define SUMS_OF_EOLS	('\r'+'\n')
 
 static uint8_t get_valid_line(struct shell_runtime_instance_t *runtime_handle,
-		uint8_t **pBuffer, shel_rx_int_size_t *p_total_length,
-		shel_rx_int_size_t *p_bytesConsumed)
+		uint8_t **pBuffer, size_t *p_total_length, size_t *p_bytesConsumed)
 {
 	uint8_t validCommadFound;
 	uint8_t *pBufferStart;
-	shel_rx_int_size_t total_length;
-	shel_rx_int_size_t bytesConsumed;
-	shel_rx_int_size_t curr_buff_pos;
-	shel_rx_int_size_t lastTestedBytePos;
-	shel_rx_int_size_t endOfLastPrintfPos;
+	size_t total_length;
+	size_t bytesConsumed;
+	size_t curr_buff_pos;
+	size_t lastTestedBytePos;
+	size_t endOfLastPrintfPos;
 	uint8_t curr_char;
 	uint8_t eol_char;
 
@@ -220,7 +209,7 @@ static uint8_t get_valid_line(struct shell_runtime_instance_t *runtime_handle,
 
 
 static uint8_t *extract_command_from_line(
-		uint8_t *pBufferStart, shel_rx_int_size_t EOL_pos)
+		uint8_t *pBufferStart, size_t EOL_pos)
 {
 	if ((HEADER_CHAR_ON == pBufferStart[HEADER_SUPPRESS_ECHO_POS]) ||
 			(HEADER_CHAR_OFF == pBufferStart[HEADER_SUPPRESS_ECHO_POS]) )
@@ -252,7 +241,7 @@ static uint8_t *extract_command_from_line(
 
 static void consume_line(
 		struct shell_cfg_t *config_handle, uint8_t *pBufferStart,
-		shel_rx_int_size_t total_length, shel_rx_int_size_t EOL_pos)
+		size_t total_length, size_t EOL_pos)
 {
 	struct dev_desc_t *   callback_dev;
 	struct dev_desc_t *   cmd_save_dev;
@@ -305,9 +294,9 @@ static void consume_line(
 static void Shell_Task( void *pvParameters )
 {
 	xMessage_t pxRxedMessage;
-	shel_rx_int_size_t total_length;
-	shel_rx_int_size_t bytesConsumed;
-	shel_rx_int_size_t EOL_pos;
+	size_t total_length;
+	size_t bytesConsumed;
+	size_t EOL_pos;
 	uint8_t *pBufferStart;
 	struct ioctl_get_data_buffer_t data_buffer_info;
 	struct shell_runtime_instance_t  *runtime_handle;
