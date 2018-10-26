@@ -150,6 +150,17 @@ static uint8_t *configuration_desc;
 uint16_t configuration_desc_size;
 uint16_t interface_count;
 
+static void increase_configuration_desc(uint16_t additional_size)
+{
+	uint16_t new_desc_size;
+	new_desc_size = configuration_desc_size + additional_size;
+	configuration_desc = (uint8_t*)realloc(configuration_desc, new_desc_size);
+	if (NULL == configuration_desc)
+	{
+		CRITICAL_ERROR("not enough memory in heap\n");
+	}
+	configuration_desc_size = new_desc_size;
+}
 
 static void device_start(struct usb_device_descriptors_cfg_t *cfg_hndl)
 {
@@ -176,15 +187,12 @@ static void device_start(struct usb_device_descriptors_cfg_t *cfg_hndl)
 static void add_interface_association_desc(uint8_t *iad_desc)
 {
 	uint16_t desc_size;
-	uint16_t new_desc_size;
+	uint16_t prev_desc_size;
 
 	desc_size = iad_desc[0];
-
-	new_desc_size = configuration_desc_size + desc_size;
-	configuration_desc =
-			(uint8_t*)realloc(configuration_desc, new_desc_size);
-	memcpy(&configuration_desc[configuration_desc_size], iad_desc, desc_size);
-	configuration_desc_size = new_desc_size;
+	prev_desc_size = configuration_desc_size;
+	increase_configuration_desc(desc_size);
+	memcpy(&configuration_desc[prev_desc_size], iad_desc, desc_size);
 }
 
 
@@ -192,14 +200,14 @@ static void add_interface(
 		struct usb_descriptors_add_interface_t *usb_desc_add_interface)
 {
 	uint16_t interface_structure_size;
-	uint16_t new_desc_size;
 	uint8_t *interface_desc;
-	uint8_t interface_num;
+	uint16_t prev_desc_size;
 
 	interface_desc = usb_desc_add_interface->interface_desc;
 
 	if (1 == usb_desc_add_interface->is_hid_interface)
 	{
+		uint8_t interface_num;
 		struct usb_descriptors_hid_descriptor_t  *hid_descriptor;
 
 		interface_num = interface_desc[2];
@@ -215,25 +223,21 @@ static void add_interface(
 	}
 
 	interface_structure_size = usb_desc_add_interface->interface_desc_size;
-
-	new_desc_size = configuration_desc_size + interface_structure_size;
-	configuration_desc =
-			(uint8_t*)realloc(configuration_desc, new_desc_size);
-	memcpy(&configuration_desc[configuration_desc_size],
+	prev_desc_size = configuration_desc_size;
+	increase_configuration_desc(interface_structure_size);
+	memcpy(&configuration_desc[prev_desc_size],
 			interface_desc, interface_structure_size);
-	configuration_desc_size = new_desc_size;
 
 	interface_desc = usb_desc_add_interface->alt_interface_desc;
 	interface_structure_size = usb_desc_add_interface->alt_interface_desc_size;
 
 	if (NULL != interface_desc)
 	{
-		new_desc_size = configuration_desc_size + interface_structure_size;
-		configuration_desc =
-				(uint8_t*)realloc(configuration_desc, new_desc_size);
-		memcpy(&configuration_desc[configuration_desc_size],
+		prev_desc_size = configuration_desc_size;
+		increase_configuration_desc(interface_structure_size);
+
+		memcpy(&configuration_desc[prev_desc_size],
 				interface_desc, interface_structure_size);
-		configuration_desc_size = new_desc_size;
 	}
 }
 

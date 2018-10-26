@@ -15,7 +15,6 @@
 
 #include "memory_pool.h"
 
-#include "_memory_pool_prerequirements_check.h"
 
 /***************   defines    *******************/
 
@@ -62,6 +61,10 @@ void *memory_pool_malloc(void *memory_pool_handle)
 	pool_chunks = mem_pool->pool_chunks;
 	pool_chunks = (struct mem_pool_chunck_t *)realloc(pool_chunks,
 					num_of_chunks * sizeof(struct mem_pool_chunck_t));
+	if (NULL == pool_chunks)
+	{
+		CRITICAL_ERROR("not enough memory in heap");
+	}
 	mem_pool->pool_chunks = pool_chunks;
 	pool_chunk = &pool_chunks[num_of_chunks - 1];
 	pool_chunk->inUse = 1;
@@ -78,12 +81,12 @@ void *memory_pool_malloc(void *memory_pool_handle)
  */
 void *memory_pool_zmalloc(void *memory_pool_handle)
 {
-	size_t	size_of_chunk;
 	void *mem;
 
 	mem = memory_pool_malloc(memory_pool_handle);
 	if (NULL != mem)
 	{
+		size_t	size_of_chunk;
 		size_of_chunk = ((struct mem_pool_t*)memory_pool_handle)->size_of_chunk;
 		memset(mem, 0, size_of_chunk);
 	}

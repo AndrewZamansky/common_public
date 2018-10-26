@@ -2,10 +2,6 @@
  *
  * file :   wireless_uart.c
  *
- *
- *
- *
- *
  */
 
 
@@ -181,7 +177,7 @@ static void wireless_uart_task( void *aHandle )
 			{
 				if('*' !=pBufferStart[curr_buff_pos])
 				{
-					while ( '*' !=pBufferStart[curr_buff_pos] && curr_buff_pos < total_length)
+					while ( (curr_buff_pos < total_length) && ('*' != pBufferStart[curr_buff_pos]))
 					{
 						curr_buff_pos++;
 					}
@@ -189,7 +185,7 @@ static void wireless_uart_task( void *aHandle )
 				else
 				{
 					cnt=0;
-					while ( '*' == pBufferStart[curr_buff_pos] && curr_buff_pos < total_length)
+					while ( (curr_buff_pos < total_length) && ('*' != pBufferStart[curr_buff_pos]))
 					{
 						cnt++;
 						curr_buff_pos++;

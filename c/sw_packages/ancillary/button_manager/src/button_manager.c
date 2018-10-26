@@ -280,7 +280,6 @@ static void button_manager_task( void *adev )
 
 	os_queue_t xButtonQueue;
 	xMessage_t xTxMessage;
-	uint8_t    queueRetVal;
 
 	uint8_t    manager_state = BTN_STATE_IDLE;
 	uint32_t   hold_count = 0;
@@ -302,6 +301,8 @@ static void button_manager_task( void *adev )
 
 	for( ;; )
 	{
+		uint8_t    queueRetVal;
+
 		manager_state = runtime_handle->manager_state;
 		hold_count = runtime_handle->hold_count;
 		queue_wait_delay = runtime_handle->queue_wait_delay;

@@ -113,6 +113,10 @@ uint8_t delay_ioctl(struct dsp_module_inst_t *adsp,
 			handle->delay_samples = delay_samples;
 			buff = handle->buff;
 			buff = (real_t *)realloc(buff, delay_samples * sizeof(real_t));
+			if (NULL == buff)
+			{
+				CRITICAL_ERROR("not enough memory in heap");
+			}
 			handle->buff = buff;
 			memset(buff, 0, delay_samples * sizeof(real_t));
 			break;

@@ -1,6 +1,6 @@
 /*
  *
- *   file  :  DevManagment.cpp
+ *   file  :  crc32.cpp
  *
  */
 
@@ -9,8 +9,6 @@
 /***************   includes    *******************/
 #include "crc_api.h" //place first to test that header file is self-contained
 
-#include "crc_config.h"
-#include "_crc_prerequirements_check.h" // should be after dev_management_config.h
 
 
 
@@ -96,60 +94,44 @@ static uint32_t reflect(uint32_t data, uint8_t nBits)
 crc_t calculate_crc32(uint8_t const message[], uint32_t nBytes)
 {
 	crc_t  remainder = 0xffffffff;
-    uint32_t i;
-    uint8_t bit,octet;
+	uint32_t i;
+	uint8_t bit;
 
 
-    /*
-     * Perform modulo-2 division, a byte at a time.
-     */
-    for (i = 0; i < nBytes; i++)
-    {
-#if 1
-        /*
-         * Bring the next byte into the remainder.
-         */
-        remainder ^= (((crc_t)REFLECT_DATA(*message)) )<< (WIDTH - 8);
+	/*
+	 * Perform modulo-2 division, a byte at a time.
+	 */
+	for (i = 0; i < nBytes; i++)
+	{
+		/*
+		 * Bring the next byte into the remainder.
+		 */
+		remainder ^= (((crc_t)REFLECT_DATA(*message)) )<< (WIDTH - 8);
 
-        /*
-         * Perform modulo-2 division, a bit at a time.
-         */
-        for (bit = 8; bit > 0; --bit)
-        {
-            /*
-             * Try to divide the current data bit.
-             */
-        	//divRes = remainder & TOPBIT;
-            if (remainder & TOPBIT)
-            {
-                remainder = ( remainder << 1) ^ POLYNOMIAL;
-            }
-            else
-            {
-                remainder =  remainder << 1;
-            }
-        }
-#else
-        octet = *message;
-        for (i=0; i<8; i++)
-        {
-            if ((octet >> 7) ^ (remainder >> 31))
-            {
-            	remainder = (remainder << 1) ^ POLYNOMIAL;
-            }
-            else
-            {
-            	remainder = (remainder << 1);
-            }
-            octet <<= 1;
-        }
-#endif
-    	message++;
-    }
-    /*
-     * The final remainder is the CRC result.
-     */
-    return (REFLECT_REMAINDER(remainder) ^ 0xffffffff);
+		/*
+		 * Perform modulo-2 division, a bit at a time.
+		 */
+		for (bit = 8; bit > 0; --bit)
+		{
+			/*
+			 * Try to divide the current data bit.
+			 */
+			//divRes = remainder & TOPBIT;
+			if (remainder & TOPBIT)
+			{
+				remainder = ( remainder << 1) ^ POLYNOMIAL;
+			}
+			else
+			{
+				remainder =  remainder << 1;
+			}
+		}
+
+		message++;
+	}
+	/*
+	 * The final remainder is the CRC result.
+	 */
+	return (REFLECT_REMAINDER(remainder) ^ 0xffffffff);
 
 }   /* crcSlow() */
-

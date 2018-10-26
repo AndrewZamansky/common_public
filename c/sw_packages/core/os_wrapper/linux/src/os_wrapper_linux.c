@@ -68,7 +68,7 @@ os_queue_t os_create_queue(uint32_t num_of_elements, uint32_t size_of_elements)
 		return NULL;
 	}
 
-	snprintf(name, 16, "/queue%d", i);
+	snprintf(name, 16, "/queue%u", i);
 	os_queue =
 			(struct os_wrapper_queue *)malloc(sizeof(struct os_wrapper_queue));
 	queues_in_use[i] = os_queue;
@@ -101,7 +101,6 @@ os_queue_t os_create_queue(uint32_t num_of_elements, uint32_t size_of_elements)
 
 uint8_t os_queue_send_immediate(os_queue_t queue,const  void * pData  )
 {
-	uint8_t retVal;
 	mqd_t  mq;
 	struct mq_attr attr;
 	int ret;
@@ -130,7 +129,6 @@ uint8_t os_queue_send_immediate(os_queue_t queue,const  void * pData  )
 
 uint8_t os_queue_send_infinite_wait(os_queue_t queue,const  void * pData  )
 {
-	uint8_t retVal;
 	mqd_t  mq;
 	int ret;
 
@@ -151,11 +149,9 @@ uint8_t os_queue_send_infinite_wait(os_queue_t queue,const  void * pData  )
 uint8_t os_queue_receive_with_timeout(
 				os_queue_t queue, void *pData, int timeout_msec)
 {
-	uint8_t retVal;
 	mqd_t  mq;
 	int ret;
 	struct timespec abs_timeout;
-	time_t sec;
 
 	mq = queue->mq;
 	clock_gettime(CLOCK_REALTIME, &abs_timeout);
@@ -163,6 +159,8 @@ uint8_t os_queue_receive_with_timeout(
 //		//printf("%s timeout_msec = %ul\n", __FUNCTION__, abs_timeout.tv_sec);
 	if (1000 <= timeout_msec)
 	{
+		time_t sec;
+
 		sec = timeout_msec / 1000;
 		abs_timeout.tv_sec += sec;
 		timeout_msec -= (1000 * sec);
@@ -184,7 +182,6 @@ uint8_t os_queue_receive_with_timeout(
 
 uint8_t os_queue_receive_infinite_wait(os_queue_t queue, void *pData)
 {
-	uint8_t retVal;
 	mqd_t  mq;
 	int ret;
 	unsigned int msg_prio = 15;

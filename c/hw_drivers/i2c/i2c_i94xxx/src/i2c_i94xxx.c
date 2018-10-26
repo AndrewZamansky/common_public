@@ -132,11 +132,10 @@ static void I2C_SlaveTRx(
 	{
 		/* Previously address with own SLA address
 		Data has been received; ACK has been returned*/
-		uint8_t data;
-
-
 		if (I2C_I94XXX_RCV_DATA_SIZE_BUFFER > curr_data_pos)
 		{
+			uint8_t data;
+
 			data = (unsigned char) I2C_GET_DATA(i2c);
 			in_buff[curr_data_pos++] = data;
 			runtime_handle->curr_data_pos = curr_data_pos;

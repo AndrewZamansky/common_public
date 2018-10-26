@@ -151,80 +151,66 @@ static void configure_pinout(struct I2S_i94xxx_cfg_t *cfg_hndl)
 
 
 
-/**
- * I2S_i94xxx_ioctl()
- *
- * return:
- */
-uint8_t I2S_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
-		, void * aIoctl_param1 , void * aIoctl_param2)
+static void i94xxx_init(struct I2S_i94xxx_cfg_t *cfg_hndl,
+		struct I2S_i94xxx_runtime_t *runtime_handle)
 {
-	struct I2S_i94xxx_cfg_t *cfg_hndl;
-	struct I2S_i94xxx_runtime_t *runtime_handle;
 	uint32_t   	clock_mode;
 	uint8_t		num_of_bytes_in_word;
 	struct dev_desc_t	*clk_dev;
 	struct dev_desc_t	*src_clock;
-	uint32_t	sample_rate;
 	uint32_t	i2s_format;
 	uint32_t    tdm_ch_num;
 	uint32_t    audio_format;
-
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
-	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
+	uint32_t	sample_rate;
 
 	src_clock = cfg_hndl->src_clock;
 	clock_mode = cfg_hndl->clock_mode;
-	sample_rate = cfg_hndl->sample_rate;
 	i2s_format = cfg_hndl->i2s_format;
 	num_of_bytes_in_word = cfg_hndl->num_of_bytes_in_word;
 	tdm_ch_num = cfg_hndl->tdm_ch_num;
 	audio_format = cfg_hndl->audio_format;
+	sample_rate = cfg_hndl->sample_rate;
 
 	clk_dev = i94xxx_i2s_clk_dev;
 
-	switch(aIoctl_num)
+	configure_pinout(cfg_hndl);
+
+	DEV_IOCTL_1_PARAMS(clk_dev, CLK_IOCTL_SET_PARENT, src_clock);
+	DEV_IOCTL_0_PARAMS(clk_dev, CLK_IOCTL_ENABLE);
+
+
+	/*
+     *  Master mode, 16-bit word width, stereo mode, I2S format.
+     *  Set TX and RX FIFO threshold to middle value.
+     */
+
+	runtime_handle->actual_sample_rate = I2S_Open(
+						I2S0,
+						clock_mode,
+						sample_rate,
+						(num_of_bytes_in_word - 1) << I2S_CTL0_DATWIDTH_Pos,
+						tdm_ch_num,
+						audio_format,
+						i2s_format);
+
+	I2S_SET_TXTH(I2S0, I2S_FIFO_TX_LEVEL_WORD_4);
+	I2S_SET_RXTH(I2S0, I2S_FIFO_RX_LEVEL_WORD_4);
+
+	I2S_CLR_TX_FIFO(I2S0);
+	I2S_CLR_RX_FIFO(I2S0);
+
+	I2S_EnableMCLK(I2S0, sample_rate * 256);
+
+	if ( I2S_FORMAT_PCMMSB == i2s_format )
 	{
-	case IOCTL_DEVICE_START :
+		/* I2S Configuration. */
+		I2S_SET_PCMSYNC(I2S0, I2S_PCMSYNC_BCLK);
+		I2S_SET_MONO_RX_CHANNEL(I2S0, I2S_MONO_RX_RIGHT);
+		I2S_SET_STEREOORDER(I2S0, I2S_ORDER_EVENLOW);
 
-		configure_pinout(cfg_hndl);
-
-		DEV_IOCTL_1_PARAMS(clk_dev, CLK_IOCTL_SET_PARENT, src_clock);
-		DEV_IOCTL_0_PARAMS(clk_dev, CLK_IOCTL_ENABLE);
-
-
-		/*
-	     *  Master mode, 16-bit word width, stereo mode, I2S format.
-	     *  Set TX and RX FIFO threshold to middle value.
-	     */
-
-		runtime_handle->actual_sample_rate = I2S_Open(
-							I2S0,
-							clock_mode,
-							sample_rate,
-							(num_of_bytes_in_word-1) << I2S_CTL0_DATWIDTH_Pos,
-							tdm_ch_num,
-							audio_format,
-							i2s_format);
-
-		I2S_SET_TXTH(I2S0, I2S_FIFO_TX_LEVEL_WORD_4);
-		I2S_SET_RXTH(I2S0, I2S_FIFO_RX_LEVEL_WORD_4);
-
-		I2S_CLR_TX_FIFO(I2S0);
-		I2S_CLR_RX_FIFO(I2S0);
-
-		I2S_EnableMCLK(I2S0, sample_rate * 256);
-
-		if ( I2S_FORMAT_PCMMSB == i2s_format )
-		{
-			/* I2S Configuration. */
-			I2S_SET_PCMSYNC(I2S0, I2S_PCMSYNC_BCLK);
-			I2S_SET_MONO_RX_CHANNEL(I2S0, I2S_MONO_RX_RIGHT);
-			I2S_SET_STEREOORDER(I2S0, I2S_ORDER_EVENLOW);
-
-			/* Set channel width. */
-			I2S_SET_CHWIDTH(I2S0, I2S_CHWIDTH_32);
-		}
+		/* Set channel width. */
+		I2S_SET_CHWIDTH(I2S0, I2S_CHWIDTH_32);
+	}
 //		else if ( I2S_FORMAT_I2S == i2s_format )
 //		{
 //			// I2S0 Configuration
@@ -235,21 +221,93 @@ uint8_t I2S_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 //			I2S_SET_CHWIDTH(I2S0, I2S_CHWIDTH_32);
 //		}
 
-		I2S_ENABLE_RX(I2S0);
-		I2S_ENABLE(I2S0);
+	if (cfg_hndl->do_reordering_for_16or8bit_channels)
+	{
+		I2S_SET_STEREOORDER(I2S0, I2S_ORDER_EVENLOW);
+	}
+	else
+	{
+		I2S_SET_STEREOORDER(I2S0, I2S_ORDER_EVENHIGH);
+	}
+
+	I2S_ENABLE_RX(I2S0);
+	I2S_ENABLE(I2S0);
 
 #ifdef DEBUG_USE_INTERRUPT
-		irq_register_interrupt(I2S0_IRQn , I2S_IRQHandler);
-		irq_set_priority(I2S0_IRQn , OS_MAX_INTERRUPT_PRIORITY_FOR_API_CALLS );
-		irq_enable_interrupt(I2S0_IRQn);
-		I2S_ENABLE_INT(I2S0, I2S_IEN_RXTHIEN_Msk);
+	irq_register_interrupt(I2S0_IRQn , I2S_IRQHandler);
+	irq_set_priority(I2S0_IRQn , OS_MAX_INTERRUPT_PRIORITY_FOR_API_CALLS );
+	irq_enable_interrupt(I2S0_IRQn);
+	I2S_ENABLE_INT(I2S0, I2S_IEN_RXTHIEN_Msk);
 
 #else
-		I2S0->CTL0 |= I2S_CTL0_RXPDMAEN_Msk;
+	I2S0->CTL0 |= I2S_CTL0_RXPDMAEN_Msk;
 #endif
-		// I2S_ENABLE_RX(I2S_module);
-		// I2S_module->FIFOCTL |= I2S_FIFO_RX_LEVEL_WORD_4;
-		// I2S_module->FIFOCTL |= SPI_FIFOCTL_RXRST_Msk;
+	// I2S_ENABLE_RX(I2S_module);
+	// I2S_module->FIFOCTL |= I2S_FIFO_RX_LEVEL_WORD_4;
+	// I2S_module->FIFOCTL |= SPI_FIFOCTL_RXRST_Msk;
+
+}
+
+
+static void i94xxx_sync_to_dpwm_fs_rate(struct I2S_i94xxx_cfg_t *cfg_hndl,
+		struct I2S_i94xxx_runtime_t *runtime_handle)
+{
+	uint32_t clock_div;
+	uint32_t dpwm_zohdiv;
+	uint32_t dpwm_clock_div;
+	uint32_t dpwm_k;
+	uint32_t dpwm_total_div_to_get_FS;
+	uint32_t i2s_total_div_to_get_FS;
+	uint8_t		num_of_bytes_in_word;
+	uint32_t    tdm_ch_num;
+
+	num_of_bytes_in_word = cfg_hndl->num_of_bytes_in_word;
+	tdm_ch_num = cfg_hndl->tdm_ch_num;
+
+	if ( 2 != tdm_ch_num)
+	{
+		CRITICAL_ERROR("only 2 channels supported");
+	}
+	dpwm_clock_div = DPWM_GET_CLOCKDIV(DPWM);
+	dpwm_zohdiv = DPWM_GET_ZOHDIV(DPWM);
+	dpwm_k = (DPWM->CTL & DPWM_CLKSET_500FS) ? 125 : 128;
+
+
+	dpwm_total_div_to_get_FS =
+			(dpwm_clock_div + 1) * dpwm_zohdiv * dpwm_k;
+	clock_div = ( ( dpwm_total_div_to_get_FS ) /
+			(2 * tdm_ch_num * num_of_bytes_in_word * 8) ) - 1;
+
+	i2s_total_div_to_get_FS = (clock_div + 1) *
+			(2 * tdm_ch_num * num_of_bytes_in_word * 8);
+
+	if (dpwm_total_div_to_get_FS != i2s_total_div_to_get_FS)
+	{
+		CRITICAL_ERROR("same FS for I2S and DPWM cannot be achived");
+	}
+	I2S0->CLKDIV = (I2S0->CLKDIV & ~I2S_CLKDIV_BCLKDIV_Msk) |
+		(clock_div << I2S_CLKDIV_BCLKDIV_Pos);
+}
+
+
+/**
+ * I2S_i94xxx_ioctl()
+ *
+ * return:
+ */
+uint8_t I2S_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
+		, void * aIoctl_param1 , void * aIoctl_param2)
+{
+	struct I2S_i94xxx_cfg_t *cfg_hndl;
+	struct I2S_i94xxx_runtime_t *runtime_handle;
+
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
+
+	switch(aIoctl_num)
+	{
+	case IOCTL_DEVICE_START :
+		i94xxx_init(cfg_hndl, runtime_handle);
 		break;
 
 	case I2S_I94XXX_ENABLE_OUTPUT_IOCTL:
@@ -267,40 +325,7 @@ uint8_t I2S_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 		break;
 
 	case I2S_I94XXX_SYNC_FS_TO_DPWM_FS_RATE:
-		{
-			uint32_t clock_div;
-			uint32_t dpwm_zohdiv;
-			uint32_t dpwm_clock_div;
-			uint32_t dpwm_k;
-			uint8_t channel_num = 2;
-			uint32_t dpwm_total_div_to_get_FS;
-			uint32_t i2s_total_div_to_get_FS;
-
-			if ( 2 != channel_num)
-			{
-				CRITICAL_ERROR("only 2 channels supported");
-			}
-			dpwm_clock_div = DPWM_GET_CLOCKDIV(DPWM);
-			dpwm_zohdiv = DPWM_GET_ZOHDIV(DPWM);
-			dpwm_k = (DPWM->CTL & DPWM_CLKSET_500FS) ? 125 : 128;
-
-
-			dpwm_total_div_to_get_FS =
-					(dpwm_clock_div + 1) * dpwm_zohdiv * dpwm_k;
-			clock_div = ( ( dpwm_total_div_to_get_FS ) /
-					(2 * channel_num * num_of_bytes_in_word * 8) ) - 1;
-
-			i2s_total_div_to_get_FS = (clock_div + 1) *
-					(2 * channel_num * num_of_bytes_in_word * 8);
-
-			if (dpwm_total_div_to_get_FS != i2s_total_div_to_get_FS)
-			{
-				CRITICAL_ERROR("same FS for I2S and DPWM cannot be achived");
-			}
-	        I2S0->CLKDIV = (I2S0->CLKDIV & ~I2S_CLKDIV_BCLKDIV_Msk) |
-				(clock_div << I2S_CLKDIV_BCLKDIV_Pos);
-
-		}
+		i94xxx_sync_to_dpwm_fs_rate(cfg_hndl, runtime_handle);
 		break;
 
 	default :

@@ -370,6 +370,15 @@ uint8_t I2S_onSPI_i94xxx_ioctl( struct dev_desc_t *adev,
 //		irq_set_priority(i2s_spi_irq , OS_MAX_INTERRUPT_PRIORITY_FOR_API_CALLS );
 //		irq_enable_interrupt(i2s_spi_irq);
 
+		if (cfg_hndl->do_reordering_for_16or8bit_channels)
+		{
+			SPI_I2S_SET_STEREOORDER(I2S_SPI_module, SPI_I2SORDER_LOW);
+		}
+		else
+		{
+			SPI_I2S_SET_STEREOORDER(I2S_SPI_module, SPI_I2SORDER_HIGH);
+		}
+
 		SPI_I2SEnableControl(I2S_SPI_module);
 
 		break;

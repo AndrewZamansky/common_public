@@ -49,7 +49,6 @@ typedef enum
 typedef struct
 {
 	struct dev_desc_t * low_level_socket;
-	uint32_t socket_state;
 } HTTP_socket_info_t;
 
 
@@ -144,7 +143,6 @@ uint8_t http_callback(struct dev_desc_t *adev ,const uint8_t aCallback_num
 {
 	uint8_t *requestStr = ((callback_new_data_from_socket_t*)aCallback_param2)->pData;
 	uint32_t str_len =  ((callback_new_data_from_socket_t*)aCallback_param2)->DataLen;
-	uint32_t cmdStartPos;
 	uint8_t *pSendData;
 	xMessage_t xMessage;
 //	struct dev_desc_t * socketHandle=(struct dev_desc_t *)aCallback_param1;
@@ -157,6 +155,8 @@ uint8_t http_callback(struct dev_desc_t *adev ,const uint8_t aCallback_num
 
 	if(0==memcmp("GET",requestStr,3))
 	{
+		uint32_t cmdStartPos;
+
 		cmdStartPos=3;
 //		PRINT_DATA_DBG( (uint8_t*)"---http2 data\r\n",15);
 

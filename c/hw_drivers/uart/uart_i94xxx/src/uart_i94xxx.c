@@ -175,7 +175,7 @@ size_t uart_i94xxx_pwrite(struct dev_desc_t *adev,
 	{
 		char uart_send_end_dbg_str[] = "uart send_data_len = 00000\n";
 		snprintf(uart_send_end_dbg_str, sizeof(uart_send_end_dbg_str),
-				"uart send_data_len = %05lu\n", send_data_len);
+				"uart send_data_len = %05u\n", (uint32_t)send_data_len);
 		PRINT_DATA_DBG(start_of_data, send_data_len);
 		PRINT_DATA_DBG(uart_send_end_dbg_str, sizeof(uart_send_end_dbg_str)- 1);
 	}

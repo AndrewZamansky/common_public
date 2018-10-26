@@ -320,11 +320,7 @@ static void new_audio_received(
 	struct usb_audio_class_runtime_t *runtime_hndl;
 
 	uint8_t	curr_buff_indx;
-	uint8_t	next_buff_indx;
-	uint8_t *next_buff_status;
-	uint8_t *curr_buff_status;
 	uint8_t **buffers;
-	struct dev_desc_t *callback_dev;
 	uint32_t buff_size;
 	uint32_t curr_pos_in_buffer;
 	uint32_t bytes_to_copy;
@@ -409,6 +405,11 @@ static void new_audio_received(
 
 	if (curr_pos_in_buffer == buff_size)
 	{
+		uint8_t	next_buff_indx;
+		uint8_t *next_buff_status;
+		uint8_t *curr_buff_status;
+		struct dev_desc_t *callback_dev;
+
 		curr_pos_in_buffer = 0;
 		next_buff_indx = (curr_buff_indx + 1) % USB_AUDIO_CLASS_NUM_OF_BUFFERS;
 		curr_buff_status = &runtime_hndl->buff_status[curr_buff_indx];

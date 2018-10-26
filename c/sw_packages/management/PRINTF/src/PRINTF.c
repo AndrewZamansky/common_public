@@ -227,7 +227,7 @@ void PRINTF_REPLY(struct dev_desc_t *aDevHandle, const char* Format, ...)
 void PRINTF_print_data(
 		PRINTF_TYPE_t aPrntType, const uint8_t* data, uint32_t aLen)
 {
-	if (0 >= aLen) return ;
+	if (0 == aLen) return ;
 	common_sendData(aPrntType, data, aLen);
 }
 

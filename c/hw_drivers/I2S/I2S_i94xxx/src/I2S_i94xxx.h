@@ -20,6 +20,10 @@ struct I2S_i94xxx_cfg_t {
 	uint32_t    sample_rate;
 	uint32_t    i2s_format;
 	uint8_t     num_of_bytes_in_word;
+
+	// fix for uint8_t/uint16_t access if needed:
+	uint8_t   	do_reordering_for_16or8bit_channels;
+
 	uint32_t    tdm_ch_num;
 	uint32_t    audio_format;
 	uint8_t     BCLK_pin;

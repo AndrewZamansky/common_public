@@ -4,14 +4,11 @@
  *
  *
  *
- *
- *
  */
 
 
 
 /********  includes *********************/
-#include "src/_spi_flash_prerequirements_check.h"
 #include "spi_flash_api.h"
 #include "gpio_api.h"
 #include "spi_flash.h"
@@ -81,7 +78,8 @@
 static void _chip_select_on(const void *apHandle   )
 {
 	/* Select the FLASH: Chip Select low */
-	DEV_IOCTL_0_PARAMS(INSTANCE(apHandle)->gpio_select_dev , IOCTL_GPIO_PIN_CLEAR );
+	DEV_IOCTL_0_PARAMS(
+			INSTANCE(apHandle)->gpio_select_dev , IOCTL_GPIO_PIN_CLEAR );
 }
 
 /*******************************************************************************
@@ -201,7 +199,8 @@ void SPI_FLASH_WaitForWriteEnd(const void *apHandle)
 * Output         : None
 * Return         : None
 *******************************************************************************/
-static void _write_to_flash_with_wen_and_wait(const void *apHandle , const uint8_t* apBuffer , uint32_t length )
+static void _write_to_flash_with_wen_and_wait(
+		const void *apHandle , const uint8_t* apBuffer , uint32_t length )
 {
 	/* Select the FLASH: Chip Select low */
 	SPI_FLASH_WriteEnable(apHandle);
@@ -353,40 +352,39 @@ size_t  spi_flash_pwrite( struct dev_desc_t *adev ,const uint8_t *apData , size_
 {
 	spi_flash_instance_t *config_handle;
 #if UINT_MAX < 0xffffffff
-  uint32_t retVal  ;
+	uint32_t retVal  ;
 #else
-  size_t retVal  ;
+	size_t retVal  ;
 #endif
-  uint16_t NumOfBytesToWrite,alignmentBytes;
-  retVal=length;
+	uint16_t alignmentBytes;
 
+	retVal=length;
 
 
 	config_handle = DEV_GET_CONFIG_DATA_POINTER(adev);
-  alignmentBytes = ((uint16_t)startAddr) & SPI_FLASH_PageSize_mask;/* in case startAddr is not aligned SPI_FLASH_PageSize   */
-  while(length)
-  {
-	NumOfBytesToWrite = SPI_FLASH_PageSize - alignmentBytes;
-
-	if(length < (uint32_t)NumOfBytesToWrite )
+	alignmentBytes = ((uint16_t)startAddr) & SPI_FLASH_PageSize_mask;/* in case startAddr is not aligned SPI_FLASH_PageSize   */
+	while(length)
 	{
-	  NumOfBytesToWrite = (uint16_t)length;
+		uint16_t NumOfBytesToWrite;
+		NumOfBytesToWrite = SPI_FLASH_PageSize - alignmentBytes;
+
+		if(length < (uint32_t)NumOfBytesToWrite )
+		{
+		  NumOfBytesToWrite = (uint16_t)length;
+		}
+
+	//	if(NumOfBytesToWrite>100)
+	//	{
+	//		  while(1);
+	//	}
+		SPI_FLASH_PageWrite(config_handle ,apData, startAddr, NumOfBytesToWrite);
+		startAddr +=  NumOfBytesToWrite;
+		apData += NumOfBytesToWrite;
+		length -=NumOfBytesToWrite;
+		alignmentBytes = 0;
 	}
 
-//	if(NumOfBytesToWrite>100)
-//	{
-//		  while(1);
-//	}
-	SPI_FLASH_PageWrite(config_handle ,apData, startAddr, NumOfBytesToWrite);
-	startAddr +=  NumOfBytesToWrite;
-	apData += NumOfBytesToWrite;
-	length -=NumOfBytesToWrite;
-	alignmentBytes = 0;
-  }
-
-
-
-  return retVal;
+	return retVal;
 }
 
 

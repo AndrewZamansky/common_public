@@ -111,10 +111,14 @@ EXTERN_C_FUNCTION void _kill(int pid)
 
 extern void* __HEAP_START;
 extern void* __HEAP_END;
-unsigned char *global_heap = NULL;
+static unsigned char *global_heap = NULL;
 EXTERN_C_FUNCTION void* _sbrk ( int incr )
 {
   unsigned char *prev_heap;
+
+  if (global_heap == NULL) {
+	  global_heap = (unsigned char *)&__HEAP_START;
+  }
 
   if( ( global_heap + incr) >= (unsigned char *)&__HEAP_END)
   {
@@ -122,15 +126,18 @@ EXTERN_C_FUNCTION void* _sbrk ( int incr )
 	  while(1); // trap of memmory overflow
   }
 
-  if (global_heap == NULL) {
-	  global_heap = (unsigned char *)&__HEAP_START;
-  }
   prev_heap = global_heap;
   /* check removed to show basic approach */
 
   global_heap += incr;
 
   return (void*) prev_heap;
+}
+
+
+size_t get_heap_left()
+{
+	return (((unsigned char *)&__HEAP_END) - global_heap);
 }
 
 

@@ -48,7 +48,6 @@ uint8_t uart_nuc505_callback(struct dev_desc_t *adev,
 {
 	struct uart_nuc505_cfg_t *config_handle;
 	struct uart_nuc505_runtime_t *runtime_handle;
-	uint8_t u8InChar;
 	uint32_t u32IntSts ;
 	UART_T *uart_regs;
 	size_t numOfReceivedChars;
@@ -66,6 +65,7 @@ uint8_t uart_nuc505_callback(struct dev_desc_t *adev,
 	while ((u32IntSts & UART_INTSTS_RDAINT_Msk) &&
 			(UART_NUC505_RCV_DATA_SIZE_BUFFER > numOfReceivedChars))
 	{
+		uint8_t u8InChar;
 
 		u8InChar = UART_READ(uart_regs);
 		buffer[numOfReceivedChars++] = u8InChar;

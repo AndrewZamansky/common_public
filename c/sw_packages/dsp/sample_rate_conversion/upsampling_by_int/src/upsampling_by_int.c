@@ -13,7 +13,7 @@
 #include "dsp_management_api.h"
 #include "common_dsp_api.h"
 
-#include "upsampling_by_int_api.h" //place upsampling_by_intst to test that header file is self-contained
+#include "upsampling_by_int_api.h"
 #include "upsampling_by_int.h"
 
 #include "auto_init_api.h"
@@ -60,6 +60,8 @@ static void upsampling_by_int_dsp(struct dsp_module_inst_t *adsp,
 	size_t factor ;
 
 	handle = adsp->handle;
+	factor = handle->factor;
+	p_upsampling_by_int_filter = handle->p_upsampling_by_int_filter;
 
 	if((0 == handle->number_of_filter_coefficients)
 		|| (0 == factor) || (NULL == p_upsampling_by_int_filter))
@@ -75,7 +77,7 @@ static void upsampling_by_int_dsp(struct dsp_module_inst_t *adsp,
 		CRITICAL_ERROR("bad buffers sizes");
 	}
 
-	data_len = data_len/handle->factor; // should be removed later ???
+	data_len = data_len / factor; // should be removed later ???
 	upsampling_by_int_function(
 			p_upsampling_by_int_filter, apCh1In , apCh1Out , in_data_len);
 

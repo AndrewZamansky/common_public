@@ -99,19 +99,21 @@ static uint32_t reflect(uint32_t data, uint8_t nBits)
 
 uint32_t  hw_crc_stm32f10x_api(const uint8_t *data , uint32_t length)
 {
-	uint32_t i,curr_data;
+	uint32_t i;
 	uint8_t j;
 
 	if( 0 != (length & 0x3)) return 0; // can calculate only blocks alligned to uint32_t
 
 	length = length >> 2;
 
-	RCC_AHBPeriphClockCmd(	RCC_AHBPeriph_CRC , ENABLE );
+	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_CRC, ENABLE );
 	CRC_ResetDR();
-	for(i=0 ; i < length ; i++)
+	for(i=0 ; i < length; i++)
 	{
+		uint32_t curr_data;
+
 		curr_data=0;
-		for(j=0;j<4;j++)
+		for(j = 0; j < 4; j++)
 		{
 			curr_data = curr_data << 8;
 			curr_data |= REFLECT_DATA(data[j]) ;
@@ -120,6 +122,5 @@ uint32_t  hw_crc_stm32f10x_api(const uint8_t *data , uint32_t length)
 		data += 4;
 	}
 
-    return (REFLECT_REMAINDER( CRC_GetCRC()) ^ 0xffffffff);
-
+	return (REFLECT_REMAINDER( CRC_GetCRC()) ^ 0xffffffff);
 }

@@ -83,15 +83,13 @@ uint32_t CyclesPerUs      = 0;
 
 void EP_Handler(uint8_t ep_num)
 {
-	usb_dev_in_endpoint_callback_func_t callback_func_in;
-	usb_dev_out_endpoint_callback_func_t callback_func_out;
-	uint32_t u32Len;
-    uint8_t *pu8Src;
 	uint32_t ep_cfg_state;
 
 	ep_cfg_state = GET_EP_CFG(ep_num) & 0x60;
 	if (USBD_CFG_EPMODE_IN == ep_cfg_state)
 	{
+		usb_dev_in_endpoint_callback_func_t callback_func_in;
+
 		callback_func_in = in_callback_functions[ep_num];
 		if (NULL != callback_func_in)
 		{
@@ -100,6 +98,10 @@ void EP_Handler(uint8_t ep_num)
 	}
 	else
 	{
+		usb_dev_out_endpoint_callback_func_t callback_func_out;
+		uint32_t u32Len;
+	    uint8_t *pu8Src;
+
 		/* Get the address in USB buffer */
 		pu8Src = (uint8_t *)(
 				(uint32_t)USBD_BUF_BASE + USBD_GET_EP_BUF_ADDR(ep_num));
@@ -286,11 +288,12 @@ static void register_interfaces(
 		struct register_interfaces_t *register_interfaces)
 {
 	uint8_t i;
-	struct register_interface_t *register_interface;
-	uint8_t interface_num;
 
 	for(i = 0; i < register_interfaces->num_of_interfaces; i++)
 	{
+		struct register_interface_t *register_interface;
+		uint8_t interface_num;
+
 		register_interface = &register_interfaces->register_interface_arr[i];
 		interface_num = register_interface->interfaces_num;
 		if (MAX_NUM_OF_ITERFACES < interface_num)
@@ -351,12 +354,13 @@ static void set_data_to_in_endpoint_func(
 
 static void set_endpoint_func(struct set_endpoints_t *set_endpoints)
 {
-	uint8_t max_pckt_size;
-	uint8_t endpoint_type;
 	int i;
 
 	for (i = 0; i < set_endpoints->num_of_endpoints; i++)
 	{
+		uint8_t max_pckt_size;
+		uint8_t endpoint_type;
+
 		if (MAX_NUM_OF_ENDPOINTS == endpoints_count)
 		{
 			CRITICAL_ERROR("no free endpoints left \n");

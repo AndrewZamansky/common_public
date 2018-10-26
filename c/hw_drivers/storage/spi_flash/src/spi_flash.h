@@ -2,10 +2,6 @@
  * file : spi_flash.h
  *
  *
- *
- *
- *
- *
  */
 
 #ifndef _SPI_FLASH_H

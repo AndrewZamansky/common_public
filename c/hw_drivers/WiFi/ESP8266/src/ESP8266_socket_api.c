@@ -394,6 +394,7 @@ int setsockopt_uCprojects(int sockfd, int level,
 int bind_uCprojects(int sockfd, const struct sockaddr *addr, socklen_t addrlen)
 {
 	sockfd = calculate_socket_fd(sockfd);
+	PRINTF_DBG("%s :  fd = %d\n", __FUNCTION__, sockfd);
 	CRITICAL_ERROR("bind_uCprojects not implemented yet");
 	return 0;
 }
@@ -595,10 +596,27 @@ int select_uCprojects(int nfds, fd_set *readfds, fd_set *writefds,
 	fd_set orig_readfds;
 	fd_set orig_writefds;
 	uint32_t timeout_msec;
+	uint32_t readfds_for_print;
+	uint32_t writefds_for_print;
 
-
-	PRINTF_DBG("%s : in *(uint32_t*)readfds= %ul, *(uint32_t*)writefds = %ul\n",
-			__FUNCTION__, *(uint32_t*)readfds, *(uint32_t*)writefds);
+	if (NULL != readfds)
+	{
+		readfds_for_print = *(uint32_t*)readfds;
+	}
+	else
+	{
+		readfds_for_print = 0;
+	}
+	if (NULL != writefds)
+	{
+		writefds_for_print = *(uint32_t*)writefds;
+	}
+	else
+	{
+		writefds_for_print = 0;
+	}
+	PRINTF_DBG("%s : in *(uint32_t*)readfds= %u, *(uint32_t*)writefds = %u\n",
+			__FUNCTION__, readfds_for_print, writefds_for_print);
 
 	if (NULL != timeout)
 	{

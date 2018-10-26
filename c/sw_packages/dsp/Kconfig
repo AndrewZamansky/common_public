@@ -65,12 +65,12 @@ if INCLUDE_MULTIPLIER
 source "$KCONFIG_PUBLIC_START_DIR/sw_packages/dsp/multiplier/Kconfig"
 endif
 
-config INCLUDE_I2S_SPLITTER
-	bool   "i2s splitter"
+config INCLUDE_PCM_SPLITTER
+	bool   "pcm splitter"
 	default n
 
-config INCLUDE_I2S_MIXER
-	bool   "i2s mixer"
+config INCLUDE_PCM_MIXER
+	bool   "pcm mixer"
 	default n
 
 config INCLUDE_DPWM_MIXER

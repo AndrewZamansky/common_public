@@ -1,10 +1,6 @@
 /*
  *
- * uart_stm32f10x.c
- *
- *
- *
- *
+ * uart_atmega.c
  *
  */
 
@@ -13,7 +9,6 @@
 #include "uart_atmega_config.h"
 #include "dev_management_api.h" // for device manager defines and typedefs
 #include "uart_api.h"
-#include "src/_uart_atmega_prerequirements_check.h" // should be after {uart_atmega_config.h,dev_management_api.h}
 
 #include <avr/io.h>
 
@@ -31,32 +26,32 @@
 
 #ifdef UCSRA
 /* Device with single UART */
-#define REG_UCSRA	UCSRA
-#define REG_UCSRB	UCSRB
-#define REG_UBRRL	UBRRL
-#define REG_UDR		UDR
+#define REG_UCSRA   UCSRA
+#define REG_UCSRB   UCSRB
+#define REG_UBRRL   UBRRL
+#define REG_UDR     UDR
 #define BIT_TXEN    TXEN
 #define BIT_RXEN    RXEN
 #define BIT_UDRE    UDRE
 #else
 /* Device with multiple UARTs */
-#define REG_UCSRA	UCSR0A
-#define REG_UCSRB	UCSR0B
-#define REG_UBRRL	UBRR0L
-#define REG_UDR		UDR0
+#define REG_UCSRA   UCSR0A
+#define REG_UCSRB   UCSR0B
+#define REG_UBRRL   UBRR0L
+#define REG_UDR     UDR0
 #define BIT_TXEN    TXEN0
 #define BIT_RXEN    RXEN0
 #define BIT_UDRE    UDRE0
 #endif
 
-#define AVR_CPU_HZ	8000000
+#define AVR_CPU_HZ   8000000
 
-#define INSTANCE(hndl)	((UART_ATMEGA_Instance_t*)hndl)
+#define INSTANCE(hndl)  ((UART_ATMEGA_Instance_t*)hndl)
 
 /********  types  *********************/
 
 
-/* ---------------------------- External variables ---------------------------------*/
+/* ---------------------------- External variables --------------------------*/
 
 /* ------------------------ External functions ------------------------------*/
 
@@ -72,16 +67,18 @@ static UART_ATMEGA_Instance_t *pHw_uart_pointer_to_instance=NULL;
 
 void tx_function(void)
 {
-    /* In order to detect unexpected events during development,
-   it is recommended to set a breakpoint on the following instruction.
-*/
-    static uint8_t dummy;
+	/* In order to detect unexpected events during development,
+   	 * it is recommended to set a breakpoint on the following instruction.
+	*/
 
-    if (REG_UCSRA & _BV(TXC0) )
-    {
-    	if(pHw_uart_pointer_to_instance->callback_dev)
-    		DEV_CALLBACK_1_PARAMS(pHw_uart_pointer_to_instance->callback_dev , CALLBACK_TX_DONE,1);
-    }
+	if (REG_UCSRA & _BV(TXC0) )
+	{
+		if(pHw_uart_pointer_to_instance->callback_dev)
+		{
+			DEV_CALLBACK_1_PARAMS(pHw_uart_pointer_to_instance->callback_dev,
+					CALLBACK_TX_DONE,1);
+		}
+	}
 
 }
 
@@ -95,7 +92,7 @@ void tx_function(void)
 ISR (USART_TX_vect)
  {
     /* In order to detect unexpected events during development,
-       it is recommended to set a breakpoint on the following instruction.
+	  it is recommended to set a breakpoint on the following instruction.
     */
 
 	 atomIntEnter();
@@ -113,13 +110,13 @@ ISR (USART_TX_vect)
 
 void rx_function(void)
 {
-    /* In order to detect unexpected events during development,
-   it is recommended to set a breakpoint on the following instruction.
-*/
-    static uint8_t cChar;
+	/* In order to detect unexpected events during development,
+   	   it is recommended to set a breakpoint on the following instruction.
+	 */
+	static uint8_t cChar;
 
-    if (REG_UCSRA & _BV(RXC0) )
-    {
+	if (REG_UCSRA & _BV(RXC0) )
+	{
 		cChar = REG_UDR;
 		if (NULL ==pHw_uart_pointer_to_instance->callback_dev )  return ;
 
@@ -127,9 +124,7 @@ void rx_function(void)
 		DEV_CALLBACK(pHw_uart_pointer_to_instance->callback_dev ,
 				CALLBACK_DATA_RECEIVED, &cChar, 1);
 
-    }
-
-
+	}
 }
 
 
@@ -151,41 +146,31 @@ ISR (USART_RX_vect)
  }
 
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        uart_atmega_pwrite                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-size_t uart_atmega_pwrite(const void *aHandle ,const uint8_t *apData , size_t aLength, size_t aOffset)
+/*--------------------------------------------------------------------------
+ * Function:        uart_atmega_pwrite
+ * Parameters:
+ * Returns:
+ *--------------------------------------------------------------------------
+ */
+size_t uart_atmega_pwrite(const void *aHandle,
+		const uint8_t *apData, size_t aLength, size_t aOffset)
 {
 
-    loop_until_bit_is_set(REG_UCSRA, BIT_UDRE);
-    REG_UDR = *apData;
+	loop_until_bit_is_set(REG_UCSRA, BIT_UDRE);
+	REG_UDR = *apData;
 
 	REG_UCSRB |= _BV(BIT_TXEN) ;
 
 	return 1;
-
 }
 
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        uart_atmega_ioctl                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------
+ * Function:        uart_atmega_ioctl
+ * Parameters:
+ * Returns:
+ *-------------------------------------------------------------------------
+ */
 uint8_t uart_atmega_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
@@ -197,14 +182,16 @@ uint8_t uart_atmega_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 
 
 		case IOCTL_UART_SET_BAUD_RATE :
-			INSTANCE(aHandle)->baud_rate = aIoctl_param1;
+			INSTANCE(aHandle)->baud_rate = (uint32_t)aIoctl_param1;
 			break;
 		case IOCTL_DEVICE_START :
 			#if AVR_CPU_HZ < 2000000UL && defined(U2X)
-			  REG_UCSRA = _BV(U2X);             /* improve baud rate error by using 2x clk */
-			  REG_UBRRL = (AVR_CPU_HZ / (8UL * INSTANCE(aHandle)->baud_rate)) - 1;
+			  REG_UCSRA = _BV(U2X);/* improve baud rate error by using 2x clk */
+			  REG_UBRRL =
+					  (AVR_CPU_HZ / (8UL * INSTANCE(aHandle)->baud_rate)) - 1;
 			#else
-			  REG_UBRRL = (AVR_CPU_HZ / (16UL * INSTANCE(aHandle)->baud_rate)) - 1;
+			  REG_UBRRL =
+					  (AVR_CPU_HZ / (16UL * INSTANCE(aHandle)->baud_rate)) - 1;
 			#endif
 
 			  pHw_uart_pointer_to_instance = INSTANCE(aHandle);
@@ -226,33 +213,3 @@ uint8_t uart_atmega_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 	}
 	return 0;
 }
-
-#if UART_ATMEGA_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
-
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        uart_atmega_api_dev_descriptor                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-uint8_t  uart_atmega_api_init_dev_descriptor(struct dev_desc_t *aDevDescriptor)
-{
-	if(NULL == aDevDescriptor) return 1;
-
-
-	aDevDescriptor->handle = &UART_ATMEGA_Instance;
-	aDevDescriptor->ioctl = uart_atmega_ioctl;
-	aDevDescriptor->pwrite = uart_atmega_pwrite;
-
-	return 0 ;
-
-}
-
-#endif
-
-

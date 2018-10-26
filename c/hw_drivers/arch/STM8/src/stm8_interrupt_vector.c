@@ -20,12 +20,12 @@ extern @far @interrupt void NonHandledInterrupt (void) ;
 
 
 struct interrupt_vector const _vectab[] = {
-  {0x82, (interrupt_handler_t)_stext}, /* RESET */
-  {0x82, (interrupt_handler_t)TRAP_IRQHandler}, /* TRAP - Software interrupt */
+	{0x82, (interrupt_handler_t)_stext}, /* RESET */
+	{0x82, (interrupt_handler_t)TRAP_IRQHandler}, /* TRAP - Software interrupt */
 	{0x82, (interrupt_handler_t)TLI_IRQHandler}, /* irq0 - External Top Level interrupt (TLI) */
 	{0x82, (interrupt_handler_t)AWU_IRQHandler}, /* irq1 - Auto Wake Up from Halt interrupt */
 	{0x82, (interrupt_handler_t)CLK_IRQHandler}, /* irq2 - Clock Controller interrupt */
-  {0x82, (interrupt_handler_t)EXTI_PORTA_IRQHandler}, /* irq3 - External interrupt 0 (GPIOA) */
+	{0x82, (interrupt_handler_t)EXTI_PORTA_IRQHandler}, /* irq3 - External interrupt 0 (GPIOA) */
 	{0x82, (interrupt_handler_t)EXTI_PORTB_IRQHandler}, /* irq4 - External interrupt 1 (GPIOB) */
 	{0x82, (interrupt_handler_t)EXTI_PORTC_IRQHandler}, /* irq5 - External interrupt 2 (GPIOC) */
 	{0x82, (interrupt_handler_t)EXTI_PORTD_IRQHandler}, /* irq6 - External interrupt 3 (GPIOD) */
@@ -47,17 +47,17 @@ struct interrupt_vector const _vectab[] = {
 	{0x82, (interrupt_handler_t)TIM1_CAP_COM_IRQHandler}, /* irq12 - TIM1 Capture/Compare interrupt */
 
 #ifdef STM8S903
-  {0x82, (interrupt_handler_t)TIM5_UPD_OVF_BRK_TRG_IRQHandler}, /* irq13 - TIM5 Update/Overflow/Break/Trigger interrupt  */
-  {0x82, (interrupt_handler_t)TIM5_CAP_COM_IRQHandler}, /* irq14 - TIM5 Capture/Compare interrupt */
+	{0x82, (interrupt_handler_t)TIM5_UPD_OVF_BRK_TRG_IRQHandler}, /* irq13 - TIM5 Update/Overflow/Break/Trigger interrupt  */
+	{0x82, (interrupt_handler_t)TIM5_CAP_COM_IRQHandler}, /* irq14 - TIM5 Capture/Compare interrupt */
 	
 #else /*STM8S208, STM8S207, STM8S105 or STM8S103*/
-  {0x82, (interrupt_handler_t)TIM2_UPD_OVF_BRK_IRQHandler}, /* irq13 - TIM2 Update/Overflow/Break interrupt  */
-  {0x82, (interrupt_handler_t)TIM2_CAP_COM_IRQHandler}, /* irq14 - TIM2 Capture/Compare interrupt */
+	{0x82, (interrupt_handler_t)TIM2_UPD_OVF_BRK_IRQHandler}, /* irq13 - TIM2 Update/Overflow/Break interrupt  */
+	{0x82, (interrupt_handler_t)TIM2_CAP_COM_IRQHandler}, /* irq14 - TIM2 Capture/Compare interrupt */
 #endif /*STM8S903*/
 	
 #if defined (STM8S208) || defined(STM8S207) || defined(STM8S105)
-  {0x82, (interrupt_handler_t)TIM3_UPD_OVF_BRK_IRQHandler}, /* irq15 - TIM3 Update/Overflow/Break interrupt */
-  {0x82, (interrupt_handler_t)TIM3_CAP_COM_IRQHandler}, /* irq16 - TIM3 Capture/Compare interrupt */
+	{0x82, (interrupt_handler_t)TIM3_UPD_OVF_BRK_IRQHandler}, /* irq15 - TIM3 Update/Overflow/Break interrupt */
+	{0x82, (interrupt_handler_t)TIM3_CAP_COM_IRQHandler}, /* irq16 - TIM3 Capture/Compare interrupt */
 #else
 	{0x82, (interrupt_handler_t)NonHandledInterrupt}, /* irq15 - Reserved */
 	{0x82, (interrupt_handler_t)NonHandledInterrupt}, /* irq16 - Reserved */

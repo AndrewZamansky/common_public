@@ -927,16 +927,17 @@ static void process_input_message(struct esp8266_cfg_t *config_handle,
 {
 	struct dev_desc_t *   uart_rx_dev;
 	struct ioctl_get_data_buffer_t data_buffer_info;
-	size_t total_length;
 	ESP8266_State_t currentState ;
 	size_t bytes_consumed;
-	uint8_t *pBufferStart;
 
 	uart_rx_dev = config_handle->uart_rx_dev;
 	update_dbg(0x64);
 
 	while(1)
 	{
+		size_t total_length;
+		uint8_t *pBufferStart;
+
 		DEV_IOCTL(uart_rx_dev,
 				IOCTL_GET_AND_LOCK_DATA_BUFFER, &data_buffer_info);
 
@@ -1058,7 +1059,6 @@ static ESP8266_State_t process_open_socket_message(
 		struct esp8266_runtime_t *esp8266_dev_state_hndl)
 {
 	struct dev_desc_t * socket_pdev;
-	struct esp8266_socket_t *socket_handle;
 	struct dev_desc_t * new_socket_pdev;
 	size_t socket_num ;
 
@@ -1067,6 +1067,8 @@ static ESP8266_State_t process_open_socket_message(
 	for(socket_num = 0;
 			socket_num < ESP8266_MAX_NUM_OF_SOCKETS; socket_num++)
 	{
+		struct esp8266_socket_t *socket_handle;
+
 		socket_handle = DEV_GET_CONFIG_DATA_POINTER(socket_pdev);
 		if (0 == socket_handle->socket_in_use)
 		{
@@ -1175,14 +1177,15 @@ static ESP8266_State_t process_check_get_rcvd_data_message(
 {
 	struct dev_desc_t * socket_pdev;
 	struct esp8266_socket_t *socket_handle;
-	size_t bytes_to_copy;
-	size_t curr_data_size;
 
 	socket_pdev = pmsg_get_data_received->socket_pdev;
 	socket_handle = DEV_GET_CONFIG_DATA_POINTER(socket_pdev);
 
 	if(0 != socket_handle->socket_in_use)
 	{
+		size_t bytes_to_copy;
+		size_t curr_data_size;
+
 		curr_data_size = socket_handle->curr_data_size;
 		bytes_to_copy = pmsg_get_data_received->max_size ;
 		if (bytes_to_copy > curr_data_size)
@@ -1404,11 +1407,9 @@ static void ESP8266_Task( void *pvParameters )
 {
 	struct dev_desc_t *adev;
 	struct esp8266_message_t xRxedMessage;
-	size_t isMessageRecieved;
 	struct esp8266_cfg_t *config_handle;
 	struct esp8266_runtime_t *esp8266_dev_state_hndl;
 	ESP8266_State_t currentState ;
-	uint8_t isMessagePending;
 	os_queue_t xQueue;
 	struct esp8266_message_t *pendingMessage;
 	uint64_t timeout;
@@ -1426,7 +1427,6 @@ static void ESP8266_Task( void *pvParameters )
 	DEV_IOCTL(config_handle->uart_dev ,
 			IOCTL_UART_SET_BAUD_RATE, &interface_device_speed);
 
-	esp8266_dev_state_hndl->need_to_reset = interface_device_speed;
 	esp8266_dev_state_hndl->need_to_reset = 1;
 	esp8266_dev_state_hndl->currentState = ESP8266_State_InitialHandShake;
 	esp8266_dev_state_hndl->handshake_counter = HANDSHAKE_TRIES;
@@ -1437,6 +1437,8 @@ static void ESP8266_Task( void *pvParameters )
 
 	for( ;; )
 	{
+		size_t isMessageRecieved;
+		uint8_t isMessagePending;
 
 		isMessageRecieved = os_queue_receive_with_timeout( xQueue,
 				&(xRxedMessage), 50/* portMAX_DELAY*/ ) ;

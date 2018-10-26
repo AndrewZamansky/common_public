@@ -103,7 +103,7 @@ void DPWM_MuxPins(struct dpwm_i94xxx_cfg_t *cfg_hndl)
 	}
 	else if (ioPort == DPWM_IO_ON_GPD)
 	{
-		SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD5MFP_Pos | SYS_GPD_MFPL_PD5MFP_Pos);
+		SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD5MFP_Pos | SYS_GPD_MFPL_PD6MFP_Pos);
 		SYS->GPD_MFPL |= SYS_GPD_MFPL_PD5MFP_DPWM0_N;
 		SYS->GPD_MFPL |= SYS_GPD_MFPL_PD6MFP_DPWM0_P ;
 	}

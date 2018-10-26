@@ -47,15 +47,15 @@ extern int smihosting_is_active ;
 static int terminal_hndl;
 
 
-#define SYS_OPEN    	0x01
-#define SYS_CLOSE    	0x02
-#define SYS_READ    	0x06
-#define SYS_READC   	0x07
-#define SYS_WRITE		0x05
-#define SYS_WRITE0 		0x04
-#define SYS_FLEN 		0x0C
-#define SYS_TMPNAM 		0x0D
-#define SYS_REMOVE 		0x0E
+#define SYS_OPEN      0x01
+#define SYS_CLOSE     0x02
+#define SYS_READ      0x06
+#define SYS_READC     0x07
+#define SYS_WRITE     0x05
+#define SYS_WRITE0    0x04
+#define SYS_FLEN      0x0C
+#define SYS_TMPNAM    0x0D
+#define SYS_REMOVE    0x0E
 
 
 
@@ -114,13 +114,13 @@ int ARM_SH_Remove(char* fileName)
  */
 int ARM_API_SH_Close(int FileHandle)
 {
-  int retVal;
-  void* block[3];
+	int retVal;
+	void* block[3];
 
-  block[0] = (void*)FileHandle;
-  retVal = BKPT(SYS_CLOSE, (void*) block, (void*) 0);
+	block[0] = (void*)FileHandle;
+	retVal = BKPT(SYS_CLOSE, (void*) block, (void*) 0);
 
-  return retVal;
+	return retVal;
 }
 
 
@@ -129,15 +129,15 @@ int ARM_API_SH_Close(int FileHandle)
  */
 int ARM_API_SH_Read(int FileHandle, uint8_t* pBuffer, int NumBytesToRead)
 {
-  int NumBytesLeft;
-  void* block[3];
+	int NumBytesLeft;
+	void* block[3];
 
-  block[0] = (void*)FileHandle;
-  block[1] = (void*)pBuffer;
-  block[2] = (void*)NumBytesToRead;
-  NumBytesLeft = BKPT(SYS_READ, (void*) block, (void*) 0);
+	block[0] = (void*)FileHandle;
+	block[1] = (void*)pBuffer;
+	block[2] = (void*)NumBytesToRead;
+	NumBytesLeft = BKPT(SYS_READ, (void*) block, (void*) 0);
 
-  return NumBytesLeft;
+	return NumBytesLeft;
 }
 
 
@@ -146,36 +146,37 @@ int ARM_API_SH_Read(int FileHandle, uint8_t* pBuffer, int NumBytesToRead)
  */
 int ARM_API_SH_GetFileLength(int FileHandle)
 {
-  int fileLength;
-  void* block[3];
+	int fileLength;
+	void* block[3];
 
-  block[0] = (void*)FileHandle;
+	block[0] = (void*)FileHandle;
 
-  fileLength = BKPT(SYS_FLEN, (void*) block, (void*) 0);
+	fileLength = BKPT(SYS_FLEN, (void*) block, (void*) 0);
 
-  return fileLength;
+	return fileLength;
 }
 
 
-char _SH_ReadC(void) {
-  char c;
+char _SH_ReadC(void)
+{
+	char c;
 
-  c = BKPT(SYS_READC, (void*) 0, (void*) 0);
-  return c;
+	c = BKPT(SYS_READC, (void*) 0, (void*) 0);
+	return c;
 }
 
 int ARM_API_SH_Write(int FileHandle,
 		const uint8_t* pBuffer, int NumBytesToWrite)
 {
-  int NumBytesLeft;
-  void* block[3];
+	int NumBytesLeft;
+	void* block[3];
 
-  block[0] = (void*)FileHandle;
-  block[1] = (void*)pBuffer;
-  block[2] = (void*)NumBytesToWrite;
-  NumBytesLeft = BKPT(SYS_WRITE, (void*) block, (void*) 0);
+	block[0] = (void*)FileHandle;
+	block[1] = (void*)pBuffer;
+	block[2] = (void*)NumBytesToWrite;
+	NumBytesLeft = BKPT(SYS_WRITE, (void*) block, (void*) 0);
 
-  return NumBytesLeft;
+	return NumBytesLeft;
 }
 
 
@@ -246,17 +247,19 @@ const char *p_sync_file_str;
  */
 static void create_sync_file( struct dev_desc_t *adev, int sync_file_hanfler )
 {
-	PRINT_STR_REPLY(adev , "\r\n\r\nif you want to enter commands over semihosting\r\ndelete ");
-	PRINT_STR_REPLY(adev ,p_sync_file_str);
-	PRINT_STR_REPLY(adev , " and wait for shell sign\r\n");
-	PRINT_STR_REPLY(adev , " -- if you cannot delete the file , re-open debugger server \r\n");
+	PRINT_STR_REPLY(adev,
+			"\r\n\r\nif you want to enter commands over semihosting\r\ndelete ");
+	PRINT_STR_REPLY(adev, p_sync_file_str);
+	PRINT_STR_REPLY(adev, " and wait for shell sign\r\n");
+	PRINT_STR_REPLY(adev,
+			" -- if you cannot delete the file , re-open debugger server \r\n");
 	ARM_API_SH_Write(sync_file_hanfler,(const uint8_t*) "a", 1);
 	ARM_API_SH_Close(sync_file_hanfler);
 }
 
-#define RUN_STATE_PREINIT				0
-#define RUN_STATE_FAILED_CREATING_FILE	1
-#define RUN_STATE_RUNNING				2
+#define RUN_STATE_PREINIT               0
+#define RUN_STATE_FAILED_CREATING_FILE  1
+#define RUN_STATE_RUNNING               2
 
 /**
  * test_for_input_ready()
@@ -265,10 +268,7 @@ static void create_sync_file( struct dev_desc_t *adev, int sync_file_hanfler )
  */
 static void test_for_input_ready( struct dev_desc_t *adev  )
 {
-	uint8_t cRead;
 	int read_sync_hndl;
-	size_t i;
-	struct dev_desc_t *   callback_dev;
 	struct semihosting_instance_t *handle;
 
 	static uint8_t run_state = RUN_STATE_PREINIT;
@@ -316,19 +316,28 @@ static void test_for_input_ready( struct dev_desc_t *adev  )
 	}
 	else
 	{
-		PRINTF_REPLY(adev , "\r\n\r\nenter command (length should be less than %d) \r\n"
-				"and press 'enter' till response \r\n>",CONFIG_ARM_SEMIHOSTING_RX_BUFFER);
+		uint8_t cRead;
+		struct dev_desc_t *   callback_dev;
+		size_t i;
+
+		PRINTF_REPLY(adev ,
+				"\r\n\r\nenter command (length should be less than %d) \r\n"
+				"and press 'enter' till response \r\n>",
+				CONFIG_ARM_SEMIHOSTING_RX_BUFFER);
 		ARM_API_SH_Read(terminal_hndl,
 				sh_rx_buffer,CONFIG_ARM_SEMIHOSTING_RX_BUFFER);
 		cRead = sh_rx_buffer[0];
-		i=1;
-		while (('\n' != cRead) && ('\r' != cRead) && (i<CONFIG_ARM_SEMIHOSTING_RX_BUFFER))
+		i = 1;
+		while (('\n' != cRead)
+				&& ('\r' != cRead) && (i < CONFIG_ARM_SEMIHOSTING_RX_BUFFER))
 		{
 			cRead = sh_rx_buffer[i++];
 		}
 		if(i == (CONFIG_ARM_SEMIHOSTING_RX_BUFFER + 1))
 		{
-			PRINTF_REPLY(adev , "error : command should be less then %d chars \r\n",CONFIG_ARM_SEMIHOSTING_RX_BUFFER);
+			PRINTF_REPLY(adev,
+					"error : command should be less then %d chars \r\n",
+					CONFIG_ARM_SEMIHOSTING_RX_BUFFER);
 			sh_rx_buffer[0]='\n';
 		}
 
@@ -340,7 +349,7 @@ static void test_for_input_ready( struct dev_desc_t *adev  )
 					CALLBACK_DATA_RECEIVED,  sh_rx_buffer, (void*)i);
 		}
 
-		read_sync_hndl=ARM_API_SH_Open(p_sync_file_str,4);
+		read_sync_hndl = ARM_API_SH_Open(p_sync_file_str,4);
 		if (-1 != read_sync_hndl)
 		{
 			create_sync_file(adev,read_sync_hndl);
@@ -357,10 +366,6 @@ static void test_for_input_ready( struct dev_desc_t *adev  )
  */
 void poll_for_semihosting_data_task( void *aHandle )
 {
-
-
-//	int read_size ;
-
 	os_delay_ms( 5000 );
 	for( ;; )
 	{
@@ -369,9 +374,7 @@ void poll_for_semihosting_data_task( void *aHandle )
 		test_for_input_ready((struct dev_desc_t *)aHandle);
 
 		os_stack_test();
-
 	}
-
 }
 
 #endif
