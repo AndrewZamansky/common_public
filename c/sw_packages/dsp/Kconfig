@@ -89,6 +89,10 @@ config INCLUDE_RMS
 	bool   "rms"
 	default n
 
+config INCLUDE_TONE_GENERATOR
+	bool   "tone generator"
+	default n
+
 config INCLUDE_BAND_SPLITTER_BUTTERWORTH_6DB_GAIN
 	bool   "band splitter butterworth 6db gain"
 	default n
