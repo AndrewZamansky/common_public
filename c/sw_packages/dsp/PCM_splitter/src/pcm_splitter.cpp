@@ -187,7 +187,7 @@ static void set_params(struct dsp_module_inst_t *adsp,
 	}
 
 	num_of_channels = frame_size_bytes / subframe_size_bytes;
-	if (2 != num_of_channels)
+	if ((2 != num_of_channels) && (4 != num_of_channels))
 	{
 		CRITICAL_ERROR("not supported number of channels");
 	}

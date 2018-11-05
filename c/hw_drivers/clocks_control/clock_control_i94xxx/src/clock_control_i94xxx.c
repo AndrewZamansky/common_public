@@ -20,6 +20,7 @@
 #include "I94100.h"
 
 #include "clk.h"
+#include "i2s.h"
 
 #include "_clock_control_i94xxx_prerequirements_check.h"
 
@@ -562,6 +563,89 @@ uint8_t clock_i94xxx_i2s_ioctl( struct dev_desc_t *adev,
 		break;
 	case CLK_IOCTL_GET_FREQ :
 		get_parent_clock_rate(cfg_clk, aIoctl_param1);
+		break;
+	default :
+		return 1;
+	}
+	return 0;
+}
+
+
+uint8_t i94xxx_I2S_MCLK_ioctl( struct dev_desc_t *adev,
+		const uint8_t aIoctl_num, void * aIoctl_param1,
+		void * aIoctl_param2)
+{
+	struct cfg_clk_t *cfg_clk;
+	uint32_t freq;
+	uint32_t mclkdiv;
+
+	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(adev);
+	switch(aIoctl_num)
+	{
+	case CLK_IOCTL_GET_FREQ :
+		get_parent_clock_rate(cfg_clk, &freq);
+		mclkdiv = I2S0->CLKDIV & I2S_CLKDIV_MCLKDIV_Msk;
+		if (0 == mclkdiv)
+		{
+			*(uint32_t *)aIoctl_param1 = freq;
+		}
+		else
+		{
+			*(uint32_t *)aIoctl_param1 = freq / 2;
+		}
+		break;
+	default :
+		return 1;
+	}
+	return 0;
+}
+
+
+uint8_t i94xxx_I2S_BCLK_ioctl( struct dev_desc_t *adev,
+		const uint8_t aIoctl_num, void * aIoctl_param1,
+		void * aIoctl_param2)
+{
+	struct cfg_clk_t *cfg_clk;
+	uint32_t freq;
+	uint32_t bclkdiv;
+
+	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(adev);
+	switch(aIoctl_num)
+	{
+	case CLK_IOCTL_GET_FREQ :
+		get_parent_clock_rate(cfg_clk, &freq);
+		bclkdiv = (I2S0->CLKDIV & I2S_CLKDIV_BCLKDIV_Msk) >>
+												I2S_CLKDIV_BCLKDIV_Pos;
+		*(uint32_t *)aIoctl_param1 = freq / (2 * (bclkdiv + 1));
+		break;
+	default :
+		return 1;
+	}
+	return 0;
+}
+
+
+uint8_t i94xxx_I2S_FSCLK_ioctl( struct dev_desc_t *adev,
+		const uint8_t aIoctl_num, void * aIoctl_param1,
+		void * aIoctl_param2)
+{
+	struct cfg_clk_t *cfg_clk;
+	uint32_t freq;
+	uint16_t num_of_channels;
+	uint16_t channel_width;
+
+	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(adev);
+	switch(aIoctl_num)
+	{
+	case CLK_IOCTL_GET_FREQ :
+		get_parent_clock_rate(cfg_clk, &freq);
+		num_of_channels =
+				(I2S0->CTL0 & I2S_CTL0_TDMCHNUM_Msk) >> I2S_CTL0_TDMCHNUM_Pos;
+		num_of_channels = 2 * (1 + num_of_channels);
+		channel_width =
+				(I2S0->CTL0 & I2S_CTL0_CHWIDTH_Msk) >> I2S_CTL0_CHWIDTH_Pos;
+		channel_width = 8 * (1 + channel_width);
+		*(uint32_t *)aIoctl_param1 = freq / (num_of_channels * channel_width);
 		break;
 	default :
 		return 1;

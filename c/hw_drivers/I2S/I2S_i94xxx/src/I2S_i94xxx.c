@@ -150,76 +150,81 @@ static void configure_pinout(struct I2S_i94xxx_cfg_t *cfg_hndl)
 }
 
 
+static void set_clocks(struct I2S_i94xxx_cfg_t *cfg_hndl)
+{
+	struct dev_desc_t  *clk_dev;
+	uint32_t  src_clk_freq;
+	uint32_t  mclk_freq;
+	uint32_t  res;
+	uint16_t  Mclock_factor_based_on_FSclock;
+
+	DEV_IOCTL_1_PARAMS(i94xxx_i2s_clk_dev, CLK_IOCTL_GET_FREQ, &src_clk_freq);
+	Mclock_factor_based_on_FSclock = cfg_hndl->Mclock_factor_based_on_FSclock;
+	mclk_freq = cfg_hndl->sample_rate * Mclock_factor_based_on_FSclock;
+
+	res = (src_clk_freq / 2) % mclk_freq;
+	if ((src_clk_freq < mclk_freq) || ((src_clk_freq != mclk_freq) && (res)))
+	{
+		CRITICAL_ERROR("cannot create desired M clock");
+	}
+
+	I2S_EnableMCLK(I2S0, mclk_freq);
+}
+
 
 static void i94xxx_init(struct I2S_i94xxx_cfg_t *cfg_hndl,
 		struct I2S_i94xxx_runtime_t *runtime_handle)
 {
-	uint32_t   	clock_mode;
-	uint8_t		num_of_bytes_in_word;
-	struct dev_desc_t	*clk_dev;
-	struct dev_desc_t	*src_clock;
-	uint32_t	i2s_format;
-	uint32_t    tdm_ch_num;
-	uint32_t    audio_format;
-	uint32_t	sample_rate;
+	uint8_t   num_of_bytes_in_word;
+	uint32_t  i2s_format;
+	struct dev_desc_t  *src_clock;
 
-	src_clock = cfg_hndl->src_clock;
-	clock_mode = cfg_hndl->clock_mode;
 	i2s_format = cfg_hndl->i2s_format;
 	num_of_bytes_in_word = cfg_hndl->num_of_bytes_in_word;
-	tdm_ch_num = cfg_hndl->tdm_ch_num;
-	audio_format = cfg_hndl->audio_format;
-	sample_rate = cfg_hndl->sample_rate;
+	src_clock = cfg_hndl->src_clock;
 
-	clk_dev = i94xxx_i2s_clk_dev;
+	DEV_IOCTL_1_PARAMS(i94xxx_i2s_clk_dev, CLK_IOCTL_SET_PARENT, src_clock);
+	DEV_IOCTL_0_PARAMS(i94xxx_i2s_clk_dev, CLK_IOCTL_ENABLE);
 
 	configure_pinout(cfg_hndl);
 
-	DEV_IOCTL_1_PARAMS(clk_dev, CLK_IOCTL_SET_PARENT, src_clock);
-	DEV_IOCTL_0_PARAMS(clk_dev, CLK_IOCTL_ENABLE);
-
-
-	/*
-     *  Master mode, 16-bit word width, stereo mode, I2S format.
-     *  Set TX and RX FIFO threshold to middle value.
-     */
-
 	runtime_handle->actual_sample_rate = I2S_Open(
-						I2S0,
-						clock_mode,
-						sample_rate,
-						(num_of_bytes_in_word - 1) << I2S_CTL0_DATWIDTH_Pos,
-						tdm_ch_num,
-						audio_format,
-						i2s_format);
+					I2S0,
+					cfg_hndl->clock_mode,
+					cfg_hndl->sample_rate,
+					(num_of_bytes_in_word - 1) << I2S_CTL0_DATWIDTH_Pos,
+					((cfg_hndl->tdm_ch_num / 2) - 1) << I2S_CTL0_TDMCHNUM_Pos,
+					cfg_hndl->mono_or_stereo,
+					i2s_format);
+
+	set_clocks(cfg_hndl);
 
 	I2S_SET_TXTH(I2S0, I2S_FIFO_TX_LEVEL_WORD_4);
 	I2S_SET_RXTH(I2S0, I2S_FIFO_RX_LEVEL_WORD_4);
-
 	I2S_CLR_TX_FIFO(I2S0);
 	I2S_CLR_RX_FIFO(I2S0);
 
-	I2S_EnableMCLK(I2S0, sample_rate * 256);
-
-	if ( I2S_FORMAT_PCMMSB == i2s_format )
+	if (( I2S_FORMAT_PCMMSB == i2s_format ) ||
+			(I2S_FORMAT_PCMLSB == i2s_format) || (I2S_FORMAT_PCM == i2s_format))
 	{
-		/* I2S Configuration. */
 		I2S_SET_PCMSYNC(I2S0, I2S_PCMSYNC_BCLK);
-		I2S_SET_MONO_RX_CHANNEL(I2S0, I2S_MONO_RX_RIGHT);
-		I2S_SET_STEREOORDER(I2S0, I2S_ORDER_EVENLOW);
-
-		/* Set channel width. */
-		I2S_SET_CHWIDTH(I2S0, I2S_CHWIDTH_32);
+		if (1 == num_of_bytes_in_word)
+		{
+			I2S_SET_CHWIDTH(I2S0, I2S_CHWIDTH_8);
+		}
+		else if (2 == num_of_bytes_in_word)
+		{
+			I2S_SET_CHWIDTH(I2S0, I2S_CHWIDTH_16);
+		}
+		else if (3 == num_of_bytes_in_word)
+		{
+			I2S_SET_CHWIDTH(I2S0, I2S_CHWIDTH_24);
+		}
+		else if (4 == num_of_bytes_in_word)
+		{
+			I2S_SET_CHWIDTH(I2S0, I2S_CHWIDTH_32);
+		}
 	}
-//		else if ( I2S_FORMAT_I2S == i2s_format )
-//		{
-//			// I2S0 Configuration
-//			I2S_SET_PCMSYNC(I2S0, I2S_PCMSYNC_BCLK);
-//			I2S_SET_MONO_RX_CHANNEL(I2S0, I2S_MONO_RX_RIGHT);
-//			I2S_SET_STEREOORDER(I2S0, I2S_ORDER_EVENLOW);
-//			// Set channel width.
-//			I2S_SET_CHWIDTH(I2S0, I2S_CHWIDTH_32);
-//		}
 
 	if (cfg_hndl->do_reordering_for_16or8bit_channels)
 	{
@@ -242,10 +247,6 @@ static void i94xxx_init(struct I2S_i94xxx_cfg_t *cfg_hndl,
 #else
 	I2S0->CTL0 |= I2S_CTL0_RXPDMAEN_Msk;
 #endif
-	// I2S_ENABLE_RX(I2S_module);
-	// I2S_module->FIFOCTL |= I2S_FIFO_RX_LEVEL_WORD_4;
-	// I2S_module->FIFOCTL |= SPI_FIFOCTL_RXRST_Msk;
-
 }
 
 
@@ -258,8 +259,8 @@ static void i94xxx_sync_to_dpwm_fs_rate(struct I2S_i94xxx_cfg_t *cfg_hndl,
 	uint32_t dpwm_k;
 	uint32_t dpwm_total_div_to_get_FS;
 	uint32_t i2s_total_div_to_get_FS;
-	uint8_t		num_of_bytes_in_word;
-	uint32_t    tdm_ch_num;
+	uint8_t  num_of_bytes_in_word;
+	uint32_t tdm_ch_num;
 
 	num_of_bytes_in_word = cfg_hndl->num_of_bytes_in_word;
 	tdm_ch_num = cfg_hndl->tdm_ch_num;
