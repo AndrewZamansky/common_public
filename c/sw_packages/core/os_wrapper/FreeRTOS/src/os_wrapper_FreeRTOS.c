@@ -45,14 +45,14 @@ void *pvPortRealloc( void *p , size_t xWantedSize )
 	return pvReturn;
 }
 
-void *os_create_task_FreeRTOS(char *taskName,
-		void (*taskFunction)(void *apParam),
-		void *taskFunctionParam , uint16_t stackSize , uint8_t priority)
+void *os_create_task_FreeRTOS(
+		char *taskName, void (*taskFunction)(void *apParam),
+		void *taskFunctionParam, size_t stack_size_bytes, uint8_t priority)
 {
 	TaskHandle_t xHandle=NULL;
 	xTaskCreate( (TaskFunction_t)taskFunction, taskName,
-			 stackSize,(void*) taskFunctionParam,
-			 priority , &xHandle  );
+			(stack_size_bytes / sizeof(StackType_t)),
+			(void*) taskFunctionParam, priority , &xHandle);
 	return (void*)xHandle;
 }
 
@@ -146,6 +146,7 @@ void os_stack_test_free_rtos(uint32_t *p_lowest_stack ,const char *task_name )
 	uint32_t stackLeft;
 
 	stackLeft = uxTaskGetStackHighWaterMark( NULL );
+	stackLeft *= sizeof(StackType_t);
 	if(*p_lowest_stack > stackLeft)
 	{
 		*p_lowest_stack = stackLeft;

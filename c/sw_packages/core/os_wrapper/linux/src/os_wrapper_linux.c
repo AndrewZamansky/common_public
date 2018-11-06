@@ -29,7 +29,7 @@ typedef void *(*thread_func_t)(void*);
 
 void *os_create_task(char *taskName,
 		void (*taskFunction)(void *apParam),
-		void *taskFunctionParam , uint16_t stackSize , uint8_t priority)
+		void *taskFunctionParam, uint16_t stack_size_bytes , uint8_t priority)
 {
 	int err;
 	pthread_t  thread_id = 0;
