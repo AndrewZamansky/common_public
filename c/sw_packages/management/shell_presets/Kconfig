@@ -2,4 +2,4 @@
 	
 config  SHELL_PRESETS_NUMBER_OF_PRESET
 	int   "number of presets"
-	default 4
+	default 3

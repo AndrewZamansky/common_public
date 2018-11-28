@@ -174,7 +174,7 @@ static void flash_wrapper_task( void *adev )
 		os_delay_ms(2000);
 
 		os_mutex_take_infinite_wait(flash_wrapper_mutex);
-		curr_block_is_dirty = runtime_handle->curr_block_addr;
+		curr_block_is_dirty = runtime_handle->curr_block_is_dirty;
 		if (2 == curr_block_is_dirty)
 		{
 			curr_block_addr = runtime_handle->curr_block_addr;
