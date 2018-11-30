@@ -152,7 +152,6 @@ static void configure_pinout(struct I2S_i94xxx_cfg_t *cfg_hndl)
 
 static void set_clocks(struct I2S_i94xxx_cfg_t *cfg_hndl)
 {
-	struct dev_desc_t  *clk_dev;
 	uint32_t  src_clk_freq;
 	uint32_t  mclk_freq;
 	uint32_t  res;
@@ -172,7 +171,7 @@ static void set_clocks(struct I2S_i94xxx_cfg_t *cfg_hndl)
 }
 
 
-static void i94xxx_init(struct I2S_i94xxx_cfg_t *cfg_hndl,
+static void i94xxx_I2S_init(struct I2S_i94xxx_cfg_t *cfg_hndl,
 		struct I2S_i94xxx_runtime_t *runtime_handle)
 {
 	uint8_t   num_of_bytes_in_word;
@@ -308,7 +307,7 @@ uint8_t I2S_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 	switch(aIoctl_num)
 	{
 	case IOCTL_DEVICE_START :
-		i94xxx_init(cfg_hndl, runtime_handle);
+		i94xxx_I2S_init(cfg_hndl, runtime_handle);
 		break;
 
 	case I2S_I94XXX_ENABLE_OUTPUT_IOCTL:

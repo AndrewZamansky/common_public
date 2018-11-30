@@ -634,8 +634,8 @@ static uint8_t get_empty_tx_buffer(struct dev_desc_t *ch_pdev,
 }
 
 
-static void enable_peripheral_output(
-		uint8_t peripheral_type, struct dev_desc_t *peripheral_dev)
+static void enable_peripheral_output( uint8_t peripheral_type,
+			struct dev_desc_t *peripheral_dev, uint8_t channel_num)
 {
 	// Need to use these variables to keep modularity and abstraction.
 //	struct I2S_onSPI_i94xxx_cfg_t *cfg_hndl;
@@ -659,6 +659,7 @@ static void enable_peripheral_output(
 
 		SPI1->PDMACTL &= ~SPI_PDMACTL_TXPDMAEN_Msk;
 		SPI1->PDMACTL |= SPI_PDMACTL_TXPDMAEN_Msk;
+		PDMA_Trigger(channel_num);
 
 		break;
 
@@ -760,7 +761,7 @@ static uint8_t release_tx_buffer(struct dma_i94xxx_cfg_t *cfg_hndl,
 				runtime_hndl->buff_size_in_transfer_words);
 		PDMA_SET_SRC_ADDR(channel_num, (size_t)buffers[next_dma_buff_indx]);
 		PDMA_SetTransferMode( channel_num, peripheral_type, FALSE, 0);
-		enable_peripheral_output(peripheral_type, peripheral_dev);
+		enable_peripheral_output(peripheral_type, peripheral_dev, channel_num);
 	}
 	return 0;
 }
