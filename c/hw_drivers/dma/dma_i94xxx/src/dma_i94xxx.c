@@ -380,11 +380,18 @@ static uint8_t set_peripheral_dma(struct dma_i94xxx_cfg_t *cfg_hndl,
 		return 1;
 	}
 
-	runtime_hndl->buff = (uint8_t**)malloc(sizeof(uint8_t*) * num_of_buffers);
-	runtime_hndl->buff_status = (uint8_t*)malloc(num_of_buffers);
+	if(NULL == runtime_hndl->buff)
+	{
+		runtime_hndl->buff =
+				(uint8_t**)malloc(sizeof(uint8_t*) * num_of_buffers);
+		runtime_hndl->buff_status = (uint8_t*)malloc(num_of_buffers);
+		for (i = 0; i < num_of_buffers; i++)
+		{
+			runtime_hndl->buff[i] = (uint8_t*)malloc(buff_size);
+		}
+	}
 	for (i = 0; i < num_of_buffers; i++)
 	{
-		runtime_hndl->buff[i] = (uint8_t*)malloc(buff_size);
 		runtime_hndl->buff_status[i] = DMA_I94XXX_BUFF_IDLE ;
 	}
 
@@ -806,6 +813,8 @@ uint8_t dma_i94xxx_ioctl( struct dev_desc_t *adev, const uint8_t aIoctl_num,
 	case DMA_I94XXX_IOCTL_RELEASE_TX_BUFF :
 		ret = release_tx_buffer(cfg_hndl, runtime_hndl);
 		break;
+
+
 
 	default :
 		return 1;
