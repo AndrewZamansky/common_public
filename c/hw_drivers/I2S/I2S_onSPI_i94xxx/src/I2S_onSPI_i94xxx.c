@@ -197,80 +197,72 @@ static void configure_i2s_spi_pinout(struct I2S_onSPI_i94xxx_cfg_t *cfg_hndl)
 	switch (cfg_hndl->base_address)
 	{
 	case I2S_onSPI_I94XXX_API_BASE_ADDRESS_SPI1 :
-		if (cfg_hndl->BCLK_pin == I2S_onSPI_I94XXX_API_BCLK_PIN_D4)
-		{
-			SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD4MFP_Msk);
-			SYS->GPD_MFPL |= SYS_GPD_MFPL_PD4MFP_SPI1_CLK;
 
-			PD->SMTEN = GPIO_SMTEN_SMTEN6_Msk;
-		}
-		else if (cfg_hndl->BCLK_pin == I2S_onSPI_I94XXX_API_BCLK_PIN_C2)
-		{
-			SYS->GPC_MFPL &= ~(SYS_GPC_MFPL_PC2MFP_Msk);
-			SYS->GPC_MFPL |= SYS_GPC_MFPL_PC2MFP_SPI1_CLK;
-
-			PC->SMTEN |= GPIO_SMTEN_SMTEN2_Msk;
-		}
-
-		if (cfg_hndl->LRCLK_pin == I2S_onSPI_I94XXX_API_LRCLK_PIN_D5)
-		{
-			SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD5MFP_Msk);
-			SYS->GPD_MFPL |= SYS_GPD_MFPL_PD5MFP_SPI1_SS;
-
-			PD->SMTEN |= GPIO_SMTEN_SMTEN3_Msk;
-		}
-		else if (cfg_hndl->LRCLK_pin == I2S_onSPI_I94XXX_API_LRCLK_PIN_C3)
-		{
-			SYS->GPC_MFPL &= ~(SYS_GPC_MFPL_PC3MFP_Msk);
-			SYS->GPC_MFPL |= SYS_GPC_MFPL_PC3MFP_SPI1_SS;
-
-			PC->SMTEN = GPIO_SMTEN_SMTEN3_Msk;
-		}
-
-		if (cfg_hndl->DI_pin == I2S_onSPI_I94XXX_API_DI_PIN_D3)
-		{
-			SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD3MFP_Msk);
-			SYS->GPD_MFPL |= SYS_GPD_MFPL_PD3MFP_SPI1_MISO;
-
-			PD->SMTEN |= GPIO_SMTEN_SMTEN4_Msk;
-		}
-		else if (cfg_hndl->DI_pin == I2S_onSPI_I94XXX_API_DI_PIN_C1)
-		{
-			SYS->GPC_MFPL &= ~(SYS_GPC_MFPL_PC1MFP_Msk);
-			SYS->GPC_MFPL |= SYS_GPC_MFPL_PC1MFP_SPI1_MISO;
-
-			PC->SMTEN |= GPIO_SMTEN_SMTEN1_Msk;
-		}
-
-		if (cfg_hndl->DO_pin == I2S_onSPI_I94XXX_API_DO_PIN_D2)
-		{
-			SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD2MFP_Msk);
-			SYS->GPD_MFPL |= SYS_GPD_MFPL_PD2MFP_SPI1_MOSI;
-
-			PD->SMTEN |= GPIO_SMTEN_SMTEN5_Msk;
-		}
-		else if (cfg_hndl->DO_pin == I2S_onSPI_I94XXX_API_DO_PIN_C0)
-		{
-			SYS->GPC_MFPL &= ~(SYS_GPC_MFPL_PC0MFP_Msk);
-			SYS->GPC_MFPL |= SYS_GPC_MFPL_PC0MFP_SPI1_MOSI;
-
-			PC->SMTEN = GPIO_SMTEN_SMTEN0_Msk;
-		}
-
-		if (cfg_hndl->MCLK_pin == I2S_onSPI_I94XXX_API_MCLK_PIN_D6)
+		if(I2S_onSPI_I94XXX_API_MCLK_PIN_D6 == cfg_hndl->MCLK_pin)
 		{
 			SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD6MFP_Msk);
 			SYS->GPD_MFPL |= SYS_GPD_MFPL_PD6MFP_SPI1_I2SMCLK;
-
 			PD->SMTEN |= GPIO_SMTEN_SMTEN2_Msk;
 		}
-		else if (cfg_hndl->MCLK_pin == I2S_onSPI_I94XXX_API_MCLK_PIN_C4)
+		else if(I2S_onSPI_I94XXX_API_MCLK_PIN_C4 == cfg_hndl->MCLK_pin)
 		{
 			SYS->GPC_MFPL &= ~(SYS_GPC_MFPL_PC4MFP_Msk);
 			SYS->GPC_MFPL |= SYS_GPC_MFPL_PC4MFP_SPI1_I2SMCLK;
-
 			PC->SMTEN |= GPIO_SMTEN_SMTEN4_Msk;
 		}
+
+		if(I2S_onSPI_I94XXX_API_BCLK_PIN_D4 == cfg_hndl->BCLK_pin)
+		{
+			SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD4MFP_Msk);
+			SYS->GPD_MFPL |= SYS_GPD_MFPL_PD4MFP_SPI1_CLK;
+			PD->SMTEN = GPIO_SMTEN_SMTEN6_Msk;
+		}
+		else if(I2S_onSPI_I94XXX_API_BCLK_PIN_C2 == cfg_hndl->BCLK_pin)
+		{
+			SYS->GPC_MFPL &= ~(SYS_GPC_MFPL_PC2MFP_Msk);
+			SYS->GPC_MFPL |= SYS_GPC_MFPL_PC2MFP_SPI1_CLK;
+			PC->SMTEN |= GPIO_SMTEN_SMTEN2_Msk;
+		}
+
+		if(I2S_onSPI_I94XXX_API_LRCLK_PIN_D5 == cfg_hndl->LRCLK_pin)
+		{
+			SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD5MFP_Msk);
+			SYS->GPD_MFPL |= SYS_GPD_MFPL_PD5MFP_SPI1_SS;
+			PD->SMTEN |= GPIO_SMTEN_SMTEN3_Msk;
+		}
+		else if(I2S_onSPI_I94XXX_API_LRCLK_PIN_C3 == cfg_hndl->LRCLK_pin)
+		{
+			SYS->GPC_MFPL &= ~(SYS_GPC_MFPL_PC3MFP_Msk);
+			SYS->GPC_MFPL |= SYS_GPC_MFPL_PC3MFP_SPI1_SS;
+			PC->SMTEN = GPIO_SMTEN_SMTEN3_Msk;
+		}
+
+		if(I2S_onSPI_I94XXX_API_DI_PIN_D3 == cfg_hndl->DI_pin)
+		{
+			SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD3MFP_Msk);
+			SYS->GPD_MFPL |= SYS_GPD_MFPL_PD3MFP_SPI1_MISO;
+			PD->SMTEN |= GPIO_SMTEN_SMTEN4_Msk;
+		}
+		else if(I2S_onSPI_I94XXX_API_DI_PIN_C1 == cfg_hndl->DI_pin)
+		{
+			SYS->GPC_MFPL &= ~(SYS_GPC_MFPL_PC1MFP_Msk);
+			SYS->GPC_MFPL |= SYS_GPC_MFPL_PC1MFP_SPI1_MISO;
+			PC->SMTEN |= GPIO_SMTEN_SMTEN1_Msk;
+		}
+
+		if(I2S_onSPI_I94XXX_API_DO_PIN_D2 == cfg_hndl->DO_pin)
+		{
+			SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD2MFP_Msk);
+			SYS->GPD_MFPL |= SYS_GPD_MFPL_PD2MFP_SPI1_MOSI;
+			PD->SMTEN |= GPIO_SMTEN_SMTEN5_Msk;
+		}
+		else if(I2S_onSPI_I94XXX_API_DO_PIN_C0 == cfg_hndl->DO_pin)
+		{
+			SYS->GPC_MFPL &= ~(SYS_GPC_MFPL_PC0MFP_Msk);
+			SYS->GPC_MFPL |= SYS_GPC_MFPL_PC0MFP_SPI1_MOSI;
+			PC->SMTEN = GPIO_SMTEN_SMTEN0_Msk;
+		}
+
 		break;
 
 	case I2S_onSPI_I94XXX_API_BASE_ADDRESS_SPI2 :
@@ -340,7 +332,7 @@ static void i94xxx_I2S_onSPI_init(struct I2S_onSPI_i94xxx_cfg_t *cfg_hndl)
 
 	configure_i2s_spi_pinout(cfg_hndl);
 
-	DEV_IOCTL_1_PARAMS(clk_dev,	CLK_IOCTL_SET_PARENT, src_clock);
+	DEV_IOCTL_1_PARAMS(clk_dev, CLK_IOCTL_SET_PARENT, src_clock);
 	DEV_IOCTL_0_PARAMS(clk_dev, CLK_IOCTL_ENABLE);
 
 	SPI_I2SOpen(I2S_SPI_module, clk_mode, sample_rate, data_width,
