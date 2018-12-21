@@ -67,7 +67,7 @@ usb_dev_interface_request_callback_func_t
 				interface_callback_functions[MAX_NUM_OF_ITERFACES];
 
 static uint8_t endpoints_count = 2;
-static uint16_t available_buff_pointer = EP1_BUF_BASE + EP1_BUF_LEN;
+static uint32_t available_buff_pointer = EP1_BUF_BASE + EP1_BUF_LEN;
 /*--------------------------------------------------------------------------*/
 
 //Windows 10 Compiler failed without this variable even though called in an
@@ -427,17 +427,6 @@ static void device_start()
     SYS->GPB_MFPH |=  (SYS_GPB_MFPH_PB13MFP_USBD_DN |
     		SYS_GPB_MFPH_PB14MFP_USBD_DP | SYS_GPB_MFPH_PB15MFP_USBD_VBUS);
 
-//    //Pull up enable for full speed transfers.
-//    PB->PUSEL |= (0x1UL << GPIO_PUSEL_PUSEL13_Pos);
-
-//    //Pull down enable for full speed transfers.
-//    PB->PUSEL |= (0x2UL << GPIO_PUSEL_PUSEL14_Pos);
-
-//    PB->PUSEL |= (0x2UL << GPIO_PUSEL_PUSEL13_Pos);
-
-//    PB->SMTEN |= GPIO_SMTEN_SMTEN13_Msk;
-//    PB->SMTEN |= GPIO_SMTEN_SMTEN14_Msk;
-
 
 	DEV_IOCTL_0_PARAMS(i94xxx_usb_clk_dev, CLK_IOCTL_ENABLE);
 	freq = 48000000;
@@ -547,7 +536,7 @@ uint8_t usb_i94xxx_ioctl( struct dev_desc_t *adev, uint8_t aIoctl_num,
 	case IOCTL_USB_DEVICE_SET_REQUEST_OUT_BUFFER :
 		set_request_out_buffer(aIoctl_param1);
 		break;
-	case IOCTL_USB_DEVICE_SET_SATLL:
+	case IOCTL_USB_DEVICE_SET_STALL:
 		USBD_SetStall(0);
 		break;
 	default :

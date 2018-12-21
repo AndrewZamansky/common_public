@@ -233,7 +233,7 @@ static void hid_class_in_request( struct dev_desc_t *usb_hw, uint8_t *request)
 	else
 	{
 		/* Setup error, stall the device */
-		DEV_IOCTL_0_PARAMS(usb_hw, IOCTL_USB_DEVICE_SET_SATLL);
+		DEV_IOCTL_0_PARAMS(usb_hw, IOCTL_USB_DEVICE_SET_STALL);
 	}
 }
 
@@ -274,7 +274,7 @@ static void hid_class_out_request( struct dev_desc_t *usb_hw, uint8_t *request)
 	else
 	{
 		/* Setup error, stall the device */
-		DEV_IOCTL_0_PARAMS(usb_hw, IOCTL_USB_DEVICE_SET_SATLL);
+		DEV_IOCTL_0_PARAMS(usb_hw, IOCTL_USB_DEVICE_SET_STALL);
 	}
 }
 

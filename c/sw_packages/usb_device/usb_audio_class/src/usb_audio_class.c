@@ -24,6 +24,11 @@
 /*following line add module to available module list for dynamic device tree*/
 #include "usb_audio_class_add_component.h"
 
+
+#ifndef BYTES_PER_PCM_CHANNEL
+	#error "BYTES_PER_PCM_CHANNEL should be defined in project header files"
+#endif
+
 typedef enum
 {
 	USB_AUDIO_CLASS_BUFF_IDLE,
@@ -70,6 +75,10 @@ typedef enum
 #define AUTO_SET_PCKT_SIZE_MSB   0x00
 #define AUTO_SET_PCKT_SIZE_LSB   0x00
 
+#define AUDIO_CLASS             0x01
+#define AUDIO_CTL_SUBCLASS      0x01
+#define AUDIO_STREAM_SUBCLASS   0x02
+
 static uint8_t const interface_association_descriptor[]=
 {
 	/*  Interface Association Descriptor:  */
@@ -77,212 +86,242 @@ static uint8_t const interface_association_descriptor[]=
 	0x0B ,  //    bDescriptorType
 	TO_BE_SET_AUTOMATICALLY, // bFirstInterface
 	0x03    , // bInterfaceCount
-	0x01    , // bFunctionClass
-	0x00    , // bFunctionSubClass
+
+	/* bFunctionClass,
+	 * Microsoft recommend to match with first bInterfaceClass
+	 */
+	AUDIO_CLASS,
+
+	/* bFunctionSubClass,
+	 * Microsoft recommend to match with first bInterfaceSubClass
+	 */
+	AUDIO_CTL_SUBCLASS,
+
 	0x00    , // bFunctionProtocol
 	0x02    ,//  iFunction
 };
 
 static uint8_t const audio_control_interface[] =
 {
-    0x09,        // bLength
-    0x04,        // bDescriptorType (Interface)
-    TO_BE_SET_AUTOMATICALLY,        // bInterfaceNumber 0
-    0x00,        // bAlternateSetting
-    0x00,        // bNumEndpoints 0
-    0x01,        // bInterfaceClass (Audio)
-    0x01,        // bInterfaceSubClass (Audio Control)
-    0x00,        // bInterfaceProtocol
-    0x00,        // iInterface (String Index)
+// Standard Audio Control Interface Descriptor
+	0x09,        // bLength
+	0x04,        // bDescriptorType (Interface)
+	TO_BE_SET_AUTOMATICALLY,        // bInterfaceNumber 0
+	0x00,        // bAlternateSetting
+	0x00,        // bNumEndpoints 0
+	AUDIO_CLASS,        // bInterfaceClass (Audio)
+	AUDIO_CTL_SUBCLASS,        // bInterfaceSubClass (Audio Control)
+	0x00,        // bInterfaceProtocol - must be 0
+	0x00,        // iInterface (String Index) - Null string
 
-    0x0A,        // bLength
-    0x24,        // bDescriptorType (See Next Line)
-    0x01,        // bDescriptorSubtype (CS_INTERFACE -> HEADER)
-    0x00, 0x01,  // bcdADC 1.00
-    0x48, 0x00,  // wTotalLength 72
-    0x02,        // binCollection 0x02
-    TO_BE_SET_AUTOMATICALLY,        // baInterfaceNr 1
-    TO_BE_SET_AUTOMATICALLY,        // baInterfaceNr 2
+// Class-Specific Audio Control Interface Descriptor
+	0x0A,        // bLength
+	0x24,        // bDescriptorType (See Next Line)
+	0x01,        // bDescriptorSubtype (CS_INTERFACE -> HEADER)
+	0x00, 0x01,  // bcdADC 1.00
+	0x48, 0x00,  // wTotalLength 72
+	0x02,        // binCollection 0x02 (number of streaming interfaces)
+	TO_BE_SET_AUTOMATICALLY,        // baInterfaceNr 1
+	TO_BE_SET_AUTOMATICALLY,        // baInterfaceNr 2
 
-    0x0C,        // bLength
-    0x24,        // bDescriptorType (See Next Line)
-    0x02,        // bDescriptorSubtype (CS_INTERFACE -> INPUT_TERMINAL)
-    0x01,        // bTerminalID
-    0x01, 0x01,  // wTerminalType (USB Streaming)
-    0x00,        // bAssocTerminal
-    0x02,        // bNrChannels 2
-    0x03, 0x00,  // wChannelConfig (Left and Right Front)
-    0x00,        // iChannelNames
-    0x00,        // iTerminal
+// Input Terminal Descriptor (Speakers)
+	0x0C,        // bLength
+	0x24,        // bDescriptorType (See Next Line)
+	0x02,        // bDescriptorSubtype (CS_INTERFACE -> INPUT_TERMINAL)
+	0x01,        // bTerminalID
+	0x01, 0x01,  // wTerminalType (USB Streaming)
+	0x00,        // bAssocTerminal
+	0x02,        // bNrChannels 2
+	0x03, 0x00,  // wChannelConfig (Left and Right Front)
+	0x00,        // iChannelNames
+	0x00,        // iTerminal
 
-    0x0A,        // bLength
-    0x24,        // bDescriptorType (See Next Line)
-    0x06,        // bDescriptorSubtype (CS_INTERFACE -> FEATURE_UNIT)
-    0x06,        // bUnitID
-    0x01,        // bSourceID
-    0x01,        // bControlSize 1
-    0x01, 0x02,  // bmaControls[0] (Mute)
-    0x02, 0x00,  // bmaControls[1] (Volume)
+// Feature Unit Descriptor
+	0x0A,        // bLength
+	0x24,        // bDescriptorType (See Next Line)
+	0x06,        // bDescriptorSubtype (CS_INTERFACE -> FEATURE_UNIT)
+	0x06,        // bUnitID
+	0x01,        // bSourceID
+	0x01,        // bControlSize 1
+	0x01, 0x02,  // bmaControls[0] (Mute)
+	0x02, 0x00,  // bmaControls[1] (Volume)
 
-    0x09,        // bLength
-    0x24,        // bDescriptorType (See Next Line)
-    0x03,        // bDescriptorSubtype (CS_INTERFACE -> OUTPUT_TERMINAL)
-    0x03,        // bTerminalID
-    0x01, 0x03,  // wTerminalType (Speaker)
-    0x00,        // bAssocTerminal
-    0x06,        // bSourceID
-    0x00,        // iTerminal
+// Output Terminal Descriptor
+	0x09,        // bLength
+	0x24,        // bDescriptorType (See Next Line)
+	0x03,        // bDescriptorSubtype (CS_INTERFACE -> OUTPUT_TERMINAL)
+	0x03,        // bTerminalID
+	0x01, 0x03,  // wTerminalType (Speaker)
+	0x00,        // bAssocTerminal
+	0x06,        // bSourceID
+	0x00,        // iTerminal
 
-    0x0C,        // bLength
-    0x24,        // bDescriptorType (See Next Line)
-    0x02,        // bDescriptorSubtype (CS_INTERFACE -> INPUT_TERMINAL)
-    0x04,        // bTerminalID
-    0x01, 0x02,  // wTerminalType (Microphone)
-    0x00,        // bAssocTerminal
-    0x02,        // bNrChannels 2
-    0x03, 0x00,  // wChannelConfig (Left and Right Front)
-    0x00,        // iChannelNames
-    0x00,        // iTerminal
+// Input Terminal Descriptor (Microphone)
+	0x0C,        // bLength
+	0x24,        // bDescriptorType (See Next Line)
+	0x02,        // bDescriptorSubtype (CS_INTERFACE -> INPUT_TERMINAL)
+	0x04,        // bTerminalID
+	0x01, 0x02,  // wTerminalType (Microphone)
+	0x00,        // bAssocTerminal
+	0x02,        // bNrChannels 2
+	0x03, 0x00,  // wChannelConfig (Left and Right Front)
+	0x00,        // iChannelNames
+	0x00,        // iTerminal
 
-    0x0A,        // bLength
-    0x24,        // bDescriptorType (See Next Line)
-    0x06,        // bDescriptorSubtype (CS_INTERFACE -> FEATURE_UNIT)
-    0x05,        // bUnitID
-    0x04,        // bSourceID
-    0x01,        // bControlSize 1
-    0x01, 0x02,  // bmaControls[0] (Mute)
-    0x02, 0x00,  // bmaControls[1] (Volume)
+// Feature Unit Descriptor
+	0x0A,        // bLength
+	0x24,        // bDescriptorType (See Next Line)
+	0x06,        // bDescriptorSubtype (CS_INTERFACE -> FEATURE_UNIT)
+	0x05,        // bUnitID
+	0x04,        // bSourceID
+	0x01,        // bControlSize 1
+	0x03, 0x00,  // bmaControls[0] (Mute)
+	0x00, 0x00,  // bmaControls[1] (Volume)
 
-    0x09,        // bLength
-    0x24,        // bDescriptorType (See Next Line)
-    0x03,        // bDescriptorSubtype (CS_INTERFACE -> OUTPUT_TERMINAL)
-    0x02,        // bTerminalID
-    0x01, 0x01,  // wTerminalType (USB Streaming)
-    0x00,        // bAssocTerminal
-    0x05,        // bSourceID
-    0x00,        // iTerminal
+// Output Terminal Descriptor
+	0x09,        // bLength
+	0x24,        // bDescriptorType (See Next Line)
+	0x03,        // bDescriptorSubtype (CS_INTERFACE -> OUTPUT_TERMINAL)
+	0x02,        // bTerminalID
+	0x01, 0x01,  // wTerminalType (USB Streaming)
+	0x00,        // bAssocTerminal
+	0x05,        // bSourceID
+	0x00,        // iTerminal
 };
 
 static uint8_t const in_interface[] = {
-	    0x09,        // bLength
-	    0x04,        // bDescriptorType (Interface)
-	    TO_BE_SET_AUTOMATICALLY,        // bInterfaceNumber
-	    0x00,        // bAlternateSetting
-	    0x00,        // bNumEndpoints 0
-	    0x01,        // bInterfaceClass (Audio)
-	    0x02,        // bInterfaceSubClass (Audio Streaming)
-	    0x00,        // bInterfaceProtocol
-	    0x00        // iInterface (String Index)
+	0x09,        // bLength
+	0x04,        // bDescriptorType (Interface)
+	TO_BE_SET_AUTOMATICALLY,        // bInterfaceNumber
+	0x00,        // bAlternateSetting
+	0x00,        // bNumEndpoints 0
+	AUDIO_CLASS,        // bInterfaceClass (Audio)
+	AUDIO_STREAM_SUBCLASS,        // bInterfaceSubClass (Audio Streaming)
+	0x00,        // bInterfaceProtocol
+	0x00        // iInterface (String Index)
 };
 
 static uint8_t const in_alt_interface[] = {
-		0x09,        // bLength
-	    0x04,        // bDescriptorType (Interface)
-	    TO_BE_SET_AUTOMATICALLY,        // bInterfaceNumber
-	    0x01,        // bAlternateSetting
-	    0x01,        // bNumEndpoints 1
-	    0x01,        // bInterfaceClass (Audio)
-	    0x02,        // bInterfaceSubClass (Audio Streaming)
-	    0x00,        // bInterfaceProtocol
-	    0x00,        // iInterface (String Index)
+	0x09,        // bLength
+	0x04,        // bDescriptorType (Interface)
+	TO_BE_SET_AUTOMATICALLY,        // bInterfaceNumber
+	0x01,        // bAlternateSetting
+	0x01,        // bNumEndpoints 1
+	AUDIO_CLASS,        // bInterfaceClass (Audio)
+	AUDIO_STREAM_SUBCLASS,        // bInterfaceSubClass (Audio Streaming)
+	0x00,        // bInterfaceProtocol
+	0x00,        // iInterface (String Index)
 
-	    0x07,        // bLength
-	    0x24,        // bDescriptorType (See Next Line)
-	    0x01,        // bDescriptorSubtype (CS_INTERFACE -> AS_GENERAL)
-	    0x02,        // bTerminalLink
-	    0x01,        // bDelay 1
-	    0x01, 0x00,  // wFormatTag (PCM)
+	0x07,        // bLength
+	0x24,        // bDescriptorType (See Next Line)
+	0x01,        // bDescriptorSubtype (CS_INTERFACE -> AS_GENERAL)
+	0x02,        // bTerminalLink
+	0x01,        // bDelay 1
+	0x01, 0x00,  // wFormatTag (PCM)
 
-	    0x0B,        // bLength
-	    0x24,        // bDescriptorType (See Next Line)
-	    0x02,        // bDescriptorSubtype (CS_INTERFACE -> FORMAT_TYPE)
-	    0x01,        // bFormatType 1
-	    0x02,        // bNrChannels (Stereo)
-	    0x02,        // bSubFrameSize 2
-	    0x10,        // bBitResolution 16
-	    0x01,        // bSamFreqType 1
-	    B3VAL(REC_RATE),
+	0x0B,        // bLength
+	0x24,        // bDescriptorType (See Next Line)
+	0x02,        // bDescriptorSubtype (CS_INTERFACE -> FORMAT_TYPE)
+	0x01,        // bFormatType 1
+	0x02,        // bNrChannels (Stereo)
+#if (2 == BYTES_PER_PCM_CHANNEL)
+	0x02,        // bSubFrameSize 2
+	0x10,        // bBitResolution 16
+#elif (4 == BYTES_PER_PCM_CHANNEL)
+	0x04,        // bSubFrameSize 4
+	0x20,        // bBitResolution 32
+#endif
+	0x01,        // bSamFreqType 1
+	B3VAL(REC_RATE),
 
-	    0x09,        // bLength
-	    0x05,        // bDescriptorType (See Next Line)
-	    TO_BE_SET_AUTOMATICALLY,        // bEndpointAddress (IN/D2H)
-	    0x0D,        // bmAttributes (Isochronous, Sync, Data EP)
-	    AUTO_SET_PCKT_SIZE_LSB, AUTO_SET_PCKT_SIZE_MSB,  // wMaxPacketSize
-	    0x01,        // bInterval 1 (unit depends on device speed)
-	    0x00,        // bRefresh
-	    0x00,        // bSyncAddress
+	0x09,        // bLength
+	0x05,        // bDescriptorType (See Next Line)
+	TO_BE_SET_AUTOMATICALLY,        // bEndpointAddress (IN/D2H)
+	0x0D,        // bmAttributes (Isochronous, Sync, Data EP)
+	AUTO_SET_PCKT_SIZE_LSB, AUTO_SET_PCKT_SIZE_MSB,  // wMaxPacketSize
+	0x01,        // bInterval 1 (unit depends on device speed)
+	0x00,        // bRefresh
+	0x00,        // bSyncAddress
 
-	    0x07,        // bLength
-	    0x25,        // bDescriptorType (See Next Line)
-	    0x01,        // bDescriptorSubtype (CS_ENDPOINT -> EP_GENERAL)
-	    0x00,        // bmAttributes (None)
-	    0x00,        // bLockDelayUnits
-	    0x00, 0x00  // wLockDelay 0
+	0x07,        // bLength
+	0x25,        // bDescriptorType (See Next Line)
+	0x01,        // bDescriptorSubtype (CS_ENDPOINT -> EP_GENERAL)
+	0x00,        // bmAttributes (sample rate control ? )
+	0x00,        // bLockDelayUnits
+	0x00, 0x00  // wLockDelay 0
 };
 
 static uint8_t const out_interface[] = {
-	    0x09,        // bLength
-	    0x04,        // bDescriptorType (Interface)
-	    TO_BE_SET_AUTOMATICALLY,        // bInterfaceNumber
-	    0x00,        // bAlternateSetting
-	    0x00,        // bNumEndpoints 0
-	    0x01,        // bInterfaceClass (Audio)
-	    0x02,        // bInterfaceSubClass (Audio Streaming)
-	    0x00,        // bInterfaceProtocol
-	    0x00        // iInterface (String Index)
+	0x09,        // bLength
+	0x04,        // bDescriptorType (Interface)
+	TO_BE_SET_AUTOMATICALLY,        // bInterfaceNumber
+	0x00,        // bAlternateSetting
+	0x00,        // bNumEndpoints 0
+	AUDIO_CLASS,        // bInterfaceClass (Audio)
+	AUDIO_STREAM_SUBCLASS,        // bInterfaceSubClass (Audio Streaming)
+	0x00,        // bInterfaceProtocol
+	0x00        // iInterface (String Index)
 };
 
 static uint8_t const out_alt_interface[] = {
-	    0x09,        // bLength
-	    0x04,        // bDescriptorType (Interface)
-	    TO_BE_SET_AUTOMATICALLY,        // bInterfaceNumber
-	    0x01,        // bAlternateSetting
-	    0x01,        // bNumEndpoints 1
-	    0x01,        // bInterfaceClass (Audio)
-	    0x02,        // bInterfaceSubClass (Audio Streaming)
-	    0x00,        // bInterfaceProtocol
-	    0x00,        // iInterface (String Index)
+	0x09,        // bLength
+	0x04,        // bDescriptorType (Interface)
+	TO_BE_SET_AUTOMATICALLY,        // bInterfaceNumber
+	0x01,        // bAlternateSetting
+	0x01,        // bNumEndpoints 1
+	AUDIO_CLASS,        // bInterfaceClass (Audio)
+	AUDIO_STREAM_SUBCLASS,        // bInterfaceSubClass (Audio Streaming)
+	0x00,        // bInterfaceProtocol
+	0x00,        // iInterface (String Index)
 
-	    0x07,        // bLength
-	    0x24,        // bDescriptorType (See Next Line)
-	    0x01,        // bDescriptorSubtype (CS_INTERFACE -> AS_GENERAL)
-	    0x01,        // bTerminalLink
-	    0x01,        // bDelay 1
-	    0x01, 0x00,  // wFormatTag (PCM)
+	0x07,        // bLength
+	0x24,        // bDescriptorType (See Next Line)
+	0x01,        // bDescriptorSubtype (CS_INTERFACE -> AS_GENERAL)
+	0x01,        // bTerminalLink
+	0x01,        // bDelay 1
+	0x01, 0x00,  // wFormatTag (PCM)
 
-	    0x0B,        // bLength
-	    0x24,        // bDescriptorType (See Next Line)
-	    0x02,        // bDescriptorSubtype (CS_INTERFACE -> FORMAT_TYPE)
-	    0x01,        // bFormatType 1
-	    0x02,        // bNrChannels (Stereo)
-	    0x02,        // bSubFrameSize 2
-	    0x10,        // bBitResolution 16
-	    0x01,        // bSamFreqType 1
-	    B3VAL(ALT2_PLAY_RATE),
-	    //B3VAL(PLAY_RATE),
-	    //B3VAL(ALT1_PLAY_RATE),
+	0x0B,        // bLength
+	0x24,        // bDescriptorType (See Next Line)
+	0x02,        // bDescriptorSubtype (CS_INTERFACE -> FORMAT_TYPE)
+	0x01,        // bFormatType 1
+	0x02,        // bNrChannels (Stereo)
+#if (2 == BYTES_PER_PCM_CHANNEL)
+	0x02,        // bSubFrameSize 2
+	0x10,        // bBitResolution 16
+#elif (4 == BYTES_PER_PCM_CHANNEL)
+	0x04,        // bSubFrameSize 4
+	0x20,        // bBitResolution 32
+#endif
+	0x01,        // bSamFreqType 1
+	B3VAL(ALT2_PLAY_RATE),
+	//B3VAL(PLAY_RATE),
+	//B3VAL(ALT1_PLAY_RATE),
 
 
-	    0x09,        // bLength
-	    0x05,        // bDescriptorType (See Next Line)
-	    TO_BE_SET_AUTOMATICALLY,        // bEndpointAddress (OUT/H2D)
-	    0x0D,        // bmAttributes (Isochronous, Sync, Data EP)
-	    AUTO_SET_PCKT_SIZE_LSB, AUTO_SET_PCKT_SIZE_MSB,  // wMaxPacketSize
-	    0x01,        // bInterval 1 (unit depends on device speed)
-	    0x00,        // bRefresh
-	    0x00,        // bSyncAddress
+	0x09,        // bLength
+	0x05,        // bDescriptorType (See Next Line)
+	TO_BE_SET_AUTOMATICALLY,        // bEndpointAddress (OUT/H2D)
+	0x0D,        // bmAttributes (Isochronous, Sync, Data EP)
+	AUTO_SET_PCKT_SIZE_LSB, AUTO_SET_PCKT_SIZE_MSB,  // wMaxPacketSize
+	0x01,        // bInterval 1 (unit depends on device speed)
+	0x00,        // bRefresh
+	0x00,        // bSyncAddress
 
-	    0x07,        // bLength
-	    0x25,        // bDescriptorType (See Next Line)
-	    0x01,        // bDescriptorSubtype (CS_ENDPOINT -> EP_GENERAL)
-	    0x80,        // bmAttributes (None)
-	    0x00,        // bLockDelayUnits
-	    0x00, 0x00  // wLockDelay 0
+	0x07,        // bLength
+	0x25,        // bDescriptorType (See Next Line)
+	0x01,        // bDescriptorSubtype (CS_ENDPOINT -> EP_GENERAL)
+	0x80,        // bmAttributes (none)
+	0x00,        // bLockDelayUnits
+	0x00, 0x00  // wLockDelay 0
 };
 
 
 /* Record MUTE control. 0 = normal. 1 = MUTE */
 volatile uint8_t g_usbd_RecMute       = 0x01;
+
+/* Play MUTE control. 0 = normal. 1 = MUTE */
+volatile uint8_t g_usbd_PlayMute      = 0x01;
 
 /* Record left channel volume. Range is -32768 ~ 32767 */
 volatile int16_t g_usbd_RecVolumeL    = 0x1000;
@@ -293,9 +332,6 @@ volatile int16_t g_usbd_RecMaxVolume  = 0x7FFF;
 volatile int16_t g_usbd_RecMinVolume  = 0x8000;
 volatile int16_t g_usbd_RecResVolume  = 0x400;
 
-/* Play MUTE control. 0 = normal. 1 = MUTE */
-volatile uint8_t g_usbd_PlayMute      = 0x01;
-
 /* Play left channel volume. Range is -32768 ~ 32767 */
 volatile int16_t g_usbd_PlayVolumeL   = 0x1000;
 
@@ -303,7 +339,7 @@ volatile int16_t g_usbd_PlayVolumeL   = 0x1000;
 volatile int16_t g_usbd_PlayVolumeR   = 0x1000;
 volatile int16_t g_usbd_PlayMaxVolume = 0x7FFF;
 volatile int16_t g_usbd_PlayMinVolume = 0x8000;
-volatile int16_t g_usbd_PlayResVolume = 0x400;
+volatile int16_t g_usbd_PlayResVolume = 0x0400;
 
 
 //#define DEBUG
@@ -695,7 +731,7 @@ static void uac_class_in_request( struct dev_desc_t *usb_hw, uint8_t *request)
 	else
 	{
 		/* Setup error, stall the device */
-		DEV_IOCTL_0_PARAMS(usb_hw, IOCTL_USB_DEVICE_SET_SATLL);
+		DEV_IOCTL_0_PARAMS(usb_hw, IOCTL_USB_DEVICE_SET_STALL);
 	}
 }
 
@@ -800,7 +836,7 @@ static void uac_class_out_request( struct dev_desc_t *usb_hw, uint8_t *request)
 	else
 	{
 		/* Setup error, stall the device */
-		DEV_IOCTL_0_PARAMS(usb_hw, IOCTL_USB_DEVICE_SET_SATLL);
+		DEV_IOCTL_0_PARAMS(usb_hw, IOCTL_USB_DEVICE_SET_STALL);
 	}
 }
 
@@ -837,11 +873,15 @@ static void configure_endpoints(struct dev_desc_t *adev,
 	uint16_t   max_pckt_sizes[2];
 	uint8_t in_endpoint_num;
 	uint8_t out_endpoint_num;
-	uint8_t endpoint_packet_size;
+	uint16_t endpoint_packet_size;
 
 	usb_hw = cfg_hndl->usb_hw;
 
-	endpoint_packet_size = 192;//48000 * 2 * 2 / 1000;
+#if (2 == BYTES_PER_PCM_CHANNEL)
+	endpoint_packet_size = 192;//48000 * 2 bytes * 2ch / 1000; (per ms)
+#elif (4 == BYTES_PER_PCM_CHANNEL)
+	endpoint_packet_size = 384;//48000 * 4 bytes * 2ch / 1000; (per ms)
+#endif
 
 	set_endpoints.num_of_endpoints = 2;
 	set_endpoints.endpoints_num_arr = endpoints_num_arr;
