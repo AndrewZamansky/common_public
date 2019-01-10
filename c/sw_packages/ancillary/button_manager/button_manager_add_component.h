@@ -20,10 +20,10 @@
 			P_TO_STATIC_DEVICE_INST(BUTTON_MANAGER_CLIENT_DEV)
 
 
+	EXTERN_DECLARATION_TO_STATIC_DEVICE_INST(BUTTON_MANAGER_CLIENT_DEV);
 	#define STATIC_DEV_DATA_STRUCT                \
 		{                                         \
 			POINTER_TO_BUTTON_MANAGER_CLIENT_DEV, \
-			NULL,                                 \
 			NULL,                                 \
 			NULL,                                 \
 			0,                                    \

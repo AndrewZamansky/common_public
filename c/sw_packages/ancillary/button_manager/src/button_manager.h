@@ -1,9 +1,5 @@
 /*
- * file : BUTTON_MANAGER.h
- *
- *
- *
- *
+ * file : button_manager.h
  *
  *
  */
@@ -18,20 +14,20 @@
 
 
 struct button_manager_runtime_t {
-	os_queue_t            xButtonQueue;
-	uint8_t               *curr_button_state;
-	uint8_t               manager_state;
-	uint32_t              hold_count;
-	uint32_t              queue_wait_delay;
+	os_queue_t  xButtonQueue;
+	struct gpio_api_read_t *curr_gpio_state_arr;
+	uint8_t     manager_state;
+	uint32_t    hold_count;
+	uint32_t    queue_wait_delay;
+	uint8_t     state;
 };
 
 struct button_manager_config_t {
 	struct dev_desc_t     *client_dev;
-	struct dev_desc_t *   *server_dev;
-	struct btn_action_states_t   *btn_actions;
-	uint8_t		          *idle_state;
-	uint8_t               num_buttons;
-	uint8_t               num_actions;
+	struct dev_desc_t     **gpio_devs_arr;
+	struct btn_action_t   *btn_actions_arr;
+	uint32_t              num_of_actions;
+	uint8_t               num_of_gpio_devs;
 };
 
 

@@ -1,6 +1,6 @@
 /*
  *
- *   file  :  GPIO_I94XXX.c
+ *   file  :  gpio_i94xxx.c
  *
  */
 
@@ -22,6 +22,7 @@
 #include "irq_api.h"
 
 #include "_gpio_i94xxx_prerequirements_check.h"
+#include <stdlib.h>
 
 /*following line add module to available module list for dynamic device tree*/
 #include "gpio_i94xxx_add_component.h"
@@ -40,138 +41,91 @@
 
 /***********   local variables    **************/
 
+static uint8_t  num_of_device_on_intA = 0;
+static struct dev_desc_t **dev_on_int_listA = NULL;
+static uint8_t  num_of_device_on_intB = 0;
+static struct dev_desc_t **dev_on_int_listB = NULL;
+static uint8_t  num_of_device_on_intC = 0;
+static struct dev_desc_t **dev_on_int_listC = NULL;
+static uint8_t  num_of_device_on_intD = 0;
+static struct dev_desc_t **dev_on_int_listD = NULL;
 
-uint8_t gpio_i94xxx_callback(struct dev_desc_t *adev ,
-		uint8_t aCallback_num , void * aCallback_param1,
-		void * aCallback_param2)
+
+static void notify_listeners(GPIO_T *GPIOx,
+		struct dev_desc_t **dev_on_int_list,
+		uint8_t  num_of_device_on_int)
 {
-	struct dev_desc_t *client_dev;
-	struct gpio_i94xxx_config_t *config_handle;
-	GPIO_T *GPIOx;
-	uint16_t pin_num_mask;
+	uint8_t i;
+	uint32_t int_flag;
 
-	config_handle = DEV_GET_CONFIG_DATA_POINTER(adev);
-
-	GPIOx = (GPIO_T *)config_handle->port_num;
-	pin_num_mask = config_handle->pin_num_mask;
-	GPIO_CLR_INT_FLAG(GPIOx, pin_num_mask);
-	client_dev = (struct dev_desc_t *)config_handle->client_dev;
-	if(NULL == client_dev)
+	int_flag = GPIOx->INTSRC;
+	GPIO_CLR_INT_FLAG(GPIOx, 0xFFFF);// clear all
+	for (i = 0; i < num_of_device_on_int; i++)
 	{
-		return 1;
-	}
-	DEV_CALLBACK_0_PARAMS(client_dev, CALLBACK_DATA_RECEIVED);
+		struct dev_desc_t * curr_dev;
+		struct gpio_i94xxx_runtime_t *runtime_handle;
+		struct dev_desc_t * callback_dev;
+		struct gpio_i94xxx_config_t *config_handle;
 
-	return 0;
+		curr_dev = dev_on_int_list[i];
+		runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(curr_dev);
+		if ( 0 == (runtime_handle->pin_mask & int_flag))
+		{
+			continue;
+		}
+
+		config_handle = DEV_GET_CONFIG_DATA_POINTER(curr_dev);
+		callback_dev = config_handle->client_dev;
+		if (NULL != callback_dev)
+		{
+			DEV_CALLBACK_0_PARAMS(callback_dev, CALLBACK_INTERRUPT_ARRIVED);
+		}
+	}
 }
 
-/**
- * gpio_configure_pinout()
- *
- * return:
- */
-uint8_t gpio_configure_pinout(GPIO_T *GPIOx, uint16_t pin_num_mask,
-								struct gpio_i94xxx_config_t *config_handle)
+
+void  __attribute__((interrupt("IRQ"))) gpio_i94xxx_isrA()
 {
-
-	// SMTEN - Schmitt Trigger Enable. This is to further prevent bouncing
-	//			and signals that may be too low or high.
-	switch(pin_num_mask)
-	{
-	case GPIO_I94XXX_API_PIN_0 :
-		config_handle->pin_num = 0;
-		GPIOx->SMTEN = GPIO_SMTEN_SMTEN0_Msk;
-		break;
-
-	case GPIO_I94XXX_API_PIN_1 :
-		config_handle->pin_num = 1;
-		GPIOx->SMTEN = GPIO_SMTEN_SMTEN1_Msk;
-		break;
-
-	case GPIO_I94XXX_API_PIN_2 :
-		config_handle->pin_num = 2;
-		GPIOx->SMTEN = GPIO_SMTEN_SMTEN2_Msk;
-		break;
-
-	case GPIO_I94XXX_API_PIN_3 :
-		config_handle->pin_num = 3;
-		GPIOx->SMTEN = GPIO_SMTEN_SMTEN3_Msk;
-		break;
-
-	case GPIO_I94XXX_API_PIN_4 :
-		config_handle->pin_num = 4;
-		GPIOx->SMTEN = GPIO_SMTEN_SMTEN4_Msk;
-		break;
-
-	case GPIO_I94XXX_API_PIN_5 :
-		config_handle->pin_num = 5;
-		GPIOx->SMTEN = GPIO_SMTEN_SMTEN5_Msk;
-		break;
-
-	case GPIO_I94XXX_API_PIN_6 :
-		config_handle->pin_num = 6;
-		GPIOx->SMTEN = GPIO_SMTEN_SMTEN6_Msk;
-		break;
-
-	case GPIO_I94XXX_API_PIN_7 :
-		config_handle->pin_num = 7;
-		GPIOx->SMTEN = GPIO_SMTEN_SMTEN7_Msk;
-		break;
-
-	case GPIO_I94XXX_API_PIN_8 :
-		config_handle->pin_num = 8;
-		GPIOx->SMTEN = GPIO_SMTEN_SMTEN8_Msk;
-		break;
-
-	case GPIO_I94XXX_API_PIN_9 :
-		config_handle->pin_num = 9;
-		GPIOx->SMTEN = GPIO_SMTEN_SMTEN9_Msk;
-		break;
-
-	case GPIO_I94XXX_API_PIN_10 :
-		config_handle->pin_num = 10;
-		GPIOx->SMTEN = GPIO_SMTEN_SMTEN10_Msk;
-		break;
-
-	case GPIO_I94XXX_API_PIN_11 :
-		config_handle->pin_num = 11;
-		GPIOx->SMTEN = GPIO_SMTEN_SMTEN11_Msk;
-		break;
-
-	case GPIO_I94XXX_API_PIN_12 :
-		config_handle->pin_num = 12;
-		GPIOx->SMTEN = GPIO_SMTEN_SMTEN12_Msk;
-		break;
-
-	case GPIO_I94XXX_API_PIN_13 :
-		config_handle->pin_num = 13;
-		GPIOx->SMTEN = GPIO_SMTEN_SMTEN13_Msk;
-		break;
-
-	case GPIO_I94XXX_API_PIN_14 :
-		config_handle->pin_num = 14;
-		GPIOx->SMTEN = GPIO_SMTEN_SMTEN14_Msk;
-		break;
-
-	case GPIO_I94XXX_API_PIN_15 :
-		config_handle->pin_num = 15;
-		GPIOx->SMTEN = GPIO_SMTEN_SMTEN15_Msk;
-		break;
-
-	default:
-		CRITICAL_ERROR("GPIO Pin not set");
-		break;
-
-	}
-	return 0;
+	notify_listeners((GPIO_T *)GPIOA_BASE,
+			dev_on_int_listA, num_of_device_on_intA);
 }
+
+
+void  __attribute__((interrupt("IRQ"))) gpio_i94xxx_isrB()
+{
+	notify_listeners((GPIO_T *)GPIOB_BASE,
+			dev_on_int_listB, num_of_device_on_intB);
+}
+
+
+void  __attribute__((interrupt("IRQ"))) gpio_i94xxx_isrC()
+{
+	notify_listeners((GPIO_T *)GPIOC_BASE,
+			dev_on_int_listC, num_of_device_on_intC);
+}
+
+
+void  __attribute__((interrupt("IRQ"))) gpio_i94xxx_isrD()
+{
+	notify_listeners((GPIO_T *)GPIOD_BASE,
+			dev_on_int_listD, num_of_device_on_intD);
+}
+
 
 uint8_t gpio_i94xxx_register_interrupt(struct dev_desc_t *adev,
 										struct dev_desc_t *client_dev)
 {
+	uint8_t  *p_num_of_callback_devices;
+	uint8_t  num_of_callback_devices;
+	struct dev_desc_t ***callback_devices_list;
+	struct dev_desc_t **new_callback_devices_list;
 	struct gpio_i94xxx_config_t *config_handle;
 	GPIO_T* GPIOx;
 	IRQn_Type IRQn;
+	uint8_t i;
+	uint8_t   pin_arr_size;
+	uint8_t   *pin_arr;
+	isr_t  isr;
 
 	if(NULL == adev)
 	{
@@ -179,6 +133,8 @@ uint8_t gpio_i94xxx_register_interrupt(struct dev_desc_t *adev,
 	}
 
 	config_handle = DEV_GET_CONFIG_DATA_POINTER(adev);
+	pin_arr_size = config_handle->pin_arr_size;
+	pin_arr = config_handle->pin_arr;
 	GPIOx = (GPIO_T*)config_handle->port_num;
 
 	if(NULL != client_dev)
@@ -190,56 +146,199 @@ uint8_t gpio_i94xxx_register_interrupt(struct dev_desc_t *adev,
 	if(PA == GPIOx)
 	{
 		IRQn = GPA_IRQn;
+		p_num_of_callback_devices = &num_of_device_on_intA;
+		callback_devices_list = &dev_on_int_listA;
+		isr = gpio_i94xxx_isrA;
 	}
 	else if(PB == GPIOx)
 	{
 		IRQn = GPB_IRQn;
+		p_num_of_callback_devices = &num_of_device_on_intB;
+		callback_devices_list = &dev_on_int_listB;
+		isr = gpio_i94xxx_isrB;
 	}
 	else if(PC == GPIOx)
 	{
 		IRQn = GPC_IRQn;
+		p_num_of_callback_devices = &num_of_device_on_intC;
+		callback_devices_list = &dev_on_int_listC;
+		isr = gpio_i94xxx_isrC;
 	}
 	else if(PD == GPIOx)
 	{
 		IRQn = GPD_IRQn;
+		p_num_of_callback_devices = &num_of_device_on_intD;
+		callback_devices_list = &dev_on_int_listD;
+		isr = gpio_i94xxx_isrD;
 	}
 	else
 	{
 		CRITICAL_ERROR("GPIO Port not set");
 	}
-	//Use this function to make adev available during callback function
-	irq_register_device_on_interrupt(IRQn, adev);
+
+	num_of_callback_devices = *p_num_of_callback_devices;
+	if (255 == num_of_callback_devices)
+	{
+		CRITICAL_ERROR("cannot register more than 255 devices");
+	}
+	num_of_callback_devices++;
+	new_callback_devices_list = (struct dev_desc_t **) realloc(
+			*callback_devices_list,
+			num_of_callback_devices * sizeof(struct dev_desc_t *));
+	if (NULL == new_callback_devices_list)
+	{
+		CRITICAL_ERROR("no memory");
+	}
+	new_callback_devices_list[num_of_callback_devices - 1] = adev;
+	*p_num_of_callback_devices = num_of_callback_devices;
+	*callback_devices_list = new_callback_devices_list;
+
+	irq_register_interrupt(IRQn, isr);
 	irq_set_priority(IRQn , INTERRUPT_LOWEST_PRIORITY - 1 );
 	irq_enable_interrupt(IRQn);
 
 	//Current Button Manager needs to be set for both edges.
-	GPIO_EnableInt(GPIOx, config_handle->pin_num, GPIO_INT_BOTH_EDGE);
+	for (i = 0; i < pin_arr_size; i++)
+	{
+		GPIO_EnableInt(GPIOx, pin_arr[i], GPIO_INT_BOTH_EDGE);
+	}
 
 	return 0;
 }
+
+
+static void init_gpio(struct dev_desc_t *adev,
+		struct gpio_i94xxx_config_t *config_handle,
+		struct gpio_i94xxx_runtime_t *runtime_handle)
+{
+	uint8_t   pin_arr_size;
+	uint8_t   *pin_arr;
+	uint8_t   *pin_arr_idle_state;
+	uint8_t   i;
+	uint8_t   curr_pin;
+	uint8_t   pin_mask;
+	uint8_t   curr_idle_state;
+	uint8_t   pin_bitwise_idle_values0;
+	uint8_t   pin_bitwise_idle_values1;
+	GPIO_T*   GPIOx;
+
+	pin_arr_size = config_handle->pin_arr_size;
+	pin_arr = config_handle->pin_arr;
+	pin_arr_idle_state = config_handle->pin_arr_idle_state;
+	GPIOx = (GPIO_T*)config_handle->port_num;
+
+	pin_mask = 0;
+	pin_bitwise_idle_values0 = 0;
+	pin_bitwise_idle_values1 = 0;
+	for (i = 0; i < pin_arr_size; i++)
+	{
+		curr_pin = pin_arr[i];
+		if (15 < curr_pin)
+		{
+			CRITICAL_ERROR("pin number should be less than 15");
+		}
+		pin_mask |= (1 << curr_pin);
+
+		curr_idle_state = pin_arr_idle_state[i];
+		if (1 < curr_idle_state)
+		{
+			CRITICAL_ERROR("idle state should be 0 or 1");
+		}
+
+		if (curr_pin < 8)
+		{
+			pin_bitwise_idle_values0 |= (curr_idle_state << curr_pin);
+		}
+		else
+		{
+			pin_bitwise_idle_values1 |= (curr_idle_state << curr_pin);
+		}
+
+		GPIO_DisableInt(GPIOx, curr_pin);
+	}
+	GPIO_SetMode(GPIOx, pin_mask, config_handle->mode);
+	GPIOx->SMTEN |= pin_mask;
+	runtime_handle->pin_mask = pin_mask;
+	runtime_handle->pin_bitwise_idle_values[0] = pin_bitwise_idle_values0;
+	runtime_handle->pin_bitwise_idle_values[1] = pin_bitwise_idle_values1;
+
+	if(NULL != config_handle->client_dev)
+	{
+		gpio_i94xxx_register_interrupt(adev, NULL);
+	}
+
+}
+
+
+static void  gpio_i94xxx_read(struct gpio_i94xxx_config_t *config_handle,
+		struct gpio_i94xxx_runtime_t *runtime_handle,
+		struct gpio_api_read_t  *gpio_api_read)
+{
+	uint32_t curr_read_values;
+	uint32_t pin_mask;
+	GPIO_T* GPIOx;
+
+	gpio_api_read->values_arr_size = 2;
+	gpio_api_read->pin_bitwise_idle_values =
+			runtime_handle->pin_bitwise_idle_values;
+	gpio_api_read->pin_bitwise_curr_values =
+			runtime_handle->pin_bitwise_curr_values;
+
+	pin_mask = runtime_handle->pin_mask;
+	GPIOx = (GPIO_T*)config_handle->port_num;
+	curr_read_values = GPIOx->PIN;
+	curr_read_values &= pin_mask;
+	gpio_api_read->pin_bitwise_curr_values[0] = curr_read_values & 0xff;
+	gpio_api_read->pin_bitwise_curr_values[1] = (curr_read_values >> 8) & 0xff;
+}
+
+
+static void  gpio_i94xxx_set(struct gpio_i94xxx_config_t *config_handle,
+		struct gpio_i94xxx_runtime_t *runtime_handle)
+{
+	uint32_t pin_mask;
+	GPIO_T* GPIOx;
+	uint32_t volatile * pDOUT;
+
+	pin_mask = runtime_handle->pin_mask;
+	GPIOx = (GPIO_T*)config_handle->port_num;
+	pDOUT = &GPIOx->DOUT;
+	*pDOUT |= pin_mask;
+}
+
+
+static void  gpio_i94xxx_clear(struct gpio_i94xxx_config_t *config_handle,
+		struct gpio_i94xxx_runtime_t *runtime_handle)
+{
+	uint32_t pin_mask;
+	GPIO_T* GPIOx;
+	uint32_t volatile * pDOUT;
+
+	pin_mask = runtime_handle->pin_mask;
+	GPIOx = (GPIO_T*)config_handle->port_num;
+	pDOUT = &GPIOx->DOUT;
+	*pDOUT &= (~pin_mask);
+}
+
 
 /**
  * gpio_i94xxx_ioctl()
  *
  * return:
  */
-uint8_t gpio_i94xxx_ioctl( struct dev_desc_t *adev, const uint8_t aIoctl_num,
+uint8_t gpio_i94xxx_ioctl(struct dev_desc_t *adev, const uint8_t aIoctl_num,
 		void * aIoctl_param1, void * aIoctl_param2)
 {
 	struct gpio_i94xxx_config_t *config_handle;
-	GPIO_T* GPIOx;
-
-	uint32_t volatile * pDOUT;
-	uint16_t pin_num_mask;
+	struct gpio_i94xxx_runtime_t *runtime_handle;
 
 	config_handle = DEV_GET_CONFIG_DATA_POINTER(adev);
-	GPIOx = (GPIO_T*)config_handle->port_num;
-	pin_num_mask = config_handle->pin_num_mask;
-	pDOUT = &GPIOx->DOUT;
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
 
 	switch(aIoctl_num)
 	{
 #ifdef CONFIG_USE_RUNTIME_DEVICE_CONFIGURATION
+#error "not implemented"
 	case IOCTL_GPIO_I94XXX_SET_PORT_PARAM :
 		config_handle->port_num =  *(uint32_t*)aIoctl_param1 ;
 		break;
@@ -255,35 +354,24 @@ uint8_t gpio_i94xxx_ioctl( struct dev_desc_t *adev, const uint8_t aIoctl_num,
 		break;
 #endif
 	case IOCTL_ADD_ISR_CALLBACK_DEV:
-
 		//Register interrupt and client device.
-		gpio_i94xxx_register_interrupt(adev, (struct dev_desc_t *)aIoctl_param1);
-
+		gpio_i94xxx_register_interrupt(adev, aIoctl_param1);
 		break;
 
 	case IOCTL_DEVICE_START :
-		GPIO_SetMode(GPIOx, pin_num_mask, config_handle->mode);
-		gpio_configure_pinout(GPIOx, pin_num_mask, config_handle);
-
-		GPIO_DisableInt(GPIOx, config_handle->pin_num);
-		if(NULL != config_handle->client_dev)
-		{
-			gpio_i94xxx_register_interrupt(adev, NULL);
-		}
-
+		init_gpio(adev, config_handle, runtime_handle);
 		break;
 
 	case IOCTL_GPIO_PIN_SET :
-		*pDOUT |= pin_num_mask;
-
+		gpio_i94xxx_set(config_handle, runtime_handle);
 		break;
 
 	case IOCTL_GPIO_PIN_CLEAR :
-		*pDOUT &= (~pin_num_mask);
+		gpio_i94xxx_clear(config_handle, runtime_handle);
 		break;
 
 	case IOCTL_GPIO_PIN_READ :
-		*((uint8_t*)aIoctl_param1) = GPIOx->PIN &  pin_num_mask ;
+		gpio_i94xxx_read(config_handle, runtime_handle, aIoctl_param1);
 		break;
 
 	default :
