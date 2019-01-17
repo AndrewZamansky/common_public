@@ -666,7 +666,7 @@ static void enable_peripheral_output( uint8_t peripheral_type,
 
 		SPI1->PDMACTL &= ~SPI_PDMACTL_TXPDMAEN_Msk;
 		SPI1->PDMACTL |= SPI_PDMACTL_TXPDMAEN_Msk;
-		PDMA_Trigger(channel_num);
+		PDMA_Trigger(channel_num); // needed for SPI module
 
 		break;
 
@@ -679,6 +679,7 @@ static void enable_peripheral_output( uint8_t peripheral_type,
 
 		SPI2->PDMACTL &= ~SPI_PDMACTL_TXPDMAEN_Msk;
 		SPI2->PDMACTL |= SPI_PDMACTL_TXPDMAEN_Msk;
+		PDMA_Trigger(channel_num); // needed for SPI module
 
 		break;
 

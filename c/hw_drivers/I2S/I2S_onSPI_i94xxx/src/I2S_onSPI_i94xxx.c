@@ -202,7 +202,7 @@ static void configure_i2s_spi_pinout(struct I2S_onSPI_i94xxx_cfg_t *cfg_hndl)
 		{
 			SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD6MFP_Msk);
 			SYS->GPD_MFPL |= SYS_GPD_MFPL_PD6MFP_SPI1_I2SMCLK;
-			PD->SMTEN |= GPIO_SMTEN_SMTEN2_Msk;
+			PD->SMTEN |= GPIO_SMTEN_SMTEN6_Msk;
 		}
 		else if(I2S_onSPI_I94XXX_API_MCLK_PIN_C4 == cfg_hndl->MCLK_pin)
 		{
@@ -210,12 +210,16 @@ static void configure_i2s_spi_pinout(struct I2S_onSPI_i94xxx_cfg_t *cfg_hndl)
 			SYS->GPC_MFPL |= SYS_GPC_MFPL_PC4MFP_SPI1_I2SMCLK;
 			PC->SMTEN |= GPIO_SMTEN_SMTEN4_Msk;
 		}
+		else
+		{
+			CRITICAL_ERROR("SPI1 cannot be routed to these pins");
+		}
 
 		if(I2S_onSPI_I94XXX_API_BCLK_PIN_D4 == cfg_hndl->BCLK_pin)
 		{
 			SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD4MFP_Msk);
 			SYS->GPD_MFPL |= SYS_GPD_MFPL_PD4MFP_SPI1_CLK;
-			PD->SMTEN = GPIO_SMTEN_SMTEN6_Msk;
+			PD->SMTEN = GPIO_SMTEN_SMTEN4_Msk;
 		}
 		else if(I2S_onSPI_I94XXX_API_BCLK_PIN_C2 == cfg_hndl->BCLK_pin)
 		{
@@ -228,7 +232,7 @@ static void configure_i2s_spi_pinout(struct I2S_onSPI_i94xxx_cfg_t *cfg_hndl)
 		{
 			SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD5MFP_Msk);
 			SYS->GPD_MFPL |= SYS_GPD_MFPL_PD5MFP_SPI1_SS;
-			PD->SMTEN |= GPIO_SMTEN_SMTEN3_Msk;
+			PD->SMTEN |= GPIO_SMTEN_SMTEN5_Msk;
 		}
 		else if(I2S_onSPI_I94XXX_API_LRCLK_PIN_C3 == cfg_hndl->LRCLK_pin)
 		{
@@ -241,7 +245,7 @@ static void configure_i2s_spi_pinout(struct I2S_onSPI_i94xxx_cfg_t *cfg_hndl)
 		{
 			SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD3MFP_Msk);
 			SYS->GPD_MFPL |= SYS_GPD_MFPL_PD3MFP_SPI1_MISO;
-			PD->SMTEN |= GPIO_SMTEN_SMTEN4_Msk;
+			PD->SMTEN |= GPIO_SMTEN_SMTEN3_Msk;
 		}
 		else if(I2S_onSPI_I94XXX_API_DI_PIN_C1 == cfg_hndl->DI_pin)
 		{
@@ -254,7 +258,7 @@ static void configure_i2s_spi_pinout(struct I2S_onSPI_i94xxx_cfg_t *cfg_hndl)
 		{
 			SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD2MFP_Msk);
 			SYS->GPD_MFPL |= SYS_GPD_MFPL_PD2MFP_SPI1_MOSI;
-			PD->SMTEN |= GPIO_SMTEN_SMTEN5_Msk;
+			PD->SMTEN |= GPIO_SMTEN_SMTEN2_Msk;
 		}
 		else if(I2S_onSPI_I94XXX_API_DO_PIN_C0 == cfg_hndl->DO_pin)
 		{
@@ -266,9 +270,45 @@ static void configure_i2s_spi_pinout(struct I2S_onSPI_i94xxx_cfg_t *cfg_hndl)
 		break;
 
 	case I2S_onSPI_I94XXX_API_BASE_ADDRESS_SPI2 :
-		CRITICAL_ERROR("SPI2 pinouts not defined yet");
-		break;
+		if(I2S_onSPI_I94XXX_API_MCLK_PIN_A12 == cfg_hndl->MCLK_pin)
+		{
+			SYS->GPA_MFPH &= ~(SYS_GPA_MFPH_PA12MFP_Msk);
+			SYS->GPA_MFPH |= SYS_GPA_MFPH_PA12MFP_SPI2I2S_MCLK;
+			PA->SMTEN |= GPIO_SMTEN_SMTEN12_Msk;
+		}
+		else
+		{
+			CRITICAL_ERROR("SPI2 cannot be routed to these pins");
+		}
 
+		if(I2S_onSPI_I94XXX_API_BCLK_PIN_A10 == cfg_hndl->BCLK_pin)
+		{
+			SYS->GPA_MFPH &= ~(SYS_GPA_MFPH_PA10MFP_Msk);
+			SYS->GPA_MFPH |= SYS_GPA_MFPH_PA10MFP_SPI2I2S_BCLK;
+			PA->SMTEN |= GPIO_SMTEN_SMTEN10_Msk;
+		}
+
+		if(I2S_onSPI_I94XXX_API_LRCLK_PIN_A9 == cfg_hndl->LRCLK_pin)
+		{
+			SYS->GPA_MFPH &= ~(SYS_GPA_MFPH_PA9MFP_Msk);
+			SYS->GPA_MFPH |= SYS_GPA_MFPH_PA9MFP_SPI2I2S_LRCK;
+			PA->SMTEN |= GPIO_SMTEN_SMTEN9_Msk;
+		}
+
+		if(I2S_onSPI_I94XXX_API_DI_PIN_A7 == cfg_hndl->DI_pin)
+		{
+			SYS->GPA_MFPL &= ~(SYS_GPA_MFPL_PA7MFP_Msk);
+			SYS->GPA_MFPL |= SYS_GPA_MFPL_PA7MFP_SPI2I2S_DI;
+			PA->SMTEN |= GPIO_SMTEN_SMTEN12_Msk;
+		}
+
+		if(I2S_onSPI_I94XXX_API_DO_PIN_A8 == cfg_hndl->DO_pin)
+		{
+			SYS->GPA_MFPH &= ~(SYS_GPA_MFPH_PA8MFP_Msk);
+			SYS->GPA_MFPH |= SYS_GPA_MFPH_PA8MFP_SPI2I2S_DO;
+			PA->SMTEN |= GPIO_SMTEN_SMTEN8_Msk;
+		}
+		break;
 	default:
 		CRITICAL_ERROR("SPI base address needs to be defined");
 	}
@@ -302,14 +342,14 @@ static void i94xxx_I2S_onSPI_init(struct I2S_onSPI_i94xxx_cfg_t *cfg_hndl)
 	SPI_T  *I2S_SPI_module;
 	struct dev_desc_t  *clk_dev;
 	struct dev_desc_t  *src_clock;
-
-	I2S_SPI_module = (SPI_T*)cfg_hndl->base_address;
-	src_clock = cfg_hndl->src_clock;
 	uint32_t clk_mode;
 	uint32_t sample_rate;
 	uint32_t data_width;
 	uint32_t audio_format;
 	uint32_t txrx_format;
+
+	I2S_SPI_module = (SPI_T*)cfg_hndl->base_address;
+	src_clock = cfg_hndl->src_clock;
 
 	clk_mode = cfg_hndl->clk_mode;
 	sample_rate = cfg_hndl->sample_rate;
@@ -341,8 +381,8 @@ static void i94xxx_I2S_onSPI_init(struct I2S_onSPI_i94xxx_cfg_t *cfg_hndl)
 	set_clocks(cfg_hndl, I2S_SPI_module, clk_dev);
 
 
-	SPI_I2S_SET_RXTH(SPI1, SPI_I2S_FIFO_RX_LEVEL_4);
-	SPI_I2S_SET_TXTH(SPI1, SPI_I2S_FIFO_TX_LEVEL_4);
+	SPI_I2S_SET_RXTH(I2S_SPI_module, SPI_I2S_FIFO_RX_LEVEL_4);
+	SPI_I2S_SET_TXTH(I2S_SPI_module, SPI_I2S_FIFO_TX_LEVEL_4);
 
 	SPI_I2S_RST_TX_FIFO(I2S_SPI_module);
 	SPI_I2S_RST_RX_FIFO(I2S_SPI_module);
