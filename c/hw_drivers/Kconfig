@@ -153,6 +153,7 @@ config INCLUDE_WIRELESS_UART
 	default n
 
 source "$KCONFIG_PUBLIC_START_DIR/hw_drivers/storage/Kconfig"
+source "$KCONFIG_PUBLIC_START_DIR/hw_drivers/audio_codecs/Kconfig"
 
 ######## automatically selected configurations #########
 config INCLUDE_SERIAL_NUMBER
