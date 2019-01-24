@@ -32,5 +32,6 @@ extern struct dev_desc_t  *i94xxx_I2S_FSCLK_clk_dev;
 extern struct dev_desc_t  *i94xxx_I2S_onSPI1_MCLK_clk_dev;
 extern struct dev_desc_t  *i94xxx_I2S_onSPI1_BCLK_clk_dev;
 extern struct dev_desc_t  *i94xxx_I2S_onSPI1_FSCLK_clk_dev;
+extern struct dev_desc_t  *i94xxx_dmic_clk_dev;
 
 #endif

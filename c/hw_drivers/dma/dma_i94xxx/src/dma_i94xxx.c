@@ -376,6 +376,13 @@ static uint8_t set_peripheral_dma(struct dma_i94xxx_cfg_t *cfg_hndl,
 		dma_peripheral_direction = DMA_TO_PERIPHERAL;
 		break;
 
+	case PDMA_DMIC_RX :
+		src_ctrl = PDMA_SAR_FIX;
+		src_addr = (void*)&DMIC->FIFO;
+		dest_ctrl = PDMA_DAR_INC;
+		dma_peripheral_direction = DMA_FROM_PERIPHERAL;
+		break;
+
 	default :
 		return 1;
 	}
@@ -481,6 +488,10 @@ static uint8_t start_dma_i94xxx_device(struct dev_desc_t *adev,
 		CRITICAL_ERROR("channel number greater than allowed\n");
 	}
 
+	if (0 != channel_pdev[channel_num])
+	{
+		CRITICAL_ERROR("channel already used\n");
+	}
 	channel_pdev[channel_num] = adev;
 
 	/* Enable PDMA clock source */

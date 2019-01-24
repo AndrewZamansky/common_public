@@ -538,7 +538,7 @@ uint8_t clock_i94xxx_i2s_ioctl( struct dev_desc_t *adev,
 		curr_val = (CLK->CLKSEL3 & ~ CLK_CLKSEL3_I2S0SEL_Msk);
 		if (i94xxx_xtal_clk_dev == aIoctl_param1)
 		{
-			CLK->CLKSEL3 = curr_val | CLK_CLKSEL3_I2S0SEL_Pos;
+			CLK->CLKSEL3 = curr_val | CLK_CLKSEL3_I2S0SEL_HXT;
 		}
 		else if (i94xxx_hirc_clk_dev == aIoctl_param1)
 		{
@@ -560,6 +560,53 @@ uint8_t clock_i94xxx_i2s_ioctl( struct dev_desc_t *adev,
 		break;
 	case CLK_IOCTL_ENABLE :
 		CLK->APBCLK0 |= CLK_APBCLK0_I2S0CKEN_Msk;
+		break;
+	case CLK_IOCTL_GET_FREQ :
+		get_parent_clock_rate(cfg_clk, aIoctl_param1);
+		break;
+	default :
+		return 1;
+	}
+	return 0;
+}
+
+
+uint8_t clock_i94xxx_dmic_ioctl( struct dev_desc_t *adev,
+		const uint8_t aIoctl_num, void * aIoctl_param1,
+		void * aIoctl_param2)
+{
+	struct cfg_clk_t *cfg_clk;
+	uint32_t curr_val;
+
+	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(adev);
+	switch(aIoctl_num)
+	{
+	case CLK_IOCTL_SET_PARENT :
+		curr_val = (CLK->CLKSEL2 & (~CLK_CLKSEL2_DMICSEL_Msk));
+		if (i94xxx_xtal_clk_dev == aIoctl_param1)
+		{
+			CLK->CLKSEL2 = curr_val | CLK_CLKSEL2_DMICSEL_HXT;
+		}
+		else if (i94xxx_hirc_clk_dev == aIoctl_param1)
+		{
+			CLK->CLKSEL2 = curr_val | CLK_CLKSEL2_DMICSEL_HIRC;
+		}
+		else if (i94xxx_pll_clk_dev == aIoctl_param1)
+		{
+			CLK->CLKSEL2 = curr_val | CLK_CLKSEL2_DMICSEL_PLL;
+		}
+		else if (i94xxx_pclk0_clk_dev == aIoctl_param1)
+		{
+			CLK->CLKSEL2 = curr_val | CLK_CLKSEL2_DMICSEL_PCLK0;
+		}
+		else
+		{
+			CRITICAL_ERROR("bad parent clock \n");
+		}
+		cfg_clk->parent_clk = aIoctl_param1;
+		break;
+	case CLK_IOCTL_ENABLE :
+		CLK->APBCLK0 |= CLK_APBCLK0_DMICCKEN_Msk;
 		break;
 	case CLK_IOCTL_GET_FREQ :
 		get_parent_clock_rate(cfg_clk, aIoctl_param1);

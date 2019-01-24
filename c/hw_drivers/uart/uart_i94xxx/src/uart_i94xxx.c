@@ -198,8 +198,8 @@ uint8_t uart_i94xxx_ioctl( struct dev_desc_t *adev, uint8_t aIoctl_num,
 	UART_T *uart_regs;
 	int uart_irq;
 	uint32_t uart_module_rst;
-	struct dev_desc_t	*src_clock;
-	struct dev_desc_t	*uart_clk_dev;
+	struct dev_desc_t  *src_clock;
+	struct dev_desc_t  *uart_clk_dev;
 
 	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
 	uart_regs = (UART_T *)UART0_BASE;
@@ -212,7 +212,7 @@ uint8_t uart_i94xxx_ioctl( struct dev_desc_t *adev, uint8_t aIoctl_num,
 		break;
 	case IOCTL_DEVICE_START :
 		uart_irq = UART0_IRQn;
-		uart_module_rst = UART0_MODULE;
+		uart_module_rst = UART0_RST;
 		uart_clk_dev = i94xxx_uart0clk_clk_dev;
 		//uart_clk_src = CLK_UART0_SRC_EXT;
 		/*
