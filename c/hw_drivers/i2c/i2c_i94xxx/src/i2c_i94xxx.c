@@ -24,6 +24,17 @@
 
 #include "i2c.h"
 
+
+
+#if !defined(INTERRUPT_PRIORITY_FOR_I2C)
+	#error "INTERRUPT_PRIORITY_FOR_I2C should be defined"
+#endif
+
+#if CHECK_INTERRUPT_PRIO_FOR_OS_SYSCALLS(INTERRUPT_PRIORITY_FOR_I2C)
+	#error "priority should be lower then maximal priority for os syscalls"
+#endif
+
+
 /********  defines *********************/
 
 #define  NUM_OF_TRIES_TO_ACCESS_I2C_DEVICE  8
@@ -861,7 +872,7 @@ static uint8_t  device_start(struct dev_desc_t *adev)
 	I2C_EnableInt(i2c_regs);
 
 	irq_register_device_on_interrupt(i2c_irq, adev);
-	irq_set_priority(i2c_irq, INTERRUPT_LOWEST_PRIORITY - 1 );
+	irq_set_priority(i2c_irq, INTERRUPT_PRIORITY_FOR_I2C );
 	irq_enable_interrupt(i2c_irq);
 	return 0;
 }

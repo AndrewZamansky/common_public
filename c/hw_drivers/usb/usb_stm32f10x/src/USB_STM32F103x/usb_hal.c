@@ -31,6 +31,16 @@
 #define usb_hush32_function  hw_crc_stm32f10x_api
 
 
+#if !defined(INTERRUPT_PRIORITY_FOR_USB)
+	#error "INTERRUPT_PRIORITY_FOR_USB should be defined"
+#endif
+
+#if CHECK_INTERRUPT_PRIO_FOR_OS_SYSCALLS(INTERRUPT_PRIORITY_FOR_USB)
+	#error "priority should be lower then maximal priority for os syscalls"
+#endif
+
+
+
 /********  defines *********************/
 
 
@@ -188,7 +198,7 @@ void    USB_STM32F103x_Init(void)
 
 
 	irq_register_interrupt(USB_LP_CAN1_RX0_IRQn , USB_Istr);
-	irq_set_priority(USB_LP_CAN1_RX0_IRQn , INTERRUPT_LOWEST_PRIORITY - 1 );
+	irq_set_priority(USB_LP_CAN1_RX0_IRQn , INTERRUPT_PRIORITY_FOR_USBD );
 	irq_enable_interrupt(USB_LP_CAN1_RX0_IRQn);
 
 	USB_Init();

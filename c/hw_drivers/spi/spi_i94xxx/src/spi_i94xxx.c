@@ -30,6 +30,16 @@
 #include "spi_i94xxx_add_component.h"
 
 
+
+#if !defined(INTERRUPT_PRIORITY_FOR_SPI)
+	#error "INTERRUPT_PRIORITY_FOR_SPI should be defined"
+#endif
+
+#if CHECK_INTERRUPT_PRIO_FOR_OS_SYSCALLS(INTERRUPT_PRIORITY_FOR_SPI)
+	#error "priority should be lower then maximal priority for os syscalls"
+#endif
+
+
 /********  defines *********************/
 #define ENABLE_I94XX_SPI_INT
 
@@ -488,7 +498,7 @@ uint8_t spi_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 //		SPI_EnableInt(spi_regs, SPI_UNIT_INT_MASK);
 
 		irq_register_device_on_interrupt(spi_irq, adev);
-		irq_set_priority(spi_irq, INTERRUPT_LOWEST_PRIORITY - 1 );
+		irq_set_priority(spi_irq, INTERRUPT_PRIORITY_FOR_SPI );
 		irq_enable_interrupt(spi_irq);
 
 		SPI_ENABLE(spi_regs);

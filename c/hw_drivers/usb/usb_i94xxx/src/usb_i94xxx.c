@@ -29,6 +29,15 @@
 /*following line add module to available module list for dynamic device tree*/
 #include "usb_i94xxx_add_component.h"
 
+#if !defined(INTERRUPT_PRIORITY_FOR_USBD)
+	#error "INTERRUPT_PRIORITY_FOR_USBD should be defined"
+#endif
+
+#if CHECK_INTERRUPT_PRIO_FOR_OS_SYSCALLS(INTERRUPT_PRIORITY_FOR_USBD)
+	#error "priority should be lower then maximal priority for os syscalls"
+#endif
+
+
 /********  defines *********************/
 /* Define EP maximum packet size */
 #define EP0_MAX_PKT_SIZE    64
@@ -68,6 +77,11 @@ usb_dev_interface_request_callback_func_t
 
 static uint8_t endpoints_count = 2;
 static uint32_t available_buff_pointer = EP1_BUF_BASE + EP1_BUF_LEN;
+
+#define USB_STATE_SETTING  0
+#define USB_STATE_STARTED  1
+static uint8_t usb_state = USB_STATE_SETTING;
+
 /*--------------------------------------------------------------------------*/
 
 //Windows 10 Compiler failed without this variable even though called in an
@@ -116,6 +130,7 @@ void EP_Handler(uint8_t ep_num)
 		USBD_SET_PAYLOAD_LEN(ep_num, max_pckt_sizes[ep_num]);
 	}
 }
+
 
 
 /*--------------------------------------------------------------------------*/
@@ -289,6 +304,10 @@ static void register_interfaces(
 {
 	uint8_t i;
 
+	if (USB_STATE_STARTED == usb_state)
+	{
+		CRITICAL_ERROR("should be done before usb started");
+	}
 	for(i = 0; i < register_interfaces->num_of_interfaces; i++)
 	{
 		struct register_interface_t *register_interface;
@@ -312,7 +331,7 @@ static void set_request_out_buffer(
 		struct set_request_out_buffer_t *set_request_out_buffer)
 {
 	USBD_PrepareCtrlOut(
-			(uint8_t*)set_request_out_buffer->data, set_request_out_buffer->size);
+		(uint8_t*)set_request_out_buffer->data, set_request_out_buffer->size);
 	USBD_PrepareCtrlIn(0, 0);
 }
 
@@ -343,7 +362,9 @@ static void set_data_to_in_endpoint_func(
 
 	size = set_data_to_in_endpoint->size;
 	pu8Src = set_data_to_in_endpoint->data;
+	//MUST BE COPIED BY  SINGLE BYTES
 	//memcpy(pu8Dest, set_data_to_in_endpoint->data, size);
+
 	for (i = 0; i < size; i++)
 	{
 		*pu8Dest++ = *pu8Src++;
@@ -356,6 +377,10 @@ static void set_endpoint_func(struct set_endpoints_t *set_endpoints)
 {
 	int i;
 
+	if (USB_STATE_STARTED == usb_state)
+	{
+		CRITICAL_ERROR("should be done before usb started");
+	}
 	for (i = 0; i < set_endpoints->num_of_endpoints; i++)
 	{
 		uint8_t max_pckt_size;
@@ -435,7 +460,7 @@ static void device_start()
 
 	//irq_register_device_on_interrupt(USBD_IRQn, adev);
 	irq_register_interrupt(USBD_IRQn, USBD_IRQHandler);
-	irq_set_priority(USBD_IRQn, OS_MAX_INTERRUPT_PRIORITY_FOR_API_CALLS );
+	irq_set_priority(USBD_IRQn, INTERRUPT_PRIORITY_FOR_USBD );
 	irq_enable_interrupt(USBD_IRQn);
 }
 
@@ -448,14 +473,23 @@ static void usb_device_start()
 		CRITICAL_ERROR("l_gsInfo structure should be initialized");
 	}
 
+	if (USB_STATE_SETTING == usb_state)
+	{
+		usb_state = USB_STATE_STARTED;
+	}
+	else if (USB_STATE_STARTED == usb_state)
+	{
+		return;
+	}
+
 	/* usb initial */
 	USBD_Open(&l_gsInfo, class_request, NULL);
 
 	/* Endpoint configuration */
 
-    /* Init setup packet buffer */
-    /* Buffer range for setup packet -> [0 ~ 0x7] */
-    USBD->STBUFSEG = SETUP_BUF_BASE;
+	/* Init setup packet buffer */
+	/* Buffer range for setup packet -> [0 ~ 0x7] */
+	USBD->STBUFSEG = SETUP_BUF_BASE;
 
     /*****************************************************/
     /* EP0 ==> control IN endpoint, address 0 */
@@ -477,6 +511,8 @@ static void usb_device_start()
 	/* Disable software-disconnect function */
 	USBD_CLR_SE0();
 
+	USBD->ATTR |= USBD_ATTR_DPPUEN_Msk;
+
 	/* Clear USB-related interrupts before enable interrupt */
 	USBD_CLR_INT_FLAG(USBD_INT_BUS |
 			USBD_INT_USB | USBD_INT_FLDET | USBD_INT_WAKEUP);
@@ -484,11 +520,16 @@ static void usb_device_start()
 	/* Enable USB-related interrupts. */
 	USBD_ENABLE_INT(USBD_INT_BUS | USBD_INT_USB |
 			USBD_INT_FLDET | USBD_INT_WAKEUP | USBD_INTEN_SOFIEN_Msk);
+
 }
 
 
 static void set_descriptors(struct set_device_descriptors_t *descriptors)
 {
+	if (USB_STATE_STARTED == usb_state)
+	{
+		CRITICAL_ERROR("should be done before usb started");
+	}
 	l_gsInfo.gu8DevDesc = descriptors->device_desc;
 	l_gsInfo.gu8ConfigDesc = descriptors->config_desc;
 	l_gsInfo.gu8StringDesc = descriptors->pointers_to_strings_descs;

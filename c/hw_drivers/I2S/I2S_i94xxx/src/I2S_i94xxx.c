@@ -28,6 +28,19 @@
 /*following line add module to available module list for dynamic device tree*/
 #include "I2S_i94xxx_add_component.h"
 
+
+//#define  DEBUG_USE_INTERRUPT
+
+#ifdef  DEBUG_USE_INTERRUPT
+	#if !defined(INTERRUPT_PRIORITY_FOR_I2S)
+		#error "INTERRUPT_PRIORITY_FOR_I2S should be defined"
+	#endif
+
+	#if CHECK_INTERRUPT_PRIO_FOR_OS_SYSCALLS(INTERRUPT_PRIORITY_FOR_I2S)
+		#error "priority should be lower then maximal priority for os syscalls"
+	#endif
+#endif
+
 /********  defines *********************/
 
 #define GPIO_MODE_I_HI_Z     0x0ul
@@ -344,7 +357,7 @@ static void i94xxx_I2S_init(struct I2S_i94xxx_cfg_t *cfg_hndl,
 
 #ifdef DEBUG_USE_INTERRUPT
 	irq_register_interrupt(I2S0_IRQn , I2S_IRQHandler);
-	irq_set_priority(I2S0_IRQn , OS_MAX_INTERRUPT_PRIORITY_FOR_API_CALLS );
+	irq_set_priority(I2S0_IRQn , INTERRUPT_PRIORITY_FOR_I2S );
 	irq_enable_interrupt(I2S0_IRQn);
 	I2S_ENABLE_INT(I2S0, I2S_IEN_RXTHIEN_Msk);
 

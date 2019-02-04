@@ -25,6 +25,14 @@
 #include "dma_i94xxx_add_component.h"
 
 
+#if !defined(INTERRUPT_PRIORITY_FOR_DMA)
+	#error "INTERRUPT_PRIORITY_FOR_DMA should be defined"
+#endif
+
+#if CHECK_INTERRUPT_PRIO_FOR_OS_SYSCALLS(INTERRUPT_PRIORITY_FOR_DMA)
+	#error "priority should be lower then maximal priority for os syscalls"
+#endif
+
 /********  defines *********************/
 
 #define DMA_TO_PERIPHERAL   0
@@ -199,7 +207,7 @@ static void update_rx_buffer(struct dev_desc_t * ch_pdev,
 
 	if (NULL != callback_dev)
 	{
-		DEV_CALLBACK_0_PARAMS(callback_dev, CALLBACK_NEW_DATA_ARRIVED);
+		DEV_CALLBACK_1_PARAMS(callback_dev, CALLBACK_NEW_DATA_ARRIVED, ch_pdev);
 	}
 
 	buff_status[curr_dma_buff_indx] =	DMA_I94XXX_BUFF_RX_RADA_READY;
@@ -515,8 +523,7 @@ static uint8_t start_dma_i94xxx_device(struct dev_desc_t *adev,
 	if (0 == ret)
 	{
 		irq_register_interrupt(PDMA_IRQn, PDMA_IRQHandler);
-		irq_set_priority(PDMA_IRQn,
-				OS_MAX_INTERRUPT_PRIORITY_FOR_API_CALLS );
+		irq_set_priority(PDMA_IRQn, INTERRUPT_PRIORITY_FOR_DMA);
 		irq_enable_interrupt(PDMA_IRQn);
 		PDMA_EnableInt(channel_num, PDMA_INT_TRANS_DONE);
 	}

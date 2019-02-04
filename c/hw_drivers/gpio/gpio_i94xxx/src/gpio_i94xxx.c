@@ -28,6 +28,15 @@
 #include "gpio_i94xxx_add_component.h"
 
 
+
+#if !defined(INTERRUPT_PRIORITY_FOR_GPIO)
+	#error "INTERRUPT_PRIORITY_FOR_GPIO should be defined"
+#endif
+
+#if CHECK_INTERRUPT_PRIO_FOR_OS_SYSCALLS(INTERRUPT_PRIORITY_FOR_GPIO)
+	#error "priority should be lower then maximal priority for os syscalls"
+#endif
+
 /***************   defines    *******************/
 
 
@@ -194,7 +203,7 @@ uint8_t gpio_i94xxx_register_interrupt(struct dev_desc_t *adev,
 	*callback_devices_list = new_callback_devices_list;
 
 	irq_register_interrupt(IRQn, isr);
-	irq_set_priority(IRQn , INTERRUPT_LOWEST_PRIORITY - 1 );
+	irq_set_priority(IRQn , INTERRUPT_PRIORITY_FOR_GPIO );
 	irq_enable_interrupt(IRQn);
 
 	//Current Button Manager needs to be set for both edges.

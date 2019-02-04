@@ -25,6 +25,16 @@
 /*following line add module to available module list for dynamic device tree*/
 #include "uart_nuc505_add_component.h"
 
+
+#if !defined(INTERRUPT_PRIORITY_FOR_UART)
+	#error "INTERRUPT_PRIORITY_FOR_UART should be defined"
+#endif
+
+#if CHECK_INTERRUPT_PRIO_FOR_OS_SYSCALLS(INTERRUPT_PRIORITY_FOR_UART)
+	#error "priority should be lower then maximal priority for os syscalls"
+#endif
+
+
 /********  defines *********************/
 
 
@@ -215,7 +225,7 @@ static uint8_t init_nuc505_uart(struct dev_desc_t *adev )
 
 
 	irq_register_device_on_interrupt(uart_irq , adev);
-	irq_set_priority(uart_irq , INTERRUPT_LOWEST_PRIORITY - 1 );
+	irq_set_priority(uart_irq , INTERRUPT_PRIORITY_FOR_UART );
 	irq_enable_interrupt(uart_irq);
 
 	return 0;

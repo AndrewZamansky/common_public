@@ -28,7 +28,7 @@
 /*define maximal priority for interrupt that can call OS API */
  //TODO : 4 for priority bits . should be changed to generic model !!
 #define OS_MAX_INTERRUPT_PRIORITY_FOR_API_CALLS  \
-						(configMAX_SYSCALL_INTERRUPT_PRIORITY>>4)
+						(configMAX_SYSCALL_INTERRUPT_PRIORITY >> 4)
 
 
 /***********  mutex type definition *******/

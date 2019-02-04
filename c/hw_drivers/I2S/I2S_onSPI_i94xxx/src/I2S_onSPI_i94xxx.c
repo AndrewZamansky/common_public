@@ -23,6 +23,19 @@
 
 /********  defines *********************/
 
+//#define  DEBUG_USE_INTERRUPT
+
+#ifdef  DEBUG_USE_INTERRUPT
+	#if !defined(INTERRUPT_PRIORITY_FOR_I2S)
+		#error "INTERRUPT_PRIORITY_FOR_I2S should be defined"
+	#endif
+
+	#if CHECK_INTERRUPT_PRIO_FOR_OS_SYSCALLS(INTERRUPT_PRIORITY_FOR_I2S)
+		#error "priority should be lower then maximal priority for os syscalls"
+	#endif
+#endif
+
+
 //Pin definitions not included in the I94xxx BSP v3.03
 /* SPI1 MOSI (Master Out, Slave In) pin; or I2S1 data output pin. */
 #define SYS_GPC_MFPL_PC0MFP_SPI1_MOSI         (0x03UL<<SYS_GPC_MFPL_PC0MFP_Pos)
@@ -409,7 +422,7 @@ static void i94xxx_I2S_onSPI_init(struct I2S_onSPI_i94xxx_cfg_t *cfg_hndl)
 //		}
 //		SPI_I2SEnableInt(I2S_SPI_module, SPI_I2S_RXTH_INT_MASK);
 //		irq_register_device_on_interrupt(i2s_spi_irq , adev);
-//		irq_set_priority(i2s_spi_irq , OS_MAX_INTERRUPT_PRIORITY_FOR_API_CALLS );
+//		irq_set_priority(i2s_spi_irq , INTERRUPT_PRIORITY_FOR_I2S );
 //		irq_enable_interrupt(i2s_spi_irq);
 
 	if (cfg_hndl->do_reordering_for_16or8bit_channels)

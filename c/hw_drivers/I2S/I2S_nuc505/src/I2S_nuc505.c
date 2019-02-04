@@ -25,6 +25,15 @@
 /*following line add module to available module list for dynamic device tree*/
 #include "I2S_nuc505_add_component.h"
 
+
+#if !defined(INTERRUPT_PRIORITY_FOR_I2S)
+	#error "INTERRUPT_PRIORITY_FOR_I2S should be defined"
+#endif
+
+#if CHECK_INTERRUPT_PRIO_FOR_OS_SYSCALLS(INTERRUPT_PRIORITY_FOR_I2S)
+	#error "priority should be lower then maximal priority for os syscalls"
+#endif
+
 /********  defines *********************/
 
 
@@ -365,7 +374,7 @@ void demo_LineIn(void)
 		I2S_ENABLE_RX(I2S);
 
 		irq_register_interrupt(I2S_IRQn , I2S_IRQHandler);
-		irq_set_priority(I2S_IRQn , OS_MAX_INTERRUPT_PRIORITY_FOR_API_CALLS );
+		irq_set_priority(I2S_IRQn , INTERRUPT_PRIORITY_FOR_I2S );
 		irq_enable_interrupt(I2S_IRQn);
 
 

@@ -26,6 +26,17 @@
 #define DEBUG
 #include "PRINTF_api.h"
 
+
+#if !defined(INTERRUPT_PRIORITY_FOR_UART)
+	#error "INTERRUPT_PRIORITY_FOR_UART should be defined"
+#endif
+
+#if CHECK_INTERRUPT_PRIO_FOR_OS_SYSCALLS(INTERRUPT_PRIORITY_FOR_UART)
+	#error "priority should be lower then maximal priority for os syscalls"
+#endif
+
+
+
 /********  defines *********************/
 
 
@@ -252,7 +263,7 @@ uint8_t uart_i94xxx_ioctl( struct dev_desc_t *adev, uint8_t aIoctl_num,
 				(UART_INTEN_RDAIEN_Msk  | UART_INTEN_RXTOIEN_Msk));
 
 		irq_register_device_on_interrupt(uart_irq, adev);
-		irq_set_priority(uart_irq, INTERRUPT_LOWEST_PRIORITY - 1 );
+		irq_set_priority(uart_irq, INTERRUPT_PRIORITY_FOR_UART );
 		irq_enable_interrupt(uart_irq);
 		break;
 
