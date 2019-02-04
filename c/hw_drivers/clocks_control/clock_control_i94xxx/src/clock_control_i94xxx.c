@@ -167,11 +167,11 @@ uint8_t clock_i94xxx_hirc_ioctl( struct dev_desc_t *adev,
 		break;
 	case CLK_IOCTL_SET_FREQ :
 		rate = *(uint32_t*)aIoctl_param1;
-		if (48000000 != rate)
+		if (48000000 == rate)
 		{
 			CLK_SELECT_TRIM_HIRC(CLK_CLKSEL0_HIRCFSEL_48M);
 		}
-		else if (49152000 != rate)
+		else if (49152000 == rate)
 		{
 			CLK_SELECT_TRIM_HIRC(CLK_CLKSEL0_HIRCFSEL_49M);
 		}
@@ -205,11 +205,11 @@ uint8_t clock_i94xxx_pll_ioctl( struct dev_desc_t *adev,
 	case CLK_IOCTL_SET_PARENT :
 		if (i94xxx_xtal_clk_dev == aIoctl_param1)
 		{
-			CLK->PWRCTL |= CLK_PWRCTL_HXTEN_Msk;
+			CLK->PLLCTL &= ~CLK_PLLCTL_PLLSRC_Msk;
 		}
 		else if (i94xxx_hirc_clk_dev == aIoctl_param1)
 		{
-			CLK->PWRCTL |= CLK_PWRCTL_HIRCEN_Msk;
+			CLK->PLLCTL |= CLK_PLLCTL_PLLSRC_Msk;
 		}
 		else
 		{
@@ -218,13 +218,13 @@ uint8_t clock_i94xxx_pll_ioctl( struct dev_desc_t *adev,
 		break;
 	case CLK_IOCTL_SET_FREQ :
 		rate = *(uint32_t*)aIoctl_param1;
-		if (CLK->PWRCTL & CLK_PWRCTL_HXTEN_Msk)
+		if (CLK->PLLCTL & CLK_PLLCTL_PLLSRC_Msk)
 		{
-			CLK_EnablePLL(CLK_PLLCTL_PLLSRC_HXT, rate);
+			CLK_EnablePLL(CLK_PLLCTL_PLLSRC_HIRC, rate );
 		}
 		else
 		{
-			CLK_EnablePLL(CLK_PLLCTL_PLLSRC_HIRC, rate );
+			CLK_EnablePLL(CLK_PLLCTL_PLLSRC_HXT, rate);
 		}
 		cfg_clk->rate = rate;
 		break;
@@ -380,6 +380,10 @@ uint8_t clock_i94xxx_usb_ioctl( struct dev_desc_t *adev,
 		{
 			div--;
 		}
+		//TODO: in revision D clock can be set to HIRC or PLL
+		//CLK->CLKSEL4 &= ~(0x1ul << 24);j
+		//CLK->CLKSEL4 |= (0x1ul << 24);
+
 		CLK->CLKDIV0 = (CLK->CLKDIV0 & (~CLK_CLKDIV0_USBDIV_Msk))
 							| (div << CLK_CLKDIV0_USBDIV_Pos);
 		cfg_clk->rate = req_rate;

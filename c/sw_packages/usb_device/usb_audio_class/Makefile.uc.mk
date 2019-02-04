@@ -11,8 +11,8 @@ INCLUDE_THIS_COMPONENT :=$(CONFIG_INCLUDE_USB_AUDIO_CLASS)
 
 
 
-SRC = usb_audio_class.c
-
+SRC += usb_audio_class.c
+SRC += usb_audio_class_descriptors.c
 VPATH = src
 
 

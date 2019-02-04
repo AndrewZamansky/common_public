@@ -12,6 +12,14 @@
 
 #include "dev_management_api.h"
 
+/* Define Terminal and Unit ID  */
+#define PLAY_IT_ID              0x01
+#define PLAY_OT_ID              0x03
+#define PLAY_FEATURE_UNITID     0x06
+#define REC_IT_ID               0x04
+#define REC_OT_ID               0x02
+#define REC_FEATURE_UNITID      0x05
+
 #define USB_AUDIO_CLASS_NUM_OF_BUFFERS   2
 
 /********  types  *********************/
@@ -28,9 +36,14 @@ struct usb_audio_class_runtime_t {
 	uint8_t  curr_buff_indx;
 	uint8_t  next_supplied_tx_buffer;
 	uint8_t  next_supplied_rx_buffer;
-	uint8_t  *buff[USB_AUDIO_CLASS_NUM_OF_BUFFERS];
-	uint8_t  buff_status[USB_AUDIO_CLASS_NUM_OF_BUFFERS];
-	uint32_t curr_pos_in_buffer;
+	uint8_t  in_endpoint_num;
+	uint8_t  *tx_buff;
+	uint8_t  *tx_pckt_buff;
+	uint8_t  *rx_buff[USB_AUDIO_CLASS_NUM_OF_BUFFERS];
+	uint8_t  rx_buff_status[USB_AUDIO_CLASS_NUM_OF_BUFFERS];
+	uint32_t curr_pos_in_rx_buffer;
+	size_t  curr_write_pos_in_tx_buffer;
+	size_t  curr_read_pos_in_tx_buffer;
 	int sample_to_skip_or_repeat;
 };
 #endif
