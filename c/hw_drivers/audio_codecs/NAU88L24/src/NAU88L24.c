@@ -242,6 +242,9 @@ static void set_routing(struct NAU88L24_config_t *cfg_hndl)
 	val_0x7f = 0;
 	switch (input_type)
 	{
+	case NAU88L24_Input_type_none:
+		// do nothing
+		break;
 	case NAU88L24_Input_type_stereo_aux:
 		CRITICAL_ERROR("fix single ended input . reg 0x79");
 
