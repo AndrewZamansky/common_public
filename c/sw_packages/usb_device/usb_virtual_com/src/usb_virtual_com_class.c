@@ -344,6 +344,7 @@ static void configure_endpoints(struct dev_desc_t *adev,
 	usb_dev_in_endpoint_callback_func_t   in_func_arr[3];
 	uint8_t   endpoints_num_arr[3];
 	usb_dev_out_endpoint_callback_func_t   out_func_arr[3];
+	usb_dev_endpoint_request_callback_func_t  endpoint_request_callback_func[3];
 	uint8_t    endpoints_type_arr[3];
 	uint16_t   max_pckt_sizes[3];
 
@@ -352,6 +353,9 @@ static void configure_endpoints(struct dev_desc_t *adev,
 
 	set_endpoints.num_of_endpoints = 3;
 	set_endpoints.endpoints_num_arr = endpoints_num_arr;
+	endpoint_request_callback_func[0] = NULL;
+	endpoint_request_callback_func[1] = NULL;
+	endpoint_request_callback_func[2] = NULL;
 	out_func_arr[0] = NULL;
 	out_func_arr[1] = new_data_received;
 	out_func_arr[2] = NULL;
@@ -360,6 +364,8 @@ static void configure_endpoints(struct dev_desc_t *adev,
 	in_func_arr[2] = end_of_transmit_callback;
 	set_endpoints.out_func_arr = out_func_arr;
 	set_endpoints.in_func_arr = in_func_arr;
+	set_endpoints.endpoint_request_callback_func =
+							endpoint_request_callback_func;
 	set_endpoints.callback_dev = adev;
 	max_pckt_sizes[0] = USB_DESC_INT_SIZE;
 	max_pckt_sizes[1] = USB_MAX_DATA_SIZE;

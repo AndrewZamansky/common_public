@@ -5,7 +5,9 @@
 
 /*****************  defines  **************/
 
-
+#define USB_AUDIO_CLASS_NO_PLAYBACK     0
+#define USB_AUDIO_CLASS_SYNC_PLAYBACK   1
+#define USB_AUDIO_CLASS_ASYNC_PLAYBACK  2
 
 /**********  define API  types ************/
 typedef enum

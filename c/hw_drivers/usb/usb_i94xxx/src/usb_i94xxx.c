@@ -68,12 +68,14 @@ static usb_dev_out_endpoint_callback_func_t
 				out_callback_functions[MAX_NUM_OF_ENDPOINTS];
 static usb_dev_in_endpoint_callback_func_t
 				in_callback_functions[MAX_NUM_OF_ENDPOINTS];
-static struct dev_desc_t *callback_devs[MAX_NUM_OF_ENDPOINTS];
+static struct dev_desc_t *endpoint_callback_devs[MAX_NUM_OF_ENDPOINTS];
 static uint16_t max_pckt_sizes[MAX_NUM_OF_ENDPOINTS] = {0};
 #define MAX_NUM_OF_ITERFACES    16
 static struct dev_desc_t *interface_callback_devs[MAX_NUM_OF_ITERFACES];
 usb_dev_interface_request_callback_func_t
 				interface_callback_functions[MAX_NUM_OF_ITERFACES];
+usb_dev_endpoint_request_callback_func_t
+				endpoint_request_callback_functions[MAX_NUM_OF_ENDPOINTS];
 
 static uint8_t endpoints_count = 2;
 static uint32_t available_buff_pointer = EP1_BUF_BASE + EP1_BUF_LEN;
@@ -107,14 +109,14 @@ void EP_Handler(uint8_t ep_num)
 		callback_func_in = in_callback_functions[ep_num];
 		if (NULL != callback_func_in)
 		{
-			callback_func_in(callback_devs[ep_num]);
+			callback_func_in(endpoint_callback_devs[ep_num]);
 		}
 	}
 	else
 	{
 		usb_dev_out_endpoint_callback_func_t callback_func_out;
 		uint32_t u32Len;
-	    uint8_t *pu8Src;
+		uint8_t *pu8Src;
 
 		/* Get the address in USB buffer */
 		pu8Src = (uint8_t *)(
@@ -124,7 +126,7 @@ void EP_Handler(uint8_t ep_num)
 		callback_func_out = out_callback_functions[ep_num];
 		if (NULL != callback_func_out)
 		{
-			callback_func_out(callback_devs[ep_num], pu8Src, u32Len);
+			callback_func_out(endpoint_callback_devs[ep_num], pu8Src, u32Len);
 		}
 		/* Prepare for nex OUT packet */
 		USBD_SET_PAYLOAD_LEN(ep_num, max_pckt_sizes[ep_num]);
@@ -285,17 +287,36 @@ static void class_request(void)
 
 	USBD_GetSetupPacket(buf);
 
-	USBwIndex = buf[4];
-	if (MAX_NUM_OF_ITERFACES < USBwIndex)
+
+	if (0x01 == (buf[0] & 0x1f))// class/interface request
 	{
-		CRITICAL_ERROR("interface number is to high \n");
+		USBwIndex = buf[4];
+		if (MAX_NUM_OF_ITERFACES < USBwIndex)
+		{
+			CRITICAL_ERROR("interface number is to high \n");
+		}
+
+		callback_func = interface_callback_functions[USBwIndex];
+		if (NULL != callback_func)
+		{
+			callback_func(interface_callback_devs[USBwIndex], buf);
+		}
+	}
+	else if (0x02 == (buf[0] & 0x1f))// class/endpoint request
+	{
+		USBwIndex = buf[4];
+		if (MAX_NUM_OF_ENDPOINTS < USBwIndex)
+		{
+			CRITICAL_ERROR("endpoint number is to high \n");
+		}
+
+		callback_func = endpoint_request_callback_functions[USBwIndex];
+		if (NULL != callback_func)
+		{
+			callback_func(endpoint_callback_devs[USBwIndex], buf);
+		}
 	}
 
-	callback_func = interface_callback_functions[USBwIndex];
-	if (NULL != callback_func)
-	{
-		callback_func(interface_callback_devs[USBwIndex], buf);
-	}
 }
 
 
@@ -391,7 +412,9 @@ static void set_endpoint_func(struct set_endpoints_t *set_endpoints)
 			CRITICAL_ERROR("no free endpoints left \n");
 		}
 		set_endpoints->endpoints_num_arr[i] = endpoints_count;
-		callback_devs[endpoints_count] = set_endpoints->callback_dev;
+		endpoint_callback_devs[endpoints_count] = set_endpoints->callback_dev;
+		endpoint_request_callback_functions[endpoints_count] =
+							set_endpoints->endpoint_request_callback_func[i];
 
 
 		/* Buffer range for endpoint */
@@ -406,6 +429,7 @@ static void set_endpoint_func(struct set_endpoints_t *set_endpoints)
 		case USB_DEVICE_API_EP_TYPE_ISO_OUT :
 			out_callback_functions[endpoints_count] =
 									set_endpoints->out_func_arr[i];
+			in_callback_functions[endpoints_count] = NULL;
 			USBD_CONFIG_EP(endpoints_count,
 					USBD_CFG_EPMODE_OUT | USBD_CFG_TYPE_ISO | endpoints_count);
 			/* trigger to receive OUT data */
@@ -415,6 +439,7 @@ static void set_endpoint_func(struct set_endpoints_t *set_endpoints)
 		case USB_DEVICE_API_EP_TYPE_INTERRUPT_OUT :
 			out_callback_functions[endpoints_count] =
 									set_endpoints->out_func_arr[i];
+			in_callback_functions[endpoints_count] = NULL;
 			USBD_CONFIG_EP(endpoints_count,
 					USBD_CFG_EPMODE_OUT | endpoints_count);
 			/* trigger to receive OUT data */
@@ -424,12 +449,14 @@ static void set_endpoint_func(struct set_endpoints_t *set_endpoints)
 		case USB_DEVICE_API_EP_TYPE_INTERRUPT_IN :
 			in_callback_functions[endpoints_count] =
 								set_endpoints->in_func_arr[i];
+			out_callback_functions[endpoints_count] = NULL;
 			USBD_CONFIG_EP(endpoints_count,
 					USBD_CFG_EPMODE_IN | endpoints_count);
 			break;
 		case USB_DEVICE_API_EP_TYPE_ISO_IN :
 			in_callback_functions[endpoints_count] =
 								set_endpoints->in_func_arr[i];
+			out_callback_functions[endpoints_count] = NULL;
 			USBD_CONFIG_EP(endpoints_count,
 					USBD_CFG_EPMODE_IN | USBD_CFG_TYPE_ISO | endpoints_count);
 			break;
@@ -448,9 +475,9 @@ static void device_start()
 	uint32_t freq;
 
 	SYS->GPB_MFPH &= ~(SYS_GPB_MFPH_PB13MFP_Msk | SYS_GPB_MFPH_PB14MFP_Msk |
-    		SYS_GPB_MFPH_PB15MFP_Msk);
-    SYS->GPB_MFPH |=  (SYS_GPB_MFPH_PB13MFP_USBD_DN |
-    		SYS_GPB_MFPH_PB14MFP_USBD_DP | SYS_GPB_MFPH_PB15MFP_USBD_VBUS);
+			SYS_GPB_MFPH_PB15MFP_Msk);
+	SYS->GPB_MFPH |=  (SYS_GPB_MFPH_PB13MFP_USBD_DN |
+			SYS_GPB_MFPH_PB14MFP_USBD_DP | SYS_GPB_MFPH_PB15MFP_USBD_VBUS);
 
 
 	DEV_IOCTL_0_PARAMS(i94xxx_usb_clk_dev, CLK_IOCTL_ENABLE);
@@ -491,16 +518,16 @@ static void usb_device_start()
 	/* Buffer range for setup packet -> [0 ~ 0x7] */
 	USBD->STBUFSEG = SETUP_BUF_BASE;
 
-    /*****************************************************/
-    /* EP0 ==> control IN endpoint, address 0 */
-    USBD_CONFIG_EP(EP0, USBD_CFG_CSTALL | USBD_CFG_EPMODE_IN | 0);
-    /* Buffer range for EP0 */
-    USBD_SET_EP_BUF_ADDR(EP0, EP0_BUF_BASE);
+	/*****************************************************/
+	/* EP0 ==> control IN endpoint, address 0 */
+	USBD_CONFIG_EP(EP0, USBD_CFG_CSTALL | USBD_CFG_EPMODE_IN | 0);
+	/* Buffer range for EP0 */
+	USBD_SET_EP_BUF_ADDR(EP0, EP0_BUF_BASE);
 
-    /* EP1 ==> control OUT endpoint, address 0 */
-    USBD_CONFIG_EP(EP1, USBD_CFG_CSTALL | USBD_CFG_EPMODE_OUT | 0);
-    /* Buffer range for EP1 */
-    USBD_SET_EP_BUF_ADDR(EP1, EP1_BUF_BASE);
+	/* EP1 ==> control OUT endpoint, address 0 */
+	USBD_CONFIG_EP(EP1, USBD_CFG_CSTALL | USBD_CFG_EPMODE_OUT | 0);
+	/* Buffer range for EP1 */
+	USBD_SET_EP_BUF_ADDR(EP1, EP1_BUF_BASE);
 
 
 	/* use following code instead of USBD_Start() because USBD_Start uses

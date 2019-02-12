@@ -70,14 +70,15 @@ typedef enum
 
 #define MUTE_CONTROL                0x01
 #define VOLUME_CONTROL              0x02
-
-
+#define SAMPLING_FREQ_CONTROL       0x1
 
 
 extern void add_audio_class_device(struct dev_desc_t *adev,
 		struct usb_audio_class_cfg_t *cfg_hndl,
 		struct usb_audio_class_runtime_t *runtime_hndl,
 		uint16_t audio_pckt_size);
+
+static volatile uint32_t g_usbd_PlaySampleRate = 48000;
 
 
 /* Record MUTE control. 0 = normal. 1 = MUTE */
@@ -106,12 +107,29 @@ static volatile int16_t g_usbd_PlayResVolume = 0x0400;
 
 static uint8_t g_usbd_RecStarted = 0;
 
+#if !defined(SAMPLE_RATE)
+	#error "SAMPLE_RATE  should be defined"
+#endif
+
+uint32_t usb_feedback_sample_rate = SAMPLE_RATE;
+
 //#define DEBUG
 
-static int dbg_force_over_or_underflow = 0;
-#define SMOOTH_VALUE    10
-static uint8_t skip_repeat_smooth = 0;
 
+#define SMOOTH_VALUE    300
+static uint16_t skip_repeat_smooth = 0;
+
+volatile uint32_t dbg_out_thr_overflow_cnt = 0;
+volatile uint32_t dbg_out_thr_underflow_cnt = 0;
+volatile uint32_t dbg_out_overflow_cnt = 0;
+volatile uint32_t dbg_out_underflow_cnt = 0;
+volatile uint32_t dbg_num_of_data_ready_buffers = 0;
+volatile uint32_t dbg_cnt11 = 0;
+
+#define BUFFER_TO_SKIP   20
+static uint8_t skip_first_buffers = BUFFER_TO_SKIP;
+uint8_t hit_overflow_threshold = 0;
+uint8_t hit_underflow_threshold = 0;
 
 void new_usb_audio_received(
 		struct dev_desc_t *adev, uint8_t const *buff, size_t size)
@@ -125,15 +143,20 @@ void new_usb_audio_received(
 	uint32_t curr_pos_in_rx_buffer;
 	uint32_t bytes_to_copy;
 	uint8_t *curr_buff;
-	int sample_to_skip_or_repeat;
 	uint8_t num_of_bytes_per_sample;
 	uint16_t num_of_bytes_per_sample_all_channels;
+	uint8_t num_of_data_ready_buffers;
 
 	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
 	runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(adev);
 	num_of_bytes_per_sample = cfg_hndl->num_of_bytes_per_sample;
-	sample_to_skip_or_repeat = runtime_hndl->sample_to_skip_or_repeat;
 	buff_size = cfg_hndl->buff_size;
+
+	if (skip_first_buffers)
+	{
+		skip_first_buffers--;
+		return;
+	}
 
 	// 2 for num of channels
 	num_of_bytes_per_sample_all_channels = 2 * num_of_bytes_per_sample;
@@ -152,22 +175,29 @@ void new_usb_audio_received(
 	buffers = runtime_hndl->rx_buff;
 	curr_buff = buffers[curr_buff_indx];
 
-#ifdef DEBUG
-	if (dbg_force_over_or_underflow > 0)
+	num_of_data_ready_buffers = runtime_hndl->num_of_data_ready_buffers;
+	if (USB_AUDIO_CLASS_NUM_OF_BUFFERS == num_of_data_ready_buffers)
 	{
-		size = size - num_of_bytes_per_sample_all_channels;
-		dbg_force_over_or_underflow--;
+		dbg_cnt11++;
+		return;
 	}
-#endif
+	dbg_num_of_data_ready_buffers = num_of_data_ready_buffers;
+	if (((USB_AUDIO_CLASS_NUM_OF_BUFFERS / 2) + 1) < num_of_data_ready_buffers)
+	{
+		if (SMOOTH_VALUE <= skip_repeat_smooth++)
+		{
+			skip_repeat_smooth = 0;
+			if (USB_AUDIO_CLASS_ASYNC_PLAYBACK != cfg_hndl->playback_type)
+			{
+				size = size - num_of_bytes_per_sample_all_channels;
+			}
+		}
+		dbg_out_thr_overflow_cnt++;
+		usb_feedback_sample_rate = SAMPLE_RATE - 1000;
+		hit_overflow_threshold = 1;
+		hit_underflow_threshold = 0;
+	}
 
-	if (( 0 < sample_to_skip_or_repeat ) &&
-			(SMOOTH_VALUE == skip_repeat_smooth++) &&
-			(0 == dbg_force_over_or_underflow))
-	{
-		skip_repeat_smooth = 0;
-		size = size - num_of_bytes_per_sample_all_channels;
-		sample_to_skip_or_repeat--;
-	}
 	bytes_to_copy = buff_size - curr_pos_in_rx_buffer;
 	if (size < bytes_to_copy)
 	{
@@ -176,32 +206,39 @@ void new_usb_audio_received(
 
 	memcpy(&curr_buff[curr_pos_in_rx_buffer], buff, bytes_to_copy);
 	curr_pos_in_rx_buffer = curr_pos_in_rx_buffer + bytes_to_copy;
-	if ((( 0 > sample_to_skip_or_repeat) &&
-			(SMOOTH_VALUE == skip_repeat_smooth++) &&
+
+	if (((USB_AUDIO_CLASS_NUM_OF_BUFFERS / 2) - 1) >= num_of_data_ready_buffers)
+	{
+		if ((USB_AUDIO_CLASS_ASYNC_PLAYBACK != cfg_hndl->playback_type) &&
+			(SMOOTH_VALUE <= skip_repeat_smooth++) &&
 			(buff_size >=
 				(curr_pos_in_rx_buffer + num_of_bytes_per_sample_all_channels)))
-			&& (0 == dbg_force_over_or_underflow))
-	{
-		skip_repeat_smooth = 0;
-		memcpy(&curr_buff[curr_pos_in_rx_buffer],
+		{
+			skip_repeat_smooth = 0;
+			memcpy(&curr_buff[curr_pos_in_rx_buffer],
 				&curr_buff[curr_pos_in_rx_buffer -
-				           num_of_bytes_per_sample_all_channels],
+				num_of_bytes_per_sample_all_channels],
 				num_of_bytes_per_sample_all_channels);
-		curr_pos_in_rx_buffer += num_of_bytes_per_sample_all_channels;
-		sample_to_skip_or_repeat++;
+			curr_pos_in_rx_buffer += num_of_bytes_per_sample_all_channels;
+		}
+		dbg_out_thr_underflow_cnt++;
+		usb_feedback_sample_rate = SAMPLE_RATE + 1000;
+		hit_overflow_threshold = 0;
+		hit_underflow_threshold = 1;
 	}
-#ifdef DEBUG
-	if ( (dbg_force_over_or_underflow < 0) && (buff_size >=
-			(curr_pos_in_rx_buffer + num_of_bytes_per_sample_all_channels)))
+
+	if ( (hit_overflow_threshold) &&
+		((USB_AUDIO_CLASS_NUM_OF_BUFFERS / 2) >= num_of_data_ready_buffers))
 	{
-		memcpy(&curr_buff[curr_pos_in_rx_buffer],
-				&curr_buff[curr_pos_in_rx_buffer -
-				           num_of_bytes_per_sample_all_channels],
-				num_of_bytes_per_sample_all_channels);
-		curr_pos_in_rx_buffer += num_of_bytes_per_sample_all_channels;
-		dbg_force_over_or_underflow++;
+		usb_feedback_sample_rate = SAMPLE_RATE;
+		hit_overflow_threshold = 0;
 	}
-#endif
+	if ( (hit_underflow_threshold) &&
+		((USB_AUDIO_CLASS_NUM_OF_BUFFERS / 2) < num_of_data_ready_buffers))
+	{
+		usb_feedback_sample_rate = SAMPLE_RATE;
+		hit_underflow_threshold = 0;
+	}
 
 	if (curr_pos_in_rx_buffer == buff_size)
 	{
@@ -216,11 +253,16 @@ void new_usb_audio_received(
 		next_buff_status = &runtime_hndl->rx_buff_status[next_buff_indx];
 
 		*curr_buff_status =	USB_AUDIO_CLASS_BUFF_RX_RADA_READY;
+		num_of_data_ready_buffers++;
+		runtime_hndl->num_of_data_ready_buffers = num_of_data_ready_buffers;
 		if (USB_AUDIO_CLASS_BUFF_IDLE != *next_buff_status)
 		{
 			//remove for debugging purposes:
-			CRITICAL_ERROR("next rx buffer not ready\n");
+			//CRITICAL_ERROR("next rx buffer not ready\n");
+			dbg_out_overflow_cnt++;
+			return;
 		}
+
 		*next_buff_status = USB_AUDIO_CLASS_BUFF_IN_PROCCESS;
 		runtime_hndl->curr_buff_indx = next_buff_indx;
 
@@ -241,7 +283,6 @@ void new_usb_audio_received(
 		}
 	}
 	runtime_hndl->curr_pos_in_rx_buffer = curr_pos_in_rx_buffer;
-	runtime_hndl->sample_to_skip_or_repeat = sample_to_skip_or_repeat;
 
 }
 
@@ -262,14 +303,12 @@ void new_usb_audio_requested(struct dev_desc_t *adev)
 	size_t  available_data_size;
 	size_t   tx_buff_size;
 	size_t   buff_size;
-	struct dev_desc_t *usb_hw;
 	uint8_t  *tx_buff;
 	uint8_t  *tx_pckt_buff;
 
 	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
 	runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(adev);
 
-	usb_hw = cfg_hndl->usb_hw;
 	buff_size = cfg_hndl->buff_size;
 	tx_buff_size = buff_size * NUM_OF_TX_BUFFERS;
 	curr_write_pos_in_tx_buffer = runtime_hndl->curr_write_pos_in_tx_buffer;
@@ -319,19 +358,44 @@ void new_usb_audio_requested(struct dev_desc_t *adev)
 				curr_read_pos_in_tx_buffer = 0;
 			}
 		}
-		DEV_IOCTL_1_PARAMS(usb_hw, IOCTL_USB_DEVICE_SENT_DATA_TO_IN_ENDPOINT,
-				&data_to_endpoint);
+		DEV_IOCTL_1_PARAMS(cfg_hndl->usb_hw,
+				IOCTL_USB_DEVICE_SENT_DATA_TO_IN_ENDPOINT, &data_to_endpoint);
 		runtime_hndl->curr_read_pos_in_tx_buffer = curr_read_pos_in_tx_buffer;
 	}
 	else
 	{
 		/* Setup error, stall the device */
-		DEV_IOCTL_0_PARAMS(usb_hw, IOCTL_USB_DEVICE_SET_STALL);
+		DEV_IOCTL_0_PARAMS(cfg_hndl->usb_hw, IOCTL_USB_DEVICE_SET_STALL);
 		dbg_stall_count++;
 	}
 
 }
 
+
+void new_sample_rate_requested(struct dev_desc_t *adev)
+{
+	struct usb_audio_class_cfg_t *cfg_hndl;
+	struct usb_audio_class_runtime_t *runtime_hndl;
+	struct set_data_to_in_endpoint_t  data_to_endpoint;
+	uint8_t  tx_buff[3];
+
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
+	runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(adev);
+
+	/* reported sample rate is in format 10.14 and number of samples per frame
+	 * for example 48k : val = 0x0c0000
+	*/
+	tx_buff[0] = 0x00;
+	tx_buff[1] = ((usb_feedback_sample_rate / 1000) & 0x3) << 6;
+	tx_buff[2] = (usb_feedback_sample_rate / 1000) >> 2;
+	data_to_endpoint.endpoint_num = runtime_hndl->in_feedback_endpoint_num;
+	data_to_endpoint.data = tx_buff;
+	data_to_endpoint.size = 3;
+	DEV_IOCTL_1_PARAMS(cfg_hndl->usb_hw,
+			IOCTL_USB_DEVICE_SENT_DATA_TO_IN_ENDPOINT, &data_to_endpoint);
+}
+
+static uint8_t rx_was_stoped = 1;
 
 static uint8_t get_full_rx_buffer(struct usb_audio_class_cfg_t *cfg_hndl,
 		struct usb_audio_class_runtime_t *runtime_hndl,
@@ -346,16 +410,24 @@ static uint8_t get_full_rx_buffer(struct usb_audio_class_cfg_t *cfg_hndl,
 	 */
 	next_supplied_rx_buffer = runtime_hndl->next_supplied_rx_buffer ;
 	buffer_state = &runtime_hndl->rx_buff_status[next_supplied_rx_buffer];
-	if (USB_AUDIO_CLASS_BUFF_RX_RADA_READY == *buffer_state)
+	if ((USB_AUDIO_CLASS_BUFF_RX_RADA_READY == *buffer_state) &&
+		((0 == rx_was_stoped) || (1 < runtime_hndl->num_of_data_ready_buffers)))
 	{
 		*buff = runtime_hndl->rx_buff[next_supplied_rx_buffer];
 		*buff_size = cfg_hndl->buff_size;
 		*buffer_state =	USB_AUDIO_CLASS_BUFF_RX_RADA_PROCESSING;
+		rx_was_stoped = 0;
 	}
 	else
 	{
 		*buff = NULL;
 		*buff_size = 0;
+		dbg_out_underflow_cnt++;
+		if (0 == rx_was_stoped)
+		{
+			skip_first_buffers = BUFFER_TO_SKIP;
+		}
+		rx_was_stoped = 1;
 	}
 	return 0;
 }
@@ -365,10 +437,16 @@ static uint8_t release_rx_buffer(struct usb_audio_class_cfg_t *cfg_hndl,
 		struct usb_audio_class_runtime_t *runtime_hndl)
 {
 	uint8_t next_supplied_rx_buffer;
+	uint8_t  *rx_buff_status;
 
 	next_supplied_rx_buffer = runtime_hndl->next_supplied_rx_buffer;
-	runtime_hndl->rx_buff_status[next_supplied_rx_buffer] =
-									USB_AUDIO_CLASS_BUFF_IDLE;
+	rx_buff_status = &runtime_hndl->rx_buff_status[next_supplied_rx_buffer];
+	if (USB_AUDIO_CLASS_BUFF_RX_RADA_PROCESSING != *rx_buff_status)
+	{
+		return 1;
+	}
+	*rx_buff_status = USB_AUDIO_CLASS_BUFF_IDLE;
+	runtime_hndl->num_of_data_ready_buffers--;
 	next_supplied_rx_buffer =
 			(next_supplied_rx_buffer + 1) % USB_AUDIO_CLASS_NUM_OF_BUFFERS;
 	runtime_hndl->next_supplied_rx_buffer = next_supplied_rx_buffer;
@@ -587,10 +665,10 @@ static uint8_t get_res_volume(
 }
 
 
-/* uac_class_in_request()
+/* uac_class_interface_in_request()
  *
  */
-static void uac_class_in_request( struct dev_desc_t *usb_hw, uint8_t *request)
+static void uac_class_interface_in_request( struct dev_desc_t *usb_hw, uint8_t *request)
 {
 	struct set_request_in_buffer_t set_request_in_buffer;
 	uint8_t ret;
@@ -726,15 +804,16 @@ static uint8_t set_volume(
 }
 
 
-/*  uac_class_out_request()
+/*  uac_class_interface_out_request()
  *
  */
-static void uac_class_out_request( struct dev_desc_t *usb_hw, uint8_t *request)
+static void uac_class_interface_out_request(
+				struct dev_desc_t *usb_hw, uint8_t *request)
 {
 	struct set_request_out_buffer_t set_request_out_buffer;
 	uint8_t ret;
 
-    switch(request[1])
+	switch(request[1])
 	{
 	case UAC_SET_CUR:
 		switch(request[3])
@@ -755,11 +834,11 @@ static void uac_class_out_request( struct dev_desc_t *usb_hw, uint8_t *request)
 		break;
 	}
 
-    if (0 == ret)
-    {
-    	DEV_IOCTL_1_PARAMS(usb_hw,
-    		IOCTL_USB_DEVICE_SET_REQUEST_OUT_BUFFER, &set_request_out_buffer);
-    }
+	if (0 == ret)
+	{
+		DEV_IOCTL_1_PARAMS(usb_hw,
+			IOCTL_USB_DEVICE_SET_REQUEST_OUT_BUFFER, &set_request_out_buffer);
+	}
 	else
 	{
 		/* Setup error, stall the device */
@@ -768,7 +847,8 @@ static void uac_class_out_request( struct dev_desc_t *usb_hw, uint8_t *request)
 }
 
 
-void uac_class_request(struct dev_desc_t *callback_dev, uint8_t *request)
+void uac_interface_class_request(
+		struct dev_desc_t *callback_dev, uint8_t *request)
 {
 	struct usb_audio_class_cfg_t *cfg_hndl;
 	struct dev_desc_t *usb_hw;
@@ -778,12 +858,91 @@ void uac_class_request(struct dev_desc_t *callback_dev, uint8_t *request)
 
 	if(request[0] & 0x80)    /* request data transfer direction */
 	{// from device to host
-		uac_class_in_request(usb_hw, request);
+		uac_class_interface_in_request(usb_hw, request);
 	}
 	else
 	{// from host to device
-		uac_class_out_request(usb_hw, request);
+		uac_class_interface_out_request(usb_hw, request);
 	}
+}
+
+
+/*  uac_class_endpoint_out_request()
+ *
+ */
+static void uac_class_endpoint_out_request( struct dev_desc_t *usb_hw,
+		struct usb_audio_class_runtime_t *runtime_hndl, uint8_t *request)
+{
+	struct set_request_out_buffer_t set_request_out_buffer;
+
+	switch(request[1])
+	{
+	case UAC_SET_CUR:
+		if ((request[3] == SAMPLING_FREQ_CONTROL) &&
+				(request[4] == runtime_hndl->out_endpoint_num))
+		{
+			set_request_out_buffer.data = (uint8_t*)&g_usbd_PlaySampleRate;
+			set_request_out_buffer.size = 3;
+			DEV_IOCTL_1_PARAMS(usb_hw, IOCTL_USB_DEVICE_SET_REQUEST_OUT_BUFFER,
+				&set_request_out_buffer);
+			return;
+		}
+		break;
+	default:
+		break;
+	}
+	DEV_IOCTL_0_PARAMS(usb_hw, IOCTL_USB_DEVICE_SET_STALL);
+}
+
+
+/*  uac_class_endpoint_in_request()
+ *
+ */
+static void uac_class_endpoint_in_request( struct dev_desc_t *usb_hw,
+		struct usb_audio_class_runtime_t *runtime_hndl, uint8_t *request)
+{
+	struct set_request_in_buffer_t set_request_in_buffer;
+
+	switch(request[1])
+	{
+	case UAC_GET_CUR:
+		if ((request[3] == SAMPLING_FREQ_CONTROL) &&
+				(request[4] == runtime_hndl->out_endpoint_num))
+		{
+			set_request_in_buffer.data = (uint8_t*)&g_usbd_PlaySampleRate;
+			set_request_in_buffer.size = 3;
+			DEV_IOCTL_1_PARAMS(usb_hw, IOCTL_USB_DEVICE_SET_REQUEST_IN_BUFFER,
+				&set_request_in_buffer);
+			return;
+		}
+		break;
+	default:
+		break;
+	}
+	DEV_IOCTL_0_PARAMS(usb_hw, IOCTL_USB_DEVICE_SET_STALL);
+}
+
+
+void uac_endpoint_class_request(
+		struct dev_desc_t *callback_dev, uint8_t *request)
+{
+	struct usb_audio_class_runtime_t *runtime_hndl;
+	struct usb_audio_class_cfg_t *cfg_hndl;
+	struct dev_desc_t *usb_hw;
+
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(callback_dev);
+	runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(callback_dev);
+	usb_hw = cfg_hndl->usb_hw;
+
+	if(request[0] & 0x80) // Device to host
+	{
+		uac_class_endpoint_in_request(usb_hw, runtime_hndl, request);
+	}
+	else // Host to device
+	{
+		uac_class_endpoint_out_request(usb_hw, runtime_hndl, request);
+	}
+
 }
 
 
@@ -797,8 +956,19 @@ static void start_audio_class(struct dev_desc_t *adev,
 	uint16_t cnt = 0;
 
 
-
+	runtime_hndl->num_of_data_ready_buffers = 0;
 	add_audio_class_device(adev, cfg_hndl, runtime_hndl, MAX_AUDIO_PACKET_SIZE);
+
+	if (USB_AUDIO_CLASS_ASYNC_PLAYBACK == cfg_hndl->playback_type)
+	{
+		struct set_data_to_in_endpoint_t  data_to_endpoint;
+		data_to_endpoint.endpoint_num = runtime_hndl->in_feedback_endpoint_num;
+		data_to_endpoint.data = NULL;
+		data_to_endpoint.size = 0;
+
+		DEV_IOCTL_1_PARAMS(cfg_hndl->usb_hw,
+				IOCTL_USB_DEVICE_SENT_DATA_TO_IN_ENDPOINT, &data_to_endpoint);
+	}
 
 	buff_size = cfg_hndl->buff_size;
 	for (i = 0; i < USB_AUDIO_CLASS_NUM_OF_BUFFERS; i++)
@@ -874,26 +1044,6 @@ uint8_t usb_audio_class_ioctl( struct dev_desc_t *adev, uint8_t aIoctl_num,
 	case USB_AUDIO_CLASS_IOCTL_RELEASE_TX_BUFF :
 		release_tx_buffer(cfg_hndl, runtime_hndl);
 		break;
-
-	case USB_AUDIO_CLASS_IOCTL_SLOWDOWN_BY_SKIPING_SAMPLES :
-		if (0 >= runtime_hndl->sample_to_skip_or_repeat)
-		{
-			runtime_hndl->sample_to_skip_or_repeat = *(uint32_t*)aIoctl_param1;
-		}
-		break;
-
-	case USB_AUDIO_CLASS_IOCTL_ACCELERATE_BY_REPEATING_SAMPLES :
-		if (0 <= runtime_hndl->sample_to_skip_or_repeat)
-		{
-			runtime_hndl->sample_to_skip_or_repeat =
-										-(*(uint32_t*)aIoctl_param1);
-		}
-		break;
-
-	case USB_AUDIO_CLASS_IOCTL_SOFT_RESET :
-		runtime_hndl->sample_to_skip_or_repeat = 0;
-		break;
-
 	default :
 		return 1;
 	}

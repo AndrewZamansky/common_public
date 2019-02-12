@@ -39,13 +39,18 @@
 		#error "USB_AUDIO_CLASS_DT_BUFFER_SIZE should be defined"
 	#endif
 
+	#ifndef USB_AUDIO_CLASS_DT_PLAYBACK_TYPE
+		#error "USB_AUDIO_CLASS_DT_PLAYBACK_TYPE should be defined"
+	#endif
+
 	#define STATIC_DEV_DATA_STRUCT           \
 		{                                    \
 			USB_AUDIO_CLASS_DT_BUFFER_SIZE,  \
 			_POINTER_TO_USB_PDEV ,           \
 			_USB_AUDIO_CLASS_CALLBACK_PDEV,  \
 			_POINTER_TO_USB_DESCRIPTOR_PDEV, \
-			USB_AUDIO_CLASS_DT_NUM_OF_BYTES_PER_SAMPLE \
+			USB_AUDIO_CLASS_DT_NUM_OF_BYTES_PER_SAMPLE, \
+			USB_AUDIO_CLASS_DT_PLAYBACK_TYPE  \
 		}
 
 	#endif

@@ -571,9 +571,15 @@ static uint8_t release_rx_buffer(struct dma_i94xxx_cfg_t *cfg_hndl,
 {
 	uint8_t next_supplied_rx_buffer;
 	uint8_t num_of_buffers;
+	uint8_t *buffer_state;
 
 	next_supplied_rx_buffer = runtime_hndl->next_supplied_rx_buffer;
-	runtime_hndl->buff_status[next_supplied_rx_buffer] = DMA_I94XXX_BUFF_IDLE;
+	buffer_state = &runtime_hndl->buff_status[next_supplied_rx_buffer];
+	if (DMA_I94XXX_BUFF_RX_RADA_PROCESSING != *buffer_state)
+	{
+		return 1;
+	}
+	*buffer_state = DMA_I94XXX_BUFF_IDLE;
 	num_of_buffers = cfg_hndl->num_of_buffers;
 	next_supplied_rx_buffer = (next_supplied_rx_buffer + 1) % num_of_buffers;
 	runtime_hndl->next_supplied_rx_buffer = next_supplied_rx_buffer;
@@ -611,7 +617,7 @@ static uint8_t get_empty_tx_buffer(struct dev_desc_t *ch_pdev,
 	num_of_buffers = cfg_hndl->num_of_buffers;
 
 	next_supplied_tx_buffer = runtime_hndl->next_supplied_tx_buffer ;
-	look_foward_tx_buffer = (next_supplied_tx_buffer + 2) % num_of_buffers;
+	look_foward_tx_buffer = (next_supplied_tx_buffer + 1) % num_of_buffers;
 
 
 	buffer_state = &runtime_hndl->buff_status[look_foward_tx_buffer];
