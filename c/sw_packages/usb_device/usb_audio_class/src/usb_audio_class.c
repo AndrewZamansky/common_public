@@ -24,23 +24,6 @@
 #include "usb_audio_class_add_component.h"
 
 
-#if !defined(BYTES_PER_PCM_CHANNEL)
-	#error "BYTES_PER_PCM_CHANNEL should be defined in project header files"
-#endif
-#if !defined(NUM_OF_CHANNELS)
-	#error "NUM_OF_CHANNELS should be defined in project header files"
-#endif
-#if !defined(SAMPLE_RATE)
-	#error "SAMPLE_RATE  should be defined"
-#endif
-
-
-#define NORMAL_AUDIO_PACKET_SIZE  ((BYTES_PER_PCM_CHANNEL *       \
-							SAMPLE_RATE * NUM_OF_CHANNELS) / 1000)// (per ms)
-
-#define MAX_AUDIO_PACKET_SIZE (NORMAL_AUDIO_PACKET_SIZE \
-							+ (NUM_OF_CHANNELS * BYTES_PER_PCM_CHANNEL))
-
 typedef enum
 {
 	USB_AUDIO_CLASS_BUFF_IDLE,
@@ -75,8 +58,7 @@ typedef enum
 
 extern void add_audio_class_device(struct dev_desc_t *adev,
 		struct usb_audio_class_cfg_t *cfg_hndl,
-		struct usb_audio_class_runtime_t *runtime_hndl,
-		uint16_t audio_pckt_size);
+		struct usb_audio_class_runtime_t *runtime_hndl);
 
 static volatile uint32_t g_usbd_PlaySampleRate = 48000;
 
@@ -107,11 +89,8 @@ static volatile int16_t g_usbd_PlayResVolume = 0x0400;
 
 static uint8_t g_usbd_RecStarted = 0;
 
-#if !defined(SAMPLE_RATE)
-	#error "SAMPLE_RATE  should be defined"
-#endif
 
-uint32_t usb_feedback_sample_rate = SAMPLE_RATE;
+uint32_t usb_feedback_sample_rate = USB_HOST_OUT_SAMPLE_RATE;
 
 //#define DEBUG
 
@@ -182,7 +161,7 @@ void new_usb_audio_received(
 		return;
 	}
 	dbg_num_of_data_ready_buffers = num_of_data_ready_buffers;
-	if (((USB_AUDIO_CLASS_NUM_OF_BUFFERS / 2) + 1) < num_of_data_ready_buffers)
+	if ((USB_AUDIO_CLASS_NUM_OF_BUFFERS - 1) <= num_of_data_ready_buffers)
 	{
 		if (SMOOTH_VALUE <= skip_repeat_smooth++)
 		{
@@ -193,7 +172,10 @@ void new_usb_audio_received(
 			}
 		}
 		dbg_out_thr_overflow_cnt++;
-		usb_feedback_sample_rate = SAMPLE_RATE - 1000;
+
+		// frame is 1ms so sample rate *1000
+		usb_feedback_sample_rate =
+				USB_HOST_OUT_SAMPLE_RATE - (ADDITIONAL_SAMPLES_NUM * 1000);
 		hit_overflow_threshold = 1;
 		hit_underflow_threshold = 0;
 	}
@@ -207,7 +189,7 @@ void new_usb_audio_received(
 	memcpy(&curr_buff[curr_pos_in_rx_buffer], buff, bytes_to_copy);
 	curr_pos_in_rx_buffer = curr_pos_in_rx_buffer + bytes_to_copy;
 
-	if (((USB_AUDIO_CLASS_NUM_OF_BUFFERS / 2) - 1) >= num_of_data_ready_buffers)
+	if (2 > num_of_data_ready_buffers)
 	{
 		if ((USB_AUDIO_CLASS_ASYNC_PLAYBACK != cfg_hndl->playback_type) &&
 			(SMOOTH_VALUE <= skip_repeat_smooth++) &&
@@ -222,21 +204,24 @@ void new_usb_audio_received(
 			curr_pos_in_rx_buffer += num_of_bytes_per_sample_all_channels;
 		}
 		dbg_out_thr_underflow_cnt++;
-		usb_feedback_sample_rate = SAMPLE_RATE + 1000;
+
+		// frame is 1ms so sample rate *1000
+		usb_feedback_sample_rate =
+				USB_HOST_OUT_SAMPLE_RATE + (ADDITIONAL_SAMPLES_NUM * 1000);
 		hit_overflow_threshold = 0;
 		hit_underflow_threshold = 1;
 	}
 
 	if ( (hit_overflow_threshold) &&
-		((USB_AUDIO_CLASS_NUM_OF_BUFFERS / 2) >= num_of_data_ready_buffers))
+		((USB_AUDIO_CLASS_NUM_OF_BUFFERS - 3) >= num_of_data_ready_buffers))
 	{
-		usb_feedback_sample_rate = SAMPLE_RATE;
+		usb_feedback_sample_rate = USB_HOST_OUT_SAMPLE_RATE;
 		hit_overflow_threshold = 0;
 	}
 	if ( (hit_underflow_threshold) &&
-		((USB_AUDIO_CLASS_NUM_OF_BUFFERS / 2) < num_of_data_ready_buffers))
+		(3 <= num_of_data_ready_buffers))
 	{
-		usb_feedback_sample_rate = SAMPLE_RATE;
+		usb_feedback_sample_rate = USB_HOST_OUT_SAMPLE_RATE;
 		hit_underflow_threshold = 0;
 	}
 
@@ -332,7 +317,7 @@ void new_usb_audio_requested(struct dev_desc_t *adev)
 		struct set_data_to_in_endpoint_t  data_to_endpoint;
 		size_t  data_to_copy;
 
-		data_to_copy = NORMAL_AUDIO_PACKET_SIZE;
+		data_to_copy = NORMAL_AUDIO_HOST_IN_PACKET_SIZE;
 		if (available_data_size < (2 * buff_size)) // reduce speed(clock)
 		{
 			data_to_copy -= (NUM_OF_CHANNELS * BYTES_PER_PCM_CHANNEL);
@@ -957,7 +942,7 @@ static void start_audio_class(struct dev_desc_t *adev,
 
 
 	runtime_hndl->num_of_data_ready_buffers = 0;
-	add_audio_class_device(adev, cfg_hndl, runtime_hndl, MAX_AUDIO_PACKET_SIZE);
+	add_audio_class_device(adev, cfg_hndl, runtime_hndl);
 
 	if (USB_AUDIO_CLASS_ASYNC_PLAYBACK == cfg_hndl->playback_type)
 	{
@@ -993,7 +978,7 @@ static void start_audio_class(struct dev_desc_t *adev,
 		*((uint16_t*)&new_buff[i + 2]) =  cnt++;
 	}
 	runtime_hndl->tx_buff = new_buff;
-	new_buff = (uint8_t*)malloc(MAX_AUDIO_PACKET_SIZE);
+	new_buff = (uint8_t*)malloc(MAX_AUDIO_HOST_IN_PACKET_SIZE);
 	if (NULL == new_buff)
 	{
 		CRITICAL_ERROR("no memory");

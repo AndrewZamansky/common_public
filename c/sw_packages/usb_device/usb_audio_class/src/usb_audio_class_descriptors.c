@@ -25,15 +25,6 @@
 #include "usb_audio_class_add_component.h"
 
 
-#if !defined(BYTES_PER_PCM_CHANNEL)
-	#error "BYTES_PER_PCM_CHANNEL should be defined in project header files"
-#endif
-#if !defined(NUM_OF_CHANNELS)
-	#error "NUM_OF_CHANNELS should be defined in project header files"
-#endif
-#if !defined(SAMPLE_RATE)
-	#error "SAMPLE_RATE  should be defined"
-#endif
 
 #define REC_STREAM_TERMINAL_ID    0x02
 #define REC_TERMINAL_ID    0x04
@@ -52,10 +43,6 @@ typedef enum
 
 /***************************************************/
 
-#if !defined(SAMPLE_RATE)
-	#error "SAMPLE_RATE  should be defined"
-#endif
-
 extern void uac_interface_class_request(
 		struct dev_desc_t *callback_dev, uint8_t *request);
 extern void uac_endpoint_class_request(
@@ -70,8 +57,6 @@ extern void new_sample_rate_requested(struct dev_desc_t *adev);
 
 #define B2VAL(x) (x & 0xFF), ((x >> 8) & 0xFF)
 #define B3VAL(x) (x & 0xFF), ((x >> 8) & 0xFF), ((x >> 16) & 0xFF)
-#define REC_RATE         SAMPLE_RATE
-#define ALT2_PLAY_RATE   SAMPLE_RATE
 #define AUTO_SET_PCKT_SIZE_MSB   0x00
 #define AUTO_SET_PCKT_SIZE_LSB   0x00
 
@@ -242,7 +227,7 @@ static uint8_t const in_alt_interface[] = {
 	0x20,        // bBitResolution 32
 #endif
 	0x01,        // bSamFreqType 1
-	B3VAL(REC_RATE),
+	B3VAL(USB_HOST_IN_SAMPLE_RATE),
 
 	0x09,        // bLength
 	0x05,        // bDescriptorType (See Next Line)
@@ -304,10 +289,7 @@ static uint8_t const out_alt_interface[] = {
 	0x20,        // bBitResolution 32
 #endif
 	0x01,        // bSamFreqType 1
-	B3VAL(ALT2_PLAY_RATE),
-	//B3VAL(PLAY_RATE),
-	//B3VAL(ALT1_PLAY_RATE),
-
+	B3VAL(USB_HOST_OUT_SAMPLE_RATE),
 
 	0x09,        // bLength
 	0x05,        // bDescriptorType (See Next Line)
@@ -334,8 +316,6 @@ static uint8_t const out_alt_interface[] = {
 	0x01,        // bmAttributes (none) was 0x80
 	0x00,        // bLockDelayUnits
 	0x00, 0x00  // wLockDelay 0
-
-
 };
 
 
@@ -349,7 +329,7 @@ static uint8_t const out_alt_interface[] = {
 
 static void configure_endpoints(struct dev_desc_t *adev,
 		struct usb_audio_class_cfg_t *cfg_hndl,
-		uint8_t *i_in_alt1, uint8_t *i_out_alt1, uint16_t audio_pckt_size)
+		uint8_t *i_in_alt1, uint8_t *i_out_alt1)
 {
 	struct usb_audio_class_runtime_t *runtime_hndl;
 	struct dev_desc_t *usb_hw;
@@ -373,7 +353,7 @@ static void configure_endpoints(struct dev_desc_t *adev,
 	out_func_arr[0] = NULL;
 	in_func_arr[0] = new_usb_audio_requested;
 	endpoint_request_callback_func[0] = uac_endpoint_class_request;
-	max_pckt_sizes[0] = audio_pckt_size;
+	max_pckt_sizes[0] = MAX_AUDIO_HOST_IN_PACKET_SIZE;
 	endpoints_type_arr[0] = USB_DEVICE_API_EP_TYPE_ISO_IN;
 	num_of_endpoints = 1;
 
@@ -382,7 +362,7 @@ static void configure_endpoints(struct dev_desc_t *adev,
 		out_func_arr[1] = new_usb_audio_received;
 		in_func_arr[1] = NULL;
 		endpoint_request_callback_func[1] = uac_endpoint_class_request;
-		max_pckt_sizes[1] = audio_pckt_size;
+		max_pckt_sizes[1] = MAX_AUDIO_HOST_OUT_PACKET_SIZE;
 		endpoints_type_arr[1] = USB_DEVICE_API_EP_TYPE_ISO_OUT;
 		num_of_endpoints++;
 	}
@@ -410,16 +390,16 @@ static void configure_endpoints(struct dev_desc_t *adev,
 	in_endpoint_num = endpoints_num_arr[0];
 	endpoint_desc = &i_in_alt1[IN_ENDPOINT_OFFSET];
 	endpoint_desc[2] = 0x80 | in_endpoint_num;// 0x80 for IN endpoint
-	endpoint_desc[4] = audio_pckt_size & 0xFF;
-	endpoint_desc[5] = (audio_pckt_size >> 8) & 0xFF;
+	endpoint_desc[4] = MAX_AUDIO_HOST_IN_PACKET_SIZE & 0xFF;
+	endpoint_desc[5] = (MAX_AUDIO_HOST_IN_PACKET_SIZE >> 8) & 0xFF;
 	runtime_hndl->in_endpoint_num = in_endpoint_num;
 
 	endpoint_desc = &i_out_alt1[OUT_ENDPOINT_OFFSET];
 	if (USB_AUDIO_CLASS_NO_PLAYBACK != playback_type)
 	{
 		endpoint_desc[2] = endpoints_num_arr[1];
-		endpoint_desc[4] = audio_pckt_size & 0xFF;
-		endpoint_desc[5] = (audio_pckt_size >> 8) & 0xFF;
+		endpoint_desc[4] = MAX_AUDIO_HOST_OUT_PACKET_SIZE & 0xFF;
+		endpoint_desc[5] = (MAX_AUDIO_HOST_OUT_PACKET_SIZE >> 8) & 0xFF;
 		runtime_hndl->out_endpoint_num = endpoints_num_arr[1];
 	}
 
@@ -528,8 +508,7 @@ static void fill_control_descriptor(struct usb_audio_class_cfg_t *cfg_hndl,
 
 static void update_configuration_desc(struct dev_desc_t *adev,
 		struct usb_audio_class_cfg_t *cfg_hndl,
-	struct usb_descriptors_alloc_interfaces_t *usb_descriptors_alloc_interfaces,
-	uint16_t audio_pckt_size)
+	struct usb_descriptors_alloc_interfaces_t *usb_descriptors_alloc_interfaces)
 {
 	struct dev_desc_t *usb_descriptors_dev;
 	struct usb_descriptors_add_interface_t usb_desc_add_interface;
@@ -581,7 +560,7 @@ static void update_configuration_desc(struct dev_desc_t *adev,
 		i_out_alt0[2] = usb_descriptors_alloc_interfaces->interfaces_num[2];
 		i_out_alt1[2] = usb_descriptors_alloc_interfaces->interfaces_num[2];
 	}
-	configure_endpoints(adev, cfg_hndl, i_in_alt1, i_out_alt1, audio_pckt_size);
+	configure_endpoints(adev, cfg_hndl, i_in_alt1, i_out_alt1);
 
 	usb_desc_add_interface.interface_desc = i_in_alt0;
 	usb_desc_add_interface.interface_desc_size = sizeof(in_interface);
@@ -616,8 +595,7 @@ static void update_configuration_desc(struct dev_desc_t *adev,
 
 void add_audio_class_device(struct dev_desc_t *adev,
 		struct usb_audio_class_cfg_t *cfg_hndl,
-		struct usb_audio_class_runtime_t *runtime_hndl,
-		uint16_t audio_pckt_size)
+		struct usb_audio_class_runtime_t *runtime_hndl)
 {
 	struct register_interfaces_t register_interfaces;
 	struct register_interface_t register_interface[3];
@@ -641,7 +619,7 @@ void add_audio_class_device(struct dev_desc_t *adev,
 			&usb_descriptors_alloc_interfaces);
 
 	update_configuration_desc(adev, cfg_hndl,
-						&usb_descriptors_alloc_interfaces, audio_pckt_size);
+						&usb_descriptors_alloc_interfaces);
 
 	register_interface[0].interfaces_num =
 			usb_descriptors_alloc_interfaces.interfaces_num[0];

@@ -12,6 +12,45 @@
 
 #include "dev_management_api.h"
 
+#include "_project_defines.h"
+
+#if !defined(BYTES_PER_PCM_CHANNEL)
+	#error "BYTES_PER_PCM_CHANNEL should be defined in project header files"
+#endif
+#if !defined(NUM_OF_CHANNELS)
+	#error "NUM_OF_CHANNELS should be defined in project header files"
+#endif
+
+#if !defined(USB_HOST_IN_SAMPLE_RATE)
+	#error "USB_HOST_IN_SAMPLE_RATE  should be defined in project header files"
+#endif
+#if !defined(USB_HOST_OUT_SAMPLE_RATE)
+	#define USB_HOST_OUT_SAMPLE_RATE  USB_HOST_IN_SAMPLE_RATE
+	#warning "USB_HOST_OUT_SAMPLE_RATE set as USB_HOST_IN_SAMPLE_RATE"
+#endif
+
+#if ((48000 != USB_HOST_IN_SAMPLE_RATE) && (16000 != USB_HOST_IN_SAMPLE_RATE))
+	#error "defined sample rate is not tested or not implemented"
+#endif
+
+#if ((48000 != USB_HOST_OUT_SAMPLE_RATE) && (16000 != USB_HOST_OUT_SAMPLE_RATE))
+	#error "defined sample rate is not tested or not implemented"
+#endif
+
+
+#define NORMAL_AUDIO_HOST_IN_PACKET_SIZE  ((BYTES_PER_PCM_CHANNEL *       \
+				USB_HOST_IN_SAMPLE_RATE * NUM_OF_CHANNELS) / 1000)// (per ms)
+
+#define MAX_AUDIO_HOST_IN_PACKET_SIZE (NORMAL_AUDIO_HOST_IN_PACKET_SIZE \
+							+ (NUM_OF_CHANNELS * BYTES_PER_PCM_CHANNEL))
+
+#define NORMAL_AUDIO_HOST_OUT_PACKET_SIZE  ((BYTES_PER_PCM_CHANNEL *       \
+				USB_HOST_OUT_SAMPLE_RATE * NUM_OF_CHANNELS) / 1000)// (per ms)
+
+#define ADDITIONAL_SAMPLES_NUM   1//for changing sample rate(like in async mode)
+#define MAX_AUDIO_HOST_OUT_PACKET_SIZE (NORMAL_AUDIO_HOST_OUT_PACKET_SIZE \
+	+ (2 * ADDITIONAL_SAMPLES_NUM * NUM_OF_CHANNELS * BYTES_PER_PCM_CHANNEL))
+
 /* Define Terminal and Unit ID  */
 #define PLAY_IT_ID              0x01
 #define PLAY_OT_ID              0x03
@@ -20,7 +59,7 @@
 #define REC_OT_ID               0x02
 #define REC_FEATURE_UNITID      0x05
 
-#define USB_AUDIO_CLASS_NUM_OF_BUFFERS   5
+#define USB_AUDIO_CLASS_NUM_OF_BUFFERS   7
 
 /********  types  *********************/
 
