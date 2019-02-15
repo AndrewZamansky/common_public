@@ -120,7 +120,7 @@ EXTERN_C_FUNCTION void* _sbrk ( int incr )
 	  global_heap = (unsigned char *)&__HEAP_START;
   }
 
-  if( ( global_heap + incr) >= (unsigned char *)&__HEAP_END)
+  if( ( global_heap + incr) > (unsigned char *)&__HEAP_END)
   {
 		__asm__ __volatile__("cpsid i\n");
 	  while(1); // trap of memmory overflow
