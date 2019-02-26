@@ -2,10 +2,6 @@
  * PRINTF.h
  *
  *
- *
- *
- *
- *
  */
 
 #ifndef _PRINTF_H

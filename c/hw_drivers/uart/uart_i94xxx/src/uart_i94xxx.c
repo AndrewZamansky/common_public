@@ -78,9 +78,11 @@ static void dbg_print(uint8_t const *data, size_t len)
 }
 #endif
 
-#define		UART_I94XXX_RCV_DATA_SIZE_BUFFER	32
-uint8_t	rcv_data[UART_I94XXX_RCV_DATA_SIZE_BUFFER];
-size_t send_data_len;
+#define   UART_I94XXX_RCV_DATA_SIZE_BUFFER  32
+uint8_t  rcv_data[UART_I94XXX_RCV_DATA_SIZE_BUFFER];
+size_t   send_data_len;
+
+uint32_t  uart_i94xxx_rx_fifo_overflow_cnt = 0;
 
 uint8_t uart_i94xxx_callback(struct dev_desc_t *adev ,
 		uint8_t aCallback_num , void * aCallback_param1,
@@ -100,6 +102,13 @@ uint8_t uart_i94xxx_callback(struct dev_desc_t *adev ,
 	rcv_data_len = 0;
 
 	callback_rx_dev = cfg_hndl->callback_rx_dev;
+
+	if (uart_regs->FIFOSTS & UART_FIFOSTS_RXOVIF_Msk)
+	{
+		//CRITICAL_ERROR("uart rx FIFO was overflowed");
+		uart_i94xxx_rx_fifo_overflow_cnt++;
+		uart_regs->FIFOSTS = UART_FIFOSTS_RXOVIF_Msk;
+	}
 	while (0 == UART_GET_RX_EMPTY(uart_regs))
 	{
 		rcv_data[rcv_data_len] = UART_READ(uart_regs);
@@ -107,25 +116,27 @@ uint8_t uart_i94xxx_callback(struct dev_desc_t *adev ,
 		if ( (UART_I94XXX_RCV_DATA_SIZE_BUFFER == rcv_data_len) &&
 				(NULL != callback_rx_dev))
 		{
+#ifdef DEBUG_UART
+			dbg_print(rcv_data, rcv_data_len);
+			if (0 != _do_uart_dbg_print)
+			{
+				PRINT_DATA_DBG("|e.rcv0|\n", sizeof("|e.rcv0|\n") - 1);
+			}
+#endif
 			DEV_CALLBACK_2_PARAMS(callback_rx_dev,
 					CALLBACK_DATA_RECEIVED,  rcv_data,  rcv_data_len);
 			rcv_data_len = 0;// start getting data again
 		}
 	}
+
+
 	if ( rcv_data_len && (NULL != callback_rx_dev))
 	{
 #ifdef DEBUG_UART
-		if (0 == rcv_data_len)
-		{
-			PRINT_DATA_DBG("-X0X-", sizeof("-X0X-") - 1);
-		}
-		else
-		{
-			dbg_print(rcv_data, rcv_data_len);
-		}
+		dbg_print(rcv_data, rcv_data_len);
 		if (0 != _do_uart_dbg_print)
 		{
-			PRINT_DATA_DBG("|e.rcv|\n", sizeof("|e.rcv|\n") - 1);
+			PRINT_DATA_DBG("|e.rcv1|\n", sizeof("|e.rcv1|\n") - 1);
 		}
 #endif
 		DEV_CALLBACK_2_PARAMS(callback_rx_dev,

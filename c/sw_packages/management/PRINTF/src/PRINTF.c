@@ -36,14 +36,14 @@
 
 #if (CONFIG_USE_MINIMAL_PRINTF)
 
-struct dev_desc_t const *print_dev;
+struct dev_desc_t const *print_dev = NULL;
 
 #else
 
 static struct dev_desc_t *debug_out_devs[MAX_NUM_OF_PRINTF_INSTANCES] = {NULL};
 static struct dev_desc_t *note_out_devs[MAX_NUM_OF_PRINTF_INSTANCES] = {NULL};
 
-static uint8_t sh_buffer[PRINTF_BUF_LENGTH]; //  define your own buffer�s size
+static uint8_t sh_buffer[PRINTF_BUF_LENGTH]; //  define your own buffer size
 
 
 static uint8_t add_dev(
@@ -151,7 +151,7 @@ static void sendDebugOrNote(struct dev_desc_t  **out_devs,
  * return:
  */
 static void common_sendData(
-		PRINTF_TYPE_t aPrntType, const uint8_t* pBuffer,uint32_t aLen)
+		enum PRINTF_TYPE_e aPrntType, const uint8_t* pBuffer, uint32_t aLen)
 {
 	switch(aPrntType)
 	{
@@ -176,7 +176,7 @@ static void common_sendData(
  *
  * return:
  */
-void PRINTF_printf(PRINTF_TYPE_t aPrntType, const char* Format, ...)
+void PRINTF_printf(enum PRINTF_TYPE_e aPrntType, const char* Format, ...)
 {
 	va_list args;
 	int retVal;
@@ -192,28 +192,6 @@ void PRINTF_printf(PRINTF_TYPE_t aPrntType, const char* Format, ...)
 }
 
 
-/**
- * PRINTF_REPLY()
- *
- * return:
- */
-void PRINTF_REPLY(struct dev_desc_t *aDevHandle, const char* Format, ...)
-{
-	va_list args;
-	int retVal;
-
-	if (NULL == aDevHandle) return;
-
-	va_start(args, Format);
-	retVal = vsnprintf(
-			(char*)sh_buffer, PRINTF_BUF_LENGTH, Format, args);
-	va_end(args);
-
-	if (0 >= retVal) return ;
-
-	DEV_WRITE(aDevHandle, sh_buffer, retVal);
-}
-
 #endif
 
 
@@ -225,23 +203,10 @@ void PRINTF_REPLY(struct dev_desc_t *aDevHandle, const char* Format, ...)
  * return:
  */
 void PRINTF_print_data(
-		PRINTF_TYPE_t aPrntType, const uint8_t* data, uint32_t aLen)
+		enum PRINTF_TYPE_e aPrntType, const uint8_t* data, uint32_t aLen)
 {
 	if (0 == aLen) return ;
 	common_sendData(aPrntType, data, aLen);
-}
-
-
-/**
- * PRINT_DATA_REPLY()
- *
- * return:
- */
-void PRINT_DATA_REPLY(
-		struct dev_desc_t *aDevHandle, const uint8_t* data, uint32_t aLen)
-{
-	if (NULL == aDevHandle) return;
-	DEV_WRITE(aDevHandle, data, aLen);
 }
 
 
@@ -250,21 +215,10 @@ void PRINT_DATA_REPLY(
  *
  * return:
  */
-void PRINTF_print_str(PRINTF_TYPE_t aPrntType, const char* str)
+void PRINTF_print_str(enum PRINTF_TYPE_e aPrntType, const char* str)
 {
 	common_sendData(aPrntType, (uint8_t*)str, strlen(str));
 }
 
-
-/**
- * PRINT_STR_REPLY()
- *
- * return:
- */
-void PRINT_STR_REPLY(struct dev_desc_t *aDevHandle, const char* str)
-{
-	if (NULL == aDevHandle) return;
-	DEV_WRITE(aDevHandle, (uint8_t*)str , strlen(str));
-}
 
 #endif

@@ -1,6 +1,6 @@
 #
 	
-
+# can be used for release compilations
 config DISABLE_DBG_PRINTS
 	bool   "disable debug prints"
 	depends on INCLUDE_PRINTF

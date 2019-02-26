@@ -23,7 +23,8 @@
 	typedef enclosure_unnedded _code_by_DONT_USE_STD_IO_in_common_h_in_uboor_include_dir  dummy_type;
 #endif
 
-#include "_u_boot_shell_prerequirements_check.h"
+#include <stdio.h>
+#include <stdarg.h>
 
 /*following line add module to available module list for dynamic device tree*/
 #include "u_boot_shell_add_component.h"
@@ -40,7 +41,7 @@
 /********  externals *********************/
 
 /* ----------- Exported variables ------------------------*/
-struct dev_desc_t * gCurrReplyDev;
+struct dev_desc_t * gCurrReplyDev = NULL;
 
 extern int run_command(const char *cmd, int flag);
 
@@ -75,6 +76,55 @@ int cli_readline(const char *const prompt)
 
 
 /**
+ * SHELL_REPLY_DATA()
+ *
+ * return:
+ */
+void SHELL_REPLY_DATA(uint8_t *data, size_t len)
+{
+	if (NULL != gCurrReplyDev)
+	{
+		DEV_WRITE(gCurrReplyDev, data , len);
+	}
+}
+
+
+/**
+ * SHELL_REPLY_STR()
+ *
+ * return:
+ */
+void SHELL_REPLY_STR(const char* str)
+{
+	SHELL_REPLY_DATA((uint8_t*)str , strlen(str));
+}
+
+
+#define  MAX_STR_LEN   64
+static  char  printf_str[MAX_STR_LEN];
+
+/**
+ * SHELL_REPLY_PRINTF()
+ *
+ * return:
+ */
+void SHELL_REPLY_PRINTF(const char* Format, ...)
+{
+	va_list args;
+	int retVal;
+
+	va_start(args, Format);
+	retVal = vsnprintf(
+			(char*)printf_str, MAX_STR_LEN, Format, args);
+	va_end(args);
+
+	if (0 >= retVal)  return ;
+
+	SHELL_REPLY_DATA((uint8_t*)printf_str , strlen(printf_str));
+}
+
+
+/**
  * u_boot_shell_callback()
  *
  * return:
@@ -98,6 +148,7 @@ uint8_t u_boot_shell_callback(
 		prev_eol = pCmdStart[eol_pos];
 		pCmdStart[eol_pos] = '\0';
 		run_command((const char *)pCmdStart, 0);
+		gCurrReplyDev = NULL;
 		pCmdStart[eol_pos] = prev_eol;
 	}
 	return 0;
