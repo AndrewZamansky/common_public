@@ -101,8 +101,8 @@
 #define os_queue_send_with_timeout(queue , pData , timeout)
 
 // without wait
-/**	function :	[os_queue_send_immediate()]  **/
-#define os_queue_send_immediate(queue , pData  )
+/**	function :	[os_queue_send_without_wait()]  **/
+#define os_queue_send_without_wait(queue , pData  )
 
 
 //infinite wait

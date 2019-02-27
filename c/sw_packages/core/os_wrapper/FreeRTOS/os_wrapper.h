@@ -20,6 +20,7 @@
 
 
 
+#define OS_MUTEX_TAKE_SUCCESS    pdTRUE
 #define OS_QUEUE_SEND_SUCCESS    pdTRUE
 #define OS_QUEUE_RECEIVE_SUCCESS pdTRUE
 #define OS_QUEUE_RECEIVE_FAILED  pdFALSE
@@ -80,7 +81,6 @@ void  os_start(void);
 								xSemaphoreTake(mutex, timeout)
 
 
-
 //infinite wait
 /** function : [os_mutex_take_infinite_wait()]  **/
 #define os_mutex_take_infinite_wait(mutex  )   \
@@ -114,8 +114,8 @@ void  os_start(void);
 		xQueueSend(queue, pData, timeout)
 
 // without wait
-/** function : [os_queue_send_immediate()]  **/
-uint8_t os_queue_send_immediate(os_queue_t queue,  void * pData);
+/** function : [os_queue_send_without_wait()]  **/
+uint8_t os_queue_send_without_wait(os_queue_t queue,  void * pData);
 
 
 //infinite wait

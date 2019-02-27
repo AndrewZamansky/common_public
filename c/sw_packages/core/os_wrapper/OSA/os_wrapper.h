@@ -60,8 +60,8 @@ os_queue_t os_create_queue_atomthreads(
 		atomQueuePut(queue, timeout, (uint8_t*) pData  )
 
 // without wait
-/**	function : [os_queue_send_immediate()]  **/
-#define os_queue_send_immediate(queue , pData  )    \
+/**	function : [os_queue_send_without_wait()]  **/
+#define os_queue_send_without_wait(queue , pData  )    \
 		atomQueuePut( queue, -1, (uint8_t*) pData)
 
 //infinite wait

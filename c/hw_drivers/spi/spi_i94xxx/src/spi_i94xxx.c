@@ -128,7 +128,7 @@ static void spi_i94xxx_pwrite_callback(SPI_T *spi_regs,
 			SPI_DisableInt(spi_regs, SPI_UNIT_INT_MASK);
 			if (NULL != xTX_WaitQueue)
 			{
-				os_queue_send_immediate( xTX_WaitQueue, ( void * ) &dummy_msg);
+				os_queue_send_without_wait(xTX_WaitQueue, ( void *) &dummy_msg);
 			}
 		}
 	}
@@ -186,7 +186,7 @@ static void spi_i94xxx_pread_callback(SPI_T *spi_regs,
 			SPI_DisableInt(spi_regs, SPI_UNIT_INT_MASK);
 			if (NULL != xRX_WaitQueue)
 			{
-				os_queue_send_immediate( xRX_WaitQueue, ( void * ) &dummy_msg);
+				os_queue_send_without_wait( xRX_WaitQueue, ( void *)&dummy_msg);
 			}
 		}
 	}

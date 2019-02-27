@@ -80,7 +80,7 @@ uint8_t shell_callback(struct dev_desc_t *adev ,const uint8_t aCallback_num,
 	queueMsg.pdev = adev;
 
 	//xQueueSendFromISR( xQueue, ( void *)&queueMsg, &xHigherPriorityTaskWoken);
-	os_queue_send_immediate( xQueue, ( void * ) &queueMsg);
+	os_queue_send_without_wait( xQueue, ( void * ) &queueMsg);
 
 	return 0;
 }

@@ -307,7 +307,8 @@ static void I2C_MasterTX(struct i2c_i94xxx_cfg_t *cfg_hndl,
 		I2C_DisableInt(i2c);
 		I2C_STOP(i2c);// SI bit is cleared inside function call
 		runtime_handle->tx_data = NULL;
-		os_queue_send_immediate(runtime_handle->WaitQueue, (void *) &dummy_msg);
+		os_queue_send_without_wait(
+				runtime_handle->WaitQueue, (void *) &dummy_msg);
 	}
 }
 
@@ -464,7 +465,8 @@ static void I2C_MasterRX(struct i2c_i94xxx_cfg_t *cfg_hndl,
 		I2C_DisableInt(i2c);
 		I2C_STOP(i2c);// SI bit is cleared inside function call
 		runtime_handle->rx_data = NULL;
-		os_queue_send_immediate(runtime_handle->WaitQueue, (void *) &dummy_msg);
+		os_queue_send_without_wait(
+				runtime_handle->WaitQueue, (void *) &dummy_msg);
 	}
 }
 

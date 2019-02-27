@@ -103,7 +103,7 @@ uint8_t async_tx_wrapper_callback(struct dev_desc_t *adev,
 
 		    if(NULL != xTX_WaitQueue)
 		    {
-		        os_queue_send_immediate( xTX_WaitQueue, ( void * ) &dummy_msg);
+		        os_queue_send_without_wait(xTX_WaitQueue, ( void * )&dummy_msg);
 		    }
 	    }
 	    runtime_handle->data_length = data_length;

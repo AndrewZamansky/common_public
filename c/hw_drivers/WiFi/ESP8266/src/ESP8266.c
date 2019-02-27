@@ -126,7 +126,7 @@ uint8_t ESP8266_callback(struct dev_desc_t *adev, const uint8_t aCallback_num,
 	if (NULL == xQueue) return 1;
 
 	queueMsg.type = DATA_FROM_UART;
-	os_queue_send_immediate( xQueue, ( void * ) &queueMsg);
+	os_queue_send_without_wait( xQueue, ( void * ) &queueMsg);
 	return 0;
 }
 

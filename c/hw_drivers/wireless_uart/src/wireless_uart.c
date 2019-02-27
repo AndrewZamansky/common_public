@@ -89,7 +89,7 @@ uint8_t wireless_uart_callback(struct dev_desc_t *adev ,const uint8_t aCallback_
 
 //	queueMsg.dev_descriptor = (struct dev_desc_t *)aCallback_param1;
 
-	os_queue_send_immediate( xQueue, ( void * ) &queueMsg);
+	os_queue_send_without_wait( xQueue, ( void * ) &queueMsg);
 
 	return 0;
 }

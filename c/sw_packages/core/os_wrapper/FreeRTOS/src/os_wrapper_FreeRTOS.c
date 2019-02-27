@@ -60,7 +60,7 @@ void *os_create_task_FreeRTOS(
 	#define portEND_SWITCHING_ISR(...)   portYIELD_FROM_ISR()
 #endif
 
-uint8_t os_queue_send_immediate(os_queue_t queue ,  void * pData  )
+uint8_t os_queue_send_without_wait(os_queue_t queue ,  void * pData  )
 {
 	uint8_t retVal;
 	BaseType_t xHigherPriorityTaskWoken ;
@@ -68,9 +68,11 @@ uint8_t os_queue_send_immediate(os_queue_t queue ,  void * pData  )
 	xHigherPriorityTaskWoken = pdFALSE ;
 	retVal = xQueueSendFromISR( queue,
 			( void * ) pData,  &xHigherPriorityTaskWoken );
-	portEND_SWITCHING_ISR( xHigherPriorityTaskWoken );
+	if ((pdTRUE == retVal) && (pdTRUE == xHigherPriorityTaskWoken))
+	{
+		portEND_SWITCHING_ISR( xHigherPriorityTaskWoken );
+	}
 	return retVal;
-
 }
 
 

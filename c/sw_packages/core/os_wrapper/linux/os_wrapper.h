@@ -140,8 +140,8 @@ os_queue_t os_create_queue(uint32_t num_of_elements, uint32_t size_of_elements);
 #endif
 
 // without wait
-/** function : [os_queue_send_immediate()]  **/
-uint8_t os_queue_send_immediate(os_queue_t queue ,  void const * pData  );
+/** function : [os_queue_send_without_wait()]  **/
+uint8_t os_queue_send_without_wait(os_queue_t queue ,  void const * pData  );
 
 
 //infinite wait

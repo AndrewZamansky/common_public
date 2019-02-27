@@ -84,7 +84,7 @@ uint8_t button_manager_callback(
 		return 1;
 	}
 
-	os_queue_send_immediate( xButtonQueue, ( void * ) &xTxMessage);
+	os_queue_send_without_wait( xButtonQueue, ( void * ) &xTxMessage);
 
 	return 0;
 }
