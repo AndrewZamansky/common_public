@@ -172,27 +172,30 @@ static void sendDebugOrNote(struct dev_desc_t  **out_devs,
 }
 
 
-void PRINTF_API_print_from_debug_buffer(size_t num_of_bytes_to_print)
+size_t PRINTF_API_print_from_debug_buffer(size_t num_of_bytes_to_print)
 {
 	size_t  curr_write_pointer;// cannot use read_pointer directly (may changes)
 	size_t  start_read_pointer;
 	size_t  send_len;
+	size_t  left_data_size;
 
 	curr_write_pointer = write_pointer;
 	start_read_pointer = MODULO_BY_BUFFER_SIZE(read_pointer + 1);
 	if ( (0 == num_of_bytes_to_print) ||
 			(start_read_pointer == curr_write_pointer))
 	{
-		return;// no data to send
+		return 0;// no data to send
 	}
 
 	if (start_read_pointer < curr_write_pointer)
 	{
 		send_len = curr_write_pointer - start_read_pointer;
+		left_data_size = send_len;
 	}
 	else
 	{
 		send_len = SIZE_OF_DEBUG_BUFFER - start_read_pointer;
+		left_data_size = curr_write_pointer + send_len;
 	}
 
 	if (num_of_bytes_to_print < send_len)
@@ -206,6 +209,7 @@ void PRINTF_API_print_from_debug_buffer(size_t num_of_bytes_to_print)
 #endif
 	start_read_pointer = MODULO_BY_BUFFER_SIZE(start_read_pointer + send_len);
 	num_of_bytes_to_print -= send_len;
+	left_data_size -= send_len;
 	if (0 == start_read_pointer)
 	{// read_pointer was wrapped
 		if ((0 == curr_write_pointer) || (0 == num_of_bytes_to_print))
@@ -223,6 +227,7 @@ void PRINTF_API_print_from_debug_buffer(size_t num_of_bytes_to_print)
 		#if defined(COMPILING_FOR_HOST)
 			write(1, __debug_buffer, send_len);
 		#endif
+			left_data_size -= send_len;
 			read_pointer = (send_len - 1);
 		}
 	}
@@ -230,6 +235,7 @@ void PRINTF_API_print_from_debug_buffer(size_t num_of_bytes_to_print)
 	{
 		read_pointer = start_read_pointer - 1;
 	}
+	return  left_data_size;
 }
 
 

@@ -223,7 +223,7 @@ size_t recv_uCprojects(int sockfd, void *buf, size_t len, int flags)
 				IOCTL_ESP8266_SOCKET_IS_DATA_RECEIVED , &read_ready);
 		if(0 != retVal)
 		{
-			//printf("--%s : fd = %d connection  lost\n",__FUNCTION__, sockfd);
+			//PRINTF_DBG("--%s : fd = %d connection  lost\n",__FUNCTION__, sockfd);
 			errno = ENOTCONN;
 			return -1;
 		}
@@ -249,7 +249,7 @@ size_t recv_uCprojects(int sockfd, void *buf, size_t len, int flags)
 
 	if (0 != retVal)
 	{
-		//printf("--%s : fd = %d connection was lost\n",__FUNCTION__, sockfd);
+		//PRINTF_DBG("--%s : fd = %d connection was lost\n",__FUNCTION__, sockfd);
 		errno = ENOTCONN;
 		return -1;
 	}
@@ -666,7 +666,7 @@ int select_uCprojects(int nfds, fd_set *readfds, fd_set *writefds,
 						IOCTL_ESP8266_SOCKET_IS_DATA_RECEIVED , &read_ready);
 				if(0 != retVal)
 				{
-					printf(
+					PRINTF_DBG(
 						"--%s : fd = %d connection was lost\n",__FUNCTION__, i);
 
 					FD_SET(i + SOCKET_OFFSET, exceptfds);

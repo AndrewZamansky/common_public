@@ -36,7 +36,7 @@
  uint8_t PRINTF_API_AddNoteOutput(struct dev_desc_t *aDevHandle);
  uint8_t PRINTF_API_RemoveDebugOutput(struct dev_desc_t *aDevHandle);
  uint8_t PRINTF_API_RemoveNoteOutput(struct dev_desc_t *aDevHandle);
- void PRINTF_API_print_from_debug_buffer(size_t num_of_bytes_to_print);
+ size_t PRINTF_API_print_from_debug_buffer(size_t num_of_bytes_to_print);
 
  void PRINTF_printf(enum PRINTF_TYPE_e aPrntType, const char* Format, ...);
 
