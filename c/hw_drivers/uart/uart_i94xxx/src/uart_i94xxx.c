@@ -69,11 +69,11 @@ static void dbg_print(uint8_t const *data, size_t len)
 		{
 			char dbg_str[] = "0x00 ";
 			snprintf(dbg_str, sizeof(dbg_str), "0x%02x ", *data);
-			PRINT_DATA_DBG(dbg_str, sizeof(dbg_str) - 1);
+			PRINT_DATA_DBG_ISR(dbg_str, sizeof(dbg_str) - 1);
 			data++;
 		}
 	#else
-		PRINT_DATA_DBG( data, len);
+		PRINT_DATA_DBG_ISR( data, len);
 	#endif
 }
 #endif
@@ -120,7 +120,7 @@ uint8_t uart_i94xxx_callback(struct dev_desc_t *adev ,
 			dbg_print(rcv_data, rcv_data_len);
 			if (0 != _do_uart_dbg_print)
 			{
-				PRINT_DATA_DBG("|e.rcv0|\n", sizeof("|e.rcv0|\n") - 1);
+				PRINT_DATA_DBG_ISR("|e.rcv0|\n", sizeof("|e.rcv0|\n") - 1);
 			}
 #endif
 			DEV_CALLBACK_2_PARAMS(callback_rx_dev,
@@ -136,7 +136,7 @@ uint8_t uart_i94xxx_callback(struct dev_desc_t *adev ,
 		dbg_print(rcv_data, rcv_data_len);
 		if (0 != _do_uart_dbg_print)
 		{
-			PRINT_DATA_DBG("|e.rcv1|\n", sizeof("|e.rcv1|\n") - 1);
+		//	PRINT_DATA_DBG_ISR("|e.rcv1|\n", sizeof("|e.rcv1|\n") - 1);
 		}
 #endif
 		DEV_CALLBACK_2_PARAMS(callback_rx_dev,
@@ -198,8 +198,8 @@ size_t uart_i94xxx_pwrite(struct dev_desc_t *adev,
 		char uart_send_end_dbg_str[] = "uart send_data_len = 00000\n";
 		snprintf(uart_send_end_dbg_str, sizeof(uart_send_end_dbg_str),
 				"uart send_data_len = %05u\n", (uint32_t)send_data_len);
-		PRINT_DATA_DBG(start_of_data, send_data_len);
-		PRINT_DATA_DBG(uart_send_end_dbg_str, sizeof(uart_send_end_dbg_str)- 1);
+		PRINT_DATA_DBG_ISR(start_of_data, send_data_len);
+		PRINT_DATA_DBG_ISR(uart_send_end_dbg_str, sizeof(uart_send_end_dbg_str)- 1);
 	}
 #endif
 
