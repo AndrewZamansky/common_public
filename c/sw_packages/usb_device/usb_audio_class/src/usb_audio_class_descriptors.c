@@ -300,6 +300,13 @@ static uint8_t const out_alt_interface[] = {
 	0x00,        // bRefresh
 	TO_BE_SET_AUTOMATICALLY,        // bSyncAddress
 
+	0x07,        // bLength
+	0x25,        // bDescriptorType (See Next Line)
+	0x01,        // bDescriptorSubtype (CS_ENDPOINT -> EP_GENERAL)
+	0x01,        // bmAttributes (none) was 0x80
+	0x00,        // bLockDelayUnits
+	0x00, 0x00,  // wLockDelay 0
+
 	// feedback endpoint
 	0x09,        // bLength
 	0x05,        // bDescriptorType (See Next Line)
@@ -308,14 +315,7 @@ static uint8_t const out_alt_interface[] = {
 	B2VAL(0x4),  // wMaxPacketSize
 	0x01,        // bInterval 1 (unit depends on device speed)
 	0x05,        // bRefresh
-	0x00,        // bSyncAddress
-
-	0x07,        // bLength
-	0x25,        // bDescriptorType (See Next Line)
-	0x01,        // bDescriptorSubtype (CS_ENDPOINT -> EP_GENERAL)
-	0x01,        // bmAttributes (none) was 0x80
-	0x00,        // bLockDelayUnits
-	0x00, 0x00  // wLockDelay 0
+	0x00        // bSyncAddress
 };
 
 
@@ -325,7 +325,7 @@ static uint8_t const out_alt_interface[] = {
 
 #define IN_ENDPOINT_OFFSET           (0x9 + 0x7 + 0xB)
 #define OUT_ENDPOINT_OFFSET          (0x9 + 0x7 + 0xB)
-#define IN_FEEDBACK_ENDPOINT_OFFSET  (0x9 + 0x7 + 0xB + 0x9)
+#define IN_FEEDBACK_ENDPOINT_OFFSET  (0x9 + 0x7 + 0xB + 0x9 + 0x07)
 
 static void configure_endpoints(struct dev_desc_t *adev,
 		struct usb_audio_class_cfg_t *cfg_hndl,
@@ -403,7 +403,7 @@ static void configure_endpoints(struct dev_desc_t *adev,
 		runtime_hndl->out_endpoint_num = endpoints_num_arr[1];
 	}
 
-	if (USB_AUDIO_CLASS_SYNC_PLAYBACK == playback_type)
+	if (USB_AUDIO_CLASS_SYNC_WITH_CORRECTIONS_PLAYBACK == playback_type)
 	{
 		i_out_alt1[4] = 0x01;
 		endpoint_desc[3] = SYNCHRONOUS | ISO_ENDPOINT;
@@ -579,10 +579,10 @@ static void update_configuration_desc(struct dev_desc_t *adev,
 		usb_desc_add_interface.alt_interface_desc = i_out_alt1;
 		usb_desc_add_interface.alt_interface_desc_size =
 									sizeof(out_alt_interface);
-		if (USB_AUDIO_CLASS_SYNC_PLAYBACK == playback_type)
+		if (USB_AUDIO_CLASS_SYNC_WITH_CORRECTIONS_PLAYBACK == playback_type)
 		{
 			// remove feedback endpoint
-			usb_desc_add_interface.alt_interface_desc_size -= 9;
+			usb_desc_add_interface.alt_interface_desc_size -= 0x9;
 		}
 		usb_desc_add_interface.is_hid_interface = 0;
 		DEV_IOCTL_1_PARAMS(usb_descriptors_dev,
