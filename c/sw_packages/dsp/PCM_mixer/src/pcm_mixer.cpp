@@ -165,7 +165,7 @@ void pcm_mixer_dsp_16and32bit(struct dsp_module_inst_t *adsp,
 		pTxBuf += subframe_size_bytes;
 	}
 	enable_test_clipping = handle->enable_test_clipping;
-	if(enable_test_clipping)
+	if (enable_test_clipping)
 	{
 		real_t max_out_val ;
 		real_t *apCh1In ;
@@ -203,7 +203,6 @@ static void set_params(struct dsp_module_inst_t *adsp,
 	uint8_t frame_size_bytes;
 	uint8_t channel_size_bits;
 	real_t normalizer;
-	uint8_t num_of_channels;
 
 	memcpy(&handle->set_params,
 			set_params, sizeof(struct pcm_mixer_api_set_params_t));
@@ -223,12 +222,7 @@ static void set_params(struct dsp_module_inst_t *adsp,
 		CRITICAL_ERROR("bad frame size should be divided by subframe size");
 	}
 
-	num_of_channels = frame_size_bytes / subframe_size_bytes;
-	if (2 != num_of_channels)
-	{
-		CRITICAL_ERROR("not supported number of channels");
-	}
-	handle->num_of_channels = num_of_channels;
+	handle->num_of_channels = frame_size_bytes / subframe_size_bytes;
 
 	channel_size_bits = set_params->channel_size_bits;
 	if (channel_size_bits != (subframe_size_bytes * 8))
