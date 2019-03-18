@@ -142,7 +142,8 @@ static void check_num_of_ready_buffers( uint8_t  *rx_buff_status,
 
 static uint8_t test_overflow_threshold(
 	struct usb_audio_class_runtime_t *runtime_hndl,
-	uint8_t num_of_rx_buffers, uint8_t num_of_rx_over_under_flow_buffers_thr)
+	uint8_t num_of_rx_buffers, uint8_t num_of_rx_over_under_flow_buffers_thr,
+	uint32_t host_out_sample_rate_hz)
 {
 	uint8_t  *rx_buff_status;
 	uint8_t  curr_buff_indx;
@@ -169,7 +170,7 @@ static uint8_t test_overflow_threshold(
 		dbg_out_thr_overflow_cnt++;
 		// frame is 1ms so sample rate *1000
 		runtime_hndl->usb_feedback_sample_rate =
-				USB_HOST_OUT_SAMPLE_RATE - (ADDITIONAL_SAMPLES_NUM * 2000);
+			host_out_sample_rate_hz - (HOST_OUT_MAX_ADDITIONAL_SAMPLES * 1000);
 		return USB_AUDIO_CLASS_RX_BUFF_ABOUT_TO_OVERFLOW;
 	}
 
@@ -181,11 +182,11 @@ static uint8_t test_overflow_threshold(
 		dbg_out_thr_underflow_cnt++;
 		// frame is 1ms so sample rate *1000
 		runtime_hndl->usb_feedback_sample_rate =
-				USB_HOST_OUT_SAMPLE_RATE + (ADDITIONAL_SAMPLES_NUM * 2000);
+			host_out_sample_rate_hz + (HOST_OUT_MAX_ADDITIONAL_SAMPLES * 1000);
 		return USB_AUDIO_CLASS_RX_BUFF_ABOUT_TO_UNDERFLOW;
 	}
 
-	runtime_hndl->usb_feedback_sample_rate = USB_HOST_OUT_SAMPLE_RATE;
+	runtime_hndl->usb_feedback_sample_rate = host_out_sample_rate_hz;
 	return USB_AUDIO_CLASS_RX_BUFF_OK;
 }
 
@@ -200,7 +201,7 @@ static  void copy_to_current_rx_buffer(struct usb_audio_class_cfg_t *cfg_hndl,
 	uint8_t *curr_buff;
 	uint16_t num_of_bytes_per_sample_all_channels;
 	uint8_t num_of_bytes_per_sample;
-	uint32_t buff_size;
+	uint32_t get_rx_buff_size;
 	uint32_t curr_pos_in_rx_buffer;
 	uint32_t bytes_to_copy;
 	uint32_t new_size;
@@ -212,7 +213,8 @@ static  void copy_to_current_rx_buffer(struct usb_audio_class_cfg_t *cfg_hndl,
 	all_rx_buff_status = runtime_hndl->rx_buff_status;
 	num_of_rx_buffers = cfg_hndl->num_of_rx_buffers;
 	buff_overflow_threshold_status = test_overflow_threshold(runtime_hndl,
-			num_of_rx_buffers, cfg_hndl->num_of_rx_over_under_flow_buffers_thr);
+			num_of_rx_buffers, cfg_hndl->num_of_rx_over_under_flow_buffers_thr,
+			cfg_hndl->host_out_sample_rate_hz);
 	if (USB_AUDIO_CLASS_RX_BUFF_OVERFLOWED  == buff_overflow_threshold_status)
 	{
 		dbg_out_overflow_cnt++;
@@ -222,7 +224,7 @@ static  void copy_to_current_rx_buffer(struct usb_audio_class_cfg_t *cfg_hndl,
 
 	new_size = *size;
 	playback_type = cfg_hndl->playback_type;
-	num_of_bytes_per_sample = cfg_hndl->num_of_bytes_per_sample;
+	num_of_bytes_per_sample = cfg_hndl->num_of_rx_bytes_per_sample;
 	if ((USB_AUDIO_CLASS_SYNC_WITH_CORRECTIONS_PLAYBACK == playback_type) &&
 						(0 != ( new_size % num_of_bytes_per_sample )))
 	{
@@ -241,9 +243,9 @@ static  void copy_to_current_rx_buffer(struct usb_audio_class_cfg_t *cfg_hndl,
 		new_size -= num_of_bytes_per_sample_all_channels;
 	}
 
-	buff_size = cfg_hndl->buff_size;
+	get_rx_buff_size = cfg_hndl->get_rx_buff_size;
 	curr_pos_in_rx_buffer = runtime_hndl->curr_pos_in_rx_buffer;
-	bytes_to_copy = buff_size - curr_pos_in_rx_buffer;
+	bytes_to_copy = get_rx_buff_size - curr_pos_in_rx_buffer;
 	if (new_size < bytes_to_copy)
 	{
 		bytes_to_copy = new_size;
@@ -258,7 +260,7 @@ static  void copy_to_current_rx_buffer(struct usb_audio_class_cfg_t *cfg_hndl,
 										buff_overflow_threshold_status) &&
 		(USB_AUDIO_CLASS_SYNC_WITH_CORRECTIONS_PLAYBACK == playback_type) &&
 		(SMOOTH_VALUE <= skip_repeat_smooth++) &&
-		(buff_size >=
+		(get_rx_buff_size >=
 				(curr_pos_in_rx_buffer + num_of_bytes_per_sample_all_channels)))
 	{
 		skip_repeat_smooth = 0;
@@ -270,7 +272,7 @@ static  void copy_to_current_rx_buffer(struct usb_audio_class_cfg_t *cfg_hndl,
 		curr_pos_in_rx_buffer += num_of_bytes_per_sample_all_channels;
 	}
 
-	if (curr_pos_in_rx_buffer == buff_size)
+	if (curr_pos_in_rx_buffer == get_rx_buff_size)
 	{
 		curr_pos_in_rx_buffer = 0;
 		all_rx_buff_status[curr_buff_indx] = USB_AUDIO_CLASS_RX_BUFF_IS_READY;
@@ -311,10 +313,9 @@ void new_usb_audio_received(
 
 uint32_t volatile dbg_stall_count = 0;
 size_t  volatile dbg_available_data_size = 0;
-size_t  volatile dbg_buff_size = 0;
 size_t  volatile dbg_copy_size = 0;
-size_t  volatile dbg_cnt2 = 0;
-size_t  volatile dbg_cnt3 = 0;
+size_t  volatile dbg_tx_overflow_cnt = 0;
+size_t  volatile dbg_tx_underflow_cnt = 0;
 
 void new_usb_audio_requested(struct dev_desc_t *adev)
 {
@@ -324,15 +325,15 @@ void new_usb_audio_requested(struct dev_desc_t *adev)
 	size_t  curr_read_pos_in_tx_buffer;
 	size_t  available_data_size;
 	size_t   tx_buff_size;
-	size_t   buff_size;
+	size_t   get_tx_buff_size;
 	uint8_t  *tx_buff;
 	uint8_t  *tx_pckt_buff;
 
 	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
 	runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(adev);
 
-	buff_size = cfg_hndl->buff_size;
-	tx_buff_size = buff_size * NUM_OF_TX_BUFFERS;
+	get_tx_buff_size = cfg_hndl->get_tx_buff_size;
+	tx_buff_size = get_tx_buff_size * NUM_OF_TX_BUFFERS;
 	curr_write_pos_in_tx_buffer = runtime_hndl->curr_write_pos_in_tx_buffer;
 	curr_read_pos_in_tx_buffer = runtime_hndl->curr_read_pos_in_tx_buffer;
 
@@ -348,22 +349,26 @@ void new_usb_audio_requested(struct dev_desc_t *adev)
 	}
 
 	dbg_available_data_size = available_data_size;
-	dbg_buff_size = buff_size;
-	if (available_data_size > buff_size)
+	if (available_data_size > get_tx_buff_size)
 	{
 		struct set_data_to_in_endpoint_t  data_to_endpoint;
 		size_t  data_to_copy;
+		uint16_t num_of_bytes_per_sample_all_channels;
 
-		data_to_copy = NORMAL_AUDIO_HOST_IN_PACKET_SIZE;
-		if (available_data_size < (2 * buff_size)) // reduce speed(clock)
-		{
-			data_to_copy -= (NUM_OF_CHANNELS * BYTES_PER_PCM_CHANNEL);
-			dbg_cnt2++;
+		num_of_bytes_per_sample_all_channels =
+			cfg_hndl->num_tx_channels * cfg_hndl->num_of_tx_bytes_per_sample;
+
+		data_to_copy = runtime_hndl->normal_host_in_pckt_size;
+		if (available_data_size < (2 * get_tx_buff_size))
+		{// reduce speed(clock)
+			data_to_copy -= (num_of_bytes_per_sample_all_channels);
+			dbg_tx_underflow_cnt++;
 		}
-		if (available_data_size > (3 * buff_size)) // increase speed(clock)
-		{
-			data_to_copy += (NUM_OF_CHANNELS * BYTES_PER_PCM_CHANNEL);
-			dbg_cnt3++;
+		else if (available_data_size >
+					((NUM_OF_TX_BUFFERS - 2) * get_tx_buff_size))
+		{// increase speed(clock)
+			data_to_copy += (num_of_bytes_per_sample_all_channels);
+			dbg_tx_overflow_cnt++;
 		}
 		dbg_copy_size = data_to_copy;
 		tx_buff = runtime_hndl->tx_buff;
@@ -390,7 +395,6 @@ void new_usb_audio_requested(struct dev_desc_t *adev)
 		DEV_IOCTL_0_PARAMS(cfg_hndl->usb_hw, IOCTL_USB_DEVICE_SET_STALL);
 		dbg_stall_count++;
 	}
-
 }
 
 
@@ -423,7 +427,7 @@ static uint8_t rx_was_stoped = 1;
 
 static uint8_t get_full_rx_buffer(struct usb_audio_class_cfg_t *cfg_hndl,
 		struct usb_audio_class_runtime_t *runtime_hndl,
-		uint8_t **buff, size_t *buff_size)
+		uint8_t **buff, size_t *get_rx_buff_size)
 {
 	uint8_t next_supplied_rx_buffer;
 	uint8_t *buffer_state;
@@ -450,20 +454,20 @@ static uint8_t get_full_rx_buffer(struct usb_audio_class_cfg_t *cfg_hndl,
 			if (USB_AUDIO_CLASS_RX_BUFF_IS_READY != *look_ahead_buffer_state)
 			{
 				*buff = NULL;
-				*buff_size = 0;
+				*get_rx_buff_size = 0;
 				dbg_out_underflow_cnt++;
 				return 0;
 			}
 		}
 		*buff = runtime_hndl->rx_buff[next_supplied_rx_buffer];
-		*buff_size = cfg_hndl->buff_size;
+		*get_rx_buff_size = cfg_hndl->get_rx_buff_size;
 		*buffer_state =	USB_AUDIO_CLASS_RX_BUFF_IS_PROCESSING;
 		rx_was_stoped = 0;
 	}
 	else
 	{
 		*buff = NULL;
-		*buff_size = 0;
+		*get_rx_buff_size = 0;
 		dbg_out_underflow_cnt++;
 		if (0 == rx_was_stoped)
 		{
@@ -503,16 +507,25 @@ static uint8_t get_empty_tx_buffer(struct usb_audio_class_cfg_t *cfg_hndl,
 	size_t  curr_write_pos_in_tx_buffer;
 	size_t  next_write_pos_in_tx_buffer;
 	size_t  curr_read_pos_in_tx_buffer;
-	size_t   buff_size;
+	size_t   get_tx_buff_size;
 	size_t   tx_buff_size;
 	uint8_t  there_is_space_for_write;
 
+	if (0 == cfg_hndl->enable_recording)
+	{
+		dbg_cnt1++;
+		*buff = NULL;
+		*ret_buff_size = 0;
+		return 1;
+	}
+
 	curr_write_pos_in_tx_buffer = runtime_hndl->curr_write_pos_in_tx_buffer;
 	curr_read_pos_in_tx_buffer = runtime_hndl->curr_read_pos_in_tx_buffer;
-	buff_size = cfg_hndl->buff_size;
-	tx_buff_size = buff_size * NUM_OF_TX_BUFFERS;
+	get_tx_buff_size = cfg_hndl->get_tx_buff_size;
+	tx_buff_size = get_tx_buff_size * NUM_OF_TX_BUFFERS;
 
-	next_write_pos_in_tx_buffer = curr_write_pos_in_tx_buffer + buff_size;
+	next_write_pos_in_tx_buffer =
+			curr_write_pos_in_tx_buffer + get_tx_buff_size;
 	if (next_write_pos_in_tx_buffer == tx_buff_size)
 	{
 		next_write_pos_in_tx_buffer = 0;
@@ -542,7 +555,7 @@ static uint8_t get_empty_tx_buffer(struct usb_audio_class_cfg_t *cfg_hndl,
 	if (there_is_space_for_write)
 	{
 		*buff = &runtime_hndl->tx_buff[curr_write_pos_in_tx_buffer];
-		*ret_buff_size = buff_size;
+		*ret_buff_size = get_tx_buff_size;
 		runtime_hndl->curr_write_pos_in_tx_buffer = next_write_pos_in_tx_buffer;
 	}
 	else
@@ -709,7 +722,8 @@ static uint8_t get_res_volume(
 /* uac_class_interface_in_request()
  *
  */
-static void uac_class_interface_in_request( struct dev_desc_t *usb_hw, uint8_t *request)
+static void uac_class_interface_in_request(
+							struct dev_desc_t *usb_hw, uint8_t *request)
 {
 	struct set_request_in_buffer_t set_request_in_buffer;
 	uint8_t ret;
@@ -987,35 +1001,21 @@ void uac_endpoint_class_request(
 }
 
 
-static void start_audio_class(struct dev_desc_t *adev,
-		struct usb_audio_class_cfg_t *cfg_hndl,
+static void init_audio_host_out(struct usb_audio_class_cfg_t *cfg_hndl,
 		struct usb_audio_class_runtime_t *runtime_hndl)
 {
 	uint8_t *new_buff;
-	uint32_t buff_size;
+	uint32_t get_rx_buff_size;
 	uint32_t i;
-	uint16_t cnt = 0;
 	uint8_t num_of_rx_buffers;
 	uint8_t  **rx_buff;
 	uint8_t  *rx_buff_status;
 
-	dbg_usb_audio_class_runtime_hndl = runtime_hndl;
-	add_audio_class_device(adev, cfg_hndl, runtime_hndl);
+	runtime_hndl->usb_feedback_sample_rate = cfg_hndl->host_out_sample_rate_hz;
 
-	runtime_hndl->usb_feedback_sample_rate = USB_HOST_OUT_SAMPLE_RATE;
-	if (USB_AUDIO_CLASS_ASYNC_PLAYBACK == cfg_hndl->playback_type)
-	{
-		struct set_data_to_in_endpoint_t  data_to_endpoint;
-		data_to_endpoint.endpoint_num = runtime_hndl->in_feedback_endpoint_num;
-		data_to_endpoint.data = NULL;
-		data_to_endpoint.size = 0;
-
-		DEV_IOCTL_1_PARAMS(cfg_hndl->usb_hw,
-				IOCTL_USB_DEVICE_SENT_DATA_TO_IN_ENDPOINT, &data_to_endpoint);
-	}
 
 	num_of_rx_buffers = cfg_hndl->num_of_rx_buffers;
-	buff_size = cfg_hndl->buff_size;
+	get_rx_buff_size = cfg_hndl->get_rx_buff_size;
 	rx_buff = (uint8_t **)malloc(num_of_rx_buffers * sizeof(uint8_t*));
 	if (NULL == rx_buff)
 	{
@@ -1032,7 +1032,7 @@ static void start_audio_class(struct dev_desc_t *adev,
 
 	for (i = 0; i < num_of_rx_buffers; i++)
 	{
-		new_buff = (uint8_t*)malloc(buff_size);
+		new_buff = (uint8_t*)malloc(get_rx_buff_size);
 		if (NULL == new_buff)
 		{
 			CRITICAL_ERROR("no memory");
@@ -1040,19 +1040,32 @@ static void start_audio_class(struct dev_desc_t *adev,
 		rx_buff[i] = new_buff;
 		rx_buff_status[i] = USB_AUDIO_CLASS_BUFF_IDLE ;
 	}
+}
 
-	new_buff = (uint8_t*)malloc(buff_size * NUM_OF_TX_BUFFERS);
+
+static void init_audio_host_in(struct usb_audio_class_cfg_t *cfg_hndl,
+		struct usb_audio_class_runtime_t *runtime_hndl)
+{
+	uint8_t *new_buff;
+	uint16_t normal_host_in_pckt_size;
+	uint16_t all_tx_channels_sample_size;
+	uint32_t max_host_in_pckt_size;
+
+	all_tx_channels_sample_size =
+			cfg_hndl->num_of_tx_bytes_per_sample * cfg_hndl->num_tx_channels;
+	normal_host_in_pckt_size = (cfg_hndl->host_in_sample_rate_hz / 1000) *
+												all_tx_channels_sample_size;
+	runtime_hndl->normal_host_in_pckt_size = normal_host_in_pckt_size;
+	new_buff = (uint8_t*)malloc(cfg_hndl->get_tx_buff_size * NUM_OF_TX_BUFFERS);
 	if (NULL == new_buff)
 	{
 		CRITICAL_ERROR("no memory");
 	}
-	for (i = 0; i < (buff_size * NUM_OF_TX_BUFFERS); i = i + 4)
-	{
-		*((uint16_t*)&new_buff[i]) =  cnt;
-		*((uint16_t*)&new_buff[i + 2]) =  cnt++;
-	}
 	runtime_hndl->tx_buff = new_buff;
-	new_buff = (uint8_t*)malloc(MAX_AUDIO_HOST_IN_PACKET_SIZE);
+
+	max_host_in_pckt_size =
+			normal_host_in_pckt_size + all_tx_channels_sample_size;
+	new_buff = (uint8_t*)malloc(max_host_in_pckt_size);
 	if (NULL == new_buff)
 	{
 		CRITICAL_ERROR("no memory");
@@ -1060,7 +1073,38 @@ static void start_audio_class(struct dev_desc_t *adev,
 	runtime_hndl->tx_pckt_buff = new_buff;
 
 	runtime_hndl->curr_write_pos_in_tx_buffer = 0;
-	runtime_hndl->curr_write_pos_in_tx_buffer = 0;
+	runtime_hndl->curr_read_pos_in_tx_buffer = 0;
+}
+
+
+static void start_audio_class(struct dev_desc_t *adev,
+		struct usb_audio_class_cfg_t *cfg_hndl,
+		struct usb_audio_class_runtime_t *runtime_hndl)
+{
+	dbg_usb_audio_class_runtime_hndl = runtime_hndl;
+
+	if (0 != cfg_hndl->enable_recording)
+	{
+		init_audio_host_in(cfg_hndl, runtime_hndl);
+	}
+
+	if (USB_AUDIO_CLASS_NO_PLAYBACK != cfg_hndl->playback_type)
+	{
+		init_audio_host_out(cfg_hndl, runtime_hndl);
+	}
+
+	add_audio_class_device(adev, cfg_hndl, runtime_hndl);
+
+	if (USB_AUDIO_CLASS_NO_PLAYBACK != cfg_hndl->playback_type)
+	{
+		struct set_data_to_in_endpoint_t  data_to_endpoint;
+
+		data_to_endpoint.endpoint_num = runtime_hndl->in_feedback_endpoint_num;
+		data_to_endpoint.data = NULL;
+		data_to_endpoint.size = 0;
+		DEV_IOCTL_1_PARAMS(cfg_hndl->usb_hw,
+				IOCTL_USB_DEVICE_SENT_DATA_TO_IN_ENDPOINT, &data_to_endpoint);
+	}
 }
 
 

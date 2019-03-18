@@ -53,10 +53,9 @@ extern void new_usb_audio_requested(struct dev_desc_t *adev);
 extern void new_sample_rate_requested(struct dev_desc_t *adev);
 
 
-#define TO_BE_SET_AUTOMATICALLY   0
+#define WILL_BE_SET_ON_INIT   0
 
 #define B2VAL(x) (x & 0xFF), ((x >> 8) & 0xFF)
-#define B3VAL(x) (x & 0xFF), ((x >> 8) & 0xFF), ((x >> 16) & 0xFF)
 #define AUTO_SET_PCKT_SIZE_MSB   0x00
 #define AUTO_SET_PCKT_SIZE_LSB   0x00
 
@@ -69,8 +68,8 @@ static uint8_t const interface_association_descriptor[]=
 	/*  Interface Association Descriptor:  */
 	0x08,
 	0x0B ,  //    bDescriptorType
-	TO_BE_SET_AUTOMATICALLY, // bFirstInterface
-	TO_BE_SET_AUTOMATICALLY , // bInterfaceCount
+	WILL_BE_SET_ON_INIT, // bFirstInterface
+	WILL_BE_SET_ON_INIT , // bInterfaceCount
 
 	/* bFunctionClass,
 	 * Microsoft recommend to match with first bInterfaceClass
@@ -91,7 +90,7 @@ static uint8_t const audio_control_interface_start[] =
 // Standard Audio Control Interface Descriptor
 	0x09,        // bLength
 	0x04,        // bDescriptorType (Interface)
-	TO_BE_SET_AUTOMATICALLY,        // bInterfaceNumber 0
+	WILL_BE_SET_ON_INIT,        // bInterfaceNumber 0
 	0x00,        // bAlternateSetting
 	0x00,        // bNumEndpoints 0
 	AUDIO_CLASS,        // bInterfaceClass (Audio)
@@ -100,14 +99,14 @@ static uint8_t const audio_control_interface_start[] =
 	0x00,        // iInterface (String Index) - Null string
 
 // Class-Specific Audio Control Interface Descriptor
-	TO_BE_SET_AUTOMATICALLY,        // bLength 0x9 or 0xa
+	WILL_BE_SET_ON_INIT,        // bLength 0x8, 0x9 or 0xa
 	0x24,        // bDescriptorType (See Next Line)
 	0x01,        // bDescriptorSubtype (CS_INTERFACE -> HEADER)
 	0x00, 0x01,  // bcdADC 1.00
-	TO_BE_SET_AUTOMATICALLY, TO_BE_SET_AUTOMATICALLY,  // wTotalLength
-	TO_BE_SET_AUTOMATICALLY, // binCollection (number of streaming interfaces)
-	TO_BE_SET_AUTOMATICALLY,        // baInterfaceNr 1
-	TO_BE_SET_AUTOMATICALLY        // baInterfaceNr 2
+	WILL_BE_SET_ON_INIT, WILL_BE_SET_ON_INIT,  // wTotalLength
+	WILL_BE_SET_ON_INIT, // binCollection (number of streaming interfaces)
+	WILL_BE_SET_ON_INIT,        // baInterfaceNr 1
+	WILL_BE_SET_ON_INIT        // baInterfaceNr 2
 };
 
 
@@ -187,7 +186,7 @@ static uint8_t const audio_in_terminal_descriptors[] =
 static uint8_t const in_interface[] = {
 	0x09,        // bLength
 	0x04,        // bDescriptorType (Interface)
-	TO_BE_SET_AUTOMATICALLY,        // bInterfaceNumber
+	WILL_BE_SET_ON_INIT,        // bInterfaceNumber
 	0x00,        // bAlternateSetting
 	0x00,        // bNumEndpoints 0
 	AUDIO_CLASS,        // bInterfaceClass (Audio)
@@ -199,7 +198,7 @@ static uint8_t const in_interface[] = {
 static uint8_t const in_alt_interface[] = {
 	0x09,        // bLength
 	0x04,        // bDescriptorType (Interface)
-	TO_BE_SET_AUTOMATICALLY,        // bInterfaceNumber
+	WILL_BE_SET_ON_INIT,        // bInterfaceNumber
 	0x01,        // bAlternateSetting
 	0x01,        // bNumEndpoints 1
 	AUDIO_CLASS,        // bInterfaceClass (Audio)
@@ -218,20 +217,15 @@ static uint8_t const in_alt_interface[] = {
 	0x24,        // bDescriptorType (See Next Line)
 	0x02,        // bDescriptorSubtype (CS_INTERFACE -> FORMAT_TYPE)
 	0x01,        // bFormatType 1
-	0x02,        // bNrChannels (Stereo)
-#if (2 == BYTES_PER_PCM_CHANNEL)
-	0x02,        // bSubFrameSize 2
-	0x10,        // bBitResolution 16
-#elif (4 == BYTES_PER_PCM_CHANNEL)
-	0x04,        // bSubFrameSize 4
-	0x20,        // bBitResolution 32
-#endif
+	WILL_BE_SET_ON_INIT,        // bNrChannels (Stereo)
+	WILL_BE_SET_ON_INIT,        // bSubFrameSize in bytes
+	WILL_BE_SET_ON_INIT,        // bBitResolution in bits
 	0x01,        // bSamFreqType 1
-	B3VAL(USB_HOST_IN_SAMPLE_RATE),
+	WILL_BE_SET_ON_INIT, WILL_BE_SET_ON_INIT, WILL_BE_SET_ON_INIT,// sample rate
 
 	0x09,        // bLength
 	0x05,        // bDescriptorType (See Next Line)
-	TO_BE_SET_AUTOMATICALLY,        // bEndpointAddress (IN/D2H)
+	WILL_BE_SET_ON_INIT,        // bEndpointAddress (IN/D2H)
 	0x0D,        // bmAttributes (Isochronous, Sync, Data EP)
 	AUTO_SET_PCKT_SIZE_LSB, AUTO_SET_PCKT_SIZE_MSB,  // wMaxPacketSize
 	0x01,        // bInterval 1 (unit depends on device speed)
@@ -249,7 +243,7 @@ static uint8_t const in_alt_interface[] = {
 static uint8_t const out_interface[] = {
 	0x09,        // bLength
 	0x04,        // bDescriptorType (Interface)
-	TO_BE_SET_AUTOMATICALLY,        // bInterfaceNumber
+	WILL_BE_SET_ON_INIT,        // bInterfaceNumber
 	0x00,        // bAlternateSetting
 	0x00,        // bNumEndpoints 0
 	AUDIO_CLASS,        // bInterfaceClass (Audio)
@@ -261,9 +255,9 @@ static uint8_t const out_interface[] = {
 static uint8_t const out_alt_interface[] = {
 	0x09,        // bLength
 	0x04,        // bDescriptorType (Interface)
-	TO_BE_SET_AUTOMATICALLY,        // bInterfaceNumber
+	WILL_BE_SET_ON_INIT,        // bInterfaceNumber
 	0x01,        // bAlternateSetting
-	TO_BE_SET_AUTOMATICALLY,  // bNumEndpoints 1 for sync, 2 for async
+	WILL_BE_SET_ON_INIT,  // bNumEndpoints 1 for sync, 2 for async
 	AUDIO_CLASS,        // bInterfaceClass (Audio)
 	AUDIO_STREAM_SUBCLASS,        // bInterfaceSubClass (Audio Streaming)
 	0x00,        // bInterfaceProtocol
@@ -280,25 +274,20 @@ static uint8_t const out_alt_interface[] = {
 	0x24,        // bDescriptorType (See Next Line)
 	0x02,        // bDescriptorSubtype (CS_INTERFACE -> FORMAT_TYPE)
 	0x01,        // bFormatType 1
-	0x02,        // bNrChannels (Stereo)
-#if (2 == BYTES_PER_PCM_CHANNEL)
-	0x02,        // bSubFrameSize 2
-	0x10,        // bBitResolution 16
-#elif (4 == BYTES_PER_PCM_CHANNEL)
-	0x04,        // bSubFrameSize 4
-	0x20,        // bBitResolution 32
-#endif
+	WILL_BE_SET_ON_INIT,        // bNrChannels (Stereo)
+	WILL_BE_SET_ON_INIT,        // bSubFrameSize in bytes
+	WILL_BE_SET_ON_INIT,        // bBitResolution in bits
 	0x01,        // bSamFreqType 1
-	B3VAL(USB_HOST_OUT_SAMPLE_RATE),
+	WILL_BE_SET_ON_INIT, WILL_BE_SET_ON_INIT, WILL_BE_SET_ON_INIT,// sample rate
 
 	0x09,        // bLength
 	0x05,        // bDescriptorType (See Next Line)
-	TO_BE_SET_AUTOMATICALLY,  // bEndpointAddress (OUT/H2D)
-	TO_BE_SET_AUTOMATICALLY,  // bmAttributes (Isochronous, Sync, Data EP)
+	WILL_BE_SET_ON_INIT,  // bEndpointAddress (OUT/H2D)
+	WILL_BE_SET_ON_INIT,  // bmAttributes (Isochronous, Sync, Data EP)
 	AUTO_SET_PCKT_SIZE_LSB, AUTO_SET_PCKT_SIZE_MSB,  // wMaxPacketSize
 	0x01,        // bInterval 1 (unit depends on device speed)
 	0x00,        // bRefresh
-	TO_BE_SET_AUTOMATICALLY,        // bSyncAddress
+	WILL_BE_SET_ON_INIT,        // bSyncAddress
 
 	0x07,        // bLength
 	0x25,        // bDescriptorType (See Next Line)
@@ -310,8 +299,8 @@ static uint8_t const out_alt_interface[] = {
 	// feedback endpoint
 	0x09,        // bLength
 	0x05,        // bDescriptorType (See Next Line)
-	TO_BE_SET_AUTOMATICALLY,  // bEndpointAddress (OUT/H2D)
-	0x0d,  // bmAttributes (Isochronous, Sync, Data EP)
+	WILL_BE_SET_ON_INIT,  // bEndpointAddress (OUT/H2D)
+	0x01,  // bmAttributes (Isochronous, Sync = none)
 	B2VAL(0x4),  // wMaxPacketSize
 	0x01,        // bInterval 1 (unit depends on device speed)
 	0x05,        // bRefresh
@@ -323,6 +312,7 @@ static uint8_t const out_alt_interface[] = {
 #define SYNCHRONOUS   0x0c
 #define ASYNCHRONOUS  0x04
 
+#define FORMAT_OFFSET                (0x9 + 0x7)
 #define IN_ENDPOINT_OFFSET           (0x9 + 0x7 + 0xB)
 #define OUT_ENDPOINT_OFFSET          (0x9 + 0x7 + 0xB)
 #define IN_FEEDBACK_ENDPOINT_OFFSET  (0x9 + 0x7 + 0xB + 0x9 + 0x07)
@@ -342,37 +332,57 @@ static void configure_endpoints(struct dev_desc_t *adev,
 	uint16_t   max_pckt_sizes[3];
 	uint8_t in_endpoint_num;
 	uint8_t  playback_type;
+	uint8_t  enable_recording;
 	uint8_t  num_of_endpoints;
+	uint8_t  curr_endpoint_indx;
 	uint8_t  *endpoint_desc;
+	uint16_t max_host_out_pckt_size;
+	uint16_t max_host_in_pckt_size;
 
 	runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(adev);
 
 	usb_hw = cfg_hndl->usb_hw;
 	playback_type = cfg_hndl->playback_type;
+	enable_recording = cfg_hndl->enable_recording;
 
-	out_func_arr[0] = NULL;
-	in_func_arr[0] = new_usb_audio_requested;
-	endpoint_request_callback_func[0] = uac_endpoint_class_request;
-	max_pckt_sizes[0] = MAX_AUDIO_HOST_IN_PACKET_SIZE;
-	endpoints_type_arr[0] = USB_DEVICE_API_EP_TYPE_ISO_IN;
-	num_of_endpoints = 1;
+	// bytes per frame, so per ms,  so /1000   .
+	// + 1  for fractional sample rate like 44.1khz
+	max_host_out_pckt_size = ((cfg_hndl->host_out_sample_rate_hz / 1000) +
+			1 + HOST_OUT_MAX_ADDITIONAL_SAMPLES) *
+			( cfg_hndl->num_of_rx_bytes_per_sample * cfg_hndl->num_rx_channels);
+	max_host_in_pckt_size = runtime_hndl->normal_host_in_pckt_size +
+		(cfg_hndl->num_of_tx_bytes_per_sample * cfg_hndl->num_tx_channels);
+
+	num_of_endpoints = 0;
+	if (0 != enable_recording)
+	{
+		out_func_arr[num_of_endpoints] = NULL;
+		in_func_arr[num_of_endpoints] = new_usb_audio_requested;
+		endpoint_request_callback_func[num_of_endpoints] =
+											uac_endpoint_class_request;
+		max_pckt_sizes[num_of_endpoints] = max_host_in_pckt_size;
+		endpoints_type_arr[num_of_endpoints] = USB_DEVICE_API_EP_TYPE_ISO_IN;
+		num_of_endpoints++;
+	}
 
 	if (USB_AUDIO_CLASS_NO_PLAYBACK != playback_type)
 	{
-		out_func_arr[1] = new_usb_audio_received;
-		in_func_arr[1] = NULL;
-		endpoint_request_callback_func[1] = uac_endpoint_class_request;
-		max_pckt_sizes[1] = MAX_AUDIO_HOST_OUT_PACKET_SIZE;
-		endpoints_type_arr[1] = USB_DEVICE_API_EP_TYPE_ISO_OUT;
+		out_func_arr[num_of_endpoints] = new_usb_audio_received;
+		in_func_arr[num_of_endpoints] = NULL;
+		endpoint_request_callback_func[num_of_endpoints] =
+											uac_endpoint_class_request;
+		max_pckt_sizes[num_of_endpoints] = max_host_out_pckt_size;
+		endpoints_type_arr[num_of_endpoints] = USB_DEVICE_API_EP_TYPE_ISO_OUT;
 		num_of_endpoints++;
 	}
 	if (USB_AUDIO_CLASS_ASYNC_PLAYBACK == playback_type)
 	{
-		out_func_arr[2] = NULL;
-		in_func_arr[2] = new_sample_rate_requested;
-		endpoint_request_callback_func[2] = uac_endpoint_class_request;
-		max_pckt_sizes[2] = 4;
-		endpoints_type_arr[2] = USB_DEVICE_API_EP_TYPE_ISO_IN;
+		out_func_arr[num_of_endpoints] = NULL;
+		in_func_arr[num_of_endpoints] = new_sample_rate_requested;
+		endpoint_request_callback_func[num_of_endpoints] =
+										uac_endpoint_class_request;
+		max_pckt_sizes[num_of_endpoints] = 4;
+		endpoints_type_arr[num_of_endpoints] = USB_DEVICE_API_EP_TYPE_ISO_IN;
 		num_of_endpoints++;
 	}
 
@@ -387,37 +397,43 @@ static void configure_endpoints(struct dev_desc_t *adev,
 	set_endpoints.endpoints_type_arr = endpoints_type_arr;
 	DEV_IOCTL_1_PARAMS(usb_hw, IOCTL_USB_DEVICE_SET_ENDPOINTS, &set_endpoints);
 
-	in_endpoint_num = endpoints_num_arr[0];
-	endpoint_desc = &i_in_alt1[IN_ENDPOINT_OFFSET];
-	endpoint_desc[2] = 0x80 | in_endpoint_num;// 0x80 for IN endpoint
-	endpoint_desc[4] = MAX_AUDIO_HOST_IN_PACKET_SIZE & 0xFF;
-	endpoint_desc[5] = (MAX_AUDIO_HOST_IN_PACKET_SIZE >> 8) & 0xFF;
-	runtime_hndl->in_endpoint_num = in_endpoint_num;
+	curr_endpoint_indx = 0;
+	if (0 != enable_recording)
+	{
+		in_endpoint_num = endpoints_num_arr[curr_endpoint_indx];
+		endpoint_desc = &i_in_alt1[IN_ENDPOINT_OFFSET];
+		endpoint_desc[2] = 0x80 | in_endpoint_num;// 0x80 for IN endpoint
+		endpoint_desc[4] = max_host_in_pckt_size & 0xFF;
+		endpoint_desc[5] = (max_host_in_pckt_size >> 8) & 0xFF;
+		runtime_hndl->in_endpoint_num = in_endpoint_num;
+		curr_endpoint_indx++;
+	}
 
-	endpoint_desc = &i_out_alt1[OUT_ENDPOINT_OFFSET];
 	if (USB_AUDIO_CLASS_NO_PLAYBACK != playback_type)
 	{
-		endpoint_desc[2] = endpoints_num_arr[1];
-		endpoint_desc[4] = MAX_AUDIO_HOST_OUT_PACKET_SIZE & 0xFF;
-		endpoint_desc[5] = (MAX_AUDIO_HOST_OUT_PACKET_SIZE >> 8) & 0xFF;
-		runtime_hndl->out_endpoint_num = endpoints_num_arr[1];
-	}
+		endpoint_desc = &i_out_alt1[OUT_ENDPOINT_OFFSET];
+		endpoint_desc[2] = endpoints_num_arr[curr_endpoint_indx];
+		endpoint_desc[4] = max_host_out_pckt_size & 0xFF;
+		endpoint_desc[5] = (max_host_out_pckt_size >> 8) & 0xFF;
+		runtime_hndl->out_endpoint_num = endpoints_num_arr[curr_endpoint_indx];
+		curr_endpoint_indx++;
 
-	if (USB_AUDIO_CLASS_SYNC_WITH_CORRECTIONS_PLAYBACK == playback_type)
-	{
-		i_out_alt1[4] = 0x01;
-		endpoint_desc[3] = SYNCHRONOUS | ISO_ENDPOINT;
-	}
-	else if (USB_AUDIO_CLASS_ASYNC_PLAYBACK == playback_type)
-	{
-		uint8_t  in_feedback_endpoint_num;
-		i_out_alt1[4] = 0x02;
-		in_feedback_endpoint_num = endpoints_num_arr[2];
-		endpoint_desc[3] = ASYNCHRONOUS | ISO_ENDPOINT;
-		endpoint_desc[8] = in_feedback_endpoint_num; // 0x80 for IN
-		runtime_hndl->in_feedback_endpoint_num = in_feedback_endpoint_num;
-		i_out_alt1[IN_FEEDBACK_ENDPOINT_OFFSET + 2] =
-							0x80 | in_feedback_endpoint_num; // 0x80 for IN
+		if (USB_AUDIO_CLASS_SYNC_WITH_CORRECTIONS_PLAYBACK == playback_type)
+		{
+			i_out_alt1[4] = 0x01;
+			endpoint_desc[3] = SYNCHRONOUS | ISO_ENDPOINT;
+		}
+		else if (USB_AUDIO_CLASS_ASYNC_PLAYBACK == playback_type)
+		{
+			uint8_t  in_feedback_endpoint_num;
+			i_out_alt1[4] = 0x02;
+			in_feedback_endpoint_num = endpoints_num_arr[curr_endpoint_indx];
+			endpoint_desc[3] = ASYNCHRONOUS | ISO_ENDPOINT;
+			endpoint_desc[8] = in_feedback_endpoint_num; // 0x80 for IN
+			runtime_hndl->in_feedback_endpoint_num = in_feedback_endpoint_num;
+			i_out_alt1[IN_FEEDBACK_ENDPOINT_OFFSET + 2] =
+								0x80 | in_feedback_endpoint_num; // 0x80 for IN
+		}
 	}
 }
 
@@ -426,6 +442,7 @@ static void fill_association_descriptor(struct usb_audio_class_cfg_t *cfg_hndl,
 	struct usb_descriptors_alloc_interfaces_t *usb_descriptors_alloc_interfaces)
 {
 	uint8_t *iad;
+	uint8_t num_of_interfaces;
 
 	iad = (uint8_t*)malloc(sizeof(interface_association_descriptor)) ;
 	if (NULL == iad)
@@ -435,7 +452,16 @@ static void fill_association_descriptor(struct usb_audio_class_cfg_t *cfg_hndl,
 	memcpy(iad, interface_association_descriptor,
 						sizeof(interface_association_descriptor));
 	iad[2] = usb_descriptors_alloc_interfaces->interfaces_num[0];
-	iad[3] = (USB_AUDIO_CLASS_NO_PLAYBACK == cfg_hndl->playback_type) ? 2 : 3;
+	num_of_interfaces = 1;// +1 for control descriptor
+	if (0 != cfg_hndl->enable_recording)
+	{
+		num_of_interfaces++;
+	}
+	if (USB_AUDIO_CLASS_NO_PLAYBACK != cfg_hndl->playback_type)
+	{
+		num_of_interfaces++;
+	}
+	iad[3] = num_of_interfaces;
 	DEV_IOCTL_1_PARAMS(cfg_hndl->usb_descriptors_dev,
 			USB_DEVICE_DESCRIPTORS_ADD_INTERFACE_ASSOCIATION_DESCRIPTOR, iad);
 	free(iad);
@@ -447,24 +473,31 @@ static void fill_control_descriptor(struct usb_audio_class_cfg_t *cfg_hndl,
 {
 	uint8_t *i_ctl;
 	uint8_t  playback_type;
+	uint8_t  enable_recording;
+	uint8_t  curr_interface_idx;
+	uint8_t  interface_num_offset;
+	uint8_t  control_interface_CS_size;// class specific descriptor size
 	uint16_t  control_interface_size;
 	uint16_t  control_interface_start_size;
 	uint16_t termianl_descriptors_size;
 	struct usb_descriptors_add_interface_t usb_desc_add_interface;
 
 	playback_type = cfg_hndl->playback_type;
+	enable_recording = cfg_hndl->enable_recording;
 
-	termianl_descriptors_size = sizeof(audio_in_terminal_descriptors);
-	if (USB_AUDIO_CLASS_NO_PLAYBACK == playback_type)
+	termianl_descriptors_size = 0;
+	control_interface_CS_size = 8;
+	if (0 != enable_recording)
 	{
-		control_interface_start_size =
-				sizeof(audio_control_interface_start) - 1;
+		control_interface_CS_size++;
+		termianl_descriptors_size += sizeof(audio_in_terminal_descriptors);
 	}
-	else
+	if (USB_AUDIO_CLASS_NO_PLAYBACK != playback_type)
 	{
-		control_interface_start_size = sizeof(audio_control_interface_start);
+		control_interface_CS_size++;
 		termianl_descriptors_size += sizeof(audio_out_terminal_descriptors);
 	}
+	control_interface_start_size = 9 + control_interface_CS_size;
 	control_interface_size =
 			control_interface_start_size + termianl_descriptors_size;
 	i_ctl = (uint8_t*)malloc(control_interface_size);
@@ -475,28 +508,35 @@ static void fill_control_descriptor(struct usb_audio_class_cfg_t *cfg_hndl,
 
 	memcpy(i_ctl, audio_control_interface_start, control_interface_start_size);
 	i_ctl[2] = usb_descriptors_alloc_interfaces->interfaces_num[0];
-	i_ctl[17] = usb_descriptors_alloc_interfaces->interfaces_num[1];
-	memcpy(&i_ctl[control_interface_start_size],
-		audio_in_terminal_descriptors, sizeof(audio_in_terminal_descriptors));
-	if (USB_AUDIO_CLASS_NO_PLAYBACK == playback_type)
+
+	i_ctl[9] = control_interface_CS_size;  // size of descriptor
+	i_ctl[14] = (termianl_descriptors_size + control_interface_CS_size) & 0xFF;
+	i_ctl[15] =
+		((termianl_descriptors_size + control_interface_CS_size) >> 8) & 0xFF;
+	curr_interface_idx = 1;
+	interface_num_offset = 0;
+	if (0 != enable_recording)
 	{
-		i_ctl[9] = 0x9;  // size of descriptor
-		i_ctl[14] = (termianl_descriptors_size + 9) & 0xFF;
-		i_ctl[15] = ((termianl_descriptors_size + 9) >> 8) & 0xFF;
-		i_ctl[16] = 1;  // only IN terminal
+		i_ctl[9 + 8 + interface_num_offset] =
+			usb_descriptors_alloc_interfaces->interfaces_num[
+															curr_interface_idx];
+		memcpy(&i_ctl[control_interface_start_size],
+			audio_in_terminal_descriptors,
+			sizeof(audio_in_terminal_descriptors));
+		control_interface_start_size += sizeof(audio_in_terminal_descriptors);
+		curr_interface_idx++;
+		interface_num_offset++;
 	}
-	else
+	if (USB_AUDIO_CLASS_NO_PLAYBACK != playback_type)
 	{
-		i_ctl[9] = 0xA;  // size of descriptor
-		i_ctl[14] = (termianl_descriptors_size + 0xA) & 0xFF;
-		i_ctl[15] = ((termianl_descriptors_size + 0xA) >> 8) & 0xFF;
-		i_ctl[16] = 2;   // IN and OUT terminal
-		i_ctl[18] = usb_descriptors_alloc_interfaces->interfaces_num[2];
-		memcpy(&i_ctl[control_interface_start_size +
-					  sizeof(audio_in_terminal_descriptors)],
+		i_ctl[9 + 8 + interface_num_offset]
+			  = usb_descriptors_alloc_interfaces->interfaces_num[
+															curr_interface_idx];
+		memcpy(&i_ctl[control_interface_start_size],
 			audio_out_terminal_descriptors,
 			sizeof(audio_out_terminal_descriptors));
 	}
+	i_ctl[16] = curr_interface_idx;   // number of all streaming interfaces
 	usb_desc_add_interface.interface_desc = i_ctl;
 	usb_desc_add_interface.interface_desc_size = control_interface_size;
 	usb_desc_add_interface.alt_interface_desc = NULL;
@@ -506,19 +546,25 @@ static void fill_control_descriptor(struct usb_audio_class_cfg_t *cfg_hndl,
 }
 
 
-static void update_configuration_desc(struct dev_desc_t *adev,
+static void update_interfaces_desc(struct dev_desc_t *adev,
 		struct usb_audio_class_cfg_t *cfg_hndl,
 	struct usb_descriptors_alloc_interfaces_t *usb_descriptors_alloc_interfaces)
 {
 	struct dev_desc_t *usb_descriptors_dev;
 	struct usb_descriptors_add_interface_t usb_desc_add_interface;
+	uint8_t curr_interface_idx;
 	uint8_t *i_in_alt0;
 	uint8_t *i_in_alt1;
 	uint8_t *i_out_alt0;
 	uint8_t *i_out_alt1;
 	uint8_t  playback_type;
+	uint8_t  enable_recording;
+	uint8_t num_of_bytes_per_sample;
+	uint32_t host_out_sample_rate_hz;
+	uint32_t host_in_sample_rate_hz;
 
 	playback_type = cfg_hndl->playback_type;
+	enable_recording = cfg_hndl->enable_recording;
 	usb_descriptors_dev = cfg_hndl->usb_descriptors_dev;
 
 	fill_association_descriptor(cfg_hndl, usb_descriptors_alloc_interfaces);
@@ -526,20 +572,30 @@ static void update_configuration_desc(struct dev_desc_t *adev,
 	fill_control_descriptor(cfg_hndl, usb_descriptors_alloc_interfaces);
 
 
-	i_in_alt0 = (uint8_t*)malloc(sizeof(in_interface)) ;
-	if (NULL == i_in_alt0)
+	curr_interface_idx = 1;
+
+	i_in_alt0 = NULL;
+	i_in_alt1 = NULL;
+	if (0 != enable_recording)
 	{
-		CRITICAL_ERROR("no memory");
+		i_in_alt0 = (uint8_t*)malloc(sizeof(in_interface)) ;
+		if (NULL == i_in_alt0)
+		{
+			CRITICAL_ERROR("no memory");
+		}
+		memcpy(i_in_alt0, in_interface, sizeof(in_interface));
+		i_in_alt1 = (uint8_t*)malloc(sizeof(in_alt_interface)) ;
+		if (NULL == i_in_alt1)
+		{
+			CRITICAL_ERROR("no memory");
+		}
+		memcpy(i_in_alt1, in_alt_interface, sizeof(in_alt_interface));
+		i_in_alt0[2] = usb_descriptors_alloc_interfaces->interfaces_num[
+															curr_interface_idx];
+		i_in_alt1[2] = usb_descriptors_alloc_interfaces->interfaces_num[
+															curr_interface_idx];
+		curr_interface_idx++;
 	}
-	memcpy(i_in_alt0, in_interface, sizeof(in_interface));
-	i_in_alt1 = (uint8_t*)malloc(sizeof(in_alt_interface)) ;
-	if (NULL == i_in_alt1)
-	{
-		CRITICAL_ERROR("no memory");
-	}
-	memcpy(i_in_alt1, in_alt_interface, sizeof(in_alt_interface));
-	i_in_alt0[2] = usb_descriptors_alloc_interfaces->interfaces_num[1];
-	i_in_alt1[2] = usb_descriptors_alloc_interfaces->interfaces_num[1];
 
 	i_out_alt0 = NULL;
 	i_out_alt1 = NULL;
@@ -557,28 +613,51 @@ static void update_configuration_desc(struct dev_desc_t *adev,
 			CRITICAL_ERROR("no memory");
 		}
 		memcpy(i_out_alt1, out_alt_interface, sizeof(out_alt_interface));
-		i_out_alt0[2] = usb_descriptors_alloc_interfaces->interfaces_num[2];
-		i_out_alt1[2] = usb_descriptors_alloc_interfaces->interfaces_num[2];
+		i_out_alt0[2] = usb_descriptors_alloc_interfaces->interfaces_num[
+															curr_interface_idx];
+		i_out_alt1[2] = usb_descriptors_alloc_interfaces->interfaces_num[
+															curr_interface_idx];
 	}
+
 	configure_endpoints(adev, cfg_hndl, i_in_alt1, i_out_alt1);
 
-	usb_desc_add_interface.interface_desc = i_in_alt0;
-	usb_desc_add_interface.interface_desc_size = sizeof(in_interface);
-	usb_desc_add_interface.alt_interface_desc = i_in_alt1;
-	usb_desc_add_interface.alt_interface_desc_size = sizeof(in_alt_interface);
-	usb_desc_add_interface.is_hid_interface = 0;
-	DEV_IOCTL_1_PARAMS(usb_descriptors_dev,
-			USB_DEVICE_DESCRIPTORS_ADD_INTERFACE, &usb_desc_add_interface);
-	free(i_in_alt0);
-	free(i_in_alt1);
+	if (0 != enable_recording)
+	{
+		num_of_bytes_per_sample = cfg_hndl->num_of_tx_bytes_per_sample;
+		host_in_sample_rate_hz = cfg_hndl->host_in_sample_rate_hz;
+		i_in_alt1[FORMAT_OFFSET + 4] = cfg_hndl->num_tx_channels;
+		i_in_alt1[FORMAT_OFFSET + 5] = num_of_bytes_per_sample;
+		i_in_alt1[FORMAT_OFFSET + 6] = num_of_bytes_per_sample * 8;
+		i_in_alt1[FORMAT_OFFSET + 8] = host_in_sample_rate_hz & 0xff;
+		i_in_alt1[FORMAT_OFFSET + 9] = (host_in_sample_rate_hz >> 8) & 0xff;
+		i_in_alt1[FORMAT_OFFSET + 10] = (host_in_sample_rate_hz >> 16) & 0xff;
+		usb_desc_add_interface.interface_desc = i_in_alt0;
+		usb_desc_add_interface.interface_desc_size = sizeof(in_interface);
+		usb_desc_add_interface.alt_interface_desc = i_in_alt1;
+		usb_desc_add_interface.alt_interface_desc_size =
+													sizeof(in_alt_interface);
+		usb_desc_add_interface.is_hid_interface = 0;
+		DEV_IOCTL_1_PARAMS(usb_descriptors_dev,
+				USB_DEVICE_DESCRIPTORS_ADD_INTERFACE, &usb_desc_add_interface);
+		free(i_in_alt0);
+		free(i_in_alt1);
+	}
 
 	if (USB_AUDIO_CLASS_NO_PLAYBACK != playback_type)
 	{
+		num_of_bytes_per_sample = cfg_hndl->num_of_rx_bytes_per_sample;
+		host_out_sample_rate_hz = cfg_hndl->host_out_sample_rate_hz;
+		i_out_alt1[FORMAT_OFFSET + 4] = cfg_hndl->num_rx_channels;
+		i_out_alt1[FORMAT_OFFSET + 5] = num_of_bytes_per_sample;
+		i_out_alt1[FORMAT_OFFSET + 6] = num_of_bytes_per_sample * 8;
+		i_out_alt1[FORMAT_OFFSET + 8] = host_out_sample_rate_hz & 0xff;
+		i_out_alt1[FORMAT_OFFSET + 9] = (host_out_sample_rate_hz >> 8) & 0xff;
+		i_out_alt1[FORMAT_OFFSET + 10] = (host_out_sample_rate_hz >> 16) & 0xff;
 		usb_desc_add_interface.interface_desc = i_out_alt0;
 		usb_desc_add_interface.interface_desc_size = sizeof(out_interface);
 		usb_desc_add_interface.alt_interface_desc = i_out_alt1;
 		usb_desc_add_interface.alt_interface_desc_size =
-									sizeof(out_alt_interface);
+													sizeof(out_alt_interface);
 		if (USB_AUDIO_CLASS_SYNC_WITH_CORRECTIONS_PLAYBACK == playback_type)
 		{
 			// remove feedback endpoint
@@ -603,42 +682,50 @@ void add_audio_class_device(struct dev_desc_t *adev,
 	struct dev_desc_t *usb_descriptors_dev;
 	struct dev_desc_t *usb_hw;
 	uint8_t  playback_type;
+	uint8_t  enable_recording;
+	uint8_t num_of_interfaces;
 
 	usb_descriptors_dev = cfg_hndl->usb_descriptors_dev;
 	playback_type = cfg_hndl->playback_type;
-	if (USB_AUDIO_CLASS_NO_PLAYBACK == playback_type)
+	enable_recording = cfg_hndl->enable_recording;
+	num_of_interfaces = 1;// for control interface
+	if (0 != enable_recording)
 	{
-		usb_descriptors_alloc_interfaces.num_of_interfaces = 2;
+		num_of_interfaces++;
 	}
-	else
+	if (USB_AUDIO_CLASS_NO_PLAYBACK != playback_type)
 	{
-		usb_descriptors_alloc_interfaces.num_of_interfaces = 3;
+		num_of_interfaces++;
 	}
+	usb_descriptors_alloc_interfaces.num_of_interfaces = num_of_interfaces;
 	DEV_IOCTL_1_PARAMS(usb_descriptors_dev,
 			USB_DEVICE_DESCRIPTORS_ALLOC_INTERFACES_NUMBERS,
 			&usb_descriptors_alloc_interfaces);
 
-	update_configuration_desc(adev, cfg_hndl,
+	update_interfaces_desc(adev, cfg_hndl,
 						&usb_descriptors_alloc_interfaces);
+
+	register_interface[0].interface_func = uac_interface_class_request;
+	register_interface[1].interface_func = uac_interface_class_request;
+	register_interface[2].interface_func = uac_interface_class_request;
 
 	register_interface[0].interfaces_num =
 			usb_descriptors_alloc_interfaces.interfaces_num[0];
-	register_interface[0].interface_func = uac_interface_class_request;
-	register_interface[1].interfaces_num =
-			usb_descriptors_alloc_interfaces.interfaces_num[1];
-	register_interface[1].interface_func = uac_interface_class_request;
-	if (USB_AUDIO_CLASS_NO_PLAYBACK == playback_type)
+	num_of_interfaces = 1;
+	if (0 != enable_recording)
 	{
-		register_interfaces.num_of_interfaces = 2;
+		register_interface[num_of_interfaces].interfaces_num =
+			usb_descriptors_alloc_interfaces.interfaces_num[num_of_interfaces];
+		num_of_interfaces++;
 	}
-	else
+	if (USB_AUDIO_CLASS_NO_PLAYBACK != playback_type)
 	{
-		register_interface[2].interfaces_num =
-				usb_descriptors_alloc_interfaces.interfaces_num[2];
-		register_interface[2].interface_func = uac_interface_class_request;
-		register_interfaces.num_of_interfaces = 3;
+		register_interface[num_of_interfaces].interfaces_num =
+			usb_descriptors_alloc_interfaces.interfaces_num[num_of_interfaces];
+		num_of_interfaces++;
 	}
 	register_interfaces.register_interface_arr = register_interface;
+	register_interfaces.num_of_interfaces = num_of_interfaces;
 	register_interfaces.callback_dev = adev;
 	usb_hw = cfg_hndl->usb_hw;
 	DEV_IOCTL_1_PARAMS(usb_hw,
