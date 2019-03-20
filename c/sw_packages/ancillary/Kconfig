@@ -2,6 +2,14 @@
 
 menu "ancillary"
 
+menuconfig INTERNAL_FILE_DESCRIPTORS_MANAGER 
+	bool   "internal file descriptor manager"
+	default n
+if INTERNAL_FILE_DESCRIPTORS_MANAGER
+source "$KCONFIG_PUBLIC_START_DIR/sw_packages/ancillary/file_descriptors_manager/Kconfig"
+endif
+
+
 config INCLUDE_LINUX_TIMER
 	bool   "linux timer"
 	depends on HOST

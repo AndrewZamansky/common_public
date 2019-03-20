@@ -2,8 +2,8 @@
  * Button Manager API:
  *
  * The button manager is a software api to serve two purpose, debounce and
- *      report when a button has met a condition. This condition can be a specific
- *      set of buttons described as an array of the buttons in the action state or
+ *    report when a button has met a condition. This condition can be a specific
+ *    set of buttons described as an array of the buttons in the action state or
  *      in the report config which will return as one of the BTN_REPORT defines.
  *
  *
@@ -58,94 +58,74 @@
  *                                or some sort of msg indicating something
  *                                other than the #defines listed above.
  *
- *      action_state -  The button state in which activates the report config.
- *                        This is the pointer to array that indicates the
- *                        button presses active state in which they follow
- *                        the server_dev's array order.
- *
  */
 
-struct btn_action_states_t
+
+
+
+
+
+typedef size_t button_manager_action_handle_t;
+
+struct button_manager_requested_gpio_values_t {
+	uint8_t   values_arr_size;
+	uint8_t   *pin_bitwise_requested_values_arr;
+};
+
+struct btn_action_t
 {
 
-	uint8_t     report_config;
-	void        *callback_private_data;
-	uint8_t     *action_state;
+	uint8_t  report_config;
+	void     *callback_private_data;
+	struct   button_manager_requested_gpio_values_t *req_gpio_values_arr;
 
 };
 
 
-/*
- * Button Manager Group Structure (needs to be made for each button combo):
- *
- *  Description - structure to be passed back and forth
- *
- *      server_dev - Device to retrieve button state. This should have the
- *                      IOCTL case IOCTL_ADD_ISR_CALLBACK_DEV and
- *                      IOCTL_GPIO_PIN_READ. IOCTL_ADD_ISR_CALLBACK_DEV is to
- *                      add/activate the device callback function to invoke
- *                      the button manager's callback function when the
- *                      button is invoked. IOCTL_GPIO_PIN_READ is to read the
- *                       value of which the button would provide.
- *
- *      btn_actions - Button Action Structure that is defined as a double pointer,
- *                      meaning it can be an array of button actions.
- *                      WARNING: DO NOT ASSIGN DUPLICATES OF BTN_REPORTS.
- *
- *      idle_state -  Natural idle state of the buttons. This can describe what
- *                      would be typically be the button return value from
- *                      DEV_IOCTL_1_PARAMS(button_dev, IOCTL_GPIO_PIN_READ, &state)
- *                      its rested state.
- *
- *      num_actions - Number of actions (1-6) that defines the number of
- *                      array elements described in btn_actions.
- *
- *      num_buttons - Number of buttons in the group. This is the number of
- *                      GPIO Devices you wish to read from.
- *
- *  Example (Initialization):
- *
- *  #include "button_manager_api.h"
- *
- *  extern struct dev_desc_t *button_manager_dev;
- *  extern struct dev_desc_t *gpio_dev;
- *
- *  uint8_t some_thread(void *aHandle)
- *  {
- *      struct buttons_manager_group_t init_button_struct;
- *
- *      uint8_t action_state = 0;   //active low
- *      uint8_t idle_state = 4;
- *
- *      init_button_struct.server_dev = &gpio_dev;
- *      init_button_struct.btn_actions->report_config = (uint8_t)BTN_REPORT_PUSH;
- *      init_button_struct.btn_actions->action_state = &action_state;
- *      init_button_struct.idle_state = &idle_state;
- *      init_button_struct.num_actions = 1;
- *      init_button_struct.num_buttons = 1;
- *
- *      DEV_IOCTL_1_PARAMS(button_manager_dev,
- *                IOCTL_BUTTON_MANAGER_CONFIG_GROUP, &init_button_struct);
- *      DEV_IOCTL_0_PARAMS(button_manager_dev, IOCTL_DEVICE_START);
- *
- *  }
- *
+#define BTN_MANAGER_ADD_GPIO_STATE(gpio_dev, pins_array, size_of_pinns_array) \
+			P_TO_STATIC_DEVICE_INST(loopback_button_dev), \
+			pins_array, size_of_pinns_array
+
+
+#define MAX_NUMBER_OF_ALLOWED_ACTIVE_PINS    4
+/* to prevent from user to put bigger pin_numbers_arr_size
+ * the pins in pin_numbers_arr should be in ascending order.
  */
+struct gpio_state_for_action_t
+{
+	struct dev_desc_t  *gpio_dev;
+	uint8_t  pin_numbers_arr[MAX_NUMBER_OF_ALLOWED_ACTIVE_PINS];
+	uint8_t  pin_numbers_arr_size;
+};
+
+
+struct set_gpio_states_for_action_t
+{
+	button_manager_action_handle_t  action_handle;
+	struct  gpio_state_for_action_t   *gpio_state_arr;
+	uint8_t  gpio_state_arr_size;
+};
+
+
+struct btn_add_action_t
+{
+	uint8_t  report_config;
+	void     *callback_private_data;
+};
 
 struct buttons_manager_group_t
 {
-	struct dev_desc_t *   *server_dev;
-	struct btn_action_states_t    *btn_actions;
-	uint8_t               *idle_state;
-	uint8_t               num_actions;
-	uint8_t               num_buttons;
+	struct dev_desc_t **gpio_dev_arr;
+	uint8_t  gpio_dev_arr_size;
 };
 
 
-typedef enum
+enum BUTTON_MANAGER_API_IOCTL_E
 {
-	IOCTL_BUTTON_MANAGER_CONFIG_GROUP = IOCTL_LAST_COMMON_IOCTL + 1,
-}BUTTON_MANAGER_API_ioctl_t;
+	IOCTL_BUTTON_MANAGER_CREATE_BUTTON_GROUP = IOCTL_LAST_COMMON_IOCTL + 1,
+	IOCTL_BUTTON_MANAGER_ADD_ACTION,
+	IOCTL_BUTTON_MANAGER_SET_GPIO_STATES_FOR_ACTION
+};
 
 /**********  define API  functions  ************/
 

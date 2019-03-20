@@ -24,6 +24,17 @@
 
 #include "i2c.h"
 
+
+
+#if !defined(INTERRUPT_PRIORITY_FOR_I2C)
+	#error "INTERRUPT_PRIORITY_FOR_I2C should be defined"
+#endif
+
+#if CHECK_INTERRUPT_PRIO_FOR_OS_SYSCALLS(INTERRUPT_PRIORITY_FOR_I2C)
+	#error "priority should be lower then maximal priority for os syscalls"
+#endif
+
+
 /********  defines *********************/
 
 #define  NUM_OF_TRIES_TO_ACCESS_I2C_DEVICE  8
@@ -132,11 +143,10 @@ static void I2C_SlaveTRx(
 	{
 		/* Previously address with own SLA address
 		Data has been received; ACK has been returned*/
-		uint8_t data;
-
-
 		if (I2C_I94XXX_RCV_DATA_SIZE_BUFFER > curr_data_pos)
 		{
+			uint8_t data;
+
 			data = (unsigned char) I2C_GET_DATA(i2c);
 			in_buff[curr_data_pos++] = data;
 			runtime_handle->curr_data_pos = curr_data_pos;
@@ -202,7 +212,6 @@ static void I2C_MasterTX(struct i2c_i94xxx_cfg_t *cfg_hndl,
 		struct i2c_i94xxx_runtime_t *runtime_handle,
 		uint32_t u32Status, I2C_T *i2c)
 {
-	os_queue_t WaitQueue;
 	uint8_t  end_of_transmition;
 	uint8_t  reg_addr_left_to_transmit;
 
@@ -220,19 +229,18 @@ static void I2C_MasterTX(struct i2c_i94xxx_cfg_t *cfg_hndl,
 
 	case 0x18:
 		/* SLA+W has been transmitted and ACK has been received. */
-		I2C_SET_CONTROL_REG(i2c, I2C_CTL_SI);
 		if (reg_addr_left_to_transmit)
 		{
-			transmit_reg_addr_byte(
-					i2c, cfg_hndl, runtime_handle);
+			transmit_reg_addr_byte(i2c, cfg_hndl, runtime_handle);
+			I2C_SET_CONTROL_REG(i2c, I2C_CTL_SI);
 		}
 		else if (runtime_handle->tx_data_size)
 		{
 			transmit_byte(i2c, cfg_hndl, runtime_handle);
+			I2C_SET_CONTROL_REG(i2c, I2C_CTL_SI);
 		}
 		else
 		{
-			runtime_handle->i2c_error = I2C_OK;
 			end_of_transmition = 1;
 		}
 		break;
@@ -241,9 +249,7 @@ static void I2C_MasterTX(struct i2c_i94xxx_cfg_t *cfg_hndl,
 		/* SLA+W has been transmitted and NACK has been received. */
 		if (runtime_handle->device_access_tries)
 		{
-			I2C_SET_CONTROL_REG(i2c, I2C_CTL_SI);
-			I2C_STOP(i2c);
-			I2C_START(i2c);
+			I2C_SET_CONTROL_REG(i2c, I2C_CTL_STO | I2C_CTL_STA | I2C_CTL_SI);
 		}
 		else
 		{
@@ -254,26 +260,24 @@ static void I2C_MasterTX(struct i2c_i94xxx_cfg_t *cfg_hndl,
 
 	case 0x28:
 		/* DATA has been transmitted and ACK has been received. */
-		I2C_SET_CONTROL_REG(i2c, I2C_CTL_SI);
 		if (reg_addr_left_to_transmit)
 		{
-			transmit_reg_addr_byte(
-					i2c, cfg_hndl, runtime_handle);
+			transmit_reg_addr_byte( i2c, cfg_hndl, runtime_handle);
+			I2C_SET_CONTROL_REG(i2c, I2C_CTL_SI);
 		}
 		else if (runtime_handle->tx_data_size)
 		{
 			transmit_byte(i2c, cfg_hndl, runtime_handle);
+			I2C_SET_CONTROL_REG(i2c, I2C_CTL_SI);
 		}
 		else
 		{
-			runtime_handle->i2c_error = I2C_OK;
 			end_of_transmition = 1;
 		}
 		break;
 
 	case 0x30:
 		/* DATA has been transmitted and NACK has been received. */
-		I2C_SET_CONTROL_REG(i2c, I2C_CTL_SI);
 		runtime_handle->i2c_error = I2C_DATA_NAK_ERROR;
 		end_of_transmition = 1;
 		break;
@@ -300,13 +304,11 @@ static void I2C_MasterTX(struct i2c_i94xxx_cfg_t *cfg_hndl,
 
 	if (end_of_transmition)
 	{
-		I2C_STOP(i2c);
-		WaitQueue = runtime_handle->WaitQueue;
+		I2C_DisableInt(i2c);
+		I2C_STOP(i2c);// SI bit is cleared inside function call
 		runtime_handle->tx_data = NULL;
-		if (NULL != WaitQueue)
-		{
-			os_queue_send_immediate( WaitQueue, (void *) &dummy_msg);
-		}
+		os_queue_send_without_wait(
+				runtime_handle->WaitQueue, (void *) &dummy_msg);
 	}
 }
 
@@ -322,7 +324,6 @@ static void I2C_MasterRX(struct i2c_i94xxx_cfg_t *cfg_hndl,
 	uint8_t data;
 	uint8_t  *rx_data;
 	uint16_t curr_data_pos;
-	os_queue_t WaitQueue;
 	uint8_t  reg_addr_left_to_transmit;
 	uint8_t end_of_transmition;
 
@@ -343,15 +344,14 @@ static void I2C_MasterRX(struct i2c_i94xxx_cfg_t *cfg_hndl,
 
 	case 0x18:
 		/* SLA+W has been transmitted and ACK has been received. */
-		I2C_SET_CONTROL_REG(i2c, I2C_CTL_SI);
 		if (reg_addr_left_to_transmit)
 		{
-			transmit_reg_addr_byte(
-					i2c, cfg_hndl, runtime_handle);
+			transmit_reg_addr_byte(i2c, cfg_hndl, runtime_handle);
+			I2C_SET_CONTROL_REG(i2c, I2C_CTL_SI);
 		}
 		else
 		{
-			I2C_SET_CONTROL_REG(i2c, I2C_CTL_STA);
+			I2C_SET_CONTROL_REG(i2c, I2C_CTL_STA_SI);
 		}
 		break;
 
@@ -359,29 +359,25 @@ static void I2C_MasterRX(struct i2c_i94xxx_cfg_t *cfg_hndl,
 		/* SLA+W has been transmitted and NACK has been received. */
 		if (runtime_handle->device_access_tries)
 		{
-			I2C_SET_CONTROL_REG(i2c, I2C_CTL_SI);
-			I2C_STOP(i2c);
-			I2C_START(i2c);
+			I2C_SET_CONTROL_REG(i2c, I2C_CTL_STO | I2C_CTL_STA | I2C_CTL_SI);
 		}
 		else
 		{
 			runtime_handle->i2c_error = I2C_DEVICE_TIMEOUT;
 			end_of_transmition = 1;
 		}
-		//I2C_SET_CONTROL_REG(i2c, I2C_CTL_STA | I2C_CTL_STO | I2C_CTL_SI);
 		break;
 
 	case 0x28:
 		/* DATA has been transmitted and ACK has been received. */
-		I2C_SET_CONTROL_REG(i2c, I2C_CTL_SI);
 		if (reg_addr_left_to_transmit)
 		{
-			transmit_reg_addr_byte(
-					i2c, cfg_hndl, runtime_handle);
+			transmit_reg_addr_byte(i2c, cfg_hndl, runtime_handle);
+			I2C_SET_CONTROL_REG(i2c, I2C_CTL_SI);
 		}
 		else
 		{
-			I2C_SET_CONTROL_REG(i2c, I2C_CTL_STA);
+			I2C_SET_CONTROL_REG(i2c, I2C_CTL_STA_SI);
 		}
 		break;
 
@@ -432,7 +428,6 @@ static void I2C_MasterRX(struct i2c_i94xxx_cfg_t *cfg_hndl,
 		curr_data_pos++;
 		if (curr_data_pos == runtime_handle->size_of_data_to_receive)
 		{
-			runtime_handle->i2c_error = I2C_OK;
 			end_of_transmition = 1;
 		}
 		else
@@ -443,21 +438,18 @@ static void I2C_MasterRX(struct i2c_i94xxx_cfg_t *cfg_hndl,
 
 	case 0x30:
 		/* DATA has been transmitted and NACK has been received. */
-		I2C_SET_CONTROL_REG(i2c, I2C_CTL_SI);
 		runtime_handle->i2c_error = I2C_DATA_NAK_ERROR;
 		end_of_transmition = 1;
 		break;
 
 	case 0x38:
 		/* Arbitration Lost */
-		I2C_SET_CONTROL_REG(i2c, I2C_CTL_SI);
 		runtime_handle->i2c_error = I2C_ARBITRATION_ERROR;
 		end_of_transmition = 1;
 		break;
 
 	case 0x00:
 		/* Bus Error */
-		I2C_SET_CONTROL_REG(i2c, I2C_CTL_SI);
 		runtime_handle->i2c_error = I2C_BUS_ERROR;
 		end_of_transmition = 1;
 		break;
@@ -470,13 +462,11 @@ static void I2C_MasterRX(struct i2c_i94xxx_cfg_t *cfg_hndl,
 
 	if (end_of_transmition)
 	{
-		I2C_STOP(i2c);
-		WaitQueue = runtime_handle->WaitQueue;
+		I2C_DisableInt(i2c);
+		I2C_STOP(i2c);// SI bit is cleared inside function call
 		runtime_handle->rx_data = NULL;
-		if (NULL != WaitQueue)
-		{
-			os_queue_send_immediate( WaitQueue, (void *) &dummy_msg);
-		}
+		os_queue_send_without_wait(
+				runtime_handle->WaitQueue, (void *) &dummy_msg);
 	}
 }
 
@@ -625,7 +615,7 @@ static void master_write(struct dev_desc_t *adev,
 	runtime_handle->transmitted_data_size = 0;
 	runtime_handle->i2c_error = I2C_OK;
 
-	runtime_handle->remote_slave_addr = wr_struct->device_addr;
+	runtime_handle->remote_slave_addr = wr_struct->device_addr_7bit;
 	reg_addr_size = wr_struct->reg_addr_size;
 	reg_addr = wr_struct->reg_addr;
 	runtime_handle->reg_addr_left_to_transmit = reg_addr_size;
@@ -637,6 +627,7 @@ static void master_write(struct dev_desc_t *adev,
 	}
 	runtime_handle->reg_addr_arr = reg_addr_arr;
 
+	I2C_EnableInt(i2c_regs);
 	I2C_START(i2c_regs);
 
 	os_queue_receive_infinite_wait( WaitQueue ,  &dummy_msg  );
@@ -702,7 +693,7 @@ static void master_read(struct dev_desc_t *adev,
 	runtime_handle->curr_data_pos = 0;
 	runtime_handle->size_of_data_to_receive = num_of_bytes_to_read;
 	runtime_handle->rx_data = rd_struct->rx_data;
-	runtime_handle->remote_slave_addr = rd_struct->device_addr;
+	runtime_handle->remote_slave_addr = rd_struct->device_addr_7bit;
 	reg_addr_size = rd_struct->reg_addr_size;
 	reg_addr = rd_struct->reg_addr;
 	runtime_handle->reg_addr_left_to_transmit = reg_addr_size;
@@ -714,6 +705,7 @@ static void master_read(struct dev_desc_t *adev,
 	}
 	runtime_handle->reg_addr_arr = reg_addr_arr;
 
+	I2C_EnableInt(i2c_regs);
 	I2C_START(i2c_regs);
 
 	os_queue_receive_infinite_wait( WaitQueue ,  &dummy_msg  );
@@ -773,13 +765,13 @@ static void set_i2c_pinmux(struct i2c_i94xxx_cfg_t *cfg_hndl, I2C_T *i2c_regs)
 		case I2C_I94XXX_API_I2C0_SCL_PIN_PORT_B_PIN_0:
 			SYS->GPB_MFPL &= ~SYS_GPB_MFPL_PB0MFP_Msk;
 			SYS->GPB_MFPL |=  SYS_GPB_MFPL_PB0MFP_I2C0_SCL;
-			PB->PUSEL |= 0x2UL << GPIO_PUSEL_PUSEL0_Pos;
+			//PB->PUSEL |= 0x2UL << GPIO_PUSEL_PUSEL0_Pos;
 			PB->SMTEN |= GPIO_SMTEN_SMTEN0_Msk;
 			break;
 		case I2C_I94XXX_API_I2C0_SCL_PIN_PORT_A_PIN_9:
 			SYS->GPA_MFPH &= ~SYS_GPA_MFPH_PA9MFP_Msk;
 			SYS->GPA_MFPH |=  SYS_GPA_MFPH_PA9MFP_I2C0_SCL;
-			PA->PUSEL |= 0x2UL << GPIO_PUSEL_PUSEL9_Pos;
+			//PA->PUSEL |= 0x2UL << GPIO_PUSEL_PUSEL9_Pos;
 			PA->SMTEN |= GPIO_SMTEN_SMTEN9_Msk;
 			break;
 		default :
@@ -791,13 +783,13 @@ static void set_i2c_pinmux(struct i2c_i94xxx_cfg_t *cfg_hndl, I2C_T *i2c_regs)
 		case I2C_I94XXX_API_I2C0_SDA_PIN_PORT_B_PIN_1:
 			SYS->GPB_MFPL &= ~SYS_GPB_MFPL_PB1MFP_Msk;
 			SYS->GPB_MFPL |=  SYS_GPB_MFPL_PB1MFP_I2C0_SDA;
-			PB->PUSEL |= 0x2UL << GPIO_PUSEL_PUSEL1_Pos;
+			//PB->PUSEL |= 0x2UL << GPIO_PUSEL_PUSEL1_Pos;
 			PB->SMTEN |= GPIO_SMTEN_SMTEN1_Msk;
 			break;
 		case I2C_I94XXX_API_I2C0_SDA_PIN_PORT_A_PIN_10:
 			SYS->GPA_MFPH &= ~SYS_GPA_MFPH_PA10MFP_Msk;
 			SYS->GPA_MFPH |=  SYS_GPA_MFPH_PA10MFP_I2C0_SDA;
-			PA->PUSEL |= 0x2UL << GPIO_PUSEL_PUSEL10_Pos;
+			//PA->PUSEL |= 0x2UL << GPIO_PUSEL_PUSEL10_Pos;
 			PA->SMTEN |= GPIO_SMTEN_SMTEN10_Msk;
 			break;
 		default :
@@ -822,6 +814,11 @@ static uint8_t  device_start(struct dev_desc_t *adev)
 
 	runtime_handle->WaitQueue = os_create_queue(1, sizeof(uint8_t ));
 	runtime_handle->mutex = os_create_mutex();
+	if(NULL == runtime_handle->WaitQueue)
+	{
+		CRITICAL_ERROR("Wait Queue NULL");
+	}
+
 	set_i2c_pinmux(cfg_hndl, i2c_regs);
 
 	if(I2C1 == i2c_regs)
@@ -862,7 +859,7 @@ static uint8_t  device_start(struct dev_desc_t *adev)
 	I2C_EnableInt(i2c_regs);
 
 	irq_register_device_on_interrupt(i2c_irq, adev);
-	irq_set_priority(i2c_irq, INTERRUPT_LOWEST_PRIORITY - 1 );
+	irq_set_priority(i2c_irq, INTERRUPT_PRIORITY_FOR_I2C );
 	irq_enable_interrupt(i2c_irq);
 	return 0;
 }

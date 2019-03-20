@@ -41,7 +41,7 @@ struct i2c_api_master_read_t {
 	uint8_t  *rx_data;
 	size_t   reg_addr;
 	uint8_t  reg_addr_size;
-	uint8_t  device_addr;
+	uint8_t  device_addr_7bit;
 	uint8_t  i2c_error;
 };
 
@@ -52,7 +52,7 @@ struct i2c_api_master_write_t {
 	uint8_t  const *tx_data;
 	size_t   reg_addr;
 	uint8_t  reg_addr_size;
-	uint8_t  device_addr;
+	uint8_t  device_addr_7bit;
 	uint8_t  i2c_error;
 };
 

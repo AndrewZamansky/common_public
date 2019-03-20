@@ -1,16 +1,16 @@
 [submodule "c/sw_packages/net/nghttp2/nghttp2_git"]
 	path = c/sw_packages/net/nghttp2/nghttp2_git
-	url = ../../AndrewZamansky-external-repo-managers/nghttp2/nghttp2_git
+	url = ../../AndrewZamansky-external-repo-managers/nghttp2_git
 	ignore = all
 [submodule "c/sw_packages/net/openssl/openssl_git"]
 	path = c/sw_packages/net/openssl/openssl_git
-	url = ../../AndrewZamansky-external-repo-managers/openssl/openssl_git
+	url = ../../AndrewZamansky-external-repo-managers/openssl_git
 	ignore = all
 [submodule "c/sw_packages/net/curl/curl_git"]
 	path = c/sw_packages/net/curl/curl_git
-	url = ../../AndrewZamansky-external-repo-managers/curl/curl_git
+	url = ../../AndrewZamansky-external-repo-managers/curl_git
 	ignore = all
 [submodule "c/sw_packages/net/wolfssl/wolfssl_git"]
 	path = c/sw_packages/net/wolfssl/wolfssl_git
-	url = ../../AndrewZamansky-external-repo-managers/wolfssl/wolfssl_git
+	url = ../../AndrewZamansky-external-repo-managers/wolfssl_git
 	ignore = all

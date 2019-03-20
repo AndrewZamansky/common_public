@@ -6,24 +6,34 @@ ifeq ($(sort $(CONFIG_FREE_RTOS)),y)
     FREE_RTOS_PATH :=$(EXTERNAL_SOURCE_ROOT_DIR)/FreeRTOSv$(FREE_RTOS_VERSION)
     ifeq ("$(wildcard $(FREE_RTOS_PATH))","")
         $(info  )
-        $(info !--- freeRTOS path $(FREE_RTOS_PATH) dont exists )
-        $(info !--- download freeRTOS version $(FREE_RTOS_VERSION) and unpack it to $(FREE_RTOS_PATH)  )
-        $(info !--- make sure that file Quick_Start_Guide is located in $(FREE_RTOS_PATH)/  after unpacking   )
+        $(info !--- freeRTOS path $(FREE_RTOS_PATH) dont exists)
+        $(info !--- download freeRTOS version $(FREE_RTOS_VERSION) and unpack it to $(FREE_RTOS_PATH))
+        $(info !--- make sure that file Quick_Start_Guide is located in $(FREE_RTOS_PATH)/  after unpacking)
         $(info  )
         $(error )
     endif
-    
+
     ifeq ("","$(filter $(FREE_RTOS_PATH),$(EXTERNAL_SRC_DIRS))")
         EXTERNAL_SRC_DIRS := $(EXTERNAL_SRC_DIRS) $(FREE_RTOS_PATH)
     endif
-    
-    DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH ,  $(FREE_RTOS_PATH)/FreeRTOS/Source/include )
-    DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH ,  $(FREE_RTOS_PATH)/FreeRTOS/Demo/Common/include )
-    ifdef CONFIG_CORTEX_M4
-        DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH ,  $(FREE_RTOS_PATH)/FreeRTOS/Source/portable/GCC/ARM_CM3 )
+
+    MAIN_FREE_RTOS_INCLUDE_PATH :=$(FREE_RTOS_PATH)/FreeRTOS/Source/include
+    DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(MAIN_FREE_RTOS_INCLUDE_PATH))
+
+    FREE_RTOS_PORT_PATH :=$(FREE_RTOS_PATH)/FreeRTOS/Source/portable
+    ifdef CONFIG_CORTEX_M3
+        FREE_RTOS_PORT_INCLUDE_PATH :=$(FREE_RTOS_PORT_PATH)/GCC/ARM_CM3
+    else ifdef CONFIG_CORTEX_M4
+        ifeq ($(sort $(CONFIG_INCLUDE_CORTEX_M_FPU)),y)
+            FREE_RTOS_PORT_INCLUDE_PATH :=$(FREE_RTOS_PORT_PATH)/GCC/ARM_CM3
+        else
+            FREE_RTOS_PORT_INCLUDE_PATH :=$(FREE_RTOS_PORT_PATH)/GCC/ARM_CM4F
+        endif
     else ifdef CONFIG_XTENSA_XCC
-        DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH ,  $(FREE_RTOS_PATH)/FreeRTOS/Source/portable/XCC/Xtensa )
+        FREE_RTOS_PORT_INCLUDE_PATH :=$(FREE_RTOS_PORT_PATH)/XCC/Xtensa
     endif
+    DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(FREE_RTOS_PORT_INCLUDE_PATH))
+
     #used in external sources like wolfssl, ...
     DUMMY := $(call ADD_TO_GLOBAL_DEFINES , FREERTOS)
 endif  
@@ -43,77 +53,56 @@ endif
 
 
 
-SRC = os_wrapper_FreeRTOS.c 
-VPATH = src
+SRC = src/os_wrapper_FreeRTOS.c 
 
 # main freeRTOS files
-SRC += tasks.c 
-SRC += croutine.c
-SRC += event_groups.c
-SRC += list.c
-SRC += queue.c
-SRC += timers.c
-VPATH += $(FREE_RTOS_PATH)/FreeRTOS/Source 
+SRC += FreeRTOS/Source/tasks.c 
+SRC += FreeRTOS/Source/croutine.c
+SRC += FreeRTOS/Source/event_groups.c
+SRC += FreeRTOS/Source/list.c
+SRC += FreeRTOS/Source/queue.c
+SRC += FreeRTOS/Source/timers.c
 # memory management
-SRC += heap_3.c
-#SRC += heap_4.c
-VPATH += : $(FREE_RTOS_PATH)/FreeRTOS/Source/portable/MemMang 
+SRC += FreeRTOS/Source/portable/MemMang/heap_3.c
+#SRC += FreeRTOS/Source/portable/MemMang/heap_4.c
 
 
-SRC += port.c 
-ifdef CONFIG_CORTEX_M3
-	SRC += freeRtos_cortex_M_port.c
-else ifdef CONFIG_CORTEX_M4
-	SRC += freeRtos_cortex_M_port.c
-else ifdef 	CONFIG_XTENSA_XCC
-	SRC += portasm.S
-	SRC += xtensa_context.S
-	SRC += portclib.c
-	SRC += xtensa_overlay_os_hook.c
-	SRC += freeRtos_xtensa_port.c
+ifeq ($(sort $(CONFIG_CORTEX_M3)),y)
+	SRC += src/freeRtos_cortex_M_port.c
+    ifeq ($(sort $(CONFIG_GCC) $(CONFIG_GPP)),y)
+        SRC += FreeRTOS/Source/portable/GCC/ARM_CM3/port.c
+    else ifdef CONFIG_ARMCC 
+        SRC += FreeRTOS/Source/portable/RVDS/ARM_CM3/port.c
+    endif
+else ifeq ($(sort $(CONFIG_CORTEX_M4)),y)
+	SRC += src/freeRtos_cortex_M_port.c
+    ifeq ($(sort $(CONFIG_GCC) $(CONFIG_GPP)),y)
+        ifeq ($(sort $(CONFIG_INCLUDE_CORTEX_M_FPU)),y)
+            SRC += FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c
+        else
+            SRC += FreeRTOS/Source/portable/GCC/ARM_CM3/port.c
+        endif
+    else ifdef CONFIG_ARMCC 
+        ifeq ($(sort $(CONFIG_INCLUDE_CORTEX_M_FPU)),y)
+            SRC += FreeRTOS/Source/portable/RVDS/ARM_CM4F/port.c
+        else
+            SRC += FreeRTOS/Source/portable/RVDS/ARM_CM3/port.c
+        endif
+    endif
+else ifeq ($(sort $(CONFIG_XTENSA_XCC)),y)
+	SRC += FreeRTOS/Source/portable/XCC/Xtensa/portasm.S
+	SRC += FreeRTOS/Source/portable/XCC/Xtensa/xtensa_context.S
+	SRC += FreeRTOS/Source/portable/XCC/Xtensa/portclib.c
+	SRC += FreeRTOS/Source/portable/XCC/Xtensa/xtensa_overlay_os_hook.c
+	SRC += src/freeRtos_xtensa_port.c
 endif
 
-ifdef CONFIG_GCC	
-    ifdef CONFIG_CORTEX_M3
-        VPATH += :$(FREE_RTOS_PATH)/FreeRTOS/Source/portable/GCC/ARM_CM3
-    else ifdef CONFIG_CORTEX_M4
-        ifdef CONFIG_INCLUDE_CORTEX_M_FPU
-            VPATH += :$(FREE_RTOS_PATH)/FreeRTOS/Source/portable/GCC/ARM_CM4F
-        else
-            VPATH += :$(FREE_RTOS_PATH)/FreeRTOS/Source/portable/GCC/ARM_CM3
-        endif 
-    endif
-else ifdef CONFIG_GPP	
-    ifdef CONFIG_CORTEX_M3
-        VPATH += :$(FREE_RTOS_PATH)/FreeRTOS/Source/portable/GCC/ARM_CM3
-    else ifdef CONFIG_CORTEX_M4
-        ifdef CONFIG_INCLUDE_CORTEX_M_FPU
-            VPATH += :$(FREE_RTOS_PATH)/FreeRTOS/Source/portable/GCC/ARM_CM4F
-        else
-            VPATH += :$(FREE_RTOS_PATH)/FreeRTOS/Source/portable/GCC/ARM_CM3
-        endif 
-    endif
-else ifdef CONFIG_ARMCC 
-    ifdef CONFIG_CORTEX_M3
-        VPATH += :$(FREE_RTOS_PATH)/FreeRTOS/Source/portable/RVDS/ARM_CM3
-    else ifdef CONFIG_CORTEX_M4
-        ifdef CONFIG_INCLUDE_CORTEX_M_FPU
-            VPATH += :$(FREE_RTOS_PATH)/FreeRTOS/Source/portable/RVDS/ARM_CM4F
-        else
-            VPATH += :$(FREE_RTOS_PATH)/FreeRTOS/Source/portable/RVDS/ARM_CM3
-        endif         
-    endif
-else ifdef CONFIG_XTENSA_XCC 
-    VPATH += :$(FREE_RTOS_PATH)/FreeRTOS/Source/portable/XCC/Xtensa
-endif
-
+VPATH += | $(FREE_RTOS_PATH)
 
 ifdef CONFIG_RT_OS_IS_SPEED_CRITICAL
-    SPEED_CRITICAL_FILES +=os_wrapper_FreeRTOS.c tasks.c  croutine.c port.c
-    SPEED_CRITICAL_FILES +=event_groups.c list.c queue.c timers.c heap_3.c
+    SPEED_CRITICAL_FILES +=$(SRC)
 endif
 
 
- 
 
 include $(COMMON_CC)

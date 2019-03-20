@@ -172,3 +172,79 @@
 
 #include ADD_CURRENT_DEV
 
+
+/***********************************/
+/********** i94xxx_I2S_MCLK_clk_dev ********/
+#define DT_DEV_NAME                i94xxx_I2S_MCLK_clk_dev
+#define DT_DEV_MODULE              clk_cntl
+
+#define CLK_DT_IOCTL               i94xxx_I2S_MCLK_ioctl
+#define CLK_DT_DEFAULT_PARENT      i94xxx_i2s_clk_dev
+
+#include ADD_CURRENT_DEV
+
+
+/***********************************/
+/********** i94xxx_I2S_BCLK_clk_dev ********/
+#define DT_DEV_NAME                i94xxx_I2S_BCLK_clk_dev
+#define DT_DEV_MODULE              clk_cntl
+
+#define CLK_DT_IOCTL               i94xxx_I2S_BCLK_ioctl
+#define CLK_DT_DEFAULT_PARENT      i94xxx_i2s_clk_dev
+
+#include ADD_CURRENT_DEV
+
+
+/***********************************/
+/********** i94xxx_I2S_FSCLK_clk_dev ********/
+#define DT_DEV_NAME                i94xxx_I2S_FSCLK_clk_dev
+#define DT_DEV_MODULE              clk_cntl
+
+#define CLK_DT_IOCTL               i94xxx_I2S_FSCLK_ioctl
+#define CLK_DT_DEFAULT_PARENT      i94xxx_I2S_BCLK_clk_dev
+
+#include ADD_CURRENT_DEV
+
+/***********************************/
+/********** i94xxx_I2S_onSPI1_MCLK_clk_dev ********/
+#define DT_DEV_NAME                i94xxx_I2S_onSPI1_MCLK_clk_dev
+#define DT_DEV_MODULE              clk_cntl
+
+#define CLK_DT_IOCTL               i94xxx_I2S_onSPI1_MCLK_ioctl
+#define CLK_DT_DEFAULT_PARENT      i94xxx_spi1clk_clk_dev
+
+#include ADD_CURRENT_DEV
+
+
+/***********************************/
+/********** i94xxx_I2S_onSPI1_BCLK_clk_dev ********/
+#define DT_DEV_NAME                i94xxx_I2S_onSPI1_BCLK_clk_dev
+#define DT_DEV_MODULE              clk_cntl
+
+#define CLK_DT_IOCTL               i94xxx_I2S_onSPI1_BCLK_ioctl
+#define CLK_DT_DEFAULT_PARENT      i94xxx_spi1clk_clk_dev
+
+#include ADD_CURRENT_DEV
+
+
+/***********************************/
+/********** i94xxx_I2S_FSCLK_onSPI1_clk_dev ********/
+#define DT_DEV_NAME                i94xxx_I2S_onSPI1_FSCLK_clk_dev
+#define DT_DEV_MODULE              clk_cntl
+
+#define CLK_DT_IOCTL               i94xxx_I2S_onSPI1_FSCLK_ioctl
+#define CLK_DT_DEFAULT_PARENT      i94xxx_I2S_onSPI1_BCLK_clk_dev
+
+#include ADD_CURRENT_DEV
+
+
+/***********************************/
+/********** i94xxx_dmic_clk_dev ********/
+#define DT_DEV_NAME                i94xxx_dmic_clk_dev
+#define DT_DEV_MODULE              clk_cntl
+
+#define CLK_DT_IOCTL               clock_i94xxx_dmic_ioctl
+
+#include ADD_CURRENT_DEV
+
+

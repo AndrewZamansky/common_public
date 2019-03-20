@@ -43,7 +43,7 @@ char rms_module_name[] = "rms";
 
 /***********   local variables    **************/
 
-#define  ALPHA   0.04f
+#define  ALPHA   0.00004f
 #define  ONE_MINUS_ALPHA   (1.0f - ALPHA)
 
 /**

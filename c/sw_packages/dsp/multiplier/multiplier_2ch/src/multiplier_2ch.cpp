@@ -23,7 +23,6 @@
 
 #include "string.h"
 
-#include "_multiplier_2ch_prerequirements_check.h"
 
 /********  defines *********************/
 
@@ -101,7 +100,8 @@ void multiplier_2ch_dsp(struct dsp_module_inst_t *adsp,
 
 
 
-
+#define ln_of_10   2.302585092994f
+#define _20_div_ln_of_10   8.685889638065f
 
 /**
  * multiplier_2ch_ioctl()
@@ -111,6 +111,7 @@ void multiplier_2ch_dsp(struct dsp_module_inst_t *adsp,
 uint8_t multiplier_2ch_ioctl(struct dsp_module_inst_t *adsp,
 		const uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2)
 {
+	real_t weight_db;
 	real_t weight;
 	real_t tmp;
 	struct multiplier_2ch_instance_t *handle;
@@ -123,25 +124,30 @@ uint8_t multiplier_2ch_ioctl(struct dsp_module_inst_t *adsp,
 	{
 		case IOCTL_DSP_INIT :
 			handle->weight = (int16_t)1;
-			set_params->weight = (int16_t)0;
+			set_params->weight_db = (int16_t)0;
 			break;
 
 		case IOCTL_MULTIPLIER_SET_WEIGHT_DB :
-			weight = *(float*)aIoctl_param1;
+			weight_db = *(float*)aIoctl_param1;
 			tmp = (float)10;
 			#ifdef CONFIG_DSP_REAL_NUMBER_FORMAT_FLOATING_POINT
-				handle->weight = pow(tmp, weight/(float)20);
+				handle->weight = pow(tmp, weight_db/(float)20);
 			#else
 				tmp = fix16_log(tmp);
-				tmp *= (weight / (float)20);
+				tmp *= (weight_db / (float)20);
 				handle->weight = fix16_exp(tmp);
 			#endif
-			set_params->weight = weight;
+			set_params->weight_db = weight_db;
 			break;
 
 		case IOCTL_MULTIPLIER_SET_WEIGHT :
 			weight = *(float*)aIoctl_param1;
-			set_params->weight = weight;
+			#ifdef CONFIG_DSP_REAL_NUMBER_FORMAT_FLOATING_POINT
+				weight_db = log10(weight) * (float)20;
+			#else
+				weight_db = fix16_log(weight) * _20_div_ln_of_10;
+			#endif
+			set_params->weight_db = weight_db;
 			handle->weight = weight;
 			break;
 

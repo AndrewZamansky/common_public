@@ -25,6 +25,14 @@
 #include "dma_i94xxx_add_component.h"
 
 
+#if !defined(INTERRUPT_PRIORITY_FOR_DMA)
+	#error "INTERRUPT_PRIORITY_FOR_DMA should be defined"
+#endif
+
+#if CHECK_INTERRUPT_PRIO_FOR_OS_SYSCALLS(INTERRUPT_PRIORITY_FOR_DMA)
+	#error "priority should be lower then maximal priority for os syscalls"
+#endif
+
 /********  defines *********************/
 
 #define DMA_TO_PERIPHERAL   0
@@ -199,7 +207,7 @@ static void update_rx_buffer(struct dev_desc_t * ch_pdev,
 
 	if (NULL != callback_dev)
 	{
-		DEV_CALLBACK_0_PARAMS(callback_dev, CALLBACK_NEW_DATA_ARRIVED);
+		DEV_CALLBACK_1_PARAMS(callback_dev, CALLBACK_NEW_DATA_ARRIVED, ch_pdev);
 	}
 
 	buff_status[curr_dma_buff_indx] =	DMA_I94XXX_BUFF_RX_RADA_READY;
@@ -376,15 +384,29 @@ static uint8_t set_peripheral_dma(struct dma_i94xxx_cfg_t *cfg_hndl,
 		dma_peripheral_direction = DMA_TO_PERIPHERAL;
 		break;
 
+	case PDMA_DMIC_RX :
+		src_ctrl = PDMA_SAR_FIX;
+		src_addr = (void*)&DMIC->FIFO;
+		dest_ctrl = PDMA_DAR_INC;
+		dma_peripheral_direction = DMA_FROM_PERIPHERAL;
+		break;
+
 	default :
 		return 1;
 	}
 
-	runtime_hndl->buff = (uint8_t**)malloc(sizeof(uint8_t*) * num_of_buffers);
-	runtime_hndl->buff_status = (uint8_t*)malloc(num_of_buffers);
+	if(NULL == runtime_hndl->buff)
+	{
+		runtime_hndl->buff =
+				(uint8_t**)malloc(sizeof(uint8_t*) * num_of_buffers);
+		runtime_hndl->buff_status = (uint8_t*)malloc(num_of_buffers);
+		for (i = 0; i < num_of_buffers; i++)
+		{
+			runtime_hndl->buff[i] = (uint8_t*)malloc(buff_size);
+		}
+	}
 	for (i = 0; i < num_of_buffers; i++)
 	{
-		runtime_hndl->buff[i] = (uint8_t*)malloc(buff_size);
 		runtime_hndl->buff_status[i] = DMA_I94XXX_BUFF_IDLE ;
 	}
 
@@ -474,6 +496,10 @@ static uint8_t start_dma_i94xxx_device(struct dev_desc_t *adev,
 		CRITICAL_ERROR("channel number greater than allowed\n");
 	}
 
+	if (0 != channel_pdev[channel_num])
+	{
+		CRITICAL_ERROR("channel already used\n");
+	}
 	channel_pdev[channel_num] = adev;
 
 	/* Enable PDMA clock source */
@@ -497,8 +523,7 @@ static uint8_t start_dma_i94xxx_device(struct dev_desc_t *adev,
 	if (0 == ret)
 	{
 		irq_register_interrupt(PDMA_IRQn, PDMA_IRQHandler);
-		irq_set_priority(PDMA_IRQn,
-				OS_MAX_INTERRUPT_PRIORITY_FOR_API_CALLS );
+		irq_set_priority(PDMA_IRQn, INTERRUPT_PRIORITY_FOR_DMA);
 		irq_enable_interrupt(PDMA_IRQn);
 		PDMA_EnableInt(channel_num, PDMA_INT_TRANS_DONE);
 	}
@@ -546,9 +571,15 @@ static uint8_t release_rx_buffer(struct dma_i94xxx_cfg_t *cfg_hndl,
 {
 	uint8_t next_supplied_rx_buffer;
 	uint8_t num_of_buffers;
+	uint8_t *buffer_state;
 
 	next_supplied_rx_buffer = runtime_hndl->next_supplied_rx_buffer;
-	runtime_hndl->buff_status[next_supplied_rx_buffer] = DMA_I94XXX_BUFF_IDLE;
+	buffer_state = &runtime_hndl->buff_status[next_supplied_rx_buffer];
+	if (DMA_I94XXX_BUFF_RX_RADA_PROCESSING != *buffer_state)
+	{
+		return 1;
+	}
+	*buffer_state = DMA_I94XXX_BUFF_IDLE;
 	num_of_buffers = cfg_hndl->num_of_buffers;
 	next_supplied_rx_buffer = (next_supplied_rx_buffer + 1) % num_of_buffers;
 	runtime_hndl->next_supplied_rx_buffer = next_supplied_rx_buffer;
@@ -586,7 +617,7 @@ static uint8_t get_empty_tx_buffer(struct dev_desc_t *ch_pdev,
 	num_of_buffers = cfg_hndl->num_of_buffers;
 
 	next_supplied_tx_buffer = runtime_hndl->next_supplied_tx_buffer ;
-	look_foward_tx_buffer = (next_supplied_tx_buffer + 2) % num_of_buffers;
+	look_foward_tx_buffer = (next_supplied_tx_buffer + 1) % num_of_buffers;
 
 
 	buffer_state = &runtime_hndl->buff_status[look_foward_tx_buffer];
@@ -634,8 +665,8 @@ static uint8_t get_empty_tx_buffer(struct dev_desc_t *ch_pdev,
 }
 
 
-static void enable_peripheral_output(
-		uint8_t peripheral_type, struct dev_desc_t *peripheral_dev)
+static void enable_peripheral_output( uint8_t peripheral_type,
+			struct dev_desc_t *peripheral_dev, uint8_t channel_num)
 {
 	// Need to use these variables to keep modularity and abstraction.
 //	struct I2S_onSPI_i94xxx_cfg_t *cfg_hndl;
@@ -659,6 +690,7 @@ static void enable_peripheral_output(
 
 		SPI1->PDMACTL &= ~SPI_PDMACTL_TXPDMAEN_Msk;
 		SPI1->PDMACTL |= SPI_PDMACTL_TXPDMAEN_Msk;
+		PDMA_Trigger(channel_num); // needed for SPI module
 
 		break;
 
@@ -671,6 +703,7 @@ static void enable_peripheral_output(
 
 		SPI2->PDMACTL &= ~SPI_PDMACTL_TXPDMAEN_Msk;
 		SPI2->PDMACTL |= SPI_PDMACTL_TXPDMAEN_Msk;
+		PDMA_Trigger(channel_num); // needed for SPI module
 
 		break;
 
@@ -760,7 +793,7 @@ static uint8_t release_tx_buffer(struct dma_i94xxx_cfg_t *cfg_hndl,
 				runtime_hndl->buff_size_in_transfer_words);
 		PDMA_SET_SRC_ADDR(channel_num, (size_t)buffers[next_dma_buff_indx]);
 		PDMA_SetTransferMode( channel_num, peripheral_type, FALSE, 0);
-		enable_peripheral_output(peripheral_type, peripheral_dev);
+		enable_peripheral_output(peripheral_type, peripheral_dev, channel_num);
 	}
 	return 0;
 }
@@ -805,6 +838,8 @@ uint8_t dma_i94xxx_ioctl( struct dev_desc_t *adev, const uint8_t aIoctl_num,
 	case DMA_I94XXX_IOCTL_RELEASE_TX_BUFF :
 		ret = release_tx_buffer(cfg_hndl, runtime_hndl);
 		break;
+
+
 
 	default :
 		return 1;

@@ -50,6 +50,7 @@ else ifdef CONFIG_CORTEX_M4
     CORTEX_M3_OR_M4 :=y
 endif
 
+SRC += src/init.c
 
 
 ifeq (y,$(CORTEX_M3_OR_M4))
@@ -59,6 +60,7 @@ else ifdef CONFIG_CORTEX_A9
 	INCLUDE_DIR += src/Cortex_A9
 	SRC += src/Cortex_A9/cache-pl310.c
 endif
+SRC += $(CORTEX_DIR)/core_init.c
 
 ifeq (y,$(USING_GCC_COMPILER))
     SRC += $(CORTEX_DIR)/SWI.s

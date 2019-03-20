@@ -46,25 +46,25 @@ uint8_t async_rx_wrapper_callback(struct dev_desc_t *adev ,
 {
 	struct async_rx_wrapper_cfg_t *config_handle;
 	struct async_rx_wrapper_runtime_t *runtime_handle;
-    uint8_t *rx_buff;
-    rx_int_size_t WritePos;
-    rx_int_size_t copy_len;
-    rx_int_size_t rx_buff_size;
-    uint8_t *rcvdData ;
-    rx_int_size_t rcvdDataLen;
-    struct dev_desc_t *   client_dev ;
+	uint8_t *rx_buff;
+	uint8_t *rcvdData ;
+	rx_int_size_t rcvdDataLen;
+	struct dev_desc_t *   client_dev ;
 
-    rcvdData = (uint8_t *)aCallback_param1;
-    rcvdDataLen = (rx_int_size_t)((size_t)aCallback_param2);
+	rcvdData = (uint8_t *)aCallback_param1;
+	rcvdDataLen = (rx_int_size_t)((size_t)aCallback_param2);
 
 	config_handle = DEV_GET_CONFIG_DATA_POINTER(adev);
 	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
 
-    client_dev = config_handle->client_dev;
-    if (CALLBACK_DATA_RECEIVED == aCallback_num)
+	client_dev = config_handle->client_dev;
+	if (CALLBACK_DATA_RECEIVED == aCallback_num)
 	{
-		rx_buff=config_handle->rx_buff;
+		rx_int_size_t WritePos;
+		rx_int_size_t copy_len;
+		rx_int_size_t rx_buff_size;
 
+		rx_buff=config_handle->rx_buff;
 		if (NULL == rx_buff) return 1;
 
 		WritePos = runtime_handle->WritePos;
@@ -105,8 +105,6 @@ uint8_t async_rx_wrapper_callback(struct dev_desc_t *adev ,
 		{
 			return DEV_CALLBACK_0_PARAMS(client_dev, CALLBACK_NEW_DATA_ARRIVED);
 		}
-
-
 	}
 	return 0;
 }

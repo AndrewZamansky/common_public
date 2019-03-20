@@ -2,10 +2,6 @@
  *
  * uart_stm8.h
  *
- *
- *
- *
- *
  */
 
 #ifndef _UART_STM8_H_
@@ -13,7 +9,6 @@
 
 /********  includes *********************/
 
-#include "src/_uart_stm8_prerequirements_check.h"
 
 /********  types  *********************/
 

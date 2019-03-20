@@ -3,7 +3,6 @@
  * file :   button_manager.c
  *
  *
- *        Last Edited 8/13/18 by Nathan Wong
  *
  *
  */
@@ -58,16 +57,16 @@ typedef struct
 } xMessage_t;
 
 
-/*----------------------------------------------------------------------------*/
-/* Function:        button_manager_callback                                   */
-/*                                                                            */
-/* Parameters:                                                                */
-/*                                                                            */
-/*                                                                            */
-/* Returns:                                                                   */
-/* Side effects:                                                              */
-/* Description:                                                               */
-/*----------------------------------------------------------------------------*/
+
+/*
+ * Function:        button_manager_callback
+ *
+ * Parameters:
+ *
+ * Returns:
+ * Side effects:
+ * Description:
+*/
 uint8_t button_manager_callback(
 		struct dev_desc_t *adev ,const uint8_t aCallback_num ,
 		void * aCallback_param1, void * aCallback_param2)
@@ -85,67 +84,97 @@ uint8_t button_manager_callback(
 		return 1;
 	}
 
-	os_queue_send_immediate( xButtonQueue, ( void * ) &xTxMessage);
+	os_queue_send_without_wait( xButtonQueue, ( void * ) &xTxMessage);
 
 	return 0;
 }
 
 
-uint8_t debounce_on_push(struct dev_desc_t *adev)
+static uint8_t compare_gpio_state(struct gpio_api_read_t *curr_gpio_state_arr,
+		uint8_t num_of_gpio_devs, struct btn_action_t *btn_action)
+{
+	struct gpio_api_read_t *curr_gpio_state;
+	uint8_t values_arr_size;
+	uint8_t i;
+	struct   button_manager_requested_gpio_values_t *req_gpio_values_arr;
+	struct   button_manager_requested_gpio_values_t *req_gpio_values;
+
+	req_gpio_values_arr = btn_action->req_gpio_values_arr;
+	if (NULL == req_gpio_values_arr)
+	{
+		return 0;
+	}
+	for(i = 0; i < num_of_gpio_devs; i++)
+	{
+		curr_gpio_state = &curr_gpio_state_arr[i];
+		values_arr_size = curr_gpio_state->values_arr_size;
+		req_gpio_values = &req_gpio_values_arr[i];
+		if (memcmp(curr_gpio_state->pin_bitwise_curr_values,
+				req_gpio_values->pin_bitwise_requested_values_arr,
+				values_arr_size))
+		{
+			return 0;
+		}
+	}
+	return 1;
+}
+
+
+uint8_t end_of_debounce_on_push(struct dev_desc_t *adev)
 {
 	struct button_manager_runtime_t *runtime_handle;
 	struct button_manager_config_t  *config_handle;
-
-	struct dev_desc_t *   *server_dev;
+	struct dev_desc_t *   *gpio_devs_arr;
 	struct dev_desc_t     *client_dev;
-
-	uint8_t i = 0;
-	uint8_t action_idx = 0;
-	uint8_t num_buttons;
-	uint8_t num_actions;
-	uint8_t *curr_button_state;
+	uint8_t i;
+	uint8_t action_idx;
+	uint8_t num_of_gpio_devs;
+	uint8_t num_of_actions;
+	struct gpio_api_read_t *curr_gpio_state_arr;
 	uint8_t manager_state;
 	uint32_t   hold_count;
 	uint32_t   queue_wait_delay;
-	struct btn_action_states_t	*pFound_action_state;
-	struct btn_action_states_t *btn_actions;
+	uint8_t action_found;
+	struct btn_action_t *btn_actions_arr;
+
 
 	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
 	config_handle = DEV_GET_CONFIG_DATA_POINTER(adev);
 
-	curr_button_state = runtime_handle->curr_button_state;
+	curr_gpio_state_arr = runtime_handle->curr_gpio_state_arr;
 	hold_count = runtime_handle->hold_count;
 	queue_wait_delay = runtime_handle->queue_wait_delay;
 
-	server_dev = config_handle->server_dev;
+	gpio_devs_arr = config_handle->gpio_devs_arr;
 	client_dev = config_handle->client_dev;
-	num_buttons = config_handle->num_buttons;
-	num_actions = config_handle->num_actions;
-	btn_actions = config_handle->btn_actions;
+	num_of_gpio_devs = config_handle->num_of_gpio_devs;
+	num_of_actions = config_handle->num_of_actions;
+	btn_actions_arr = config_handle->btn_actions_arr;
 
-	for(i = 0; i < num_buttons ; i++)
+	for(i = 0; i < num_of_gpio_devs; i++)
 	{
 		DEV_IOCTL_1_PARAMS(
-				server_dev[i], IOCTL_GPIO_PIN_READ, &curr_button_state[i]);
+				gpio_devs_arr[i], IOCTL_GPIO_PIN_READ, &curr_gpio_state_arr[i]);
 	}
 
-	pFound_action_state = NULL;
-	for(action_idx = 0; action_idx < num_actions ; action_idx++)
+	action_found = 0;
+	for(action_idx = 0; action_idx < num_of_actions ; action_idx++)
 	{
-		if(0 == memcmp(btn_actions[action_idx].action_state,
-				curr_button_state,num_buttons))
+		action_found = compare_gpio_state(curr_gpio_state_arr,
+				num_of_gpio_devs, &btn_actions_arr[action_idx]);
+
+		if (action_found)
 		{
-			pFound_action_state = &btn_actions[action_idx];
-			if(BTN_REPORT_PUSH & btn_actions[action_idx].report_config)
+			if (BTN_REPORT_PUSH & btn_actions_arr[action_idx].report_config)
 			{
 				DEV_CALLBACK_2_PARAMS(client_dev, CALLBACK_BTN_STATE_CHANGED,
-					(void *)BTN_REPORT_PUSH, &btn_actions[action_idx]);
+					(void *)BTN_REPORT_PUSH, &btn_actions_arr[action_idx]);
 			}
 			break;
 		}
 	}
 
-	if(NULL == pFound_action_state)
+	if (0 == action_found)
 	{
 		queue_wait_delay = DEBOUNCE_DELAY;
 		manager_state = BTN_STATE_DEBOUNCING_ON_RELEASE;
@@ -172,7 +201,7 @@ uint8_t button_state_hold(struct dev_desc_t *adev, uint8_t action_idx)
 	struct button_manager_config_t  *config_handle;
 	struct dev_desc_t     *client_dev;
 
-	struct btn_action_states_t *btn_actions;
+	struct btn_action_t *btn_actions_arr;
 
 	uint32_t   hold_count;
 
@@ -182,76 +211,84 @@ uint8_t button_state_hold(struct dev_desc_t *adev, uint8_t action_idx)
 	hold_count = runtime_handle->hold_count;
 
 	client_dev = config_handle->client_dev;
-	btn_actions = config_handle->btn_actions;
+	btn_actions_arr = config_handle->btn_actions_arr;
 
-	hold_count+=128;
-	if(BTN_REPORT_HOLD_EVERY_0s1 & btn_actions[action_idx].report_config)
+	hold_count += 128;
+	if(BTN_REPORT_HOLD_EVERY_0s1 & btn_actions_arr[action_idx].report_config)
 	{
-		DEV_CALLBACK_2_PARAMS( client_dev ,CALLBACK_BTN_STATE_CHANGED ,
-				(void *)BTN_REPORT_HOLD_EVERY_0s1 ,
-				&btn_actions[action_idx]) ;
+		DEV_CALLBACK_2_PARAMS( client_dev, CALLBACK_BTN_STATE_CHANGED,
+			(void *)BTN_REPORT_HOLD_EVERY_0s1, &btn_actions_arr[action_idx]);
 	}
 	if( 0x0 == (hold_count & 0x3ff) ) // enter each 1024
 	{
-		if(BTN_REPORT_HOLD_EVERY_1s & btn_actions[action_idx].report_config)
+		if(BTN_REPORT_HOLD_EVERY_1s & btn_actions_arr[action_idx].report_config)
 		{
 			DEV_CALLBACK_2_PARAMS( client_dev ,CALLBACK_BTN_STATE_CHANGED ,
-					(void *)BTN_REPORT_HOLD_EVERY_1s ,
-					&btn_actions[action_idx]) ;
+				(void *)BTN_REPORT_HOLD_EVERY_1s, &btn_actions_arr[action_idx]);
 		}
 	}
 	if( 4992 == hold_count  ) // enter once ~5s
 	{
-		if(BTN_REPORT_HOLD_ONCE_5s & btn_actions[action_idx].report_config)
+		if(BTN_REPORT_HOLD_ONCE_5s & btn_actions_arr[action_idx].report_config)
 		{
 			DEV_CALLBACK_2_PARAMS( client_dev ,CALLBACK_BTN_STATE_CHANGED ,
-					(void *)BTN_REPORT_HOLD_ONCE_5s ,
-					&btn_actions[action_idx]) ;
+				(void *)BTN_REPORT_HOLD_ONCE_5s, &btn_actions_arr[action_idx]);
 		}
 	}
 
-
 	runtime_handle->hold_count = hold_count;
-
 	return 0;
 }
 
 
-uint8_t debounce_on_release(struct dev_desc_t *adev)
+uint8_t end_of_debounce_on_release(struct dev_desc_t *adev)
 {
 	struct button_manager_runtime_t *runtime_handle;
 	struct button_manager_config_t  *config_handle;
-
-	struct dev_desc_t *   *server_dev;
-
-	uint8_t i = 0;
-	uint8_t num_buttons;
+	uint8_t idle_state_detected;
+	struct dev_desc_t **gpio_devs_arr;
+	uint8_t i;
+	uint8_t num_of_gpio_devs;
 	uint8_t manager_state;
 	uint32_t   queue_wait_delay;
-	uint8_t *curr_button_state;
-	uint8_t *idle_state;
+	struct gpio_api_read_t *curr_gpio_state_arr;
 
 	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
 	config_handle = DEV_GET_CONFIG_DATA_POINTER(adev);
 
-	curr_button_state = runtime_handle->curr_button_state;
+	curr_gpio_state_arr = runtime_handle->curr_gpio_state_arr;
 
 	manager_state = runtime_handle->manager_state;
 	queue_wait_delay = runtime_handle->queue_wait_delay;
 
-	server_dev = config_handle->server_dev;
-	num_buttons = config_handle->num_buttons;
-	idle_state = config_handle->idle_state;
+	gpio_devs_arr = config_handle->gpio_devs_arr;
+	num_of_gpio_devs = config_handle->num_of_gpio_devs;
 
-	for(i = 0; i < num_buttons ; i++)
+	for (i = 0; i < num_of_gpio_devs; i++)
 	{
 		DEV_IOCTL_1_PARAMS(
-				server_dev[i],IOCTL_GPIO_PIN_READ, &curr_button_state[i]);
+				gpio_devs_arr[i], IOCTL_GPIO_PIN_READ, &curr_gpio_state_arr[i]);
 	}
-	if(0 == memcmp(idle_state ,
-			curr_button_state,num_buttons))
+
+	idle_state_detected = 1;
+	for (i = 0; i < num_of_gpio_devs; i++)
 	{
-		queue_wait_delay=100000;
+		struct gpio_api_read_t *curr_gpio_state;
+		uint8_t values_arr_size;
+
+		curr_gpio_state = &curr_gpio_state_arr[i];
+		values_arr_size = curr_gpio_state->values_arr_size;
+		if (memcmp(curr_gpio_state->pin_bitwise_curr_values,
+				curr_gpio_state->pin_bitwise_idle_values, values_arr_size))
+		{
+			idle_state_detected = 0;
+			break;
+		}
+	}
+
+	if (idle_state_detected)
+	{
+		queue_wait_delay = 100000;
 		manager_state = BTN_STATE_IDLE;
 	}
 
@@ -262,16 +299,15 @@ uint8_t debounce_on_release(struct dev_desc_t *adev)
 }
 
 
-/*----------------------------------------------------------------------------*/
-/* Function:        button_manager_task                                       */
-/*                                                                            */
-/* Parameters:                                                                */
-/*                                                                            */
-/*                                                                            */
-/* Returns:                                                                   */
-/* Side effects:                                                              */
-/* Description:                                                               */
-/*----------------------------------------------------------------------------*/
+/*
+ * Function:        button_manager_task
+ *
+ * Parameters:
+ *
+ * Returns:
+ * Side effects:
+ * Description:
+*/
 static void button_manager_task( void *adev )
 {
 	struct button_manager_runtime_t *runtime_handle;
@@ -280,7 +316,6 @@ static void button_manager_task( void *adev )
 
 	os_queue_t xButtonQueue;
 	xMessage_t xTxMessage;
-	uint8_t    queueRetVal;
 
 	uint8_t    manager_state = BTN_STATE_IDLE;
 	uint32_t   hold_count = 0;
@@ -302,6 +337,8 @@ static void button_manager_task( void *adev )
 
 	for( ;; )
 	{
+		uint8_t    queueRetVal;
+
 		manager_state = runtime_handle->manager_state;
 		hold_count = runtime_handle->hold_count;
 		queue_wait_delay = runtime_handle->queue_wait_delay;
@@ -324,8 +361,8 @@ static void button_manager_task( void *adev )
 				break;
 			case BTN_STATE_DEBOUNCING_ON_PUSH:
 				if( OS_QUEUE_RECEIVE_SUCCESS != queueRetVal)
-				{
-					action_idx = debounce_on_push(adev);
+				{/*if no event received from queue */
+					action_idx = end_of_debounce_on_push(adev);
 				}
 				break;
 			case BTN_STATE_HOLD:
@@ -346,7 +383,7 @@ static void button_manager_task( void *adev )
 			case BTN_STATE_DEBOUNCING_ON_RELEASE:
 				if( OS_QUEUE_RECEIVE_SUCCESS != queueRetVal)
 				{
-					debounce_on_release(adev);
+					end_of_debounce_on_release(adev);
 				}
 				break;
 		}
@@ -355,85 +392,211 @@ static void button_manager_task( void *adev )
 }
 
 
-uint8_t button_manager_config_group(
+
+#define STATE_CREATING_GROUP  0
+#define STATE_ADDING_ACTIONS  1
+
+static void create_button_group(struct button_manager_config_t *config_handle,
 		struct button_manager_runtime_t *runtime_handle,
-		struct button_manager_config_t *config_handle,
-		struct buttons_manager_group_t *button_group)
+		struct buttons_manager_group_t *buttons_manager_group)
 {
-	uint8_t i;
-	uint8_t num_buttons;
-	uint16_t num_actions;
+	struct dev_desc_t **gpio_dev_arr;
+	uint8_t num_of_gpio_devs;
+	struct gpio_api_read_t *curr_gpio_state_arr;
 
-	if(NULL == button_group)
+	if (STATE_CREATING_GROUP != runtime_handle->state)
 	{
-		CRITICAL_ERROR("Need button struct, refer to button_manager_api.h");
+		CRITICAL_ERROR("can be called only when state = STATE_CREATING_GROUP");
 	}
 
-	num_buttons = button_group->num_buttons;
-	num_actions = button_group->num_actions;
-
-	config_handle->num_buttons = num_buttons;
-	config_handle->num_actions = num_actions;
-
-	//Allocate memory for storing button configurations.
-	config_handle->server_dev = (struct dev_desc_t **)malloc(
-						num_buttons * sizeof(struct dev_desc_t));
-
-	config_handle->idle_state =
-				(uint8_t *)malloc(num_buttons * sizeof(uint8_t));
-
-	runtime_handle->curr_button_state =
-				(uint8_t *)malloc(num_buttons * sizeof(uint8_t));
-
-	config_handle->btn_actions = (struct btn_action_states_t *)malloc(
-						num_actions * sizeof(struct btn_action_states_t));
-
-
-	for(i = 0; i < num_buttons ; i++)
+	num_of_gpio_devs = buttons_manager_group->gpio_dev_arr_size;
+	gpio_dev_arr = (struct dev_desc_t **)malloc(
+					num_of_gpio_devs * sizeof(struct dev_desc_t *));
+	if (NULL == gpio_dev_arr)
 	{
-		//Assign pointers to the runtime handle
-		config_handle->server_dev[i] = button_group->server_dev[i];
-
-		// Servers need this IOCTL case:
-		/*
-		 * IOCTL_ADD_ISR_CALLBACK_DEV
-		 *      IOCTL function to add this instance of button manager
-		 *      to its ISR so the server can notify the button manager
-		 *      when the specific button is pressed.
-		 *
-		 *  *Updated 8/13/18. Currently use device tree to add
-		 *      directly through IOCTL_DEVICE_START.
-		 *
-		 */
-//		DEV_IOCTL_1_PARAMS(server_dev, IOCTL_ADD_ISR_CALLBACK_DEV, (void *)adev);
+		CRITICAL_ERROR("no memory");
 	}
+	memcpy(gpio_dev_arr, buttons_manager_group->gpio_dev_arr,
+						num_of_gpio_devs * sizeof(struct dev_desc_t *));
+	config_handle->gpio_devs_arr = gpio_dev_arr;
+	config_handle->num_of_gpio_devs = num_of_gpio_devs;
 
-	// Copy the idle states of buttons into the runtime handle
-	memcpy(config_handle->idle_state, button_group->idle_state, num_buttons);
-
-	// Copy the button action array into the runtime handle
-	//    without padding, The size is based on report_config and
-	//    action_state. If there is a callback_private_data then
-	//    this needs to be changed.
-	memcpy(config_handle->btn_actions, button_group->btn_actions,
-			(num_actions * sizeof(struct btn_action_states_t)));
-
-	return 0;
+	curr_gpio_state_arr = (struct gpio_api_read_t *)malloc(
+					num_of_gpio_devs * sizeof(struct gpio_api_read_t));
+	if (NULL == curr_gpio_state_arr)
+	{
+		CRITICAL_ERROR("no memory");
+	}
+	runtime_handle->curr_gpio_state_arr = curr_gpio_state_arr;
 }
 
 
-/*---------------------------------------------------------------------------*/
-/* Function:        button_manager_ioctl                                     */
-/*                                                                           */
-/* Parameters:                                                               */
-/*                                                                           */
-/*                                                                           */
-/* Returns:                                                                  */
-/* Side effects:                                                             */
-/* Description:                                                              */
-/*---------------------------------------------------------------------------*/
-uint8_t button_manager_ioctl(struct dev_desc_t *adev ,const uint8_t aIoctl_num
-		, void * aIoctl_param1 , void * aIoctl_param2)
+static button_manager_action_handle_t
+	add_new_action(struct button_manager_config_t *config_handle,
+					struct button_manager_runtime_t *runtime_handle,
+					struct btn_add_action_t *btn_add_action)
+{
+	struct btn_action_t   *btn_actions_arr;
+	struct btn_action_t   *new_btn_action;
+	uint32_t               num_of_actions;
+
+	runtime_handle->state = STATE_ADDING_ACTIONS;
+	btn_actions_arr = config_handle->btn_actions_arr;
+	num_of_actions = config_handle->num_of_actions;
+
+	if (0xffffffff == num_of_actions)
+	{
+		CRITICAL_ERROR("too many actions");
+	}
+	num_of_actions++;
+	btn_actions_arr = (struct btn_action_t *)realloc(btn_actions_arr,
+			 num_of_actions * sizeof(struct btn_action_t));
+	if (NULL == btn_actions_arr)
+	{
+		CRITICAL_ERROR("no memory");
+	}
+	config_handle->num_of_actions = num_of_actions;
+	new_btn_action = &btn_actions_arr[num_of_actions - 1];
+	new_btn_action->report_config = btn_add_action->report_config;
+	new_btn_action->callback_private_data =
+							btn_add_action->callback_private_data;
+	new_btn_action->req_gpio_values_arr = NULL;
+	config_handle->btn_actions_arr = btn_actions_arr;
+
+	return (button_manager_action_handle_t)new_btn_action;
+}
+
+
+static void fill_gpio_state(
+		struct set_gpio_states_for_action_t *set_gpio_states,
+		struct dev_desc_t *gpio_dev,
+		uint8_t   *pin_bitwise_requested_values_arr)
+{
+	struct  gpio_state_for_action_t   *gpio_state_arr;
+	struct  gpio_state_for_action_t   *gpio_state;
+	uint8_t  pin_numbers_arr_size;
+	uint16_t  i;
+	uint16_t  j;
+	int16_t  max_pin;
+
+	gpio_state_arr = set_gpio_states->gpio_state_arr;
+	max_pin = -1;
+	for (i = 0; i < set_gpio_states->gpio_state_arr_size; i++)
+	{
+		gpio_state = &gpio_state_arr[i];
+		if (gpio_dev == gpio_state->gpio_dev)
+		{
+			uint8_t  pin_num;
+
+			pin_numbers_arr_size = gpio_state->pin_numbers_arr_size;
+			if ( MAX_NUMBER_OF_ALLOWED_ACTIVE_PINS < pin_numbers_arr_size)
+			{
+				CRITICAL_ERROR("to many active gpio");
+			}
+			for (j = 0; j < pin_numbers_arr_size; j++)
+			{
+				uint8_t byte_num;
+				uint8_t pin_offset_in_byte;
+
+				pin_num = gpio_state->pin_numbers_arr[j];
+				if (max_pin < pin_num)
+				{
+					max_pin = pin_num;
+				}
+				else
+				{
+					/* to prevent from user to put bigger pin_numbers_arr_size
+					 * the pins should be in ascending order. then uninitialized
+					 * pins will be assigned 0, and then this error will happen
+					 */
+					CRITICAL_ERROR("pin was already configured");
+				}
+				byte_num = pin_num / 8;
+				pin_offset_in_byte = pin_num % 8;
+				// change state of bit 0->1  or 1->0 by XOR
+				pin_bitwise_requested_values_arr[byte_num] ^=
+												(1 << pin_offset_in_byte);
+			}
+			for (j = pin_numbers_arr_size;
+					j < MAX_NUMBER_OF_ALLOWED_ACTIVE_PINS; j++)
+			{
+				pin_num = gpio_state->pin_numbers_arr[j];
+				if (0 != pin_num)
+				{
+					/* to prevent from user to put small pin_numbers_arr_size */
+					CRITICAL_ERROR("pin_numbers_arr_size > defined pins");
+				}
+			}
+		}
+	}
+}
+
+
+static void set_gpio_states_for_action(
+		struct button_manager_config_t *config_handle,
+		struct button_manager_runtime_t *runtime_handle,
+		struct set_gpio_states_for_action_t *set_gpio_states)
+{
+	struct dev_desc_t **gpio_dev_arr;
+	uint8_t num_of_gpio_devs;
+	uint16_t  i;
+	struct btn_action_t   *btn_action;
+	struct   button_manager_requested_gpio_values_t *req_gpio_values;
+	struct   button_manager_requested_gpio_values_t *req_gpio_values_arr;
+	struct   gpio_api_read_t gpio_read_data;
+	uint8_t  values_arr_size;
+	uint8_t   *pin_bitwise_requested_values_arr;
+
+	if (STATE_ADDING_ACTIONS != runtime_handle->state)
+	{
+		CRITICAL_ERROR("can be called only when state = STATE_ADDING_ACTIONS");
+	}
+
+	btn_action = (struct btn_action_t *)set_gpio_states->action_handle;
+	num_of_gpio_devs = config_handle->num_of_gpio_devs;
+	req_gpio_values_arr =
+			(struct   button_manager_requested_gpio_values_t *) malloc(
+					num_of_gpio_devs *
+					sizeof(struct button_manager_requested_gpio_values_t));
+	if (NULL == req_gpio_values_arr)
+	{
+		CRITICAL_ERROR("no memory");
+	}
+	btn_action->req_gpio_values_arr = req_gpio_values_arr;
+	gpio_dev_arr = config_handle->gpio_devs_arr;
+	for (i = 0; i < num_of_gpio_devs; i++)
+	{
+		DEV_IOCTL_1_PARAMS(gpio_dev_arr[i],
+							IOCTL_GPIO_PIN_READ, &gpio_read_data);
+		values_arr_size = gpio_read_data.values_arr_size;
+		pin_bitwise_requested_values_arr = (uint8_t *)malloc(values_arr_size);
+		if (NULL == pin_bitwise_requested_values_arr)
+		{
+			CRITICAL_ERROR("no memory");
+		}
+		req_gpio_values = &req_gpio_values_arr[i];
+		req_gpio_values->values_arr_size = values_arr_size;
+		memcpy(pin_bitwise_requested_values_arr,
+				gpio_read_data.pin_bitwise_idle_values, values_arr_size);
+		fill_gpio_state(set_gpio_states, gpio_dev_arr[i],
+								pin_bitwise_requested_values_arr);
+		req_gpio_values->pin_bitwise_requested_values_arr =
+									pin_bitwise_requested_values_arr;
+	}
+}
+
+
+/*
+ * Function:        button_manager_ioctl
+ *
+ * Parameters:
+ *
+ * Returns:gpio_dev
+ * Side effects:
+ * Description:
+ */
+uint8_t button_manager_ioctl(struct dev_desc_t *adev, const uint8_t aIoctl_num,
+		void * aIoctl_param1, void * aIoctl_param2)
 {
 	struct button_manager_runtime_t *runtime_handle;
 	struct button_manager_config_t *config_handle;
@@ -444,18 +607,26 @@ uint8_t button_manager_ioctl(struct dev_desc_t *adev ,const uint8_t aIoctl_num
 
 	switch(aIoctl_num)
 	{
-		case IOCTL_BUTTON_MANAGER_CONFIG_GROUP :
-			button_manager_config_group(runtime_handle, config_handle,
-						(struct buttons_manager_group_t *)aIoctl_param1);
+	case IOCTL_BUTTON_MANAGER_CREATE_BUTTON_GROUP:
+		create_button_group(config_handle, runtime_handle, aIoctl_param1);
+		break;
 
-			break;
+	case IOCTL_BUTTON_MANAGER_ADD_ACTION:
+		*(button_manager_action_handle_t *)aIoctl_param1 =
+				add_new_action(config_handle, runtime_handle, aIoctl_param2);
+		break;
 
-		case IOCTL_DEVICE_START :
-			os_create_task("button_manager_task", button_manager_task ,
-					(void *)adev , BUTTON_MANAGER_CONFIG_TASK_STACK_SIZE ,
-					BUTTON_MANAGER_CONFIG_TASK_PRIORITY);
+	case IOCTL_BUTTON_MANAGER_SET_GPIO_STATES_FOR_ACTION:
+		set_gpio_states_for_action(
+				config_handle, runtime_handle, aIoctl_param1);
+		break;
 
-			break;
+	case IOCTL_DEVICE_START :
+		os_create_task("button_manager_task", button_manager_task ,
+				(void *)adev , BUTTON_MANAGER_CONFIG_TASK_STACK_SIZE ,
+				BUTTON_MANAGER_CONFIG_TASK_PRIORITY);
+
+		break;
 
 		default :
 			return 1;

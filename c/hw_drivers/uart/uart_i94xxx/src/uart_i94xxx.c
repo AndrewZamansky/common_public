@@ -26,6 +26,17 @@
 #define DEBUG
 #include "PRINTF_api.h"
 
+
+#if !defined(INTERRUPT_PRIORITY_FOR_UART)
+	#error "INTERRUPT_PRIORITY_FOR_UART should be defined"
+#endif
+
+#if CHECK_INTERRUPT_PRIO_FOR_OS_SYSCALLS(INTERRUPT_PRIORITY_FOR_UART)
+	#error "priority should be lower then maximal priority for os syscalls"
+#endif
+
+
+
 /********  defines *********************/
 
 
@@ -58,18 +69,20 @@ static void dbg_print(uint8_t const *data, size_t len)
 		{
 			char dbg_str[] = "0x00 ";
 			snprintf(dbg_str, sizeof(dbg_str), "0x%02x ", *data);
-			PRINT_DATA_DBG(dbg_str, sizeof(dbg_str) - 1);
+			PRINT_DATA_DBG_ISR(dbg_str, sizeof(dbg_str) - 1);
 			data++;
 		}
 	#else
-		PRINT_DATA_DBG( data, len);
+		PRINT_DATA_DBG_ISR( data, len);
 	#endif
 }
 #endif
 
-#define		UART_I94XXX_RCV_DATA_SIZE_BUFFER	32
-uint8_t	rcv_data[UART_I94XXX_RCV_DATA_SIZE_BUFFER];
-size_t send_data_len;
+#define   UART_I94XXX_RCV_DATA_SIZE_BUFFER  32
+uint8_t  rcv_data[UART_I94XXX_RCV_DATA_SIZE_BUFFER];
+size_t   send_data_len;
+
+uint32_t  uart_i94xxx_rx_fifo_overflow_cnt = 0;
 
 uint8_t uart_i94xxx_callback(struct dev_desc_t *adev ,
 		uint8_t aCallback_num , void * aCallback_param1,
@@ -89,6 +102,13 @@ uint8_t uart_i94xxx_callback(struct dev_desc_t *adev ,
 	rcv_data_len = 0;
 
 	callback_rx_dev = cfg_hndl->callback_rx_dev;
+
+	if (uart_regs->FIFOSTS & UART_FIFOSTS_RXOVIF_Msk)
+	{
+		//CRITICAL_ERROR("uart rx FIFO was overflowed");
+		uart_i94xxx_rx_fifo_overflow_cnt++;
+		uart_regs->FIFOSTS = UART_FIFOSTS_RXOVIF_Msk;
+	}
 	while (0 == UART_GET_RX_EMPTY(uart_regs))
 	{
 		rcv_data[rcv_data_len] = UART_READ(uart_regs);
@@ -96,25 +116,27 @@ uint8_t uart_i94xxx_callback(struct dev_desc_t *adev ,
 		if ( (UART_I94XXX_RCV_DATA_SIZE_BUFFER == rcv_data_len) &&
 				(NULL != callback_rx_dev))
 		{
+#ifdef DEBUG_UART
+			dbg_print(rcv_data, rcv_data_len);
+			if (0 != _do_uart_dbg_print)
+			{
+				PRINT_DATA_DBG_ISR("|e.rcv0|\n", sizeof("|e.rcv0|\n") - 1);
+			}
+#endif
 			DEV_CALLBACK_2_PARAMS(callback_rx_dev,
 					CALLBACK_DATA_RECEIVED,  rcv_data,  rcv_data_len);
 			rcv_data_len = 0;// start getting data again
 		}
 	}
+
+
 	if ( rcv_data_len && (NULL != callback_rx_dev))
 	{
 #ifdef DEBUG_UART
-		if (0 == rcv_data_len)
-		{
-			PRINT_DATA_DBG("-X0X-", sizeof("-X0X-") - 1);
-		}
-		else
-		{
-			dbg_print(rcv_data, rcv_data_len);
-		}
+		dbg_print(rcv_data, rcv_data_len);
 		if (0 != _do_uart_dbg_print)
 		{
-			PRINT_DATA_DBG("|e.rcv|\n", sizeof("|e.rcv|\n") - 1);
+		//	PRINT_DATA_DBG_ISR("|e.rcv1|\n", sizeof("|e.rcv1|\n") - 1);
 		}
 #endif
 		DEV_CALLBACK_2_PARAMS(callback_rx_dev,
@@ -175,9 +197,9 @@ size_t uart_i94xxx_pwrite(struct dev_desc_t *adev,
 	{
 		char uart_send_end_dbg_str[] = "uart send_data_len = 00000\n";
 		snprintf(uart_send_end_dbg_str, sizeof(uart_send_end_dbg_str),
-				"uart send_data_len = %05lu\n", send_data_len);
-		PRINT_DATA_DBG(start_of_data, send_data_len);
-		PRINT_DATA_DBG(uart_send_end_dbg_str, sizeof(uart_send_end_dbg_str)- 1);
+				"uart send_data_len = %05u\n", (uint32_t)send_data_len);
+		PRINT_DATA_DBG_ISR(start_of_data, send_data_len);
+		PRINT_DATA_DBG_ISR(uart_send_end_dbg_str, sizeof(uart_send_end_dbg_str)- 1);
 	}
 #endif
 
@@ -198,8 +220,8 @@ uint8_t uart_i94xxx_ioctl( struct dev_desc_t *adev, uint8_t aIoctl_num,
 	UART_T *uart_regs;
 	int uart_irq;
 	uint32_t uart_module_rst;
-	struct dev_desc_t	*src_clock;
-	struct dev_desc_t	*uart_clk_dev;
+	struct dev_desc_t  *src_clock;
+	struct dev_desc_t  *uart_clk_dev;
 
 	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
 	uart_regs = (UART_T *)UART0_BASE;
@@ -212,7 +234,7 @@ uint8_t uart_i94xxx_ioctl( struct dev_desc_t *adev, uint8_t aIoctl_num,
 		break;
 	case IOCTL_DEVICE_START :
 		uart_irq = UART0_IRQn;
-		uart_module_rst = UART0_MODULE;
+		uart_module_rst = UART0_RST;
 		uart_clk_dev = i94xxx_uart0clk_clk_dev;
 		//uart_clk_src = CLK_UART0_SRC_EXT;
 		/*
@@ -252,7 +274,7 @@ uint8_t uart_i94xxx_ioctl( struct dev_desc_t *adev, uint8_t aIoctl_num,
 				(UART_INTEN_RDAIEN_Msk  | UART_INTEN_RXTOIEN_Msk));
 
 		irq_register_device_on_interrupt(uart_irq, adev);
-		irq_set_priority(uart_irq, INTERRUPT_LOWEST_PRIORITY - 1 );
+		irq_set_priority(uart_irq, INTERRUPT_PRIORITY_FOR_UART );
 		irq_enable_interrupt(uart_irq);
 		break;
 

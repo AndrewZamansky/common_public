@@ -62,6 +62,14 @@ extern "C" {
 #define STATIC_DEVICE_INST2(pdev)       inst_##pdev
 #define P_TO_STATIC_DEVICE_INST(pdev)   &STATIC_DEVICE_INST(pdev)
 
+#define _DT_ARRAY_NAME3(arr_name, pdev)  arr_name##_##pdev
+#define _DT_ARRAY_NAME2(arr_name, pdev)  _DT_ARRAY_NAME3(arr_name, pdev)
+#define DT_ARRAY_NAME(arr_name)  _DT_ARRAY_NAME2(arr_name, DT_DEV_NAME)
+#define DECLARE_DT_UINT8_ARRAY(arr_name, arr_values)  \
+		DEVICE_PLACEMENT uint8_t   DT_ARRAY_NAME(arr_name)[] = arr_values;
+
+#define DT_UINT8_ARRAY_SIZE(arr_name)  \
+					sizeof(DT_ARRAY_NAME(pins_arr))/sizeof(uint8_t)
 struct dev_desc_t;
 
 typedef enum

@@ -19,7 +19,7 @@ typedef enum
 
 struct multiplier_api_set_params_t
 {
-	float weight;
+	float weight_db;
 };
 
 

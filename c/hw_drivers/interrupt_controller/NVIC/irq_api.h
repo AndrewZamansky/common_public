@@ -5,7 +5,15 @@
 
 #include "cpu_config.h"
 #include "dev_management_api.h"
+#include "_project_interrupt_priorities.h"
 
+
+#if !defined(MAX_INTERRUPT_PRIO_FOR_OS_SYSCALLS)
+	#error "MAX_INTERRUPT_PRIO_FOR_OS_SYSCALLS should be defined "
+#endif
+
+#define CHECK_INTERRUPT_PRIO_FOR_OS_SYSCALLS(l)    \
+						(MAX_INTERRUPT_PRIO_FOR_OS_SYSCALLS > l)
 
 
 typedef void (*isr_t)(void)  ;

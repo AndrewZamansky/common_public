@@ -21,14 +21,12 @@
 int do_get_version (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 	struct dev_desc_t * dev;
-	uint8_t ret_buff[MAX_RET_BUFF_SIZE+1];
+	uint8_t ret_buff[MAX_RET_BUFF_SIZE + 1];
 
 	dev = DEV_OPEN("ver_dev");
-	DEV_READ(dev,ret_buff,MAX_RET_BUFF_SIZE);
-	SHELL_REPLY_STR(ret_buff);
+	DEV_READ(dev, ret_buff, MAX_RET_BUFF_SIZE);
+	SHELL_REPLY_STR((char*)ret_buff);
 	SHELL_REPLY_STR("\r\n");
-
-
 	return 0;
 }
 

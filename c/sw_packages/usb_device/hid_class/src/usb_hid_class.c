@@ -233,7 +233,7 @@ static void hid_class_in_request( struct dev_desc_t *usb_hw, uint8_t *request)
 	else
 	{
 		/* Setup error, stall the device */
-		DEV_IOCTL_0_PARAMS(usb_hw, IOCTL_USB_DEVICE_SET_SATLL);
+		DEV_IOCTL_0_PARAMS(usb_hw, IOCTL_USB_DEVICE_SET_STALL);
 	}
 }
 
@@ -274,7 +274,7 @@ static void hid_class_out_request( struct dev_desc_t *usb_hw, uint8_t *request)
 	else
 	{
 		/* Setup error, stall the device */
-		DEV_IOCTL_0_PARAMS(usb_hw, IOCTL_USB_DEVICE_SET_SATLL);
+		DEV_IOCTL_0_PARAMS(usb_hw, IOCTL_USB_DEVICE_SET_STALL);
 	}
 }
 
@@ -307,6 +307,7 @@ static void configure_endpoints(struct dev_desc_t *adev,
 	usb_dev_in_endpoint_callback_func_t   in_func_arr[2];
 	uint8_t   endpoints_num_arr[2];
 	usb_dev_out_endpoint_callback_func_t   out_func_arr[2];
+	usb_dev_endpoint_request_callback_func_t  endpoint_request_callback_func[2];
 	uint8_t    endpoints_type_arr[2];
 	uint16_t   max_pckt_sizes[2];
 	uint8_t in_endpoint_num;
@@ -318,12 +319,16 @@ static void configure_endpoints(struct dev_desc_t *adev,
 
 	set_endpoints.num_of_endpoints = 2;
 	set_endpoints.endpoints_num_arr = endpoints_num_arr;
+	endpoint_request_callback_func[0] = NULL;
+	endpoint_request_callback_func[1] = NULL;
 	out_func_arr[0] = NULL;
 	out_func_arr[1] = new_data_received;
 	in_func_arr[0] = end_of_transmit_callback;
 	in_func_arr[1] = NULL;
 	set_endpoints.out_func_arr = out_func_arr;
 	set_endpoints.in_func_arr = in_func_arr;
+	set_endpoints.endpoint_request_callback_func =
+							endpoint_request_callback_func;
 	set_endpoints.callback_dev = adev;
 	max_pckt_sizes[0] = IN_MAX_PKT_SIZE;
 	max_pckt_sizes[1] = OUT_MAX_PKT_SIZE;

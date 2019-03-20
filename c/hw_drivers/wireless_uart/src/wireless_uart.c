@@ -2,10 +2,6 @@
  *
  * file :   wireless_uart.c
  *
- *
- *
- *
- *
  */
 
 
@@ -93,7 +89,7 @@ uint8_t wireless_uart_callback(struct dev_desc_t *adev ,const uint8_t aCallback_
 
 //	queueMsg.dev_descriptor = (struct dev_desc_t *)aCallback_param1;
 
-	os_queue_send_immediate( xQueue, ( void * ) &queueMsg);
+	os_queue_send_without_wait( xQueue, ( void * ) &queueMsg);
 
 	return 0;
 }
@@ -181,7 +177,7 @@ static void wireless_uart_task( void *aHandle )
 			{
 				if('*' !=pBufferStart[curr_buff_pos])
 				{
-					while ( '*' !=pBufferStart[curr_buff_pos] && curr_buff_pos < total_length)
+					while ( (curr_buff_pos < total_length) && ('*' != pBufferStart[curr_buff_pos]))
 					{
 						curr_buff_pos++;
 					}
@@ -189,7 +185,7 @@ static void wireless_uart_task( void *aHandle )
 				else
 				{
 					cnt=0;
-					while ( '*' == pBufferStart[curr_buff_pos] && curr_buff_pos < total_length)
+					while ( (curr_buff_pos < total_length) && ('*' != pBufferStart[curr_buff_pos]))
 					{
 						cnt++;
 						curr_buff_pos++;

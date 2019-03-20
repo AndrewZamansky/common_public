@@ -1,0 +1,21 @@
+
+INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_PCM_MIXER)
+ 
+
+
+#DEFINES = 
+
+#CFLAGS = 
+
+#ASMFLAGS =  
+
+SRC = pcm_mixer.cpp
+
+ifdef CONFIG_DSP_IS_SPEED_CRITICAL
+    SPEED_CRITICAL_FILES += pcm_mixer.cpp
+endif
+
+VPATH = src
+
+
+include $(COMMON_CC)

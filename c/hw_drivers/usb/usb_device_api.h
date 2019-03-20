@@ -17,6 +17,9 @@ typedef void (*usb_dev_in_endpoint_callback_func_t)(
 typedef void (*usb_dev_interface_request_callback_func_t)(
 					struct dev_desc_t   *callback_dev, uint8_t *request);
 
+typedef void (*usb_dev_endpoint_request_callback_func_t)(
+					struct dev_desc_t   *callback_dev, uint8_t *request);
+
 
 typedef enum
 {
@@ -26,7 +29,7 @@ typedef enum
 	IOCTL_USB_DEVICE_REGISTER_INTERFACES,
 	IOCTL_USB_DEVICE_SET_REQUEST_IN_BUFFER,
 	IOCTL_USB_DEVICE_SET_REQUEST_OUT_BUFFER,
-	IOCTL_USB_DEVICE_SET_SATLL,
+	IOCTL_USB_DEVICE_SET_STALL,
 	IOCTL_USB_DEVICE_SENT_DATA_TO_IN_ENDPOINT
 } USB_DEVICE_COMMON_API_IOCTL_T;
 
@@ -46,6 +49,7 @@ struct set_endpoints_t {
 	uint8_t   *endpoints_num_arr;
 	usb_dev_out_endpoint_callback_func_t   *out_func_arr;
 	usb_dev_in_endpoint_callback_func_t   *in_func_arr;
+	usb_dev_endpoint_request_callback_func_t   *endpoint_request_callback_func;
 	struct dev_desc_t   *callback_dev;
 	uint16_t   *max_pckt_sizes;
 	uint8_t    *endpoints_type_arr;

@@ -24,6 +24,16 @@
 #include "sw_uart_wrapper_api.h"
 #include "uart_api.h"
 
+
+#if !defined(INTERRUPT_PRIORITY_FOR_UART)
+	#error "INTERRUPT_PRIORITY_FOR_UART should be defined"
+#endif
+
+#if CHECK_INTERRUPT_PRIO_FOR_OS_SYSCALLS(INTERRUPT_PRIORITY_FOR_UART)
+	#error "priority should be lower then maximal priority for os syscalls"
+#endif
+
+
 /********  defines *********************/
 
 
@@ -202,7 +212,7 @@ inline uint8_t UART_STM32F10x_Init(UART_STM32F103x_Instance_t *apHandle)
 	USART_ClockInit(USARTx, &USART_ClockInitStructure);
 
 	irq_register_interrupt(int_num , pIsr);
-	irq_set_priority(int_num , INTERRUPT_LOWEST_PRIORITY - 2 );
+	irq_set_priority(int_num , INTERRUPT_PRIORITY_FOR_UART );
 	irq_enable_interrupt(int_num);
 
 	USART_ITConfig( USARTx, USART_IT_RXNE, ENABLE );

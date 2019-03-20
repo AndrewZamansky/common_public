@@ -1,9 +1,6 @@
 /*
  *
- * uart_stm32f10x.c
- *
- *
- *
+ * uart_stm8.c
  *
  *
  */
@@ -11,7 +8,6 @@
 /********  includes *********************/
 
 #include "uart_api.h"
-#include "src/_uart_stm8_prerequirements_check.h"
 
 #include "uart_stm8.h"
 
@@ -43,18 +39,19 @@ static uart_stm8_instance_t *pHw_uart_pointer_to_instance=NULL;
 
 void tx_function(void)
 {
-    /* In order to detect unexpected events during development,
-   it is recommended to set a breakpoint on the following instruction.
-*/
-    struct dev_desc_t *   callback_tx_dev;
+	/* In order to detect unexpected events during development,
+   	   it is recommended to set a breakpoint on the following instruction.
+	 */
 
-    if (UART1_GetFlagStatus(UART1_FLAG_TXE) == SET)
-    {
-    	callback_tx_dev = pHw_uart_pointer_to_instance->callback_tx_dev ;
-    	if(NULL != callback_tx_dev)
-    		DEV_CALLBACK_1_PARAMS(callback_tx_dev , CALLBACK_TX_DONE, 1);
-    }
-
+	if (UART1_GetFlagStatus(UART1_FLAG_TXE) == SET)
+	{
+		struct dev_desc_t *   callback_tx_dev;
+		callback_tx_dev = pHw_uart_pointer_to_instance->callback_tx_dev ;
+		if(NULL != callback_tx_dev)
+		{
+			DEV_CALLBACK_1_PARAMS(callback_tx_dev , CALLBACK_TX_DONE, 1);
+		}
+	}
 }
 
 //struct dev_desc_t *   stm8_callback_dev;
@@ -85,25 +82,23 @@ INTERRUPT_HANDLER(UART1_TX_IRQHandler, 17)
 
 void rx_function(void)
 {
-    /* In order to detect unexpected events during development,
-   it is recommended to set a breakpoint on the following instruction.
-*/
-    uint8_t cChar;
-    struct dev_desc_t *   callback_rx_dev;
+	/* In order to detect unexpected events during development,
+	*it is recommended to set a breakpoint on the following instruction.
+	 */
 
-    if (UART1_GetFlagStatus(UART1_FLAG_RXNE) == SET)
-    {
+	if (UART1_GetFlagStatus(UART1_FLAG_RXNE) == SET)
+	{
+		struct dev_desc_t *   callback_rx_dev;
+		uint8_t cChar;
+
 		cChar = UART1_ReceiveData8();
 		callback_rx_dev = pHw_uart_pointer_to_instance->callback_rx_dev;
 		if (NULL == callback_rx_dev)  return ;
 
-
 		DEV_CALLBACK_2_PARAMS( callback_rx_dev ,
 				CALLBACK_DATA_RECEIVED,  &cChar,  1);
 
-    }
-
-
+	}
 }
 
 
@@ -119,43 +114,31 @@ void rx_function(void)
 	 rx_function();
 
 	 arch_exit_interrupt(FALSE);
-
-
  }
 
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        uart_stm8_pwrite                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
- size_t uart_stm8_pwrite(const void *aHandle ,const uint8_t *apData , size_t aLength, size_t aOffset)
+/*------------------------------------------------------------------------
+ * Function:        uart_stm8_pwrite
+ * Parameters:
+ * Returns:
+ *------------------------------------------------------------------------
+ */
+ size_t uart_stm8_pwrite(const void *aHandle,
+		 const uint8_t *apData , size_t aLength, size_t aOffset)
 {
 	UART1_SendData8(*apData);
-    UART1_ITConfig( UART1_IT_TXE, ENABLE );
+	UART1_ITConfig( UART1_IT_TXE, ENABLE );
 
 	return 1;
-
 }
 
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        uart_stm8_ioctl                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------
+ * Function:        uart_stm8_ioctl
+ * Parameters:
+ * Returns:
+ *----------------------------------------------------------------------
+ */
 uint8_t uart_stm8_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
@@ -168,19 +151,20 @@ uint8_t uart_stm8_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 			config_handle->baud_rate = *(uint32_t*)aIoctl_param1;
 			break;
 		case IOCTL_DEVICE_START :
-			  UART1_DeInit();
-			  UART1_Init (config_handle->baud_rate, UART1_WORDLENGTH_8D, UART1_STOPBITS_1, UART1_PARITY_NO,
-			              UART1_SYNCMODE_CLOCK_DISABLE, UART1_MODE_TXRX_ENABLE);
-			  pHw_uart_pointer_to_instance = config_handle;
-			  GPIO_Init(GPIOD,GPIO_PIN_6,GPIO_MODE_IN_PU_NO_IT);
-			  UART1_ITConfig( UART1_IT_RXNE, ENABLE );
+			UART1_DeInit();
+			UART1_Init (config_handle->baud_rate, UART1_WORDLENGTH_8D,
+					UART1_STOPBITS_1, UART1_PARITY_NO,
+					UART1_SYNCMODE_CLOCK_DISABLE, UART1_MODE_TXRX_ENABLE);
+			pHw_uart_pointer_to_instance = config_handle;
+			GPIO_Init(GPIOD,GPIO_PIN_6,GPIO_MODE_IN_PU_NO_IT);
+			UART1_ITConfig( UART1_IT_RXNE, ENABLE );
 			break;
 		case IOCTL_UART_DISABLE_TX :
 			UART1_ITConfig( UART1_IT_TXE, DISABLE );
 			break;
 		case IOCTL_UART_ENABLE_TX :
-		    //UART1_ITConfig( UART1_IT_TXE, ENABLE );
-		    break;
+			//UART1_ITConfig( UART1_IT_TXE, ENABLE );
+			break;
 #ifdef CONFIG_USE_RUNTIME_DEVICE_CONFIGURATION
 		case IOCTL_SET_ISR_CALLBACK_DEV:
 			stm8_callback_dev =(struct dev_desc_t *) aIoctl_param1;
@@ -226,8 +210,8 @@ char putchar (char c)
  */
 int putchar (char c)
 {
-    uart_putchar(c);
-    return (1);
+	uart_putchar(c);
+	return (1);
 }
 #endif /* __RCSTM8__ */
 
@@ -247,28 +231,28 @@ int putchar (char c)
  */
 size_t __write(int handle, const unsigned char *buf, size_t bufSize)
 {
-    size_t chars_written = 0;
+	size_t chars_written = 0;
 
-    /* Ignore flushes */
-    if (handle == -1)
-    {
-      chars_written = (size_t)0;
-    }
-    /* Only allow stdout/stderr output */
-    else if ((handle != 1) && (handle != 2))
-    {
-      chars_written = (size_t)-1;
-    }
-    /* Parameters OK, call the low-level character output routine */
-    else
-    {
-        while (chars_written < bufSize)
-        {
-            uart_putchar (buf[chars_written]);
-            chars_written++;
-        }
-    }
+	/* Ignore flushes */
+	if (handle == -1)
+	{
+		chars_written = (size_t)0;
+	}
+	/* Only allow stdout/stderr output */
+	else if ((handle != 1) && (handle != 2))
+	{
+		chars_written = (size_t)-1;
+	}
+	/* Parameters OK, call the low-level character output routine */
+	else
+	{
+		while (chars_written < bufSize)
+		{
+			uart_putchar (buf[chars_written]);
+			chars_written++;
+		}
+	}
 
-    return (chars_written);
+	return (chars_written);
 }
 #endif /* __IAR_SYSTEMS_ICC__ */

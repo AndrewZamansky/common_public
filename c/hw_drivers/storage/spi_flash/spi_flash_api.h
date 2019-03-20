@@ -2,7 +2,6 @@
 #ifndef _SPI_FLASH_API_H_
 #define _SPI_FLASH_API_H_
 
-#include "src/_spi_flash_prerequirements_check.h"
 
 /*****************  defines  **************/
 

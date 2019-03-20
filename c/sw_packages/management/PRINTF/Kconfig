@@ -1,6 +1,6 @@
 #
 	
-
+# can be used for release compilations
 config DISABLE_DBG_PRINTS
 	bool   "disable debug prints"
 	depends on INCLUDE_PRINTF
@@ -8,4 +8,9 @@ config DISABLE_DBG_PRINTS
 
 config USE_MINIMAL_PRINTF
 	bool   "use only minimal capabilities"
-	default n	
+	default n
+
+config DBG_BUF_SHIFT
+	int   "debug buffer size : size = 1 << (2 + DBG_BUF_SHIFT)"
+	depends on !DISABLE_DBG_PRINTS && !USE_MINIMAL_PRINTF
+	default 8

@@ -17,13 +17,17 @@ struct gpio_i94xxx_config_t
 {
 	struct dev_desc_t *client_dev;
 	uint32_t    port_num;
-	uint32_t    pin_num;
-	uint16_t    pin_num_mask;
+	uint8_t     pin_arr_size;
+	uint8_t     *pin_arr;
+	uint8_t     *pin_arr_idle_state;
 	uint8_t     mode;
 };
 
-//struct gpio_i94xxx_runtime_t
-//{
-//};
+struct gpio_i94xxx_runtime_t
+{
+	uint8_t  pin_mask;
+	uint8_t  pin_bitwise_curr_values[2];
+	uint8_t  pin_bitwise_idle_values[2];
+};
 
 #endif

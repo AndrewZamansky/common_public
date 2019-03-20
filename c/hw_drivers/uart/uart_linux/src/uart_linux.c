@@ -106,7 +106,7 @@ size_t uart_linux_pwrite(struct dev_desc_t *adev,
 	{
 		char uart_send_end_dbg_str[] = "uart_linux send written_size = 00000\n";
 		snprintf(uart_send_end_dbg_str, sizeof(uart_send_end_dbg_str),
-				"uart_linux send written_size = %05lu\n", written_size);
+				"uart_linux send written_size = %05u\n", (uint32_t)written_size);
 		write(1, uart_send_end_dbg_str, sizeof(uart_send_end_dbg_str) - 1);
 	}
 #endif
@@ -124,7 +124,6 @@ static void *receive_thread(void *adev)
 {
 	struct uart_linux_cfg_t *cfg_hndl;
 	struct uart_linux_runtime_t *runtime_handle;
-	int curr_read_num;
 	char rd_buf[READ_BUFF_LEN + 1];
 	int tty_fd;
 	struct dev_desc_t * callback_rx_dev ;
@@ -136,6 +135,8 @@ static void *receive_thread(void *adev)
 	tty_fd = runtime_handle->tty_fd;
 	while (1)
 	{
+		int curr_read_num;
+
 		curr_read_num = read (tty_fd, rd_buf, READ_BUFF_LEN);
 		if (0 > curr_read_num)
 		{
@@ -213,7 +214,6 @@ static void uart_start(struct dev_desc_t *adev,
 	struct termios tty;
 	char *portname;
 	int tty_fd;
-	int parity;
 	int err;
 
 	if (ALREADY_INITIALIZED == runtime_handle->initialized)
@@ -227,7 +227,6 @@ static void uart_start(struct dev_desc_t *adev,
 
 	memset (&tty, 0, sizeof tty);
 
-	parity = 0;
 	portname = cfg_hndl->tty_dev_path;
 
 	tty_fd = open (portname, O_RDWR | O_NOCTTY | O_SYNC);

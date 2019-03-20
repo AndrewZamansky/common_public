@@ -31,20 +31,11 @@ uint32_t CyclesPerUs      = (__HSI / 1000000);  /*!< Cycles per micro second */
 
 /********  types  *********************/
 
-typedef uint32_t (*clock_get_func_t)(void )  ;
-typedef uint8_t (*clock_set_func_t)(uint32_t )  ;
-
-typedef struct
-{
-	clock_set_func_t clock_set_func;
-	clock_get_func_t clock_get_func;
-}clocks_nuc505_t;
 
 /********  externals *********************/
 
 
 /********  local variables *********************/
-static clocks_nuc505_t clocks_array[];
 
 
 static uint32_t gau32ClkSrcTbl[] = {__HXT, 0};/*!< System clock source table */
@@ -55,31 +46,31 @@ static uint32_t gau32ClkSrcTbl[] = {__HXT, 0};/*!< System clock source table */
 void SystemCoreClockUpdate (void)            /* Get Core Clock Frequency      */
 {
 
-    uint32_t u32Freq, u32ClkSrc;
-    uint32_t u32HclkDiv;
+	uint32_t u32Freq, u32ClkSrc;
+	uint32_t u32HclkDiv;
 
-    u32ClkSrc = CLK->CLKDIV0 & CLK_CLKDIV0_HCLKSEL_Msk;
+	u32ClkSrc = CLK->CLKDIV0 & CLK_CLKDIV0_HCLKSEL_Msk;
 
-    if(u32ClkSrc != CLK_CLKDIV0_HCLKSEL_Msk) {
-        /* Use the clock sources directly */
-        u32Freq = gau32ClkSrcTbl[u32ClkSrc];
-    } else {
-        /* Use PLL clock */
-        u32Freq = CLK_GetPLLClockFreq();
-    }
+	if(u32ClkSrc != CLK_CLKDIV0_HCLKSEL_Msk) {
+		/* Use the clock sources directly */
+		u32Freq = gau32ClkSrcTbl[u32ClkSrc];
+	} else {
+		/* Use PLL clock */
+		u32Freq = CLK_GetPLLClockFreq();
+	}
 
-    u32HclkDiv = (CLK->CLKDIV0 & CLK_CLKDIV0_HCLKDIV_Msk) + 1;
+	u32HclkDiv = (CLK->CLKDIV0 & CLK_CLKDIV0_HCLKDIV_Msk) + 1;
 
-    /* Update System Core Clock */
-    SystemCoreClock = u32Freq/u32HclkDiv;
+	/* Update System Core Clock */
+	SystemCoreClock = u32Freq/u32HclkDiv;
 
-    CyclesPerUs = (SystemCoreClock + 500000) / 1000000;
+	CyclesPerUs = (SystemCoreClock + 500000) / 1000000;
 
-    //added by az to improve flash speed . MAX flash speed is 80Mhz :
-    SPIM_SetBusClock(SPIM,SystemCoreClock/2);
+	//added by az to improve flash speed . MAX flash speed is 80Mhz :
+	SPIM_SetBusClock(SPIM,SystemCoreClock/2);
 
 
-    SPIM_ENABLE_DMM_MODE(SPIM, SPIM_CTL0_CMDCODE_FAST_READ_QUAD_IO , 0);
+	SPIM_ENABLE_DMM_MODE(SPIM, SPIM_CTL0_CMDCODE_FAST_READ_QUAD_IO , 0);
 }
 
 
@@ -137,11 +128,11 @@ uint8_t clock_nuc505_core_ioctl( struct dev_desc_t *adev,
 		CLK->PWRCTL |= CLK_PWRCTL_HXTEN_Msk;
 
 		CLK_SetCoreClock(rate);
-	    /* Set PCLK divider */
-	    CLK_SetModuleClock(PCLK_MODULE, 0 , 1);
+		/* Set PCLK divider */
+		CLK_SetModuleClock(PCLK_MODULE, 0 , 1);
 
-	    /* Update System Core Clock */
-	    SystemCoreClockUpdate();
+		/* Update System Core Clock */
+		SystemCoreClockUpdate();
 		break;
 	case CLK_IOCTL_GET_FREQ :
 		*(uint32_t*)aIoctl_param1 = SystemCoreClock;//cfg_clk->rate;

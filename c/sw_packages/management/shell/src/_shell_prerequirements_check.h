@@ -48,9 +48,9 @@
 
 
 
-#ifndef os_queue_send_immediate
+#ifndef os_queue_send_without_wait
 enum{
-	os_queue_send_immediate___not_declared_in_os_wrapper_h__as_required_by_async_tx_wrapper = sizeof(os_queue_send_immediate)
+	os_queue_send_without_wait___not_declared_in_os_wrapper_h__as_required_by_async_tx_wrapper = sizeof(os_queue_send_without_wait)
 };
 #endif
 

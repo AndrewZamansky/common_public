@@ -107,7 +107,7 @@ do_startup_common:
 	push {lr}
 
 	mov r0,sp
- 	ldr r1,=low_level_init
+ 	ldr r1,=init_after_startup
  	blx r1
  	pop {pc}
 

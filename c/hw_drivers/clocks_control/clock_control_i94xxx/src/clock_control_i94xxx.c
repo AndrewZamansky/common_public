@@ -20,6 +20,7 @@
 #include "I94100.h"
 
 #include "clk.h"
+#include "i2s.h"
 
 #include "_clock_control_i94xxx_prerequirements_check.h"
 
@@ -166,11 +167,11 @@ uint8_t clock_i94xxx_hirc_ioctl( struct dev_desc_t *adev,
 		break;
 	case CLK_IOCTL_SET_FREQ :
 		rate = *(uint32_t*)aIoctl_param1;
-		if (48000000 != rate)
+		if (48000000 == rate)
 		{
 			CLK_SELECT_TRIM_HIRC(CLK_CLKSEL0_HIRCFSEL_48M);
 		}
-		else if (49152000 != rate)
+		else if (49152000 == rate)
 		{
 			CLK_SELECT_TRIM_HIRC(CLK_CLKSEL0_HIRCFSEL_49M);
 		}
@@ -204,11 +205,11 @@ uint8_t clock_i94xxx_pll_ioctl( struct dev_desc_t *adev,
 	case CLK_IOCTL_SET_PARENT :
 		if (i94xxx_xtal_clk_dev == aIoctl_param1)
 		{
-			CLK->PWRCTL |= CLK_PWRCTL_HXTEN_Msk;
+			CLK->PLLCTL &= ~CLK_PLLCTL_PLLSRC_Msk;
 		}
 		else if (i94xxx_hirc_clk_dev == aIoctl_param1)
 		{
-			CLK->PWRCTL |= CLK_PWRCTL_HIRCEN_Msk;
+			CLK->PLLCTL |= CLK_PLLCTL_PLLSRC_Msk;
 		}
 		else
 		{
@@ -217,13 +218,13 @@ uint8_t clock_i94xxx_pll_ioctl( struct dev_desc_t *adev,
 		break;
 	case CLK_IOCTL_SET_FREQ :
 		rate = *(uint32_t*)aIoctl_param1;
-		if (CLK->PWRCTL & CLK_PWRCTL_HXTEN_Msk)
+		if (CLK->PLLCTL & CLK_PLLCTL_PLLSRC_Msk)
 		{
-			CLK_EnablePLL(CLK_PLLCTL_PLLSRC_HXT, rate);
+			CLK_EnablePLL(CLK_PLLCTL_PLLSRC_HIRC, rate );
 		}
 		else
 		{
-			CLK_EnablePLL(CLK_PLLCTL_PLLSRC_HIRC, rate );
+			CLK_EnablePLL(CLK_PLLCTL_PLLSRC_HXT, rate);
 		}
 		cfg_clk->rate = rate;
 		break;
@@ -379,6 +380,10 @@ uint8_t clock_i94xxx_usb_ioctl( struct dev_desc_t *adev,
 		{
 			div--;
 		}
+		//TODO: in revision D clock can be set to HIRC or PLL
+		//CLK->CLKSEL4 &= ~(0x1ul << 24);j
+		//CLK->CLKSEL4 |= (0x1ul << 24);
+
 		CLK->CLKDIV0 = (CLK->CLKDIV0 & (~CLK_CLKDIV0_USBDIV_Msk))
 							| (div << CLK_CLKDIV0_USBDIV_Pos);
 		cfg_clk->rate = req_rate;
@@ -537,7 +542,7 @@ uint8_t clock_i94xxx_i2s_ioctl( struct dev_desc_t *adev,
 		curr_val = (CLK->CLKSEL3 & ~ CLK_CLKSEL3_I2S0SEL_Msk);
 		if (i94xxx_xtal_clk_dev == aIoctl_param1)
 		{
-			CLK->CLKSEL3 = curr_val | CLK_CLKSEL3_I2S0SEL_Pos;
+			CLK->CLKSEL3 = curr_val | CLK_CLKSEL3_I2S0SEL_HXT;
 		}
 		else if (i94xxx_hirc_clk_dev == aIoctl_param1)
 		{
@@ -562,6 +567,218 @@ uint8_t clock_i94xxx_i2s_ioctl( struct dev_desc_t *adev,
 		break;
 	case CLK_IOCTL_GET_FREQ :
 		get_parent_clock_rate(cfg_clk, aIoctl_param1);
+		break;
+	default :
+		return 1;
+	}
+	return 0;
+}
+
+
+uint8_t clock_i94xxx_dmic_ioctl( struct dev_desc_t *adev,
+		const uint8_t aIoctl_num, void * aIoctl_param1,
+		void * aIoctl_param2)
+{
+	struct cfg_clk_t *cfg_clk;
+	uint32_t curr_val;
+
+	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(adev);
+	switch(aIoctl_num)
+	{
+	case CLK_IOCTL_SET_PARENT :
+		curr_val = (CLK->CLKSEL2 & (~CLK_CLKSEL2_DMICSEL_Msk));
+		if (i94xxx_xtal_clk_dev == aIoctl_param1)
+		{
+			CLK->CLKSEL2 = curr_val | CLK_CLKSEL2_DMICSEL_HXT;
+		}
+		else if (i94xxx_hirc_clk_dev == aIoctl_param1)
+		{
+			CLK->CLKSEL2 = curr_val | CLK_CLKSEL2_DMICSEL_HIRC;
+		}
+		else if (i94xxx_pll_clk_dev == aIoctl_param1)
+		{
+			CLK->CLKSEL2 = curr_val | CLK_CLKSEL2_DMICSEL_PLL;
+		}
+		else if (i94xxx_pclk0_clk_dev == aIoctl_param1)
+		{
+			CLK->CLKSEL2 = curr_val | CLK_CLKSEL2_DMICSEL_PCLK0;
+		}
+		else
+		{
+			CRITICAL_ERROR("bad parent clock \n");
+		}
+		cfg_clk->parent_clk = aIoctl_param1;
+		break;
+	case CLK_IOCTL_ENABLE :
+		CLK->APBCLK0 |= CLK_APBCLK0_DMICCKEN_Msk;
+		break;
+	case CLK_IOCTL_GET_FREQ :
+		get_parent_clock_rate(cfg_clk, aIoctl_param1);
+		break;
+	default :
+		return 1;
+	}
+	return 0;
+}
+
+
+uint8_t i94xxx_I2S_MCLK_ioctl( struct dev_desc_t *adev,
+		const uint8_t aIoctl_num, void * aIoctl_param1,
+		void * aIoctl_param2)
+{
+	struct cfg_clk_t *cfg_clk;
+	uint32_t freq;
+	uint32_t mclkdiv;
+
+	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(adev);
+	switch(aIoctl_num)
+	{
+	case CLK_IOCTL_GET_FREQ :
+		get_parent_clock_rate(cfg_clk, &freq);
+		mclkdiv = I2S0->CLKDIV & I2S_CLKDIV_MCLKDIV_Msk;
+		if (0 == mclkdiv)
+		{
+			*(uint32_t *)aIoctl_param1 = freq;
+		}
+		else
+		{
+			*(uint32_t *)aIoctl_param1 = freq / 2;
+		}
+		break;
+	default :
+		return 1;
+	}
+	return 0;
+}
+
+
+uint8_t i94xxx_I2S_BCLK_ioctl( struct dev_desc_t *adev,
+		const uint8_t aIoctl_num, void * aIoctl_param1,
+		void * aIoctl_param2)
+{
+	struct cfg_clk_t *cfg_clk;
+	uint32_t freq;
+	uint32_t bclkdiv;
+
+	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(adev);
+	switch(aIoctl_num)
+	{
+	case CLK_IOCTL_GET_FREQ :
+		get_parent_clock_rate(cfg_clk, &freq);
+		bclkdiv = (I2S0->CLKDIV & I2S_CLKDIV_BCLKDIV_Msk) >>
+												I2S_CLKDIV_BCLKDIV_Pos;
+		*(uint32_t *)aIoctl_param1 = freq / (2 * (bclkdiv + 1));
+		break;
+	default :
+		return 1;
+	}
+	return 0;
+}
+
+
+uint8_t i94xxx_I2S_FSCLK_ioctl( struct dev_desc_t *adev,
+		const uint8_t aIoctl_num, void * aIoctl_param1,
+		void * aIoctl_param2)
+{
+	struct cfg_clk_t *cfg_clk;
+	uint32_t freq;
+	uint16_t num_of_channels;
+	uint16_t channel_width;
+
+	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(adev);
+	switch(aIoctl_num)
+	{
+	case CLK_IOCTL_GET_FREQ :
+		get_parent_clock_rate(cfg_clk, &freq);
+		num_of_channels =
+				(I2S0->CTL0 & I2S_CTL0_TDMCHNUM_Msk) >> I2S_CTL0_TDMCHNUM_Pos;
+		num_of_channels = 2 * (1 + num_of_channels);
+		channel_width =
+				(I2S0->CTL0 & I2S_CTL0_CHWIDTH_Msk) >> I2S_CTL0_CHWIDTH_Pos;
+		channel_width = 8 * (1 + channel_width);
+		*(uint32_t *)aIoctl_param1 = freq / (num_of_channels * channel_width);
+		break;
+	default :
+		return 1;
+	}
+	return 0;
+}
+
+
+uint8_t i94xxx_I2S_onSPI1_MCLK_ioctl( struct dev_desc_t *adev,
+		const uint8_t aIoctl_num, void * aIoctl_param1,
+		void * aIoctl_param2)
+{
+	struct cfg_clk_t *cfg_clk;
+	uint32_t freq;
+	uint32_t mclkdiv;
+
+	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(adev);
+	switch(aIoctl_num)
+	{
+	case CLK_IOCTL_GET_FREQ :
+		get_parent_clock_rate(cfg_clk, &freq);
+		mclkdiv = ((SPI_T*)SPI1_BASE)->I2SCLK & SPI_I2SCLK_MCLKDIV_Msk;
+		if (0 == mclkdiv)
+		{
+			*(uint32_t *)aIoctl_param1 = freq;
+		}
+		else
+		{
+			*(uint32_t *)aIoctl_param1 = freq / 2;
+		}
+		break;
+	default :
+		return 1;
+	}
+	return 0;
+}
+
+
+uint8_t i94xxx_I2S_onSPI1_BCLK_ioctl( struct dev_desc_t *adev,
+		const uint8_t aIoctl_num, void * aIoctl_param1,
+		void * aIoctl_param2)
+{
+	struct cfg_clk_t *cfg_clk;
+	uint32_t freq;
+	uint32_t bclkdiv;
+
+	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(adev);
+	switch(aIoctl_num)
+	{
+	case CLK_IOCTL_GET_FREQ :
+		get_parent_clock_rate(cfg_clk, &freq);
+		bclkdiv = (((SPI_T*)SPI1_BASE)->I2SCLK & SPI_I2SCLK_BCLKDIV_Msk) >>
+											SPI_I2SCLK_BCLKDIV_Pos;
+		*(uint32_t *)aIoctl_param1 = freq / (2 * (bclkdiv + 1));
+		break;
+	default :
+		return 1;
+	}
+	return 0;
+}
+
+
+uint8_t i94xxx_I2S_onSPI1_FSCLK_ioctl( struct dev_desc_t *adev,
+		const uint8_t aIoctl_num, void * aIoctl_param1,
+		void * aIoctl_param2)
+{
+	struct cfg_clk_t *cfg_clk;
+	uint32_t freq;
+	uint16_t num_of_channels;
+	uint16_t channel_width;
+
+	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(adev);
+	switch(aIoctl_num)
+	{
+	case CLK_IOCTL_GET_FREQ :
+		get_parent_clock_rate(cfg_clk, &freq);
+		num_of_channels = 2;
+		channel_width =
+				(((SPI_T*)SPI1_BASE)->I2SCTL & SPI_I2SCTL_WDWIDTH_Msk) >>
+														SPI_I2SCTL_WDWIDTH_Pos;
+		channel_width = 8 * (1 + channel_width);
+		*(uint32_t *)aIoctl_param1 = freq / (num_of_channels * channel_width);
 		break;
 	default :
 		return 1;

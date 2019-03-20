@@ -11,15 +11,19 @@
 
 
 /**********  define API  functions  ************/
-typedef enum
+enum GPIO_API_IOCTL_E
 {
-	IOCTL_GPIO_PIN_SET = IOCTL_LAST_COMMON_IOCTL+1,
+	IOCTL_GPIO_PIN_SET = IOCTL_LAST_COMMON_IOCTL + 1,
 	IOCTL_GPIO_PIN_CLEAR,
 	IOCTL_GPIO_PIN_READ,
 	IOCTL_LAST_COMMON_GPIO_IOCTL
-}GPIO_COMMON_API_ioctl_t;
+};
 
 
-
+struct gpio_api_read_t {
+	uint8_t   values_arr_size;
+	uint8_t   *pin_bitwise_curr_values;
+	uint8_t const *pin_bitwise_idle_values;
+};
 
 #endif

@@ -185,14 +185,12 @@ uint8_t DEV_API_dummy_callback_func(struct dev_desc_t *adev,
  */
 struct dev_desc_t * DEV_OPEN(const char *device_name)
 {
-	struct dev_desc_t * curr_pdev ;
+	struct dev_desc_t * curr_pdev;
 
 #ifdef CONFIG_USE_SPECIFIC_MEMORY_LOCATION_FOR_DEVICES
 	curr_pdev = find_static_dev_by_name(device_name);
 	if (NULL != curr_pdev) return curr_pdev;
-#endif
-
-#if CONFIG_MAX_NUM_OF_DYNAMIC_DEVICES > 0
+#elif CONFIG_MAX_NUM_OF_DYNAMIC_DEVICES > 0
 	curr_pdev =  &dev_descriptors[0];
 	while (curr_pdev <  &dev_descriptors[CONFIG_MAX_NUM_OF_DYNAMIC_DEVICES])
 	{
@@ -202,6 +200,9 @@ struct dev_desc_t * DEV_OPEN(const char *device_name)
 		}
 		curr_pdev++;
 	}
+#else
+	curr_pdev = NULL;
+	(void)curr_pdev;// remove unused variable warning
 #endif
 	return NULL;
 }

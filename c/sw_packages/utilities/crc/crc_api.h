@@ -3,9 +3,6 @@
 #define _crc_api_h_
 
 
-#include "crc_config.h"
-#include "src/_crc_prerequirements_check.h"// should be after dev_management_config.h
-
 /**********  define API  types ************/
 
 

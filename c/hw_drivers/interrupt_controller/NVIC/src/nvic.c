@@ -125,8 +125,18 @@ void __attribute__((interrupt("IRQ"))) __attribute__((naked)) isr_hard_fault()
 	uint32_t *stack;
 
 #if defined(__GNUC__)
-	register int sp asm ("sp");
-	stack = (uint32_t *)sp ;
+	__asm volatile
+	(
+		/* bit 2 in EXC_RETURN value (in LR) shows what
+		 stack was used before exception happened*/
+		"tst lr, #4    \n"
+		"ite eq        \n"
+		"mrseq r0, MSP \n"
+		"mrsne r0, PSP \n"
+		"mov %[stack], r0 \n"
+		: [stack]"=r" (stack)::"r0","memory"
+	);
+
 #elif defined(__arm)
 	__asm
 	{

@@ -71,7 +71,6 @@ static void Config_Task( void *pvParameters )
 {
 
 	uint32_t i;
-	struct dev_desc_t * currDev;
 	uint32_t paramStatus;
 	const struct dev_param_t *dev_Params;
 	uint8_t dev_Num_Of_Params;
@@ -82,6 +81,7 @@ static void Config_Task( void *pvParameters )
 	for( ;; )
 	{
 
+		struct dev_desc_t * currDev;
 		vTaskDelay( 5000 );
 
 		currDev=DevManagment_API_GetAllDevsArray();
@@ -145,13 +145,15 @@ static void Config_Task( void *pvParameters )
 uint32_t config_parse_params(uint8_t *config_buff ,  uint32_t maxTokenAvailable ,
 		const uint8_t *apParamName, uint32_t *found_token_num )
 {
-	uint32_t currTokenNum, currTokenLen;
+	uint32_t currTokenNum;
 	
 	currTokenNum=1;
 	jsmntok_t array_token;
 
 	while(currTokenNum < (maxTokenAvailable-1) )
 	{
+		uint32_t currTokenLen;
+
 		if(JSMN_STRING != tokens[currTokenNum].type)
 		{
 			return 1;

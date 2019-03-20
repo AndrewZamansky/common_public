@@ -24,16 +24,6 @@
 /*following line add module to available module list for dynamic device tree*/
 #include "shell_add_component.h"
 
-#if SHELL_CONFIG_MAX_RX_BUFFER_SIZE <= (1<<8)
-	typedef uint8_t shel_rx_int_size_t;
-#else
-	#if SHELL_CONFIG_MAX_RX_BUFFER_SIZE <= (1<<16)
-		typedef uint16_t shel_rx_int_size_t;
-	#else
-		typedef uint32_t shel_rx_int_size_t;
-	#endif
-#endif
-
 
 /********  defines *********************/
 
@@ -42,16 +32,12 @@
 /********  types  *********************/
 typedef struct
 {
-
 	struct dev_desc_t * pdev;
 } xMessage_t;
 
 
 
 /********  externals *********************/
-
-extern int run_command(const char *cmd, int flag);
-
 
 /********  local variables *********************/
 static uint8_t task_is_running=0;
@@ -61,15 +47,14 @@ static const char eol_seq[] = "\r\n";		/* end of line sequence	*/
 static char EOF_MARKER_STR[] = "\r\n~2@5\r\n";
 
 
-#define HEADER_CHAR_ON		'+'
-#define HEADER_CHAR_OFF		'-'
+#define HEADER_CHAR_ON    '+'
+#define HEADER_CHAR_OFF   '-'
 
-typedef enum
-{
+enum Header_positions_t {
 	HEADER_SUPPRESS_ECHO_POS, // must be on first position
 	HEADER_ADD_EOF_MARK_POS,
 	START_OF_CMD_POS
-}Header_positions_t;
+};
 
 static struct dev_desc_t *   curr_tx_dev;
 
@@ -81,8 +66,8 @@ static os_queue_t xQueue = NULL;
  *
  * return:
  */
-uint8_t shell_callback(struct dev_desc_t *adev ,const uint8_t aCallback_num
-		, void * aCallback_param1, void * aCallback_param2)
+uint8_t shell_callback(struct dev_desc_t *adev ,const uint8_t aCallback_num,
+		void * aCallback_param1, void * aCallback_param2)
 {
 	xMessage_t  queueMsg;
 
@@ -95,7 +80,7 @@ uint8_t shell_callback(struct dev_desc_t *adev ,const uint8_t aCallback_num
 	queueMsg.pdev = adev;
 
 	//xQueueSendFromISR( xQueue, ( void *)&queueMsg, &xHigherPriorityTaskWoken);
-	os_queue_send_immediate( xQueue, ( void * ) &queueMsg);
+	os_queue_send_without_wait( xQueue, ( void * ) &queueMsg);
 
 	return 0;
 }
@@ -111,16 +96,15 @@ static void reply_data(const char *data, size_t len)
 #define SUMS_OF_EOLS	('\r'+'\n')
 
 static uint8_t get_valid_line(struct shell_runtime_instance_t *runtime_handle,
-		uint8_t **pBuffer, shel_rx_int_size_t *p_total_length,
-		shel_rx_int_size_t *p_bytesConsumed)
+		uint8_t **pBuffer, size_t *p_total_length, size_t *p_bytesConsumed)
 {
 	uint8_t validCommadFound;
 	uint8_t *pBufferStart;
-	shel_rx_int_size_t total_length;
-	shel_rx_int_size_t bytesConsumed;
-	shel_rx_int_size_t curr_buff_pos;
-	shel_rx_int_size_t lastTestedBytePos;
-	shel_rx_int_size_t endOfLastPrintfPos;
+	size_t total_length;
+	size_t bytesConsumed;
+	size_t curr_buff_pos;
+	size_t lastTestedBytePos;
+	size_t endOfLastPrintfPos;
 	uint8_t curr_char;
 	uint8_t eol_char;
 
@@ -164,7 +148,7 @@ static uint8_t get_valid_line(struct shell_runtime_instance_t *runtime_handle,
 					reply_data(erase_seq, sizeof(erase_seq)-1);
 				}
 				//shift buffer right before DEL
-				memmove(&pBufferStart[2],pBufferStart, curr_buff_pos-1);
+				memmove(&pBufferStart[2], pBufferStart, curr_buff_pos-1);
 
 				curr_buff_pos -= 1;
 				endOfLastPrintfPos = curr_buff_pos;
@@ -220,12 +204,12 @@ static uint8_t get_valid_line(struct shell_runtime_instance_t *runtime_handle,
 
 
 static uint8_t *extract_command_from_line(
-		uint8_t *pBufferStart, shel_rx_int_size_t EOL_pos)
+		uint8_t *pBufferStart, size_t *p_EOL_pos)
 {
 	if ((HEADER_CHAR_ON == pBufferStart[HEADER_SUPPRESS_ECHO_POS]) ||
 			(HEADER_CHAR_OFF == pBufferStart[HEADER_SUPPRESS_ECHO_POS]) )
 	{
-		if (START_OF_CMD_POS > EOL_pos)
+		if (START_OF_CMD_POS > *p_EOL_pos)
 		{
 			return NULL;
 		}
@@ -233,6 +217,7 @@ static uint8_t *extract_command_from_line(
 		if ((HEADER_CHAR_ON == pBufferStart[START_OF_CMD_POS - 1]) ||
 				(HEADER_CHAR_OFF == pBufferStart[START_OF_CMD_POS - 1]) )
 		{
+			*p_EOL_pos = (*p_EOL_pos) - START_OF_CMD_POS;
 			return &pBufferStart[START_OF_CMD_POS];
 		}
 		else
@@ -250,20 +235,20 @@ static uint8_t *extract_command_from_line(
 }
 
 
-static void consume_line(
-		struct shell_cfg_t *config_handle, uint8_t *pBufferStart,
-		shel_rx_int_size_t total_length, shel_rx_int_size_t EOL_pos)
+static void consume_line(struct shell_cfg_t *config_handle,
+							uint8_t *pBufferStart, size_t EOL_pos)
 {
 	struct dev_desc_t *   callback_dev;
 	struct dev_desc_t *   cmd_save_dev;
+	struct rcvd_cmd_t  rcvd_cmd;
 	uint8_t *pCmd;
-	struct rcvd_cmd_t	rcvd_cmd;
 
-	pCmd = extract_command_from_line(pBufferStart, EOL_pos);
+	pCmd = extract_command_from_line(pBufferStart, &EOL_pos);
 
 	if (NULL != pCmd)
 	{
-		if (pBufferStart == pCmd )
+		if ((pBufferStart == pCmd )/*no header*/ ||
+				(HEADER_CHAR_OFF == pBufferStart[HEADER_SUPPRESS_ECHO_POS]))
 		{
 			reply_data("\r\n", 2);
 		}
@@ -305,9 +290,9 @@ static void consume_line(
 static void Shell_Task( void *pvParameters )
 {
 	xMessage_t pxRxedMessage;
-	shel_rx_int_size_t total_length;
-	shel_rx_int_size_t bytesConsumed;
-	shel_rx_int_size_t EOL_pos;
+	size_t total_length;
+	size_t bytesConsumed;
+	size_t EOL_pos;
 	uint8_t *pBufferStart;
 	struct ioctl_get_data_buffer_t data_buffer_info;
 	struct shell_runtime_instance_t  *runtime_handle;
@@ -317,11 +302,11 @@ static void Shell_Task( void *pvParameters )
 
 	xQueue = os_create_queue( CONFIG_SHELL_MAX_QUEUE_LEN, sizeof(xMessage_t) );
 
-    if( 0 == xQueue  ) return ;
+    if ( 0 == xQueue  ) return ;
 
-	for( ;; )
+	for ( ;; )
 	{
-		if( OS_QUEUE_RECEIVE_SUCCESS ==
+		if ( OS_QUEUE_RECEIVE_SUCCESS ==
 				os_queue_receive_infinite_wait( xQueue, &( pxRxedMessage )) )
 		{
 			curr_dev = pxRxedMessage.pdev;
@@ -352,8 +337,7 @@ static void Shell_Task( void *pvParameters )
 
 				if (EOL_pos < total_length)
 				{
-					consume_line(config_handle, pBufferStart,
-							total_length, EOL_pos);
+					consume_line(config_handle, pBufferStart, EOL_pos);
 
 					EOL_pos++;// add first EOL char
 					bytesConsumed += EOL_pos;
@@ -365,7 +349,6 @@ static void Shell_Task( void *pvParameters )
 						(void *)((uint32_t)bytesConsumed));
 			}
 			DEV_IOCTL(curr_rx_dev, IOCTL_SET_UNLOCK_DATA_BUFFER ,(void *) 0);
-
 		}
 		os_stack_test();
 	}
@@ -396,25 +379,25 @@ uint8_t shell_ioctl( struct dev_desc_t *adev,
 				DEV_IOCTL(server_dev, IOCTL_SET_ISR_CALLBACK_DEV, (void*)adev);
 			}
 
-			config_handle->server_tx_dev=server_dev;
-			config_handle->server_rx_dev=server_dev;
+			config_handle->server_tx_dev = server_dev;
+			config_handle->server_rx_dev = server_dev;
 		}
 		break;
 	case IOCTL_SET_CALLBACK_DEV:
-		config_handle->callback_dev =(struct dev_desc_t *) aIoctl_param1;
+		config_handle->callback_dev = (struct dev_desc_t *) aIoctl_param1;
 		break;
 #endif
 	case IOCTL_DEVICE_START :
 		if (0 == task_is_running)
 		{
-			task_is_running=1;
-			os_create_task("shell_task",Shell_Task,
-					NULL , SHELL_TASK_STACK_SIZE , SHELL_TASK_PRIORITY);
+			task_is_running = 1;
+			os_create_task("shell_task", Shell_Task,
+					NULL, SHELL_TASK_STACK_SIZE, SHELL_TASK_PRIORITY);
 		}
 		server_dev = config_handle->server_tx_dev;
-		DEV_IOCTL_0_PARAMS(server_dev , IOCTL_DEVICE_START );
+		DEV_IOCTL_0_PARAMS(server_dev, IOCTL_DEVICE_START );
 		server_dev = config_handle->server_rx_dev;
-		DEV_IOCTL_0_PARAMS(server_dev , IOCTL_DEVICE_START );
+		DEV_IOCTL_0_PARAMS(server_dev, IOCTL_DEVICE_START );
 
 		break;
 

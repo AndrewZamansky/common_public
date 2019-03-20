@@ -28,7 +28,7 @@ ifeq ("","$(filter $(CURR_GIT_REPO_DIR),$(EXTERNAL_SRC_GIT_DIRS))")
 
     ifeq ("",$(GIT_REQUESTED_COMMIT))
         $(info err: git repository test failed : $(CURR_GIT_REPO_DIR))
-        $(info ---: $(CURR_GIT_COMMIT_HASH_VARIABLE) = $(GIT_REQUESTED_COMMIT))
+        $(info ---: $(CURR_GIT_COMMIT_HASH_VARIABLE) is empty)
         $(info ---: $(CURR_GIT_COMMIT_HASH_VARIABLE) should contain git hash)
         $(call exit,1)
     endif
@@ -43,6 +43,8 @@ ifeq ("","$(filter $(CURR_GIT_REPO_DIR),$(EXTERNAL_SRC_GIT_DIRS))")
         SHELL_GO_TO_GIT_DIR :=cd $(CURR_GIT_REPO_DIR) ;
 
     endif
+
+    NEED_TO_SWITCH_BRANCH_OR_COMMIT :=n
 
     SHELL_CMD :=$(SHELL_GO_TO_GIT_DIR) $(GIT) rev-parse --abbrev-ref HEAD
     CURR_GIT_BRANCH := $(shell $(SHELL_CMD))
@@ -126,45 +128,81 @@ ifeq ("","$(filter $(CURR_GIT_REPO_DIR),$(EXTERNAL_SRC_GIT_DIRS))")
         $(info ---: current commit   : "$(CURR_GIT_COMMIT)")
         $(info ---: requested commit : $(GIT_REQUESTED_COMMIT))
         NEED_TO_SWITCH_BRANCH_OR_COMMIT :=y
-    else ifeq ($(CHECKING_COMMON_PUBLIC_GIT),y)
+    else
         #if  $(CURR_APP_GIT_BRANCH) is not in $(CURR_GIT_BRANCH) list
         ifeq (n,$(BRANCH_NAME_MATCH))
             # for now we are doing manual checkout as it usefull in case when
             # we try mistakenly compile non-related project 
-            $(info info/err: git repository test failed : $(CURR_GIT_REPO_DIR))
-            $(info ---: current branch is : $(CURR_GIT_BRANCH) )
-            $(info ---: current commit is OK but current branch)
-            $(info ---: should be $(CURR_APP_GIT_BRANCH) .)
+            $(info info: git repository : $(CURR_GIT_REPO_DIR))
+            $(info ---: current branch is : $(CURR_GIT_BRANCH))
+            $(info ---: will be switched to: $(CURR_APP_GIT_BRANCH))
             NEED_TO_SWITCH_BRANCH_OR_COMMIT :=y
         endif
-    else
     endif
 
     ifeq ($(NEED_TO_SWITCH_BRANCH_OR_COMMIT),y)
-        CMD_TO_RUN := $(SHELL_GO_TO_GIT_DIR) $(GIT) checkout
-        CMD_TO_RUN += $(GIT_REQUESTED_COMMIT) -B $(CURR_APP_GIT_BRANCH)
 
-        DO_AUTO_CHECKOUT :=y
         ifeq ($(CHECKING_COMMON_PUBLIC_GIT),y)
-            ifneq ($(FORCE_PROJECT_SWITCH),y)
-                DO_AUTO_CHECKOUT :=n
-            endif
-        endif
-
-        ifeq ($(DO_AUTO_CHECKOUT),y)
-            SHELL_OUT := $(shell $(CMD_TO_RUN) 2>&1)
-            $(info $(SHELL_OUT))
-            ifeq ($(findstring fatal:,$(SHELL_OUT)),fatal:)
+            ifeq ($(FORCE_PROJECT_SWITCH),) # not FORCE_PROJECT_SWITCH
+                CMD_TO_RUN := $(SHELL_GO_TO_GIT_DIR) $(GIT) checkout
+                CMD_TO_RUN += $(GIT_REQUESTED_COMMIT) -B $(CURR_APP_GIT_BRANCH)
                 $(info err: git repository test failed : $(CURR_GIT_REPO_DIR))
-                $(info ---: maybe commit $(GIT_REQUESTED_COMMIT) doesn't exists)
+                $(info ---: current git branch is : $(CURR_GIT_BRANCH))
+                $(info ---: chack out branch $(CURR_APP_GIT_BRANCH) manually)
+                $(info ---: you can use following command :)
+                $(info ---: $(CMD_TO_RUN))
                 $(call exit,1)
             endif
-        else
-            $(info ---: move branch $(CURR_APP_GIT_BRANCH) to requested commit)
-            $(info ---: you can use following command :)
-            $(info ---: $(CMD_TO_RUN))
+        endif
+
+        CMD_TO_RUN := $(SHELL_GO_TO_GIT_DIR) $(GIT) rev-parse
+        CMD_TO_RUN += $(CURR_APP_GIT_BRANCH) 2>&1
+        COMMIT_OF_NEEDED_BRANCH := $(shell $(CMD_TO_RUN))
+
+        # if we receive error then branch is not exists, we can safely create it
+        # so no need to enter following 'if'
+        ifneq ($(findstring fatal:,$(COMMIT_OF_NEEDED_BRANCH)),fatal:)
+            # find all branches that contains commit that we will leave
+            CMD_TO_RUN := $(SHELL_GO_TO_GIT_DIR) $(GIT) branch
+            CMD_TO_RUN += --contain $(COMMIT_OF_NEEDED_BRANCH)
+            SHELL_OUT := $(shell $(CMD_TO_RUN) 2>&1)
+            REFERENCES := $(filter-out *,$(SHELL_OUT))
+
+            # find all remote branches that contains commit that we will leave
+            CMD_TO_RUN := $(SHELL_GO_TO_GIT_DIR) $(GIT) branch -r
+            CMD_TO_RUN += --contain $(COMMIT_OF_NEEDED_BRANCH)
+            SHELL_OUT := $(shell $(CMD_TO_RUN) 2>&1)
+            REFERENCES += $(filter-out *,$(SHELL_OUT))
+
+            # find all tags that contains commit that we will leave
+            CMD_TO_RUN := $(SHELL_GO_TO_GIT_DIR) $(GIT) tag
+            CMD_TO_RUN += --contain $(COMMIT_OF_NEEDED_BRANCH)
+            SHELL_OUT := $(shell $(CMD_TO_RUN) 2>&1)
+            REFERENCES += $(filter-out *,$(SHELL_OUT))
+
+            REFERENCES :=$(filter-out $(CURR_APP_GIT_BRANCH),$(REFERENCES))
+
+            # if no additional references beside our branch, stop auto switch
+            ifeq ($(REFERENCES),)
+                $(info err: git repository test failed : $(CURR_GIT_REPO_DIR))
+                $(info ---: cannot auto move branch $(CURR_APP_GIT_BRANCH))
+                $(info ---: as it can create detached HEAD in git repo)
+                $(info ---: go to this repo and move branch manually after)
+                $(info ---: verifying that you will not create detached HEAD)
+                $(call exit,1)
+            endif
+        endif
+
+        CMD_TO_RUN := $(SHELL_GO_TO_GIT_DIR) $(GIT) checkout
+        CMD_TO_RUN += $(GIT_REQUESTED_COMMIT) -B $(CURR_APP_GIT_BRANCH)
+        SHELL_OUT := $(shell $(CMD_TO_RUN) 2>&1)
+        $(info $(SHELL_OUT))
+        ifeq ($(findstring fatal:,$(SHELL_OUT)),fatal:)
+            $(info err: git repository test failed : $(CURR_GIT_REPO_DIR))
+            $(info ---: maybe commit $(GIT_REQUESTED_COMMIT) doesn't exists)
             $(call exit,1)
         endif
+
     else
         $(info ---- git repository $(CURR_GIT_REPO_DIR) is synchronized)
     endif

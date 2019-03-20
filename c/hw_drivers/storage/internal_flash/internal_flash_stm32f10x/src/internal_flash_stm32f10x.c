@@ -1,6 +1,6 @@
 /*
  *
- *   file  :  FLASH.cpp
+ *   file  :  internal_flash_stm32f10x.c
  *
  */
 
@@ -28,13 +28,13 @@
 #define KEY2  0xCDEF89AB
 
 #define FLASH_SR (FLASH_BASE_ADDRESS + 0xC)
-#define FLASH_SR_BSY_F 	(0x00000001)
+#define FLASH_SR_BSY_F  (0x00000001)
 
 #define FLASH_CR (FLASH_BASE_ADDRESS + 0x10)
-#define FLASH_CR_PG_F 	(0x00000001)
-#define FLASH_CR_PER_F 	(0x00000002)
-#define FLASH_CR_STRT_F (0x00000040)
-#define FLASH_CR_LOCK_F (0x00000080)
+#define FLASH_CR_PG_F  (0x00000001)
+#define FLASH_CR_PER_F  (0x00000002)
+#define FLASH_CR_STRT_F  (0x00000040)
+#define FLASH_CR_LOCK_F  (0x00000080)
 
 #define FLASH_AR (FLASH_BASE_ADDRESS + 0x14)
 
@@ -44,10 +44,10 @@
 
 #define FLASH_HAL_NULL NULL
 
-#define FLASH_hal_writeRegU32(addr,val)		( (*(volatile unsigned int *)(addr)) = (val) )
-#define FLASH_hal_readRegU32(addr)			( *(volatile unsigned int *)(addr) )
-#define FLASH_hal_writeRegU16(addr,val)		( (*(volatile unsigned short *)(addr)) = (val) )
-#define FLASH_hal_readRegU16(addr)			( *(volatile unsigned short *)(addr) )
+#define FLASH_hal_writeRegU32(addr,val)  ( (*(volatile unsigned int *)(addr)) = (val) )
+#define FLASH_hal_readRegU32(addr)       ( *(volatile unsigned int *)(addr) )
+#define FLASH_hal_writeRegU16(addr,val)  ( (*(volatile unsigned short *)(addr)) = (val) )
+#define FLASH_hal_readRegU16(addr)   ( *(volatile unsigned short *)(addr) )
 
 /***************   typedefs    *******************/
 
@@ -99,7 +99,8 @@ uint32_t internal_flash_stm32f10x_api_SetCorrectLatency(uint32_t aClock_hz)
  *
  *
  */
-uint32_t internal_flash_stm32f10x_api_StartProgramming(uint32_t start_addr , uint32_t total_size_to_programm)
+uint32_t internal_flash_stm32f10x_api_StartProgramming(
+		uint32_t start_addr, uint32_t total_size_to_programm)
 {
 	uint32_t regVal;
 	uint32_t current_addr;
@@ -138,51 +139,52 @@ uint32_t internal_flash_stm32f10x_api_StartProgramming(uint32_t start_addr , uin
 
 uint32_t internal_flash_stm32f10x_api_ContinueProgramming(uint8_t *buff,uint32_t size)
 {
-	uint32_t regVal;
 	uint16_t newDataVal;
 
 	if (0==size) return 0; // nothing to do
 
 
-    if (gCurr_program_addr & 0x01) // if address is odd
-    {
-        newDataVal = FLASH_hal_readRegU16(gCurr_program_addr);
-        newDataVal += ( buff[0] << 8 );
-        FLASH_hal_writeRegU16(gCurr_program_addr,newDataVal);
-        size--;
-        gCurr_program_addr++;
-    }
+	if (gCurr_program_addr & 0x01) // if address is odd
+	{
+		newDataVal = FLASH_hal_readRegU16(gCurr_program_addr);
+		newDataVal += ( buff[0] << 8 );
+		FLASH_hal_writeRegU16(gCurr_program_addr,newDataVal);
+		size--;
+		gCurr_program_addr++;
+	}
 
-    while( size >1 )
-    {
-        newDataVal = buff[0];
-        newDataVal += ( buff[1] << 8 );
+	while( size >1 )
+	{
+		newDataVal = buff[0];
+		newDataVal += ( buff[1] << 8 );
 
-        FLASH_hal_writeRegU16(gCurr_program_addr,newDataVal);
+		FLASH_hal_writeRegU16(gCurr_program_addr,newDataVal);
 
-        while( FLASH_hal_readRegU32(FLASH_SR) & FLASH_SR_BSY_F) ; // wait for action done
+		while( FLASH_hal_readRegU32(FLASH_SR) & FLASH_SR_BSY_F) ; // wait for action done
 
-        gCurr_program_addr +=2;
-        size -= 2 ;
-        buff += 2;
-    }
+		gCurr_program_addr +=2;
+		size -= 2 ;
+		buff += 2;
+	}
 
-    if ( size ) // if one byte left
-    {
-        newDataVal = buff[0];
-        FLASH_hal_writeRegU16(gCurr_program_addr,newDataVal);
+	if ( size ) // if one byte left
+	{
+		newDataVal = buff[0];
+		FLASH_hal_writeRegU16(gCurr_program_addr,newDataVal);
 
-        while( FLASH_hal_readRegU32(FLASH_SR) & FLASH_SR_BSY_F) ; // wait for action done
-        gCurr_program_addr++;
-    }
+		while( FLASH_hal_readRegU32(FLASH_SR) & FLASH_SR_BSY_F) ; // wait for action done
+		gCurr_program_addr++;
+	}
 
-    if(gCurr_program_addr >= gLastProgramAddr) // end of programming
-    {
-    	regVal=FLASH_hal_readRegU32(FLASH_CR);
+	if(gCurr_program_addr >= gLastProgramAddr) // end of programming
+	{
+		uint32_t regVal;
+
+		regVal=FLASH_hal_readRegU32(FLASH_CR);
 		regVal &= (~(FLASH_CR_PG_F));
 		regVal |= FLASH_CR_LOCK_F;
 		FLASH_hal_writeRegU32(FLASH_CR,regVal);
-    }
+	}
 
 	return 0;
 }

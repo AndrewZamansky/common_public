@@ -1,0 +1,20 @@
+
+INCLUDE_THIS_COMPONENT :=$(CONFIG_USE_INTERNAL_SOCKETS_IMPLEMENTATION)
+
+
+#INCLUDE_DIR =  
+
+#DEFINES = 
+
+#CFLAGS = 
+
+#ASMFLAGS =  
+
+
+
+SRC += file_descriptor_manager.c
+VPATH = src
+
+
+
+include $(COMMON_CC)

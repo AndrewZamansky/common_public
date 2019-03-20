@@ -28,6 +28,19 @@
 /*following line add module to available module list for dynamic device tree*/
 #include "dpwm_i94xxx_add_component.h"
 
+
+//#define  DEBUG_USE_INTERRUPT
+
+#ifdef  DEBUG_USE_INTERRUPT
+	#if !defined(INTERRUPT_PRIORITY_FOR_DPWM)
+		#error "INTERRUPT_PRIORITY_FOR_DPWM should be defined"
+	#endif
+
+	#if CHECK_INTERRUPT_PRIO_FOR_OS_SYSCALLS(INTERRUPT_PRIORITY_FOR_DPWM)
+		#error "priority should be lower then maximal priority for os syscalls"
+	#endif
+#endif
+
 /********  defines *********************/
 
 
@@ -39,7 +52,6 @@
 
 /* ------------------------ Exported variables ---------------*/
 
-//#define   DEBUG_USE_INTERRUPT
 
 #ifdef 	DEBUG_USE_INTERRUPT
 
@@ -103,7 +115,7 @@ void DPWM_MuxPins(struct dpwm_i94xxx_cfg_t *cfg_hndl)
 	}
 	else if (ioPort == DPWM_IO_ON_GPD)
 	{
-		SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD5MFP_Pos | SYS_GPD_MFPL_PD5MFP_Pos);
+		SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD5MFP_Pos | SYS_GPD_MFPL_PD6MFP_Pos);
 		SYS->GPD_MFPL |= SYS_GPD_MFPL_PD5MFP_DPWM0_N;
 		SYS->GPD_MFPL |= SYS_GPD_MFPL_PD6MFP_DPWM0_P ;
 	}
@@ -263,7 +275,7 @@ uint8_t dpwm_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 
 #ifdef DEBUG_USE_INTERRUPT
 		irq_register_interrupt(DPWM_IRQn , DPWM_IRQHandler);
-		irq_set_priority(DPWM_IRQn , OS_MAX_INTERRUPT_PRIORITY_FOR_API_CALLS );
+		irq_set_priority(DPWM_IRQn , INTERRUPT_PRIORITY_FOR_DPWM );
 		irq_enable_interrupt(DPWM_IRQn);
 		DPWM_ENABLE_FIFOTHRESHOLDINT(DPWM, 16);
 

@@ -9,9 +9,8 @@
 
 #include "dev_management_api.h"
 #include "PRINTF_api.h"
-extern struct dev_desc_t * gCurrReplyDev;
 
-#define printf(...)		PRINTF_REPLY(gCurrReplyDev,__VA_ARGS__)
+#define printf(...)		SHELL_REPLY_PRINTF(__VA_ARGS__)
 
 #define CONFIG_USE_STDINT
 #define CONFIG_ENV_SIZE 8 // dummy
