@@ -1,0 +1,20 @@
+
+INCLUDE_THIS_COMPONENT :=$(CONFIG_USE_INTERNAL_STD_NET_FUNCTION_IMPLEMENTATION)
+
+
+#INCLUDE_DIR =  
+
+#DEFINES = 
+
+#CFLAGS = 
+
+#ASMFLAGS =  
+
+
+
+SRC += std_net_functions.c
+VPATH = src
+
+
+
+include $(COMMON_CC)

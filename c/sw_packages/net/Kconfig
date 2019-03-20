@@ -31,8 +31,8 @@ source "$NGHTTP2_GIT_DIR/Kconfig"
 endif
 
 
-config  CUSTOM_SOCKET_LAYER
-	bool   "custom socket layer"
+config  USE_INTERNAL_STD_NET_FUNCTION_IMPLEMENTATION
+	bool   "use internal standard net function implementation"
 	default n
 
 

@@ -1,0 +1,9 @@
+#
+	
+config MAX_NUMBER_OF_OPENED_FILE_DESCRIPTORS
+	int "max number of opened file descriptors"
+	default 8
+
+config USE_INTERNAL_SOCKETS_IMPLEMENTATION
+	bool "use internal sockets implementation"
+	default n

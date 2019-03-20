@@ -51,7 +51,7 @@ do_startup_common:
 	push {lr}
 
 	mov r0,sp
- 	ldr r1,=low_level_init
+ 	ldr r1,=init_after_startup
  	/*orr r0 ,r0, #0x01*/  /*remain in thumb*/
  	blx r1
  	pop {pc}

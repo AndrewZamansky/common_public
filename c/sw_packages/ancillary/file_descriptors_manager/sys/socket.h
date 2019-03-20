@@ -61,7 +61,7 @@ struct servent {
     char  *s_proto;      /* protocol to use */
 };
 
-#ifdef USE_CUSTOM_SOCKET_IN_COMPILED_MODULE
+#ifdef CONFIG_USE_INTERNAL_SOCKETS_IMPLEMENTATION
 
 /*
 * Types
@@ -203,7 +203,7 @@ uint32_t ntohl(uint32_t n);
 
 ssize_t send_uCprojects(
 		int socket, const void *buffer, size_t length, int flags);
-size_t recv_uCprojects(int sockfd, void *buf, size_t len, int flags);
+ssize_t recv_uCprojects(int sockfd, void *buf, size_t len, int flags);
 int select_uCprojects(int nfds, fd_set *readfds, fd_set *writefds,
                   fd_set *exceptfds, struct timeval *timeout);
 struct hostent*  gethostbyname_uCprojects( const char *name);
@@ -243,7 +243,7 @@ int closesocket_uCprojects(int sockfd);
 #define closesocket  closesocket_uCprojects
 
 
-#endif /* USE_CUSTOM_SOCKET_IN_COMPILED_MODULE */
+#endif /* CONFIG_USE_INTERNAL_SOCKETS_IMPLEMENTATION */
 
 #ifdef  __cplusplus
 }

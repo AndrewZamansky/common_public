@@ -37,7 +37,6 @@ typedef enum
 	IOCTL_ESP8266_SET_SSID_NAME_REDANDENCY,
 	IOCTL_ESP8266_SET_SSID_PSWRD_REDANDENCY,
 	IOCTL_ESP8266_SET_SERVER_DEVICE,
-	IOCTL_ESP8266_GET_IP,
 	IOCTL_ESP8266_SOCKET_CLOSE,
 	IOCTL_ESP8266_SOCKET_OPEN,
 	IOCTL_ESP8266_SOCKET_CONNECT,
@@ -67,12 +66,6 @@ struct ESP8266_ioctl_get_conn_status_t {
 };
 
 
-struct ESP8266_ioctl_socket_get_ip_t {
-	char *strIP;
-	uint8_t strIPLen;
-};
-
-
 struct ESP8266_ioctl_data_received_t {
 	uint8_t *buffer;
 	size_t max_size;
@@ -81,8 +74,6 @@ struct ESP8266_ioctl_data_received_t {
 
 /**********  define API  functions  ************/
 
-uint8_t ESP8266_api_init_dev_descriptor(struct dev_desc_t *aDevDescriptor);
-void set_esp8266_pdev_for_socket_api(struct dev_desc_t *a_esp8266_dev);
 
 #ifdef  __cplusplus
 }
