@@ -35,13 +35,13 @@ struct file_desc_ops_t {
 #ifdef CONFIG_USE_INTERNAL_SOCKETS_IMPLEMENTATION
 	closesocket_func_t closesocket_func;
 	connect_func_t connect_func;
-	is_data_available_func_t  is_data_available_func;
 	recv_func_t   recv_func;
 	setsockopt_func_t  setsockopt_func;
 	bind_func_t   bind_func;
 	getpeername_func_t  getpeername_func;
 	send_func_t  send_func;
 #endif
+	is_data_available_func_t  is_data_available_func;
 };
 
 struct file_desc_t {
