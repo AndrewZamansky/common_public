@@ -20,6 +20,8 @@
 #ifndef _button_manager_API_H_
 #define _button_manager_API_H_
 
+#include "dev_management_api.h"
+
 
 /*****************  defines  **************/
 
@@ -36,55 +38,70 @@
  */
 
 #define	BTN_REPORT_PUSH                 0x01
-#define	BTN_REPORT_SHORT_RELEASE        0x02
+#define	BTN_REPORT_RELEASE              0x02
 #define	BTN_REPORT_HOLD_EVERY_0s1       0x04
 #define	BTN_REPORT_HOLD_EVERY_1s        0x08
 #define	BTN_REPORT_HOLD_ONCE_5s         0x10
-#define	BTN_REPORT_RELEASE_AFTER_5s     0x20
 
-/*
- * Button Action Structure (needs to be made for each action case):
- *
- *  Description - Used to check the hold time and state of which will return
- *                  a request for action to the client device that should
- *                  be specified in the device tree.
- *
- *      report_config - Configuration of button group, refers to the button
- *                        reports as shown above. This needs to be set according
- *                        to what you want the button manager to report.
- *
- *      callback_private_data - (Optional) Data to be sent to host device.
- *                                This can be additional data like I2C byte
- *                                or some sort of msg indicating something
- *                                other than the #defines listed above.
- *
- */
+//following are not implemented yet
+#define	BTN_REPORT_SHORT_RELEASE        0x20
+#define	BTN_REPORT_RELEASE_AFTER_5s     0x40
+
+
+
+enum BUTTON_MANAGER_API_IOCTL_E
+{
+	IOCTL_BUTTON_MANAGER_CREATE_BUTTON_GROUP = IOCTL_LAST_COMMON_IOCTL + 1,
+	IOCTL_BUTTON_MANAGER_ADD_ACTION,
+	IOCTL_BUTTON_MANAGER_SET_GPIO_STATES_FOR_ACTION
+};
 
 
 
 
+
+/****** utilities for creating btn devices array *****/
+#define  BTN_MANAGER_DECLARE_GPIO_DEV(gpio_dev)   \
+				EXTERN_DECLARATION_TO_STATIC_DEVICE_INST(gpio_dev)
+
+#define  BTN_MANAGER_ADD_GPIO_DEV(gpio_dev)   \
+				P_TO_STATIC_DEVICE_INST(gpio_dev)
+
+struct buttons_manager_group_t
+{
+	struct dev_desc_t **gpio_dev_arr;
+	uint8_t  gpio_dev_arr_size;
+};
+
+#define  BTN_MANAGER_SET_GPIO_DEV_ARRAY(buttons_manager_group, gpio_dev_arr) \
+	{   \
+		buttons_manager_group.gpio_dev_arr = gpio_dev_arr;   \
+		buttons_manager_group.gpio_dev_arr_size =            \
+					sizeof(gpio_dev_arr) / sizeof(struct dev_desc_t *); \
+	}
+/****************************************************/
 
 
 typedef size_t button_manager_action_handle_t;
 
-struct button_manager_requested_gpio_values_t {
-	uint8_t   values_arr_size;
-	uint8_t   *pin_bitwise_requested_values_arr;
-};
-
-struct btn_action_t
+/*
+ *  report_config - Configuration of button group, refers to the button
+ *                   reports as shown above. This needs to be set according
+ *                  to what you want the button manager to report.
+ *
+ *  callback_private_data - Data pointer to be passed to during callback .
+ */
+struct btn_add_action_t
 {
-
-	uint8_t  report_config;
+	uint16_t  report_config;
 	void     *callback_private_data;
-	struct   button_manager_requested_gpio_values_t *req_gpio_values_arr;
-
 };
 
 
+
+/****** utilities for adding gpio states to action *****/
 #define BTN_MANAGER_ADD_GPIO_STATE(gpio_dev, pins_array, size_of_pinns_array) \
-			P_TO_STATIC_DEVICE_INST(loopback_button_dev), \
-			pins_array, size_of_pinns_array
+			P_TO_STATIC_DEVICE_INST(gpio_dev), pins_array, size_of_pinns_array
 
 
 #define MAX_NUMBER_OF_ALLOWED_ACTIVE_PINS    4
@@ -99,33 +116,23 @@ struct gpio_state_for_action_t
 };
 
 
+#define  BTN_MANAGER_SET_GPIO_STATES_ARRAY(set_gpio_states, gpio_state_arr) \
+	{   \
+		set_gpio_states.gpio_state_arr = gpio_state_arr;   \
+		set_gpio_states.gpio_state_arr_size =              \
+			sizeof(gpio_state_arr) / sizeof(struct  gpio_state_for_action_t); \
+	}
+
 struct set_gpio_states_for_action_t
 {
 	button_manager_action_handle_t  action_handle;
 	struct  gpio_state_for_action_t   *gpio_state_arr;
 	uint8_t  gpio_state_arr_size;
 };
+/****************************************************/
 
 
-struct btn_add_action_t
-{
-	uint8_t  report_config;
-	void     *callback_private_data;
-};
 
-struct buttons_manager_group_t
-{
-	struct dev_desc_t **gpio_dev_arr;
-	uint8_t  gpio_dev_arr_size;
-};
-
-
-enum BUTTON_MANAGER_API_IOCTL_E
-{
-	IOCTL_BUTTON_MANAGER_CREATE_BUTTON_GROUP = IOCTL_LAST_COMMON_IOCTL + 1,
-	IOCTL_BUTTON_MANAGER_ADD_ACTION,
-	IOCTL_BUTTON_MANAGER_SET_GPIO_STATES_FOR_ACTION
-};
 
 /**********  define API  functions  ************/
 

@@ -20,6 +20,7 @@ struct button_manager_runtime_t {
 	uint32_t    hold_count;
 	uint32_t    queue_wait_delay;
 	uint8_t     state;
+	uint32_t    curr_action_indx;
 };
 
 struct button_manager_config_t {

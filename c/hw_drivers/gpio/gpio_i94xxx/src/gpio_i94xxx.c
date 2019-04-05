@@ -21,7 +21,6 @@
 #include "gpio_api.h"
 #include "irq_api.h"
 
-#include "_gpio_i94xxx_prerequirements_check.h"
 #include <stdlib.h>
 
 /*following line add module to available module list for dynamic device tree*/
@@ -225,7 +224,7 @@ static void init_gpio(struct dev_desc_t *adev,
 	uint8_t   *pin_arr_idle_state;
 	uint8_t   i;
 	uint8_t   curr_pin;
-	uint8_t   pin_mask;
+	uint16_t   pin_mask;
 	uint8_t   curr_idle_state;
 	uint8_t   pin_bitwise_idle_values0;
 	uint8_t   pin_bitwise_idle_values1;
@@ -260,7 +259,7 @@ static void init_gpio(struct dev_desc_t *adev,
 		}
 		else
 		{
-			pin_bitwise_idle_values1 |= (curr_idle_state << curr_pin);
+			pin_bitwise_idle_values1 |= (curr_idle_state << (curr_pin - 8));
 		}
 
 		GPIO_DisableInt(GPIOx, curr_pin);

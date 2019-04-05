@@ -17,6 +17,15 @@
 #include "auto_init_api.h"
 #include "uart_api.h"
 
+
+#ifndef  ESP8266_TASK_PRIORITY
+	#error  "ESP8266_TASK_PRIORITY should be define in project"
+#endif
+#ifndef  ESP8266_TASK_STACK_SIZE
+	#error  "ESP8266_TASK_STACK_SIZE should be define in project"
+#endif
+
+
 /********  defines *********************/
 
 #define AP_CONNECT_TIMEOUT  15000

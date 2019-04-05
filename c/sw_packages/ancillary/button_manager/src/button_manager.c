@@ -21,19 +21,35 @@
 #include "gpio_api.h"
 
 
+#ifndef  BUTTON_MANAGER_CONFIG_TASK_PRIORITY
+	#error  "BUTTON_MANAGER_CONFIG_TASK_PRIORITY should be define in project"
+#endif
+#ifndef  BUTTON_MANAGER_CONFIG_TASK_STACK_SIZE
+	#error  "BUTTON_MANAGER_CONFIG_TASK_STACK_SIZE should be define in project"
+#endif
+
 /********  defines *********************/
 
 
 /********  types  *********************/
 
+struct button_manager_requested_gpio_values_t {
+	uint8_t   values_arr_size;
+	uint8_t   *pin_bitwise_requested_values_arr;
+};
 
+struct btn_action_t {
+	uint16_t  report_config;
+	void     *callback_private_data;
+	struct   button_manager_requested_gpio_values_t *req_gpio_values_arr;
+};
 /********  externals *********************/
 
 
 /********  local defs *********************/
 
-#define 	NO_VALID_STATE_FOUND	0xff
-#define 	DEBOUNCE_DELAY	10
+#define  DEBOUNCE_DELAY  10
+#define  VERY_LONG_WAIT  100000
 
 
 /**********   external variables    **************/
@@ -120,7 +136,8 @@ static uint8_t compare_gpio_state(struct gpio_api_read_t *curr_gpio_state_arr,
 }
 
 
-uint8_t end_of_debounce_on_push(struct dev_desc_t *adev)
+uint8_t end_of_debounce_on_push(
+		struct dev_desc_t *adev, uint32_t  *curr_action_indx)
 {
 	struct button_manager_runtime_t *runtime_handle;
 	struct button_manager_config_t  *config_handle;
@@ -131,19 +148,13 @@ uint8_t end_of_debounce_on_push(struct dev_desc_t *adev)
 	uint8_t num_of_gpio_devs;
 	uint8_t num_of_actions;
 	struct gpio_api_read_t *curr_gpio_state_arr;
-	uint8_t manager_state;
-	uint32_t   hold_count;
-	uint32_t   queue_wait_delay;
 	uint8_t action_found;
 	struct btn_action_t *btn_actions_arr;
-
 
 	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
 	config_handle = DEV_GET_CONFIG_DATA_POINTER(adev);
 
 	curr_gpio_state_arr = runtime_handle->curr_gpio_state_arr;
-	hold_count = runtime_handle->hold_count;
-	queue_wait_delay = runtime_handle->queue_wait_delay;
 
 	gpio_devs_arr = config_handle->gpio_devs_arr;
 	client_dev = config_handle->client_dev;
@@ -158,40 +169,26 @@ uint8_t end_of_debounce_on_push(struct dev_desc_t *adev)
 	}
 
 	action_found = 0;
-	for(action_idx = 0; action_idx < num_of_actions ; action_idx++)
+	for (action_idx = 0; action_idx < num_of_actions ; action_idx++)
 	{
 		action_found = compare_gpio_state(curr_gpio_state_arr,
 				num_of_gpio_devs, &btn_actions_arr[action_idx]);
 
 		if (action_found)
 		{
-			if (BTN_REPORT_PUSH & btn_actions_arr[action_idx].report_config)
+			*curr_action_indx = action_idx;
+			if ((NULL != client_dev) &&
+				(BTN_REPORT_PUSH & btn_actions_arr[action_idx].report_config))
 			{
 				DEV_CALLBACK_2_PARAMS(client_dev, CALLBACK_BTN_STATE_CHANGED,
-					(void *)BTN_REPORT_PUSH, &btn_actions_arr[action_idx]);
+					(void *)BTN_REPORT_PUSH,
+					btn_actions_arr[action_idx].callback_private_data);
 			}
-			break;
+			return 1;
 		}
 	}
 
-	if (0 == action_found)
-	{
-		queue_wait_delay = DEBOUNCE_DELAY;
-		manager_state = BTN_STATE_DEBOUNCING_ON_RELEASE;
-	}
-	else
-	{
-		queue_wait_delay = 128;
-		hold_count = 0;
-		manager_state = BTN_STATE_HOLD;
-	}
-
-
-	runtime_handle->manager_state = manager_state;
-	runtime_handle->hold_count = hold_count;
-	runtime_handle->queue_wait_delay = queue_wait_delay;
-
-	return action_idx;
+	return 0;
 }
 
 
@@ -200,39 +197,41 @@ uint8_t button_state_hold(struct dev_desc_t *adev, uint8_t action_idx)
 	struct button_manager_runtime_t *runtime_handle;
 	struct button_manager_config_t  *config_handle;
 	struct dev_desc_t     *client_dev;
-
 	struct btn_action_t *btn_actions_arr;
-
 	uint32_t   hold_count;
+	void *callback_private_data;
 
 	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
 	config_handle = DEV_GET_CONFIG_DATA_POINTER(adev);
 
-	hold_count = runtime_handle->hold_count;
-
 	client_dev = config_handle->client_dev;
+	if (NULL == client_dev)
+	{
+		return 0;
+	}
+	hold_count = runtime_handle->hold_count;
 	btn_actions_arr = config_handle->btn_actions_arr;
-
+	callback_private_data = btn_actions_arr[action_idx].callback_private_data;
 	hold_count += 128;
 	if(BTN_REPORT_HOLD_EVERY_0s1 & btn_actions_arr[action_idx].report_config)
 	{
 		DEV_CALLBACK_2_PARAMS( client_dev, CALLBACK_BTN_STATE_CHANGED,
-			(void *)BTN_REPORT_HOLD_EVERY_0s1, &btn_actions_arr[action_idx]);
+			(void *)BTN_REPORT_HOLD_EVERY_0s1, callback_private_data);
 	}
 	if( 0x0 == (hold_count & 0x3ff) ) // enter each 1024
 	{
 		if(BTN_REPORT_HOLD_EVERY_1s & btn_actions_arr[action_idx].report_config)
 		{
 			DEV_CALLBACK_2_PARAMS( client_dev ,CALLBACK_BTN_STATE_CHANGED ,
-				(void *)BTN_REPORT_HOLD_EVERY_1s, &btn_actions_arr[action_idx]);
+				(void *)BTN_REPORT_HOLD_EVERY_1s, callback_private_data);
 		}
 	}
 	if( 4992 == hold_count  ) // enter once ~5s
 	{
-		if(BTN_REPORT_HOLD_ONCE_5s & btn_actions_arr[action_idx].report_config)
+		if (BTN_REPORT_HOLD_ONCE_5s & btn_actions_arr[action_idx].report_config)
 		{
 			DEV_CALLBACK_2_PARAMS( client_dev ,CALLBACK_BTN_STATE_CHANGED ,
-				(void *)BTN_REPORT_HOLD_ONCE_5s, &btn_actions_arr[action_idx]);
+				(void *)BTN_REPORT_HOLD_ONCE_5s, callback_private_data);
 		}
 	}
 
@@ -241,7 +240,7 @@ uint8_t button_state_hold(struct dev_desc_t *adev, uint8_t action_idx)
 }
 
 
-uint8_t end_of_debounce_on_release(struct dev_desc_t *adev)
+uint8_t end_of_debounce_on_release(struct dev_desc_t *adev, uint8_t action_idx)
 {
 	struct button_manager_runtime_t *runtime_handle;
 	struct button_manager_config_t  *config_handle;
@@ -249,18 +248,12 @@ uint8_t end_of_debounce_on_release(struct dev_desc_t *adev)
 	struct dev_desc_t **gpio_devs_arr;
 	uint8_t i;
 	uint8_t num_of_gpio_devs;
-	uint8_t manager_state;
-	uint32_t   queue_wait_delay;
 	struct gpio_api_read_t *curr_gpio_state_arr;
 
 	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
 	config_handle = DEV_GET_CONFIG_DATA_POINTER(adev);
 
 	curr_gpio_state_arr = runtime_handle->curr_gpio_state_arr;
-
-	manager_state = runtime_handle->manager_state;
-	queue_wait_delay = runtime_handle->queue_wait_delay;
-
 	gpio_devs_arr = config_handle->gpio_devs_arr;
 	num_of_gpio_devs = config_handle->num_of_gpio_devs;
 
@@ -288,14 +281,97 @@ uint8_t end_of_debounce_on_release(struct dev_desc_t *adev)
 
 	if (idle_state_detected)
 	{
-		queue_wait_delay = 100000;
-		manager_state = BTN_STATE_IDLE;
-	}
+		struct btn_action_t *btn_actions_arr;
+		struct dev_desc_t     *client_dev;
 
+		client_dev = config_handle->client_dev;
+		btn_actions_arr = config_handle->btn_actions_arr;
+		if ( (NULL != client_dev) &&
+			(BTN_REPORT_RELEASE & btn_actions_arr[action_idx].report_config))
+		{
+			DEV_CALLBACK_2_PARAMS( client_dev, CALLBACK_BTN_STATE_CHANGED,
+				(void *)BTN_REPORT_RELEASE,
+				btn_actions_arr[action_idx].callback_private_data);
+		}
+		return 1;
+	}
+	return 0;
+}
+
+static void state_machine(struct dev_desc_t *adev,
+		uint8_t event_was_received_from_gpio)
+{
+	struct button_manager_runtime_t *runtime_handle;
+	uint8_t    manager_state;
+	uint32_t   queue_wait_delay;
+	uint32_t   curr_action_indx;
+
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
+
+	manager_state = runtime_handle->manager_state;
+	queue_wait_delay = runtime_handle->queue_wait_delay;
+	curr_action_indx = runtime_handle->curr_action_indx;
+
+	switch(manager_state)
+	{
+		default :
+		case BTN_STATE_IDLE:
+			if (event_was_received_from_gpio)
+			{
+				queue_wait_delay = DEBOUNCE_DELAY;
+				manager_state = BTN_STATE_DEBOUNCING_ON_PUSH;
+			}
+			break;
+
+		case BTN_STATE_DEBOUNCING_ON_PUSH:
+			if (0 == event_was_received_from_gpio)
+			{
+				uint8_t  action_found;
+
+				action_found = end_of_debounce_on_push(adev, &curr_action_indx);
+				if (0 == action_found)
+				{
+					queue_wait_delay = DEBOUNCE_DELAY;
+					manager_state = BTN_STATE_DEBOUNCING_ON_RELEASE;
+				}
+				else
+				{
+					runtime_handle->curr_action_indx = curr_action_indx;
+					runtime_handle->hold_count = 0;
+					queue_wait_delay = 128;
+					manager_state = BTN_STATE_HOLD;
+				}
+			}
+			break;
+
+		case BTN_STATE_HOLD:
+			if (0 == event_was_received_from_gpio)
+			{
+				button_state_hold(adev, curr_action_indx);
+			}
+			else
+			{
+				queue_wait_delay = DEBOUNCE_DELAY;
+				manager_state = BTN_STATE_DEBOUNCING_ON_RELEASE;
+			}
+			break;
+		case BTN_STATE_DEBOUNCING_ON_RELEASE:
+			if (0 == event_was_received_from_gpio)
+			{
+				uint8_t idle_state_detected;
+
+				idle_state_detected =
+						end_of_debounce_on_release(adev, curr_action_indx);
+				if (idle_state_detected)
+				{
+					queue_wait_delay = VERY_LONG_WAIT;// not used during idle
+					manager_state = BTN_STATE_IDLE;
+				}
+			}
+			break;
+	}
 	runtime_handle->manager_state = manager_state;
 	runtime_handle->queue_wait_delay = queue_wait_delay;
-
-	return 0;
 }
 
 
@@ -311,82 +387,34 @@ uint8_t end_of_debounce_on_release(struct dev_desc_t *adev)
 static void button_manager_task( void *adev )
 {
 	struct button_manager_runtime_t *runtime_handle;
-
-	uint8_t action_idx = 0;
-
 	os_queue_t xButtonQueue;
 	xMessage_t xTxMessage;
-
-	uint8_t    manager_state = BTN_STATE_IDLE;
-	uint32_t   hold_count = 0;
-	uint32_t   queue_wait_delay = 100000;
 
 	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
 
 	xButtonQueue =  os_create_queue( 1 , sizeof(xMessage_t ) );
-
-	runtime_handle->queue_wait_delay = queue_wait_delay;
-	runtime_handle->hold_count = hold_count;
 	runtime_handle->xButtonQueue = xButtonQueue;
 
+	runtime_handle->manager_state = BTN_STATE_IDLE;
+	runtime_handle->queue_wait_delay = VERY_LONG_WAIT;// not used during idle
 
 	if( 0 == xButtonQueue  )
 	{
-		CRITICAL_ERROR("OS queue failed to create");
+		CRITICAL_ERROR("failed to create OS queue");
 	}
 
-	for( ;; )
+	while (1)
 	{
 		uint8_t    queueRetVal;
-
-		manager_state = runtime_handle->manager_state;
-		hold_count = runtime_handle->hold_count;
-		queue_wait_delay = runtime_handle->queue_wait_delay;
+		uint8_t    event_was_received_from_gpio;
 
 		queueRetVal = os_queue_receive_with_timeout(
-				xButtonQueue , &( xTxMessage ),queue_wait_delay) ;
+			xButtonQueue , &( xTxMessage ), runtime_handle->queue_wait_delay) ;
 
-		switch(manager_state)
-		{
-			default :
-			case BTN_STATE_IDLE:
-				if( OS_QUEUE_RECEIVE_SUCCESS == queueRetVal)
-				{
-					queue_wait_delay = DEBOUNCE_DELAY;
-					manager_state = BTN_STATE_DEBOUNCING_ON_PUSH;
+		event_was_received_from_gpio =
+				(OS_QUEUE_RECEIVE_SUCCESS == queueRetVal) ? 1 : 0;
+		state_machine(adev, event_was_received_from_gpio);
 
-					runtime_handle->manager_state = manager_state;
-					runtime_handle->queue_wait_delay = queue_wait_delay;
-				}
-				break;
-			case BTN_STATE_DEBOUNCING_ON_PUSH:
-				if( OS_QUEUE_RECEIVE_SUCCESS != queueRetVal)
-				{/*if no event received from queue */
-					action_idx = end_of_debounce_on_push(adev);
-				}
-				break;
-			case BTN_STATE_HOLD:
-
-				if( OS_QUEUE_RECEIVE_SUCCESS != queueRetVal)
-				{
-					button_state_hold(adev, action_idx);
-				}
-				else
-				{
-					queue_wait_delay = DEBOUNCE_DELAY;
-					manager_state = BTN_STATE_DEBOUNCING_ON_RELEASE;
-
-					runtime_handle->manager_state = manager_state;
-					runtime_handle->queue_wait_delay = queue_wait_delay;
-				}
-				break;
-			case BTN_STATE_DEBOUNCING_ON_RELEASE:
-				if( OS_QUEUE_RECEIVE_SUCCESS != queueRetVal)
-				{
-					end_of_debounce_on_release(adev);
-				}
-				break;
-		}
 		os_stack_test();
 	}
 }
