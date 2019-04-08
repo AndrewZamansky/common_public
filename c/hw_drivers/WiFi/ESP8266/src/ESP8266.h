@@ -166,6 +166,7 @@ struct esp8266_runtime_t{
 	char  ssid_pswrd[ESP8266_MAX_SSID_PSWRD_LEN];
 	char  ssid_name_redandency[ESP8266_MAX_SSID_NAME_LEN];
 	char  ssid_pswrd_redandency[ESP8266_MAX_SSID_PSWRD_LEN];
+	uint8_t  returnFromDataReceiveStateSocketNumber;
 	uint8_t  currentSocketNumber;
 	uint8_t  isMessagePending;
 	uint8_t  lCurrError;

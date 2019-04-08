@@ -268,11 +268,16 @@ static size_t receiving_incoming_net_data(struct esp8266_cfg_t *config_handle,
 		}
 		esp8266_runtime_hndl->currentState =
 				esp8266_runtime_hndl->returnFromDataReceiveState;
+		esp8266_runtime_hndl->currentSocketNumber =
+				esp8266_runtime_hndl->returnFromDataReceiveStateSocketNumber;
 	}
 
-	memcpy(&recvedData[curr_data_size],pBufferStart , bytes_to_copy);
-	curr_data_size += bytes_to_copy;
-	curr_rcv_data_socket->curr_data_size = curr_data_size;
+	if (curr_rcv_data_socket->socket_in_use)
+	{
+		memcpy(&recvedData[curr_data_size], pBufferStart , bytes_to_copy);
+		curr_data_size += bytes_to_copy;
+		curr_rcv_data_socket->curr_data_size = curr_data_size;
+	}
 	leftDataToReceive -= bytes_to_copy;
 	esp8266_runtime_hndl->leftDataToReceive = leftDataToReceive;
 	return (0 < bytes_to_copy) ? bytes_to_copy : 1;
@@ -291,12 +296,13 @@ static size_t process_new_incoming_net_data(
 	size_t header_size;
 	uint8_t receivedSocketNumber;
 	uint64_t timeout ;
+	size_t  leftDataToReceive;
 
 	*is_NOT_incoming_data = 0;
 	if (7 > total_length) return 0;
 
 	// check if buffer start "+IPD,nn,nnn:" or (TODO "+IPD,n,nnn")
-	if (0 != memcmp("+IPD,",pBufferStart,5))
+	if (0 != memcmp("+IPD,", pBufferStart, 5))
 	{
 		*is_NOT_incoming_data = 1;
 		return 1;
@@ -304,7 +310,7 @@ static size_t process_new_incoming_net_data(
 
 	pBufferStart += 5;
 	total_length -= 5;
-	start_of_data_str = memchr(pBufferStart,':',total_length);
+	start_of_data_str = memchr(pBufferStart, ':', total_length);
 	if (NULL == start_of_data_str)
 	{
 		if (10 > total_length)
@@ -330,7 +336,6 @@ static size_t process_new_incoming_net_data(
 		*is_NOT_incoming_data = 1;
 		return 1;
 	}
-	esp8266_runtime_hndl->currentSocketNumber = receivedSocketNumber;
 
 	if (',' != *start_of_requested_str)
 	{
@@ -338,9 +343,8 @@ static size_t process_new_incoming_net_data(
 		*is_NOT_incoming_data = 1;
 		return 1;
 	}
-
 	start_of_requested_str++;
-	esp8266_runtime_hndl->leftDataToReceive = strtoul(
+	leftDataToReceive = strtoul(
 			(char*)start_of_requested_str, &end_of_requested_str, 10);
 
 	if (start_of_requested_str == end_of_requested_str)
@@ -350,11 +354,16 @@ static size_t process_new_incoming_net_data(
 		return 1;
 	}
 
+
 //	PRINTF_DBG("\r\nnew in=%d-\r\n" ,
 //			esp8266_runtime_hndl->leftDataToReceive);
 	esp8266_runtime_hndl->returnFromDataReceiveState =
 						esp8266_runtime_hndl->currentState;
+	esp8266_runtime_hndl->returnFromDataReceiveStateSocketNumber =
+								esp8266_runtime_hndl->currentSocketNumber;
+	esp8266_runtime_hndl->currentSocketNumber = receivedSocketNumber;
 	esp8266_runtime_hndl->currentState = ESP8266_State_Receiving_Data;
+	esp8266_runtime_hndl->leftDataToReceive = leftDataToReceive;
 	timeout = ESP8266_TIMEOUT;
 	DEV_IOCTL(config_handle->timer_dev ,
 			IOCTL_TIMER_WRAPPER_API_SET_COUNTDOWN_VALUE_AND_RESET, &timeout);
@@ -402,6 +411,7 @@ static size_t process_receiving_socket_close(
 	if (0 != cmpBuff2Str((uint8_t*)start_of_requested_str,
 			total_length, "CLOSED")) return 1;
 
+	//PRINTF_DBG("rec closed socket #%d\n", receivedSocketNumber);
 	curr_closing_socket =
 			&esp8266_runtime_hndl->sockets[receivedSocketNumber];
 	curr_closing_socket->socket_in_use = 0;
@@ -637,6 +647,8 @@ static void close_socket(struct esp8266_runtime_t *esp8266_runtime_hndl)
 	os_safe_free(curr_socket->recvedData);
 	curr_socket->recvedData = NULL ;
 	curr_socket->curr_data_size = 0;
+//	PRINTF_DBG("close socket #%d\n", esp8266_runtime_hndl->currentSocketNumber);
+
 }
 
 
@@ -890,21 +902,21 @@ static size_t process_data_from_esp8266_on_wait_for_response(
 		timeout = AP_CONNECT_TIMEOUT;
 		break;
 	case ESP8266_State_Setting_Connection_Type:
-		if (0 == cmpBuff2Str(pBufferStart, line_length,"OK"))
+		if (0 == cmpBuff2Str(pBufferStart, line_length, "OK"))
 		{
 			send_str_to_chip(tx_dev, "AT+CIPSERVER=1,80\r\n");
 			currentState = ESP8266_State_Creating_Server;
 		}
 		break;
 	case ESP8266_State_Creating_Server:
-		if (0 == cmpBuff2Str(pBufferStart, line_length,"OK"))
+		if (0 == cmpBuff2Str(pBufferStart, line_length, "OK"))
 		{
 			send_str_to_chip(tx_dev, "AT+CIPSTO=200\r\n");
 			currentState = ESP8266_State_Setting_Timeout;
 		}
 		break;
 	case ESP8266_State_Setting_Timeout:
-		if (0 == cmpBuff2Str(pBufferStart, line_length,"OK"))
+		if (0 == cmpBuff2Str(pBufferStart, line_length, "OK"))
 		{
 			currentState = ESP8266_State_Idle;
 		}
@@ -1081,6 +1093,7 @@ static ESP8266_State_t process_open_socket_message(
 		socket_handle = DEV_GET_CONFIG_DATA_POINTER(socket_pdev);
 		if (0 == socket_handle->socket_in_use)
 		{
+
 			socket_handle->socket_in_use = 1;
 			socket_handle->recvedData =
 					(uint8_t*)os_safe_malloc(MAX_RCVD_BUFFER_SIZE);
@@ -1113,6 +1126,7 @@ static ESP8266_State_t process_connect_socket_message(
 	socket_handle = DEV_GET_CONFIG_DATA_POINTER(socket_pdev);
 	if(0 != socket_handle->socket_in_use)
 	{
+		//PRINTF_DBG("open socket #%d\n", socket_handle->socket_number);
 		snprintf(sendBuffer, ESP8266_SEND_BUFFER_LEN,
 			"AT+CIPSTART=%d,\"TCP\",\"%s\",%s\r\n",
 			socket_handle->socket_number,
@@ -1123,6 +1137,7 @@ static ESP8266_State_t process_connect_socket_message(
 	}
 	else
 	{
+		PRINTF_DBG("ERR open socket #%d\n", socket_handle->socket_number);
 		esp8266_runtime_hndl->lCurrError = ESP8266_ERR_SOCKET_NOT_AVAILABLE;
 		esp8266_runtime_hndl->lRequest_done = 1;
 		return ESP8266_State_Idle;
