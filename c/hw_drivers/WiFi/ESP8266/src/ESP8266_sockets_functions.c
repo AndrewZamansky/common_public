@@ -241,6 +241,10 @@ static ssize_t esp8266_send(void* socketfd,
 	struct dev_desc_t * socket_dev;
 	size_t ret_length;
 
+	if (0 == length)
+	{
+		return 0;
+	}
 	if(0 != flags)
 	{
 		CRITICAL_ERROR("flags != 0 not implemented yet");

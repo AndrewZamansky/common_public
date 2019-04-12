@@ -51,10 +51,10 @@ static struct dev_desc_t *debug_out_devs[MAX_NUM_OF_PRINTF_INSTANCES] = {NULL};
 static struct dev_desc_t *note_out_devs[MAX_NUM_OF_PRINTF_INSTANCES] = {NULL};
 static uint8_t mutex_init_done = 0;
 
-// keep this buffer global for easier search during debugging
+// keep buffer and write position global for easier search during debugging
 uint8_t  __debug_buffer[SIZE_OF_DEBUG_BUFFER];
+size_t  __dbg_last_write_pos = 1;
 
-static size_t  write_pointer = 1;
 static size_t  read_pointer = 0;
 static uint8_t  busy_for_isr = 0;
 
@@ -179,7 +179,7 @@ size_t PRINTF_API_print_from_debug_buffer(size_t num_of_bytes_to_print)
 	size_t  send_len;
 	size_t  left_data_size;
 
-	curr_write_pointer = write_pointer;
+	curr_write_pointer = __dbg_last_write_pos;
 	start_read_pointer = MODULO_BY_BUFFER_SIZE(read_pointer + 1);
 	if ( (0 == num_of_bytes_to_print) ||
 			(start_read_pointer == curr_write_pointer))
@@ -245,30 +245,31 @@ static void update_dbg_buffer(const uint8_t* pBuffer, uint32_t aLen)
 	size_t curr_read_pointer;// cannot use read_pointer directly (may changes)
 
 	curr_read_pointer = read_pointer;
-	if (curr_read_pointer == write_pointer)// buffer is full
+	if (curr_read_pointer == __dbg_last_write_pos)// buffer is full
 	{
 		return;
 	}
 
-	if (curr_read_pointer > write_pointer)
+	if (curr_read_pointer > __dbg_last_write_pos)
 	{
-		copy_len = curr_read_pointer - write_pointer;
+		copy_len = curr_read_pointer - __dbg_last_write_pos;
 	}
-	else// cannot be  (read_pointer == write_pointer),  already checked before
-	{
-		copy_len = SIZE_OF_DEBUG_BUFFER - write_pointer;
+	else
+	{// cannot be (read_pointer == __dbg_last_write_pos), already checked before
+		copy_len = SIZE_OF_DEBUG_BUFFER - __dbg_last_write_pos;
 	}
 	if (aLen < copy_len)
 	{
 		copy_len = aLen;
 	}
-	memcpy(&__debug_buffer[write_pointer], pBuffer, copy_len);
+	memcpy(&__debug_buffer[__dbg_last_write_pos], pBuffer, copy_len);
 	aLen -= copy_len;
-	write_pointer = MODULO_BY_BUFFER_SIZE(write_pointer + copy_len);
+	__dbg_last_write_pos =
+			MODULO_BY_BUFFER_SIZE(__dbg_last_write_pos + copy_len);
 	pBuffer += copy_len;
 
-	if ((0 == write_pointer) && (0 != curr_read_pointer))
-	{// write_pointer was wrapped and there is still place for new data
+	if ((0 == __dbg_last_write_pos) && (0 != curr_read_pointer))
+	{// __dbg_last_write_pos was wrapped and there is still place for new data
 		copy_len = curr_read_pointer;
 		if (aLen < copy_len)
 		{
@@ -276,7 +277,7 @@ static void update_dbg_buffer(const uint8_t* pBuffer, uint32_t aLen)
 		}
 		memcpy(__debug_buffer, pBuffer, copy_len);
 		aLen -= copy_len;
-		write_pointer += copy_len;
+		__dbg_last_write_pos += copy_len;
 	}
 }
 

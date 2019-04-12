@@ -224,7 +224,10 @@ size_t async_tx_wrapper_pwrite(struct dev_desc_t *adev,
 
 
 		pSendData = xMessage.pData;
-		if(NULL == pSendData) 	return 0;
+		if(NULL == pSendData)
+		{
+			return 0;
+		}
 		memcpy(pSendData, (uint8_t*)apData, curr_transmit_len);
 
 
@@ -238,6 +241,7 @@ size_t async_tx_wrapper_pwrite(struct dev_desc_t *adev,
 #ifdef CONFIG_ASYNC_TX_WRAPPER_USE_MALLOC
 				os_safe_free(pSendData);
 #endif
+				//PRINT_DATA_DBG("async tx wrapper queue full\n", 27);
 				return 0;
 			}
 		}

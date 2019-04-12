@@ -19,7 +19,6 @@
 #include "uart_api.h"
 #include "clock_control_i94xxx_api.h"
 
-#include "_uart_i94xxx_prerequirements_check.h"
 
 /*following line add module to available module list for dynamic device tree*/
 #include "uart_i94xxx_add_component.h"
@@ -42,7 +41,7 @@
 
 //#define MAX_ERR_STR_LEN   255
 
-//#define DEBUG_UART
+#define DEBUG_UART  0
 //#define PRINT_BIN_DATA
 
 /********  types  *********************/
@@ -55,10 +54,8 @@
 /* ------------------------ Exported variables --------*/
 
 
-#ifdef DEBUG_UART
-//char error_str[MAX_ERR_STR_LEN + 1];
-//static char uart_send_dbg_str[] = "uart_linux send start:\n";
-uint8_t _do_uart_dbg_print = 1;
+uint8_t _do_uart_dbg_print = 0;
+#if (0 != DEBUG_UART)
 static void dbg_print(uint8_t const *data, size_t len)
 {
 	if (0 == _do_uart_dbg_print) return;
@@ -76,6 +73,8 @@ static void dbg_print(uint8_t const *data, size_t len)
 		PRINT_DATA_DBG_ISR( data, len);
 	#endif
 }
+#else
+static void dbg_print(uint8_t const *data, size_t len){}
 #endif
 
 #define   UART_I94XXX_RCV_DATA_SIZE_BUFFER  32
@@ -116,13 +115,14 @@ uint8_t uart_i94xxx_callback(struct dev_desc_t *adev ,
 		if ( (UART_I94XXX_RCV_DATA_SIZE_BUFFER == rcv_data_len) &&
 				(NULL != callback_rx_dev))
 		{
-#ifdef DEBUG_UART
-			dbg_print(rcv_data, rcv_data_len);
-			if (0 != _do_uart_dbg_print)
+			if ((DEBUG_UART) && (0 != _do_uart_dbg_print))
 			{
-				PRINT_DATA_DBG_ISR("|e.rcv0|\n", sizeof("|e.rcv0|\n") - 1);
+				dbg_print(rcv_data, rcv_data_len);
+				if (0 != _do_uart_dbg_print)
+				{
+					PRINT_DATA_DBG_ISR("|e.rcv0|\n", sizeof("|e.rcv0|\n") - 1);
+				}
 			}
-#endif
 			DEV_CALLBACK_2_PARAMS(callback_rx_dev,
 					CALLBACK_DATA_RECEIVED,  rcv_data,  rcv_data_len);
 			rcv_data_len = 0;// start getting data again
@@ -132,13 +132,12 @@ uint8_t uart_i94xxx_callback(struct dev_desc_t *adev ,
 
 	if ( rcv_data_len && (NULL != callback_rx_dev))
 	{
-#ifdef DEBUG_UART
-		dbg_print(rcv_data, rcv_data_len);
-		if (0 != _do_uart_dbg_print)
+		if ((DEBUG_UART) && (0 != _do_uart_dbg_print))
 		{
-		//	PRINT_DATA_DBG_ISR("|e.rcv1|\n", sizeof("|e.rcv1|\n") - 1);
+			PRINT_DATA_DBG_ISR("{", 1);
+			dbg_print(rcv_data, rcv_data_len);
+			PRINT_DATA_DBG_ISR("}", 1);
 		}
-#endif
 		DEV_CALLBACK_2_PARAMS(callback_rx_dev,
 				CALLBACK_DATA_RECEIVED,  rcv_data,  (void*)rcv_data_len);
 	}
@@ -173,7 +172,7 @@ size_t uart_i94xxx_pwrite(struct dev_desc_t *adev,
 			const uint8_t *apData, size_t aLength, size_t aOffset)
 {
 	UART_T *uart_regs;
-#ifdef DEBUG_UART
+#if (0 != DEBUG_UART)
 	const uint8_t *start_of_data = apData;
 #endif
 
@@ -192,16 +191,15 @@ size_t uart_i94xxx_pwrite(struct dev_desc_t *adev,
 	}
 	UART_EnableInt(uart_regs,  UART_INTEN_TXENDIEN_Msk );
 
-#ifdef DEBUG_UART
-	if (0 != _do_uart_dbg_print)
+	if ((DEBUG_UART) && (0 != _do_uart_dbg_print))
 	{
 		char uart_send_end_dbg_str[] = "uart send_data_len = 00000\n";
 		snprintf(uart_send_end_dbg_str, sizeof(uart_send_end_dbg_str),
-				"uart send_data_len = %05u\n", (uint32_t)send_data_len);
-		PRINT_DATA_DBG_ISR(start_of_data, send_data_len);
-		PRINT_DATA_DBG_ISR(uart_send_end_dbg_str, sizeof(uart_send_end_dbg_str)- 1);
+				"uart send_data_len = %05lu\n", (uint32_t)send_data_len);
+//		PRINT_DATA_DBG_ISR(start_of_data, send_data_len);
+//		PRINT_DATA_DBG_ISR(uart_send_end_dbg_str,
+//										sizeof(uart_send_end_dbg_str)- 1);
 	}
-#endif
 
 	return send_data_len;
 

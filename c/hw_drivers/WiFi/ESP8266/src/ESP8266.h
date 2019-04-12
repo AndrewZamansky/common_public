@@ -34,6 +34,12 @@ typedef enum
 	ESP8266_State_StartResetting,
 	ESP8266_State_Resetting,
 	ESP8266_State_Setting_Echo_Off,
+
+	/* following state needed because otherwise there are problems some times
+	 * after uart baud rate change. like not receiving handshakes
+	 */
+	ESP8266_State_DisconnectWIFI_before_baud_rate_change,
+
 	ESP8266_State_ChangingBaudRate,
 	ESP8266_State_BaudChangeHandShake,
 	ESP8266_State_Setting_Mode,
@@ -152,7 +158,8 @@ struct esp8266_message_t {
 
 
 struct esp8266_runtime_t{
-	os_queue_t  xQueue;
+	os_queue_t  main_queue;
+	os_queue_t  end_of_msg_queue;
 	os_mutex_t  sendDataMutex;
 	struct dev_desc_t  sockets_descriptors[ESP8266_MAX_NUM_OF_SOCKETS];
 	struct esp8266_socket_t  sockets[ESP8266_MAX_NUM_OF_SOCKETS];
@@ -161,6 +168,7 @@ struct esp8266_runtime_t{
 	size_t  leftDataToReceive;
 	struct esp8266_message_t  pendingMessage;
 	size_t  last_tested_length;
+	size_t  last_bytes_consumed;
 	char  sendBuffer[ESP8266_SEND_BUFFER_LEN+1];// +1 for '\0'
 	char  ssid_name[ESP8266_MAX_SSID_NAME_LEN];
 	char  ssid_pswrd[ESP8266_MAX_SSID_PSWRD_LEN];
