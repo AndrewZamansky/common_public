@@ -164,15 +164,15 @@ uint8_t dmic_i94xxx_ioctl( struct dev_desc_t *adev, uint8_t aIoctl_num,
 			channels = DMIC_CTL_CH0;
 			if (1 < cfg_hndl->num_of_channels)
 			{
-				channels =  DMIC_CTL_CH1;
+				channels |= DMIC_CTL_CH1;
 			}
 			if (2 < cfg_hndl->num_of_channels)
 			{
-				channels = DMIC_CTL_CH2;
+				channels |= DMIC_CTL_CH2;
 			}
 			if (3 < cfg_hndl->num_of_channels)
 			{
-				channels |=  DMIC_CTL_CH3;
+				channels |= DMIC_CTL_CH3;
 			}
 			DMIC_ENABLE_CHANNEL(DMIC, channels);
 			DMIC_ENABLE_PDMA(DMIC);
