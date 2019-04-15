@@ -49,7 +49,7 @@ struct usb_audio_class_cfg_t {
 
 struct usb_audio_class_runtime_t {
 	uint8_t  curr_buff_indx;
-	uint8_t  next_supplied_tx_buffer;
+	uint8_t  tx_buffer_was_supplied;
 	uint8_t  next_supplied_rx_buffer;
 	uint8_t  out_endpoint_num;
 	uint8_t  in_endpoint_num;

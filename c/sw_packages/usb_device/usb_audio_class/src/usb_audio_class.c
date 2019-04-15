@@ -511,9 +511,19 @@ static uint8_t get_empty_tx_buffer(struct usb_audio_class_cfg_t *cfg_hndl,
 	size_t   tx_buff_size;
 	uint8_t  there_is_space_for_write;
 
-	if (0 == cfg_hndl->enable_recording)
+	if ((0 == cfg_hndl->enable_recording) ||
+			(NULL == runtime_hndl->tx_buff))
 	{
 		dbg_cnt1++;
+		*buff = NULL;
+		*ret_buff_size = 0;
+		runtime_hndl->tx_buffer_was_supplied = 0;
+		return 1;
+	}
+
+
+	if (1 == runtime_hndl->tx_buffer_was_supplied)
+	{
 		*buff = NULL;
 		*ret_buff_size = 0;
 		return 1;
@@ -556,15 +566,17 @@ static uint8_t get_empty_tx_buffer(struct usb_audio_class_cfg_t *cfg_hndl,
 	{
 		*buff = &runtime_hndl->tx_buff[curr_write_pos_in_tx_buffer];
 		*ret_buff_size = get_tx_buff_size;
-		runtime_hndl->curr_write_pos_in_tx_buffer = next_write_pos_in_tx_buffer;
 	}
 	else
 	{
 			dbg_cnt1++;
 		*buff = NULL;
 		*ret_buff_size = 0;
+		runtime_hndl->tx_buffer_was_supplied = 0;
 		return 1;
 	}
+	runtime_hndl->tx_buffer_was_supplied = 1;
+
 	return 0;
 }
 
@@ -572,6 +584,11 @@ static uint8_t get_empty_tx_buffer(struct usb_audio_class_cfg_t *cfg_hndl,
 static uint8_t release_tx_buffer(struct usb_audio_class_cfg_t *cfg_hndl,
 		struct usb_audio_class_runtime_t *runtime_hndl)
 {
+	size_t  curr_write_pos_in_tx_buffer;
+	size_t  next_write_pos_in_tx_buffer;
+	size_t   tx_buff_size;
+	size_t   get_tx_buff_size;
+
 	if (0 == g_usbd_RecStarted)
 	{
 		struct set_data_to_in_endpoint_t  data_to_endpoint;
@@ -584,6 +601,25 @@ static uint8_t release_tx_buffer(struct usb_audio_class_cfg_t *cfg_hndl,
 				IOCTL_USB_DEVICE_SENT_DATA_TO_IN_ENDPOINT, &data_to_endpoint);
 		g_usbd_RecStarted = 1;
 	}
+
+	if ((NULL == runtime_hndl->tx_buff) ||
+			( 0 == runtime_hndl->tx_buffer_was_supplied))
+	{
+		return 0;
+	}
+	runtime_hndl->tx_buffer_was_supplied = 0;
+	get_tx_buff_size = cfg_hndl->get_tx_buff_size;
+	tx_buff_size = get_tx_buff_size * NUM_OF_TX_BUFFERS;
+	curr_write_pos_in_tx_buffer = runtime_hndl->curr_write_pos_in_tx_buffer;
+	next_write_pos_in_tx_buffer =
+			curr_write_pos_in_tx_buffer + get_tx_buff_size;
+	if (next_write_pos_in_tx_buffer == tx_buff_size)
+	{
+		next_write_pos_in_tx_buffer = 0;
+	}
+	runtime_hndl->curr_write_pos_in_tx_buffer =
+											next_write_pos_in_tx_buffer;
+
 	return 0;
 }
 
@@ -1056,12 +1092,6 @@ static void init_audio_host_in(struct usb_audio_class_cfg_t *cfg_hndl,
 	normal_host_in_pckt_size = (cfg_hndl->host_in_sample_rate_hz / 1000) *
 												all_tx_channels_sample_size;
 	runtime_hndl->normal_host_in_pckt_size = normal_host_in_pckt_size;
-	new_buff = (uint8_t*)malloc(cfg_hndl->get_tx_buff_size * NUM_OF_TX_BUFFERS);
-	if (NULL == new_buff)
-	{
-		CRITICAL_ERROR("no memory");
-	}
-	runtime_hndl->tx_buff = new_buff;
 
 	max_host_in_pckt_size =
 			normal_host_in_pckt_size + all_tx_channels_sample_size;
@@ -1074,6 +1104,14 @@ static void init_audio_host_in(struct usb_audio_class_cfg_t *cfg_hndl,
 
 	runtime_hndl->curr_write_pos_in_tx_buffer = 0;
 	runtime_hndl->curr_read_pos_in_tx_buffer = 0;
+
+	// init tx_buff last, as it serves for detecting if host_in is initialized
+	new_buff = (uint8_t*)malloc(cfg_hndl->get_tx_buff_size * NUM_OF_TX_BUFFERS);
+	if (NULL == new_buff)
+	{
+		CRITICAL_ERROR("no memory");
+	}
+	runtime_hndl->tx_buff = new_buff;
 }
 
 
