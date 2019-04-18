@@ -16,10 +16,10 @@
 #include "_project_func_declarations.h"
 
 
-/**	defines :	[OS_QUEUE_SEND_SUCCESS]  **/
-#define OS_QUEUE_SEND_SUCCESS
-/**	function :	[OS_QUEUE_RECEIVE_SUCCESS]  **/
-#define OS_QUEUE_RECEIVE_SUCCESS
+#define OS_MUTEX_TAKE_SUCCESS    0
+#define OS_QUEUE_SEND_SUCCESS    0
+#define OS_QUEUE_RECEIVE_SUCCESS 0
+#define OS_QUEUE_RECEIVE_FAILED  1
 
 
 /*define maximal priority for interrupt that can call OS API */
@@ -29,11 +29,13 @@
 /**	*********  mutex type definition *****    **/
 /** os_create_mutex should return os_mutex_t  **/
 /**	type :	[os_mutex_t]  **/
+typedef uint32_t *os_mutex_t;
 
 
 /**	*********  queue type definition *****    **/
 /** os_create_queue should return os_queue_t  **/
 /**	type :	[os_queue_t]  **/
+typedef uint32_t *os_queue_t;
 
 
 /**	*********  init os ********        **/
@@ -52,19 +54,19 @@
 /** os_create_mutex should return os_mutex_t  **/
 
 /**	function :	[os_create_queue()]  **/
-#define os_create_mutex()
+#define os_create_mutex()  NULL
 
 /***********  mutex take **********/
 /** on success will return OS_QUEUE_SEND_SUCCESS  **/
 
 /**	function :	[os_mutex_take_with_timeout()]  **/
-#define os_mutex_take_with_timeout(mutex , timeout)
+#define os_mutex_take_with_timeout(mutex , timeout)   OS_MUTEX_TAKE_SUCCESS
 
 
 
 //infinite wait
 /**	function :	[os_mutex_take_infinite_wait()]  **/
-#define os_mutex_take_infinite_wait(mutex  )
+#define os_mutex_take_infinite_wait(mutex  )  OS_MUTEX_TAKE_SUCCESS
 
 
 
@@ -77,48 +79,44 @@
 
 
 
-/***********  queue receive **********/
-//infinite wait
-/**	function :	[os_queue_receive_with_timeout()]  **/
-#define os_queue_receive_with_timeout(queue , pData ,timeout )
-
-//infinite wait
-/**	function :	[os_queue_receive_infinite_wait()]  **/
-#define os_queue_receive_infinite_wait(queue , pData )
-
 
 /**	*********  queue creation ********        **/
 /** os_create_queue should return os_queue_t  **/
 
 /**	function :	[os_create_queue()]  **/
-#define os_create_queue(num_of_elements , size_of_elements)
+#define os_create_queue(num_of_elements , size_of_elements)   NULL
 
 
 /***********  queue insertion **********/
 /** on success will return OS_QUEUE_SEND_SUCCESS  **/
 
 /**	function :	[os_queue_send_with_timeout()]  **/
-#define os_queue_send_with_timeout(queue , pData , timeout)
+#define os_queue_send_with_timeout(queue , pData , timeout)  \
+													OS_QUEUE_SEND_SUCCESS
 
 // without wait
 /**	function :	[os_queue_send_without_wait()]  **/
-#define os_queue_send_without_wait(queue , pData  )
+#define os_queue_send_without_wait(queue , pData  )  \
+													OS_QUEUE_SEND_SUCCESS
 
 
 //infinite wait
 /**	function :	[os_queue_send_infinite_wait()]  **/
-#define os_queue_send_infinite_wait(queue , pData  )
+#define os_queue_send_infinite_wait(queue , pData  )  \
+													OS_QUEUE_SEND_SUCCESS
 
 
 /***********  queue retrieval **********/
 /** on success will return OS_QUEUE_RECEIVE_SUCCESS  **/
 
 /**	function :	[os_queue_receive_with_timeout()]  **/
-#define os_queue_receive_with_timeout(queue , pData , timeout)
+#define os_queue_receive_with_timeout(queue , pData , timeout)  \
+													OS_QUEUE_RECEIVE_SUCCESS
 
 //infinite wait
 /**	function :	[os_queue_receive_with_timeout()]  **/
-#define os_queue_receive_infinite_wait(queue , pData )
+#define os_queue_receive_infinite_wait(queue , pData )  \
+													OS_QUEUE_RECEIVE_SUCCESS
 
 
 /***********  task creation **********/

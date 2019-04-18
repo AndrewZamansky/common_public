@@ -16,8 +16,6 @@
 #include "irq_api.h"
 #include "auto_init_api.h"
 
-#include "_nvic_prerequirements_check.h"
-
 #include "dt_memory_layout.h"
 
 #ifdef USE_INTERNAL_SRAM

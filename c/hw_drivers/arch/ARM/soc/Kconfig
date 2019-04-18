@@ -2,7 +2,7 @@
 
 choice
 	prompt "SOC"
-	default GENERIC_SOC
+	default GENERIC_ARM_SOC
 
 config NUC505
 	bool "nuc505"

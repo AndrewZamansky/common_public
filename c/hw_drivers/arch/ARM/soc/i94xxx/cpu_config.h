@@ -20,8 +20,8 @@
 
 #endif  // for __ASSEMBLER__
 
+#include "dt_interrupts_num.h"
 
-#define NUMBER_OF_NVIC_EXTERNAL_INTERRUPTS   68
 
 #if 0 // defined in ISD94XXXSeries.h
 

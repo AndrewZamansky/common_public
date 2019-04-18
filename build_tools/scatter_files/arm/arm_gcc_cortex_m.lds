@@ -4,9 +4,37 @@
 ENTRY(_startup)
 
 #include "arm_memory_blocks.lds"
+#include "dt_interrupts_num.h"
+
+#ifndef NUMBER_OF_NVIC_EXTERNAL_INTERRUPTS
+	#error "NUMBER_OF_NVIC_EXTERNAL_INTERRUPTS should be defined"
+#endif
 
 STACK_SIZE = 1024;
-EXCEPTION_VECTOR_AREA_SIZE  	= 0x200;
+
+#define BYTES_TO_KEEP_FOR_INTERNAL_INTERRUPTS  52 //(13 * 4)
+
+#if (NUMBER_OF_NVIC_EXTERNAL_INTERRUPTS < 32)
+	#define BYTES_TO_KEEP_FOR_EXTERNAL_INTERRUPTS  128
+#elif  (NUMBER_OF_NVIC_EXTERNAL_INTERRUPTS < 64)
+	#define BYTES_TO_KEEP_FOR_EXTERNAL_INTERRUPTS  256
+#elif  (NUMBER_OF_NVIC_EXTERNAL_INTERRUPTS < 96)
+	#define BYTES_TO_KEEP_FOR_EXTERNAL_INTERRUPTS  384
+#elif  (NUMBER_OF_NVIC_EXTERNAL_INTERRUPTS < 128)
+	#define BYTES_TO_KEEP_FOR_EXTERNAL_INTERRUPTS  512
+#elif  (NUMBER_OF_NVIC_EXTERNAL_INTERRUPTS < 160)
+	#define BYTES_TO_KEEP_FOR_EXTERNAL_INTERRUPTS  640
+#elif  (NUMBER_OF_NVIC_EXTERNAL_INTERRUPTS < 192)
+	#define BYTES_TO_KEEP_FOR_EXTERNAL_INTERRUPTS  768
+#elif  (NUMBER_OF_NVIC_EXTERNAL_INTERRUPTS < 224)
+	#define BYTES_TO_KEEP_FOR_EXTERNAL_INTERRUPTS  896
+#elif  (NUMBER_OF_NVIC_EXTERNAL_INTERRUPTS < 256)
+	#define BYTES_TO_KEEP_FOR_EXTERNAL_INTERRUPTS  1024
+#endif
+
+
+EXCEPTION_VECTOR_AREA_SIZE = BYTES_TO_KEEP_FOR_INTERNAL_INTERRUPTS +
+								BYTES_TO_KEEP_FOR_EXTERNAL_INTERRUPTS;
 
 SECTIONS
 {
@@ -53,10 +81,11 @@ SECTIONS
 
 	/********************************/
 	/*******  device tree **********/
-	start_of_device_tree_on_ROM =
-		__tables_relocation_section_start_on_ROM__ + EXCEPTION_VECTOR_AREA_SIZE;
-	start_of_device_tree_on_RAM =
-		__tables_relocation_section_start_on_RAM__ + EXCEPTION_VECTOR_AREA_SIZE;
+	start_of_device_tree_on_ROM = __tables_relocation_section_start_on_ROM__ + 
+					EXCEPTION_VECTOR_AREA_SIZE + SIZEOF(.arm_additional_table);
+	start_of_device_tree_on_RAM = __tables_relocation_section_start_on_RAM__ +
+					EXCEPTION_VECTOR_AREA_SIZE + SIZEOF(.arm_additional_table);
+		
 
 #if 0 //TODO : used for creating dynamic device tree file
 #ifdef CONFIG_DYNAMIC_DEVICE_TREE
