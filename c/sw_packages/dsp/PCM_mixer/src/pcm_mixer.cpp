@@ -123,10 +123,10 @@ void pcm_mixer_dsp_16and32bit(struct dsp_module_inst_t *adsp,
 	for (i = 0; i < num_of_channels; i++)
 	{
 		dsp_get_buffer_from_pad(in_pads[i], &apChIn[i], &in_data_len[i]);
-	}
-	if (in_data_len[0] != in_data_len[1] )
-	{
-		CRITICAL_ERROR("bad input buffer size");
+		if (in_data_len[0] != in_data_len[i])
+		{
+			CRITICAL_ERROR("bad input buffer size");
+		}
 	}
 
 
