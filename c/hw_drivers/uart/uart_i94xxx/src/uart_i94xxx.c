@@ -18,11 +18,11 @@
 #include "irq_api.h"
 #include "uart_api.h"
 #include "clock_control_i94xxx_api.h"
-
+#include <stdio.h>
 
 /*following line add module to available module list for dynamic device tree*/
 #include "uart_i94xxx_add_component.h"
-#define DEBUG
+//#define DEBUG
 #include "PRINTF_api.h"
 
 

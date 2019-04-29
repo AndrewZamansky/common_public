@@ -5,8 +5,7 @@
  */
 
 /********  includes *********************/
-
-#include "src/_I2S_onSPI_i94xxx_prerequirements_check.h"
+#include "dev_management_api.h" // for device manager defines and typedefs
 
 #include "I2S_onSPI_i94xxx_api.h"
 #include "I2S_onSPI_i94xxx.h"

@@ -2,7 +2,7 @@
 #ifndef _I2S_onSPI_I94XXX_API_H_
 #define _I2S_onSPI_I94XXX_API_H_
 
-#include "src/_I2S_onSPI_i94xxx_prerequirements_check.h"
+#include "dev_management_api.h" // for device manager defines and typedefs
 #include "spi.h"
 
 /*****************  defines  **************/
