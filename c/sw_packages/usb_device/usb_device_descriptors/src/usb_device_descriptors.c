@@ -149,6 +149,7 @@ uint32_t gu32ConfigHidDescIdx[MAX_INTERFACE_NUM_FOR_HID] = {0};
 static uint8_t *configuration_desc;
 uint16_t configuration_desc_size;
 uint16_t interface_count;
+static uint8_t init_done = 0;
 
 static void increase_configuration_desc(uint16_t additional_size)
 {
@@ -169,6 +170,12 @@ static void device_start(struct usb_device_descriptors_cfg_t *cfg_hndl)
 	uint16_t PID;
 
 	usb_hw = cfg_hndl->usb_hw;
+
+	if (1 == init_done)
+	{
+		CRITICAL_ERROR('usb descriptors already initialized');
+	}
+
 	interface_count = 0;
 	configuration_desc_size = sizeof(gu8ConfigDescriptor);
 	configuration_desc = (uint8_t*)malloc(configuration_desc_size);
@@ -181,6 +188,7 @@ static void device_start(struct usb_device_descriptors_cfg_t *cfg_hndl)
 	memcpy(
 		configuration_desc, gu8ConfigDescriptor, configuration_desc_size);
 	DEV_IOCTL_0_PARAMS(usb_hw, IOCTL_DEVICE_START);
+	init_done = 1;
 }
 
 
@@ -296,6 +304,12 @@ uint8_t usb_device_descriptors_ioctl(
 	struct usb_device_descriptors_cfg_t *cfg_hndl;
 
 	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
+
+	if ((0 == init_done) && (IOCTL_DEVICE_START != aIoctl_num))
+	{
+		CRITICAL_ERROR('usb descriptors not initialized');
+	}
+
 	switch(aIoctl_num)
 	{
 	case IOCTL_DEVICE_START :

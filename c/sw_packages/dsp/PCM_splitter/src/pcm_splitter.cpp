@@ -114,11 +114,10 @@ static void pcm_splitter_dsp_16and32bit(struct dsp_module_inst_t *adsp,
 	for (i = 0; i < num_of_channels; i++)
 	{
 		dsp_get_buffer_from_pad(&out_pads[i], &apChOut[i], &out_data_len[i]);
-	}
-
-	if (out_data_len[0] != out_data_len[1] )
-	{
-		CRITICAL_ERROR("bad output buffer size");
+		if (out_data_len[0] != out_data_len[i] )
+		{
+			CRITICAL_ERROR("bad output buffer size");
+		}
 	}
 
 	subframe_size_bytes = set_params->subframe_size_bytes;
@@ -187,7 +186,7 @@ static void set_params(struct dsp_module_inst_t *adsp,
 	}
 
 	num_of_channels = frame_size_bytes / subframe_size_bytes;
-	if ((2 != num_of_channels) && (4 != num_of_channels))
+	if (4 < num_of_channels)
 	{
 		CRITICAL_ERROR("not supported number of channels");
 	}
