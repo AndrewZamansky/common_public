@@ -40,11 +40,11 @@
 
 /********  defines *********************/
 /* Define EP maximum packet size */
-#define EP0_MAX_PKT_SIZE    64
-#define EP1_MAX_PKT_SIZE    EP0_MAX_PKT_SIZE
+#define EP0_MAX_PKT_SIZE    64 // must be aligned by 8 bytes
+#define EP1_MAX_PKT_SIZE    EP0_MAX_PKT_SIZE // must be aligned by 8 bytes
 
 #define SETUP_BUF_BASE      0
-#define SETUP_BUF_LEN       8
+#define SETUP_BUF_LEN       8// must be aligned by 8 bytes
 #define EP0_BUF_BASE        (SETUP_BUF_BASE + SETUP_BUF_LEN)
 #define EP0_BUF_LEN         (EP0_MAX_PKT_SIZE)
 #define EP1_BUF_BASE        (SETUP_BUF_BASE + SETUP_BUF_LEN)
@@ -421,6 +421,9 @@ static void set_endpoint_func(struct set_endpoints_t *set_endpoints)
 		USBD_SET_EP_BUF_ADDR(endpoints_count, available_buff_pointer);
 		max_pckt_size = set_endpoints->max_pckt_sizes[i];
 		available_buff_pointer += max_pckt_size;
+		// hw requires alignment by 8 bytes:
+		available_buff_pointer = (available_buff_pointer + 7) & (~0x7);
+
 		max_pckt_sizes[endpoints_count] = max_pckt_size;
 
 		endpoint_type = set_endpoints->endpoints_type_arr[i];
