@@ -180,7 +180,11 @@ ifeq ("","$(filter $(CURR_GIT_REPO_DIR),$(EXTERNAL_SRC_GIT_DIRS))")
             SHELL_OUT := $(shell $(CMD_TO_RUN) 2>&1)
             REFERENCES += $(filter-out *,$(SHELL_OUT))
 
-            REFERENCES :=$(filter-out $(CURR_APP_GIT_BRANCH),$(REFERENCES))
+            # if needed branch will not be moved then it's safe to switch
+            # so no need to remove needed branch from $(REFERENCES)
+            ifneq ("$(COMMIT_OF_NEEDED_BRANCH)",$(GIT_REQUESTED_COMMIT))
+                REFERENCES :=$(filter-out $(CURR_APP_GIT_BRANCH),$(REFERENCES))
+            endif
 
             # if no additional references beside our branch, stop auto switch
             ifeq ($(REFERENCES),)
