@@ -19,11 +19,19 @@
 
 #define EP0_MAX_PKT_SIZE    64
 /* Define the vendor id and product id */
-#define USBD_VID     0x0416
+#define USBD_VID     0xDEAD
 #define USBD_PID     0xDEAD
+
+#define DESC_STRING         0x03
 
 #define VID_POS      8
 #define PID_POS      10
+#define VENDOR_STR_POS      14
+#define PRODUCT_STR_POS     15
+#define SERIAL_STR_POS      16
+
+#define WILL_BE_CALC_LATER   0
+
 /*----------------------------------------------------------------------------*/
 /*!<USB Device Descriptor */
 uint8_t gu8DeviceDescriptor[] =
@@ -38,14 +46,13 @@ uint8_t gu8DeviceDescriptor[] =
 	WBVAL(USBD_VID),   /* idVendor */
 	WBVAL(USBD_PID),   /* idProduct */ 
 	0x00, 0x00,        /* bcdDevice */
-	0x01,              /* iManufacture */
-	0x02,              /* iProduct */
-	0x03,              /* iSerialNumber */
+	WILL_BE_CALC_LATER,  /* iManufacture */
+	WILL_BE_CALC_LATER,  /* iProduct */
+	WILL_BE_CALC_LATER,  /* iSerialNumber */
 	0x01               /* bNumConfigurations */
 };
 
 	
-#define WILL_BE_CALC_LATER   0
 /*!<USB Configure Descriptor */
 static uint8_t const gu8ConfigDescriptor[] =
 {
@@ -59,60 +66,15 @@ static uint8_t const gu8ConfigDescriptor[] =
 	0x32,        // bMaxPower 100mA
 };
 
-#define DESC_STRING         0x03
 
 /*!<USB Language String Descriptor */
-const uint8_t gu8StringLang[4] = 
+static const uint8_t gu8StringLang[4] =
 {
 	4,              /* bLength */
 	DESC_STRING,    /* bDescriptorType */
 	0x09, 0x04
 };
 
-/*!<USB Vendor String Descriptor */
-const uint8_t gu8VendorStringDesc[16] = 
-{
-	16,
-	DESC_STRING,
-	'N', 0, 'u', 0, 'v', 0, 'o', 0, 't', 0, 'o', 0, 'n', 0
-};
-
-/*!<USB Product String Descriptor */
-const uint8_t gu8ProductStringDesc[] = {
-	46,             /* bLength          */
-	DESC_STRING,    /* bDescriptorType  */
-	'N', 0,
-	'u', 0, 
-	'v', 0, 
-	'o', 0, 
-	't', 0,
-	'o', 0, 
-	'n', 0,
-	' ', 0,
-	'U', 0,
-	'A', 0, 
-	'C', 0, 
-	'_', 0, 
-	'H', 0,
-	'I', 0, 
-	'D', 0,
-	' ', 0,
-	'D', 0, 
-	'e', 0, 
-	'v', 0, 
-	'i', 0, 
-	'c', 0, 
-	'e', 0
-};
-
-
-uint8_t gu8StringSerial[] = 
-{
-	26,             // bLength
-	DESC_STRING,    // bDescriptorType
-	'A', 0, '0', 0, '0', 0, '0', 0, '0', 0, '8', 0,
-	'0', 0, '4', 0, '0', 0, '1', 0, '1', 0, '5', 0
-};
 
 /*!<USB BOS Descriptor */
 uint8_t gu8BOSDescriptor[] = 
@@ -132,12 +94,7 @@ uint8_t gu8BOSDescriptor[] =
 };
 
 
-const uint8_t *gpu8UsbString[4] = {
-    gu8StringLang,
-    gu8VendorStringDesc,
-    gu8ProductStringDesc,
-    gu8StringSerial
-};
+uint8_t const **gpu8UsbString = NULL;
 
 #define MAX_INTERFACE_NUM_FOR_HID  6
 uint8_t const *gu8UsbHidReport[MAX_INTERFACE_NUM_FOR_HID] = {NULL};
@@ -148,7 +105,8 @@ uint32_t gu32ConfigHidDescIdx[MAX_INTERFACE_NUM_FOR_HID] = {0};
 
 static uint8_t *configuration_desc;
 uint16_t configuration_desc_size;
-uint16_t interface_count;
+uint16_t interface_count = 0;
+uint16_t string_index_count = 0;
 static uint8_t init_done = 0;
 
 static void increase_configuration_desc(uint16_t additional_size)
@@ -176,9 +134,12 @@ static void device_start(struct usb_device_descriptors_cfg_t *cfg_hndl)
 		CRITICAL_ERROR('usb descriptors already initialized');
 	}
 
-	interface_count = 0;
 	configuration_desc_size = sizeof(gu8ConfigDescriptor);
 	configuration_desc = (uint8_t*)malloc(configuration_desc_size);
+	if (NULL == configuration_desc)
+	{
+		CRITICAL_ERROR("not enough memory in heap\n");
+	}
 	VID = cfg_hndl->VID;
 	gu8DeviceDescriptor[VID_POS] = VID & 0xff;
 	gu8DeviceDescriptor[VID_POS + 1] = (VID >> 8) & 0xff;
@@ -187,6 +148,15 @@ static void device_start(struct usb_device_descriptors_cfg_t *cfg_hndl)
 	gu8DeviceDescriptor[PID_POS + 1] = (PID >> 8) & 0xff;
 	memcpy(
 		configuration_desc, gu8ConfigDescriptor, configuration_desc_size);
+
+	string_index_count = 1;
+	gpu8UsbString = (uint8_t const **)malloc(sizeof(uint8_t const *));
+	if (NULL == gpu8UsbString)
+	{
+		CRITICAL_ERROR("not enough memory in heap\n");
+	}
+	gpu8UsbString[0] = gu8StringLang;
+
 	DEV_IOCTL_0_PARAMS(usb_hw, IOCTL_DEVICE_START);
 	init_done = 1;
 }
@@ -257,6 +227,14 @@ static void usb_device_start(struct usb_device_descriptors_cfg_t *cfg_hndl)
 
 	usb_hw = cfg_hndl->usb_hw;
 
+	if ((WILL_BE_CALC_LATER == gu8DeviceDescriptor[VENDOR_STR_POS]) ||
+			(WILL_BE_CALC_LATER == gu8DeviceDescriptor[PRODUCT_STR_POS]) ||
+			(WILL_BE_CALC_LATER == gu8DeviceDescriptor[SERIAL_STR_POS]) ||
+			(0 == interface_count))
+	{
+		CRITICAL_ERROR('device descriptors not fully initialized yet');
+	}
+
 	//set total size :
 	configuration_desc[2] = configuration_desc_size & 0xFF;
 	configuration_desc[3] = (configuration_desc_size >> 8) & 0xFF;
@@ -290,6 +268,52 @@ static void alloc_interfaces(
 	}
 }
 
+
+static void add_string_descriptor(struct usb_device_descriptors_cfg_t *cfg_hndl,
+				struct usb_descriptors_add_string_t *usb_descriptors_add_string)
+{
+	uint8_t const *string_descriptor;
+	uint32_t size_of_descriptor;// additional step to check validity of call
+	uint16_t curr_string_index_count;
+
+	string_descriptor = usb_descriptors_add_string->string_descriptor;
+	size_of_descriptor = usb_descriptors_add_string->size_of_descriptor;
+	if (string_descriptor[0] != size_of_descriptor)
+	{
+		CRITICAL_ERROR('bad size of string descriptor');
+	}
+	if (string_descriptor[1] != DESC_STRING)
+	{
+		CRITICAL_ERROR('bad string descriptor');
+	}
+
+	curr_string_index_count = string_index_count;
+	string_index_count++;
+	gpu8UsbString = (uint8_t const **)realloc(gpu8UsbString,
+						string_index_count * sizeof(uint8_t const *));
+	if (NULL == gpu8UsbString)
+	{
+		CRITICAL_ERROR("not enough memory in heap\n");
+	}
+
+	gpu8UsbString[curr_string_index_count] = string_descriptor;
+	usb_descriptors_add_string->ret_string_index = curr_string_index_count;
+
+	switch (usb_descriptors_add_string->type_of_string)
+	{
+	case USB_DEVICE_DESCRIPTORS_VENDOR_STRING:
+		gu8DeviceDescriptor[VENDOR_STR_POS] = curr_string_index_count;
+		break;
+	case USB_DEVICE_DESCRIPTORS_PRODUCT_STRING:
+		gu8DeviceDescriptor[PRODUCT_STR_POS] = curr_string_index_count;
+		break;
+	case USB_DEVICE_DESCRIPTORS_SERIAL_STRING:
+		gu8DeviceDescriptor[SERIAL_STR_POS] = curr_string_index_count;
+		break;
+	default:
+		break;
+	}
+}
 
 
 /**
@@ -326,6 +350,9 @@ uint8_t usb_device_descriptors_ioctl(
 		break;
 	case USB_DEVICE_DESCRIPTORS_START :
 		usb_device_start(cfg_hndl);
+		break;
+	case USB_DEVICE_DESCRIPTORS_ADD_STRING_DESCRIPTOR :
+		add_string_descriptor(cfg_hndl, aIoctl_param1);
 		break;
 	default :
 		return 1;
