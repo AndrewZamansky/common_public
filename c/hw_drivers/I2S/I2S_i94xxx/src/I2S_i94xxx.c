@@ -13,7 +13,6 @@
 #include "I2S_i94xxx.h"
 #include "irq_api.h"
 #include "timer_wrapper_api.h"
-
 #include "os_wrapper.h"
 
 #include "I94100.h"
@@ -22,8 +21,7 @@
 #include "dpwm.h"
 
 #include "clock_control_i94xxx_api.h"
-
-#include "_I2S_i94xxx_prerequirements_check.h"
+#include "pin_control_api.h"
 
 /*following line add module to available module list for dynamic device tree*/
 #include "I2S_i94xxx_add_component.h"
@@ -43,15 +41,7 @@
 
 /********  defines *********************/
 
-#define GPIO_MODE_I_HI_Z     0x0ul
-#define GPIO_MODE_O_PSH_PLL  0x1ul
-#define GPIO_MODE_O_OPN_DRN  0x2ul
-#define GPIO_MODE_IO_QUAZI   0x3ul
-
-
 /********  types  *********************/
-#define SYS_GPD_MFPL_PD0MFP_I2S0_BCLK   (0x04UL<<SYS_GPD_MFPL_PD0MFP_Pos) /*  */
-#define SYS_GPD_MFPL_PD1MFP_I2S0_LRCLK  (0x04UL<<SYS_GPD_MFPL_PD1MFP_Pos) /*  */
 
 
 
@@ -90,181 +80,27 @@ void I2S_IRQHandler()
 
 static void disable_pinout(struct I2S_i94xxx_cfg_t *cfg_hndl)
 {
-	if (I2S_I94XXX_API_DI_PIN_B13 == cfg_hndl->DI_pin)
+	pin_control_api_clear_pin_function(cfg_hndl->BCLK_pin);
+	pin_control_api_clear_pin_function(cfg_hndl->LRCLK_pin);
+	pin_control_api_clear_pin_function(cfg_hndl->DI_pin);
+	pin_control_api_clear_pin_function(cfg_hndl->DO_pin);
+	if (0xffffffff != cfg_hndl->MCLK_pin)
 	{
-		SYS->GPB_MFPH &= ~(SYS_GPB_MFPH_PB13MFP_Msk);
-		SYS->GPB_MFPH |= SYS_GPB_MFPH_PB13MFP_GPIO;
-
-		PB->MODE &= ~(GPIO_MODE_MODE13_Msk);
-		PB->PUSEL |= (GPIO_MODE_I_HI_Z << GPIO_PUSEL_PUSEL13_Pos);
-	}
-	else if (I2S_I94XXX_API_DI_PIN_D4 == cfg_hndl->DI_pin)
-	{
-		SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD4MFP_Msk);
-		SYS->GPD_MFPL |= SYS_GPD_MFPL_PD4MFP_GPIO;
-
-		PD->MODE &= ~(GPIO_MODE_MODE4_Msk);
-		PD->PUSEL |= (GPIO_MODE_I_HI_Z << GPIO_PUSEL_PUSEL4_Pos);
-	}
-
-	if (I2S_I94XXX_API_DO_PIN_B14 == cfg_hndl->DO_pin)
-	{
-		SYS->GPB_MFPH &= ~(SYS_GPB_MFPH_PB14MFP_Msk);
-		SYS->GPB_MFPH |= SYS_GPB_MFPH_PB14MFP_GPIO;
-
-		PB->MODE &= ~(GPIO_MODE_MODE14_Msk);
-		PB->PUSEL |= (GPIO_MODE_I_HI_Z << GPIO_PUSEL_PUSEL14_Pos);
-	}
-	else if (I2S_I94XXX_API_DO_PIN_D5 == cfg_hndl->DO_pin)
-	{
-		SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD5MFP_Msk);
-		SYS->GPD_MFPL |= SYS_GPD_MFPL_PD5MFP_GPIO;
-
-		PD->MODE &= ~(GPIO_MODE_MODE5_Msk);
-		PB->PUSEL |= (GPIO_MODE_I_HI_Z << GPIO_PUSEL_PUSEL13_Pos);
-	}
-
-	if (I2S_I94XXX_API_MCLK_PIN_B15 == cfg_hndl->MCLK_pin)
-	{
-		SYS->GPB_MFPH &= ~(SYS_GPB_MFPH_PB15MFP_Msk);
-		SYS->GPB_MFPH |= SYS_GPB_MFPH_PB15MFP_GPIO;
-
-		PB->MODE &= ~(GPIO_MODE_MODE15_Msk);
-		PB->PUSEL |= (GPIO_MODE_I_HI_Z << GPIO_PUSEL_PUSEL15_Pos);
-	}
-	else if (I2S_I94XXX_API_MCLK_PIN_D2 == cfg_hndl->MCLK_pin)
-	{
-		SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD2MFP_Msk);
-		SYS->GPD_MFPL |= SYS_GPD_MFPL_PD2MFP_GPIO;
-
-		PD->MODE &= ~(GPIO_MODE_MODE2_Msk);
-		PD->PUSEL |= (GPIO_MODE_I_HI_Z << GPIO_PUSEL_PUSEL2_Pos);
-	}
-
-	if (I2S_I94XXX_API_LRCLK_PIN_D1 == cfg_hndl->LRCLK_pin)
-	{
-		SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD1MFP_Msk);
-		SYS->GPD_MFPL |= SYS_GPD_MFPL_PD1MFP_GPIO;
-
-		PD->MODE &= ~(GPIO_MODE_MODE1_Msk);
-		PD->PUSEL |= (GPIO_MODE_I_HI_Z << GPIO_PUSEL_PUSEL1_Pos);
-	}
-	else if (I2S_I94XXX_API_LRCLK_PIN_D3 == cfg_hndl->LRCLK_pin)
-	{
-		SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD3MFP_Msk);
-		SYS->GPD_MFPL |= SYS_GPD_MFPL_PD3MFP_GPIO;
-
-		PD->MODE &= ~(GPIO_MODE_MODE3_Msk);
-		PD->PUSEL |= (GPIO_MODE_I_HI_Z << GPIO_PUSEL_PUSEL3_Pos);
-	}
-
-	if (I2S_I94XXX_API_BCLK_PIN_D0 == cfg_hndl->BCLK_pin)
-	{
-		SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD0MFP_Msk);
-		SYS->GPD_MFPL |= SYS_GPD_MFPL_PD0MFP_GPIO;
-
-		PD->MODE &= ~(GPIO_MODE_MODE0_Msk);
-		PD->PUSEL |= (GPIO_MODE_I_HI_Z << GPIO_PUSEL_PUSEL0_Pos);
-	}
-	else if (I2S_I94XXX_API_BCLK_PIN_D6 == cfg_hndl->BCLK_pin)
-	{
-		SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD6MFP_Msk);
-		SYS->GPD_MFPL |= SYS_GPD_MFPL_PD6MFP_GPIO;
-
-		PD->MODE &= ~(GPIO_MODE_MODE6_Msk);
-		PD->PUSEL |= (GPIO_MODE_I_HI_Z << GPIO_PUSEL_PUSEL6_Pos);
+		pin_control_api_clear_pin_function(cfg_hndl->MCLK_pin);
 	}
 }
 
 
 static void configure_pinout(struct I2S_i94xxx_cfg_t *cfg_hndl)
 {
-
-	if (I2S_I94XXX_API_DI_PIN_B13 == cfg_hndl->DI_pin)
+	pin_control_api_set_pin_function(cfg_hndl->BCLK_pin);
+	pin_control_api_set_pin_function(cfg_hndl->LRCLK_pin);
+	pin_control_api_set_pin_function(cfg_hndl->DI_pin);
+	pin_control_api_set_pin_function(cfg_hndl->DO_pin);
+	if (0xffffffff != cfg_hndl->MCLK_pin)
 	{
-		PB->MODE &= ~(GPIO_MODE_MODE13_Msk);
-		PB->MODE |= (GPIO_MODE_O_OPN_DRN << GPIO_MODE_MODE13_Pos);
-
-		SYS->GPB_MFPH &= ~(SYS_GPB_MFPH_PB13MFP_Msk);
-		SYS->GPB_MFPH |= SYS_GPB_MFPH_PB13MFP_I2S0_DI;
+		pin_control_api_set_pin_function(cfg_hndl->MCLK_pin);
 	}
-	else if (I2S_I94XXX_API_DI_PIN_D4 == cfg_hndl->DI_pin)
-	{
-		PD->MODE &= ~(GPIO_MODE_MODE4_Msk);
-		PB->MODE |= (GPIO_MODE_O_OPN_DRN << GPIO_MODE_MODE4_Pos);
-
-		SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD4MFP_Msk);
-		SYS->GPD_MFPL |= SYS_GPD_MFPL_PD4MFP_I2S0_DI;
-	}
-
-	if (I2S_I94XXX_API_DO_PIN_B14 == cfg_hndl->DO_pin)
-	{
-		PD->MODE &= ~(GPIO_MODE_MODE14_Msk);
-		PB->MODE |= (GPIO_MODE_O_OPN_DRN << GPIO_MODE_MODE14_Pos);
-
-		SYS->GPB_MFPH &= ~(SYS_GPB_MFPH_PB14MFP_Msk);
-		SYS->GPB_MFPH |= SYS_GPB_MFPH_PB14MFP_I2S0_DO;
-	}
-	else if (I2S_I94XXX_API_DO_PIN_D5 == cfg_hndl->DO_pin)
-	{
-		PD->MODE &= ~(GPIO_MODE_MODE5_Msk);
-		PD->MODE |= (GPIO_MODE_O_OPN_DRN << GPIO_MODE_MODE5_Pos);
-
-		SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD5MFP_Msk);
-		SYS->GPD_MFPL |= SYS_GPD_MFPL_PD5MFP_I2S0_DO;
-	}
-
-	if (I2S_I94XXX_API_MCLK_PIN_B15 == cfg_hndl->MCLK_pin)
-	{
-		PD->MODE &= ~(GPIO_MODE_MODE15_Msk);
-		PB->MODE |= (GPIO_MODE_O_OPN_DRN << GPIO_MODE_MODE15_Pos);
-
-		SYS->GPB_MFPH &= ~(SYS_GPB_MFPH_PB15MFP_Msk);
-		SYS->GPB_MFPH |= SYS_GPB_MFPH_PB15MFP_I2S0_MCLK;
-	}
-	else if (I2S_I94XXX_API_MCLK_PIN_D2 == cfg_hndl->MCLK_pin)
-	{
-		PD->MODE &= ~(GPIO_MODE_MODE2_Msk);
-		PD->MODE |= (GPIO_MODE_O_OPN_DRN << GPIO_MODE_MODE2_Pos);
-
-		SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD2MFP_Msk);
-		SYS->GPD_MFPL |= SYS_GPD_MFPL_PD2MFP_I2S0_MCLK;
-	}
-
-	if (I2S_I94XXX_API_LRCLK_PIN_D1 == cfg_hndl->LRCLK_pin)
-	{
-		PD->MODE &= ~(GPIO_MODE_MODE1_Msk);
-		PD->MODE |= (GPIO_MODE_O_OPN_DRN << GPIO_MODE_MODE1_Pos);
-
-		SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD1MFP_Msk);
-		SYS->GPD_MFPL |= SYS_GPD_MFPL_PD1MFP_I2S0_LRCLK;
-	}
-	else if (I2S_I94XXX_API_LRCLK_PIN_D3 == cfg_hndl->LRCLK_pin)
-	{
-		PD->MODE &= ~(GPIO_MODE_MODE3_Msk);
-		PD->MODE |= (GPIO_MODE_O_OPN_DRN << GPIO_MODE_MODE3_Pos);
-
-		SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD3MFP_Msk);
-		SYS->GPD_MFPL |= SYS_GPD_MFPL_PD3MFP_I2S0_LRCK;
-	}
-
-	if (I2S_I94XXX_API_BCLK_PIN_D0 == cfg_hndl->BCLK_pin)
-	{
-		PD->MODE &= ~(GPIO_MODE_MODE0_Msk);
-		PD->MODE |= (GPIO_MODE_O_OPN_DRN << GPIO_MODE_MODE0_Pos);
-
-		SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD0MFP_Msk);
-		SYS->GPD_MFPL |= SYS_GPD_MFPL_PD0MFP_I2S0_BCLK;
-	}
-	else if (I2S_I94XXX_API_BCLK_PIN_D6 == cfg_hndl->BCLK_pin)
-	{
-		PD->MODE &= ~(GPIO_MODE_MODE6_Msk);
-		PD->MODE |= (GPIO_MODE_O_OPN_DRN << GPIO_MODE_MODE6_Pos);
-
-		SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD6MFP_Msk);
-		SYS->GPD_MFPL |= SYS_GPD_MFPL_PD6MFP_I2S0_BCLK;
-	}
-
 }
 
 
@@ -432,6 +268,7 @@ uint8_t I2S_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 		I2S_ENABLE_TX(I2S0);
 		I2S0->CTL0 |= I2S_CTL0_TXPDMAEN_Msk;
 		break;
+
 	case I2S_I94XXX_STOP_IOCTL:
 		I2S_DISABLE_TX(I2S0);
 		I2S_DISABLE_RX(I2S0);

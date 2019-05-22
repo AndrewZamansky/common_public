@@ -13,14 +13,28 @@
 		#error "DPWM_I94XXX_DT_SAMPLE_RATE should be defined"
 	#endif
 
-	#ifndef DPWM_I94XXX_DT_LEFT_CHANNEL_IO_BANK
-		#error "DPWM_I94XXX_DT_LEFT_CHANNEL_IO_BANK should be defined"
+	#ifndef DPWM_I94XXX_DT_LEFT_CH_P_PIN
+		#error "DPWM_I94XXX_DT_LEFT_CH_P_PIN should be defined"
 	#endif
-	#ifndef DPWM_I94XXX_DT_RIGHT_CHANNEL_IO_BANK
-		#error "DPWM_I94XXX_DT_RIGHT_CHANNEL_IO_BANK should be defined"
+	#ifndef DPWM_I94XXX_DT_LEFT_CH_N_PIN
+		#error "DPWM_I94XXX_DT_LEFT_CH_P_PIN should be defined"
 	#endif
-	#ifndef DPWM_I94XXX_DT_SUB_CHANNEL_IO_BANK
-		#error "DPWM_I94XXX_DT_SUB_CHANNEL_IO_BANK should be defined"
+
+	#ifndef DPWM_I94XXX_DT_RIGHT_CH_P_PIN
+		#error "DPWM_I94XXX_DT_LEFT_CH_P_PIN should be defined"
+	#endif
+	#ifndef DPWM_I94XXX_DT_RIGHT_CH_N_PIN
+		#error "DPWM_I94XXX_DT_LEFT_CH_P_PIN should be defined"
+	#endif
+
+	#ifndef DPWM_I94XXX_DT_SUB_CH_P_PIN
+		//#warning "DPWM_I94XXX_DT_SUB_CH_P_PIN not defined"
+		#define DPWM_I94XXX_DT_SUB_CH_P_PIN  0xffffffff
+	#endif
+
+	#ifndef DPWM_I94XXX_DT_SUB_CH_N_PIN
+		//#warning "DPWM_I94XXX_DT_SUB_CH_N_PIN not defined"
+		#define DPWM_I94XXX_DT_SUB_CH_N_PIN  0xffffffff
 	#endif
 
 	#ifndef DPWM_I94XXX_DT_SRC_CLOCK_PDEV
@@ -35,9 +49,12 @@
 		{                               \
 			POINTER_TO_SRC_CLOCK_PDEV,  \
 			DPWM_I94XXX_DT_SAMPLE_RATE, \
-			DPWM_I94XXX_DT_LEFT_CHANNEL_IO_BANK,  \
-			DPWM_I94XXX_DT_RIGHT_CHANNEL_IO_BANK, \
-			DPWM_I94XXX_DT_SUB_CHANNEL_IO_BANK    \
+			DPWM_I94XXX_DT_LEFT_CH_P_PIN,  \
+			DPWM_I94XXX_DT_LEFT_CH_N_PIN,  \
+			DPWM_I94XXX_DT_RIGHT_CH_P_PIN, \
+			DPWM_I94XXX_DT_RIGHT_CH_N_PIN, \
+			DPWM_I94XXX_DT_SUB_CH_P_PIN,   \
+			DPWM_I94XXX_DT_SUB_CH_N_PIN    \
 		}
 
 #endif
@@ -45,8 +62,11 @@
 #include "add_component.h"
 
 #undef DPWM_I94XXX_DT_SAMPLE_RATE
-#undef DPWM_I94XXX_DT_LEFT_CHANNEL_IO_BANK
-#undef DPWM_I94XXX_DT_RIGHT_CHANNEL_IO_BANK
-#undef DPWM_I94XXX_DT_SUB_CHANNEL_IO_BANK
+#undef DPWM_I94XXX_DT_LEFT_CH_P_PIN
+#undef DPWM_I94XXX_DT_LEFT_CH_N_PIN
+#undef DPWM_I94XXX_DT_RIGHT_CH_P_PIN
+#undef DPWM_I94XXX_DT_RIGHT_CH_N_PIN
+#undef DPWM_I94XXX_DT_SUB_CH_P_PIN
+#undef DPWM_I94XXX_DT_SUB_CH_N_PIN
 #undef DPWM_I94XXX_DT_SRC_CLOCK_PDEV
 #undef POINTER_TO_SRC_CLOCK_PDEV

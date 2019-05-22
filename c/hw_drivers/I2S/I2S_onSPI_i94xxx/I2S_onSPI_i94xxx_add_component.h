@@ -81,7 +81,7 @@
 
 	#ifndef I2S_onSPI_I94XXX_DT_MCLK_PIN
 		#warning "I2S_onSPI_I94XXX_DT_MCLK_PIN is not defined"
-		#define I2S_onSPI_I94XXX_DT_MCLK_PIN  0
+		#define I2S_onSPI_I94XXX_DT_MCLK_PIN    0xffffffff
 	#endif
 
 	#define POINTER_TO_SRC_CLOCK_PDEV  \

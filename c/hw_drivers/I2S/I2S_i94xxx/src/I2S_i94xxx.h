@@ -22,11 +22,11 @@ struct I2S_i94xxx_cfg_t {
 	uint32_t    mono_or_stereo;
 	uint16_t    Mclock_factor_based_on_FSclock;
 	uint8_t     tdm_ch_num;
-	uint8_t     BCLK_pin;
-	uint8_t     LRCLK_pin;
-	uint8_t     DI_pin;
-	uint8_t     DO_pin;
-	uint8_t     MCLK_pin;
+	uint32_t     BCLK_pin;
+	uint32_t     LRCLK_pin;
+	uint32_t     DI_pin;
+	uint32_t     DO_pin;
+	uint32_t     MCLK_pin;
 	uint8_t     num_of_bytes_in_word;
 
 	// fix for uint8_t/uint16_t access if needed:

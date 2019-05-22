@@ -18,6 +18,7 @@
 #include "irq_api.h"
 #include "usb_device_api.h"
 #include "clock_control_i94xxx_api.h"
+#include "pin_control_api.h"
 
 #include "usbd.h"
 #include "string.h"
@@ -476,12 +477,9 @@ static void set_endpoint_func(struct set_endpoints_t *set_endpoints)
 static void device_start()
 {
 	uint32_t freq;
-
-	SYS->GPB_MFPH &= ~(SYS_GPB_MFPH_PB13MFP_Msk | SYS_GPB_MFPH_PB14MFP_Msk |
-			SYS_GPB_MFPH_PB15MFP_Msk);
-	SYS->GPB_MFPH |=  (SYS_GPB_MFPH_PB13MFP_USBD_DN |
-			SYS_GPB_MFPH_PB14MFP_USBD_DP | SYS_GPB_MFPH_PB15MFP_USBD_VBUS);
-
+	pin_control_api_set_pin_function(PIN_CONTROL_DT_I94XXX_PIN_B13_USBD_DN);
+	pin_control_api_set_pin_function(PIN_CONTROL_DT_I94XXX_PIN_B14_USBD_DP);
+	pin_control_api_set_pin_function(PIN_CONTROL_DT_I94XXX_PIN_B15_USBD_VBUS);
 
 	DEV_IOCTL_0_PARAMS(i94xxx_usb_clk_dev, CLK_IOCTL_ENABLE);
 	freq = 48000000;

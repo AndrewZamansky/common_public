@@ -22,7 +22,6 @@
 #include "clk.h"
 #include "i2s.h"
 
-#include "_clock_control_i94xxx_prerequirements_check.h"
 
 
 /********  defines *********************/

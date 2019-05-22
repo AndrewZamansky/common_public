@@ -22,11 +22,11 @@ struct I2S_onSPI_i94xxx_cfg_t {
 	uint32_t    audio_format;
 	uint32_t    txrx_format;
 	uint16_t    Mclock_factor_based_on_FSclock;
-	uint8_t     BCLK_pin;
-	uint8_t     LRCLK_pin;
-	uint8_t     DI_pin;
-	uint8_t     DO_pin;
-	uint8_t     MCLK_pin;
+	uint32_t     BCLK_pin;
+	uint32_t     LRCLK_pin;
+	uint32_t     DI_pin;
+	uint32_t     DO_pin;
+	uint32_t     MCLK_pin;
 
 	// fix for uint8_t/uint16_t access if needed:
 	uint8_t     do_reordering_for_16or8bit_channels;

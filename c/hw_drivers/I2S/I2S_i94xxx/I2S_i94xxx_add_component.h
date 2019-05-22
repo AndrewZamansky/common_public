@@ -78,7 +78,7 @@
 	#endif
 
 	#ifndef I2S_I94XXX_DT_MCLK_PIN
-		#error "I2S_I94XXX_DT_MCLK_PIN should be defined"
+		#define I2S_I94XXX_DT_MCLK_PIN    0xffffffff
 	#endif
 
 	#ifndef I2S_I94XXX_DT_SRC_CLOCK_PDEV

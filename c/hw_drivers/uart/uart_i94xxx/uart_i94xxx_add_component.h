@@ -43,8 +43,12 @@
 	#define POINTER_TO_SRC_CLOCK_PDEV     \
 			P_TO_STATIC_DEVICE_INST(UART_I94XXX_DT_SRC_CLOCK_PDEV)
 
-	#ifndef UART_I94XXX_DT_PINOUT
-		#error "UART_I94XXX_DT_PINOUT should be defined"
+	#ifndef UART_I94XXX_DT_TX_PIN
+		#error "UART_I94XXX_DT_TX_PIN should be defined"
+	#endif
+
+	#ifndef UART_I94XXX_DT_RX_PIN
+		#error "UART_I94XXX_DT_RX_PIN should be defined"
 	#endif
 
 	#define STATIC_DEV_DATA_STRUCT          \
@@ -53,7 +57,8 @@
 			POINTER_TO_RX_CALLBACK_PDEV ,   \
 			POINTER_TO_SRC_CLOCK_PDEV   ,   \
 			UART_I94XXX_DT_BAUD_RATE,       \
-			UART_I94XXX_DT_PINOUT,          \
+			UART_I94XXX_DT_TX_PIN,          \
+			UART_I94XXX_DT_RX_PIN,          \
 		}
 
 	#endif
@@ -71,3 +76,5 @@
 #undef UART_I94XXX_DT_CALLBACK_PDEV
 #undef UART_I94XXX_DT_BAUD_RATE
 #undef UART_I94XXX_DT_SRC_CLOCK_PDEV
+#undef UART_I94XXX_DT_TX_PIN
+#undef UART_I94XXX_DT_RX_PIN

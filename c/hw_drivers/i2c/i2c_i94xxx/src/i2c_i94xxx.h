@@ -22,8 +22,8 @@ struct i2c_i94xxx_cfg_t {
 	size_t   base_address;
 	uint32_t baud_rate;
 	uint8_t master_slave_mode;
-	uint8_t SCL_pinout;
-	uint8_t SDA_pinout;
+	uint32_t SCL_pinout;
+	uint32_t SDA_pinout;
 	uint8_t slave_address;
 } ;
 

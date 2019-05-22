@@ -1,30 +1,19 @@
-
-
 /*
  *
  * spi_i94xxx.c
- *
- *
- *
- *
  *
  */
 
 /********  includes *********************/
 #include "_project_typedefs.h"
 #include "_project_defines.h"
-
-
-
 #include "os_wrapper.h"
-
 #include "I94100.h"
 #include "irq_api.h"
-
 #include "spi.h"
 
-#include "_spi_i94xxx_prerequirements_check.h"
 #include "clock_control_i94xxx_api.h"
+#include "pin_control_api.h"
 
 /*following line add module to available module list for dynamic device tree*/
 #include "spi_i94xxx_add_component.h"
@@ -363,63 +352,6 @@ size_t spi_i94xxx_pwrite(struct dev_desc_t *adev ,
 
 
 
-
-static void configure_spi0_pinout(struct spi_i94xxx_cfg_t *cfg_hndl)
-{
-	if (SPI_I94XXX_API_CLK_PIN_C12 == cfg_hndl->CLK_pin)
-	{
-		SYS->GPC_MFPH &= ~(SYS_GPC_MFPH_PC12MFP_Msk);
-		SYS->GPC_MFPH |= SYS_GPC_MFPH_PC12MFP_SPI0_CLK;
-	}
-
-	if (SPI_I94XXX_API_MISO_PIN_C11 == cfg_hndl->MISO_pin)
-	{
-		SYS->GPC_MFPH &= ~(SYS_GPC_MFPH_PC11MFP_Msk);
-		SYS->GPC_MFPH |= SYS_GPC_MFPH_PC11MFP_SPI0_MISO0;
-	}
-
-	if (SPI_I94XXX_API_MOSI_PIN_C10 == cfg_hndl->MOSI_pin)
-	{
-		SYS->GPC_MFPH &= ~(SYS_GPC_MFPH_PC10MFP_Msk);
-		SYS->GPC_MFPH |= SYS_GPC_MFPH_PC10MFP_SPI0_MOSI0;
-	}
-
-	if (SPI_I94XXX_API_SS_PIN_C7 == cfg_hndl->SS_pin)
-	{
-		SYS->GPC_MFPL &= ~(SYS_GPC_MFPL_PC7MFP_Msk);
-		SYS->GPC_MFPL |= SYS_GPC_MFPL_PC7MFP_SPI0_SS0;
-	}
-
-	//Secondary pinout for SPI0
-
-	if (SPI_I94XXX_API_CLK_PIN_A5 == cfg_hndl->CLK_pin)
-	{
-		SYS->GPA_MFPL &= ~(SYS_GPA_MFPL_PA5MFP_Msk);
-		SYS->GPA_MFPL |= SYS_GPA_MFPL_PA5MFP_SPI0_CLK;
-	}
-
-	if (SPI_I94XXX_API_MISO_PIN_A4 == cfg_hndl->MISO_pin)
-	{
-		SYS->GPA_MFPL &= ~(SYS_GPA_MFPL_PA4MFP_Msk);
-		SYS->GPA_MFPL |= SYS_GPA_MFPL_PA4MFP_SPI0_MISO0;
-	}
-
-	if (SPI_I94XXX_API_MOSI_PIN_A3 == cfg_hndl->MOSI_pin)
-	{
-		SYS->GPA_MFPL &= ~(SYS_GPA_MFPL_PA3MFP_Msk);
-		SYS->GPA_MFPL |= SYS_GPA_MFPL_PA3MFP_SPI0_MOSI0;
-	}
-
-	if (SPI_I94XXX_API_SS_PIN_A6 == cfg_hndl->SS_pin)
-	{
-		SYS->GPA_MFPL &= ~(SYS_GPA_MFPL_PA6MFP_Msk);
-		SYS->GPA_MFPL |= SYS_GPA_MFPL_PA6MFP_SPI0_SS0;
-	}
-
-}
-
-
-
 /**
  * spi_i94xxx_ioctl()
  *
@@ -462,13 +394,17 @@ uint8_t spi_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 			spi_clk_dev = i94xxx_spi0_clk_dev;
 			spi_module_rst = SPI0_RST;
 			spi_irq = SPI0_IRQn;
-			configure_spi0_pinout(cfg_hndl);
 		}
 		else
 		{
-			//TODO: Make additional clock settings for spi1 and spi2
+			CRITICAL_ERROR("not implemented yet");
 			return 1;
 		}
+
+		pin_control_api_set_pin_function(cfg_hndl->CLK_pin);
+		pin_control_api_set_pin_function(cfg_hndl->MISO_pin);
+		pin_control_api_set_pin_function(cfg_hndl->MOSI_pin);
+		pin_control_api_set_pin_function(cfg_hndl->SS_pin);
 
 		DEV_IOCTL_1_PARAMS(spi_clk_dev, CLK_IOCTL_SET_PARENT, src_clock);
 		DEV_IOCTL_0_PARAMS(spi_clk_dev, CLK_IOCTL_ENABLE);

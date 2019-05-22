@@ -19,6 +19,7 @@
 #include "I2S_onSPI_i94xxx_add_component.h"
 
 #include "clock_control_i94xxx_api.h"
+#include "pin_control_api.h"
 
 /********  defines *********************/
 
@@ -34,22 +35,6 @@
 	#endif
 #endif
 
-
-//Pin definitions not included in the I94xxx BSP v3.03
-/* SPI1 MOSI (Master Out, Slave In) pin; or I2S1 data output pin. */
-#define SYS_GPC_MFPL_PC0MFP_SPI1_MOSI         (0x03UL<<SYS_GPC_MFPL_PC0MFP_Pos)
-
-/* SPI1 MISO (Master In, Slave Out) pin; or I2S1 data input pin. */
-#define SYS_GPC_MFPL_PC1MFP_SPI1_MISO         (0x03UL<<SYS_GPC_MFPL_PC1MFP_Pos)
-
-/* SPI1 Serial Clock pin; or I2S1 bit clock pin. */
-#define SYS_GPC_MFPL_PC2MFP_SPI1_CLK          (0x03UL<<SYS_GPC_MFPL_PC2MFP_Pos)
-
-/* SPI1 slave select pin; or I2S1 left right channel clock pin. */
-#define SYS_GPC_MFPL_PC3MFP_SPI1_SS           (0x03UL<<SYS_GPC_MFPL_PC3MFP_Pos)
-
-/* SPI1 I2S master clock output pin. */
-#define SYS_GPC_MFPL_PC4MFP_SPI1_I2SMCLK      (0x03UL<<SYS_GPC_MFPL_PC4MFP_Pos)
 
 
 /********  types  *********************/
@@ -195,134 +180,25 @@ uint8_t I2S_onSPI_i94xxx_callback(struct dev_desc_t *adev ,
 	return 1;
 }
 
+
 /*
  * configure_i2s_spi_pinout :
  *
- * Set Pinouts for I2S over SPI bus. Refer to defines for fuller mask/pos
- * 		Input = 1~4 numbered through defines in I2S_onSPI_i94XXX_api.h
- * 				and listed through SPI1_PD/PC and SPI2PA/PC
- * 		Output = None
  */
-
 static void configure_i2s_spi_pinout(struct I2S_onSPI_i94xxx_cfg_t *cfg_hndl)
 {
-	switch (cfg_hndl->base_address)
+	pin_control_api_set_pin_function(cfg_hndl->BCLK_pin);
+	pin_control_api_enable_input_schmitt_trigger(cfg_hndl->BCLK_pin);
+	pin_control_api_set_pin_function(cfg_hndl->LRCLK_pin);
+	pin_control_api_enable_input_schmitt_trigger(cfg_hndl->LRCLK_pin);
+	pin_control_api_set_pin_function(cfg_hndl->DI_pin);
+	pin_control_api_enable_input_schmitt_trigger(cfg_hndl->DI_pin);
+	pin_control_api_set_pin_function(cfg_hndl->DO_pin);
+	pin_control_api_enable_input_schmitt_trigger(cfg_hndl->DO_pin);
+	if (0xffffffff != cfg_hndl->MCLK_pin)
 	{
-	case I2S_onSPI_I94XXX_API_BASE_ADDRESS_SPI1 :
-
-		if(I2S_onSPI_I94XXX_API_MCLK_PIN_D6 == cfg_hndl->MCLK_pin)
-		{
-			SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD6MFP_Msk);
-			SYS->GPD_MFPL |= SYS_GPD_MFPL_PD6MFP_SPI1_I2SMCLK;
-			PD->SMTEN |= GPIO_SMTEN_SMTEN6_Msk;
-		}
-		else if(I2S_onSPI_I94XXX_API_MCLK_PIN_C4 == cfg_hndl->MCLK_pin)
-		{
-			SYS->GPC_MFPL &= ~(SYS_GPC_MFPL_PC4MFP_Msk);
-			SYS->GPC_MFPL |= SYS_GPC_MFPL_PC4MFP_SPI1_I2SMCLK;
-			PC->SMTEN |= GPIO_SMTEN_SMTEN4_Msk;
-		}
-		else
-		{
-			CRITICAL_ERROR("SPI1 cannot be routed to these pins");
-		}
-
-		if(I2S_onSPI_I94XXX_API_BCLK_PIN_D4 == cfg_hndl->BCLK_pin)
-		{
-			SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD4MFP_Msk);
-			SYS->GPD_MFPL |= SYS_GPD_MFPL_PD4MFP_SPI1_CLK;
-			PD->SMTEN = GPIO_SMTEN_SMTEN4_Msk;
-		}
-		else if(I2S_onSPI_I94XXX_API_BCLK_PIN_C2 == cfg_hndl->BCLK_pin)
-		{
-			SYS->GPC_MFPL &= ~(SYS_GPC_MFPL_PC2MFP_Msk);
-			SYS->GPC_MFPL |= SYS_GPC_MFPL_PC2MFP_SPI1_CLK;
-			PC->SMTEN |= GPIO_SMTEN_SMTEN2_Msk;
-		}
-
-		if(I2S_onSPI_I94XXX_API_LRCLK_PIN_D5 == cfg_hndl->LRCLK_pin)
-		{
-			SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD5MFP_Msk);
-			SYS->GPD_MFPL |= SYS_GPD_MFPL_PD5MFP_SPI1_SS;
-			PD->SMTEN |= GPIO_SMTEN_SMTEN5_Msk;
-		}
-		else if(I2S_onSPI_I94XXX_API_LRCLK_PIN_C3 == cfg_hndl->LRCLK_pin)
-		{
-			SYS->GPC_MFPL &= ~(SYS_GPC_MFPL_PC3MFP_Msk);
-			SYS->GPC_MFPL |= SYS_GPC_MFPL_PC3MFP_SPI1_SS;
-			PC->SMTEN = GPIO_SMTEN_SMTEN3_Msk;
-		}
-
-		if(I2S_onSPI_I94XXX_API_DI_PIN_D3 == cfg_hndl->DI_pin)
-		{
-			SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD3MFP_Msk);
-			SYS->GPD_MFPL |= SYS_GPD_MFPL_PD3MFP_SPI1_MISO;
-			PD->SMTEN |= GPIO_SMTEN_SMTEN3_Msk;
-		}
-		else if(I2S_onSPI_I94XXX_API_DI_PIN_C1 == cfg_hndl->DI_pin)
-		{
-			SYS->GPC_MFPL &= ~(SYS_GPC_MFPL_PC1MFP_Msk);
-			SYS->GPC_MFPL |= SYS_GPC_MFPL_PC1MFP_SPI1_MISO;
-			PC->SMTEN |= GPIO_SMTEN_SMTEN1_Msk;
-		}
-
-		if(I2S_onSPI_I94XXX_API_DO_PIN_D2 == cfg_hndl->DO_pin)
-		{
-			SYS->GPD_MFPL &= ~(SYS_GPD_MFPL_PD2MFP_Msk);
-			SYS->GPD_MFPL |= SYS_GPD_MFPL_PD2MFP_SPI1_MOSI;
-			PD->SMTEN |= GPIO_SMTEN_SMTEN2_Msk;
-		}
-		else if(I2S_onSPI_I94XXX_API_DO_PIN_C0 == cfg_hndl->DO_pin)
-		{
-			SYS->GPC_MFPL &= ~(SYS_GPC_MFPL_PC0MFP_Msk);
-			SYS->GPC_MFPL |= SYS_GPC_MFPL_PC0MFP_SPI1_MOSI;
-			PC->SMTEN = GPIO_SMTEN_SMTEN0_Msk;
-		}
-
-		break;
-
-	case I2S_onSPI_I94XXX_API_BASE_ADDRESS_SPI2 :
-		if(I2S_onSPI_I94XXX_API_MCLK_PIN_A12 == cfg_hndl->MCLK_pin)
-		{
-			SYS->GPA_MFPH &= ~(SYS_GPA_MFPH_PA12MFP_Msk);
-			SYS->GPA_MFPH |= SYS_GPA_MFPH_PA12MFP_SPI2I2S_MCLK;
-			PA->SMTEN |= GPIO_SMTEN_SMTEN12_Msk;
-		}
-		else
-		{
-			CRITICAL_ERROR("SPI2 cannot be routed to these pins");
-		}
-
-		if(I2S_onSPI_I94XXX_API_BCLK_PIN_A10 == cfg_hndl->BCLK_pin)
-		{
-			SYS->GPA_MFPH &= ~(SYS_GPA_MFPH_PA10MFP_Msk);
-			SYS->GPA_MFPH |= SYS_GPA_MFPH_PA10MFP_SPI2I2S_BCLK;
-			PA->SMTEN |= GPIO_SMTEN_SMTEN10_Msk;
-		}
-
-		if(I2S_onSPI_I94XXX_API_LRCLK_PIN_A9 == cfg_hndl->LRCLK_pin)
-		{
-			SYS->GPA_MFPH &= ~(SYS_GPA_MFPH_PA9MFP_Msk);
-			SYS->GPA_MFPH |= SYS_GPA_MFPH_PA9MFP_SPI2I2S_LRCK;
-			PA->SMTEN |= GPIO_SMTEN_SMTEN9_Msk;
-		}
-
-		if(I2S_onSPI_I94XXX_API_DI_PIN_A7 == cfg_hndl->DI_pin)
-		{
-			SYS->GPA_MFPL &= ~(SYS_GPA_MFPL_PA7MFP_Msk);
-			SYS->GPA_MFPL |= SYS_GPA_MFPL_PA7MFP_SPI2I2S_DI;
-			PA->SMTEN |= GPIO_SMTEN_SMTEN12_Msk;
-		}
-
-		if(I2S_onSPI_I94XXX_API_DO_PIN_A8 == cfg_hndl->DO_pin)
-		{
-			SYS->GPA_MFPH &= ~(SYS_GPA_MFPH_PA8MFP_Msk);
-			SYS->GPA_MFPH |= SYS_GPA_MFPH_PA8MFP_SPI2I2S_DO;
-			PA->SMTEN |= GPIO_SMTEN_SMTEN8_Msk;
-		}
-		break;
-	default:
-		CRITICAL_ERROR("SPI base address needs to be defined");
+		pin_control_api_set_pin_function(cfg_hndl->MCLK_pin);
+		pin_control_api_enable_input_schmitt_trigger(cfg_hndl->MCLK_pin);
 	}
 }
 

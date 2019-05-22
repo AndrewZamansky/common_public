@@ -20,6 +20,7 @@
 
 #include "gpio_api.h"
 #include "irq_api.h"
+#include "pin_control_api.h"
 
 #include <stdlib.h>
 
@@ -229,6 +230,7 @@ static void init_gpio(struct dev_desc_t *adev,
 	uint8_t   pin_bitwise_idle_values0;
 	uint8_t   pin_bitwise_idle_values1;
 	GPIO_T*   GPIOx;
+	uint32_t  pin_control;
 
 	pin_arr_size = config_handle->pin_arr_size;
 	pin_arr = config_handle->pin_arr;
@@ -238,6 +240,7 @@ static void init_gpio(struct dev_desc_t *adev,
 	pin_mask = 0;
 	pin_bitwise_idle_values0 = 0;
 	pin_bitwise_idle_values1 = 0;
+	pin_control = ((config_handle->port_num - GPIOA_BASE) / 0x40) << 8;
 	for (i = 0; i < pin_arr_size; i++)
 	{
 		curr_pin = pin_arr[i];
@@ -245,6 +248,9 @@ static void init_gpio(struct dev_desc_t *adev,
 		{
 			CRITICAL_ERROR("pin number should be less than 15");
 		}
+		pin_control |= (curr_pin << 4);
+		pin_control_api_set_pin_function(pin_control);
+
 		pin_mask |= (1 << curr_pin);
 
 		curr_idle_state = pin_arr_idle_state[i];
