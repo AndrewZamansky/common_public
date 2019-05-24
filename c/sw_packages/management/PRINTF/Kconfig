@@ -14,3 +14,8 @@ config DBG_BUF_SHIFT
 	int   "debug buffer size : size = 1 << (2 + DBG_BUF_SHIFT)"
 	depends on !DISABLE_DBG_PRINTS && !USE_MINIMAL_PRINTF
 	default 8
+
+config PRINTF_MAX_STRING_SIZE
+	int   "max size of output string of printf() function"
+	depends on !USE_MINIMAL_PRINTF
+	default 32

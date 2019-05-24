@@ -239,6 +239,39 @@
 
 
 /***********************************/
+/********** i94xxx_I2S_onSPI2_MCLK_clk_dev ********/
+#define DT_DEV_NAME                i94xxx_I2S_onSPI2_MCLK_clk_dev
+#define DT_DEV_MODULE              clk_cntl
+
+#define CLK_DT_IOCTL               i94xxx_I2S_onSPI2_MCLK_ioctl
+#define CLK_DT_DEFAULT_PARENT      i94xxx_spi2clk_clk_dev
+
+#include ADD_CURRENT_DEV
+
+
+/***********************************/
+/********** i94xxx_I2S_onSPI2_BCLK_clk_dev ********/
+#define DT_DEV_NAME                i94xxx_I2S_onSPI2_BCLK_clk_dev
+#define DT_DEV_MODULE              clk_cntl
+
+#define CLK_DT_IOCTL               i94xxx_I2S_onSPI2_BCLK_ioctl
+#define CLK_DT_DEFAULT_PARENT      i94xxx_spi2clk_clk_dev
+
+#include ADD_CURRENT_DEV
+
+
+/***********************************/
+/********** i94xxx_I2S_FSCLK_onSPI2_clk_dev ********/
+#define DT_DEV_NAME                i94xxx_I2S_onSPI2_FSCLK_clk_dev
+#define DT_DEV_MODULE              clk_cntl
+
+#define CLK_DT_IOCTL               i94xxx_I2S_onSPI2_FSCLK_ioctl
+#define CLK_DT_DEFAULT_PARENT      i94xxx_I2S_onSPI2_BCLK_clk_dev
+
+#include ADD_CURRENT_DEV
+
+
+/***********************************/
 /********** i94xxx_dmic_clk_dev ********/
 #define DT_DEV_NAME                i94xxx_dmic_clk_dev
 #define DT_DEV_MODULE              clk_cntl

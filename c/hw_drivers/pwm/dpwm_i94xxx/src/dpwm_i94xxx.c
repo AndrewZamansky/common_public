@@ -41,6 +41,7 @@
 
 
 static uint32_t actualSamplingRate;
+static uint8_t init_done = 0;
 
 
 #ifdef 	DEBUG_USE_INTERRUPT
@@ -127,11 +128,16 @@ static void dpwm_init(struct dpwm_i94xxx_cfg_t *cfg_hndl)
 	uint16_t clkdiv;
 	uint16_t clkdiv2;
 
+	if (init_done)
+	{
+		return;
+	}
+
 	DPWM_MuxPins(cfg_hndl);
 
 	clk_dev = i94xxx_dpwm_clk_dev;
 	src_clock = cfg_hndl->src_clock;
-	sample_rate = cfg_hndl->sample_rate;
+	sample_rate = cfg_hndl->sample_rate_hz;
 
 	DEV_IOCTL_1_PARAMS(clk_dev,	CLK_IOCTL_SET_PARENT, src_clock);
 	DEV_IOCTL_1_PARAMS(clk_dev,	CLK_IOCTL_GET_FREQ, &src_clk_rate);
@@ -185,6 +191,7 @@ static void dpwm_init(struct dpwm_i94xxx_cfg_t *cfg_hndl)
 	irq_enable_interrupt(DPWM_IRQn);
 	DPWM_ENABLE_FIFOTHRESHOLDINT(DPWM, 16);
 #endif
+	init_done = 1;
 }
 
 
@@ -199,6 +206,10 @@ uint8_t dpwm_i94xxx_ioctl( struct dev_desc_t *adev,
 	struct dpwm_i94xxx_cfg_t *cfg_hndl;
 
 	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
+	if ((0 == init_done) && (IOCTL_DEVICE_START != aIoctl_num))
+	{
+		CRITICAL_ERROR("not initialized yet");
+	}
 
 	switch(aIoctl_num)
 	{
@@ -212,8 +223,13 @@ uint8_t dpwm_i94xxx_ioctl( struct dev_desc_t *adev,
 
 		break;
 
-	case DPWM_I94XXX_GET_MEASURED_SAMPLE_RATE:
+	case DPWM_I94XXX_GET_SAMPLE_RATE_HZ:
 		*((uint32_t*)aIoctl_param1) = actualSamplingRate;
+		break;
+
+	case DPWM_I94XXX_GET_ROOT_CLK_DEV :
+		DEV_IOCTL_1_PARAMS(i94xxx_dpwm_clk_dev,
+						CLK_IOCTL_GET_ROOT_CLK, aIoctl_param1);
 		break;
 
 	default :

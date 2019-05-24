@@ -36,6 +36,7 @@ struct I2S_i94xxx_cfg_t {
 
 struct I2S_i94xxx_runtime_t {
 	uint32_t    actual_sample_rate;
+	uint8_t init_done;
 };
 
 #endif

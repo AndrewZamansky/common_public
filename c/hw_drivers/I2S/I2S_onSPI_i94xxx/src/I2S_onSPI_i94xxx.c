@@ -16,10 +16,11 @@
 
 #include "I94100.h"
 
-#include "I2S_onSPI_i94xxx_add_component.h"
-
 #include "clock_control_i94xxx_api.h"
 #include "pin_control_api.h"
+#include "dpwm_i94xxx_api.h"
+
+#include "I2S_onSPI_i94xxx_add_component.h"
 
 /********  defines *********************/
 
@@ -313,7 +314,47 @@ static void i94xxx_I2S_onSPI_init(struct I2S_onSPI_i94xxx_cfg_t *cfg_hndl)
 }
 
 
-/* ---------------- I/O Control (IOCTL) Function ----------------*/
+static void i94xxx_sync_to_dpwm_fs_rate(struct I2S_onSPI_i94xxx_cfg_t *cfg_hndl,
+		struct dev_desc_t *dpwm_dev)
+{
+	struct dev_desc_t *dpwm_root_clk_dev;
+	struct dev_desc_t *i2s_root_clk_dev;
+	SPI_T  *I2S_SPI_module;
+	uint32_t dpwm_sample_rate_hz;
+	uint32_t i2s_sample_rate_hz;
+
+	I2S_SPI_module = (SPI_T*)cfg_hndl->base_address;
+	DEV_IOCTL_1_PARAMS(dpwm_dev,
+			DPWM_I94XXX_GET_ROOT_CLK_DEV, &dpwm_root_clk_dev);
+	if ((SPI_T*)SPI1_BASE == I2S_SPI_module)
+	{
+		DEV_IOCTL_1_PARAMS(i94xxx_spi1clk_clk_dev,
+				CLK_IOCTL_GET_ROOT_CLK, &i2s_root_clk_dev);
+		DEV_IOCTL_1_PARAMS(i94xxx_I2S_onSPI1_FSCLK_clk_dev,
+				CLK_IOCTL_GET_FREQ, &i2s_sample_rate_hz);
+	}
+	else if ((SPI_T*)SPI2_BASE == I2S_SPI_module)
+	{
+		DEV_IOCTL_1_PARAMS(i94xxx_spi2clk_clk_dev,
+				CLK_IOCTL_GET_ROOT_CLK, &i2s_root_clk_dev);
+		DEV_IOCTL_1_PARAMS(i94xxx_I2S_onSPI2_FSCLK_clk_dev,
+				CLK_IOCTL_GET_FREQ, &i2s_sample_rate_hz);
+	}
+
+	if (dpwm_root_clk_dev != i2s_root_clk_dev)
+	{
+		CRITICAL_ERROR("synchronized dpwm and i2s should be from same root clock");
+	}
+
+	DEV_IOCTL_1_PARAMS(dpwm_dev,
+			DPWM_I94XXX_GET_SAMPLE_RATE_HZ, &dpwm_sample_rate_hz);
+
+	if ( dpwm_sample_rate_hz != i2s_sample_rate_hz)
+	{
+		CRITICAL_ERROR("DPWM and I2S sample rates are not synchronized");
+	}
+}
+
 
 /**
  * I2S_onSPI_i94xxx_ioctl()
@@ -324,15 +365,24 @@ uint8_t I2S_onSPI_i94xxx_ioctl( struct dev_desc_t *adev,
 			const uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2)
 {
 	struct I2S_onSPI_i94xxx_cfg_t *cfg_hndl;
+	struct I2S_onSPI_i94xxx_runtime_t *runtime_hndl;
 	SPI_T	*I2S_SPI_module;
 
 	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
+	runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(adev);
+
+	if ((0 == runtime_hndl->init_done) && (IOCTL_DEVICE_START != aIoctl_num))
+	{
+		CRITICAL_ERROR("not initialized yet");
+	}
+
 	I2S_SPI_module = (SPI_T*)cfg_hndl->base_address;
 
 	switch(aIoctl_num)
 	{
 	case IOCTL_DEVICE_START :
 		i94xxx_I2S_onSPI_init(cfg_hndl);
+		runtime_hndl->init_done = 1;
 		break;
 
 	case SPI_I2S_ENABLE_INPUT_IOCTL:
@@ -354,6 +404,11 @@ uint8_t I2S_onSPI_i94xxx_ioctl( struct dev_desc_t *adev,
 		SPI_I2S_DISABLE_TX(I2S_SPI_module);
 		SPI_I2S_DISABLE_TXDMA(I2S_SPI_module);
 		break;
+
+	case SPI_I2S_I94XXX_SYNC_FS_TO_DPWM_FS_RATE:
+		i94xxx_sync_to_dpwm_fs_rate(cfg_hndl, aIoctl_param1);
+		break;
+
 
 	default :
 		return 1;

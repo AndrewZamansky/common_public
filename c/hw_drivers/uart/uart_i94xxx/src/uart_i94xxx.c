@@ -79,8 +79,9 @@ static void dbg_print(uint8_t const *data, size_t len){}
 #endif
 
 #define   UART_I94XXX_RCV_DATA_SIZE_BUFFER  32
-uint8_t  rcv_data[UART_I94XXX_RCV_DATA_SIZE_BUFFER];
-size_t   send_data_len;
+static uint8_t  rcv_data[UART_I94XXX_RCV_DATA_SIZE_BUFFER];
+static size_t   send_data_len;
+static uint8_t init_done = 0;
 
 uint32_t  uart_i94xxx_rx_fifo_overflow_cnt = 0;
 
@@ -206,7 +207,6 @@ size_t uart_i94xxx_pwrite(struct dev_desc_t *adev,
 
 }
 
-uint8_t init_done = 0;
 /**
  * uart_i94xxx_ioctl()
  *

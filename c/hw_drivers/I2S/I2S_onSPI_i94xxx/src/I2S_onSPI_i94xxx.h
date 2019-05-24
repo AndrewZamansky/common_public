@@ -33,7 +33,7 @@ struct I2S_onSPI_i94xxx_cfg_t {
 };
 
 struct I2S_onSPI_i94xxx_runtime_t {
-	size_t   empty;
+	uint8_t   init_done;
 };
 
 #endif

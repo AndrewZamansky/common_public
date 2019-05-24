@@ -84,7 +84,7 @@ static uint32_t available_buff_pointer = EP1_BUF_BASE + EP1_BUF_LEN;
 #define USB_STATE_SETTING  0
 #define USB_STATE_STARTED  1
 static uint8_t usb_state = USB_STATE_SETTING;
-
+static uint8_t init_done = 0;
 /*--------------------------------------------------------------------------*/
 
 //Windows 10 Compiler failed without this variable even though called in an
@@ -474,13 +474,20 @@ static void set_endpoint_func(struct set_endpoints_t *set_endpoints)
 }
 
 
-static void device_start()
+static void device_start(struct usb_i94xxx_cfg_t *cfg_hndl)
 {
 	uint32_t freq;
+
+	if (init_done)
+	{
+		return;
+	}
 	pin_control_api_set_pin_function(PIN_CONTROL_DT_I94XXX_PIN_B13_USBD_DN);
 	pin_control_api_set_pin_function(PIN_CONTROL_DT_I94XXX_PIN_B14_USBD_DP);
 	pin_control_api_set_pin_function(PIN_CONTROL_DT_I94XXX_PIN_B15_USBD_VBUS);
 
+	DEV_IOCTL_1_PARAMS(i94xxx_usb_clk_dev,
+						CLK_IOCTL_SET_PARENT, cfg_hndl->src_clock);
 	DEV_IOCTL_0_PARAMS(i94xxx_usb_clk_dev, CLK_IOCTL_ENABLE);
 	freq = 48000000;
 	DEV_IOCTL_1_PARAMS(i94xxx_usb_clk_dev, CLK_IOCTL_SET_FREQ, &freq);
@@ -490,6 +497,7 @@ static void device_start()
 	irq_register_interrupt(USBD_IRQn, USBD_IRQHandler);
 	irq_set_priority(USBD_IRQn, INTERRUPT_PRIORITY_FOR_USBD );
 	irq_enable_interrupt(USBD_IRQn);
+	init_done = 1;
 }
 
 
@@ -576,13 +584,19 @@ static void set_descriptors(struct set_device_descriptors_t *descriptors)
 uint8_t usb_i94xxx_ioctl( struct dev_desc_t *adev, uint8_t aIoctl_num,
 		void * aIoctl_param1, void * aIoctl_param2)
 {
-//	struct usb_i94xxx_cfg_t *cfg_hndl;
+	struct usb_i94xxx_cfg_t *cfg_hndl;
 
-//	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
+	if ((0 == init_done) && (IOCTL_DEVICE_START != aIoctl_num))
+	{
+		CRITICAL_ERROR("not initialized yet");
+	}
+
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
+
 	switch(aIoctl_num)
 	{
 	case IOCTL_DEVICE_START :
-		device_start();
+		device_start(cfg_hndl);
 		break;
 	case IOCTL_USB_DEVICE_SET_DESCRIPTORS :
 		set_descriptors(aIoctl_param1);

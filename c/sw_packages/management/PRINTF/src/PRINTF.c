@@ -338,7 +338,6 @@ void PRINTF_print_str(enum PRINTF_TYPE_e aPrntType, const char* str)
 
 #ifndef _DONT_USE_PRINTF
 
-#define PRINTF_BUF_LENGTH  64
 /**
  * PRINTF_printf()
  *
@@ -348,11 +347,11 @@ void PRINTF_printf(enum PRINTF_TYPE_e aPrntType, const char* Format, ...)
 {
 	va_list args;
 	int retVal;
-	char buffer[PRINTF_BUF_LENGTH];
+	char buffer[CONFIG_PRINTF_MAX_STRING_SIZE + 1];
 
 	va_start(args, Format);
 	retVal = vsnprintf(
-			(char*)buffer, PRINTF_BUF_LENGTH, Format, args);
+			(char*)buffer, CONFIG_PRINTF_MAX_STRING_SIZE, Format, args);
 	va_end(args);
 
 	if (0 >= retVal) return ;

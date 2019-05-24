@@ -19,6 +19,7 @@
 
 #include "i2s.h"
 #include "dpwm.h"
+#include "dpwm_i94xxx_api.h"
 
 #include "clock_control_i94xxx_api.h"
 #include "pin_control_api.h"
@@ -132,6 +133,11 @@ static void i94xxx_I2S_init(struct I2S_i94xxx_cfg_t *cfg_hndl,
 	uint32_t  i2s_format;
 	struct dev_desc_t  *src_clock;
 
+	if (runtime_handle->init_done)
+	{
+		return;
+	}
+
 	i2s_format = cfg_hndl->i2s_format;
 	num_of_bytes_in_word = cfg_hndl->num_of_bytes_in_word;
 	src_clock = cfg_hndl->src_clock;
@@ -200,47 +206,37 @@ static void i94xxx_I2S_init(struct I2S_i94xxx_cfg_t *cfg_hndl,
 #else
 	I2S0->CTL0 |= I2S_CTL0_RXPDMAEN_Msk;
 #endif
+	runtime_handle->init_done = 1;
 }
 
 
 static void i94xxx_sync_to_dpwm_fs_rate(struct I2S_i94xxx_cfg_t *cfg_hndl,
-		struct I2S_i94xxx_runtime_t *runtime_handle)
+		struct dev_desc_t *dpwm_dev)
 {
-	uint32_t clock_div;
-	uint32_t dpwm_zohdiv;
-	uint32_t dpwm_clock_div;
-	uint32_t dpwm_k;
-	uint32_t dpwm_total_div_to_get_FS;
-	uint32_t i2s_total_div_to_get_FS;
-	uint8_t  num_of_bytes_in_word;
-	uint32_t tdm_ch_num;
+	struct dev_desc_t *dpwm_root_clk_dev;
+	struct dev_desc_t *i2s_root_clk_dev;
+	uint32_t dpwm_sample_rate_hz;
+	uint32_t i2s_sample_rate_hz;
 
-	num_of_bytes_in_word = cfg_hndl->num_of_bytes_in_word;
-	tdm_ch_num = cfg_hndl->tdm_ch_num;
+	DEV_IOCTL_1_PARAMS(dpwm_dev,
+			DPWM_I94XXX_GET_ROOT_CLK_DEV, &dpwm_root_clk_dev);
+	DEV_IOCTL_1_PARAMS(i94xxx_i2s_clk_dev,
+			CLK_IOCTL_GET_ROOT_CLK, &i2s_root_clk_dev);
 
-	if ( 2 != tdm_ch_num)
+	if (dpwm_root_clk_dev != i2s_root_clk_dev)
 	{
-		CRITICAL_ERROR("only 2 channels supported");
+		CRITICAL_ERROR("synchronized dpwm and i2s should be from same root clock");
 	}
-	dpwm_clock_div = DPWM_GET_CLOCKDIV(DPWM);
-	dpwm_zohdiv = DPWM_GET_ZOHDIV(DPWM);
-	dpwm_k = (DPWM->CTL & DPWM_CLKSET_500FS) ? 125 : 128;
 
+	DEV_IOCTL_1_PARAMS(i94xxx_I2S_FSCLK_clk_dev,
+						CLK_IOCTL_GET_FREQ, &i2s_sample_rate_hz);
+	DEV_IOCTL_1_PARAMS(dpwm_dev,
+			DPWM_I94XXX_GET_SAMPLE_RATE_HZ, &dpwm_sample_rate_hz);
 
-	dpwm_total_div_to_get_FS =
-			(dpwm_clock_div + 1) * dpwm_zohdiv * dpwm_k;
-	clock_div = ( ( dpwm_total_div_to_get_FS ) /
-			(2 * tdm_ch_num * num_of_bytes_in_word * 8) ) - 1;
-
-	i2s_total_div_to_get_FS = (clock_div + 1) *
-			(2 * tdm_ch_num * num_of_bytes_in_word * 8);
-
-	if (dpwm_total_div_to_get_FS != i2s_total_div_to_get_FS)
+	if ( dpwm_sample_rate_hz != i2s_sample_rate_hz)
 	{
-		CRITICAL_ERROR("same FS for I2S and DPWM cannot be achived");
+		CRITICAL_ERROR("DPWM and I2S sample rates are not synchronized");
 	}
-	I2S0->CLKDIV = (I2S0->CLKDIV & ~I2S_CLKDIV_BCLKDIV_Msk) |
-		(clock_div << I2S_CLKDIV_BCLKDIV_Pos);
 }
 
 
@@ -257,6 +253,12 @@ uint8_t I2S_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 
 	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
 	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
+
+	if ((0 == runtime_handle->init_done) && (IOCTL_DEVICE_START != aIoctl_num))
+	{
+		CRITICAL_ERROR("not initialized yet");
+	}
+
 
 	switch(aIoctl_num)
 	{
@@ -283,7 +285,7 @@ uint8_t I2S_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 		break;
 
 	case I2S_I94XXX_SYNC_FS_TO_DPWM_FS_RATE:
-		i94xxx_sync_to_dpwm_fs_rate(cfg_hndl, runtime_handle);
+		i94xxx_sync_to_dpwm_fs_rate(cfg_hndl, aIoctl_param1);
 		break;
 
 	default :

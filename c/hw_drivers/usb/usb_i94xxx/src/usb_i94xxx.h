@@ -14,7 +14,7 @@
 /********  types  *********************/
 
 struct usb_i94xxx_cfg_t {
-	uint8_t dummy;
+	struct dev_desc_t *   src_clock;
 };
 
 
