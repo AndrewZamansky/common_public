@@ -18,7 +18,9 @@
 
 #include "clock_control_i94xxx_api.h"
 #include "pin_control_api.h"
-#include "dpwm_i94xxx_api.h"
+#ifdef CONFIG_INCLUDE_INTERNAL_PWM
+	#include "dpwm_i94xxx_api.h"
+#endif
 
 #include "I2S_onSPI_i94xxx_add_component.h"
 
@@ -317,6 +319,7 @@ static void i94xxx_I2S_onSPI_init(struct I2S_onSPI_i94xxx_cfg_t *cfg_hndl)
 static void i94xxx_sync_to_dpwm_fs_rate(struct I2S_onSPI_i94xxx_cfg_t *cfg_hndl,
 		struct dev_desc_t *dpwm_dev)
 {
+#ifdef CONFIG_INCLUDE_INTERNAL_PWM
 	struct dev_desc_t *dpwm_root_clk_dev;
 	struct dev_desc_t *i2s_root_clk_dev;
 	SPI_T  *I2S_SPI_module;
@@ -353,6 +356,9 @@ static void i94xxx_sync_to_dpwm_fs_rate(struct I2S_onSPI_i94xxx_cfg_t *cfg_hndl,
 	{
 		CRITICAL_ERROR("DPWM and I2S sample rates are not synchronized");
 	}
+#else
+	CRITICAL_ERROR("DPWM not included in firmware");
+#endif
 }
 
 

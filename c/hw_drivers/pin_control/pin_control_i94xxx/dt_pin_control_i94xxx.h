@@ -29,17 +29,21 @@
 /*****************************************/
 /************  PORT A ********************/
 #define PIN_A00  ((PORT_A << PORT_POS) | (PIN_0 << PIN_POS))
-#define PIN_CONTROL_DT_I94XXX_PIN_A00_GPIO     (PIN_A00 | 0)
+#define PIN_CONTROL_DT_I94XXX_PIN_A00_GPIO        (PIN_A00 | 0)
+#define PIN_CONTROL_DT_I94XXX_PIN_A00_DMIC_DAT0   (PIN_A00 | 3)
 
 #define PIN_A01  ((PORT_A << PORT_POS) | (PIN_1 << PIN_POS))
-#define PIN_CONTROL_DT_I94XXX_PIN_A01_GPIO     (PIN_A01 | 0)
+#define PIN_CONTROL_DT_I94XXX_PIN_A01_GPIO        (PIN_A01 | 0)
+#define PIN_CONTROL_DT_I94XXX_PIN_A01_DMIC_CLK0   (PIN_A01 | 3)
 
 #define PIN_A02  ((PORT_A << PORT_POS) | (PIN_2 << PIN_POS))
-#define PIN_CONTROL_DT_I94XXX_PIN_A02_GPIO     (PIN_A02 | 0)
+#define PIN_CONTROL_DT_I94XXX_PIN_A02_GPIO        (PIN_A02 | 0)
+#define PIN_CONTROL_DT_I94XXX_PIN_A02_DMIC_DAT1   (PIN_A02 | 3)
 
 #define PIN_A03  ((PORT_A << PORT_POS) | (PIN_3 << PIN_POS))
 #define PIN_CONTROL_DT_I94XXX_PIN_A03_GPIO        (PIN_A03 | 0)
 #define PIN_CONTROL_DT_I94XXX_PIN_A03_SPIO0_MOSI0 (PIN_A03 | 1)
+#define PIN_CONTROL_DT_I94XXX_PIN_A03_DMIC_CLK1   (PIN_A03 | 3)
 
 #define PIN_A04  ((PORT_A << PORT_POS) | (PIN_4 << PIN_POS))
 #define PIN_CONTROL_DT_I94XXX_PIN_A04_GPIO        (PIN_A04 | 0)

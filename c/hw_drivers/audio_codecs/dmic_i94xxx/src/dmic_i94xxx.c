@@ -35,56 +35,6 @@
 /* ------------------------ Exported variables --------*/
 
 
-#define SYS_GPA_MFPL_PA0MFP_DMIC_DAT0  (0x03UL<<SYS_GPA_MFPL_PA0MFP_Pos)
-#define SYS_GPA_MFPL_PA1MFP_DMIC_CLK0  (0x03UL<<SYS_GPA_MFPL_PA1MFP_Pos)
-#define SYS_GPA_MFPL_PA2MFP_DMIC_DAT1  (0x03UL<<SYS_GPA_MFPL_PA2MFP_Pos)
-#define SYS_GPA_MFPL_PA3MFP_DMIC_CLK1  (0x03UL<<SYS_GPA_MFPL_PA3MFP_Pos)
-
-static void set_pinout(struct dmic_i94xxx_cfg_t *cfg_hndl)
-{
-	switch (cfg_hndl->dmic_data0_pin)
-	{
-	case DMIC_I94XXX_DMIC_DATA0_A0:
-		SYS->GPA_MFPL &= ~(SYS_GPA_MFPL_PA0MFP_Msk);
-		SYS->GPA_MFPL |= (SYS_GPA_MFPL_PA0MFP_DMIC_DAT0);
-		break;
-	default :
-		CRITICAL_ERROR("wrong pin");
-		return ;
-	}
-	switch (cfg_hndl->dmic_clk0_pin)
-	{
-	case DMIC_I94XXX_DMIC_CLK0_A1:
-		SYS->GPA_MFPL &= ~(SYS_GPA_MFPL_PA1MFP_Msk);
-		SYS->GPA_MFPL |= (SYS_GPA_MFPL_PA1MFP_DMIC_CLK0);
-		break;
-	default :
-		CRITICAL_ERROR("wrong pin");
-		return ;
-	}
-	switch (cfg_hndl->dmic_data1_pin)
-	{
-	case DMIC_I94XXX_DMIC_DATA1_A2:
-		SYS->GPA_MFPL &= ~(SYS_GPA_MFPL_PA2MFP_Msk);
-		SYS->GPA_MFPL |= (SYS_GPA_MFPL_PA2MFP_DMIC_DAT1);
-		break;
-	default :
-		CRITICAL_ERROR("wrong pin");
-		return ;
-	}
-	switch (cfg_hndl->dmic_clk1_pin)
-	{
-	case DMIC_I94XXX_DMIC_CLK1_A3:
-		SYS->GPA_MFPL &= ~(SYS_GPA_MFPL_PA3MFP_Msk);
-		SYS->GPA_MFPL |= (SYS_GPA_MFPL_PA3MFP_DMIC_CLK1);
-		break;
-	default :
-		CRITICAL_ERROR("wrong pin");
-		return ;
-	}
-}
-
-
 static void dmic_init(struct dmic_i94xxx_cfg_t *cfg_hndl)
 {
 	//int dmic_irq;
@@ -97,8 +47,10 @@ static void dmic_init(struct dmic_i94xxx_cfg_t *cfg_hndl)
 	src_clock = cfg_hndl->src_clock;
 
 	//dmic_irq = DMIC0_IRQn;
-
-	set_pinout(cfg_hndl);
+	pin_control_api_set_pin_function(cfg_hndl->dmic_data0_pin);
+	pin_control_api_set_pin_function(cfg_hndl->dmic_clk0_pin);
+	pin_control_api_set_pin_function(cfg_hndl->dmic_data1_pin);
+	pin_control_api_set_pin_function(cfg_hndl->dmic_clk1_pin);
 
 	DEV_IOCTL_1_PARAMS(i94xxx_dmic_clk_dev, CLK_IOCTL_SET_PARENT, src_clock);
 	DEV_IOCTL_0_PARAMS(i94xxx_dmic_clk_dev, CLK_IOCTL_ENABLE);

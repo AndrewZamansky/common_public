@@ -3,6 +3,7 @@
 #define _DMA_I94XXX_API_H_
 
 #include "dev_management_api.h"
+#include "pdma.h"
 
 /*****************  defines  **************/
 
