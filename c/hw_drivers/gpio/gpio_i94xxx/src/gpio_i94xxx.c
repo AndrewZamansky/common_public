@@ -280,7 +280,7 @@ static void init_gpio(struct dev_desc_t *adev,
 	{
 		gpio_i94xxx_register_interrupt(adev, NULL);
 	}
-
+	runtime_handle->init_done = 1;
 }
 
 
@@ -304,6 +304,28 @@ static void  gpio_i94xxx_read(struct gpio_i94xxx_config_t *config_handle,
 	curr_read_values &= pin_mask;
 	gpio_api_read->pin_bitwise_curr_values[0] = curr_read_values & 0xff;
 	gpio_api_read->pin_bitwise_curr_values[1] = (curr_read_values >> 8) & 0xff;
+}
+
+
+static void  test_if_pins_not_in_idle(
+		struct gpio_i94xxx_config_t *config_handle,
+		struct gpio_i94xxx_runtime_t *runtime_handle, uint8_t  *not_idle)
+{
+	struct gpio_api_read_t  gpio_api_read;
+
+	gpio_i94xxx_read(config_handle, runtime_handle, &gpio_api_read);
+	// use XOR to check if values are different from idles
+	if ((gpio_api_read.pin_bitwise_idle_values[0] ^
+			gpio_api_read.pin_bitwise_curr_values[0]) ||
+		(gpio_api_read.pin_bitwise_idle_values[1] ^
+			gpio_api_read.pin_bitwise_curr_values[1]))
+	{
+		*not_idle = 1;
+	}
+	else
+	{
+		*not_idle = 0;
+	}
 }
 
 
@@ -335,6 +357,38 @@ static void  gpio_i94xxx_clear(struct gpio_i94xxx_config_t *config_handle,
 }
 
 
+static void stop_gpio(struct dev_desc_t *adev,
+		struct gpio_i94xxx_config_t *config_handle,
+		struct gpio_i94xxx_runtime_t *runtime_handle)
+{
+	uint8_t   pin_arr_size;
+	uint8_t   *pin_arr;
+	uint8_t   i;
+	uint8_t   curr_pin;
+	GPIO_T*   GPIOx;
+	uint32_t  pin_control;
+
+	pin_arr_size = config_handle->pin_arr_size;
+	pin_arr = config_handle->pin_arr;
+	GPIOx = (GPIO_T*)config_handle->port_num;
+
+	pin_control = ((config_handle->port_num - GPIOA_BASE) / 0x40) << 8;
+	for (i = 0; i < pin_arr_size; i++)
+	{
+		curr_pin = pin_arr[i];
+		if (15 < curr_pin)
+		{
+			CRITICAL_ERROR("pin number should be less than 15");
+		}
+		pin_control |= (curr_pin << 4);
+		pin_control_api_clear_pin_function(pin_control);
+
+		GPIO_DisableInt(GPIOx, curr_pin);
+	}
+	runtime_handle->pin_mask = 0;
+	runtime_handle->init_done = 0;
+}
+
 /**
  * gpio_i94xxx_ioctl()
  *
@@ -348,6 +402,10 @@ uint8_t gpio_i94xxx_ioctl(struct dev_desc_t *adev, const uint8_t aIoctl_num,
 
 	config_handle = DEV_GET_CONFIG_DATA_POINTER(adev);
 	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
+	if ((0 == runtime_handle->init_done) && (IOCTL_DEVICE_START != aIoctl_num))
+	{
+		CRITICAL_ERROR("not initialized yet");
+	}
 
 	switch(aIoctl_num)
 	{
@@ -386,6 +444,14 @@ uint8_t gpio_i94xxx_ioctl(struct dev_desc_t *adev, const uint8_t aIoctl_num,
 
 	case IOCTL_GPIO_PIN_READ :
 		gpio_i94xxx_read(config_handle, runtime_handle, aIoctl_param1);
+		break;
+
+	case IOCTL_GPIO_TEST_IF_PINS_NOT_IN_IDLE :
+		test_if_pins_not_in_idle(config_handle, runtime_handle, aIoctl_param1);
+		break;
+
+	case IOCTL_DEVICE_STOP :
+		stop_gpio(adev, config_handle, runtime_handle);
 		break;
 
 	default :

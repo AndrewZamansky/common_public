@@ -199,6 +199,9 @@ void USBD_IRQHandler(void)
 	//------------------------------------------------------------------
 	if(u32IntSts & USBD_INTSTS_USB)
 	{
+		uint8_t i;
+		uint32_t endpoint_status_flag;
+
 		// EP events
 		if(u32IntSts & USBD_INTSTS_EP0) {
 			/* Clear event flag */
@@ -215,53 +218,15 @@ void USBD_IRQHandler(void)
 			USBD_CtrlOut();
 		}
 
-		if(u32IntSts & USBD_INTSTS_EP2)
+		for (i = 2; i < 12; i++)
 		{
-			/* Clear event flag */
-			USBD_CLR_INT_FLAG(USBD_INTSTS_EP2);
-			//
-			EP_Handler(2);
-		}
-
-		if(u32IntSts & USBD_INTSTS_EP3)
-		{
-			/* Clear event flag */
-			USBD_CLR_INT_FLAG(USBD_INTSTS_EP3);
-			//
-			EP_Handler(3);
-		}
-
-		if(u32IntSts & USBD_INTSTS_EP4)
-		{
-			/* Clear event flag */
-			USBD_CLR_INT_FLAG(USBD_INTSTS_EP4);
-			EP_Handler(4);
-		}
-
-		if(u32IntSts & USBD_INTSTS_EP5)
-		{
-			/* Clear event flag */
-			USBD_CLR_INT_FLAG(USBD_INTSTS_EP5);
-			EP_Handler(5);
-		}
-
-		if(u32IntSts & USBD_INTSTS_EP6) {
-			/* Clear event flag */
-			USBD_CLR_INT_FLAG(USBD_INTSTS_EP6);
-			EP_Handler(6);
-		}
-
-		if(u32IntSts & USBD_INTSTS_EP7) {
-			/* Clear event flag */
-			USBD_CLR_INT_FLAG(USBD_INTSTS_EP7);
-			EP_Handler(7);
-		}
-
-		if(u32IntSts & USBD_INTSTS_EP8)
-		{
-			/* Clear event flag */
-			USBD_CLR_INT_FLAG(USBD_INTSTS_EP8);
-			EP_Handler(8);
+			endpoint_status_flag = 1 << (USBD_INTSTS_EPEVT0_Pos + i);
+			if (u32IntSts & endpoint_status_flag)
+			{
+				/* Clear event flag */
+				USBD_CLR_INT_FLAG(endpoint_status_flag);
+				EP_Handler(i);
+			}
 		}
 
 		// USB event
