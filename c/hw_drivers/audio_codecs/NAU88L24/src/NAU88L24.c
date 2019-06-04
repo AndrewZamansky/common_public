@@ -41,7 +41,7 @@ struct  NAU88L24_cmd_t {
 
 
 
-static struct  NAU88L24_cmd_t const init_85L40_arr[] = {
+static struct  NAU88L24_cmd_t const init_88L24_arr[] = {
 	//-- Address ------ Data ---------//
 	{0x0020 , 0x0000 },
 	{0x0004 , 0x0000 },
@@ -63,7 +63,7 @@ static struct  NAU88L24_cmd_t const init_85L40_arr[] = {
 };
 
 
-static void send_to_85L40(struct dev_desc_t *i2c_bus_dev, uint8_t dev_addr,
+static void send_to_88L24(struct dev_desc_t *i2c_bus_dev, uint8_t dev_addr,
 		uint16_t reg_addr, uint16_t data)
 {
 	struct i2c_api_master_write_t  i2c_write_struct;
@@ -90,7 +90,7 @@ static void send_to_85L40(struct dev_desc_t *i2c_bus_dev, uint8_t dev_addr,
 
 #define  DMIC_CLK_DIV_4  0x0100
 
-static void init_85L40_clocks(struct NAU88L24_config_t *cfg_hndl)
+static void init_88L24_clocks(struct NAU88L24_config_t *cfg_hndl)
 {
 	struct dev_desc_t    *i2c_bus_dev;
 	struct dev_desc_t *   i2s_mclk_clock;
@@ -158,7 +158,7 @@ static void init_85L40_clocks(struct NAU88L24_config_t *cfg_hndl)
 		CRITICAL_ERROR("unsupported MCLK divider");
 	}
 	reg_val |= DMIC_CLK_DIV_4;
-	send_to_85L40(i2c_bus_dev, dev_addr, 0x0003, reg_val);
+	send_to_88L24(i2c_bus_dev, dev_addr, 0x0003, reg_val);
 
 	HPF_filter_field = 0;
 	switch (fsclk_clock_rate)
@@ -186,7 +186,7 @@ static void init_85L40_clocks(struct NAU88L24_config_t *cfg_hndl)
 	}
 	reg_val = 0x3; // OSR = 256
 	reg_val |= HPF_filter_field << 5;
-	send_to_85L40(i2c_bus_dev, dev_addr, 0x0024, reg_val);
+	send_to_88L24(i2c_bus_dev, dev_addr, 0x0024, reg_val);
 
 }
 
@@ -251,18 +251,18 @@ static void set_routing(struct NAU88L24_config_t *cfg_hndl)
 		val_0x7f |= (POWERUP_PGA_L + POWERUP_PGA_R);
 		val_0x77 |= (FEPGA_MODE_AUX_MONO_HSMIC_L + FEPGA_MODE_AUX_MONO_HSMIC_R);
 		val = 0x0100; // 0db gain
-		send_to_85L40(
+		send_to_88L24(
 				i2c_bus_dev, dev_addr, 0x002d, val + (0 << ADC_MUX_CH_POS));
-		send_to_85L40(
+		send_to_88L24(
 				i2c_bus_dev, dev_addr, 0x002e, val + (1 << ADC_MUX_CH_POS));
-		send_to_85L40(
+		send_to_88L24(
 				i2c_bus_dev, dev_addr, 0x002f, val + (2 << ADC_MUX_CH_POS));
-		send_to_85L40(
+		send_to_88L24(
 				i2c_bus_dev, dev_addr, 0x0030, val + (3 << ADC_MUX_CH_POS));
 		break;
 	case NAU88L24_Input_type_DMIC:
 		val_0x77 |= (FEPGA_MODE_MICP_DMIC_L + FEPGA_MODE_MICP_DMIC_R);
-		send_to_85L40(
+		send_to_88L24(
 				i2c_bus_dev, dev_addr, 0x0074, 0x4106);
 		break;
 	default :
@@ -282,16 +282,16 @@ static void set_routing(struct NAU88L24_config_t *cfg_hndl)
 	}
 	val_0x76 |= ENABLE_AUTO_SHORT_CIR_DETECT;
 
-	send_to_85L40(i2c_bus_dev, dev_addr, 0x0077, val_0x77);
-	send_to_85L40(i2c_bus_dev, dev_addr, 0x0078, 0x3c00);
-	send_to_85L40(i2c_bus_dev, dev_addr, 0x0076, DISCHRG);
+	send_to_88L24(i2c_bus_dev, dev_addr, 0x0077, val_0x77);
+	send_to_88L24(i2c_bus_dev, dev_addr, 0x0078, 0x3c00);
+	send_to_88L24(i2c_bus_dev, dev_addr, 0x0076, DISCHRG);
 	os_delay_ms(1);
-	send_to_85L40(i2c_bus_dev, dev_addr, 0x0076, val_0x76);
-	send_to_85L40(i2c_bus_dev, dev_addr, 0x0080,
+	send_to_88L24(i2c_bus_dev, dev_addr, 0x0076, val_0x76);
+	send_to_88L24(i2c_bus_dev, dev_addr, 0x0080,
 			(HEADPHONES_POWER_DOWN + ENABLE_CHARGE_PUMP));
-	send_to_85L40(i2c_bus_dev, dev_addr, 0x007f, val_0x7f);
-	send_to_85L40(i2c_bus_dev, dev_addr, 0x0078, 0x00);
-	send_to_85L40(i2c_bus_dev, dev_addr, 0x0080, ENABLE_CHARGE_PUMP);
+	send_to_88L24(i2c_bus_dev, dev_addr, 0x007f, val_0x7f);
+	send_to_88L24(i2c_bus_dev, dev_addr, 0x0078, 0x00);
+	send_to_88L24(i2c_bus_dev, dev_addr, 0x0080, ENABLE_CHARGE_PUMP);
 
 
 }
@@ -331,11 +331,11 @@ static void enable_inputs_and_outputs(struct NAU88L24_config_t *cfg_hndl)
 			reg0x01_val |= (1 << (ENABLE_DMIC_POS + 3));
 		}
 	}
-	send_to_85L40(i2c_bus_dev, dev_addr, 0x0001, 0x003f);
+	send_to_88L24(i2c_bus_dev, dev_addr, 0x0001, 0x003f);
 }
 
 
-static void init_85L40(struct NAU88L24_config_t *cfg_hndl)
+static void init_88L24(struct NAU88L24_config_t *cfg_hndl)
 {
 	struct dev_desc_t    *i2c_bus_dev;
 	uint8_t    dev_addr;
@@ -347,37 +347,37 @@ static void init_85L40(struct NAU88L24_config_t *cfg_hndl)
 	dev_addr = cfg_hndl->dev_addr;
 
 	// datasheet recommends to write 0x0000 twice uppon resetting
-	send_to_85L40(i2c_bus_dev, dev_addr, 0x0000, 0x0001);
-	send_to_85L40(i2c_bus_dev, dev_addr, 0x0000, 0x0001);
+	send_to_88L24(i2c_bus_dev, dev_addr, 0x0000, 0x0001);
+	send_to_88L24(i2c_bus_dev, dev_addr, 0x0000, 0x0001);
 
-	send_to_85L40(
+	send_to_88L24(
 			i2c_bus_dev, dev_addr, 0x0066, (ENABLE_VMID + VMID_TIE_OFF_125k));
 	os_delay_ms(2);// should be at least 2ms
 
 
-	send_to_85L40(
+	send_to_88L24(
 			i2c_bus_dev, dev_addr, 0x0067, (MUTE_PGA_L + MUTE_PGA_R));
 
 	set_routing(cfg_hndl);
 
 	for(i = 0;
-			i < (sizeof(init_85L40_arr) / sizeof(struct  NAU88L24_cmd_t)); i++)
+			i < (sizeof(init_88L24_arr) / sizeof(struct  NAU88L24_cmd_t)); i++)
 	{
-		struct  NAU88L24_cmd_t const *cmd_85L40;
+		struct  NAU88L24_cmd_t const *cmd_88L24;
 
-		cmd_85L40 = &init_85L40_arr[i];
-		send_to_85L40(i2c_bus_dev, dev_addr,
-					cmd_85L40->reg_addr, cmd_85L40->reg_val);
+		cmd_88L24 = &init_88L24_arr[i];
+		send_to_88L24(i2c_bus_dev, dev_addr,
+					cmd_88L24->reg_addr, cmd_88L24->reg_val);
 	}
 
 
 	os_delay_ms(10);// pop reducing delay
-	send_to_85L40(i2c_bus_dev, dev_addr, 0x0067, 0x00);
+	send_to_88L24(i2c_bus_dev, dev_addr, 0x0067, 0x00);
 
 	val = 0x20 + POWER_ON_ADC_L + POWER_ON_ADC_R;
-	send_to_85L40(i2c_bus_dev, dev_addr, 0x0072, val);
+	send_to_88L24(i2c_bus_dev, dev_addr, 0x0072, val);
 
-	init_85L40_clocks(cfg_hndl);
+	init_88L24_clocks(cfg_hndl);
 
 	reg0x1c = 0x0043; // PCM B mode
 	if (16 == cfg_hndl->pcm_data_width)
@@ -392,11 +392,11 @@ static void init_85L40(struct NAU88L24_config_t *cfg_hndl)
 	{
 		CRITICAL_ERROR("unsupported pcm data width");
 	}
-	send_to_85L40(i2c_bus_dev, dev_addr, 0x001c, reg0x1c);
+	send_to_88L24(i2c_bus_dev, dev_addr, 0x001c, reg0x1c);
 
 	// start clocks and ADC
 	enable_inputs_and_outputs(cfg_hndl);
-	send_to_85L40(i2c_bus_dev, dev_addr, 0x0002, 0xf334);
+	send_to_88L24(i2c_bus_dev, dev_addr, 0x0002, 0xf334);
 }
 
 /**
@@ -414,7 +414,7 @@ uint8_t NAU88L24_ioctl( struct dev_desc_t *adev, uint8_t aIoctl_num,
 	switch(aIoctl_num)
 	{
 	case IOCTL_DEVICE_START :
-		init_85L40(cfg_hndl);
+		init_88L24(cfg_hndl);
 		break;
 
 	default :
