@@ -1,0 +1,62 @@
+menu "`--->  stm32f103xxx configurations"
+
+
+config STM32F10X_BSP_VERSION
+	string "st32f10x bsp version in form : xx.xx[.xx]"
+	default "3.5.0"
+
+choice
+	prompt "stm32f103xxx flavors"
+	default stm32f103xC
+
+config stm32f103xC
+	bool "stm32f103xC"
+	select STM32F103xC_256K_FLASH
+	select STM32F103xC_64K_SRAM
+
+config stm32f103xD
+	bool "stm32f103xD"
+	select STM32F103xD_384K_FLASH
+	select STM32F103xC_64K_SRAM
+
+config stm32f103xE
+	bool "stm32f103xE"
+	select STM32F103xE_512K_FLASH
+	select STM32F103xC_64K_SRAM
+
+config stm32f103xF
+	bool "stm32f103xF"
+	select STM32F103xF_768K_FLASH
+	select STM32F103xF_96K_SRAM
+
+
+endchoice
+
+
+=======
+config STM32F103XXX_ADDITIONAL_OPTIONS
+	def_bool n
+	select CORTEX_M3
+	
+config STM32F103xC_256K_FLASH
+	def_bool n
+
+config STM32F103xD_384K_FLASH
+	def_bool n
+
+config STM32F103xE_512K_FLASH
+	def_bool n
+
+config STM32F103xF_768K_FLASH
+	def_bool n
+
+
+
+config STM32F103xC_64K_SRAM
+	def_bool n
+
+config STM32F103xF_96K_SRAM
+	def_bool n
+
+
+endmenu

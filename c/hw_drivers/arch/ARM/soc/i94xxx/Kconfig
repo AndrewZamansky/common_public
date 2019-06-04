@@ -38,26 +38,26 @@ config I94XXX_ADDITIONAL_OPTIONS
 	select CORTEX_M4 
 	select SOC_HAS_DSP
 	
-config I9412X_512K_FLASH
+config I9413X_128K_FLASH
 	def_bool n
 
 config I9411X_256K_FLASH
 	def_bool n
 
-config I9413X_128K_FLASH
+config I9412X_512K_FLASH
 	def_bool n
 
 
-config I941X4_196K_SRAM
-	def_bool n
-
-config I941X3_128K_SRAM
+config I941X0_48K_SRAM
 	def_bool n
 
 config I941X1_64K_SRAM
 	def_bool n
 
-config I941X0_48K_SRAM
+config I941X3_128K_SRAM
+	def_bool n
+
+config I941X4_196K_SRAM
 	def_bool n
 
 endmenu

@@ -36,9 +36,6 @@
 	#error "I94XXX flavor not defined"
 #endif
 
-#define CODE_SECTION_LOCATION   internal_flash
-#define DATA_SECTION_LOCATION   internal_sram
-
 
 #include "set_memory_layout.h"
 
