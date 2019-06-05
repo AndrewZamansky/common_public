@@ -2,7 +2,8 @@
 ifeq ($(sort $(CONFIG_I94XXX)),y)
 
     I94XXX_BSP_VERSION :=$(patsubst "%",%,$(CONFIG_I94XXX_BSP_VERSION))
-    BSP_I94XXX_PATH :=$(EXTERNAL_SOURCE_ROOT_DIR)/BSP_I94XXX_v$(I94XXX_BSP_VERSION)
+    _BSP_DIR_NAME =BSP_I94XXX_v$(I94XXX_BSP_VERSION)
+    BSP_I94XXX_PATH :=$(EXTERNAL_SOURCE_ROOT_DIR)/$(_BSP_DIR_NAME)
     ifeq ("$(wildcard $(BSP_I94XXX_PATH))","")
         $(info !--- I94XXX BSP path $(BSP_I94XXX_PATH) dont exists )
         $(info !--- download I94XXX BSP version $(I94XXX_BSP_VERSION) and unpack it to $(BSP_I94XXX_PATH)  )

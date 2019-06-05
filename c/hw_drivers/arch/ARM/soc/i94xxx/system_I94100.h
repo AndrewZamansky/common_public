@@ -19,22 +19,24 @@ extern "C" {
 #include <stdint.h>
 #include "project_config.h"
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Macro Definition                                                                                        */
-/*---------------------------------------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/* Macro Definition                                                           */
+/*----------------------------------------------------------------------------*/
 #ifndef DEBUG_PORT
-#define DEBUG_PORT      UART0       /*!< Select Debug Port which is used for retarget.c to output debug message to UART */
+/*Select Debug Port  for retarget.c to output debug message to UART */
+#define DEBUG_PORT      UART0
 #endif
 	
 /*----------------------------------------------------------------------------
   Define clocks
  *----------------------------------------------------------------------------*/
-//#define __HXT       (CONFIG_CRYSTAL_CLOCK)    /*!< External Crystal Clock Frequency     */
+//#define __HXT (CONFIG_CRYSTAL_CLOCK)  /*!< External Crystal Clock Frequency */
 extern uint32_t __HXT;
 
-//#define __LXT       (32768UL)       /*!< External Crystal Clock Frequency 32.768KHz */
+//#define __LXT (32768UL)    /*!< External Crystal Clock Frequency 32.768KHz */
 extern uint32_t __LXT;
-//#define __HIRC      ((CLK->CLKSEL0&CLK_CLKSEL0_HIRCFSEL_Msk)?(48000000UL):(49152000UL))    /*< Internal 49.152M/48.000 RC Oscillator Frequency */
+/*< Internal 49.152M/48.000 RC Oscillator Frequency */
+//#define __HIRC   ((CLK->CLKSEL0&CLK_CLKSEL0_HIRCFSEL_Msk)?(48000000UL):(49152000UL))
 extern uint32_t __HIRC;
 
 #define __LIRC      (10000UL)       /*!< Internal 10K RC Oscillator Frequency */
@@ -42,9 +44,9 @@ extern uint32_t __HIRC;
 
 //#define __SYSTEM_CLOCK    (1*__HXT)
 
-extern uint32_t SystemCoreClock;     /*!< System Clock Frequency (Core Clock)  */
-extern uint32_t CyclesPerUs;         /*!< Cycles per micro second              */
-extern uint32_t PllClock;            /*!< PLL Output Clock Frequency           */
+extern uint32_t SystemCoreClock;     /*!< System Clock Frequency (Core Clock) */
+extern uint32_t CyclesPerUs;         /*!< Cycles per micro second             */
+extern uint32_t PllClock;            /*!< PLL Output Clock Frequency          */
 
 
 /**

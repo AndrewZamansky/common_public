@@ -38,27 +38,27 @@ EXCEPTION_VECTOR_AREA_SIZE = BYTES_TO_KEEP_FOR_INTERNAL_INTERRUPTS +
 
 SECTIONS
 {
-#ifdef DATA_SECTION_LOCATION_INTERNAL_SRAM
+#ifdef CONFIG_DATA_LOCATION_INTERNAL_SRAM
 	#define DATA_LOCATION internal_sram
 	ram_start = ORIGIN(internal_sram);
 #endif
-#ifdef DATA_SECTION_LOCATION_EXTERNAL_DDR
+#ifdef CONFIG_DATA_LOCATION_DDR
 	#define DATA_LOCATION ddr
 	ram_start = ORIGIN(ddr);
 #endif
 
-#ifdef CODE_SECTION_LOCATION_INTERNAL_FLASH
+#ifdef CONFIG_CODE_LOCATION_INTERNAL_FLASH
 	#define CODE_LOCATION internal_flash
 	rom_start = ORIGIN(internal_flash);
 	__tables_relocation_section_start_on_ROM__ =  rom_start ;
 #endif
 
-#ifdef CODE_SECTION_LOCATION_INTERNAL_SRAM
+#ifdef CONFIG_CODE_LOCATION_INTERNAL_SRAM
 	#define CODE_LOCATION internal_sram
 	__tables_relocation_section_start_on_ROM__ = ram_start ;
 #endif
 
-#ifdef CODE_SECTION_LOCATION_EXTERNAL_DDR
+#ifdef CONFIG_CODE_LOCATION_DDR
 	#define CODE_LOCATION ddr
 	__tables_relocation_section_start_on_ROM__ = ram_start ;
 #endif
@@ -175,7 +175,7 @@ SECTIONS
 	__relocation_section_start_on_ROM__ = __end_of_text__;
 	critical_text_section_start_on_ROM = __relocation_section_start_on_ROM__;
 
-#ifdef CODE_SECTION_LOCATION_INTERNAL_FLASH
+#ifdef CONFIG_CODE_LOCATION_INTERNAL_FLASH
 	__relocation_section_start_on_RAM__ = __tables_relocation_section_end_on_RAM__ ;
 #else
 	__relocation_section_start_on_RAM__ = __end_of_text__ ;
