@@ -12,14 +12,19 @@ config POLEG
 	bool "poleg"
 	select PUBLIC_SOC_SELECTED
 
-config STM32F103RC
-	bool "stm32f103rc"
+config STM32F103XXX
+	bool "stm32f103xxx"
 	select PUBLIC_SOC_SELECTED
+	select STM32F103XXX_ADDITIONAL_OPTIONS
+	select INTERNAL_FLASH_EXISTS
+	select INTERNAL_SRAM_EXISTS
 
 config I94XXX
 	bool "I94XXX"
 	select PUBLIC_SOC_SELECTED
 	select I94XXX_ADDITIONAL_OPTIONS
+	select INTERNAL_FLASH_EXISTS
+	select INTERNAL_SRAM_EXISTS
 
 config GENERIC_SOC
 	bool "generic SOC"
@@ -54,8 +59,8 @@ if I94XXX
 source "$KCONFIG_PUBLIC_START_DIR/hw_drivers/arch/ARM/soc/i94xxx/Kconfig"
 endif
 
-if STM32F103RC
-source "$KCONFIG_PUBLIC_START_DIR/hw_drivers/arch/ARM/soc/stm32/stm32f103rc/Kconfig"
+if STM32F103XXX
+source "$KCONFIG_PUBLIC_START_DIR/hw_drivers/arch/ARM/soc/stm32/stm32f103xxx/Kconfig"
 endif
 
 if NUC505

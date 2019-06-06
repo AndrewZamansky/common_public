@@ -51,17 +51,77 @@ config USE_APPLICATION_SPECIFIC_SCATTER_FILE
     depends on ARM || XTENSA
     default n
 
-
-config PUT_SPEED_CRITICAL_CODE_TO_RAM
-	bool "put speed critical code to ram"
-    depends on ARM && !USE_APPLICATION_SPECIFIC_SCATTER_FILE
+# following configuration will be selected automatically
+config INTERNAL_FLASH_EXISTS
+    bool
     default n
+
+config INTERNAL_SRAM_EXISTS
+    bool
+    default n
+
+config DDR_EXISTS
+    bool
+    default n
+################################
+
+if !USE_APPLICATION_SPECIFIC_SCATTER_FILE
+
+choice
+	prompt "code location"
+	default CODE_LOCATION_INTERNAL_FLASH
+
+config CODE_LOCATION_INTERNAL_FLASH
+	bool "internal flash"
+	depends on INTERNAL_FLASH_EXISTS
+
+config CODE_LOCATION_INTERNAL_SRAM
+	bool "internal sram"
+	depends on INTERNAL_SRAM_EXISTS
+
+config CODE_LOCATION_DDR
+	bool "ddr"
+	depends on DDR_EXISTS
+endchoice
+
+
+choice
+	prompt "data/bss location"
+	default DATA_LOCATION_INTERNAL_SRAM
+
+config DATA_LOCATION_INTERNAL_SRAM
+	bool "internal sram"
+	depends on INTERNAL_SRAM_EXISTS
+
+config DATA_LOCATION_DDR
+	bool "ddr"
+	depends on DDR_EXISTS
+endchoice
+
+
+choice
+	prompt "speed critical code location"
+	default SPEED_CRITICAL_CODE_LOCATION_INTERNAL_SRAM
+
+config SPEED_CRITICAL_CODE_LOCATION_INTERNAL_FLASH
+	bool "internal flash"
+	depends on INTERNAL_FLASH_EXISTS
+
+config SPEED_CRITICAL_CODE_LOCATION_INTERNAL_SRAM
+	bool "internal sram"
+	depends on INTERNAL_SRAM_EXISTS
+
+config SPEED_CRITICAL_CODE_LOCATION_DDR
+	bool "ddr"
+	depends on DDR_EXISTS
+endchoice
+
+endif #### (if !USE_APPLICATION_SPECIFIC_SCATTER_FILE)
 
 config EXCEPTION_STACKS_DEBUG
 	bool "fill system stacks with pattern (help to debug stack overflow)"
     depends on CORTEX_A9 || CORTEX_M3 || CORTEX_M4
     default n
-
 
 
 endif #### (if !HEXAGON && !ANDROID_NDK)
