@@ -51,6 +51,9 @@ struct btn_event_t {
 #define  DEBOUNCE_DELAY  10
 #define  VERY_LONG_WAIT  100000
 
+#define ILLEGAL_EVENT      0xffffffff
+#define MAX_NUM_OF_EVENTS  0xfffffffe
+
 
 /**********   external variables    **************/
 
@@ -136,8 +139,7 @@ static uint8_t compare_gpio_state(struct gpio_api_read_t *curr_gpio_state_arr,
 }
 
 
-uint8_t end_of_debounce_on_push(
-		struct dev_desc_t *adev, uint32_t  *curr_event_indx)
+uint32_t end_of_debounce_on_push(struct dev_desc_t *adev)
 {
 	struct button_manager_runtime_t *runtime_handle;
 	struct button_manager_config_t  *config_handle;
@@ -176,7 +178,6 @@ uint8_t end_of_debounce_on_push(
 
 		if (event_found)
 		{
-			*curr_event_indx = event_idx;
 			if ((NULL != client_dev) &&
 				(BTN_REPORT_PUSH & btn_events_arr[event_idx].report_config))
 			{
@@ -184,11 +185,11 @@ uint8_t end_of_debounce_on_push(
 					(void *)BTN_REPORT_PUSH,
 					btn_events_arr[event_idx].callback_private_data);
 			}
-			return 1;
+			return event_idx;
 		}
 	}
 
-	return 0;
+	return ILLEGAL_EVENT;
 }
 
 
@@ -285,6 +286,10 @@ uint8_t end_of_debounce_on_release(struct dev_desc_t *adev, uint8_t event_idx)
 		struct dev_desc_t     *client_dev;
 		size_t  reported_flags;
 
+		if (ILLEGAL_EVENT == event_idx)
+		{
+			return 1;
+		}
 		client_dev = config_handle->client_dev;
 		btn_events_arr = config_handle->btn_events_arr;
 		reported_flags = 0;
@@ -337,21 +342,19 @@ static void state_machine(struct dev_desc_t *adev,
 		case BTN_STATE_DEBOUNCING_ON_PUSH:
 			if (0 == event_was_received_from_gpio)
 			{
-				uint8_t  event_found;
-
-				event_found = end_of_debounce_on_push(adev, &curr_event_indx);
-				if (0 == event_found)
+				curr_event_indx = end_of_debounce_on_push(adev);
+				if (ILLEGAL_EVENT == curr_event_indx)
 				{
 					queue_wait_delay = DEBOUNCE_DELAY;
 					manager_state = BTN_STATE_DEBOUNCING_ON_RELEASE;
 				}
 				else
 				{
-					runtime_handle->curr_event_indx = curr_event_indx;
 					runtime_handle->hold_count = 0;
 					queue_wait_delay = 128;
 					manager_state = BTN_STATE_HOLD;
 				}
+				runtime_handle->curr_event_indx = curr_event_indx;
 			}
 			break;
 
@@ -602,7 +605,7 @@ static button_manager_reported_event_handle_t
 		CRITICAL_ERROR("can be called after gpio device were added");
 	}
 
-	if (0xffffffff == num_of_events)
+	if (MAX_NUM_OF_EVENTS == num_of_events)
 	{
 		CRITICAL_ERROR("too many events");
 	}
