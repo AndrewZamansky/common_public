@@ -20,3 +20,6 @@ using: eclipse + OpenOCD + "ST-Link V2":
 	ii) 
 		in map file find address of 'start_with_semihosting'.
 		put this address in "Set program counter at" field
+
+4) run openOCD server :
+   [path_to_openOCD_bin]/openocd -f [path_to_common_public]/c/hw_drivers/arch/ARM/soc/stm32/openocd.cfg

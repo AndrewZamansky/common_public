@@ -32,6 +32,17 @@ void __attribute__((weak)) OS_SWI_Handler(void)
 #if (1 == CONFIG_FREE_RTOS)
 	EXTERN_C_FUNCTION void vPortSVCHandler( void ) __attribute__ (( naked ));
 	vPortSVCHandler();
+	#if defined(CONFIG_CORTEX_M3)
+		#if defined(CONFIG_GCC)
+			__asm volatile
+			(
+				"	ldr.w r14, =0xfffffffd    \n"
+				"	bx r14                      "
+			);
+		#else
+			#error "TODO : check if lr needed to be set to 0xfffffffd"
+		#endif
+	#endif
 #endif
 }
 

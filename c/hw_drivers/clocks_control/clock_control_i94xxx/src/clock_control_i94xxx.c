@@ -15,6 +15,7 @@
 
 #include "clock_control_api.h"
 #include "clock_control_i94xxx_api.h"
+#include "clock_control_common_api.h"
 #include "clock_control_i94xxx.h"
 
 #include "I94100.h"
@@ -76,54 +77,6 @@ void SystemCoreClockUpdate(void)
 
  //   CyclesPerUs = (SystemCoreClock + 500000) / 1000000;
 #endif
-}
-
-
-static void get_root_clock(struct dev_desc_t *adev,
-								struct dev_desc_t **root_clk_dev)
-{
-	struct cfg_clk_t *cfg_clk;
-
-	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(adev);
-	while (NULL != cfg_clk->parent_clk)
-	{
-		adev = cfg_clk->parent_clk;
-		cfg_clk = DEV_GET_CONFIG_DATA_POINTER(adev);
-	}
-	*root_clk_dev = adev;
-}
-
-
-static void get_parent_clock_rate(struct cfg_clk_t *cfg_clk, uint32_t *rate)
-{
-	struct dev_desc_t * parent_clk_dev;
-
-	parent_clk_dev = cfg_clk->parent_clk;
-	if (NULL == parent_clk_dev) CRITICAL_ERROR("bad parent clock\n");
-	DEV_IOCTL_1_PARAMS(parent_clk_dev, CLK_IOCTL_GET_FREQ, rate);
-}
-
-
-static uint8_t common_clk_ioctls(struct dev_desc_t *adev,
-		const uint8_t aIoctl_num, void * aIoctl_param1,
-		void * aIoctl_param2)
-{
-	struct cfg_clk_t *cfg_clk;
-
-	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(adev);
-
-	switch(aIoctl_num)
-	{
-	case CLK_IOCTL_GET_FREQ :
-		get_parent_clock_rate(cfg_clk, aIoctl_param1);
-		break;
-	case CLK_IOCTL_GET_ROOT_CLK:
-		get_root_clock(adev, aIoctl_param1);
-		break;
-	default :
-		return 1;
-	}
-	return 0;
 }
 
 
@@ -473,7 +426,7 @@ uint8_t i94xxx_systick_clk_ioctl( struct dev_desc_t *adev,
 		//TODO:
 		break;
 	default :
-		return common_clk_ioctls(
+		return common_clock_api_standard_clk_ioctls(
 				adev, aIoctl_num, aIoctl_param1, aIoctl_param2);
 	}
 	return 0;
@@ -520,7 +473,7 @@ uint8_t clock_i94xxx_spi2clk_ioctl( struct dev_desc_t *adev,
 		CLK_EnableModuleClock(SPI2_MODULE);
 		break;
 	default :
-		return common_clk_ioctls(
+		return common_clock_api_standard_clk_ioctls(
 				adev, aIoctl_num, aIoctl_param1, aIoctl_param2);
 	}
 	return 0;
@@ -566,7 +519,7 @@ uint8_t clock_i94xxx_spi1clk_ioctl( struct dev_desc_t *adev,
 		CLK_EnableModuleClock(SPI1_MODULE);
 		break;
 	default :
-		return common_clk_ioctls(
+		return common_clock_api_standard_clk_ioctls(
 				adev, aIoctl_num, aIoctl_param1, aIoctl_param2);
 	}
 	return 0;
@@ -611,7 +564,7 @@ uint8_t clock_i94xxx_i2s_ioctl( struct dev_desc_t *adev,
 		CLK->APBCLK0 |= CLK_APBCLK0_I2S0CKEN_Msk;
 		break;
 	default :
-		return common_clk_ioctls(
+		return common_clock_api_standard_clk_ioctls(
 				adev, aIoctl_num, aIoctl_param1, aIoctl_param2);
 	}
 	return 0;
@@ -656,7 +609,7 @@ uint8_t clock_i94xxx_dmic_ioctl( struct dev_desc_t *adev,
 		CLK->APBCLK0 |= CLK_APBCLK0_DMICCKEN_Msk;
 		break;
 	default :
-		return common_clk_ioctls(
+		return common_clock_api_standard_clk_ioctls(
 				adev, aIoctl_num, aIoctl_param1, aIoctl_param2);
 	}
 	return 0;
@@ -675,7 +628,7 @@ uint8_t i94xxx_I2S_MCLK_ioctl( struct dev_desc_t *adev,
 	switch(aIoctl_num)
 	{
 	case CLK_IOCTL_GET_FREQ :
-		get_parent_clock_rate(cfg_clk, &freq);
+		clock_control_common_api_get_parent_clock_rate(cfg_clk, &freq);
 		mclkdiv = I2S0->CLKDIV & I2S_CLKDIV_MCLKDIV_Msk;
 		if (0 == mclkdiv)
 		{
@@ -705,7 +658,7 @@ uint8_t i94xxx_I2S_BCLK_ioctl( struct dev_desc_t *adev,
 	switch(aIoctl_num)
 	{
 	case CLK_IOCTL_GET_FREQ :
-		get_parent_clock_rate(cfg_clk, &freq);
+		clock_control_common_api_get_parent_clock_rate(cfg_clk, &freq);
 		bclkdiv = (I2S0->CLKDIV & I2S_CLKDIV_BCLKDIV_Msk) >>
 												I2S_CLKDIV_BCLKDIV_Pos;
 		*(uint32_t *)aIoctl_param1 = freq / (2 * (bclkdiv + 1));
@@ -730,7 +683,7 @@ uint8_t i94xxx_I2S_FSCLK_ioctl( struct dev_desc_t *adev,
 	switch(aIoctl_num)
 	{
 	case CLK_IOCTL_GET_FREQ :
-		get_parent_clock_rate(cfg_clk, &freq);
+		clock_control_common_api_get_parent_clock_rate(cfg_clk, &freq);
 		num_of_channels =
 				(I2S0->CTL0 & I2S_CTL0_TDMCHNUM_Msk) >> I2S_CTL0_TDMCHNUM_Pos;
 		num_of_channels = 2 * (1 + num_of_channels);
@@ -758,7 +711,7 @@ uint8_t i94xxx_I2S_onSPI1_MCLK_ioctl( struct dev_desc_t *adev,
 	switch(aIoctl_num)
 	{
 	case CLK_IOCTL_GET_FREQ :
-		get_parent_clock_rate(cfg_clk, &freq);
+		clock_control_common_api_get_parent_clock_rate(cfg_clk, &freq);
 		mclkdiv = ((SPI_T*)SPI1_BASE)->I2SCLK & SPI_I2SCLK_MCLKDIV_Msk;
 		if (0 == mclkdiv)
 		{
@@ -788,7 +741,7 @@ uint8_t i94xxx_I2S_onSPI1_BCLK_ioctl( struct dev_desc_t *adev,
 	switch(aIoctl_num)
 	{
 	case CLK_IOCTL_GET_FREQ :
-		get_parent_clock_rate(cfg_clk, &freq);
+		clock_control_common_api_get_parent_clock_rate(cfg_clk, &freq);
 		bclkdiv = (((SPI_T*)SPI1_BASE)->I2SCLK & SPI_I2SCLK_BCLKDIV_Msk) >>
 											SPI_I2SCLK_BCLKDIV_Pos;
 		*(uint32_t *)aIoctl_param1 = freq / (2 * (bclkdiv + 1));
@@ -813,7 +766,7 @@ uint8_t i94xxx_I2S_onSPI1_FSCLK_ioctl( struct dev_desc_t *adev,
 	switch(aIoctl_num)
 	{
 	case CLK_IOCTL_GET_FREQ :
-		get_parent_clock_rate(cfg_clk, &freq);
+		clock_control_common_api_get_parent_clock_rate(cfg_clk, &freq);
 		num_of_channels = 2;
 		channel_width =
 				(((SPI_T*)SPI1_BASE)->I2SCTL & SPI_I2SCTL_WDWIDTH_Msk) >>
@@ -840,7 +793,7 @@ uint8_t i94xxx_I2S_onSPI2_MCLK_ioctl( struct dev_desc_t *adev,
 	switch(aIoctl_num)
 	{
 	case CLK_IOCTL_GET_FREQ :
-		get_parent_clock_rate(cfg_clk, &freq);
+		clock_control_common_api_get_parent_clock_rate(cfg_clk, &freq);
 		mclkdiv = ((SPI_T*)SPI2_BASE)->I2SCLK & SPI_I2SCLK_MCLKDIV_Msk;
 		if (0 == mclkdiv)
 		{
@@ -870,7 +823,7 @@ uint8_t i94xxx_I2S_onSPI2_BCLK_ioctl( struct dev_desc_t *adev,
 	switch(aIoctl_num)
 	{
 	case CLK_IOCTL_GET_FREQ :
-		get_parent_clock_rate(cfg_clk, &freq);
+		clock_control_common_api_get_parent_clock_rate(cfg_clk, &freq);
 		bclkdiv = (((SPI_T*)SPI2_BASE)->I2SCLK & SPI_I2SCLK_BCLKDIV_Msk) >>
 											SPI_I2SCLK_BCLKDIV_Pos;
 		*(uint32_t *)aIoctl_param1 = freq / (2 * (bclkdiv + 1));
@@ -895,7 +848,7 @@ uint8_t i94xxx_I2S_onSPI2_FSCLK_ioctl( struct dev_desc_t *adev,
 	switch(aIoctl_num)
 	{
 	case CLK_IOCTL_GET_FREQ :
-		get_parent_clock_rate(cfg_clk, &freq);
+		clock_control_common_api_get_parent_clock_rate(cfg_clk, &freq);
 		num_of_channels = 2;
 		channel_width =
 				(((SPI_T*)SPI2_BASE)->I2SCTL & SPI_I2SCTL_WDWIDTH_Msk) >>
@@ -949,7 +902,7 @@ uint8_t clock_i94xxx_dpwm_ioctl( struct dev_desc_t *adev,
 		CLK->APBCLK1 |= CLK_APBCLK1_DPWMCKEN_Msk;
 		break;
 	default :
-		return common_clk_ioctls(
+		return common_clock_api_standard_clk_ioctls(
 				adev, aIoctl_num, aIoctl_param1, aIoctl_param2);
 	}
 	return 0;
@@ -992,7 +945,7 @@ uint8_t clock_i94xxx_uart0clk_ioctl( struct dev_desc_t *adev,
 		CLK_EnableModuleClock(UART0_MODULE);
 		break;
 	default :
-		return common_clk_ioctls(
+		return common_clock_api_standard_clk_ioctls(
 				adev, aIoctl_num, aIoctl_param1, aIoctl_param2);
 	}
 	return 0;
@@ -1095,14 +1048,7 @@ uint8_t clock_i94xxx_spi0_ioctl( struct dev_desc_t *adev,
 static void init_clocks(struct clk_cntl_i94xxx_cfg_t *cfg_hndl)
 {
 	uint32_t rate;
-#if 0
-	/*
-	 * CLKDIV1[24] Something that should be in the BSP but is not.
-	 *    8/10/18 - Currently this affects the clock on the USB. If not
-	 *    set, the USB will not work.
-	 */
-	*((uint32_t *)0x40000224) |= (0x1UL<<24);
-#endif
+
 	if (0 != cfg_hndl->xtal_rate)
 	{
 		DEV_IOCTL_0_PARAMS(i94xxx_xtal_clk_dev, CLK_IOCTL_ENABLE);

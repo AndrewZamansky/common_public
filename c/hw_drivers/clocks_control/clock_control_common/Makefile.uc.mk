@@ -1,0 +1,18 @@
+INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_CLOCK_CONTROL)
+
+
+#INCLUDE_DIR =
+
+#DEFINES =
+
+#CFLAGS =
+
+#ASMFLAGS =
+
+
+
+SRC = clock_control_common.c
+VPATH = src
+
+
+include $(COMMON_CC)

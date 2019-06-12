@@ -24,10 +24,10 @@ choice
 	default EABI
 
 config EABI
-	bool "eabi"
+	bool "eabi(bare metal)"
 
 config GNUEABI
-    bool "gnueabi"
+    bool "gnueabi(for linux)"
 endchoice
 
 
