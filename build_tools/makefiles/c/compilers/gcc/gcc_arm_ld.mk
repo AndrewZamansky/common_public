@@ -173,7 +173,7 @@ ALL_OBJ_FILES += $(call rwildcard,$(OBJ_DIR)/,*.O.asm)
 ALL_OBJ_FILES :=$(sort $(ALL_OBJ_FILES))
 ALL_OBJ_FILES :=$(subst \,/,$(ALL_OBJ_FILES))
 
-ALL_OBJECTS_LIST_FILE:=$(OUT_DIR)\objects.txt
+ALL_OBJECTS_LIST_FILE:=$(OUT_DIR)/objects.txt
 
 #create file with list of objects
 LIST_FILE_NAME_TRUNCATE :=$(ALL_OBJECTS_LIST_FILE)
