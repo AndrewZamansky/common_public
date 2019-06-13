@@ -51,18 +51,15 @@ endif
 
 #}}}}}}}}  END OF LINKER SCRIPT FILE PREPARATIONS }}}}}}}}
 
-ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
-    SCATTER_FILE := $(subst /,\,$(SCATTER_FILE))
-    LINKER_OUTPUT := $(subst /,\,$(LINKER_OUTPUT))
-    MAP_FILE := $(subst /,\,$(MAP_FILE))
-    LINKER_HISTORY_OUTPUT := $(subst /,\,$(LINKER_HISTORY_OUTPUT))
-    OUTPUT_ASM := $(subst /,\,$(OUTPUT_ASM))
-    OUTPUT_BIN := $(subst /,\,$(OUTPUT_BIN))
-    OUTPUT_HEX := $(subst /,\,$(OUTPUT_HEX))
-    OUTPUT_CRC32 := $(subst /,\,$(OUTPUT_CRC32))
-endif
 
-
+SCATTER_FILE :=$(call fix_path_if_in_windows,$(SCATTER_FILE))
+LINKER_OUTPUT :=$(call fix_path_if_in_windows,$(LINKER_OUTPUT))
+MAP_FILE :=$(call fix_path_if_in_windows,$(MAP_FILE))
+OUTPUT_BIN :=$(call fix_path_if_in_windows,$(OUTPUT_BIN))
+OUTPUT_ASM :=$(call fix_path_if_in_windows,$(OUTPUT_ASM))
+OUTPUT_HEX :=$(call fix_path_if_in_windows,$(OUTPUT_HEX))
+OUTPUT_CRC32 :=$(call fix_path_if_in_windows,$(OUTPUT_CRC32))
+LINKER_HISTORY_OUTPUT :=$(call fix_path_if_in_windows,$(LINKER_HISTORY_OUTPUT))
 
 #{{{{{{{{   LDFLAGS PREPARATIONS   {{{{{{{{
 

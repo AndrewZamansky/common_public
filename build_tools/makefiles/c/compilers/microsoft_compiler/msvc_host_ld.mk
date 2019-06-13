@@ -38,10 +38,15 @@ else
     EXTENSION :=exe
 endif
 
-LINKER_OUTPUT := $(OUT_DIR)/$(OUTPUT_APP_NAME).$(EXTENSION)
-LINKER_LIB_OUTPUT := $(OUT_DIR)/$(OUTPUT_APP_NAME).lib
-LINKER_OUTPUT_NAMED := $(OUT_DIR)/$(NAMED_OUT_PREFIX).$(EXTENSION)
-LINKER_HISTORY_OUTPUT := $(OUT_DIR_HISTORY)/$(HISTORY_OUT_PREFIX).$(EXTENSION)
+LINKER_OUTPUT :=$(call fix_path_if_in_windows,\
+                              $(OUT_DIR)/$(OUTPUT_APP_NAME).$(EXTENSION))
+LINKER_LIB_OUTPUT :=$(call fix_path_if_in_windows,\
+                             $(OUT_DIR)/$(OUTPUT_APP_NAME).lib)
+LINKER_OUTPUT_NAMED :=$(call fix_path_if_in_windows,\
+                       $(OUT_DIR)/$(NAMED_OUT_PREFIX).$(EXTENSION))
+LINKER_HISTORY_OUTPUT :=$(call fix_path_if_in_windows,\
+                  $(OUT_DIR_HISTORY)/$(HISTORY_OUT_PREFIX).$(EXTENSION))
+OUTPUT_CRC32 :=$(call fix_path_if_in_windows,$(OUTPUT_CRC32))
 
 
 #init LDFLAGS
@@ -183,15 +188,6 @@ ALL_OBJ_FILES += $(call rwildcard,$(OBJ_DIR)/,*.O.asm)
 # some time on windows .O.asm and .o.asm will appear as same files,
 # so $(sort) will eliminate duplication
 ALL_OBJ_FILES := $(sort $(ALL_OBJ_FILES))
-
-ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
-    LINKER_OUTPUT := $(subst /,\,$(LINKER_OUTPUT))
-    LINKER_OUTPUT_NAMED := $(subst /,\,$(LINKER_OUTPUT_NAMED))
-    OUTPUT_BIN := $(subst /,\,$(OUTPUT_BIN))
-    OUTPUT_HISTORY_BIN := $(subst /,\,$(OUTPUT_HISTORY_BIN))
-    LINKER_HISTORY_OUTPUT := $(subst /,\,$(LINKER_HISTORY_OUTPUT))
-    OUTPUT_CRC32 := $(subst /,\,$(OUTPUT_CRC32))
-endif
 
 ALL_OBJECTS_LIST_FILE:=$(OUT_DIR)\objects.txt
 

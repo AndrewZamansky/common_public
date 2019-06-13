@@ -42,3 +42,11 @@ endef
 define eval_config
 $(if $(strip $(filter-out y,$(1))),,$(filter y,$(1)))
 endef
+
+
+# function : fix_path_if_in_windows
+# usage    : $(call check_if_selected,1)
+#
+# changes slash '/' to backslash '\' if we are building in Windows OS
+fix_path_if_in_windows =$(if \
+     $(findstring WINDOWS,$(COMPILER_HOST_OS)),$(subst /,\,$1),$1)

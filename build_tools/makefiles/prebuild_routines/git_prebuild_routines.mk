@@ -1,11 +1,8 @@
 
-DEFAULT_GIT_IGNORE_FILE :=$(BUILD_TOOLS_ROOT_DIR)/default.project.gitignore
-CURRENT_GIT_IGNORE_FILE :=$(APP_ROOT_DIR)/.gitignore
-ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
-    DEFAULT_GIT_IGNORE_FILE := $(subst /,\,$(DEFAULT_GIT_IGNORE_FILE))
-    CURRENT_GIT_IGNORE_FILE := $(subst /,\,$(CURRENT_GIT_IGNORE_FILE))
-endif
-
+DEFAULT_GIT_IGNORE_FILE :=$(call fix_path_if_in_windows,\
+                            $(BUILD_TOOLS_ROOT_DIR)/default.project.gitignore)
+CURRENT_GIT_IGNORE_FILE :=$(call fix_path_if_in_windows,\
+                                              $(APP_ROOT_DIR)/.gitignore)
 GIT_ROOT_DIR:=
 
 ##### test for existence of git and put its directory name in GIT_ROOT_DIR #####

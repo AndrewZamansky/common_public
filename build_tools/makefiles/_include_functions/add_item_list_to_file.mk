@@ -33,15 +33,14 @@ ifeq ($(ITEMS),DUMMY_________123)
 endif
 
 ifneq ($(LIST_FILE_NAME_TRUNCATE),)
-    LIST_FILE_NAME:=$(LIST_FILE_NAME_TRUNCATE)
+    LIST_FILE_NAME :=$(call fix_path_if_in_windows,$(LIST_FILE_NAME_TRUNCATE))
     ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
-        LIST_FILE_NAME := $(subst /,\,$(LIST_FILE_NAME))
         DUMMY:=$(shell copy /b /y NUL $(LIST_FILE_NAME))
     else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX)
         DUMMY:=$(shell cat /dev/null >|$(LIST_FILE_NAME))
     endif
 else    
-    LIST_FILE_NAME:=$(LIST_FILE_NAME_APPEND)
+    LIST_FILE_NAME :=$(call fix_path_if_in_windows,$(LIST_FILE_NAME_APPEND))
 endif
 
 _ECHO_PREFIX :=echo $(PREFIX_FOR_EACH_ITEM)
@@ -71,9 +70,9 @@ _MAX_N:=1000000
 put_items_to_file= $(if $1,\
       $(call add_item_to_file,$(wordlist 1,$(_M),$1)) \
       $(call put_items_to_file,$(strip $(wordlist $(_MPP),$(_MAX_N),$1))),\
-      $(info --- created : $(LIST_FILE_NAME)))
+      DUMMY_DO_NOTHING_ON_IF_FALSE_CONDITION)
 
-$(call put_items_to_file,$(ITEMS))
+DUMMY := $(call put_items_to_file,$(ITEMS))
 
 
 #clear arguments for next function usage

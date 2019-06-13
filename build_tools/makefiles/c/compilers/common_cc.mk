@@ -56,12 +56,8 @@ LOCAL_HEADER_FILES_DEPS := $(wildcard $(LOCAL_HEADER_FILES_DEPS))
 HEADER_FILES_DEPS := $(GLOBAL_HEADER_FILES_DEPS) $(LOCAL_HEADER_FILES_DEPS)
 
 
-
-CURR_OBJ_DIR := $(OBJ_DIR)/$(CURRENT_COMPILATION_DIR_NAME)
-ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
-    #replace backslash for slash
-    CURR_OBJ_DIR := $(subst /,\,$(CURR_OBJ_DIR))
-endif
+CURR_OBJ_DIR :=$(call fix_path_if_in_windows,\
+                  $(OBJ_DIR)/$(CURRENT_COMPILATION_DIR_NAME))
 
 $(call mkdir_if_not_exists, $(CURR_OBJ_DIR))
 

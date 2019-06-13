@@ -15,23 +15,13 @@ else
     endif
 endif
 
-
-LINKER_OUTPUT := $(OUT_DIR)/$(OUTPUT_NAME)
-LINKER_HISTORY_OUTPUT :=$(OUT_DIR_HISTORY)/$(HISTORY_OUTPUT_NAME)
-OUTPUT_ASM :=  $(OUT_DIR)/$(OUTPUT_NAME).asm
-OUTPUT_BIN := $(OUT_DIR)/$(OUTPUT_NAME).bin
-OUTPUT_HEX :=  $(OUT_DIR)/$(OUTPUT_NAME).hex
-
-ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
-    LINKER_OUTPUT := $(subst /,\,$(LINKER_OUTPUT))
-    LINKER_HISTORY_OUTPUT := $(subst /,\,$(LINKER_HISTORY_OUTPUT))
-    OUTPUT_ASM := $(subst /,\,$(OUTPUT_ASM))
-    OUTPUT_BIN := $(subst /,\,$(OUTPUT_BIN))
-    OUTPUT_HEX := $(subst /,\,$(OUTPUT_HEX))
-    OUTPUT_CRC32 := $(subst /,\,$(OUTPUT_CRC32))
-endif
-
-
+LINKER_OUTPUT :=$(call fix_path_if_in_windows,$(OUT_DIR)/$(OUTPUT_NAME))
+LINKER_HISTORY_OUTPUT :=$(call fix_path_if_in_windows,\
+                             $(OUT_DIR_HISTORY)/$(HISTORY_OUTPUT_NAME))
+OUTPUT_ASM :=$(call fix_path_if_in_windows,$(OUT_DIR)/$(OUTPUT_NAME).asm)
+OUTPUT_BIN :=$(call fix_path_if_in_windows,$(OUT_DIR)/$(OUTPUT_NAME).bin)
+OUTPUT_HEX :=$(call fix_path_if_in_windows,$(OUT_DIR)/$(OUTPUT_NAME).hex)
+OUTPUT_CRC32 :=$(call fix_path_if_in_windows,$(OUTPUT_CRC32))
 
 #{{{{{{{{   LDFLAGS PREPARATIONS   {{{{{{{{
 

@@ -72,6 +72,7 @@ NEW_WORKSPACE_CONFIG :=$(patsubst $(APP_ROOT_DIR)/%,%,$(TEMP))
 # workspace_config.mk.exported still not exists, so it 
 # should be added AFTER execution of  $(realpath $(EXPORTS))
 EXPORTS += $(patsubst $(OUTPUT_ARCHIVE_DIR)/%,%,$(NEW_WORKSPACE_CONFIG))
+EXPORTS := $(call fix_path_if_in_windows,$(EXPORTS))
  
 ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
     ### test for existence of make and put its directory name in 7ZIP_DIR #####
@@ -93,8 +94,6 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
         $(info ---: and update/remove REDEFINE_7ZIP_DIR)
         $(call exit,1)
     endif
-    
-    EXPORTS := $(subst /,\,$(EXPORTS))
 
     CREATE_TAR_CMD := cd /D $(OUTPUT_ARCHIVE_DIR)/ & del /Q $(OUTPUT_TAR) &
     CREATE_TAR_CMD += echo start time : & time /T & 
