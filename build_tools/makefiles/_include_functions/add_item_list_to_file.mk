@@ -3,26 +3,32 @@ include $(MAKEFILES_ROOT_DIR)/common.mk
 #test that arguments are set correctly 
 ifeq ($(LIST_FILE_NAME_TRUNCATE),)
     ifeq ($(LIST_FILE_NAME_APPEND),)
-        $(info err: LIST_FILE_NAME_TRUNCATE or LIST_FILE_NAME_APPEND (= name of file to create/append) should be set before including this file)
+        $(info err: LIST_FILE_NAME_TRUNCATE or LIST_FILE_NAME_APPEND {= name 
+        $(info    : of file to create/append} should be set before 
+        $(info    : including this file)
         $(call exit,1)
     endif
 endif
 ifneq ($(LIST_FILE_NAME_TRUNCATE),)
     ifneq ($(LIST_FILE_NAME_APPEND),)
-        $(info err: only one argument of LIST_FILE_NAME_TRUNCATE or LIST_FILE_NAME_APPEND may be set before including this file)
+        $(info err: only one argument of LIST_FILE_NAME_TRUNCATE or 
+        $(info    : LIST_FILE_NAME_APPEND may be set before including this file)
         $(call exit,1)
     endif
 endif
 ifeq ($(PREFIX_FOR_EACH_ITEM),DUMMY_________123)
-    $(info err: PREFIX_FOR_EACH_ITEM (= string to insert before each item) should be set before including this file)
+    $(info err: PREFIX_FOR_EACH_ITEM {= string to insert before each 
+    $(info    : item} should be set before including this file)
     $(call exit,1)
 endif
 ifeq ($(SUFFIX_LINE_FOR_EACH_ITEM),DUMMY_________123)
-    $(info err: SUFFIX_LINE_FOR_EACH_ITEM (= string to insert after each item) should be set before including this file)
+    $(info err: SUFFIX_LINE_FOR_EACH_ITEM {= string to insert after each 
+    $(info    : item} should be set before including this file)
     $(call exit,1)
 endif
 ifeq ($(ITEMS),DUMMY_________123)
-    $(info err: ITEMS (= items to place in file) should be set before including this file)
+    $(info err: ITEMS {= items to place in file} should be set before 
+    $(info    : including this file)
     $(call exit,1)
 endif
 
@@ -38,26 +44,36 @@ else
     LIST_FILE_NAME:=$(LIST_FILE_NAME_APPEND)
 endif
 
+_ECHO_PREFIX :=echo $(PREFIX_FOR_EACH_ITEM)
+
 ifneq ($(SUFFIX_LINE_FOR_EACH_ITEM),)
-    ITEM_LINE_WITH_ADDITIONAL_SUFFIX_LINE:=>>$(LIST_FILE_NAME) $(SHELL_CMD_DELIMITER) echo $(SUFFIX_LINE_FOR_EACH_ITEM)>>$(LIST_FILE_NAME) $(SHELL_CMD_DELIMITER)
+    # use ':=' at the end, to calculate variable right her and not each item
+    _ECHO_SUFFIX =>>$(LIST_FILE_NAME) $(SHELL_CMD_DELIMITER)
+    _ECHO_SUFFIX += echo $(SUFFIX_LINE_FOR_EACH_ITEM)>>$(LIST_FILE_NAME) 
+    _ECHO_SUFFIX := $(_ECHO_SUFFIX) $(SHELL_CMD_DELIMITER)
 else    
-    ITEM_LINE_WITH_ADDITIONAL_SUFFIX_LINE:=>>$(LIST_FILE_NAME) $(SHELL_CMD_DELIMITER)
+    _ECHO_SUFFIX :=>>$(LIST_FILE_NAME) $(SHELL_CMD_DELIMITER)
 endif
 
-_M :=20#too large _M may cause string of _M items be to long for HOST shell(8192 for win) . too small _M can increase build time 
+add_item_to_file=$(shell $(patsubst %, $(_ECHO_PREFIX)%$(_ECHO_SUFFIX),$1))
+
+# too large _M may cause string of _M items be to long for HOST 
+# shell(8192 for win). too small _M can increase build time
+_M :=20 
 _MPP:=21#must be _M+1
 _MAX_N:=1000000
-# put_items_to_file is recursive function that receives 2 arguments
-# argument $1 contains what to put in shell
-# argument $2 contains the remaining list of N items.
-# each iteration new $1 will contain first _M items formatted to output to shell
-# and new $2 will contain last N-_M items
-put_items_to_file=$(shell $1) $(foreach var,$(wordlist 1, 1,$2),\
-         $(call put_items_to_file,\
-         $(patsubst %, echo $(PREFIX_FOR_EACH_ITEM)%$(ITEM_LINE_WITH_ADDITIONAL_SUFFIX_LINE),$(wordlist 1,$(_M),$2)),\
-         $(wordlist  $(_MPP),$(_MAX_N),$2)))
+# argument $1 contains list of items to put in shell
+# each iteration call to 'add_item_to_file' contain first _M items
+# that will be formatted and outputed to file.
+# in recursive call to 'put_items_to_file' argument $1 will
+# contains the remaining list of N-$(_M) items.
+# 'if' statement will continue to call 'put_items_to_file' till $1 is empty
+put_items_to_file= $(if $1,\
+      $(call add_item_to_file,$(wordlist 1,$(_M),$1)) \
+      $(call put_items_to_file,$(strip $(wordlist $(_MPP),$(_MAX_N),$1))),\
+      $(info --- created : $(LIST_FILE_NAME)))
 
-$(call put_items_to_file,,$(ITEMS))
+$(call put_items_to_file,$(ITEMS))
 
 
 #clear arguments for next function usage
