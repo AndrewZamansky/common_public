@@ -370,7 +370,7 @@ static void set_endpoint_func(struct set_endpoints_t *set_endpoints)
 	}
 	for (i = 0; i < set_endpoints->num_of_endpoints; i++)
 	{
-		uint8_t max_pckt_size;
+		uint16_t max_pckt_size;
 		uint8_t endpoint_type;
 
 		if (MAX_NUM_OF_ENDPOINTS == endpoints_count)
@@ -390,6 +390,10 @@ static void set_endpoint_func(struct set_endpoints_t *set_endpoints)
 		// hw requires alignment by 8 bytes:
 		available_buff_pointer = (available_buff_pointer + 7) & (~0x7);
 
+		if (1024 < available_buff_pointer)
+		{
+			CRITICAL_ERROR("usb sram area is 1024 bytes only");
+		}
 		max_pckt_sizes[endpoints_count] = max_pckt_size;
 
 		endpoint_type = set_endpoints->endpoints_type_arr[i];
