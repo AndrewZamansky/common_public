@@ -249,6 +249,7 @@ static void init_gpio(struct dev_desc_t *adev,
 			CRITICAL_ERROR("pin number should be less than 15");
 		}
 		pin_control |= (curr_pin << 4);
+		// last 4 bits of pin_control are equal to 0, to select GPIO function
 		pin_control_api_set_pin_function(pin_control);
 
 		pin_mask |= (1 << curr_pin);

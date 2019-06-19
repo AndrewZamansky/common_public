@@ -102,6 +102,50 @@ uint8_t clock_stm32f10x_hsirc_ioctl( struct dev_desc_t *adev,
 }
 
 
+uint8_t clock_stm32f10x_apb2_ioctl( struct dev_desc_t *adev,
+		const uint8_t aIoctl_num, void * aIoctl_param1,
+		void * aIoctl_param2)
+{
+	struct cfg_clk_t *cfg_clk;
+	uint32_t rate;
+	uint32_t sysclk_rate;
+	uint32_t prescaler;
+	uint32_t RCC_HCLK_Div_val;
+
+	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(adev);
+
+	switch(aIoctl_num)
+	{
+	case CLK_IOCTL_ENABLE :
+		break;
+	case CLK_IOCTL_SET_FREQ :
+		clock_control_common_api_get_parent_clock_rate(cfg_clk, &sysclk_rate);
+		rate = *(uint32_t*)aIoctl_param1;
+		prescaler = 1;
+		RCC_HCLK_Div_val = RCC_HCLK_Div1;
+		while (( (sysclk_rate / prescaler) != rate) && (16 >= prescaler))
+		{
+			prescaler *= 2;
+			RCC_HCLK_Div_val += 0x100;
+		}
+		if (16 < prescaler)
+		{
+			CRITICAL_ERROR("cannot create requested APB2 clock \n");
+		}
+		RCC_PCLK2Config( RCC_HCLK_Div_val );
+		cfg_clk->rate = rate;
+		break;
+	case CLK_IOCTL_GET_FREQ :
+		*(uint32_t*)aIoctl_param1 = cfg_clk->rate;
+		break;
+	default :
+		return 1;
+	}
+	return 0;
+}
+
+
+
 uint8_t clock_stm32f10x_sysclk_ioctl( struct dev_desc_t *adev,
 		const uint8_t aIoctl_num, void * aIoctl_param1,
 		void * aIoctl_param2)
@@ -273,7 +317,8 @@ static void init_clocks(struct clk_cntl_stm32f10x_cfg_t *cfg_hndl)
 					CLK_IOCTL_SET_PARENT, cfg_hndl->sysclk_src_clk_dev);
 	DEV_IOCTL_1_PARAMS(stm32f10x_hclk_clk_dev,
 					CLK_IOCTL_SET_FREQ, &cfg_hndl->hclk_rate);
-
+	DEV_IOCTL_1_PARAMS(stm32f10x_apb2_clk_dev,
+			CLK_IOCTL_SET_FREQ, &cfg_hndl->apb2_rate);
 }
 
 

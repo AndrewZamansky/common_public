@@ -41,12 +41,13 @@
 #define DT_DEV_MODULE             clk_cntl
 
 #define CLK_DT_IOCTL              clock_stm32f10x_hclk_ioctl
+#define CLK_DT_DEFAULT_PARENT      stm32f10x_sysclk_dev
 
 #include ADD_CURRENT_DEV
 
 
 /***********************************/
-/********** stm32f10x_spi2clk_dev ********/
+/********** stm32f10x_systick_dev ********/
 #define DT_DEV_NAME                stm32f10x_systick_clk_dev
 #define DT_DEV_MODULE              clk_cntl
 
@@ -55,4 +56,14 @@
 
 #include ADD_CURRENT_DEV
 
+
+/***********************************/
+/********** stm32f10x_apb2_dev ********/
+#define DT_DEV_NAME               stm32f10x_apb2_clk_dev
+#define DT_DEV_MODULE             clk_cntl
+
+#define CLK_DT_IOCTL              clock_stm32f10x_apb2_ioctl
+#define CLK_DT_DEFAULT_PARENT      stm32f10x_hclk_clk_dev
+
+#include ADD_CURRENT_DEV
 

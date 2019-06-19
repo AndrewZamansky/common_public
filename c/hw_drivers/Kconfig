@@ -78,7 +78,7 @@ config INCLUDE_INTERNAL_FLASH
 
 config INCLUDE_INTERNAL_GPIO
 	bool   "internal gpio"
-	depends on NUC505 || STM32F103RC || NPCE586 || STM8S103F || PIC32MX575 || I94XXX
+	depends on NUC505 || STM32F103XXX || NPCE586 || STM8S103F || PIC32MX575 || I94XXX
 	default n
 
 

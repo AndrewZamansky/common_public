@@ -3,8 +3,6 @@
 #include  "gpio_i94xxx_api.h"
 #include "src/gpio_i94xxx.h"
 
-uint8_t gpio_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2);
-
 #define MODULE_NAME               gpio_i94xxx
 #define MODULE_IOCTL_FUNCTION     gpio_i94xxx_ioctl
 #define MODULE_CONFIG_DATA_STRUCT_TYPE  struct gpio_i94xxx_config_t
@@ -103,7 +101,9 @@ uint8_t gpio_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num , v
 
 #include "add_component.h"
 
-/* device specific defines should be undefined after calling #include "add_component.h" */
+/* device specific defines should be undefined
+ * after calling #include "add_component.h"
+ */
 #undef GPIO_I94XXX_DT_PORT
 #undef GPIO_I94XXX_DT_PINS
 #undef GPIO_I94XXX_DT_MODE
