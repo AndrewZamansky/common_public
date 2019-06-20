@@ -145,19 +145,17 @@ uint8_t uart_i94xxx_callback(struct dev_desc_t *adev ,
 	}
 
 
-	if ( send_data_len && (u32IntSts & UART_INTEN_TXENDIEN_Msk))
+	if ( (uart_regs->INTEN & UART_INTEN_TXENDIEN_Msk) &&
+						(u32IntSts & UART_INTEN_TXENDIEN_Msk))
 	{
-		size_t  len_was_sent;
 		struct dev_desc_t * callback_tx_dev ;
 
-		len_was_sent = send_data_len;
 		callback_tx_dev = cfg_hndl->callback_tx_dev;
 		UART_DISABLE_INT(uart_regs,  UART_INTEN_TXENDIEN_Msk);
-		send_data_len = 0;
 		if (NULL != callback_tx_dev)
 		{
 			DEV_CALLBACK_1_PARAMS(
-					callback_tx_dev , CALLBACK_TX_DONE, (void*)len_was_sent);
+					callback_tx_dev , CALLBACK_TX_DONE, (void*)send_data_len);
 		}
 	}
 
@@ -178,12 +176,17 @@ size_t uart_i94xxx_pwrite(struct dev_desc_t *adev,
 	const uint8_t *start_of_data = apData;
 #endif
 
-//	if (send_data_len)// still busy
-//	{
-//		CRITICAL_ERROR("resolution for this state not implemented yet\n");
-//		return 0;
-//	}
+	if (0 == aLength)
+	{
+		return 0;
+	}
+
 	uart_regs =(UART_T *)UART0_BASE;
+
+	// wait till busy
+	while ((uart_regs->INTEN & UART_INTEN_TXENDIEN_Msk) ||
+			((uart_regs->FIFOSTS & UART_FIFOSTS_TXEMPTYF_Msk) == 0));
+
 	send_data_len = 0;
 	while ( aLength && (0 == UART_IS_TX_FULL(uart_regs)))
 	{
