@@ -1,11 +1,8 @@
 
 
-LD				:=	"$(CXSTM8_ROOT_DIR)\clnk"  
-STM8_TO_HEX		:=	"$(CXSTM8_ROOT_DIR)\chex"
-HEX_TO_BIN		:=	"$(TOOLS_ROOT_DIR)\HexToBin\bin\mot2bin.exe"
-LINKER_OUTPUT 	:=  $(OUT_DIR)/$(OUTPUT_APP_NAME).stm8
-OUTPUT_BIN 		:=  $(OUT_DIR)/$(OUTPUT_APP_NAME).bin
-OUTPUT_HEX 		:=  $(OUT_DIR)/$(OUTPUT_APP_NAME).s19
+LD :="$(CXSTM8_ROOT_DIR)\clnk"  
+STM8_TO_HEX :="$(CXSTM8_ROOT_DIR)\chex"
+HEX_TO_BIN :="$(TOOLS_ROOT_DIR)\HexToBin\bin\mot2bin.exe"
 
 #caclulating linker flags
 
@@ -38,19 +35,15 @@ ALL_OBJ_FILES := $(patsubst %stacks.o,,$(ALL_OBJ_FILES))
 OBJ_FILES1 := $(wordlist 1, 5, $(ALL_OBJ_FILES))
 OBJ_FILES2 := $(wordlist 6, 1000, $(ALL_OBJ_FILES))
 
-OUTPUT_HISTORY_BIN :=  $(OUT_DIR_HISTORY)/$(PROJECT_NAME)_$(MAIN_VERSION_STR)r$(DATE_STR).bin
-LINKER_HISTORY_OUTPUT := $(OUT_DIR_HISTORY)/$(PROJECT_NAME)_$(MAIN_VERSION_STR).stm8
-
-ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS) 	 
-    #replace backslash for slash
-    LINKER_OUTPUT := $(subst /,\,$(LINKER_OUTPUT))
-    OUTPUT_BIN := $(subst /,\,$(OUTPUT_BIN))
-    OUTPUT_HEX := $(subst /,\,$(OUTPUT_HEX))
-    OUTPUT_CRC32 := $(subst /,\,$(OUTPUT_CRC32))
-    OUTPUT_HISTORY_BIN := $(subst /,\,$(OUTPUT_HISTORY_BIN))
-    LINKER_HISTORY_OUTPUT := $(subst /,\,$(LINKER_HISTORY_OUTPUT))
-endif
-
+LINKER_OUTPUT :=$(call fix_path_if_in_windows,\
+                                     $(OUT_DIR)/$(OUTPUT_APP_NAME).stm8)
+OUTPUT_BIN :=$(call fix_path_if_in_windows,$(OUT_DIR)/$(OUTPUT_APP_NAME).bin)
+OUTPUT_HEX :=$(call fix_path_if_in_windows,$(OUT_DIR)/$(OUTPUT_APP_NAME).s19)
+OUTPUT_CRC32 :=$(call fix_path_if_in_windows,$(OUTPUT_CRC32))
+OUTPUT_HISTORY_BIN :=$(call fix_path_if_in_windows,\
+      $(OUT_DIR_HISTORY)/$(PROJECT_NAME)_$(MAIN_VERSION_STR)r$(DATE_STR).bin)
+LINKER_HISTORY_OUTPUT :=$(call fix_path_if_in_windows,\
+                $(OUT_DIR_HISTORY)/$(PROJECT_NAME)_$(MAIN_VERSION_STR).stm8)
 
 
 build_outputs : 

@@ -18,6 +18,7 @@ config STM32F103XXX
 	select STM32F103XXX_ADDITIONAL_OPTIONS
 	select INTERNAL_FLASH_EXISTS
 	select INTERNAL_SRAM_EXISTS
+	select STM32F10X
 
 config I94XXX
 	bool "I94XXX"
@@ -55,12 +56,15 @@ config SOC_HAS_DSP
     bool
     default n
 
+
 if I94XXX
 source "$KCONFIG_PUBLIC_START_DIR/hw_drivers/arch/ARM/soc/i94xxx/Kconfig"
 endif
 
 if STM32F103XXX
 source "$KCONFIG_PUBLIC_START_DIR/hw_drivers/arch/ARM/soc/stm32/stm32f103xxx/Kconfig"
+config STM32F10X
+	def_bool n
 endif
 
 if NUC505

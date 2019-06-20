@@ -18,12 +18,9 @@ LINKER_OUTPUT := $(OUT_DIR)/$(OUTPUT_NAME)
 LINKER_HISTORY_OUTPUT :=$(OUT_DIR_HISTORY)/$(HISTORY_OUTPUT_NAME)
 #OUTPUT_ASM :=  $(OUT_DIR)/$(OUTPUT_NAME).asm
 
-
-ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
-    LINKER_OUTPUT := $(subst /,\,$(LINKER_OUTPUT))
-    LINKER_HISTORY_OUTPUT := $(subst /,\,$(LINKER_HISTORY_OUTPUT))
-    OUTPUT_CRC32 := $(subst /,\,$(OUTPUT_CRC32))
-endif
+LINKER_OUTPUT :=$(call fix_path_if_in_windows,$(LINKER_OUTPUT))
+OUTPUT_CRC32 :=$(call fix_path_if_in_windows,$(OUTPUT_CRC32))
+LINKER_HISTORY_OUTPUT :=$(call fix_path_if_in_windows,$(LINKER_HISTORY_OUTPUT))
 
 #}}}}}}}}  END OF DEFINING OUTPUTS  }}}}}}}}
 

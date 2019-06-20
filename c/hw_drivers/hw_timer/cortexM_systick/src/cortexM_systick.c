@@ -18,7 +18,6 @@
 #include "clock_control_api.h"
 #include "hw_timer_api.h"
 
-#include "_cortexM_systick_prerequirements_check.h"
 
 /*following line add module to available module list for dynamic device tree*/
 #include "cortexM_systick_add_component.h"

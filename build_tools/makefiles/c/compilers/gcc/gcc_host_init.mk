@@ -50,20 +50,21 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
            $(call exit,1)
        endif
 
-       GCC_ROOT_DIR :=$(lastword $(wildcard $(TEST_GCC_ROOT_DIR)))#take the latest gcc version
+       # take the latest gcc version:
+       GCC_ROOT_DIR :=$(lastword $(wildcard $(TEST_GCC_ROOT_DIR)))
 
     endif
 
     #clear PATH environment variable to get rid of different mingw conflicts
-    FULL_GCC_PREFIX 		:= set "PATH=$(TEST_GCC_ROOT_DIR)/bin" & $(GCC_ROOT_DIR)/bin/
-    FULL_GCC_PREFIX := $(subst /,\,$(FULL_GCC_PREFIX))
-    COMPILER_INCLUDE_DIR 	:= $(GCC_ROOT_DIR)/include
-    GCC_LIB_ROOT_DIR  		:= $(GCC_ROOT_DIR)/lib
+    FULL_GCC_PREFIX :=$(call fix_path_if_in_windows,\
+                   set "PATH=$(TEST_GCC_ROOT_DIR)/bin" & $(GCC_ROOT_DIR)/bin/)
+    COMPILER_INCLUDE_DIR := $(GCC_ROOT_DIR)/include
+    GCC_LIB_ROOT_DIR := $(GCC_ROOT_DIR)/lib
 
     ifdef CONFIG_MIN_GW_GCC
-        COMPILE_WITH_GCC   :=y
+        COMPILE_WITH_GCC :=y
     else ifdef CONFIG_MIN_GW_GPP
-        COMPILE_WITH_GPP   :=y
+        COMPILE_WITH_GPP :=y
     endif
 
 else # for 'ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)'

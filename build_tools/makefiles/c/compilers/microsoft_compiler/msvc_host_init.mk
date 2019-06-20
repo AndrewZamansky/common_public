@@ -9,7 +9,7 @@ TEST_FILE_IN_SEARCHED_DIR:=cl.exe
 include $(MAKEFILES_INC_FUNC_DIR)/tool_existence_check.mk
 ############ end of tool existence test #####
 
-MSVC_BIN_DIR := $(subst /,\,$(MSVC_BIN_DIR))
+MSVC_BIN_DIR :=$(call fix_path_if_in_windows,$(MSVC_BIN_DIR))
 
 SHELL_OUT :=$(shell "$(MSVC_BIN_DIR)\cl.exe" 2>&1)
 ifneq ($(findstring Version 18,$(SHELL_OUT)),)

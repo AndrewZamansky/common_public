@@ -46,6 +46,13 @@
   #define IRQ_ATTR  __irq
 #endif
 
+// undefined if defined before
+#undef NVIC_PriorityGroup_0
+#undef NVIC_PriorityGroup_1
+#undef NVIC_PriorityGroup_2
+#undef NVIC_PriorityGroup_3
+#undef NVIC_PriorityGroup_4
+
 /*!< 0 bits for pre-emption priority 4 bits for subpriority */
 #define NVIC_PriorityGroup_0         ((uint32_t)0x7)
 /*!< 1 bits for pre-emption priority 3 bits for subpriority */

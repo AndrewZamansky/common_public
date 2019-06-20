@@ -82,14 +82,11 @@ ALL_OBJ_FILES += $(call rwildcard,$(OBJ_DIR)/,*.O.asm)
 # so $(sort) will eliminate duplication
 ALL_OBJ_FILES := $(sort $(ALL_OBJ_FILES))
 
-ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
-    LINKER_OUTPUT := $(subst /,\,$(LINKER_OUTPUT))
-    OUTPUT_BIN := $(subst /,\,$(OUTPUT_BIN))
-    OUTPUT_HISTORY_BIN := $(subst /,\,$(OUTPUT_HISTORY_BIN))
-    LINKER_HISTORY_OUTPUT := $(subst /,\,$(LINKER_HISTORY_OUTPUT))
-    OUTPUT_CRC32 := $(subst /,\,$(OUTPUT_CRC32))
-endif
-
+LINKER_OUTPUT :=$(call fix_path_if_in_windows,$(LINKER_OUTPUT))
+OUTPUT_BIN :=$(call fix_path_if_in_windows,$(OUTPUT_BIN))
+OUTPUT_CRC32 :=$(call fix_path_if_in_windows,$(OUTPUT_CRC32))
+LINKER_HISTORY_OUTPUT :=$(call fix_path_if_in_windows,$(LINKER_HISTORY_OUTPUT))
+OUTPUT_HISTORY_BIN :=$(call fix_path_if_in_windows,$(OUTPUT_HISTORY_BIN))
 
 
 build_outputs :

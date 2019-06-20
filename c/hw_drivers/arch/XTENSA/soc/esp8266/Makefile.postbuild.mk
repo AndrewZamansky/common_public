@@ -15,15 +15,13 @@ endif
 include $(MAKEFILES_ROOT_DIR)/_include_functions/tool_existence_check.mk
 ####### end of tool existence test #####
 
-BIN_GEN_ORIG_SCRIPT :=$(SDK_ESP8266_PATH)\tools\gen_appbin.py
-FLASH_BIN_FILE :=$(OUT_DIR)/eagle.app.flash.bin
+SDK_ESP8266_PATH :=$(call fix_path_if_in_windows,$(SDK_ESP8266_PATH))
+BIN_GEN_ORIG_SCRIPT :=$(call fix_path_if_in_windows,\
+                                $(SDK_ESP8266_PATH)\tools\gen_appbin.py)
+FLASH_BIN_FILE :=$(call fix_path_if_in_windows,$(OUT_DIR)/eagle.app.flash.bin)
 
-COMPILER_PATH :=$(GCC_ROOT_DIR)/bin
+COMPILER_PATH :=$(call fix_path_if_in_windows,$(GCC_ROOT_DIR)/bin)
 ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
-    COMPILER_PATH := $(subst /,\,$(COMPILER_PATH))
-    SDK_ESP8266_PATH := $(subst /,\,$(SDK_ESP8266_PATH))
-    BIN_GEN_ORIG_SCRIPT := $(subst /,\,$(BIN_GEN_ORIG_SCRIPT))
-    FLASH_BIN_FILE := $(subst /,\,$(FLASH_BIN_FILE))
     CD := cd /D 
     RM := del /Q
 endif

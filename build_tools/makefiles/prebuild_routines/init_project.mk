@@ -55,10 +55,8 @@ else
     OBJ_DIR    :=$(APP_ROOT_DIR)/zOBJ
 endif
 
-ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
-    OBJ_DIR :=$(subst /,\,$(OBJ_DIR))
-    OUT_DIR :=$(subst /,\,$(OUT_DIR))
-endif
+OBJ_DIR :=$(call fix_path_if_in_windows,$(OBJ_DIR))
+OUT_DIR :=$(call fix_path_if_in_windows,$(OUT_DIR))
 
 ALL_FOUND_COMPONENTS := $(AUTO_GENERATED_FILES_DIR)/all_found_components.mk
 COMPONENTS_MK := $(AUTO_GENERATED_FILES_DIR)/include_components.mk

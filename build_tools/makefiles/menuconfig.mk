@@ -52,12 +52,12 @@ ifeq ("$(wildcard $(COMMON_PRIVATE_KCONFIG_FILE))","")
     DUMMY:=$(shell echo     bool "dummy">>$(COMMON_PRIVATE_KCONFIG_FILE))
 endif
 
+PROJECT_KCONFIG :=$(call fix_path_if_in_windows,$(PROJECT_KCONFIG))
 
 ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
 
     ERROR_LOG =  $(OUT_DIR)\kconfig.out
-    PROJECT_KCONFIG := $(subst /,\,$(PROJECT_KCONFIG))
-
+    
     KCONFIG_BASIC_CMD :=$(KCONFIG_ROOT_DIR)/kconfig-mconf.exe $(PROJECT_KCONFIG)
     KCONFIG_CMD :=$(KCONFIG_BASIC_CMD) 2>$(ERROR_LOG)
 

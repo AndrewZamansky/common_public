@@ -84,7 +84,7 @@ ifeq ($(sort $(CONFIG_JUCE_VST_PLUGIN)),y)
         else ifeq ($(sort $(CONFIG_MSVC_COMPILER_64)),y)
             SAVIHOST :=$(SAVIHOST_DIR)\x64\savihost.exe
         endif
-        SAVIHOST := $(subst /,\,$(SAVIHOST))
+        SAVIHOST := $(call fix_path_if_in_windows,$(SAVIHOST))
         DUMMY:=$(shell $(CP) $(SAVIHOST) $(VST_TESTER))
     endif
 

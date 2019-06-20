@@ -51,18 +51,15 @@ endif
 
 #}}}}}}}}  END OF LINKER SCRIPT FILE PREPARATIONS }}}}}}}}
 
-ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
-    SCATTER_FILE := $(subst /,\,$(SCATTER_FILE))
-    LINKER_OUTPUT := $(subst /,\,$(LINKER_OUTPUT))
-    MAP_FILE := $(subst /,\,$(MAP_FILE))
-    LINKER_HISTORY_OUTPUT := $(subst /,\,$(LINKER_HISTORY_OUTPUT))
-    OUTPUT_ASM := $(subst /,\,$(OUTPUT_ASM))
-    OUTPUT_BIN := $(subst /,\,$(OUTPUT_BIN))
-    OUTPUT_HEX := $(subst /,\,$(OUTPUT_HEX))
-    OUTPUT_CRC32 := $(subst /,\,$(OUTPUT_CRC32))
-endif
 
-
+SCATTER_FILE :=$(call fix_path_if_in_windows,$(SCATTER_FILE))
+LINKER_OUTPUT :=$(call fix_path_if_in_windows,$(LINKER_OUTPUT))
+MAP_FILE :=$(call fix_path_if_in_windows,$(MAP_FILE))
+OUTPUT_BIN :=$(call fix_path_if_in_windows,$(OUTPUT_BIN))
+OUTPUT_ASM :=$(call fix_path_if_in_windows,$(OUTPUT_ASM))
+OUTPUT_HEX :=$(call fix_path_if_in_windows,$(OUTPUT_HEX))
+OUTPUT_CRC32 :=$(call fix_path_if_in_windows,$(OUTPUT_CRC32))
+LINKER_HISTORY_OUTPUT :=$(call fix_path_if_in_windows,$(LINKER_HISTORY_OUTPUT))
 
 #{{{{{{{{   LDFLAGS PREPARATIONS   {{{{{{{{
 
@@ -173,7 +170,7 @@ ALL_OBJ_FILES += $(call rwildcard,$(OBJ_DIR)/,*.O.asm)
 ALL_OBJ_FILES :=$(sort $(ALL_OBJ_FILES))
 ALL_OBJ_FILES :=$(subst \,/,$(ALL_OBJ_FILES))
 
-ALL_OBJECTS_LIST_FILE:=$(OUT_DIR)\objects.txt
+ALL_OBJECTS_LIST_FILE:=$(OUT_DIR)/objects.txt
 
 #create file with list of objects
 LIST_FILE_NAME_TRUNCATE :=$(ALL_OBJECTS_LIST_FILE)
@@ -191,8 +188,14 @@ include $(MAKEFILES_INC_FUNC_DIR)/add_item_list_to_file_in_one_line.mk
 ifdef CONFIG_USE_APPLICATION_SPECIFIC_SCATTER_FILE
     CREATE_LDS_CMD += echo using application specifc scatter file
 else
+    FMT_GLOBAL_DEFINES := $(patsubst %,-D%,$(GLOBAL_DEFINES))
+    #substitute " to \" for string defines  :
+    FMT_GLOBAL_DEFINES := $(subst ",\", $(FMT_GLOBAL_DEFINES))
+
     FMT_GLOBAL_INCLUDE_DIR := $(patsubst %,-I%,$(GLOBAL_INCLUDE_DIR))
-    CREATE_LDS_CMD =$(CC) -E -P -x c -I $(FMT_GLOBAL_INCLUDE_DIR)
+
+    CREATE_LDS_CMD =$(CC) -E -P -x c $(FMT_GLOBAL_INCLUDE_DIR)
+    CREATE_LDS_CMD += $(FMT_GLOBAL_DEFINES)
     CREATE_LDS_CMD += $(LDS_PREPROCESSOR_DEFS)
     CREATE_LDS_CMD += $(SCATTER_FILE_PATTERN) -o $(SCATTER_FILE)
 endif
