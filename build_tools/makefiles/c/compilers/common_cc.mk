@@ -75,31 +75,11 @@ ASM_OBJ_O := $(patsubst %.S,$(CURR_OBJ_DIR)/%.O.asm,$(SRC_ASM_S))
 all: $(SRC_OBJ) $(SRC_CC_OBJ) $(SRC_CPP_OBJ) $(ASM_OBJ) $(ASM_OBJ_O)
 
 
-ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
-    ENV_VAR_PUBLIC_SW_PACKAGES_DIR :=%PUBLIC_SW_PACKAGES_DIR%
-    ENV_VAR_EXTERNAL_SOURCE_ROOT_DIR :=%EXTERNAL_SOURCE_ROOT_DIR%
-    ENV_VAR_PUBLIC_DRIVERS_DIR :=%PUBLIC_DRIVERS_DIR%
-    ENV_VAR_APP_ROOT_DIR :=%APP_ROOT_DIR%
-else
-    ENV_VAR_PUBLIC_SW_PACKAGES_DIR :=$${PUBLIC_SW_PACKAGES_DIR}
-    ENV_VAR_EXTERNAL_SOURCE_ROOT_DIR :=$${EXTERNAL_SOURCE_ROOT_DIR}
-    ENV_VAR_PUBLIC_DRIVERS_DIR :=$${PUBLIC_DRIVERS_DIR}
-    ENV_VAR_APP_ROOT_DIR :=$${APP_ROOT_DIR}
-endif
-
-# reduce length of command line by replacing common path with variable :
-ALL_ASM_INCLUDE_DIRS :=$(subst $(PUBLIC_SW_PACKAGES_DIR),\
-                $(ENV_VAR_PUBLIC_SW_PACKAGES_DIR),$(ALL_ASM_INCLUDE_DIRS))
-ALL_ASM_INCLUDE_DIRS :=$(subst $(EXTERNAL_SOURCE_ROOT_DIR),\
-               $(ENV_VAR_EXTERNAL_SOURCE_ROOT_DIR),$(ALL_ASM_INCLUDE_DIRS))
-ALL_ASM_INCLUDE_DIRS :=$(subst $(PUBLIC_DRIVERS_DIR),\
-                     $(ENV_VAR_PUBLIC_DRIVERS_DIR),$(ALL_ASM_INCLUDE_DIRS))
-ALL_ASM_INCLUDE_DIRS :=$(subst $(APP_ROOT_DIR),\
-                          $(ENV_VAR_APP_ROOT_DIR),$(ALL_ASM_INCLUDE_DIRS))
-
-
-ASM_COMPILATION_CMD := $(SET_CC_ENV_VARS) $(ASM) $(GLOBAL_ASMFLAGS) $(ASMFLAGS)
+ASM_COMPILATION_CMD := $(ASM) $(GLOBAL_ASMFLAGS) $(ASMFLAGS)
 ASM_COMPILATION_CMD += $(ALL_ASM_INCLUDE_DIRS) $(ALL_ASM_DEFINES)
+ASM_COMPILATION_CMD :=$(call reduce_cmd_len, $(ASM_COMPILATION_CMD))
+$(call check_win_cmd_len, $(ASM_COMPILATION_CMD))
+
 $(CURR_OBJ_DIR)/%.o.asm: %.s
 	$(info .    Compiling $<)
 	$(call mkdir_if_not_exists, $(dir $@))
@@ -112,22 +92,12 @@ $(CURR_OBJ_DIR)/%.O.asm: %.S
 
 
 
-
-
-
-# reduce length of command line by replacing common path with variable :
-ALL_INCLUDE_DIRS :=$(subst $(PUBLIC_SW_PACKAGES_DIR),\
-                        $(ENV_VAR_PUBLIC_SW_PACKAGES_DIR),$(ALL_INCLUDE_DIRS))
-ALL_INCLUDE_DIRS :=$(subst $(EXTERNAL_SOURCE_ROOT_DIR),\
-                       $(ENV_VAR_EXTERNAL_SOURCE_ROOT_DIR),$(ALL_INCLUDE_DIRS))
-ALL_INCLUDE_DIRS :=$(subst $(PUBLIC_DRIVERS_DIR),\
-                         $(ENV_VAR_PUBLIC_DRIVERS_DIR),$(ALL_INCLUDE_DIRS))
-ALL_INCLUDE_DIRS :=$(subst $(APP_ROOT_DIR),\
-                                 $(ENV_VAR_APP_ROOT_DIR),$(ALL_INCLUDE_DIRS))
-
 ALL_CFLAGS := $(GLOBAL_CFLAGS) $(CFLAGS)
-C_COMPILATION_CMD := $(SET_CC_ENV_VARS) $(CC) $(ALL_CFLAGS)
+C_COMPILATION_CMD := $(CC) $(ALL_CFLAGS)
 C_COMPILATION_CMD += $(ALL_INCLUDE_DIRS) $(ALL_DEFINES)
+C_COMPILATION_CMD :=$(call reduce_cmd_len, $(C_COMPILATION_CMD))
+$(call check_win_cmd_len, $(C_COMPILATION_CMD))
+
 $(CURR_OBJ_DIR)/%.o: %.c $(HEADER_FILES_DEPS) $(APP_ROOT_DIR)/.config
 	$(info .    Compiling $<)
 	$(call mkdir_if_not_exists, $(dir $@))

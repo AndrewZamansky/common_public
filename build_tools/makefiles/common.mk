@@ -12,3 +12,5 @@ SPACE:= $(EMPTY) $(EMPTY)
 include $(MAKEFILES_ROOT_DIR)/_functions/update_global_variables_functions.mk
 
 include $(MAKEFILES_ROOT_DIR)/_functions/usefull_functions.mk
+
+.SUFFIXES:

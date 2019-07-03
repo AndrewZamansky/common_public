@@ -199,9 +199,12 @@ else
     CREATE_LDS_CMD += $(LDS_PREPROCESSOR_DEFS)
     CREATE_LDS_CMD += $(SCATTER_FILE_PATTERN) -o $(SCATTER_FILE)
 endif
+CREATE_LDS_CMD :=$(call reduce_cmd_len, $(CREATE_LDS_CMD))
+$(call check_win_cmd_len, $(CREATE_LDS_CMD))
 
 LINKER_CMD =$(LD) $(LDFLAGS) -T $(SCATTER_FILE) $(LIBRARIES_DIRS)
 LINKER_CMD += @$(ALL_OBJECTS_LIST_FILE) $(LIBS) -o $(LINKER_OUTPUT)
+$(call check_win_cmd_len, $(LINKER_CMD))
 
 build_outputs :
 	$(CREATE_LDS_CMD)

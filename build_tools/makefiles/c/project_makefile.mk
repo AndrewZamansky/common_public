@@ -1,3 +1,5 @@
+MAKEFLAGS += --no-builtin-rules
+
 # test for valid target 
 VALID_TARGETS := all clean rebuild export_project list_var  menuconfig
 ifeq ($(filter $(MAKECMDGOALS),$(VALID_TARGETS)),)
@@ -50,7 +52,7 @@ KCONFIG_PRIVATE_START_DIR :=$(COMMON_PRIVATE_DIR)/c
 menuconfig: $(PROJECT_KCONFIG)
 	$(eval export KCONFIG_PUBLIC_START_DIR)
 	$(eval export KCONFIG_PRIVATE_START_DIR)
-	$(MAKE) -f $(MAKEFILES_ROOT_DIR)/menuconfig.mk
+	$(MAKE) -r -f $(MAKEFILES_ROOT_DIR)/menuconfig.mk
 
 
 all: $(COMPONENTS_MK) $(PROJECT_CONFIG_H_FILE)
@@ -59,13 +61,13 @@ all: $(COMPONENTS_MK) $(PROJECT_CONFIG_H_FILE)
 $(PROJECT_KCONFIG) : $(APP_ROOT_DIR)/.config
 	$(eval export KCONFIG_PUBLIC_START_DIR)
 	$(eval export KCONFIG_PRIVATE_START_DIR)
-	$(MAKE) -f $(GENERATE_PRJ_FILES_DIR)/generate_project_kconfig.mk
+	$(MAKE) -r -f $(GENERATE_PRJ_FILES_DIR)/generate_project_kconfig.mk
 
 $(COMPONENTS_MK) : $(APP_ROOT_DIR)/.config
-	$(MAKE) -f $(GENERATE_PRJ_FILES_DIR)/generate_include_components_mk_file.mk
+	$(MAKE) -r -f $(GENERATE_PRJ_FILES_DIR)/generate_include_components_mk_file.mk
 
 $(PROJECT_CONFIG_H_FILE) : $(APP_ROOT_DIR)/.config
-	$(MAKE) -f $(GENERATE_PRJ_FILES_DIR)/generate_project_config_h_file.mk
+	$(MAKE) -r -f $(GENERATE_PRJ_FILES_DIR)/generate_project_config_h_file.mk
 
 
 rebuild : clean
