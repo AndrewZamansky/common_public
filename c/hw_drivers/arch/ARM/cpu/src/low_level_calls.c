@@ -61,8 +61,7 @@ EXTERN_C_FUNCTION void* _sbrk ( int incr )
 
 	if( ( global_heap + incr) > (unsigned char *)&__HEAP_END)
 	{
-		__asm__ __volatile__("cpsid i\n");
-		while(1); // trap of memmory overflow
+		CRITICAL_ERROR("no more heap");
 	}
 
 	prev_heap = global_heap;

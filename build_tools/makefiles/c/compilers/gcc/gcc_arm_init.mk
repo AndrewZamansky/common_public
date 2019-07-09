@@ -15,7 +15,11 @@ ifdef CONFIG_GNUEABI
     ABI_PREFIX:=gnueabi
 endif
 
-GNU_COMPILATION_PREFIX	:=arm-$(VENDOR_NAME)$(OS_PREFIX)$(ABI_PREFIX)
+ifdef CONFIG_CORTEX_A35
+  GNU_COMPILATION_PREFIX :=aarch64-elf
+else
+  GNU_COMPILATION_PREFIX :=arm-$(VENDOR_NAME)$(OS_PREFIX)$(ABI_PREFIX)
+endif
 
 GCC_ROOT_DIR :=
 
@@ -23,7 +27,11 @@ GCC_ROOT_DIR :=
 ####### put its directory name in GCC_ROOT_DIR     #####
 SEARCHED_TOOL:=$(GNU_COMPILATION_PREFIX)-gcc
 SEARCHED_DIR_VARIABLE:=GCC_ROOT_DIR
-MANUALLY_DEFINED_DIR_VARIABLE:=REDEFINE_ARM_GCC_ROOT_DIR
+ifdef CONFIG_CORTEX_A35
+    MANUALLY_DEFINED_DIR_VARIABLE:=REDEFINE_ARM_GCC_AARCH64_ROOT_DIR
+else
+    MANUALLY_DEFINED_DIR_VARIABLE:=REDEFINE_ARM_GCC_ROOT_DIR
+endif
 ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
     TEST_FILE_IN_SEARCHED_DIR:=bin\$(GNU_COMPILATION_PREFIX)-gcc.exe
 else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX)
@@ -57,6 +65,8 @@ else ifdef CONFIG_CORTEX_M4
     CONFIG_CPU_TYPE := cortex-m4
 else ifdef CONFIG_CORTEX_A9
     CONFIG_CPU_TYPE := cortex-a9
+else ifdef CONFIG_CORTEX_A35
+    CONFIG_CPU_TYPE := cortex-a35
 else ifdef CONFIG_ARM_926EJ_S
     CONFIG_CPU_TYPE := arm926ej-s
 endif
@@ -65,13 +75,17 @@ endif
 ### GLOBAL_CFLAGS calculation
 
 GLOBAL_CFLAGS += -mcpu=$(CONFIG_CPU_TYPE) -gdwarf-2 -MD
-GLOBAL_CFLAGS += -mapcs-frame -mthumb-interwork
+ifndef CONFIG_CORTEX_A35
+    GLOBAL_CFLAGS += -mapcs-frame -mthumb-interwork
+endif
 GLOBAL_CFLAGS += -Wall -fdata-sections
 
 ifeq ($(findstring cortex-m,$(CONFIG_CPU_TYPE)),cortex-m)
    	GLOBAL_CFLAGS +=  -mthumb
 else	
-    GLOBAL_CFLAGS += -mno-unaligned-access
+    ifndef CONFIG_CORTEX_A35
+        GLOBAL_CFLAGS += -mno-unaligned-access
+    endif
 endif
 
 
@@ -83,6 +97,8 @@ else ifdef CONFIG_CORTEX_M4
     else
         GLOBAL_CFLAGS += -mfloat-abi=soft
     endif
+else ifdef CONFIG_CORTEX_A35
+    GLOBAL_CFLAGS += -march=armv8-a
 endif
 
 ifdef CONFIG_GCC_OPTIMISE_SIZE
@@ -96,7 +112,10 @@ GLOBAL_CFLAGS += -$(CONFIG_OPTIMIZE_LEVEL) -g -g3 -ggdb3 #-gstabs3
 GLOBAL_CFLAGS := $(GLOBAL_CFLAGS)
 
 ### GLOBAL_ASMFLAGS calculation
-GLOBAL_ASMFLAGS += -mcpu=$(CONFIG_CPU_TYPE)  -gdwarf-2   -mthumb-interwork
+GLOBAL_ASMFLAGS += -mcpu=$(CONFIG_CPU_TYPE) -gdwarf-2
+ifndef CONFIG_CORTEX_A35
+    GLOBAL_ASMFLAGS += -mthumb-interwork
+endif
 
 ifeq ($(findstring cortex-m,$(CONFIG_CPU_TYPE)),cortex-m)
 	GLOBAL_ASMFLAGS += -mthumb 
@@ -114,16 +133,16 @@ GLOBAL_ASMFLAGS := $(GLOBAL_ASMFLAGS)
 
 
 
-FULL_GCC_PREFIX 		:= $(GCC_ROOT_DIR)/bin/$(GNU_COMPILATION_PREFIX)-
-COMPILER_INCLUDE_DIR 	:= $(GCC_ROOT_DIR)/$(GNU_COMPILATION_PREFIX)/include
-GCC_LIB_ROOT_DIR  		:= $(GCC_ROOT_DIR)/$(GNU_COMPILATION_PREFIX)/lib
+FULL_GCC_PREFIX      := $(GCC_ROOT_DIR)/bin/$(GNU_COMPILATION_PREFIX)-
+COMPILER_INCLUDE_DIR := $(GCC_ROOT_DIR)/$(GNU_COMPILATION_PREFIX)/include
+GCC_LIB_ROOT_DIR     := $(GCC_ROOT_DIR)/$(GNU_COMPILATION_PREFIX)/lib
 
 ifdef CONFIG_GCC
-    CC   :=	$(FULL_GCC_PREFIX)gcc -c
-    ASM  :=	$(FULL_GCC_PREFIX)gcc -c
-    LD   :=	$(FULL_GCC_PREFIX)gcc
+    CC   := $(FULL_GCC_PREFIX)gcc -c
+    ASM  := $(FULL_GCC_PREFIX)gcc -c
+    LD   := $(FULL_GCC_PREFIX)gcc
 else ifdef CONFIG_GPP
-	CC   :=	$(FULL_GCC_PREFIX)g++ -c
-    ASM  :=	$(FULL_GCC_PREFIX)g++ -c
-    LD   :=	$(FULL_GCC_PREFIX)g++
+	CC   := $(FULL_GCC_PREFIX)g++ -c
+    ASM  := $(FULL_GCC_PREFIX)g++ -c
+    LD   := $(FULL_GCC_PREFIX)g++
 endif

@@ -15,35 +15,44 @@
 .equ I_BIT    ,  0x80
 .equ F_BIT    ,  0x40
 
+
 /*
 ;----------------------------------------------------------
-; --- Stack memory locations
+; --- additional vector table
 ;----------------------------------------------------------
 */
 
-.section ._secondary_rom_vector_table,"ax"
-.global _secondary_rom_vector_table
+.section .arm_additional_table.1.start,"ax"
 .global _secondary_rom_vector_table_startup_entry
-_secondary_rom_vector_table:
 
-_secondary_rom_vector_table_startup_entry:
+_additional_startup_entry:
     ldr pc, _startup_text
-_secondary_rom_vector_table_startup_with_debugger_entry:
-    ldr pc, _startup_text_with_debugger
 
-/*end of _inner_vector_table */
+.section ._arm_additional_table.2.start_with_semihosting,"ax"
+_additional_startup_with_debugger_entry:
+    ldr pc, _startup_text_with_debugger
 
 .extern return_from_semihosting
 
 _startup_text: .word do_startup
 _startup_text_with_debugger: .word do_startup_with_debugger
 
+.section ._arm_additional_table.3.semihosting_breakpoint,"ax"
 .section ._secondary_ram_vector_table,"ax"
 .global _secondary_ram_vector_table_semihosting_entry
 
 _secondary_ram_vector_table_semihosting_entry:
     ldr pc, _return_from_semihosting_text
 _return_from_semihosting_text: .word return_from_semihosting
+
+/*
+;----------------------------------------------------------
+; --- end of additional vector table
+;----------------------------------------------------------
+*/
+
+
+
 
 .section .text.startup , "ax"
 

@@ -1,7 +1,8 @@
 
-INCLUDE_THIS_COMPONENT := $(CONFIG_CORTEX_M3) $(CONFIG_CORTEX_M4) $(CONFIG_CORTEX_A9)
+INCLUDE_THIS_COMPONENT := $(CONFIG_CORTEX_M3) $(CONFIG_CORTEX_M4)
+INCLUDE_THIS_COMPONENT += $(CONFIG_CORTEX_A9)  $(CONFIG_CORTEX_A35)
 
-ifneq ($(strip $(INCLUDE_THIS_COMPONENT) ),)
+ifeq ($(sort $(CONFIG_CORTEX_M3) $(CONFIG_CORTEX_M4)),y)
 
     ARM_CMSIS_PATH :=$(EXTERNAL_SOURCE_ROOT_DIR)/ARM-CMSIS_v3.01
     ifeq ("$(wildcard $(ARM_CMSIS_PATH))","")
@@ -59,15 +60,23 @@ else ifdef CONFIG_CORTEX_A9
 	CORTEX_DIR := src/Cortex_A9
 	INCLUDE_DIR += src/Cortex_A9
 	SRC += src/Cortex_A9/cache-pl310.c
+else ifdef CONFIG_CORTEX_A35
+	CORTEX_DIR := src/Cortex_A35
+	INCLUDE_DIR += src/Cortex_A35
 endif
 SRC += $(CORTEX_DIR)/core_init.c
 
 ifeq (y,$(USING_GCC_COMPILER))
-    SRC += $(CORTEX_DIR)/SWI.s
     SRC += src/low_level_calls.c
-    SRC += src/SWI.c
-    SRC += $(CORTEX_DIR)/startup.s
+    ifdef CONFIG_CORTEX_A35
+        SRC += $(CORTEX_DIR)/v8_aarch64.s
+        SRC += $(CORTEX_DIR)/MP_GIC.s
+    else
+        SRC += $(CORTEX_DIR)/SWI.s
+        SRC += src/SWI.c
+    endif
     SRC += $(CORTEX_DIR)/vectors.s
+    SRC += $(CORTEX_DIR)/startup.s
 else ifdef CONFIG_ARMCC
     SRC += $(CORTEX_DIR)/startup_armcc.s
     SRC += $(CORTEX_DIR)/vectors_armcc.s

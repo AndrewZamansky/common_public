@@ -12,6 +12,12 @@ config POLEG
 	bool "poleg"
 	select PUBLIC_SOC_SELECTED
 
+config ARBEL
+	bool "arbel"
+	select PUBLIC_SOC_SELECTED
+	select ARBEL_ADDITIONAL_OPTIONS
+	select INTERNAL_SRAM_EXISTS
+
 config STM32F103XXX
 	bool "stm32f103xxx"
 	select PUBLIC_SOC_SELECTED
@@ -48,6 +54,10 @@ config CORTEX_A9
     bool
     default n
 
+config CORTEX_A35
+    bool
+    default n
+
 config ARM_926EJ_S
     bool
     default n
@@ -73,6 +83,10 @@ endif
 
 if POLEG
 source "$KCONFIG_PUBLIC_START_DIR/hw_drivers/arch/ARM/soc/poleg/Kconfig"
+endif
+
+if ARBEL
+source "$KCONFIG_PUBLIC_START_DIR/hw_drivers/arch/ARM/soc/arbel/Kconfig"
 endif
 
 if GENERIC_SOC

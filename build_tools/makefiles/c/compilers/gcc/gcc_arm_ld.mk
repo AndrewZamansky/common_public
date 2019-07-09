@@ -39,12 +39,7 @@ ifdef CONFIG_USE_APPLICATION_SPECIFIC_SCATTER_FILE
 else
     SCATTER_FILES_DIR :=$(BUILD_TOOLS_ROOT_DIR)/scatter_files/arm
     LDS_PREPROCESSOR_DEFS += -DFILES_TO_FORCE_IN_RAM="$(FILES_TO_FORCE_IN_RAM)"
-    CORTEX_M =$(sort $(CONFIG_CORTEX_M4) $(CONFIG_CORTEX_M3))
-    ifeq ($(CORTEX_M),y)
-        SCATTER_FILE_PATTERN =$(SCATTER_FILES_DIR)/arm_gcc_cortex_m.lds
-    else
-        SCATTER_FILE_PATTERN =$(SCATTER_FILES_DIR)/arm_gcc_cortex_a.lds
-    endif
+    SCATTER_FILE_PATTERN =$(SCATTER_FILES_DIR)/arm_gcc_cortex.lds
 
     SCATTER_FILE =$(OUT_DIR)/$(OUTPUT_NAME).lds
 endif
@@ -71,10 +66,12 @@ ifeq ($(findstring cortex-m,$(CONFIG_CPU_TYPE)),cortex-m)
 endif
 
 LDFLAGS += -mcpu=$(CONFIG_CPU_TYPE)
-LDFLAGS += -mthumb-interwork
 LDFLAGS += -Wl,--gc-sections
 LDFLAGS += -nostartfiles
 LDFLAGS += -Wl,-Map=$(MAP_FILE)
+ifndef CONFIG_CORTEX_A35
+    LDFLAGS += -mthumb-interwork
+endif
 
 ifdef CONFIG_USE_NANO_STD_LIBS
     LDFLAGS += -specs=nano.specs

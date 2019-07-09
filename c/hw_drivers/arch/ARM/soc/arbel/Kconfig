@@ -1,0 +1,25 @@
+menu "`--->  Arbel configurations"
+
+
+choice
+	prompt "Arbel flavors"
+	default ARBEL_DEFAULT
+
+config ARBEL_DEFAULT
+	bool "arbel default"
+	select ARBEL_256K_SRAM
+
+endchoice
+
+
+=======
+config ARBEL_ADDITIONAL_OPTIONS
+	def_bool n
+	select CORTEX_A35 
+	
+config ARBEL_256K_SRAM
+	def_bool n
+
+endmenu
+
+	

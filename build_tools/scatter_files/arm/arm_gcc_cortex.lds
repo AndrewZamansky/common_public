@@ -4,37 +4,16 @@
 ENTRY(_startup)
 
 #include "arm_memory_blocks.lds"
-#include "dt_interrupts_num.h"
 
-#ifndef NUMBER_OF_NVIC_EXTERNAL_INTERRUPTS
-	#error "NUMBER_OF_NVIC_EXTERNAL_INTERRUPTS should be defined"
+#if defined(CONFIG_CORTEX_A9)
+	#include "arm_gcc_cortex_a9_calc_exception_size.lds"
+#elif defined(CONFIG_CORTEX_A35)
+	#include "arm_gcc_cortex_a35_calc_exception_size.lds"
+#elif defined(CONFIG_CORTEX_M4)
+	#include "arm_gcc_cortex_m_calc_exception_size.lds"
 #endif
 
-STACK_SIZE = 1024;
-
-#define BYTES_TO_KEEP_FOR_INTERNAL_INTERRUPTS  52 //(13 * 4)
-
-#if (NUMBER_OF_NVIC_EXTERNAL_INTERRUPTS < 32)
-	#define BYTES_TO_KEEP_FOR_EXTERNAL_INTERRUPTS  128
-#elif  (NUMBER_OF_NVIC_EXTERNAL_INTERRUPTS < 64)
-	#define BYTES_TO_KEEP_FOR_EXTERNAL_INTERRUPTS  256
-#elif  (NUMBER_OF_NVIC_EXTERNAL_INTERRUPTS < 96)
-	#define BYTES_TO_KEEP_FOR_EXTERNAL_INTERRUPTS  384
-#elif  (NUMBER_OF_NVIC_EXTERNAL_INTERRUPTS < 128)
-	#define BYTES_TO_KEEP_FOR_EXTERNAL_INTERRUPTS  512
-#elif  (NUMBER_OF_NVIC_EXTERNAL_INTERRUPTS < 160)
-	#define BYTES_TO_KEEP_FOR_EXTERNAL_INTERRUPTS  640
-#elif  (NUMBER_OF_NVIC_EXTERNAL_INTERRUPTS < 192)
-	#define BYTES_TO_KEEP_FOR_EXTERNAL_INTERRUPTS  768
-#elif  (NUMBER_OF_NVIC_EXTERNAL_INTERRUPTS < 224)
-	#define BYTES_TO_KEEP_FOR_EXTERNAL_INTERRUPTS  896
-#elif  (NUMBER_OF_NVIC_EXTERNAL_INTERRUPTS < 256)
-	#define BYTES_TO_KEEP_FOR_EXTERNAL_INTERRUPTS  1024
-#endif
-
-
-EXCEPTION_VECTOR_AREA_SIZE = BYTES_TO_KEEP_FOR_INTERNAL_INTERRUPTS +
-								BYTES_TO_KEEP_FOR_EXTERNAL_INTERRUPTS;
+SECONDARY_RAM_VECTOR_AREA_SIZE  = 0x40;//with some extra for future use
 
 SECTIONS
 {
@@ -66,11 +45,12 @@ SECTIONS
 	__tables_relocation_section_start_on_RAM__ = ram_start;
 
 	/* the AT process of first table is not used because it cause
-	 * problem on nuc-link debugger to rom it : */
+	 * problem on nu-link debugger to rom it : */
 	/*.vector_table __tables_relocation_section_start_on_RAM__ : AT ( __tables_relocation_section_start_on_ROM__ ) */
 	.vector_table __tables_relocation_section_start_on_ROM__ :
 	{
 		KEEP(*(._arm_vector_table))
+		KEEP(*(._arm_vector_table.*))
 	} > CODE_LOCATION
 
 	.arm_additional_table . :
@@ -85,7 +65,7 @@ SECTIONS
 					EXCEPTION_VECTOR_AREA_SIZE + SIZEOF(.arm_additional_table);
 	start_of_device_tree_on_RAM = __tables_relocation_section_start_on_RAM__ +
 					EXCEPTION_VECTOR_AREA_SIZE + SIZEOF(.arm_additional_table);
-		
+
 
 #if 0 //TODO : used for creating dynamic device tree file
 #ifdef CONFIG_DYNAMIC_DEVICE_TREE
@@ -187,7 +167,7 @@ SECTIONS
 		* (.text .text*);
 		* (.rodata .rodata*);
 		. = ALIGN(4);
-	}  > DATA_LOCATION
+	} > DATA_LOCATION
 
 	data_section_start_on_ROM =
 			critical_text_section_start_on_ROM + SIZEOF(.critical_text);
@@ -196,7 +176,7 @@ SECTIONS
 		*(.data) ;
 		*(.data.*) ;
 		. = ALIGN(4);
-	}  > DATA_LOCATION
+	} > DATA_LOCATION
 
 	__relocation_section_end_on_RAM__ = .;
 
@@ -214,19 +194,27 @@ SECTIONS
 	.stack . : {
 		. = ALIGN (8); /*cortex requirement*/
 		Buttom_Of_Stacks = . ;
-		. += STACK_SIZE;
+#if defined(CONFIG_CORTEX_A9)
+	#include "arm_gcc_cortex_a9_stacks.lds"
+#elif defined(CONFIG_CORTEX_A35)
+	#include "arm_gcc_cortex_a35_stacks.lds"
+#elif defined(CONFIG_CORTEX_M4)
+	#include "arm_gcc_cortex_m_stacks.lds"
+#endif
 		. = ALIGN (8); /*cortex requirement*/
 		Top_Of_Stacks = .;
 		Size_Of_Stack = Top_Of_Stacks - Buttom_Of_Stacks;
-	} >DATA_LOCATION
+	} > DATA_LOCATION
 
 
 	/* debug sections */
 	#include "arm_gcc_debug_sections.lds"
+    .note (NOLOAD) : { *(.note*) } >DATA_LOCATION
 
 	/* arm build attributes like cpu type , eabi type ,
-	 * etc. that was configured during build can be added to text
-	 * of code if this info is needed during run of program */
+	 * etc. that was configured during build can be added to text of
+	 * code if this info is needed during run of program
+	 */
 	.ARM.attributes 0   : {
 	   __ARM.attributes_start = .;
 	   *(.ARM.attributes*)
