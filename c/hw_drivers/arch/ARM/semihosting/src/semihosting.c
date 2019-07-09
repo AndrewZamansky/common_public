@@ -14,7 +14,7 @@
 #include "semihosting_api.h"
 #include "dev_management_api.h"
 
-#include "PRINTF_api.h"
+//#include "PRINTF_api.h"
 #ifdef CONFIG_ARM_SEMIHOSTING_CONFIG_ENABLE_RX
     #include "os_wrapper.h"
 #endif
@@ -46,7 +46,7 @@
 
 static int BKPT(int op, void* p1, void* p2) ;
 extern int smihosting_is_active ;
-static int terminal_hndl;
+static int terminal_hndl = -1;
 
 
 #define SYS_OPEN      0x01
@@ -222,6 +222,10 @@ size_t semihosting_pwrite( struct dev_desc_t *adev,
 	struct semihosting_instance_t *handle;
 	struct dev_desc_t *   callback_dev;
 
+	if (-1 == terminal_hndl)
+	{
+		return 0;
+	}
 	handle = DEV_GET_CONFIG_DATA_POINTER(adev);
 	callback_dev = handle->callback_dev;
 	ARM_API_SH_Write(terminal_hndl, apData, aLength);
@@ -412,7 +416,13 @@ uint8_t semihosting_ioctl( struct dev_desc_t *adev,
 	switch(aIoctl_num)
 	{
 		case IOCTL_DEVICE_START :
+			// some debuggers expect mode = 'wb'(5) and some expect 'w'(4)
+			// so checking two modes
 			terminal_hndl = ARM_API_SH_Open(":tt", 5);//mode 5=wb
+			if (-1 == terminal_hndl)
+			{
+				terminal_hndl = ARM_API_SH_Open(":tt", 4);//mode 4=w
+			}
 #ifdef CONFIG_ARM_SEMIHOSTING_CONFIG_ENABLE_RX
 			os_create_task("sw_uart_wrapper_task",
 					poll_for_semihosting_data_task, adev,

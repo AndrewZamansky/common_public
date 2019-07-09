@@ -71,10 +71,9 @@ ifeq (y,$(USING_GCC_COMPILER))
     ifdef CONFIG_CORTEX_A35
         SRC += $(CORTEX_DIR)/v8_aarch64.s
         SRC += $(CORTEX_DIR)/MP_GIC.s
-    else
-        SRC += $(CORTEX_DIR)/SWI.s
-        SRC += src/SWI.c
     endif
+    SRC += src/SWI.c
+    SRC += $(CORTEX_DIR)/SWI.s
     SRC += $(CORTEX_DIR)/vectors.s
     SRC += $(CORTEX_DIR)/startup.s
 else ifdef CONFIG_ARMCC

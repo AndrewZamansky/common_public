@@ -21,7 +21,8 @@ extern "C" {
 
 #if defined(CONFIG_USE_SPECIFIC_MEMORY_LOCATION_FOR_DEVICES) &&  \
 	( (defined(CONFIG_CORTEX_M3) || defined(CONFIG_CORTEX_M4) || \
-			defined(CONFIG_CORTEX_A9) )  && defined(CONFIG_GCC) )
+		defined(CONFIG_CORTEX_A9) || defined(CONFIG_CORTEX_A35) )  &&  \
+		defined(CONFIG_GCC) )
 
 	#define MODULES_PLACEMENT        __attribute__((section("modules_section")))
 	#define DEVICE_PLACEMENT     __attribute__((section("static_devs_section")))
