@@ -27,9 +27,14 @@ typedef struct _fir_filter_api_band_set_t
 
 /**********  define API  functions  ************/
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 extern char fir_filter_module_name[] ;
 #define FIR_FILTER_DSPT	fir_filter_module_name
 
-
+#ifdef __cplusplus
+}
+#endif
 #endif

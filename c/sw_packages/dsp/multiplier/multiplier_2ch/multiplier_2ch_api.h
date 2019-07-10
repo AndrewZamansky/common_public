@@ -13,9 +13,15 @@
 
 /**********  define API  functions  ************/
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern char multiplier_2ch_module_name[] ;
 #define MULTIPLIER_2CH_DSPT	multiplier_2ch_module_name
 
-
+#ifdef __cplusplus
+}
+#endif
 
 #endif

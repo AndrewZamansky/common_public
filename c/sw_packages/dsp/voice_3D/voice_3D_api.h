@@ -29,8 +29,16 @@ typedef enum
 
 /**********  define API  functions  ************/
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern char voice_3D_module_name[] ;
 #define VOICE_3D_DSPT	voice_3D_module_name
+
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif

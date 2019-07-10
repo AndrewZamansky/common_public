@@ -55,9 +55,15 @@ struct biquad_filter_api_band_set_t
 
 /**********  define API  functions  ************/
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 extern char biquad_filter_module_name[] ;
 #define BIQUAD_FILTER_DSPT	biquad_filter_module_name
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif

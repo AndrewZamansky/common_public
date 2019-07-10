@@ -13,9 +13,15 @@
 
 /**********  define API  functions  ************/
 
-
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 extern char mixer3x1_module_name[] ;
 #define MIXER3X1_DSPT	mixer3x1_module_name
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

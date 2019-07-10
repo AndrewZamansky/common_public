@@ -31,7 +31,15 @@ struct pcm_splitter_api_set_params_t {
 	uint8_t channel_justification; /**/
 };
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern char pcm_splitter_module_name[] ;
 #define PCM_SPLITTER_DSPT	pcm_splitter_module_name
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
