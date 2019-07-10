@@ -28,9 +28,16 @@ typedef struct _downsampling_by_int_filter_api_band_set_t
 
 /**********  define API  functions  ************/
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 extern char downsampling_by_int_module_name[] ;
 #define DOWNSAMPLING_BY_INT_DSPT	downsampling_by_int_module_name
+
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif

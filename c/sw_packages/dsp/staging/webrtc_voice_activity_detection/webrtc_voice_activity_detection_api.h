@@ -20,10 +20,18 @@ typedef enum
 
 /**********  define API  functions  ************/
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern char webrtc_voice_activity_detection_module_name[] ;
 
 #define WEBRTC_VOICE_ACTIVITY_DETECTION_DSPT	\
 								webrtc_voice_activity_detection_module_name
 
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

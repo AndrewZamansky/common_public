@@ -125,16 +125,16 @@ struct dsp_chain_t {
 	uint16_t          magic_num;
 };
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern char chain_outputs_module_name[] ;
 #define CHAIN_OUTPUTS_DSPT  chain_outputs_module_name
 extern char chain_inputs_module_name[] ;
 #define CHAIN_INPUTS_DSPT   chain_inputs_module_name
 
-/**********  define API  functions  ************/
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /*  ioctl functions */
 uint8_t	dsp_management_api_ioctl_0_params(

@@ -22,8 +22,15 @@ typedef enum
 
 /**********  define API  functions  ************/
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern char tone_generator_module_name[] ;
 #define TONE_GENERATOR_DSPT	tone_generator_module_name
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif

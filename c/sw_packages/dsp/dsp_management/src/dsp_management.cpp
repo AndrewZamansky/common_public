@@ -113,8 +113,8 @@ static struct dsp_module_inst_t * find_dsp_by_name(
 
 	while (num_of_modules)
 	{
-		if (0 ==
-			strncmp(module_inst_arr->module_inst_name, module_inst_name, 64))
+		if ((NULL != module_inst_arr->module_inst_name) && (0 ==
+			strncmp(module_inst_arr->module_inst_name, module_inst_name, 64)))
 		{
 			return module_inst_arr;
 		}

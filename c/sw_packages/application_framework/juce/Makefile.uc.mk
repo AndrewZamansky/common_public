@@ -1,6 +1,5 @@
 
-
-ifeq ($(sort $(CONFIG_XTENSA_FPGA_SIM)),y)
+ifeq ($(sort $(CONFIG_INCLUDE_JUCE)),y)
 
     JUCE_PATH :=$(EXTERNAL_SOURCE_ROOT_DIR)/JUCE
     ifeq ("$(wildcard $(JUCE_PATH))","")
@@ -54,9 +53,9 @@ else
     DBG_NAME :=
 endif
 
-ifeq ($(sort $(CONFIG_MSVC_COMPILER_32)),y)
+ifeq ($(sort $(CONFIG_MSC_TARGET_ARCH_X86)),y)
     ARCH_NAME :=x86_32
-else ifeq ($(sort $(CONFIG_MSVC_COMPILER_64)),y)
+else ifeq ($(sort $(CONFIG_MSC_TARGET_ARCH_X64)),y)
     ARCH_NAME :=x86_64
 endif
 
@@ -79,9 +78,9 @@ ifeq ($(sort $(CONFIG_JUCE_VST_PLUGIN)),y)
     SAVIHOST_DIR :=$(REDEFINE_SAVIHOST_VST_TESTER_DIR)
     #if VST tester dont exists then copy it tou output directory
     ifeq ($(wildcard $(VST_TESTER)),)
-        ifeq ($(sort $(CONFIG_MSVC_COMPILER_32)),y)
+        ifeq ($(sort $(CONFIG_MSC_TARGET_ARCH_X86)),y)
             SAVIHOST :=$(SAVIHOST_DIR)\x32\savihost.exe
-        else ifeq ($(sort $(CONFIG_MSVC_COMPILER_64)),y)
+        else ifeq ($(sort $(CONFIG_MSC_TARGET_ARCH_X64)),y)
             SAVIHOST :=$(SAVIHOST_DIR)\x64\savihost.exe
         endif
         SAVIHOST := $(call fix_path_if_in_windows,$(SAVIHOST))
