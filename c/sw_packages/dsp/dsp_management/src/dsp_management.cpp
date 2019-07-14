@@ -23,8 +23,6 @@ extern "C" {
 #include "os_wrapper.h"
 }
 
-#include "_dsp_management_prerequirements_check.h"
-
 
 /********  defines *********************/
 #define NOT_ALLOCATED_BUFFER	255
