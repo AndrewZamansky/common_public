@@ -15,7 +15,7 @@ CONFIG_NAME_SUFFIX_IN_BUNDLE :=$(strip $(CONFIG_NAME_SUFFIX_IN_BUNDLE))
 # to improve speed of unique name recursive test in all subdirectoris ,
 # following list of files will stop the recursivity of rwildcard function
 # and files from this list will not be tested for "$(filename)/.config" pattern
-UNWANTED_FILES = %zOUT %zOBJ %zOUT_history %z_auto_generated_files
+UNWANTED_FILES = %zOUT %zOBJ  %zIDE %zOUT_history %z_auto_generated_files
 UNWANTED_FILES += %project_config_includes %.config %.config.old
 UNWANTED_FILES += %.gitignore %Makefile %.git %app
 UNWANTED_FILES :=$(UNWANTED_FILES)

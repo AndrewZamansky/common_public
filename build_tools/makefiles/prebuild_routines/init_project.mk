@@ -30,7 +30,7 @@ PASS_VARIABLES := MAKEFILES_ROOT_DIR=$(MAKEFILES_ROOT_DIR)
 PASS_VARIABLES += PARENT_OF_COMMON_PUBLIC_DIR=$(PARENT_OF_COMMON_PUBLIC_DIR)
 PASS_VARIABLES += APP_ROOT_DIR=$(APP_ROOT_DIR)
 MAKE_FILE :=$(PREBUILD_ROUTINES_DIR)/prebuild_check_unique_project_name.mk 
-SHELL_OUT := $(shell $(MAKE) -f $(MAKE_FILE) $(PASS_VARIABLES)  2>&1)
+SHELL_OUT := $(shell $(MAKE) -r -f $(MAKE_FILE) $(PASS_VARIABLES)  2>&1)
 
 ifneq ($(findstring name is not unique,$(SHELL_OUT)),)#if name is not unique
     $(info )
@@ -40,6 +40,7 @@ ifneq ($(findstring name is not unique,$(SHELL_OUT)),)#if name is not unique
     $(call exit,1)
 endif
 $(info ---- unique project name test passed ---- )
+
 
 include $(PREBUILD_ROUTINES_DIR)/git_prebuild_routines.mk
 

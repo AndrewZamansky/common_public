@@ -8,9 +8,6 @@
 
 
 /********  includes *********************/
-#include "mixer4x1.h"
-
-#include "mixer4x1_api.h"
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 
@@ -19,6 +16,9 @@
 
 
 #include "mixer_api.h"
+#include "mixer4x1.h"
+#include "mixer4x1_api.h"
+
 #include "auto_init_api.h"
 
 
@@ -100,7 +100,7 @@ void mixer4x1_dsp(struct dsp_module_inst_t *adsp,
 	channels_weights_1 =  channels_weights[0];
 	channels_weights_2 =  channels_weights[1];
 	channels_weights_3 =  channels_weights[2];
-	channels_weights_4 =  channels_weights[4];
+	channels_weights_4 =  channels_weights[3];
 
 	while( in_data_len1--)
 	{

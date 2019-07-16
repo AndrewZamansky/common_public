@@ -57,10 +57,10 @@ export #export all variables declared before
 
 
 build_all : build_outputs
-	$(MAKE) -f $(MAKEFILES_ROOT_DIR)/c/post_build.mk
+	$(MAKE) -r -f $(MAKEFILES_ROOT_DIR)/c/post_build.mk
 
 build_outputs :  $(SUBDIRS)
-	$(MAKE) -f $(MAKEFILES_ROOT_DIR)/c/build_final_outputs.mk
+	$(MAKE) -r -f $(MAKEFILES_ROOT_DIR)/c/build_final_outputs.mk
 
 
 $(SUBDIRS):
