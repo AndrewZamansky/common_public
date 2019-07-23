@@ -7,7 +7,7 @@
 #include "u_boot_shell_api.h"
 #include "version_management_api.h"
 
-#define MAX_RET_BUFF_SIZE 64
+#define MAX_RET_BUFF_SIZE 16
 /*
  * Subroutine:  do_get_version
  *
@@ -22,10 +22,18 @@ int do_get_version (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 	struct dev_desc_t * dev;
 	uint8_t ret_buff[MAX_RET_BUFF_SIZE + 1];
+	size_t read_count;
+	size_t last_read_pos;
 
 	dev = DEV_OPEN("ver_dev");
-	DEV_READ(dev, ret_buff, MAX_RET_BUFF_SIZE);
-	SHELL_REPLY_STR((char*)ret_buff);
+	last_read_pos = 0;
+	read_count = 1;
+	while (read_count)
+	{
+		read_count = DEV_PREAD(dev, ret_buff, MAX_RET_BUFF_SIZE, last_read_pos);
+		last_read_pos += read_count;
+		SHELL_REPLY_DATA(ret_buff, read_count);
+	}
 	SHELL_REPLY_STR("\r\n");
 	return 0;
 }
