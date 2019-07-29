@@ -70,7 +70,9 @@ ifeq (y,$(USING_GCC_COMPILER))
     SRC += src/low_level_calls.c
     ifdef CONFIG_CORTEX_A35
         SRC += $(CORTEX_DIR)/v8_aarch64.s
-        SRC += $(CORTEX_DIR)/MP_GIC.s
+        ifdef CONFIG_ARBEL
+            $(eval $(call ADD_TO_GLOBAL_CFLAGS , -mstrict-align ))
+        endif
     endif
     SRC += src/SWI.c
     SRC += $(CORTEX_DIR)/SWI.s

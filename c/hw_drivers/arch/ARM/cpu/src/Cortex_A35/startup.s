@@ -54,10 +54,40 @@
     .global start64
     .type start64, "function"
 start64:
+	bl start_common
+    bl main
+    b .
+
+    .global start64_semihosting
+    .type start64_semihosting, "function"
+start64_semihosting:
+	bl start_common
+ 	ldr	  x0, =smihosting_is_active
+ 	mov   w1,#0x01
+ 	str   w1,[x0]
+    bl main
+    b .
+
+    .global start64_semihosting_palladium
+    .type start64_semihosting_palladium, "function"
+start64_semihosting_palladium:
+	bl start_common
+ 	ldr	  x0, =smihosting_is_active
+ 	mov   w1,#0x01
+ 	str   w1,[x0]
+ 	ldr	  x0, =running_on_palladium
+ 	mov   w1,#0x01
+ 	str   w1,[x0]
+    bl main
+    b .
+
+    .type start_common, "function"
+start_common:
 
     //
     // program the VBARs
     //
+
     ldr x1, =el1_vectors
     msr VBAR_EL1, x1
 
@@ -77,8 +107,12 @@ start64:
     // x19 (defined by the AAPCS as callee-saved), so we can re-use
     // the number later
     //
+
+    //az in GetCPUID on x0 is used, so store x30(LR) in x1
+    mov x1, x30
     bl GetCPUID
     mov x19, x0
+    mov x30, x1
 
     //
     // Don't trap SIMD, floating point or accesses to CPACR
@@ -146,6 +180,8 @@ start64:
     ldr x0, =__el3_stack_top__
     sub x0, x0, x19, lsl #12
     mov sp, x0
+
+	str   x30, [sp, #-16]! // push LR to stack
 
     //
     // SGI #15 is assigned to group1 - non secure interruprs
@@ -284,10 +320,9 @@ el3_primary:
 
 	// Branch to core0 main funtion
     bl init_after_startup
-    bl main
 
-    b .
-
+    ldr   x30, [sp], #16   // pop LR from stack
+	ret
 
 // ------------------------------------------------------------
 // EL3 - secondary CPU init code

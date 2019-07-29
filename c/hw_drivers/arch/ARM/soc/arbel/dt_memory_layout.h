@@ -17,6 +17,10 @@
 	#error "Arbel flavor not defined"
 #endif
 
+#define USE_EXTERNAL_DDR
+#define DT_EXTERNAL_DDR_NAME          external_ddr
+#define DT_EXTERNAL_DDR_BASE_ADDR     0x8000
+#define DT_EXTERNAL_DDR_MEMORY_SIZE   0x40000
 
 #include "set_memory_layout.h"
 

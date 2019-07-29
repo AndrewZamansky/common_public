@@ -36,7 +36,7 @@
 
 #if (CONFIG_USE_MINIMAL_PRINTF)
 
-struct dev_desc_t const *print_dev = NULL;
+struct dev_desc_t *print_dev = NULL;
 
 #else
 

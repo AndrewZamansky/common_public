@@ -9,6 +9,8 @@
     .section ._arm_vector_table, "ax"
     .balign 4
     .global start64
+    .global start64_semihosting
+    .global start64_semihosting_palladium
 
 
 // ------------------------------------------------------------
@@ -18,12 +20,22 @@
 _startup:
     bl start64
 
+    .global _startup_semihosting
+    .type rom_start_semihosting, "function"
+_startup_semihosting:
+    bl start64_semihosting
+
+    .global _startup_semihosting_palladium
+    .type rom_start_semihosting_palladium, "function"
+_startup_semihosting_palladium:
+    bl start64_semihosting_palladium
+
 
     .global el1_vectors
     .global el2_vectors
     .global el3_vectors
     .global c0sync1
-    .global irqHandler
+    .global GIC_Isr
     .global fiqHandler
     .global irqFirstLevelHandler
     .global fiqFirstLevelHandler
@@ -239,7 +251,7 @@ irqFirstLevelHandler:
   STP      x2, x3, [sp, #-16]!
   STP      x0, x1, [sp, #-16]!
 
-  BL       irqHandler
+  BL       GIC_Isr
 
   LDP      x0, x1, [sp], #16
   LDP      x2, x3, [sp], #16
