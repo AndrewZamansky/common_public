@@ -7,3 +7,7 @@ config INCLUDE_2X1_MIXER
 config INCLUDE_3X1_MIXER
 	bool   "mixer 3 inputs 1 outputs"
 	default n
+
+config INCLUDE_4X1_MIXER
+	bool   "mixer 4 inputs 1 outputs"
+	default n

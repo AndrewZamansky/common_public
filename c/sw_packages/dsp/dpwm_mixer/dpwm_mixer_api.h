@@ -20,9 +20,15 @@ typedef enum
 
 /**********  define API  functions  ************/
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern char dpwm_mixer_module_name[] ;
 #define DPWM_MIXER_DSPT	dpwm_mixer_module_name
 
-
+#ifdef __cplusplus
+}
+#endif
 
 #endif

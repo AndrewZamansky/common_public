@@ -82,7 +82,7 @@ int cli_readline(const char *const prompt)
  */
 void SHELL_REPLY_DATA(uint8_t *data, size_t len)
 {
-	if (NULL != gCurrReplyDev)
+	if ((NULL != gCurrReplyDev) && (0 != len))
 	{
 		DEV_WRITE(gCurrReplyDev, data , len);
 	}

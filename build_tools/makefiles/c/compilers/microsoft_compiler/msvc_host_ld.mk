@@ -38,14 +38,14 @@ else
     EXTENSION :=exe
 endif
 
-LINKER_OUTPUT :=$(call fix_path_if_in_windows,\
-                              $(OUT_DIR)/$(OUTPUT_APP_NAME).$(EXTENSION))
-LINKER_LIB_OUTPUT :=$(call fix_path_if_in_windows,\
-                             $(OUT_DIR)/$(OUTPUT_APP_NAME).lib)
-LINKER_OUTPUT_NAMED :=$(call fix_path_if_in_windows,\
-                       $(OUT_DIR)/$(NAMED_OUT_PREFIX).$(EXTENSION))
-LINKER_HISTORY_OUTPUT :=$(call fix_path_if_in_windows,\
-                  $(OUT_DIR_HISTORY)/$(HISTORY_OUT_PREFIX).$(EXTENSION))
+LINKER_OUTPUT :=$(call\
+            fix_path_if_in_windows,$(OUT_DIR)/$(OUTPUT_APP_NAME).$(EXTENSION))
+LINKER_LIB_OUTPUT :=$(call\
+                   fix_path_if_in_windows,$(OUT_DIR)/$(OUTPUT_APP_NAME).lib)
+LINKER_OUTPUT_NAMED :=$(call\
+            fix_path_if_in_windows,$(OUT_DIR)/$(NAMED_OUT_PREFIX).$(EXTENSION))
+LINKER_HISTORY_OUTPUT :=$(call\
+   fix_path_if_in_windows,$(OUT_DIR_HISTORY)/$(HISTORY_OUT_PREFIX).$(EXTENSION))
 OUTPUT_CRC32 :=$(call fix_path_if_in_windows,$(OUTPUT_CRC32))
 
 

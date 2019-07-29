@@ -1,8 +1,6 @@
 
-#ifndef _mixer2x1_API_H_
-#define _mixer2x1_API_H_
-
-
+#ifndef _mixer4x1_API_H_
+#define _mixer4x1_API_H_
 
 
 /*****************  defines  **************/
@@ -13,15 +11,14 @@
 
 
 
-
 /**********  define API  functions  ************/
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-extern char mixer2x1_module_name[] ;
-#define MIXER2X1_DSPT	mixer2x1_module_name
+extern char mixer4x1_module_name[] ;
+#define MIXER4X1_DSPT	mixer4x1_module_name
 
 #ifdef __cplusplus
 }

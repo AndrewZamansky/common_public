@@ -33,8 +33,16 @@ struct pcm_mixer_api_set_params_t {
 
 /**********  define API  functions  ************/
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern char pcm_mixer_module_name[] ;
 #define PCM_MIXER_DSPT	pcm_mixer_module_name
+
+#ifdef __cplusplus
+}
+#endif
 
 
 

@@ -48,10 +48,17 @@
 size_t version_management_pread(struct dev_desc_t *adev,
 				uint8_t *apData , size_t aLength, size_t aOffset)
 {
-	if(aLength > sizeof(VERSION_STR))
+	if((aLength + aOffset) > (sizeof(VERSION_STR) - 1))
 	{
-		aLength = sizeof(VERSION_STR);
+		if (aOffset >= (sizeof(VERSION_STR) - 1))
+		{
+			aLength = 0;
+		}
+		else
+		{
+			aLength = (sizeof(VERSION_STR) - 1) - aOffset;
+		}
 	}
-	memcpy(apData,VERSION_STR, aLength);
+	memcpy(apData, &VERSION_STR[aOffset], aLength);
 	return aLength;
 }

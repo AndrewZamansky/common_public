@@ -20,7 +20,6 @@
 
 #include "auto_init_api.h"
 
-#include "_mixer2x1_prerequirements_check.h"
 
 /********  defines *********************/
 

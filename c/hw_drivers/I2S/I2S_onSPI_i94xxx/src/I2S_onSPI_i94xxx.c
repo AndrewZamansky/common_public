@@ -26,9 +26,9 @@
 
 /********  defines *********************/
 
-//#define  DEBUG_USE_INTERRUPT
+//#define USE_SPI_I2S_INTERRUPT
 
-#ifdef  DEBUG_USE_INTERRUPT
+#ifdef  USE_SPI_I2S_INTERRUPT
 	#if !defined(INTERRUPT_PRIORITY_FOR_I2S)
 		#error "INTERRUPT_PRIORITY_FOR_I2S should be defined"
 	#endif
@@ -63,6 +63,7 @@ uint8_t I2S_onSPI_i94xxx_callback(struct dev_desc_t *adev ,
 		uint8_t aCallback_num , void * aCallback_param1,
 		void * aCallback_param2)
 {
+#if defined(USE_SPI_I2S_INTERRUPT)
 	struct I2S_onSPI_i94xxx_cfg_t *cfg_hndl;
 	SPI_T	*I2S_SPI_module;
 
@@ -179,6 +180,7 @@ uint8_t I2S_onSPI_i94xxx_callback(struct dev_desc_t *adev ,
 	else {
 		CRITICAL_ERROR("Audio Format not set in Device Tree.")
 	}
+#endif
 
 	return 1;
 }
@@ -228,7 +230,8 @@ static void set_clocks(struct I2S_onSPI_i94xxx_cfg_t *cfg_hndl,
 }
 
 
-static void i94xxx_I2S_onSPI_init(struct I2S_onSPI_i94xxx_cfg_t *cfg_hndl)
+static void i94xxx_I2S_onSPI_init(struct dev_desc_t *adev,
+								struct I2S_onSPI_i94xxx_cfg_t *cfg_hndl)
 {
 	SPI_T  *I2S_SPI_module;
 	struct dev_desc_t  *clk_dev;
@@ -286,23 +289,28 @@ static void i94xxx_I2S_onSPI_init(struct I2S_onSPI_i94xxx_cfg_t *cfg_hndl)
 	 *   Please refer to device tree for current set up to comment or
 	 *   uncomment these lines.
 	 */
-//		if (SPI1_BASE == (uint32_t)I2S_SPI_module)
-//		{
-//			i2s_spi_irq = SPI1_IRQn;
-//		}
-//		else if (SPI2_BASE == (uint32_t)I2S_SPI_module)
-//		{
-//			i2s_spi_irq = SPI2_IRQn;
-//		}
-//		else
-//		{
-//			return 1;
-//		}
-//		SPI_I2SEnableInt(I2S_SPI_module, SPI_I2S_RXTH_INT_MASK);
-//		irq_register_device_on_interrupt(i2s_spi_irq , adev);
-//		irq_set_priority(i2s_spi_irq , INTERRUPT_PRIORITY_FOR_I2S );
-//		irq_enable_interrupt(i2s_spi_irq);
+#if defined(USE_SPI_I2S_INTERRUPT)
+	{
+		int i2s_spi_irq;
 
+		if (SPI1_BASE == (uint32_t)I2S_SPI_module)
+		{
+			i2s_spi_irq = SPI1_IRQn;
+		}
+		else if (SPI2_BASE == (uint32_t)I2S_SPI_module)
+		{
+			i2s_spi_irq = SPI2_IRQn;
+		}
+		else
+		{
+			return ;
+		}
+		SPI_I2SEnableInt(I2S_SPI_module, SPI_I2S_RXTH_INT_MASK);
+		irq_register_device_on_interrupt(i2s_spi_irq , adev);
+		irq_set_priority(i2s_spi_irq , INTERRUPT_PRIORITY_FOR_I2S );
+		irq_enable_interrupt(i2s_spi_irq);
+	}
+#endif
 	if (cfg_hndl->do_reordering_for_16or8bit_channels)
 	{
 		SPI_I2S_SET_STEREOORDER(I2S_SPI_module, SPI_I2SORDER_LOW);
@@ -387,13 +395,15 @@ uint8_t I2S_onSPI_i94xxx_ioctl( struct dev_desc_t *adev,
 	switch(aIoctl_num)
 	{
 	case IOCTL_DEVICE_START :
-		i94xxx_I2S_onSPI_init(cfg_hndl);
+		i94xxx_I2S_onSPI_init(adev, cfg_hndl);
 		runtime_hndl->init_done = 1;
 		break;
 
 	case SPI_I2S_ENABLE_INPUT_IOCTL:
 		SPI_I2S_ENABLE_RX(I2S_SPI_module);
+#if !defined(USE_SPI_I2S_INTERRUPT)
 	    SPI_I2S_ENABLE_RXDMA(I2S_SPI_module);
+#endif
 		break;
 
 	case SPI_I2S_DISABLE_INPUT_IOCTL:
@@ -403,7 +413,9 @@ uint8_t I2S_onSPI_i94xxx_ioctl( struct dev_desc_t *adev,
 
 	case SPI_I2S_ENABLE_OUTPUT_IOCTL:
 		SPI_I2S_ENABLE_TX(I2S_SPI_module);
+#if !defined(USE_SPI_I2S_INTERRUPT)
 	    SPI_I2S_ENABLE_TXDMA(I2S_SPI_module);
+#endif
 		break;
 
 	case SPI_I2S_DISABLE_OUTPUT_IOCTL:
