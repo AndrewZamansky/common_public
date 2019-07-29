@@ -183,19 +183,7 @@ start_common:
 
 	str   x30, [sp, #-16]! // push LR to stack
 
-    //
-    // SGI #15 is assigned to group1 - non secure interruprs
-    //
-    mov w0, #15
-    mov w1, #1
-	bl SetIrqGroup
 
-    //
-    // While we're in the Secure World, set the priority mask low enough
-    // for it to be writable in the Non-Secure World
-    //
-    mov w0, #0x1F
-    bl  SetPriorityMask
 
     //
     // Enable floating point
@@ -292,31 +280,19 @@ start_common:
     .type el3_primary, "function"
 el3_primary:
 
-    //
-    // We're now on the primary processor, so turn GIC distributor
-    // and CPU interface
-    bl  EnableGICD
-
-	//
-	// Enabling secure FIQ will generate FIQ for Group 0 interrupts; otherwise IRQ will be generated
-	//
-    bl 	EnableSecureFIQ
-
-	//
-	// Enable GIC CPU interface
-	//
-    bl  EnableGICC
+#if 0 // not using MMU yet
 
     //
     // Enable the MMU
     //
     mrs x1, SCTLR_EL3
-//    orr x1, x1, #SCTLR_ELx_M
-//    bic x1, x1, #SCTLR_ELx_A // Disable alignment fault checking.  To enable, change bic to orr
-//    orr x1, x1, #SCTLR_ELx_C
-//    orr x1, x1, #SCTLR_ELx_I
+    orr x1, x1, #SCTLR_ELx_M
+    bic x1, x1, #SCTLR_ELx_A // Disable alignment fault checking.  To enable, change bic to orr
+    orr x1, x1, #SCTLR_ELx_C
+    orr x1, x1, #SCTLR_ELx_I
     msr SCTLR_EL3, x1
     isb
+#endif
 
 	// Branch to core0 main funtion
     bl init_after_startup
@@ -344,6 +320,7 @@ el3_secondary:
     // too low a priority to ever raise an interrupt, so let's
     // use 14
     //
+#if 0    // GIC functions moved to c files
     mov w0, #15
     mov w1, #(14 << 1) // we're in NS world, so adjustment is needed
     bl  SetIRQPriority
@@ -353,13 +330,14 @@ el3_secondary:
 
     mov w0, #(15 << 1)
     bl  SetPriorityMask
-
 #endif
+
 
 	//
 	// Enable GIC CPU interface
 	//
     bl  EnableGICC
+#endif
 
     //
     // wait for our interrupt to arrive

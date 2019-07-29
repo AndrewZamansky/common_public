@@ -77,17 +77,19 @@ void ARM_API_SH_Write0(const uint8_t* ptr)
 }
 
 
-struct smh_open_t
-{
-	const char *fname;
-	size_t mode;
-	size_t len;
-};
+
 /*
  * function ARM_API_SH_Open()
  */
 int ARM_API_SH_Open(const char* fileName, size_t mode)
 {
+	struct smh_open_t
+	{
+		const char *fname;
+		size_t mode;
+		size_t len;
+	};
+
 	int retVal;
 	struct smh_open_t open_params;
 
@@ -123,6 +125,8 @@ int ARM_API_SH_Close(int FileHandle)
 {
 	return BKPT(SYS_CLOSE, (void*)(size_t)FileHandle, (void*)0);
 }
+
+
 
 
 struct smh_read_t
@@ -165,10 +169,12 @@ char _SH_ReadC(void)
 	return c;
 }
 
+
+
 struct smh_write_t
 {
 	size_t fd;
-	void *memp;
+	const void *memp;
 	size_t len;
 };
 
