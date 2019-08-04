@@ -1,42 +1,65 @@
+# helper function to append string
+define _APPEND_VAR =
+    $(if $(1),$(eval $(1) :=$($(1))$(2)),)
+endef
+# helper function to append string only if such string doesn't exist
+# spaces in ' $($(1)) ' are important
+define _APPEND_IF_NOT_EXISTS =
+    $(if $(findstring $(2), $($(1)) ),,$(call _APPEND_VAR,$(1),$(2)))
+endef
+
+# spaces in ' $(strip $(1)) ' are important
 define ADD_TO_GLOBAL_INCLUDE_PATH =
-    $(eval GLOBAL_INCLUDE_DIR := $(GLOBAL_INCLUDE_DIR) $(1))
+    $(call _APPEND_IF_NOT_EXISTS,GLOBAL_INCLUDE_DIR, $(strip $(1)) )
 endef
 #usage :
-#    DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , path/to/include/dir )
+#    $(eval $(call ADD_TO_GLOBAL_INCLUDE_PATH , path/to/include/dir))
 
+
+# spaces in ' $(strip $(1)) ' are important
 define ADD_TO_GLOBAL_DEFINES =
-    $(eval GLOBAL_DEFINES := $(GLOBAL_DEFINES) $(1))
+    $(call _APPEND_IF_NOT_EXISTS,GLOBAL_DEFINES, $(strip $(1)) )
 endef
 #usage :
-#    DUMMY := $(call ADD_TO_GLOBAL_DEFINES , var )
-#    DUMMY := $(call ADD_TO_GLOBAL_DEFINES , var=val )
+#    $(eval $(call ADD_TO_GLOBAL_DEFINES , var))
+#    $(eval $(call ADD_TO_GLOBAL_DEFINES , var=val))
 
+
+# spaces in ' $(strip $(1)) ' are important
 define ADD_TO_GLOBAL_LIBRARIES =
-    $(eval GLOBAL_LIBS := $(GLOBAL_LIBS) $(1))
+    $(call _APPEND_IF_NOT_EXISTS,GLOBAL_LIBS, $(strip $(1)) )
 endef
 #usage :
-#    DUMMY := $(call ADD_TO_GLOBAL_LIBRARIES , var )
+#    $(eval $(call ADD_TO_GLOBAL_LIBRARIES , var))
 
+
+# spaces in ' $(strip $(1)) ' are important
 define ADD_TO_GLOBAL_CFLAGS =
-    $(eval GLOBAL_CFLAGS := $(GLOBAL_CFLAGS) $(1))
+    $(call _APPEND_IF_NOT_EXISTS,GLOBAL_CFLAGS, $(strip $(1)) )
 endef
 #usage :
-#    DUMMY := $(call ADD_TO_GLOBAL_CFLAGS , var )
+#    $(eval $(call ADD_TO_GLOBAL_CFLAGS , var))
 
+
+# spaces in ' $(strip $(1)) ' are important
 define ADD_TO_GLOBAL_LDFLAGS =
-    $(eval GLOBAL_LDFLAGS := $(GLOBAL_LDFLAGS) $(1))
+    $(call _APPEND_IF_NOT_EXISTS,GLOBAL_LDFLAGS, $(strip $(1)) )
 endef
 #usage :
-#    DUMMY := $(call ADD_TO_GLOBAL_LDFLAGS,var)
+#    $(eval $(call ADD_TO_GLOBAL_LDFLAGS, var))
 
+
+# spaces in ' $(strip $(1)) ' are important
 define ADD_TO_GLOBAL_LIBRARIES_PATH =
-    $(eval GLOBAL_LIBS_PATH := $(GLOBAL_LIBS_PATH) $(1))
+    $(call _APPEND_IF_NOT_EXISTS,GLOBAL_LIBS_PATH, $(strip $(1)) )
 endef
 #usage :
-#    DUMMY := $(call ADD_TO_GLOBAL_LIBRARIES_PATH , var )
+#    $(eval $(call ADD_TO_GLOBAL_LIBRARIES_PATH , var))
 
+
+# spaces in ' $(strip $(1)) ' are important
 define ADD_TO_GLOBAL_ARCHIVES =
-    $(eval GLOBAL_ARCHIVES := $(GLOBAL_ARCHIVES) $(1))
+    $(call _APPEND_IF_NOT_EXISTS,GLOBAL_ARCHIVES, $(strip $(1)) )
 endef
 #usage :
-#    DUMMY := $(call ADD_TO_GLOBAL_ARCHIVES , var )
+#    $(eval $(call ADD_TO_GLOBAL_ARCHIVES , var))

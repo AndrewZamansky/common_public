@@ -30,7 +30,7 @@ else ifneq ($(findstring Version 19.00,$(SHELL_OUT)),)
 else
     ADDITIONAL_PATH :=$(MSVC_BIN_DIR)\..\..\Common7\IDE
     SHEL_CMD :=set "PATH=$(ADDITIONAL_PATH)" &
-    SHEL_CMD +=$(MSVC_BIN_DIR)\cl.exe" 2>&1
+    SHEL_CMD +="$(MSVC_BIN_DIR)\cl.exe" 2>&1
     SHELL_OUT :=$(shell $(SHEL_CMD))
     ifneq ($(findstring Version 17,$(SHELL_OUT)),)
         MSVC_SET_ADDITIONAL_PATHS :=set "PATH=$(ADDITIONAL_PATH)" &
@@ -38,7 +38,13 @@ else
         MSVC_VERSION :=17
     else
         $(info err: unsupported version of visual studio)
-        $(info err: install one of following versions : VS2012, VS2013, VS2015, VS2017(community))
+        $(info err: install one of following versions :)
+        $(info err:      VS2012(or cl.exe version 17.xx))
+        $(info err:      VS2013(or cl.exe version 18.xx))
+        $(info err:      VS2015(or cl.exe version 19.00.xx))
+        $(info err:      VS2017(community)(or cl.exe version 19.14.xx))
+        $(info err: current version of cl.exe can be found in following string:)
+        $(info err: $(SHELL_OUT))
         $(call exit,1)
     endif
 endif
