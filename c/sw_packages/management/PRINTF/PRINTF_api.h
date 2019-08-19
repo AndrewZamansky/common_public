@@ -16,12 +16,12 @@
 /**********  define API  functions  ************/
 #if (CONFIG_USE_MINIMAL_PRINTF)
 
- extern struct dev_desc_t const *print_dev;
+ extern struct dev_desc_t *print_dev;
 
  #define PRINTF_API_SET_DEV(dev)    print_dev = dev
- #define PRINT_DATA_DBG(data,len)   DEV_WRITE(print_dev, data, len)
+ #define PRINT_DATA_DBG(data, len)   DEV_WRITE(print_dev, data, len)
  #define PRINT_STR_DBG(str)         \
-					DEV_WRITE(print_dev, (uint8_t*)str, strlen((char*)str))
+				DEV_WRITE(print_dev, (uint8_t const*)str, strlen((char*)str))
 
 #else
 

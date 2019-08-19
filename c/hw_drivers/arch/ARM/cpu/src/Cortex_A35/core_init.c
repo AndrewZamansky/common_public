@@ -205,34 +205,7 @@ __attribute__((noreturn)) void main_core3(void)
 
 void irqHandler(void)
 {
-	unsigned int ID;
-
-	// Read Interrupt acknowledge register
-	ID = ReadIAR();
-
-//	switch(ID)
-//	{
-//	case TIMER0_INTID:
-//		// Dual-Timer 0 (SP804)
-//		clearTimerIrq();
-//		break;
-//	case GMAC_INTID:
-//		int_counter++;
-//		break;
-//	case USB_INTID:
-//		int_counter++;
-//		break;
-//	case PECI_INTID:
-//		int_counter++;
-//		break;
-//	default:
-//		// Unexpected ID value
-//		break;
-//	}
-//
-//	// Write the End of Interrupt register to tell the GIC
-//	// we've finished handling the interrupt
-	WriteEOI(ID);
+	while(1); //trap
 }
 
 // --------------------------------------------------------
@@ -241,23 +214,5 @@ void irqHandler(void)
 
 void fiqHandler(void)
 {
-	unsigned int ID;
-
-	ID = ReadIAR();
-
-//	switch(ID)
-//	{
-//	case TIMER0_INTID:
-//	  // Dual-Timer 0 (SP804)
-//	  clearTimerIrq();
-//	  break;
-//
-//	default:
-//	  // Unexpected ID value
-//	  break;
-//	}
-//
-//	// Write the End of Interrupt register to tell the GIC
-	// we've finished handling the interrupt
-	WriteEOI(ID);
+	while(1); //trap
 }

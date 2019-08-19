@@ -24,6 +24,11 @@ config INCLUDE_CORTEX_M_FPU
 	depends on CORTEX_M4
 	default n
 
+config DISABLE_ARM_FPU
+	bool   "compile without fpu support"
+	depends on CORTEX_A35
+	default n
+
 
 endif
 

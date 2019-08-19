@@ -98,7 +98,11 @@ else ifdef CONFIG_CORTEX_M4
         GLOBAL_CFLAGS += -mfloat-abi=soft
     endif
 else ifdef CONFIG_CORTEX_A35
-    GLOBAL_CFLAGS += -march=armv8-a
+    ifdef CONFIG_DISABLE_ARM_FPU
+        GLOBAL_CFLAGS += -march=armv8-a+nofp
+    else
+        GLOBAL_CFLAGS += -march=armv8-a
+    endif
 endif
 
 ifdef CONFIG_GCC_OPTIMISE_SIZE

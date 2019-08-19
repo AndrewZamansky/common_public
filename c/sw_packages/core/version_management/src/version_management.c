@@ -16,8 +16,6 @@
 
 #include "version_management_api.h"
 
-#include "_version_management_prerequirements_check.h"
-
 #include "version_management_add_component.h"
 
 /********  defines *********************/

@@ -23,7 +23,6 @@
 #include "stdio.h"
 #include "string.h"
 
-#include "_semihosting_prerequirements_check.h"
 
 /*following line add module to available module list for dynamic device tree*/
 #include "semihosting_add_component.h"
@@ -78,18 +77,26 @@ void ARM_API_SH_Write0(const uint8_t* ptr)
 }
 
 
+
 /*
  * function ARM_API_SH_Open()
  */
-int ARM_API_SH_Open(const char* fileName, int mode)
+int ARM_API_SH_Open(const char* fileName, size_t mode)
 {
-	int retVal;
-	void* block[3];
+	struct smh_open_t
+	{
+		const char *fname;
+		size_t mode;
+		size_t len;
+	};
 
-	block[0] = (void*)fileName;
-	block[1] = (void*)mode;
-	block[2] = (void*)strlen(fileName);
-	retVal = BKPT(SYS_OPEN, (void*)block, (void*)0);
+	int retVal;
+	struct smh_open_t open_params;
+
+	open_params.fname = fileName;
+	open_params.mode = mode;
+	open_params.len = strlen(fileName);
+	retVal = BKPT(SYS_OPEN, &open_params, (void*)(size_t)0);
 	return retVal;
 }
 
@@ -110,35 +117,38 @@ int ARM_SH_Remove(char* fileName)
 }
 
 
+
 /*
  * function ARM_API_SH_Close()
  */
 int ARM_API_SH_Close(int FileHandle)
 {
-	int retVal;
-	void* block[3];
-
-	block[0] = (void*)FileHandle;
-	retVal = BKPT(SYS_CLOSE, (void*)block, (void*)0);
-
-	return retVal;
+	return BKPT(SYS_CLOSE, (void*)(size_t)FileHandle, (void*)0);
 }
 
 
+
+
+struct smh_read_t
+{
+	size_t fd;
+	void *memp;
+	size_t len;
+};
 /*
  * function ARM_API_SH_Read()
  */
-int ARM_API_SH_Read(int FileHandle, uint8_t* pBuffer, int NumBytesToRead)
+int ARM_API_SH_Read(int FileHandle, uint8_t* pBuffer, size_t NumBytesToRead)
 {
-	int NumBytesLeft;
-	void* block[3];
+	int num_of_bytes_actually_read;
+	struct smh_read_t read_params;
 
-	block[0] = (void*)FileHandle;
-	block[1] = (void*)pBuffer;
-	block[2] = (void*)NumBytesToRead;
-	NumBytesLeft = BKPT(SYS_READ, (void*)block, (void*)0);
+	read_params.fd = FileHandle;
+	read_params.memp = pBuffer;
+	read_params.len = NumBytesToRead;
+	num_of_bytes_actually_read = BKPT(SYS_READ, &read_params, (void*)0);
 
-	return NumBytesLeft;
+	return num_of_bytes_actually_read;
 }
 
 
@@ -147,14 +157,7 @@ int ARM_API_SH_Read(int FileHandle, uint8_t* pBuffer, int NumBytesToRead)
  */
 int ARM_API_SH_GetFileLength(int FileHandle)
 {
-	int fileLength;
-	void* block[3];
-
-	block[0] = (void*)FileHandle;
-
-	fileLength = BKPT(SYS_FLEN, (void*)block, (void*)0);
-
-	return fileLength;
+	return BKPT(SYS_FLEN, (void*)(size_t)FileHandle, (void*)0);
 }
 
 
@@ -166,18 +169,27 @@ char _SH_ReadC(void)
 	return c;
 }
 
-int ARM_API_SH_Write(int FileHandle,
-		const uint8_t* pBuffer, int NumBytesToWrite)
+
+
+struct smh_write_t
 {
-	int NumBytesLeft;
-	void* block[3];
+	size_t fd;
+	const void *memp;
+	size_t len;
+};
 
-	block[0] = (void*)FileHandle;
-	block[1] = (void*)pBuffer;
-	block[2] = (void*)NumBytesToWrite;
-	NumBytesLeft = BKPT(SYS_WRITE, (void*)block, (void*)0);
+int ARM_API_SH_Write(int FileHandle,
+		const uint8_t* pBuffer, size_t NumBytesToWrite)
+{
+	int num_of_bytes_actually_written;
+	struct smh_write_t read_params;
 
-	return NumBytesLeft;
+	read_params.fd = FileHandle;
+	read_params.memp = pBuffer;
+	read_params.len = NumBytesToWrite;
+	num_of_bytes_actually_written = BKPT(SYS_WRITE, &read_params, (void*)0);
+
+	return num_of_bytes_actually_written;
 }
 
 

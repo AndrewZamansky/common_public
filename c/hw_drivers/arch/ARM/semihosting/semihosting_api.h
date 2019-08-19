@@ -22,11 +22,12 @@ typedef enum
 
 //int ARM_API_Init(void);
 //int ARM_API_SH_Init(void);
-int ARM_API_SH_Open(const char* fileName, int mode);
+int ARM_API_SH_Open(const char* fileName, size_t mode);
 int ARM_API_SH_Close(int FileHandle);
-int ARM_API_SH_Read(int FileHandle, uint8_t * pBuffer, int NumBytesToRead);
+int ARM_API_SH_Read(int FileHandle, uint8_t * pBuffer, size_t NumBytesToRead);
 int ARM_API_SH_GetFileLength(int FileHandle);
-int ARM_API_SH_Write(int FileHandle, const uint8_t* pBuffer, int NumBytesToWrite) ;
+int ARM_API_SH_Write(
+		int FileHandle, const uint8_t* pBuffer, size_t NumBytesToWrite) ;
 void ARM_API_SH_Write0(const uint8_t* ptr);
 
 

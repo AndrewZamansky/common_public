@@ -54,10 +54,40 @@
     .global start64
     .type start64, "function"
 start64:
+	bl start_common
+    bl main
+    b .
+
+    .global start64_semihosting
+    .type start64_semihosting, "function"
+start64_semihosting:
+	bl start_common
+ 	ldr	  x0, =smihosting_is_active
+ 	mov   w1,#0x01
+ 	str   w1,[x0]
+    bl main
+    b .
+
+    .global start64_semihosting_palladium
+    .type start64_semihosting_palladium, "function"
+start64_semihosting_palladium:
+	bl start_common
+ 	ldr	  x0, =smihosting_is_active
+ 	mov   w1,#0x01
+ 	str   w1,[x0]
+ 	ldr	  x0, =running_on_palladium
+ 	mov   w1,#0x01
+ 	str   w1,[x0]
+    bl main
+    b .
+
+    .type start_common, "function"
+start_common:
 
     //
     // program the VBARs
     //
+
     ldr x1, =el1_vectors
     msr VBAR_EL1, x1
 
@@ -77,8 +107,12 @@ start64:
     // x19 (defined by the AAPCS as callee-saved), so we can re-use
     // the number later
     //
+
+    //az in GetCPUID on x0 is used, so store x30(LR) in x1
+    mov x1, x30
     bl GetCPUID
     mov x19, x0
+    mov x30, x1
 
     //
     // Don't trap SIMD, floating point or accesses to CPACR
@@ -147,19 +181,9 @@ start64:
     sub x0, x0, x19, lsl #12
     mov sp, x0
 
-    //
-    // SGI #15 is assigned to group1 - non secure interruprs
-    //
-    mov w0, #15
-    mov w1, #1
-	bl SetIrqGroup
+	str   x30, [sp, #-16]! // push LR to stack
 
-    //
-    // While we're in the Secure World, set the priority mask low enough
-    // for it to be writable in the Non-Secure World
-    //
-    mov w0, #0x1F
-    bl  SetPriorityMask
+
 
     //
     // Enable floating point
@@ -256,38 +280,25 @@ start64:
     .type el3_primary, "function"
 el3_primary:
 
-    //
-    // We're now on the primary processor, so turn GIC distributor
-    // and CPU interface
-    bl  EnableGICD
-
-	//
-	// Enabling secure FIQ will generate FIQ for Group 0 interrupts; otherwise IRQ will be generated
-	//
-    bl 	EnableSecureFIQ
-
-	//
-	// Enable GIC CPU interface
-	//
-    bl  EnableGICC
+#if 0 // not using MMU yet
 
     //
     // Enable the MMU
     //
     mrs x1, SCTLR_EL3
-//    orr x1, x1, #SCTLR_ELx_M
-//    bic x1, x1, #SCTLR_ELx_A // Disable alignment fault checking.  To enable, change bic to orr
-//    orr x1, x1, #SCTLR_ELx_C
-//    orr x1, x1, #SCTLR_ELx_I
+    orr x1, x1, #SCTLR_ELx_M
+    bic x1, x1, #SCTLR_ELx_A // Disable alignment fault checking.  To enable, change bic to orr
+    orr x1, x1, #SCTLR_ELx_C
+    orr x1, x1, #SCTLR_ELx_I
     msr SCTLR_EL3, x1
     isb
+#endif
 
 	// Branch to core0 main funtion
     bl init_after_startup
-    bl main
 
-    b .
-
+    ldr   x30, [sp], #16   // pop LR from stack
+	ret
 
 // ------------------------------------------------------------
 // EL3 - secondary CPU init code
@@ -309,6 +320,7 @@ el3_secondary:
     // too low a priority to ever raise an interrupt, so let's
     // use 14
     //
+#if 0    // GIC functions moved to c files
     mov w0, #15
     mov w1, #(14 << 1) // we're in NS world, so adjustment is needed
     bl  SetIRQPriority
@@ -318,13 +330,14 @@ el3_secondary:
 
     mov w0, #(15 << 1)
     bl  SetPriorityMask
-
 #endif
+
 
 	//
 	// Enable GIC CPU interface
 	//
     bl  EnableGICC
+#endif
 
     //
     // wait for our interrupt to arrive

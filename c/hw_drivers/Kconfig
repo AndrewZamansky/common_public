@@ -17,7 +17,7 @@ config INCLUDE_NVIC
 
 config INCLUDE_GIC
 	bool   "gic"
-	depends on CORTEX_A9
+	depends on CORTEX_A9 || CORTEX_A35
 	default n
 
 ######## semihosting configurations #########

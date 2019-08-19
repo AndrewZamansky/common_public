@@ -17,6 +17,7 @@ config ARBEL
 	select PUBLIC_SOC_SELECTED
 	select ARBEL_ADDITIONAL_OPTIONS
 	select INTERNAL_SRAM_EXISTS
+	select DDR_EXISTS
 
 config STM32F103XXX
 	bool "stm32f103xxx"
