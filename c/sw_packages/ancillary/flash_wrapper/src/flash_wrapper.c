@@ -17,8 +17,6 @@
 #include "flash_wrapper.h"
 #include "flash_wrapper_api.h"
 
-#include "_flash_wrapper_prerequirements_check.h"
-
 /*following line add module to available module list for dynamic device tree*/
 #include "flash_wrapper_add_component.h"
 
@@ -173,7 +171,11 @@ static void flash_wrapper_task( void *adev )
 	{
 		os_delay_ms(2000);
 
-		os_mutex_take_infinite_wait(flash_wrapper_mutex);
+		if (OS_MUTEX_TAKE_SUCCESS !=
+				os_mutex_take_infinite_wait(flash_wrapper_mutex))
+		{
+			CRITICAL_ERROR("cannot take mutex\n");
+		}
 		curr_block_is_dirty = runtime_handle->curr_block_is_dirty;
 		if (2 == curr_block_is_dirty)
 		{

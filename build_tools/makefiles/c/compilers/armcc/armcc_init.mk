@@ -1,72 +1,55 @@
-GCC_ROOT_DIR := $(ARMCC_ROOT_DIR)
-
-CC   :=	$(ARMCC_ROOT_DIR)/bin/armcc
-ASM  :=	$(ARMCC_ROOT_DIR)/bin/armasm
-LD   :=	$(ARMCC_ROOT_DIR)/bin/armlink
-ELF_TO_BIN	:=	$(ARMCC_ROOT_DIR)/bin/fromelf --bin
-DISASSEMBLER	:=	$(ARMCC_ROOT_DIR)/bin/fromelf -c
-
-
-LINKER_OUTPUT :=  $(OUTPUT_BIN).axf
-OUTPUT_BIN := $(OUTPUT_BIN).bin
-
-GLOBAL_CFLAGS := $(GLOBAL_CFLAGS) -c --apcs=interwork --split_sections --gnu --c99
-
-ifdef CONFIG_INCLUDE_CORTEX_M_FPU
-   GLOBAL_CFLAGS += --cpu=$(CONFIG_CPU_TYPE).fp
-else 	 
-   GLOBAL_CFLAGS += --cpu=$(CONFIG_CPU_TYPE) 
+####### test for existence of arm gcc compiler and  #####
+####### put its directory name in GCC_ROOT_DIR     #####
+SEARCHED_TOOL:=armcc
+SEARCHED_DIR_VARIABLE:=ARMCC_ROOT_DIR
+MANUALLY_DEFINED_DIR_VARIABLE:=REDEFINE_ARMCC_ROOT_DIR
+ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
+    TEST_FILE_IN_SEARCHED_DIR:=bin\armcc.exe
+else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX)
+    TEST_FILE_IN_SEARCHED_DIR:=bin/armcc
 endif
+include $(MAKEFILES_ROOT_DIR)/_include_functions/tool_existence_check.mk
+####### end of tool existence test #####
 
+GLOBAL_CFLAGS += -c --apcs=interwork --split_sections --gnu
+
+ifdef CONFIG_CORTEX_M4
+    ifdef CONFIG_INCLUDE_CORTEX_M_FPU
+        GLOBAL_CFLAGS += --cpu=Cortex-M4.fp
+    else 	 
+        GLOBAL_CFLAGS += --cpu=Cortex-M4
+    endif
+else
+    $(info err: unsported architecture)
+    $(call exit,1)
+endif
 
 ifndef CONFIG_OPTIMIZE_LEVEL
     CONFIG_OPTIMIZE_LEVEL :=O0
 endif
 
 
-GLOBAL_CFLAGS := $(GLOBAL_CFLAGS) -$(CONFIG_OPTIMIZE_LEVEL) -g 
+GLOBAL_CFLAGS += -$(CONFIG_OPTIMIZE_LEVEL) -g 
 
+#stop GLOBAL_CFLAGS calculation each time it used :
+GLOBAL_CFLAGS := $(GLOBAL_CFLAGS)
 
 #caclulating assembler flags
 
-ifdef CONFIG_INCLUDE_CORTEX_M_FPU
-   GLOBAL_ASMFLAGS += --cpu=$(CONFIG_CPU_TYPE).fp
-else 	 
-   GLOBAL_ASMFLAGS += --cpu=$(CONFIG_CPU_TYPE) 
+ifdef CONFIG_CORTEX_M4
+    ifdef CONFIG_INCLUDE_CORTEX_M_FPU
+        GLOBAL_ASMFLAGS += --cpu=Cortex-M4.fp
+    else 	 
+        GLOBAL_ASMFLAGS += --cpu=Cortex-M4
+    endif
 endif
+
 GLOBAL_ASMFLAGS += -g --16 --apcs=interwork
 
-GLOBAL_ASMFLAGS := $(GLOBAL_ASMFLAGS) #add this line to stop calculate GLOBAL_ASMFLAGS recursively
-
-#caclulating linker flags
-
-ifdef CONFIG_INCLUDE_CORTEX_M_FPU
-   GLOBAL_LDFLAGS += --cpu=$(CONFIG_CPU_TYPE).fp
-else 	 
-   GLOBAL_LDFLAGS += --cpu=$(CONFIG_CPU_TYPE) 
-endif
+#stop GLOBAL_ASMFLAGS calculation each time it used :
+GLOBAL_ASMFLAGS := $(GLOBAL_ASMFLAGS)
 
 
-
-GLOBAL_LDFLAGS += --library_type=microlib --strict 
-GLOBAL_LDFLAGS += --map --datacompressor=off --info=inline --entry do_startup 
-GLOBAL_LDFLAGS += --summary_stderr --info summarysizes --info sizes --info totals 
-GLOBAL_LDFLAGS += --list $(OUT_DIR)/$(OUTPUT_APP_NAME).map
-
-GLOBAL_LDFLAGS := $(GLOBAL_LDFLAGS) #add this line to stop calculate GLOBAL_LDFLAGS recursively
-
-
-#end of flags definitions
-
-
-
-############   PREPROCESSOR FLAGS FOR LINKER SCRIPT #############
-LDS_PREPROCESSOR_DEFINES += DEBUG_SECTIONS_INCLUDE_FILE="\"$(BUILD_TOOLS_ROOT_DIR)/scatter_files/gcc/debug_sections.lds\""
-ifdef CONFIG_CODE_LOCATION_FLASH
-	LDS_PREPROCESSOR_DEFINES += RUN_FROM_FLASH
-endif
-ifeq ($(findstring cortex-m,$(CONFIG_CPU_TYPE)),cortex-m)
-	LDS_PREPROCESSOR_DEFINES += CORTEX_M
-endif
-LDS_PREPROCESSOR_DEFINES_FRMT 	= $(patsubst %,-D%,$(LDS_PREPROCESSOR_DEFINES))
-##########################################################
+CC   := $(ARMCC_ROOT_DIR)/bin/armcc --c99
+CCPP := $(ARMCC_ROOT_DIR)/bin/armcc --cpp
+ASM  := $(ARMCC_ROOT_DIR)/bin/armasm

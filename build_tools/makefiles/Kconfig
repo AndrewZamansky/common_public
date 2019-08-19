@@ -143,7 +143,7 @@ config OUTPUT_TYPE_APPLICATION
 	bool "application"
 
 config OUTPUT_TYPE_STATIC_LIBRARY
-	depends on XTENSA_XCC
+	depends on XTENSA_XCC || ARMCC
 	bool "static library"
 
 config OUTPUT_TYPE_DYNAMIC_LIBRARY

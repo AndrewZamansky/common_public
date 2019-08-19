@@ -139,10 +139,12 @@ GCC_LIB_ROOT_DIR     := $(GCC_ROOT_DIR)/$(GNU_COMPILATION_PREFIX)/lib
 
 ifdef CONFIG_GCC
     CC   := $(FULL_GCC_PREFIX)gcc -c
+    CCPP := $(FULL_GCC_PREFIX)gcc -c
     ASM  := $(FULL_GCC_PREFIX)gcc -c
     LD   := $(FULL_GCC_PREFIX)gcc
 else ifdef CONFIG_GPP
 	CC   := $(FULL_GCC_PREFIX)g++ -c
+	CCPP := $(FULL_GCC_PREFIX)g++ -c
     ASM  := $(FULL_GCC_PREFIX)g++ -c
     LD   := $(FULL_GCC_PREFIX)g++
 endif

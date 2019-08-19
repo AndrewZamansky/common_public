@@ -10,6 +10,7 @@
 #include "dev_management_api.h"
 #include "PRINTF_api.h"
 
+extern void SHELL_REPLY_PRINTF(const char* Format, ...);
 #define printf(...)		SHELL_REPLY_PRINTF(__VA_ARGS__)
 
 #define CONFIG_USE_STDINT
@@ -91,7 +92,7 @@
 
 #define DECLARE_GLOBAL_DATA_PTR
 
-#if !defined(_WIN32) && !defined(_WIN64)
+#if !defined(_WIN32) && !defined(_WIN64) && !defined(__ARMCC_VERSION)
 	#pragma GCC diagnostic ignored "-Wchar-subscripts"
 #endif
 
@@ -163,6 +164,10 @@ typedef unsigned long phys_size_t;
 
 	#define debug(fmt, args...)			\
 		debug_cond(_DEBUG, fmt, ##args)
+
+	#if defined(__ARMCC_VERSION)
+		typedef unsigned long ulong;
+	#endif
 #else
 	#define debug(fmt, args, ...)
 	typedef unsigned long ulong;
@@ -171,14 +176,14 @@ typedef unsigned long phys_size_t;
 extern char console_buffer[1];
 void clear_ctrlc (void);
 int had_ctrlc (void);
-int ctrlc();
+int ctrlc(void);
 ulong get_timer(ulong base);
 int cli_readline(const char *const prompt);
 
 #define CMD_FLAG_REPEAT		0x0001	/* repeat last command		*/
 
 #ifndef __COMMAND_H
-	#if !defined(_WIN32) && !defined(_WIN64)
+	#if !defined(_WIN32) && !defined(_WIN64) && !defined(__ARMCC_VERSION)
 		#pragma GCC diagnostic ignored "-Wimplicit-function-declaration"
 	#endif
 #endif

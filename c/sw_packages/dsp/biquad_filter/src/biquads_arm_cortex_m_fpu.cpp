@@ -16,12 +16,16 @@
 #include "_project.h"
 #include "cpu_config.h"
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wsign-compare"
+#if defined(__GNUC__) && !defined(__ARMCC_VERSION)
+	#pragma GCC diagnostic push
+	#pragma GCC diagnostic ignored "-Wsign-compare"
+#endif
 //extern "C" {
 #include "arm_math.h"
 //}
-#pragma GCC diagnostic pop
+#if defined(__GNUC__) && !defined(__ARMCC_VERSION)
+	#pragma GCC diagnostic pop
+#endif
 
 #include "biquad_filter.h"
 #include "biquad_filter_api.h"

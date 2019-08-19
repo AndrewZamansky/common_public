@@ -33,7 +33,7 @@ extern uint32_t __relocation_section_start_on_RAM__;
 extern uint32_t __relocation_section_end_on_RAM__;
 extern uint32_t __relocation_section_start_on_ROM__;
 
-uint32_t board_init_before_main_function();
+uint32_t board_init_before_main_function(void);
 void core_init(uint32_t curr_stack);
 
 /***********   loacal variables    **************/

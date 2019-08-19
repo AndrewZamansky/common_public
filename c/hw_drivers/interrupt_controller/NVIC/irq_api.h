@@ -16,7 +16,14 @@
 						(MAX_INTERRUPT_PRIO_FOR_OS_SYSCALLS > l)
 
 
-typedef void (*isr_t)(void)  ;
+#if defined(__GNUC__) && !defined(__ARMCC_VERSION)
+  #define IRQ_ATTR  __attribute__((interrupt("IRQ")))
+#elif defined(__ARMCC_VERSION)
+  #define IRQ_ATTR  __irq
+#endif
+
+
+typedef IRQ_ATTR void (*isr_t)(void);
 
 /**
  * irq_register_interrupt()

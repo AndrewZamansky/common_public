@@ -93,28 +93,28 @@ static void notify_listeners(GPIO_T *GPIOx,
 }
 
 
-void  __attribute__((interrupt("IRQ"))) gpio_i94xxx_isrA()
+IRQ_ATTR void gpio_i94xxx_isrA()
 {
 	notify_listeners((GPIO_T *)GPIOA_BASE,
 			dev_on_int_listA, num_of_device_on_intA);
 }
 
 
-void  __attribute__((interrupt("IRQ"))) gpio_i94xxx_isrB()
+IRQ_ATTR void gpio_i94xxx_isrB()
 {
 	notify_listeners((GPIO_T *)GPIOB_BASE,
 			dev_on_int_listB, num_of_device_on_intB);
 }
 
 
-void  __attribute__((interrupt("IRQ"))) gpio_i94xxx_isrC()
+IRQ_ATTR void gpio_i94xxx_isrC()
 {
 	notify_listeners((GPIO_T *)GPIOC_BASE,
 			dev_on_int_listC, num_of_device_on_intC);
 }
 
 
-void  __attribute__((interrupt("IRQ"))) gpio_i94xxx_isrD()
+IRQ_ATTR void gpio_i94xxx_isrD()
 {
 	notify_listeners((GPIO_T *)GPIOD_BASE,
 			dev_on_int_listD, num_of_device_on_intD);

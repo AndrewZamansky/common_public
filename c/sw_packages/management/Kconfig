@@ -28,6 +28,8 @@ menuconfig INCLUDE_SHELL
 	
 if INCLUDE_SHELL
 source "$KCONFIG_PUBLIC_START_DIR/sw_packages/management/shell/Kconfig"
+endif
+
 
 menuconfig INCLUDE_SHELL_PRESETS
 	bool   "shell presets"
@@ -37,7 +39,7 @@ if INCLUDE_SHELL_PRESETS
 source "$KCONFIG_PUBLIC_START_DIR/sw_packages/management/shell_presets/Kconfig"
 endif
 
-endif
+
 
 #if INCLUDE_SHELL || ARM_SEMIHOSTING_CONFIG_ENABLE_RX
 

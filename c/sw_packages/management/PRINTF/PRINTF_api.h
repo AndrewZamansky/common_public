@@ -31,7 +31,7 @@
  	PRINTF_TYPE_NOTE
  };
 
- void PRINTF_API_init();
+ void PRINTF_API_init(void);
  uint8_t PRINTF_API_AddDebugOutput(struct dev_desc_t *aDevHandle);
  uint8_t PRINTF_API_AddNoteOutput(struct dev_desc_t *aDevHandle);
  uint8_t PRINTF_API_RemoveDebugOutput(struct dev_desc_t *aDevHandle);

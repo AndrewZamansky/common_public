@@ -73,13 +73,17 @@ ifeq (y,$(USING_GCC_COMPILER))
         SRC += $(CORTEX_DIR)/MP_GIC.s
     endif
     SRC += src/SWI.c
-    SRC += $(CORTEX_DIR)/SWI.s
-    SRC += $(CORTEX_DIR)/vectors.s
-    SRC += $(CORTEX_DIR)/startup.s
+    ifndef CONFIG_OUTPUT_TYPE_STATIC_LIBRARY
+        SRC += $(CORTEX_DIR)/SWI.s
+        SRC += $(CORTEX_DIR)/vectors.s
+        SRC += $(CORTEX_DIR)/startup.s
+    endif
 else ifdef CONFIG_ARMCC
-    SRC += $(CORTEX_DIR)/startup_armcc.s
-    SRC += $(CORTEX_DIR)/vectors_armcc.s
-    SRC += $(CORTEX_DIR)/SWI_armcc.s
+    ifndef CONFIG_OUTPUT_TYPE_STATIC_LIBRARY
+        SRC += $(CORTEX_DIR)/startup_armcc.s
+        SRC += $(CORTEX_DIR)/vectors_armcc.s
+        SRC += $(CORTEX_DIR)/SWI_armcc.s
+    endif
 endif
 
 include $(COMMON_CC)

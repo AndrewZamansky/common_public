@@ -40,9 +40,9 @@
 
 /********  defines *********************/
 
-#if defined(__GNUC__)
+#if defined(__GNUC__) && !defined(__ARMCC_VERSION)
   #define IRQ_ATTR  __attribute__((interrupt("IRQ")))
-#elif defined(__arm)
+#elif defined(__ARMCC_VERSION)
   #define IRQ_ATTR  __irq
 #endif
 
@@ -84,7 +84,7 @@ enum IRQn_Type_local {
 };
 
 /********  externals *********************/
-extern void do_software_interrupt_asm(void);
+extern IRQ_ATTR void do_software_interrupt_asm(void);
 
 
 /********  local variables *********************/
@@ -98,7 +98,7 @@ struct dev_desc_t * callback_devs[
  *
  * return:
  */
-void  IRQ_ATTR common_interrupt_handler()
+IRQ_ATTR void common_interrupt_handler()
 {
 	uint32_t curr_isr ;
 	struct dev_desc_t * pdev ;
@@ -125,11 +125,15 @@ static volatile uint32_t R0_r, R1_r, R2_r, R3_r, R12_r, LR_r, PC_r, PSR_r;
  *
  * return:
  */
-void __attribute__((interrupt("IRQ"))) __attribute__((naked)) isr_hard_fault()
+#if defined(__GNUC__) && !defined(__ARMCC_VERSION)
+	void IRQ_ATTR __attribute__((naked)) isr_hard_fault()
+#elif defined(__ARMCC_VERSION)
+	IRQ_ATTR void isr_hard_fault()
+#endif
 {
 	uint32_t *stack;
 
-#if defined(__GNUC__)
+#if defined(__GNUC__) && !defined(__ARMCC_VERSION)
 	__asm volatile
 	(
 		/* bit 2 in EXC_RETURN value (in LR) shows what
@@ -142,7 +146,8 @@ void __attribute__((interrupt("IRQ"))) __attribute__((naked)) isr_hard_fault()
 		: [stack]"=r" (stack)::"r0","memory"
 	);
 
-#elif defined(__arm)
+#elif defined(__ARMCC_VERSION)
+	while(1);
 	__asm
 	{
 		//TODO
@@ -205,8 +210,8 @@ int irq_register_device_on_interrupt(int int_num, struct dev_desc_t * pdev)
  */
 int irq_disable_interrupt(int int_num)
 {
-	NVIC_DisableIRQ(int_num);
-	NVIC_ClearPendingIRQ(int_num);
+	NVIC_DisableIRQ((IRQn_Type_TMP)int_num);
+	NVIC_ClearPendingIRQ((IRQn_Type_TMP)int_num);
 	return 0;
 }
 

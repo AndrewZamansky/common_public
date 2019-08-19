@@ -7,7 +7,7 @@
 #include <u-boot/include/command.h>
 #include "u_boot_shell_api.h"
 
-extern size_t get_heap_left();
+extern size_t get_heap_left(void);
 
 
 /*

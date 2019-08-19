@@ -9,7 +9,6 @@
 /***************   includes    *******************/
 
 #include "dev_management_api.h"
-#include "_dev_management_prerequirements_check.h"
 #include "dev_management.h"
 #include "arch.h"
 #include "string.h"

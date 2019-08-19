@@ -15,8 +15,6 @@
 
 #include <math.h>
 
-#include "_common_dsp_prerequirements_check.h"
-
 /********  defines *********************/
 
 
@@ -77,7 +75,7 @@ static inline float b_mult_log2_of_a(float b, float a)
 	 * approximated by taylor series around 0.75 :
 	 * log2(fraction) ~= sum( An_log2 * (fraction-0.75)^n )
 	 */
-	fraction -= 0.75;
+	fraction -= 0.75f;
 
 	log2_of_fraction = A8_log2;
 	log2_of_fraction *= fraction;
@@ -203,7 +201,7 @@ float fast_pow_float(float a, float b)
 	 *  2^fraction_of_z ~= An_2_power_x * (fraction_of_z - 0.5)^n
 	 */
 #ifdef USE_TAYLOR_AROUND_0_5
-	fraction_of_z -= 0.5;
+	fraction_of_z -= 0.5f;
 #endif
 	power_of_fraction = 0.0f;
 	power_of_fraction += A7_2_power_x;

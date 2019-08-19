@@ -151,7 +151,7 @@ void dsp_management_api_set_module_control(
 		dsp_management_api_module_control_t ctl);
 
 
-void dsp_management_api_delete_modules();
+void dsp_management_api_delete_modules(void);
 
 
 

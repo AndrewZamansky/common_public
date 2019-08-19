@@ -29,11 +29,8 @@ config PUBLIC_SOC_SELECTED
     bool
     default n
 
-if !HEXAGON && !ANDROID_NDK
 
-
-
-
+if !HEXAGON && !ANDROID_NDK && !OUTPUT_TYPE_STATIC_LIBRARY
 
 config PROJECT_IS_BOOTLOADER
     bool "this project is bootloader"
@@ -45,25 +42,10 @@ config BUILD_FOR_USE_WITH_BOOTLOADER
 	default n
 
 
-
 config USE_APPLICATION_SPECIFIC_SCATTER_FILE
 	bool "use application specifc scatter file"
     depends on ARM || XTENSA
     default n
-
-# following configuration will be selected automatically
-config INTERNAL_FLASH_EXISTS
-    bool
-    default n
-
-config INTERNAL_SRAM_EXISTS
-    bool
-    default n
-
-config DDR_EXISTS
-    bool
-    default n
-################################
 
 if !USE_APPLICATION_SPECIFIC_SCATTER_FILE
 
@@ -118,12 +100,28 @@ endchoice
 
 endif #### (if !USE_APPLICATION_SPECIFIC_SCATTER_FILE)
 
+
 config EXCEPTION_STACKS_DEBUG
 	bool "fill system stacks with pattern (help to debug stack overflow)"
     depends on CORTEX_A9 || CORTEX_M3 || CORTEX_M4
     default n
 
 
-endif #### (if !HEXAGON && !ANDROID_NDK)
+endif #### (if !HEXAGON && !ANDROID_NDK && !OUTPUT_TYPE_STATIC_LIBRARY)
+
+
+# following configuration will be selected automatically
+config INTERNAL_FLASH_EXISTS
+    bool
+    default n
+
+config INTERNAL_SRAM_EXISTS
+    bool
+    default n
+
+config DDR_EXISTS
+    bool
+    default n
+################################
 
 endmenu

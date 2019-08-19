@@ -98,6 +98,12 @@ C_COMPILATION_CMD += $(ALL_INCLUDE_DIRS) $(ALL_DEFINES)
 C_COMPILATION_CMD :=$(call reduce_cmd_len, $(C_COMPILATION_CMD))
 $(call check_win_cmd_len, $(C_COMPILATION_CMD))
 
+ALL_CFLAGS := $(GLOBAL_CFLAGS) $(CFLAGS)
+CPP_COMPILATION_CMD := $(CCPP) $(ALL_CFLAGS)
+CPP_COMPILATION_CMD += $(ALL_INCLUDE_DIRS) $(ALL_DEFINES)
+CPP_COMPILATION_CMD :=$(call reduce_cmd_len, $(CPP_COMPILATION_CMD))
+$(call check_win_cmd_len, $(CPP_COMPILATION_CMD))
+
 $(CURR_OBJ_DIR)/%.o: %.c $(HEADER_FILES_DEPS) $(APP_ROOT_DIR)/.config
 	$(info .    Compiling $<)
 	$(call mkdir_if_not_exists, $(dir $@))
@@ -111,13 +117,13 @@ $(CURR_OBJ_DIR)/%.o: %.c $(HEADER_FILES_DEPS) $(APP_ROOT_DIR)/.config
 $(CURR_OBJ_DIR)/%.oo: %.cc $(HEADER_FILES_DEPS) $(APP_ROOT_DIR)/.config
 	$(info .    Compiling $<)
 	$(call mkdir_if_not_exists, $(dir $@))
-	$(C_COMPILATION_CMD) $(CC_OUTPUT_FLAG_AND_FILE) $<
+	$(CPP_COMPILATION_CMD) $(CC_OUTPUT_FLAG_AND_FILE) $<
 #	open line to create preproccesor file
 #	$(CC) -E -P $(ALL_CFLAGS) $(ALL_INCLUDE_DIRS) $(ALL_DEFINES) $< -o  $@.pre
 
 $(CURR_OBJ_DIR)/%.oop: %.cpp $(HEADER_FILES_DEPS) $(APP_ROOT_DIR)/.config
 	$(info .    Compiling $<)
 	$(call mkdir_if_not_exists, $(dir $@))
-	$(C_COMPILATION_CMD) $(CC_OUTPUT_FLAG_AND_FILE) $<
+	$(CPP_COMPILATION_CMD) $(CC_OUTPUT_FLAG_AND_FILE) $<
 #	open line to create preproccesor file
 #	$(CC) -E -P $(ALL_CFLAGS) $(ALL_INCLUDE_DIRS) $(ALL_DEFINES) $< -o  $@.pre

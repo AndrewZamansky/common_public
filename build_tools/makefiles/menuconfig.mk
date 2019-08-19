@@ -58,6 +58,8 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
 
     ERROR_LOG =  $(OUT_DIR)\kconfig.out
     
+    SHELL_GO_TO_GIT_DIR :=cd /d $(call fix_path_if_in_windows,$(APP_ROOT_DIR)) &
+
     KCONFIG_BASIC_CMD :=$(KCONFIG_ROOT_DIR)/kconfig-mconf.exe $(PROJECT_KCONFIG)
     KCONFIG_CMD :=$(KCONFIG_BASIC_CMD) 2>$(ERROR_LOG)
 
@@ -73,6 +75,7 @@ else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX)
 
     ERROR_LOG =  $(OUT_DIR)/kconfig.out
 
+    SHELL_GO_TO_GIT_DIR :=cd $(APP_ROOT_DIR) ;
 
     KCONFIG_BASIC_CMD :=$(KCONFIG_ROOT_DIR)/kconfig-mconf $(PROJECT_KCONFIG)
     KCONFIG_CMD :=$(KCONFIG_BASIC_CMD) 2>$(ERROR_LOG)
@@ -111,7 +114,8 @@ endif
 
 menuconfig :
 	$(info --- if kconfig window didn't opened, run following command in shell:)
-	$(info --- $(MANUAL_KCONFIG_CMD) )
-	$(info --- to see kconfig warnings run following command in shell : )
-	$(info --- $(MANUAL_KCONFIG_WARNING_CHECK_CMD) )
+	$(info --- $(SHELL_GO_TO_GIT_DIR) $(MANUAL_KCONFIG_CMD) )
+	$(info --- to see kconfig warnings run following command in shell [note: graphical window will NOT open)
+	$(info ---  and ignore "LINES value must be >= 2 and <= 0..." and "initscr(): Unable to create SP"] : )
+	$(info --- $(SHELL_GO_TO_GIT_DIR) $(MANUAL_KCONFIG_WARNING_CHECK_CMD) )
 	$(info auto generated Kconfig created)

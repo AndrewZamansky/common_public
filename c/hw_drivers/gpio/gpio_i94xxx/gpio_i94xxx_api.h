@@ -15,6 +15,7 @@
 #define GPIO_I94XXX_API_MODE_STR   			"mode"
 
 
+#include "I94100.h"
 #include "gpio.h"
 
 #define GPIO_I94XXX_API_PORT_A		GPIOA_BASE

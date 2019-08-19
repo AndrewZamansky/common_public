@@ -19,28 +19,26 @@
 
 #include "os_wrapper.h"
 
-#include "_shell_presets_prerequirements_check.h"
 
 /*following line add module to available module list for dynamic device tree*/
 #include "shell_presets_add_component.h"
 
 /********  defines *********************/
 
-#define MAGIC_NUMBER			0xA5B6C7D8
-#define MAGIC_NUMBER_SIZE		4
-#define PRESET_SIZE_WORD_POS	(MAGIC_NUMBER_SIZE)
-#define PRESET_SIZE_WORD_SIZE	2
-#define DATA_POSITION		(MAGIC_NUMBER_SIZE + PRESET_SIZE_WORD_SIZE)
+#define MAGIC_NUMBER            0xA5B6C7D8
+#define MAGIC_NUMBER_SIZE       4
+#define PRESET_SIZE_WORD_POS    (MAGIC_NUMBER_SIZE)
+#define PRESET_SIZE_WORD_SIZE   2
+#define DATA_POSITION           (MAGIC_NUMBER_SIZE + PRESET_SIZE_WORD_SIZE)
 
 
 /********  types  *********************/
 
-typedef enum
-{
-	SHEL_PRESET_STATE_IDLE,
-	SHEL_PRESET_STATE_RECORDING,
-	SHEL_PRESET_STATE_LOADING
-} state_t;
+enum state_t {
+	SHELL_PRESET_STATE_IDLE,
+	SHELL_PRESET_STATE_RECORDING,
+	SHELL_PRESET_STATE_LOADING
+};
 
 /********  externals *********************/
 
@@ -64,7 +62,7 @@ size_t shell_presets_pwrite(struct dev_desc_t *adev,
 	uint16_t preset_size;
 
 	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
-	if (SHEL_PRESET_STATE_RECORDING != runtime_handle->state)
+	if (SHELL_PRESET_STATE_RECORDING != runtime_handle->state)
 	{
 		return 0;
 	}
@@ -96,7 +94,7 @@ static uint8_t save_preset( struct shell_presets_cfg_t *config_handle,
 	struct dev_desc_t *   storage_dev ;
 	uint8_t *curr_preset_buf;
 
-	if (SHEL_PRESET_STATE_RECORDING != runtime_handle->state)
+	if (SHELL_PRESET_STATE_RECORDING != runtime_handle->state)
 	{
 		return 1;
 	}
@@ -116,7 +114,7 @@ static uint8_t save_preset( struct shell_presets_cfg_t *config_handle,
 	DEV_PWRITE(storage_dev,
 			curr_preset_buf, preset_size, preset_size * num_of_preset);
 
-	runtime_handle->state = SHEL_PRESET_STATE_IDLE;
+	runtime_handle->state = SHELL_PRESET_STATE_IDLE;
 
 	return 0;
 }
@@ -131,7 +129,7 @@ static uint8_t get_preset(struct shell_presets_cfg_t *config_handle,
 	uint16_t preset_size;
 	uint8_t *curr_preset_buf;
 
-	if (SHEL_PRESET_STATE_RECORDING == runtime_handle->state)
+	if (SHELL_PRESET_STATE_RECORDING == runtime_handle->state)
 	{
 		return 1;
 	}
@@ -273,17 +271,17 @@ uint8_t shell_presets_ioctl( struct dev_desc_t *adev,
 		break;
 
 	case IOCTL_SHELL_PRESETS_START_RECORDING :
-		if (SHEL_PRESET_STATE_LOADING == curr_state)
+		if (SHELL_PRESET_STATE_LOADING == curr_state)
 		{
 			return 0;
 		}
-		runtime_handle->state = SHEL_PRESET_STATE_RECORDING;
+		runtime_handle->state = SHELL_PRESET_STATE_RECORDING;
 		curr_preset_buf = runtime_handle->curr_preset_buf;
 		runtime_handle->preset_actual_size = DATA_POSITION;
 		break;
 
 	case IOCTL_SHELL_PRESETS_STOP_RECORDING :
-		if (SHEL_PRESET_STATE_LOADING == curr_state)
+		if (SHELL_PRESET_STATE_LOADING == curr_state)
 		{
 			return 0;
 		}
@@ -292,18 +290,18 @@ uint8_t shell_presets_ioctl( struct dev_desc_t *adev,
 		break;
 
 	case IOCTL_SHELL_PRESETS_LOAD_PRESET :
-		if (SHEL_PRESET_STATE_LOADING == curr_state)
+		if (SHELL_PRESET_STATE_LOADING == curr_state)
 		{
 			return 0;
 		}
-		runtime_handle->state = SHEL_PRESET_STATE_LOADING;
+		runtime_handle->state = SHELL_PRESET_STATE_LOADING;
 		retVal = load_preset(
 				config_handle, runtime_handle, (size_t) aIoctl_param1);
-		runtime_handle->state = SHEL_PRESET_STATE_IDLE;
+		runtime_handle->state = SHELL_PRESET_STATE_IDLE;
 		break;
 
 	case IOCTL_SHELL_PRESETS_SET_PRESET_TO_DEFAULT :
-		if (SHEL_PRESET_STATE_LOADING == curr_state)
+		if (SHELL_PRESET_STATE_LOADING == curr_state)
 		{
 			return 0;
 		}

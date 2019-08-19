@@ -15,8 +15,6 @@
 
 #include "auto_init_api.h"
 
-#include "_dev_management_prerequirements_check.h"
-
 
 /***************   defines    *******************/
 

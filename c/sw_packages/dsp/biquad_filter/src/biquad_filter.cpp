@@ -162,7 +162,7 @@ uint8_t biquad_filter_ioctl(struct dsp_module_inst_t *adsp,
 		band_num = band_params->band_num ;
 		p_band_set_params = &(band_params->band_set_params);
 
-		if ((num_of_bands <= band_num ) || (p_band_set_params->Fc < 0.01))
+		if ((num_of_bands <= band_num ) || (p_band_set_params->Fc < 0.01f))
 		{
 			CRITICAL_ERROR("bad band number");
 			return 1;

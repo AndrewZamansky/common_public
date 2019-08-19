@@ -4,6 +4,10 @@ config INCLUDE_2X1_MIXER
 	bool   "mixer 2 inputs 1 outputs"
 	default n
 
+config INCLUDE_2X2_MIXER
+	bool   "mixer 2 inputs 2 outputs"
+	default n
+
 config INCLUDE_3X1_MIXER
 	bool   "mixer 3 inputs 1 outputs"
 	default n
