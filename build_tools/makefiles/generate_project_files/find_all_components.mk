@@ -68,8 +68,10 @@ ITEMS :=$(ALL_CONFIG_FILES)
 include $(MAKEFILES_ROOT_DIR)/_include_functions/add_item_list_to_file.mk
 #end of file creation
 
-# init INCLUDE_THIS_FOR_H_FILES_PATH variable
+# init INCLUDE_* variable
+$(shell echo INCLUDE_THIS_COMPONENT := NO>> $(ALL_FOUND_COMPONENTS))
 $(shell echo INCLUDE_THIS_FOR_H_FILES_PATH := NO>> $(ALL_FOUND_COMPONENTS))
+$(shell echo INCLUDE_THIS_COMPONENT_WITHOUT_INCLUDE_PATH := NO>> $(ALL_FOUND_COMPONENTS))
 
 ADD_COMPONENT_UCONFIG_MK :=$(GENERATE_PRJ_FILES_DIR_FOR_ECHO)/add_component_uconfig.mk
 
