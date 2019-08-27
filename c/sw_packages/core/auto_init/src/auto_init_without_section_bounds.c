@@ -10,7 +10,6 @@
 
 #include "auto_init_api.h"
 
-#include "_auto_init_prerequirements_check.h"
 
 /***************   defines    *******************/
 

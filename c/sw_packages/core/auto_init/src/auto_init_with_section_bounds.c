@@ -10,7 +10,6 @@
 
 #include "auto_init_api.h"
 
-#include "_auto_init_prerequirements_check.h"
 
 /***************   defines    *******************/
 
@@ -21,7 +20,7 @@
 /***********   global variables    **************/
 
 /***********   local variables    **************/
-#if defined(_MSC_VER)
+#if defined(_MSC_VER) || defined(__ARMCC_VERSION)
 	extern int *init_functions_section_start ;
 	extern int *init_functions_section_end ;
 #else
@@ -35,7 +34,7 @@ void auto_init_api(void)
 	auto_init_struct_t *p_end_of_auto_init;
 
 
-#if defined(_MSC_VER)
+#if defined(_MSC_VER) || defined(__ARMCC_VERSION)
     #pragma message( "change to __start_auto_init_section in " __FILE__ )
 	p_curr_auto_init = (auto_init_struct_t *)&init_functions_section_start;
 	p_end_of_auto_init = (auto_init_struct_t *)&init_functions_section_end;

@@ -185,7 +185,10 @@ uint8_t u_boot_shell_ioctl( struct dev_desc_t *adev ,
 #endif
 	case IOCTL_DEVICE_START :
 		server_dev = config_handle->server_dev;
-		DEV_IOCTL_0_PARAMS(server_dev , IOCTL_DEVICE_START );
+		if (NULL != server_dev)
+		{
+			DEV_IOCTL_0_PARAMS(server_dev , IOCTL_DEVICE_START );
+		}
 
 		break;
 

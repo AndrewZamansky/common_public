@@ -19,12 +19,16 @@
 		#error "unknown host"
 	#endif
 #else
-	#if defined(CONFIG_HEXAGON_COMPILER) || defined(CONFIG_ANDROID_NDK) || \
-	 defined(CONFIG_XTENSA_GCC) || (defined(__GNUC__))
+	#if (defined(CONFIG_HEXAGON_COMPILER) || defined(CONFIG_ANDROID_NDK) || \
+		defined(CONFIG_XTENSA_GCC) ||  \
+		(defined(__GNUC__) && !defined(__ARMCC_VERSION)))
 		#define USE_GCC_AUTO_INIT_PLACEMENT  1
 	#endif
 	#if defined(CONFIG_XTENSA_XCC)
 		#define USE_XCC_AUTO_INIT_PLACEMENT  1
+	#endif
+	#if defined(__ARMCC_VERSION)
+		#define USE_ARMCC_AUTO_INIT_PLACEMENT  1
 	#endif
 #endif
 
@@ -45,6 +49,12 @@
 	#define AUTO_INIT_FUNCTION_PLACEMENT	 	\
 							const __attribute__((section(".rodata.autoinit")))
 
+#elif defined(USE_ARMCC_AUTO_INIT_PLACEMENT)
+
+	#define AUTO_INIT_FUNCTION_PLACEMENT	const 	\
+							__attribute__((used)) \
+							__attribute__((section(".constdata.autoinit_2")))
+
 #endif
 
 
@@ -58,6 +68,8 @@ typedef struct
 }auto_init_struct_t;
 
 #define AUTO_INIT_FUNCTION(func)  						\
+		extern auto_init_struct_t AUTO_INIT_FUNCTION_PLACEMENT \
+													auto_init_##func;\
 		auto_init_struct_t AUTO_INIT_FUNCTION_PLACEMENT \
 		auto_init_##func = { (int*)AUTO_INIT_MAGIC_NUMBER , func}
 

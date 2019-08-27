@@ -2,7 +2,7 @@
 define _APPEND_VAR =
     $(if $(1),$(eval $(1) :=$($(1))$(2)),)
 endef
-# helper function to append string only if such string doesn't exist
+# helper function to append string only if such string doesn't exist.
 # spaces in ' $($(1)) ' are important
 define _APPEND_IF_NOT_EXISTS =
     $(if $(findstring $(2), $($(1)) ),,$(call _APPEND_VAR,$(1),$(2)))

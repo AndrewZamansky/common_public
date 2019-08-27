@@ -72,57 +72,100 @@ SRC_CPP_OBJ := $(patsubst %.cpp,$(CURR_OBJ_DIR)/%.oop,$(SRC_CPP))
 ASM_OBJ := $(patsubst %.s,$(CURR_OBJ_DIR)/%.o.asm,$(SRC_ASM))
 ASM_OBJ_O := $(patsubst %.S,$(CURR_OBJ_DIR)/%.O.asm,$(SRC_ASM_S))
 
+
+ALL_DEPS :=$(HEADER_FILES_DEPS) $(APP_ROOT_DIR)/.config
+
+
 all: $(SRC_OBJ) $(SRC_CC_OBJ) $(SRC_CPP_OBJ) $(ASM_OBJ) $(ASM_OBJ_O)
 
 
-ASM_COMPILATION_CMD := $(ASM) $(GLOBAL_ASMFLAGS) $(ASMFLAGS)
-ASM_COMPILATION_CMD += $(ALL_ASM_INCLUDE_DIRS) $(ALL_ASM_DEFINES)
-ASM_COMPILATION_CMD :=$(call reduce_cmd_len, $(ASM_COMPILATION_CMD))
-$(call check_win_cmd_len, $(ASM_COMPILATION_CMD))
+ASM_COMPILATION_CMD := $(ASM) $(GLOBAL_ASMFLAGS) $(ASMFLAGS) $(ALL_ASM_DEFINES)
+ASM_COMPILATION_REDUCED_CMD :=$(call \
+     reduce_cmd_len, $(ASM_COMPILATION_CMD) $(ALL_ASM_INCLUDE_DIRS))
+LONG_ASM_CMD :=$(call check_win_cmd_len, $(ASM_COMPILATION_REDUCED_CMD))
 
-$(CURR_OBJ_DIR)/%.o.asm: %.s
+ASM_ARGS_FILE :=$(strip $(if $(LONG_ASM_CMD),$(CURR_OBJ_DIR)/asm.args,))
+ifeq ($(LONG_ASM_CMD),TOO_LONG)
+    ASM_COMPILATION_CMD += $(CC_USE_ARGS_FROM_FILE_FLAG)$(ASM_ARGS_FILE)
+else
+    ASM_COMPILATION_CMD :=$(ASM_COMPILATION_REDUCED_CMD)
+endif
+
+
+$(CURR_OBJ_DIR)/%.o.asm: %.s $(ALL_DEPS) $(ASM_ARGS_FILE)
 	$(info .    Compiling $<)
 	$(call mkdir_if_not_exists, $(dir $@))
 	$(ASM_COMPILATION_CMD) $(ASM_OUTPUT_FLAG_AND_FILE) $<
 
-$(CURR_OBJ_DIR)/%.O.asm: %.S
+$(CURR_OBJ_DIR)/%.O.asm: %.S $(ALL_DEPS) $(ASM_ARGS_FILE)
 	$(info .    Compiling $<)
 	$(call mkdir_if_not_exists, $(dir $@))
 	$(ASM_COMPILATION_CMD) $(ASM_OUTPUT_FLAG_AND_FILE) $<
 
+$(ASM_ARGS_FILE): $(ALL_DEPS)
+	$(eval D:=$(call fwrite,$(ASM_ARGS_FILE),$(ALL_ASM_INCLUDE_DIRS),TRUNCATE))
+
+
 
 ALL_CFLAGS := $(GLOBAL_CFLAGS) $(CFLAGS)
-C_COMPILATION_CMD := $(CC) $(ALL_CFLAGS)
-C_COMPILATION_CMD += $(ALL_INCLUDE_DIRS) $(ALL_DEFINES)
-C_COMPILATION_CMD :=$(call reduce_cmd_len, $(C_COMPILATION_CMD))
-$(call check_win_cmd_len, $(C_COMPILATION_CMD))
+C_COMPILATION_CMD := $(CC) $(ALL_CFLAGS) $(ALL_DEFINES)
+C_COMPILATION_REDUCED_CMD :=$(call \
+               reduce_cmd_len, $(C_COMPILATION_CMD) $(ALL_INCLUDE_DIRS))
+LONG_C_CMD :=$(call check_win_cmd_len, $(C_COMPILATION_REDUCED_CMD))
 
-ALL_CFLAGS := $(GLOBAL_CFLAGS) $(CFLAGS)
-CPP_COMPILATION_CMD := $(CCPP) $(ALL_CFLAGS)
-CPP_COMPILATION_CMD += $(ALL_INCLUDE_DIRS) $(ALL_DEFINES)
-CPP_COMPILATION_CMD :=$(call reduce_cmd_len, $(CPP_COMPILATION_CMD))
-$(call check_win_cmd_len, $(CPP_COMPILATION_CMD))
+C_ARGS_FILE :=$(strip $(if $(LONG_C_CMD),$(CURR_OBJ_DIR)/c.args,))
+ifeq ($(LONG_C_CMD),TOO_LONG)
+    C_COMPILATION_CMD += $(CC_USE_ARGS_FROM_FILE_FLAG)$(C_ARGS_FILE)
+else
+    C_COMPILATION_CMD :=$(C_COMPILATION_REDUCED_CMD)
+endif
 
-$(CURR_OBJ_DIR)/%.o: %.c $(HEADER_FILES_DEPS) $(APP_ROOT_DIR)/.config
+
+$(CURR_OBJ_DIR)/%.o: %.c $(ALL_DEPS) $(C_ARGS_FILE)
 	$(info .    Compiling $<)
 	$(call mkdir_if_not_exists, $(dir $@))
 	$(eval SRC_FILE := $(realpath $<))
 	$(info .    Compiling $(SRC_FILE))
 	$(C_COMPILATION_CMD) $(CC_OUTPUT_FLAG_AND_FILE) $<
-	
+
+$(C_ARGS_FILE): $(ALL_DEPS)
+	$(eval DUMMY := $(call fwrite,$(C_ARGS_FILE),$(ALL_INCLUDE_DIRS),TRUNCATE))
+
+
+
+
+ALL_CFLAGS := $(GLOBAL_CFLAGS) $(CFLAGS)
+CPP_COMPILATION_CMD := $(CCPP) $(ALL_CFLAGS) $(ALL_DEFINES)
+CPP_COMPILATION_REDUCED_CMD :=$(call \
+          reduce_cmd_len, $(CPP_COMPILATION_CMD) $(ALL_INCLUDE_DIRS))
+LONG_CPP_CMD :=$(call check_win_cmd_len, $(CPP_COMPILATION_REDUCED_CMD))
+
+CPP_ARGS_FILE :=$(strip $(if $(LONG_CPP_CMD),$(CURR_OBJ_DIR)/cpp.args,))
+ifeq ($(LONG_CPP_CMD),TOO_LONG)
+    CPP_COMPILATION_CMD += $(CC_USE_ARGS_FROM_FILE_FLAG)$(CPP_ARGS_FILE)
+else
+    CPP_COMPILATION_CMD :=$(CPP_COMPILATION_REDUCED_CMD)
+endif
+
+
 #	open line to create preproccesor file
 #	$(CC) -E -P $(ALL_CFLAGS) $(ALL_INCLUDE_DIRS) $(ALL_DEFINES) $< -o  $@.pre
 
-$(CURR_OBJ_DIR)/%.oo: %.cc $(HEADER_FILES_DEPS) $(APP_ROOT_DIR)/.config
+$(CURR_OBJ_DIR)/%.oo: %.cc $(ALL_DEPS) $(CPP_ARGS_FILE)
 	$(info .    Compiling $<)
 	$(call mkdir_if_not_exists, $(dir $@))
 	$(CPP_COMPILATION_CMD) $(CC_OUTPUT_FLAG_AND_FILE) $<
 #	open line to create preproccesor file
 #	$(CC) -E -P $(ALL_CFLAGS) $(ALL_INCLUDE_DIRS) $(ALL_DEFINES) $< -o  $@.pre
 
-$(CURR_OBJ_DIR)/%.oop: %.cpp $(HEADER_FILES_DEPS) $(APP_ROOT_DIR)/.config
+$(CURR_OBJ_DIR)/%.oop: %.cpp $(ALL_DEPS) $(CPP_ARGS_FILE)
 	$(info .    Compiling $<)
 	$(call mkdir_if_not_exists, $(dir $@))
 	$(CPP_COMPILATION_CMD) $(CC_OUTPUT_FLAG_AND_FILE) $<
 #	open line to create preproccesor file
 #	$(CC) -E -P $(ALL_CFLAGS) $(ALL_INCLUDE_DIRS) $(ALL_DEFINES) $< -o  $@.pre
+
+$(CPP_ARGS_FILE): $(ALL_DEPS)
+	$(eval DUMMY :=$(call fwrite,$(CPP_ARGS_FILE),$(ALL_INCLUDE_DIRS),TRUNCATE))
+
+.SECONDARY: $(ASM_ARGS_FILE) $(C_ARGS_FILE) $(CPP_ARGS_FILE)

@@ -35,18 +35,26 @@
 
 /********  local variables *********************/
 
-uint32_t SystemCoreClock;
-uint32_t  PllClock;
-uint32_t __HXT;
-uint32_t __LXT;
-uint32_t __HIRC;
-static uint32_t gau32ClkSrcTbl[] = {0, 0, 0, __LIRC, 0, 0, 0, 0};
 /*-----
-  BSP required  function
+  SystemCoreClock,__HXT, __LXT, __HIRC are BSP required  variables.
+  add weak attribute for case when we compile library so this variable
+  declared outside of library
  *------------------*/
-void SystemCoreClockUpdate(void)
+extern uint32_t SystemCoreClock __attribute__((weak));
+extern uint32_t __HXT __attribute__((weak));
+extern uint32_t __LXT __attribute__((weak));
+extern uint32_t __HIRC __attribute__((weak));
+static uint32_t gau32ClkSrcTbl[] = {0, 0, 0, __LIRC, 0, 0, 0, 0};
+
+/*-----
+  SystemCoreClockUpdate() BSP required  function.
+  add weak attribute for case when we compile library so this function can
+  be implemented outside of library
+ *------------------*/
+__attribute__((weak)) void SystemCoreClockUpdate(void)
 {
-#if 1
+	uint32_t  PllClock;
+
 	uint32_t u32Freq, u32ClkSrc;
 	uint32_t u32HclkDiv;
 
@@ -76,7 +84,6 @@ void SystemCoreClockUpdate(void)
 	//	__BKPT(0);
 
  //   CyclesPerUs = (SystemCoreClock + 500000) / 1000000;
-#endif
 }
 
 

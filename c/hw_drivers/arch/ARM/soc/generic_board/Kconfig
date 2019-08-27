@@ -25,5 +25,9 @@ config CPU_UNKNOWN
 
 endchoice
 
+config INCLUDE_FPU_IN_GENERIC_ARM_SOC
+	bool "include FPU in generic ARM SOC"
+	depends on GENERIC_CORTEX_M4 || GENERIC_CORTEX_A9
+	default n
 
 endmenu

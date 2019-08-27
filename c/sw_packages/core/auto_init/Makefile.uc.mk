@@ -56,6 +56,9 @@ endif
 ifneq ($(USE_GCC_AUTO_INIT_HELPER),)
     SRC += auto_init_gcc_helper.c
 endif
+ifeq ($(CONFIG_ARMCC),y)
+    SRC += auto_init_armcc_helper.c
+endif
 
 VPATH = src
 

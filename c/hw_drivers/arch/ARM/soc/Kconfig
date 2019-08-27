@@ -34,7 +34,7 @@ config I94XXX
 	select INTERNAL_FLASH_EXISTS
 	select INTERNAL_SRAM_EXISTS
 
-config GENERIC_SOC
+config GENERIC_ARM_SOC
 	bool "generic SOC"
 	select PUBLIC_SOC_SELECTED
 
@@ -90,6 +90,6 @@ if ARBEL
 source "$KCONFIG_PUBLIC_START_DIR/hw_drivers/arch/ARM/soc/arbel/Kconfig"
 endif
 
-if GENERIC_SOC
+if GENERIC_ARM_SOC
 source "$KCONFIG_PUBLIC_START_DIR/hw_drivers/arch/ARM/soc/generic_board/Kconfig"
 endif

@@ -8,6 +8,10 @@
 
 #include "project_config.h"
 
+#if defined(INCLUDE_FPU_IN_GENERIC_ARM_SOC)
+	#define __FPU_PRESENT             1         /*!< FPU present or not                               */
+#endif
+
 #ifdef CONFIG_CORTEX_M4
 	#define ARM_MATH_CM4   1
 	#define __FPU_PRESENT  1

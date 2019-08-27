@@ -124,13 +124,7 @@ ifdef CONFIG_OUTPUT_TYPE_STATIC_LIBRARY
 endif
 
 ALL_OBJECTS_LIST_FILE:=$(OUT_DIR)/objects.txt
-
-#create file with list of objects
-LIST_FILE_NAME_TRUNCATE :=$(ALL_OBJECTS_LIST_FILE)
-PREFIX_FOR_EACH_ITEM :=
-ITEMS := $(ALL_OBJ_FILES)
-include $(MAKEFILES_INC_FUNC_DIR)/add_item_list_to_file_in_one_line.mk
-#end of file creation
+DUMMY := $(call fwrite,$(ALL_OBJECTS_LIST_FILE),$(ALL_OBJ_FILES),TRUNCATE)
 
 #}}}}}}}}  END OF CREATING OBJECT LIST  }}}}}}}}
 
@@ -149,13 +143,23 @@ else
 
     FMT_GLOBAL_INCLUDE_DIR := $(patsubst %,-I%,$(GLOBAL_INCLUDE_DIR))
 
-    CREATE_LDS_CMD =$(CC) -E -P $(FMT_GLOBAL_INCLUDE_DIR)
-    CREATE_LDS_CMD += $(FMT_GLOBAL_DEFINES)
+    CREATE_LDS_CMD =$(CC) -E -P $(FMT_GLOBAL_DEFINES)
     CREATE_LDS_CMD += $(LDS_PREPROCESSOR_DEFS)
+    CREATE_LDS_CMD_REDUCED :=$(call \
+         reduce_cmd_len, $(CREATE_LDS_CMD) $(FMT_GLOBAL_INCLUDE_DIR))
+    LONG_LDS_CMD:=$(call check_win_cmd_len, $(CREATE_LDS_CMD_REDUCED))
+
+    LDS_ARGS_FILE :=$(strip $(if $(LONG_ASM_CMD),$(OBJ_DIR)/lds.args,))
+    ifeq ($(LONG_LDS_CMD),TOO_LONG)
+        DUMMY := $(call \
+             fwrite,$(LDS_ARGS_FILE),$(FMT_GLOBAL_INCLUDE_DIR),TRUNCATE)
+        CREATE_LDS_CMD += $(CC_USE_ARGS_FROM_FILE_FLAG)$(LDS_ARGS_FILE)
+    else
+        CREATE_LDS_CMD :=$(CREATE_LDS_CMD_REDUCED)
+    endif
     CREATE_LDS_CMD += $(SCATTER_FILE_PATTERN) -o $(SCATTER_FILE)
+         
 endif
-CREATE_LDS_CMD :=$(call reduce_cmd_len, $(CREATE_LDS_CMD))
-$(call check_win_cmd_len, $(CREATE_LDS_CMD))
 
 ifdef CONFIG_OUTPUT_TYPE_STATIC_LIBRARY
     LINKER_CMD = $(ARMCC_ROOT_DIR)/bin/armar -r --via $(ALL_OBJECTS_LIST_FILE)
@@ -164,7 +168,6 @@ else
     LINKER_CMD += --scatter $(SCATTER_FILE)
     LINKER_CMD += --via $(ALL_OBJECTS_LIST_FILE) -o $(LINKER_OUTPUT)
 endif
-$(call check_win_cmd_len, $(LINKER_CMD))
 
 build_outputs :
 	$(CREATE_LDS_CMD)

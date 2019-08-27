@@ -101,13 +101,7 @@ ALL_OBJ_FILES :=$(sort $(ALL_OBJ_FILES))
 ALL_OBJ_FILES :=$(subst \,/,$(ALL_OBJ_FILES))
 
 ALL_OBJECTS_LIST_FILE:=$(OUT_DIR)\objects.txt
-
-#create file with list of objects
-LIST_FILE_NAME_TRUNCATE :=$(ALL_OBJECTS_LIST_FILE)
-PREFIX_FOR_EACH_ITEM :=
-ITEMS := $(ALL_OBJ_FILES)
-include $(MAKEFILES_INC_FUNC_DIR)/add_item_list_to_file_in_one_line.mk
-#end of file creation
+DUMMY := $(call fwrite,$(ALL_OBJECTS_LIST_FILE),$(ALL_OBJ_FILES),TRUNCATE)
 
 #}}}}}}}}  END OF CREATING OBJECT LIST  }}}}}}}}
 

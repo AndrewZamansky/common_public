@@ -11,6 +11,7 @@ endif
 include $(MAKEFILES_ROOT_DIR)/_include_functions/tool_existence_check.mk
 ####### end of tool existence test #####
 
+#GLOBAL_CFLAGS += -c --apcs=interwork --gnu
 GLOBAL_CFLAGS += -c --apcs=interwork --split_sections --gnu
 
 ifdef CONFIG_CORTEX_M4
@@ -53,3 +54,4 @@ GLOBAL_ASMFLAGS := $(GLOBAL_ASMFLAGS)
 CC   := $(ARMCC_ROOT_DIR)/bin/armcc --c99
 CCPP := $(ARMCC_ROOT_DIR)/bin/armcc --cpp
 ASM  := $(ARMCC_ROOT_DIR)/bin/armasm
+CC_USE_ARGS_FROM_FILE_FLAG := --via=
