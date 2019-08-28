@@ -6,8 +6,14 @@
 #include "u-boot/include/command.h"
 #include "u_boot_shell_api.h"
 #include "version_management_api.h"
+#include "dev_management_api.h"
 
 #define MAX_RET_BUFF_SIZE 16
+
+#if !defined(CONFIG_USE_DEVICE_NAME_STRINGS)
+	extern struct dev_desc_t * ver_dev;
+#endif
+
 /*
  * Subroutine:  do_get_version
  *
@@ -25,7 +31,12 @@ int do_get_version (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	size_t read_count;
 	size_t last_read_pos;
 
+#if !defined(CONFIG_USE_DEVICE_NAME_STRINGS)
+	dev = ver_dev;
+#else
 	dev = DEV_OPEN("ver_dev");
+#endif
+
 	last_read_pos = 0;
 	read_count = 1;
 	while (read_count)
