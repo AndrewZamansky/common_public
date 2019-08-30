@@ -17,13 +17,14 @@
 
 
 #if defined(__GNUC__) && !defined(__ARMCC_VERSION)
-  #define IRQ_ATTR  __attribute__((interrupt("IRQ")))
+	#define IRQ_ATTR  __attribute__((interrupt("IRQ")))
+	typedef void (*isr_t)(void);
 #elif defined(__ARMCC_VERSION)
-  #define IRQ_ATTR  __irq
+	#define IRQ_ATTR  __irq
+	typedef void IRQ_ATTR (*isr_t)(void);
 #endif
 
 
-typedef IRQ_ATTR void (*isr_t)(void);
 
 /**
  * irq_register_interrupt()

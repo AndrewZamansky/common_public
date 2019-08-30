@@ -40,10 +40,10 @@
   add weak attribute for case when we compile library so this variable
   declared outside of library
  *------------------*/
-extern uint32_t SystemCoreClock __attribute__((weak));
-extern uint32_t __HXT __attribute__((weak));
-extern uint32_t __LXT __attribute__((weak));
-extern uint32_t __HIRC __attribute__((weak));
+uint32_t SystemCoreClock __attribute__((weak));
+uint32_t __HXT __attribute__((weak));
+uint32_t __LXT __attribute__((weak));
+uint32_t __HIRC __attribute__((weak));
 static uint32_t gau32ClkSrcTbl[] = {0, 0, 0, __LIRC, 0, 0, 0, 0};
 
 /*-----
