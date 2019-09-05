@@ -152,3 +152,4 @@ else ifdef CONFIG_GPP
     ASM  := $(FULL_GCC_PREFIX)g++ -c
     LD   := $(FULL_GCC_PREFIX)g++
 endif
+CC_USE_ARGS_FROM_FILE_FLAG := @
