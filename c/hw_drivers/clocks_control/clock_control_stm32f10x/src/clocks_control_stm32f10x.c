@@ -228,7 +228,7 @@ uint8_t clock_stm32f10x_hclk_ioctl( struct dev_desc_t *adev,
 			CRITICAL_ERROR("cannot create requested hclk \n");
 		}
 		cfg_clk->rate = new_rate;
-		RCC_HCLKConfig( div_reg_val );
+		RCC_HCLKConfig( div_reg_val << 4);
 		break;
 	case CLK_IOCTL_GET_FREQ :
 		*(uint32_t*)aIoctl_param1 = cfg_clk->rate;
