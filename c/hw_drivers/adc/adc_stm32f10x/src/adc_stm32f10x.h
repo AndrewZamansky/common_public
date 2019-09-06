@@ -1,28 +1,24 @@
 /*
- * file : ADC.h
- *
- *
- *
- *
+ * file : _ADC_STM32F10X.h
  *
  *
  */
 
-#ifndef _ADC_H
-#define _ADC_H
+#ifndef _ADC_STM32F10X_H
+#define _ADC_STM32F10X_H
 
 
 /***************   typedefs    *******************/
 
 
-typedef struct ADC_Instance_t_{
+struct adc_stm32f10x_config_t {
+	uint32_t adc_clock_rate;
 	uint8_t channel;
-} ADC_Instance_t;
+};
 
+struct adc_stm32f10x_runtime_t
+{
+	uint8_t  init_done;
+};
 
-
-uint8_t ADC_STM32F10x_Init(ADC_Instance_t *pInstance);
-
-#else
-#pragma message( "warning : this header file had already been included" )
 #endif /* */
