@@ -1,11 +1,11 @@
 /* !! DONT PUT HEADER FILE PROTECTIONS IN THIS FILE !! */
 
-#include  	"gpio_stm32f10x_api.h"
-#include 	"src/gpio_stm32f10x.h"
+#include  "gpio_stm32f10x_api.h"
+#include  "src/gpio_stm32f10x.h"
 
 
-#define	MODULE_NAME					gpio_stm32f10x
-#define	MODULE_IOCTL_FUNCTION		gpio_stm32f10x_ioctl
+#define MODULE_NAME                     gpio_stm32f10x
+#define MODULE_IOCTL_FUNCTION           gpio_stm32f10x_ioctl
 #define MODULE_CONFIG_DATA_STRUCT_TYPE  struct gpio_stm32f10x_config_t
 #define MODULE_RUNTIME_DATA_STRUCT_TYPE struct gpio_stm32f10x_runtime_t
 
@@ -60,13 +60,13 @@
 
 #endif
 
-#define MODULE_CONFIGURABLE_PARAMS_ARRAY	{	\
+#define MODULE_CONFIGURABLE_PARAMS_ARRAY   {  \
 		{IOCTL_GPIO_STM32F10X_SET_PORT_PARAM , IOCTL_VOID ,\
-					GPIO_STM32F10X_API_PORT_STR, NOT_FOR_SAVE}, 	\
+					GPIO_STM32F10X_API_PORT_STR, NOT_FOR_SAVE}, \
 		{IOCTL_GPIO_STM32F10X_SET_PIN_PARAM , IOCTL_VOID , \
-							GPIO_STM32F10X_API_PIN_STR, NOT_FOR_SAVE},	\
+							GPIO_STM32F10X_API_PIN_STR, NOT_FOR_SAVE}, \
 		{IOCTL_GPIO_STM32F10X_SET_MODE_PARAM , IOCTL_VOID ,\
-								GPIO_STM32F10X_API_MODE_STR, NOT_FOR_SAVE},	\
+								GPIO_STM32F10X_API_MODE_STR, NOT_FOR_SAVE}, \
 	}
 
 #include "add_component.h"

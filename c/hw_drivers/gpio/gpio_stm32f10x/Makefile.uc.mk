@@ -1,4 +1,4 @@
-ifeq ($(sort $(CONFIG_STM32F103XXX)),y)
+ifeq ($(sort $(CONFIG_STM32F10X)),y)
     INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_INTERNAL_GPIO)
 endif
 

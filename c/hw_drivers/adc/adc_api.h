@@ -6,10 +6,9 @@
 
 
 
-typedef enum
-{
-	IOCTL_ADC_GET_CURRENT_VALUE_mV = IOCTL_LAST_COMMON_IOCTL+1
-}ADC_API_ioctl_t;
+enum adc_aoi_ioctl_e {
+	IOCTL_ADC_GET_CURRENT_VALUE_mV = IOCTL_LAST_COMMON_IOCTL + 1
+};
 
 
 #endif

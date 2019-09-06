@@ -145,6 +145,49 @@ uint8_t clock_stm32f10x_apb2_ioctl( struct dev_desc_t *adev,
 }
 
 
+uint8_t clock_stm32f10x_adc_ioctl( struct dev_desc_t *adev,
+		const uint8_t aIoctl_num, void * aIoctl_param1,
+		void * aIoctl_param2)
+{
+	struct cfg_clk_t *cfg_clk;
+	uint32_t rate;
+	uint32_t apb2_rate;
+	uint32_t prescaler;
+	uint32_t ADCPRE_val;
+
+	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(adev);
+
+	switch(aIoctl_num)
+	{
+	case CLK_IOCTL_ENABLE :
+		RCC_APB2PeriphClockCmd(	RCC_APB2Periph_ADC1 , ENABLE );
+		break;
+	case CLK_IOCTL_SET_FREQ :
+		clock_control_common_api_get_parent_clock_rate(cfg_clk, &apb2_rate);
+		rate = *(uint32_t*)aIoctl_param1;
+		prescaler = 2;
+		ADCPRE_val = 0;
+		while (( (apb2_rate / prescaler) != rate) && (8 >= prescaler))
+		{
+			prescaler += 2;
+			ADCPRE_val += 0x4000;
+		}
+		if (8 < prescaler)
+		{
+			CRITICAL_ERROR("cannot create requested ADC clock \n");
+		}
+		RCC_ADCCLKConfig(ADCPRE_val);
+		cfg_clk->rate = rate;
+		break;
+	case CLK_IOCTL_GET_FREQ :
+		*(uint32_t*)aIoctl_param1 = cfg_clk->rate;
+		break;
+	default :
+		return 1;
+	}
+	return 0;
+}
+
 
 uint8_t clock_stm32f10x_sysclk_ioctl( struct dev_desc_t *adev,
 		const uint8_t aIoctl_num, void * aIoctl_param1,

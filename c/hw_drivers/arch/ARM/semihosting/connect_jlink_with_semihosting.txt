@@ -1,5 +1,6 @@
 if Eclipse is used with GDB SEGGER J-Link Debugging plugin:
- in .map file find symbol _startup_semihosting and put address of this symbol
+ in .map file find symbol _startup_with_semihosting and put address of this symbol
  in Eclipsy/"debug configurations"/"GDB Hardware Debugging"/"project_XXX"/Startup/"Set program conter at"
  also make sure that previous field is checked.
- semihosting prints will appear in "console" window of eclipse
+ semihosting prints will appear in "console" window
+ of eclipse(select "Semihosting and SWV" console fromlist of consoles).
