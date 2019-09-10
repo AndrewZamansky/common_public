@@ -308,6 +308,44 @@ static void PDMA_IRQHandler(void)
 }
 
 
+
+static void init_buffers(struct dma_i94xxx_cfg_t *cfg_hndl,
+		struct dma_i94xxx_runtime_t *runtime_hndl)
+{
+	uint8_t i;
+	uint8_t buff;
+	uint8_t num_of_buffers;
+
+	num_of_buffers = cfg_hndl->num_of_buffers;
+
+	if(NULL == runtime_hndl->buff)
+	{
+		runtime_hndl->buff =
+				(uint8_t**)malloc(sizeof(uint8_t*) * num_of_buffers);
+		runtime_hndl->buff_status = (uint8_t*)malloc(num_of_buffers);
+		if (NULL == runtime_hndl->buff_status)
+		{
+			CRITICAL_ERROR("not enough memory in heap");
+		}
+		for (i = 0; i < num_of_buffers; i++)
+		{
+			buff = (uint8_t*)malloc(cfg_hndl->buff_size);
+			if (NULL == buff)
+			{
+				CRITICAL_ERROR("not enough memory in heap");
+			}
+			runtime_hndl->buff[i] = buff;
+		}
+	}
+	for (i = 0; i < num_of_buffers; i++)
+	{
+		runtime_hndl->buff_status[i] = DMA_I94XXX_BUFF_IDLE ;
+	}
+
+	runtime_hndl->next_supplied_tx_buffer = 0;
+}
+
+
 /* func : set_peripheral_dma
  *
  */
@@ -321,14 +359,9 @@ static uint8_t set_peripheral_dma(struct dma_i94xxx_cfg_t *cfg_hndl,
 	uint8_t channel_num;
 	uint8_t peripheral_type;
 	uint8_t dma_peripheral_direction;
-	uint32_t buff_size;
-	uint8_t i;
-	uint8_t num_of_buffers;
 
 	channel_num = cfg_hndl->channel_num;
-	buff_size = cfg_hndl->buff_size;
 	peripheral_type = cfg_hndl->peripheral_type;
-	num_of_buffers = cfg_hndl->num_of_buffers;
 	runtime_hndl->curr_dma_buff_indx = 0;
 
 	src_addr = NULL;
@@ -395,22 +428,8 @@ static uint8_t set_peripheral_dma(struct dma_i94xxx_cfg_t *cfg_hndl,
 		return 1;
 	}
 
-	if(NULL == runtime_hndl->buff)
-	{
-		runtime_hndl->buff =
-				(uint8_t**)malloc(sizeof(uint8_t*) * num_of_buffers);
-		runtime_hndl->buff_status = (uint8_t*)malloc(num_of_buffers);
-		for (i = 0; i < num_of_buffers; i++)
-		{
-			runtime_hndl->buff[i] = (uint8_t*)malloc(buff_size);
-		}
-	}
-	for (i = 0; i < num_of_buffers; i++)
-	{
-		runtime_hndl->buff_status[i] = DMA_I94XXX_BUFF_IDLE ;
-	}
+	init_buffers(cfg_hndl, runtime_hndl);
 
-	runtime_hndl->next_supplied_tx_buffer = 0;
 	if (DMA_FROM_PERIPHERAL == dma_peripheral_direction)
 	{
 		dest_addr = runtime_hndl->buff[0];// TODO : redesign RX
@@ -419,7 +438,7 @@ static uint8_t set_peripheral_dma(struct dma_i94xxx_cfg_t *cfg_hndl,
 	else
 	{
 		runtime_hndl->needed_full_dma_start = 1;
-		runtime_hndl->curr_dma_buff_indx = num_of_buffers - 1;
+		runtime_hndl->curr_dma_buff_indx = cfg_hndl->num_of_buffers - 1;
 	}
 
 	/* Set source/destination address and attributes */

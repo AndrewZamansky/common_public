@@ -12,6 +12,7 @@
 #include "dev_management.h"
 #include "arch.h"
 #include "string.h"
+#include "errors_api.h"
 
 #ifdef CONFIG_USE_SPECIFIC_MEMORY_LOCATION_FOR_DEVICES
 
@@ -105,8 +106,10 @@ void init_new_device(struct dev_desc_t * pdev )
 	if (NULL == pdev->p_config_data)
 	{
 		pdev->p_config_data = malloc(module->module_config_struct_size);
+		errors_api_check_if_malloc_secceed(pdev->p_config_data);
 	}
 	pdev->p_runtime_data = malloc(module->module_runtime_struct_size);
+	errors_api_check_if_malloc_secceed(pdev->p_runtime_data);
 }
 #endif
 
@@ -126,6 +129,7 @@ void init_device_tree()
 
 	src = (uint32_t *)CONFIG_DEVICE_TREE_LOCATION_ADDR;
 	dst = (uint32_t *) malloc(CONFIG_DEVICE_TREE_MAXIMAL_SIZE);
+	errors_api_check_if_malloc_secceed(dst);
 	start_of_dev_tree = (struct dev_desc_t *)dst;
 	end_of_dev_tree = (uint8_t *)dst + CONFIG_DEVICE_TREE_MAXIMAL_SIZE;
 	if (src != dst)

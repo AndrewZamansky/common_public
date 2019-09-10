@@ -9,6 +9,7 @@
 /********  includes *********************/
 #include "_project_typedefs.h"
 #include "_project_defines.h"
+#include "errors_api.h"
 
 #include "dsp_management_api.h"
 
@@ -65,6 +66,7 @@ void webrtc_voice_activity_detection_dsp(struct dsp_module_inst_t *adsp,
 	apCh1In = in_pads[0]->buff;
 
 	buff= (int16_t*)malloc(data_len * sizeof(int16_t));
+	errors_api_check_if_malloc_secceed(buff);
 	tmp_buff = buff;
 	for (i=0 ; i<data_len ; i++ )
 	{

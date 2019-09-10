@@ -13,7 +13,9 @@
 /********  includes *********************/
 #include "spi_flash_partition_manager_config.h"
 #include "dev_management_api.h" // for device manager defines and typedefs
-#include "src/_spi_flash_partition_manager_prerequirements_check.h" // should be after {spi_stm8_config.h,dev_management_api.h}
+
+ // should be after {spi_stm8_config.h,dev_management_api.h}
+#include "src/_spi_flash_partition_manager_prerequirements_check.h"
 
 #include "spi_flash_api.h"
 
@@ -21,7 +23,7 @@
 #include "spi_flash_partition_manager.h"
 
 /********  defines *********************/
-#define INSTANCE(hndl)	((spi_flash_partition_manager_Instance_t*)hndl)
+#define INSTANCE(hndl)  ((spi_flash_partition_manager_Instance_t*)hndl)
 
 
 #define SPI_FLASH_PARTITION_MANAGER_TIMEOUT  3000
@@ -40,27 +42,33 @@
 
 
 /***********   local variables    **************/
-#if SPI_FLASH_PARTITION_MANAGER_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
- static spi_flash_partition_manager_Instance_t SPI_FLASH_PARTITION_MANAGER_InstanceParams = {0} ;
+#if SPI_FLASH_PARTITION_MANAGER_CONFIG_NUM_OF_DYNAMIC_INSTANCES > 0
+ static spi_flash_partition_manager_Instance_t
+ 	 	 	 	 	 SPI_FLASH_PARTITION_MANAGER_InstanceParams = {0} ;
 #endif
 
 
 
 
 
-#define TOTAL_SIZE_OF_FLASH			(1024*1024) // 1M
-#define SECTOR_SIZE					(512) //
-#define TOTAL_NUM_OF_SECTORS		(TOTAL_SIZE_OF_FLASH / SECTOR_SIZE)
+#define TOTAL_SIZE_OF_FLASH        (1024*1024) // 1M
+#define SECTOR_SIZE                (512) //
+#define TOTAL_NUM_OF_SECTORS       (TOTAL_SIZE_OF_FLASH / SECTOR_SIZE)
 
-#define SECTORS_PER_TRACK			8 //
-#define TOTAL_NUM_OF_CYLINDERS		(TOTAL_NUM_OF_SECTORS / SECTORS_PER_TRACK)
+#define SECTORS_PER_TRACK           8 //
+#define TOTAL_NUM_OF_CYLINDERS   (TOTAL_NUM_OF_SECTORS / SECTORS_PER_TRACK)
 
-#define NUM_OF_RESERVED_CYLINDERS	6 // reserved cylenders for bufferring
-#define REPORTED_NUM_OF_CYLINDERS	(TOTAL_NUM_OF_CYLINDERS - NUM_OF_RESERVED_CYLINDERS) // windows will not recognize less then 0x11
-#define NUM_OF_HEADS				0x1 //
+#define NUM_OF_RESERVED_CYLINDERS 6 // reserved cylenders for bufferring
 
-#define REPORTED_SECTORS_ON_STORAGE	   ((NUM_OF_HEADS * REPORTED_NUM_OF_CYLINDERS) * SECTORS_PER_TRACK)
-#define REPORTED_SECTORS_ON_PARTITION   (REPORTED_SECTORS_ON_STORAGE - 1*(SECTORS_PER_TRACK)) // first block is MBR
+// windows will not recognize less then 0x11
+#define REPORTED_NUM_OF_CYLINDERS  \
+	(TOTAL_NUM_OF_CYLINDERS - NUM_OF_RESERVED_CYLINDERS)
+#define NUM_OF_HEADS               0x1 //
+
+#define REPORTED_SECTORS_ON_STORAGE   \
+			((NUM_OF_HEADS * REPORTED_NUM_OF_CYLINDERS) * SECTORS_PER_TRACK)
+#define REPORTED_SECTORS_ON_PARTITION   \
+	(REPORTED_SECTORS_ON_STORAGE - 1*(SECTORS_PER_TRACK)) // first block is MBR
 
 #define uint16_low8(x)          ((x) & 0xFF)
 #define uint16_high8(x)         (((x) >> 8) & 0xFF)
@@ -81,9 +89,11 @@
 * Output         : None.
 * Return         : None.
 *******************************************************************************/
-size_t  spi_flash_partition_manager_pread(const void *apHandle ,uint8_t *apData , size_t length ,size_t startAddr)
+size_t  spi_flash_partition_manager_pread(const void *apHandle,
+						uint8_t *apData , size_t length ,size_t startAddr)
 {
-	return DEV_PREAD(INSTANCE(apHandle)->spi_flash_server_dev, apData , length , startAddr);
+	return DEV_PREAD(INSTANCE(
+			apHandle)->spi_flash_server_dev, apData , length , startAddr);
 
 }
 
@@ -91,10 +101,12 @@ size_t  spi_flash_partition_manager_pread(const void *apHandle ,uint8_t *apData 
 
 #define SPI_FLASH_PARTITION_MANAGER_SIZE   			(1024*1024)
 #define SPI_FLASH_PARTITION_MANAGER_4K_BLOCKS_NUM   	(1024/4)
-#define SPI_FLASH_PARTITION_MANAGER_BUFFER_ADDR   	(SPI_FLASH_PARTITION_MANAGER_SIZE - (4*1024))
+#define SPI_FLASH_PARTITION_MANAGER_BUFFER_ADDR   	\
+								(SPI_FLASH_PARTITION_MANAGER_SIZE - (4*1024))
 #define SPI_FLASH_PARTITION_MANAGER_NON_EXISTENT_ADDR  (0xffffffff)
 
-static size_t currWrite4KblockAddr = SPI_FLASH_PARTITION_MANAGER_NON_EXISTENT_ADDR;
+static size_t currWrite4KblockAddr =
+				SPI_FLASH_PARTITION_MANAGER_NON_EXISTENT_ADDR;
 static size_t dirty_512bytes_block;
 
 #define TEMP_BUFF_SIZE 16
@@ -105,28 +117,32 @@ static size_t dirty_512bytes_block;
 * Output         : None.
 * Return         : None.
 *******************************************************************************/
-void  SPI_FLASH_PARTITION_MANAGER_Copy_from_buffer_to_main_area(const void *apHandle)
+void  SPI_FLASH_PARTITION_MANAGER_Copy_from_buffer_to_main_area(
+													const void *apHandle)
 {
 	size_t i,j;
 	uint8_t buffer[TEMP_BUFF_SIZE];
-	struct dev_desc_t const *spi_flash_server_dev=INSTANCE(apHandle)->spi_flash_server_dev;
+	struct dev_desc_t const *spi_flash_server_dev;
 
+	spi_flash_server_dev=INSTANCE(apHandle)->spi_flash_server_dev;
 	// fill bufer with current data from main storage
 	for(i=0 ; 8>i ; i++)
 	{
-		if( 0==( dirty_512bytes_block & (1<<i)))
+		if( 0 == ( dirty_512bytes_block & (1 << i)))
 		{
-			for(j=0 ; 512 > j; j=j+TEMP_BUFF_SIZE)
+			for(j = 0; 512 > j; j = j + TEMP_BUFF_SIZE)
 			{
-				spi_flash_partition_manager_pread(apHandle , buffer , TEMP_BUFF_SIZE , currWrite4KblockAddr + (512 * i) + j);
-				DEV_PWRITE(spi_flash_server_dev, buffer , TEMP_BUFF_SIZE , SPI_FLASH_PARTITION_MANAGER_BUFFER_ADDR + (512 * i) + j);
-				//SPI_FLASH_PARTITION_MANAGER_WriteData(apHandle , SPI_FLASH_PARTITION_MANAGER_BUFFER_ADDR + (512 * i) + j , buffer , TEMP_BUFF_SIZE);
+				spi_flash_partition_manager_pread(apHandle , buffer ,
+						TEMP_BUFF_SIZE , currWrite4KblockAddr + (512 * i) + j);
+				DEV_PWRITE(spi_flash_server_dev, buffer , TEMP_BUFF_SIZE ,
+					SPI_FLASH_PARTITION_MANAGER_BUFFER_ADDR + (512 * i) + j);
 			}
 		}
 	}
 
 	//erase sector in main storage area
-	DEV_IOCTL(spi_flash_server_dev, IOCTL_SPI_FLASH_ERRASE_SECTOR,&currWrite4KblockAddr);
+	DEV_IOCTL(spi_flash_server_dev,
+			IOCTL_SPI_FLASH_ERRASE_SECTOR,&currWrite4KblockAddr);
 //	SPI_FLASH_PARTITION_MANAGER_SectorErase(apHandle,currWrite4KblockAddr);
 
 	// transfer from buder to  main storage area
@@ -134,16 +150,17 @@ void  SPI_FLASH_PARTITION_MANAGER_Copy_from_buffer_to_main_area(const void *apHa
 	{
 		for(j=0 ; 512 > j; j=j+TEMP_BUFF_SIZE)
 		{
-			spi_flash_partition_manager_pread(apHandle , buffer , TEMP_BUFF_SIZE, SPI_FLASH_PARTITION_MANAGER_BUFFER_ADDR + (512 * i) + j);
-			DEV_PWRITE(spi_flash_server_dev, buffer , TEMP_BUFF_SIZE , currWrite4KblockAddr + (512 * i) + j);
-			//SPI_FLASH_PARTITION_MANAGER_WriteData(apHandle , currWrite4KblockAddr + (512 * i) + j , buffer , TEMP_BUFF_SIZE);
+			spi_flash_partition_manager_pread(apHandle, buffer , TEMP_BUFF_SIZE,
+					SPI_FLASH_PARTITION_MANAGER_BUFFER_ADDR + (512 * i) + j);
+			DEV_PWRITE(spi_flash_server_dev, buffer , TEMP_BUFF_SIZE ,
+					currWrite4KblockAddr + (512 * i) + j);
 		}
 	}
 
 	//erase fuffer sector
 	currWrite4KblockAddr = SPI_FLASH_PARTITION_MANAGER_BUFFER_ADDR;
-	DEV_IOCTL(spi_flash_server_dev, IOCTL_SPI_FLASH_ERRASE_SECTOR, &currWrite4KblockAddr);
-	//SPI_FLASH_PARTITION_MANAGER_SectorErase(apHandle,SPI_FLASH_PARTITION_MANAGER_BUFFER_ADDR);
+	DEV_IOCTL(spi_flash_server_dev,
+			IOCTL_SPI_FLASH_ERRASE_SECTOR, &currWrite4KblockAddr);
 
 	currWrite4KblockAddr = SPI_FLASH_PARTITION_MANAGER_NON_EXISTENT_ADDR;
 	dirty_512bytes_block=0;
@@ -159,7 +176,8 @@ void  SPI_FLASH_PARTITION_MANAGER_Copy_from_buffer_to_main_area(const void *apHa
 * Output         : None.
 * Return         : None.
 *******************************************************************************/
-size_t  spi_flash_partition_manager_pwrite(const void *apHandle ,const uint8_t *apData , size_t length ,size_t startAddr)
+size_t  spi_flash_partition_manager_pwrite( const void *apHandle,
+					const uint8_t *apData, size_t length, size_t startAddr)
 {
 	size_t offset_in_4k_block;
 	size_t next_dirty_512bytes_block;
@@ -211,20 +229,33 @@ const uint8_t PartitionTable[16] =
 #define START_OF_PARTITION_SECTOR  0x08
 #define SECTORS_PER_FAT  0x08
 #define RESERVED_SECTORS  0x08
-const uint8_t VBR[62] =
+static const uint8_t VBR[62] =
 {
 	0xEB, 0x3C, 0x90,
 	'A', 'N', 'D', 'R', 'E', 'W', '_', 'Z',// system that created partition
 	0x00, 0x02, // bytes per sector
 	0x01, // logical sectors per claster
-	uint16_low8(RESERVED_SECTORS),uint16_high8(RESERVED_SECTORS), // reserved logical sectors (we align to 4k )
+
+	// reserved logical sectors (we align to 4k )
+	uint16_low8(RESERVED_SECTORS),
+	uint16_high8(RESERVED_SECTORS),
+
 	0x02,// number of fats
 	0x00, 0x01, //number of root entries . 0x100=256 entries
-	uint16_low8(REPORTED_SECTORS_ON_PARTITION),uint16_high8(REPORTED_SECTORS_ON_PARTITION),	// partition size																		 0x00, 0x00,
+
+	// partition size
+	uint16_low8(REPORTED_SECTORS_ON_PARTITION),
+	uint16_high8(REPORTED_SECTORS_ON_PARTITION),
+
 	0xF0, // partition type
-	uint16_low8(SECTORS_PER_FAT),uint16_high8(SECTORS_PER_FAT), // sectrors per FAT
-	uint16_low8(SECTORS_PER_TRACK),uint16_high8(SECTORS_PER_TRACK), // sector per track/header
-	uint16_low8(NUM_OF_HEADS),uint16_high8(NUM_OF_HEADS), //number of heads
+
+	// sectrors per FAT
+	uint16_low8(SECTORS_PER_FAT), uint16_high8(SECTORS_PER_FAT),
+
+	// sector per track/header
+	uint16_low8(SECTORS_PER_TRACK), uint16_high8(SECTORS_PER_TRACK),
+
+	uint16_low8(NUM_OF_HEADS), uint16_high8(NUM_OF_HEADS), //number of heads
 	0x01, 0x00, 0x00, 0x00,// hidden sectors (sectors before partition starts)
 
 	0x00, 0x00, 0x00, 0x00, // total number of sectors
@@ -233,74 +264,79 @@ const uint8_t VBR[62] =
 	'F' , 'A' , 'T' , '1' , '2' , ' ' , ' ' , ' ' ,
 };
 
-const uint8_t StartOfFatSection[3] =
+static const uint8_t StartOfFatSection[3] =
 {
 		0xF8,0xFF,0xFF,
 };
 
-const uint8_t StartOfRootSection[32] =
+static const uint8_t StartOfRootSection[32] =
 {
-		'A', 'N', 'D', 'R', 'E', 'W', ' ' , ' ' , ' ' , ' ' , ' ' , 0x08,  0x00, 0x00, 0x00, 0x00,
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xE2, 0x45,	0x2F, 0x45, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	'A', 'N', 'D', 'R', 'E', 'W', ' ' , ' ' , ' ' , ' ' , ' ' , 0x08, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xE2, 0x45, 0x2F,
+	0x45, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
 };
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        SPI_FLASH_PARTITION_MANAGER_Format                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
+/*
+ * Function:       SPI_FLASH_PARTITION_MANAGER_Format
+ *
+ * Parameters:
+ *
+ * Returns:
+ * Side effects:
+ * Description:
+ */
 uint8_t  SPI_FLASH_PARTITION_MANAGER_Format(const void *apHandle)
 {
 	uint8_t *block_data;
 	size_t i,j;
 
-	block_data=(uint8_t *)malloc(0x200);// = 512
+	block_data = (uint8_t *)malloc(0x200);// = 512
+	errors_api_check_if_malloc_secceed(block_data);
 
 	// writing MBR
 	memset(block_data ,0 , 0x200);
 	memcpy(&block_data[0x1be],PartitionTable,16);
-	block_data[0x1fe]=0x55;
-	block_data[0x1ff]=0xaa;
-	spi_flash_partition_manager_pwrite(apHandle, block_data , 0x200 ,0 );
+	block_data[0x1fe] = 0x55;
+	block_data[0x1ff] = 0xaa;
+	spi_flash_partition_manager_pwrite(apHandle, block_data, 0x200, 0 );
 
 	// writing VBR
-	memset(block_data ,0 , 0x200);
-	memcpy(&block_data[0],VBR,62);
-	block_data[0x1fe]=0x55;
-	block_data[0x1ff]=0xaa;
-	spi_flash_partition_manager_pwrite(apHandle  , block_data , 0x200,512 * START_OF_PARTITION_SECTOR/*next 4k*/);
+	memset(block_data, 0, 0x200);
+	memcpy(&block_data[0], VBR,62);
+	block_data[0x1fe] = 0x55;
+	block_data[0x1ff] = 0xaa;
+	spi_flash_partition_manager_pwrite(apHandle, block_data,
+				0x200, 512 * START_OF_PARTITION_SECTOR/*next 4k*/);
 
 	// writing FAT
 	for (j=0;j<2;j++)
 	{
-		memset(block_data ,0 , 0x200);
-		memcpy(&block_data[0],StartOfFatSection,3);
-		spi_flash_partition_manager_pwrite(apHandle ,  block_data , 0x200,
-				512 * (START_OF_PARTITION_SECTOR + RESERVED_SECTORS +(j*SECTORS_PER_FAT)) );
-		memset(block_data ,0 , 0x200);
-		for(i=1;i<SECTORS_PER_FAT;i++)
+		memset(block_data, 0, 0x200);
+		memcpy(&block_data[0], StartOfFatSection, 3);
+		spi_flash_partition_manager_pwrite(apHandle, block_data, 0x200,
+				512 * (START_OF_PARTITION_SECTOR +
+						RESERVED_SECTORS + (j*SECTORS_PER_FAT)) );
+		memset(block_data, 0, 0x200);
+		for(i = 1; i < SECTORS_PER_FAT; i++)
 		{
-			spi_flash_partition_manager_pwrite(apHandle , block_data , 0x200,
-					512 * (START_OF_PARTITION_SECTOR+ RESERVED_SECTORS + (j*SECTORS_PER_FAT) + i) );
+			spi_flash_partition_manager_pwrite(apHandle, block_data, 0x200,
+					512 * (START_OF_PARTITION_SECTOR +
+							RESERVED_SECTORS + (j * SECTORS_PER_FAT) + i) );
 		}
 	}
 
 	// writing root section
+	memset(block_data, 0, 0x200);
+	memcpy(&block_data[0] ,StartOfRootSection, 32);
+	spi_flash_partition_manager_pwrite(apHandle, block_data, 0x200,
+			512 * (START_OF_PARTITION_SECTOR +
+					RESERVED_SECTORS + (2 * SECTORS_PER_FAT))  );
 	memset(block_data ,0 , 0x200);
-	memcpy(&block_data[0],StartOfRootSection,32);
-	spi_flash_partition_manager_pwrite(apHandle , block_data , 0x200,
-			512 * (START_OF_PARTITION_SECTOR + RESERVED_SECTORS +(2*SECTORS_PER_FAT))  );
-	memset(block_data ,0 , 0x200);
-	for(i=1;i<SECTORS_PER_FAT;i++)
+	for(i = 1; i < SECTORS_PER_FAT; i++)
 	{
 		spi_flash_partition_manager_pwrite(apHandle , block_data , 0x200,
-				512 * (START_OF_PARTITION_SECTOR+ RESERVED_SECTORS + (2*SECTORS_PER_FAT) + i)  );
+				512 * (START_OF_PARTITION_SECTOR +
+						RESERVED_SECTORS + (2*SECTORS_PER_FAT) + i)  );
 	}
 
 	free(block_data);
@@ -310,17 +346,15 @@ uint8_t  SPI_FLASH_PARTITION_MANAGER_Format(const void *apHandle)
 
 
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:       SPI_FLASH_PARTITION_MANAGER_Send_Task                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
+/*
+ * Function:       SPI_FLASH_PARTITION_MANAGER_Send_Task
+ *
+ * Parameters:
+ *
+ * Returns:
+ * Side effects:
+ * Description:
+ */
 static void spi_flash_partition_manager_task( void *pvParameters )
 {
 
@@ -328,9 +362,11 @@ static void spi_flash_partition_manager_task( void *pvParameters )
 	{
 		vTaskDelay( 3000 );
 
-		if(SPI_FLASH_PARTITION_MANAGER_NON_EXISTENT_ADDR != currWrite4KblockAddr)
+		if(SPI_FLASH_PARTITION_MANAGER_NON_EXISTENT_ADDR !=
+													currWrite4KblockAddr)
 		{
-			SPI_FLASH_PARTITION_MANAGER_Copy_from_buffer_to_main_area(pvParameters);
+			SPI_FLASH_PARTITION_MANAGER_Copy_from_buffer_to_main_area(
+																pvParameters);
 		}
 
 		os_stack_test();
@@ -339,17 +375,17 @@ static void spi_flash_partition_manager_task( void *pvParameters )
 
 
 }
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        SPI_FLASH_PARTITION_MANAGER_start                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
+
+
+/*
+ * Function:       SPI_FLASH_PARTITION_MANAGER_start
+ *
+ * Parameters:
+ *
+ * Returns:
+ * Side effects:
+ * Description:
+ */
 uint8_t  SPI_FLASH_PARTITION_MANAGER_start(struct dev_desc_t *adev)
 {
 	uint8_t mbr_signiture[2];
@@ -377,19 +413,18 @@ uint8_t  SPI_FLASH_PARTITION_MANAGER_start(struct dev_desc_t *adev)
 }
 
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        spi_flash_partition_manager_ioctl                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-uint8_t spi_flash_partition_manager_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
-		, void * aIoctl_param1 , void * aIoctl_param2)
+/*
+ * Function:       spi_flash_partition_manager_ioctl
+ *
+ * Parameters:
+ *
+ * Returns:
+ * Side effects:
+ * Description:
+ */
+uint8_t spi_flash_partition_manager_ioctl(
+		struct dev_desc_t *adev ,const uint8_t aIoctl_num,
+		void * aIoctl_param1 , void * aIoctl_param2)
 {
 	switch(aIoctl_num)
 	{
@@ -402,7 +437,8 @@ uint8_t spi_flash_partition_manager_ioctl( struct dev_desc_t *adev ,const uint8_
 			break;
 
 		case IOCTL_SPI_FLASH_PARTITION_MANAGER_GET_BLOCK_COUNT :
-			*((uint32_t*)aIoctl_param1) = REPORTED_SECTORS_ON_STORAGE ; // block is 512bytes = 2^9 bytes
+			*((uint32_t*)aIoctl_param1) =
+					REPORTED_SECTORS_ON_STORAGE ;//block is 512bytes = 2^9 bytes
 			break;
 
 		case IOCTL_SPI_FLASH_PARTITION_MANAGER_GET_BLOCK_SIZE :
@@ -414,9 +450,11 @@ uint8_t spi_flash_partition_manager_ioctl( struct dev_desc_t *adev ,const uint8_
 			break;
 
 		case IOCTL_SPI_FLASH_PARTITION_MANAGER_FLUSH :
-			if(SPI_FLASH_PARTITION_MANAGER_NON_EXISTENT_ADDR != currWrite4KblockAddr)
+			if (SPI_FLASH_PARTITION_MANAGER_NON_EXISTENT_ADDR
+													!= currWrite4KblockAddr)
 			{
-				SPI_FLASH_PARTITION_MANAGER_Copy_from_buffer_to_main_area(aHandle);
+				SPI_FLASH_PARTITION_MANAGER_Copy_from_buffer_to_main_area(
+																	aHandle);
 			}
 			break;
 
@@ -426,20 +464,19 @@ uint8_t spi_flash_partition_manager_ioctl( struct dev_desc_t *adev ,const uint8_
 	return 0;
 }
 
-#if SPI_FLASH_PARTITION_MANAGER_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
+#if SPI_FLASH_PARTITION_MANAGER_CONFIG_NUM_OF_DYNAMIC_INSTANCES > 0
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        SPI_FLASH_PARTITION_MANAGER_API_Init_Dev_Descriptor                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-uint8_t  spi_flash_partition_manager_api_init_dev_descriptor(struct dev_desc_t *aDevDescriptor)
+/*
+ * Function:       spi_flash_partition_manager_api_init_dev_descriptor
+ *
+ * Parameters:
+ *
+ * Returns:
+ * Side effects:
+ * Description:
+ */
+uint8_t  spi_flash_partition_manager_api_init_dev_descriptor(
+		struct dev_desc_t *aDevDescriptor)
 {
 	if(NULL == aDevDescriptor) return 1;
 

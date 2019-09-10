@@ -10,6 +10,7 @@
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 #include "_project_func_declarations.h"
+#include "errors_api.h"
 
 #include "dev_management_api.h" // for device manager defines and typedefs
 #define DEBUG
@@ -167,16 +168,18 @@ uint8_t http_callback(struct dev_desc_t *adev ,const uint8_t aCallback_num
 
 
 		str_len -= cmdStartPos;
-		pSendData=(uint8_t*)malloc(str_len * sizeof(uint8_t));
+		pSendData = (uint8_t*)malloc(str_len * sizeof(uint8_t));
+		errors_api_check_if_malloc_secceed(pSendData);
 
-		memcpy(pSendData,(uint8_t*)&requestStr[cmdStartPos],str_len);
+		memcpy(pSendData, (uint8_t*)&requestStr[cmdStartPos], str_len);
 
 		xMessage.low_level_socket = (struct dev_desc_t *)aCallback_param1;
-		xMessage.len=str_len;
-		xMessage.pData=pSendData;
+		xMessage.len = str_len;
+		xMessage.pData = pSendData;
 
 
-		if(pdTRUE !=xQueueSendFromISR( xQueue, ( void * ) &xMessage,  &xHigherPriorityTaskWoken ))
+		if(pdTRUE != xQueueSendFromISR( xQueue,
+							( void * ) &xMessage,  &xHigherPriorityTaskWoken ))
 		{
 	        free(pSendData);
 	        return 1;

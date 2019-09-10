@@ -9,6 +9,7 @@
 /********  includes *********************/
 #include "_project_typedefs.h"
 #include "_project_defines.h"
+#include "errors_api.h"
 
 #include "dsp_management_api.h"
 
@@ -127,7 +128,7 @@ uint8_t  fft_api_init_dsp_descriptor(struct dsp_module_inst_t aDspDescriptor)
 	if(NULL == aDspDescriptor) return 1;
 
 	pInstance = (struct FFT_Instance_t *)malloc(sizeof(FFT_Instance_t));
-	if(NULL == pInstance) return 1;
+	errors_api_check_if_malloc_secceed(pInstance);
 
 	aDspDescriptor->handle = pInstance;
 	aDspDescriptor->ioctl = fft_ioctl;

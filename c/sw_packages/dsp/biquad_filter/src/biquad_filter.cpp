@@ -10,6 +10,9 @@
 /********  includes *********************/
 #include "_project_typedefs.h"
 #include "_project_defines.h"
+extern "C" {
+#include "errors_api.h"
+}
 
 #include "dsp_management_api.h"
 #include "dsp_management_internal_api.h"
@@ -92,11 +95,13 @@ static void set_number_of_bands(
 	free(handle->band_set_params);
 
 	biquad_bands_coeffs = (real_t *)malloc(	5 * sizeof(real_t) * num_of_bands);
+	errors_api_check_if_malloc_secceed(biquad_bands_coeffs);
 	handle->biquad_bands_coeffs = biquad_bands_coeffs;
 
 	p_band_set_params =
 		(struct  biquad_filter_api_band_set_params_t *)malloc(num_of_bands *
 						sizeof(struct  biquad_filter_api_band_set_params_t));
+	errors_api_check_if_malloc_secceed(p_band_set_params);
 	handle->band_set_params = p_band_set_params;
 
 	for (i = 0; i < num_of_bands; i++)

@@ -11,6 +11,7 @@
 
 /********  includes *********************/
 #include "_project_tasks_defines.h"
+#include "errors_api.h"
 
 #include "dev_management_api.h"
 #include "os_wrapper.h"
@@ -454,10 +455,8 @@ static void create_button_group(struct button_manager_config_t *config_handle,
 	num_of_gpio_devs = buttons_manager_group->gpio_dev_arr_size;
 	gpio_dev_arr = (struct dev_desc_t **)malloc(
 					num_of_gpio_devs * sizeof(struct dev_desc_t *));
-	if (NULL == gpio_dev_arr)
-	{
-		CRITICAL_ERROR("no memory");
-	}
+	errors_api_check_if_malloc_secceed(gpio_dev_arr);
+
 	memcpy(gpio_dev_arr, buttons_manager_group->gpio_dev_arr,
 						num_of_gpio_devs * sizeof(struct dev_desc_t *));
 	config_handle->gpio_devs_arr = gpio_dev_arr;
@@ -465,10 +464,8 @@ static void create_button_group(struct button_manager_config_t *config_handle,
 
 	curr_gpio_state_arr = (struct gpio_api_read_t *)malloc(
 					num_of_gpio_devs * sizeof(struct gpio_api_read_t));
-	if (NULL == curr_gpio_state_arr)
-	{
-		CRITICAL_ERROR("no memory");
-	}
+	errors_api_check_if_malloc_secceed(curr_gpio_state_arr);
+
 	runtime_handle->curr_gpio_state_arr = curr_gpio_state_arr;
 	runtime_handle->state = STATE_ADDING_REPORTED_EVENTS;
 }
@@ -560,10 +557,8 @@ static void set_gpio_states_for_event(
 			(struct   button_manager_requested_gpio_values_t *) malloc(
 					num_of_gpio_devs *
 					sizeof(struct button_manager_requested_gpio_values_t));
-	if (NULL == req_gpio_values_arr)
-	{
-		CRITICAL_ERROR("no memory");
-	}
+	errors_api_check_if_malloc_secceed(req_gpio_values_arr);
+
 	btn_event->req_gpio_values_arr = req_gpio_values_arr;
 	gpio_dev_arr = config_handle->gpio_devs_arr;
 	for (i = 0; i < num_of_gpio_devs; i++)
@@ -572,10 +567,8 @@ static void set_gpio_states_for_event(
 							IOCTL_GPIO_PIN_READ, &gpio_read_data);
 		values_arr_size = gpio_read_data.values_arr_size;
 		pin_bitwise_requested_values_arr = (uint8_t *)malloc(values_arr_size);
-		if (NULL == pin_bitwise_requested_values_arr)
-		{
-			CRITICAL_ERROR("no memory");
-		}
+		errors_api_check_if_malloc_secceed(pin_bitwise_requested_values_arr);
+
 		req_gpio_values = &req_gpio_values_arr[i];
 		req_gpio_values->values_arr_size = values_arr_size;
 		memcpy(pin_bitwise_requested_values_arr,

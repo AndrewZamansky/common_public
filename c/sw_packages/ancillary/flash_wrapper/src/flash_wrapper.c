@@ -10,6 +10,7 @@
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 #include "_project_tasks_defines.h"
+#include "errors_api.h"
 
 #include "dev_management_api.h"
 
@@ -220,6 +221,7 @@ uint8_t flash_wrapper_ioctl(struct dev_desc_t *adev,
 				IOCTL_FLASH_WRAPPER_GET_ERASE_SIZE, &erase_block_size);
 		runtime_handle->erase_block_size = erase_block_size;
 		runtime_handle->write_buffer = (uint8_t*)malloc(erase_block_size);
+		errors_api_check_if_malloc_secceed(runtime_handle->write_buffer);
 		DEV_IOCTL_1_PARAMS(hw_flash_dev,
 				IOCTL_FLASH_WRAPPER_GET_FLASH_SIZE, &flash_size);
 		runtime_handle->flash_size = flash_size;

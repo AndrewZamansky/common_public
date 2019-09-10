@@ -10,6 +10,7 @@
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 #include "_project_func_declarations.h"
+#include "errors_api.h"
 
 #include "dev_management_api.h" // for device manager defines and typedefs
 #define DEBUG
@@ -390,7 +391,9 @@ uint8_t Config_API_Init(void)
 	uint32_t braces_stack;
 
 	tokens=(jsmntok_t*)malloc(sizeof(jsmntok_t)*MAX_JSMN_TOKEN_ALLOWED);
+	errors_api_check_if_malloc_secceed(tokens);
 	cfg_buff=(uint8_t*)malloc(MAX_JSMN_BUFFER_SIZE);
+	errors_api_check_if_malloc_secceed(cfg_buff);
 
 	if(FR_OK!=f_open(&fp,CONFIG_FILE_NAME, FA_READ))
 	{

@@ -9,6 +9,7 @@
 /*!<Includes */
 #include "_project_typedefs.h"
 #include "_project_defines.h"
+#include "errors_api.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -445,10 +446,7 @@ static void fill_association_descriptor(struct usb_audio_class_cfg_t *cfg_hndl,
 	uint8_t num_of_interfaces;
 
 	iad = (uint8_t*)malloc(sizeof(interface_association_descriptor)) ;
-	if (NULL == iad)
-	{
-		CRITICAL_ERROR("no memory");
-	}
+	errors_api_check_if_malloc_secceed(iad);
 	memcpy(iad, interface_association_descriptor,
 						sizeof(interface_association_descriptor));
 	iad[2] = usb_descriptors_alloc_interfaces->interfaces_num[0];
@@ -501,10 +499,7 @@ static void fill_control_descriptor(struct usb_audio_class_cfg_t *cfg_hndl,
 	control_interface_size =
 			control_interface_start_size + termianl_descriptors_size;
 	i_ctl = (uint8_t*)malloc(control_interface_size);
-	if (NULL == i_ctl)
-	{
-		CRITICAL_ERROR("no memory");
-	}
+	errors_api_check_if_malloc_secceed(i_ctl);
 
 	memcpy(i_ctl, audio_control_interface_start, control_interface_start_size);
 	i_ctl[2] = usb_descriptors_alloc_interfaces->interfaces_num[0];
@@ -579,16 +574,10 @@ static void update_interfaces_desc(struct dev_desc_t *adev,
 	if (0 != enable_recording)
 	{
 		i_in_alt0 = (uint8_t*)malloc(sizeof(in_interface)) ;
-		if (NULL == i_in_alt0)
-		{
-			CRITICAL_ERROR("no memory");
-		}
+		errors_api_check_if_malloc_secceed(i_in_alt0);
 		memcpy(i_in_alt0, in_interface, sizeof(in_interface));
 		i_in_alt1 = (uint8_t*)malloc(sizeof(in_alt_interface)) ;
-		if (NULL == i_in_alt1)
-		{
-			CRITICAL_ERROR("no memory");
-		}
+		errors_api_check_if_malloc_secceed(i_in_alt1);
 		memcpy(i_in_alt1, in_alt_interface, sizeof(in_alt_interface));
 		i_in_alt0[2] = usb_descriptors_alloc_interfaces->interfaces_num[
 															curr_interface_idx];
@@ -602,16 +591,10 @@ static void update_interfaces_desc(struct dev_desc_t *adev,
 	if (USB_AUDIO_CLASS_NO_PLAYBACK != playback_type)
 	{
 		i_out_alt0 = (uint8_t*)malloc(sizeof(out_interface)) ;
-		if (NULL == i_out_alt0)
-		{
-			CRITICAL_ERROR("no memory");
-		}
+		errors_api_check_if_malloc_secceed(i_out_alt0);
 		memcpy(i_out_alt0, out_interface, sizeof(out_interface));
 		i_out_alt1 = (uint8_t*)malloc(sizeof(out_alt_interface)) ;
-		if (NULL == i_out_alt1)
-		{
-			CRITICAL_ERROR("no memory");
-		}
+		errors_api_check_if_malloc_secceed(i_out_alt1);
 		memcpy(i_out_alt1, out_alt_interface, sizeof(out_alt_interface));
 		i_out_alt0[2] = usb_descriptors_alloc_interfaces->interfaces_num[
 															curr_interface_idx];
