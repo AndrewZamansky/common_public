@@ -194,10 +194,8 @@ uint8_t gpio_i94xxx_register_interrupt(struct dev_desc_t *adev,
 	new_callback_devices_list = (struct dev_desc_t **) realloc(
 			*callback_devices_list,
 			num_of_callback_devices * sizeof(struct dev_desc_t *));
-	if (NULL == new_callback_devices_list)
-	{
-		CRITICAL_ERROR("no memory");
-	}
+	errors_api_check_if_malloc_secceed(new_callback_devices_list);
+
 	new_callback_devices_list[num_of_callback_devices - 1] = adev;
 	*p_num_of_callback_devices = num_of_callback_devices;
 	*callback_devices_list = new_callback_devices_list;

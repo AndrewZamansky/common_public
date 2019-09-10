@@ -174,6 +174,8 @@ void _dsp_register_new_module_type(const char *a_module_name,
 	dsp_module_type_array =
 			(struct dsp_module_type_t*)os_safe_realloc(dsp_module_type_array,
 			sizeof(struct dsp_module_type_t) * size_of_dsp_module_type_array);
+	errors_api_check_if_malloc_secceed(dsp_module_type_array);
+
 	p_new_dsp_module =
 			&dsp_module_type_array[size_of_dsp_module_type_array - 1];
 	p_new_dsp_module->name = a_module_name;

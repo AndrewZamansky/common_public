@@ -22,8 +22,6 @@ extern "C" {
 #include "management_api.h"
 #include "os_wrapper.h"
 
-#include "_ArduinoSdSpi_prerequirements_check.h"
-
 #include "SdSpiCard.h"
 
 extern "C" {
@@ -38,7 +36,13 @@ extern "C" {
 
 
 #define MAX_NUMBER_OF_ARDUINO_SPI_SD_INSTANCES   2
-uint8_t g_num_dev_inst = 0;
+
+
+// systick is a struct that has something to increment every millisecond
+// TODO : move to instance member ; need to be moved to timer wrapper
+extern struct dev_desc_t *systick_dev;
+
+static uint8_t g_num_dev_inst = 0;
 
 /********  types  *********************/
 
@@ -46,101 +50,131 @@ struct lookup_table_t {
 	struct dev_desc_t *spi_dev;
 };
 
-lookup_table_t lookup_table[MAX_NUMBER_OF_ARDUINO_SPI_SD_INSTANCES] = {NULL};
+static lookup_table_t
+	lookup_table[MAX_NUMBER_OF_ARDUINO_SPI_SD_INSTANCES] = {NULL};
 
 /********  externals *********************/
 
+// following variables are used in external library and need to be declared
+Particle_class Particle;
+SPI_class arduino_spi_inst;
+
+
 extern "C" {
-
-
 
 	static SdSpiCardEX *SdSpiCard_inst;
 
-
-
-	uint8_t cSdSpiCardEX_begin(SdSpiDriver* spi, uint8_t csPin, SPISettings spiSettings)
-	{
-		if(SdSpiCard_inst->begin(spi, csPin, spiSettings))
-			return 1;
-		else return 0;
-	}
-
-
+	uint8_t cSdSpiCardEX_begin(
+		SdSpiDriver* spi, uint8_t csPin, SPISettings spiSettings);
 
 	uint8_t ArduinoSdSpi_pwrite(struct dev_desc_t *adev,  //Device in .h file
 			const uint8_t *apData,  /* Data buffer to write data from */
 			size_t aLength, 		/* Amount of data to write in blocks*512 */
-			size_t  aOffset)   		/* Position*512 to write into device*/
-	{
-		struct arduino_sd_spi_runtime_t *runtime_handle;
-
-		runtime_handle = (struct arduino_sd_spi_runtime_t *)
-							    DEV_GET_RUNTIME_DATA_POINTER(adev);
-
-		// This should be handled by setup
-		//config_handle->sd_spi_inst = (void*) (new SdSpiCardEX);
-
-		SdSpiCard_inst = (SdSpiCardEX *)runtime_handle->sd_spi_inst;
-
-
-		/**  bool writeBlocks(uint32_t block, const uint8_t* src, size_t nb);
-		* Write multiple 512 byte blocks to an SD card.
-		*
-		* \param[in] block Logical block to be written.
-		* \param[in] nb Number of blocks to be written.
-		* \param[in] src Pointer to the location of the data to be written.
-		* \return The value true is returned for success and
-		* the value false is returned for failure.
-		*/
-
-		if (SdSpiCard_inst->writeBlocks(
-				aOffset / 512, (uint8_t *)apData, (size_t)(aLength / 512)))
-		{
-			return 1;
-		}
-		else return 0;
-
-
-	}
+			size_t  aOffset);   		/* Position*512 to write into device*/
 
 	uint8_t ArduinoSdSpi_pread(struct dev_desc_t *adev,  //Device in .h file
 			uint8_t *apData,  /* Data buffer to read data into */
 			size_t aLength, 		/* Amount of data to read in blocks*512 */
-			size_t  aOffset)   		/* Position*512 to read from device*/
+			size_t  aOffset);   		/* Position*512 to read from device*/
+
+	uint8_t ArduinoSdSpi_ioctl( struct dev_desc_t *adev ,
+		const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2);
+}
+
+
+uint8_t cSdSpiCardEX_begin(
+		SdSpiDriver* spi, uint8_t csPin, SPISettings spiSettings)
+{
+	if(SdSpiCard_inst->begin(spi, csPin, spiSettings))
 	{
-		struct arduino_sd_spi_runtime_t *runtime_handle;
-
-		runtime_handle = (struct arduino_sd_spi_runtime_t *)
-							    DEV_GET_RUNTIME_DATA_POINTER(adev);
-
-		// This should be handled by setup
-		//config_handle->sd_spi_inst = (void*) (new SdSpiCardEX);
-
-		SdSpiCard_inst = (SdSpiCardEX *)runtime_handle->sd_spi_inst;
-
-
-		/**  bool readBlocks(uint32_t block, uint8_t* dst, size_t nb);
-		* Read multiple 512 byte blocks from an SD card.
-		*
-		* \param[in] block Logical block to be read.
-		* \param[in] nb Number of blocks to be read.
-		* \param[out] dst Pointer to the location that will receive the data.
-		* \return The value true is returned for success and
-		* the value false is returned for failure.
-		*/
-
-		if (SdSpiCard_inst->readBlocks(
-				aOffset / 512, (uint8_t *)apData, (size_t)(aLength / 512)))
-		{
-			return 1;
-		}
-		else return 0;
+		return 1;
+	}
+	else
+	{
+		return 0;
 	}
 }
 
-Particle_class Particle;
 
-SPI_class arduino_spi_inst;
+
+uint8_t ArduinoSdSpi_pwrite(struct dev_desc_t *adev,  //Device in .h file
+		const uint8_t *apData,  /* Data buffer to write data from */
+		size_t aLength, 		/* Amount of data to write in blocks*512 */
+		size_t  aOffset)   		/* Position*512 to write into device*/
+{
+	struct arduino_sd_spi_runtime_t *runtime_handle;
+
+	runtime_handle = (struct arduino_sd_spi_runtime_t *)
+							DEV_GET_RUNTIME_DATA_POINTER(adev);
+
+	// This should be handled by setup
+	//config_handle->sd_spi_inst = (void*) (new SdSpiCardEX);
+
+	SdSpiCard_inst = (SdSpiCardEX *)runtime_handle->sd_spi_inst;
+
+
+	/**  bool writeBlocks(uint32_t block, const uint8_t* src, size_t nb);
+	* Write multiple 512 byte blocks to an SD card.
+	*
+	* \param[in] block Logical block to be written.
+	* \param[in] nb Number of blocks to be written.
+	* \param[in] src Pointer to the location of the data to be written.
+	* \return The value true is returned for success and
+	* the value false is returned for failure.
+	*/
+
+	if (SdSpiCard_inst->writeBlocks(
+			aOffset / 512, (uint8_t *)apData, (size_t)(aLength / 512)))
+	{
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+
+
+}
+
+
+uint8_t ArduinoSdSpi_pread(struct dev_desc_t *adev,  //Device in .h file
+		uint8_t *apData,  /* Data buffer to read data into */
+		size_t aLength, 		/* Amount of data to read in blocks*512 */
+		size_t  aOffset)   		/* Position*512 to read from device*/
+{
+	struct arduino_sd_spi_runtime_t *runtime_handle;
+
+	runtime_handle = (struct arduino_sd_spi_runtime_t *)
+							DEV_GET_RUNTIME_DATA_POINTER(adev);
+
+	// This should be handled by setup
+	//config_handle->sd_spi_inst = (void*) (new SdSpiCardEX);
+
+	SdSpiCard_inst = (SdSpiCardEX *)runtime_handle->sd_spi_inst;
+
+
+	/**  bool readBlocks(uint32_t block, uint8_t* dst, size_t nb);
+	* Read multiple 512 byte blocks from an SD card.
+	*
+	* \param[in] block Logical block to be read.
+	* \param[in] nb Number of blocks to be read.
+	* \param[out] dst Pointer to the location that will receive the data.
+	* \return The value true is returned for success and
+	* the value false is returned for failure.
+	*/
+
+	if (SdSpiCard_inst->readBlocks(
+			aOffset / 512, (uint8_t *)apData, (size_t)(aLength / 512)))
+	{
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+
 
 
 // should not be used, but needs to be implemented
@@ -159,14 +193,11 @@ bool digitalWrite(int pin, int logic)
 	return 1;
 }
 
+
 // should not be used, but needs to be implemented
 void pinMode(uint8_t pin, uint8_t mode)
 {
 }
-
-// systick is a struct that has something to increment every millisecond
-// TODO : move to instance member ; need to be moved to timer wrapper
-extern struct dev_desc_t *systick_dev;
 
 int millis()
 {
@@ -176,6 +207,7 @@ int millis()
 				IOCTL_GET_CURRENT_TIMER_VALUE, (void*)&curr_counter);
 	return (uint32_t)curr_counter;
 }
+
 
 // needed only to call sysCalls::yield (not needed for now)
 uint32_t micros()
@@ -193,6 +225,7 @@ void SdSpiAltDriver::begin(uint8_t csPin)
 void SdSpiAltDriver::activate()
 {
 }
+
 
 void SdSpiAltDriver::deactivate()
 {
@@ -231,11 +264,6 @@ void SdSpiAltDriver::send(const uint8_t* buf, size_t n)
 }
 
 
-extern "C" {
-	uint8_t ArduinoSdSpi_ioctl( struct dev_desc_t *adev ,
-		const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2);
-}
-
 
 
 /**
@@ -243,8 +271,8 @@ extern "C" {
  *
  * return:
  */
-uint8_t ArduinoSdSpi_ioctl( struct dev_desc_t *adev ,
-		const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
+uint8_t ArduinoSdSpi_ioctl( struct dev_desc_t *adev,
+		const uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2)
 {
 	struct arduino_sd_spi_cfg_t *config_handle;
 	struct arduino_sd_spi_runtime_t *runtime_handle;
@@ -266,11 +294,14 @@ uint8_t ArduinoSdSpi_ioctl( struct dev_desc_t *adev ,
 		//Wait 1ms for sdcard to power up at minimum.
 		os_delay_ms(1);
 
-		DEV_IOCTL_0_PARAMS(spi_dev , IOCTL_DEVICE_START );
-
-		if ((NULL == runtime_handle->sd_spi_inst) &&
-				 (MAX_NUMBER_OF_ARDUINO_SPI_SD_INSTANCES > g_num_dev_inst))
+		if(MAX_NUMBER_OF_ARDUINO_SPI_SD_INSTANCES <= g_num_dev_inst)
 		{
+			CRITICAL_ERROR("max number of spi sd instances reached.");
+		}
+
+		if (NULL == runtime_handle->sd_spi_inst )
+		{
+			DEV_IOCTL_0_PARAMS(spi_dev, IOCTL_DEVICE_START );
 
 			num_dev_inst = g_num_dev_inst++;
 			runtime_handle->num_dev_inst = num_dev_inst;
@@ -279,16 +310,18 @@ uint8_t ArduinoSdSpi_ioctl( struct dev_desc_t *adev ,
 
 			lookup_table[num_dev_inst].spi_dev = spi_dev;
 			SdSpiCard_inst = (SdSpiCardEX *)runtime_handle->sd_spi_inst;
-		}
-		num_dev_inst = runtime_handle->num_dev_inst ;
 
-		{
-		SPISettings spiSettings(0,0,0);
-		cSdSpiCardEX_begin(
-				(SdSpiDriver *)runtime_handle->SdSpiAltDriver_obj,
-				num_dev_inst, spiSettings);
+			num_dev_inst = runtime_handle->num_dev_inst ;
+
+			{
+			SPISettings spiSettings(0,0,0);
+			cSdSpiCardEX_begin(
+					(SdSpiDriver *)runtime_handle->SdSpiAltDriver_obj,
+					num_dev_inst, spiSettings);
+			}
+			DEV_IOCTL_1_PARAMS(
+					spi_dev, IOCTL_SPI_API_SET_CLK, (void *)clk_freq);
 		}
-		DEV_IOCTL_1_PARAMS(spi_dev , IOCTL_SPI_API_SET_CLK, (void *)clk_freq );
 		break;
 
 	default :

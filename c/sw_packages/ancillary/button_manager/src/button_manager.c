@@ -605,10 +605,8 @@ static button_manager_reported_event_handle_t
 	num_of_events++;
 	btn_events_arr = (struct btn_event_t *)realloc(btn_events_arr,
 			 num_of_events * sizeof(struct btn_event_t));
-	if (NULL == btn_events_arr)
-	{
-		CRITICAL_ERROR("no memory");
-	}
+	errors_api_check_if_malloc_secceed(btn_events_arr);
+
 	config_handle->num_of_events = num_of_events;
 	new_btn_event = &btn_events_arr[num_of_events - 1];
 	new_btn_event->report_config = btn_add_event->report_config;

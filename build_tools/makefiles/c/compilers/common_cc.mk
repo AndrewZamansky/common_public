@@ -128,8 +128,15 @@ $(CURR_OBJ_DIR)/%.o: %.c $(ALL_DEPS) $(C_ARGS_FILE)
 	$(info .    Compiling $(SRC_FILE))
 	$(C_COMPILATION_CMD) $(CC_OUTPUT_FLAG_AND_FILE) $<
 
+
+ifdef CONFIG_GCC
+    ARGS_CONTENT :=$(subst \,/,$(ALL_INCLUDE_DIRS))
+else
+    ARGS_CONTENT :=$(ALL_INCLUDE_DIRS)
+endif
+
 $(C_ARGS_FILE): $(ALL_DEPS)
-	$(eval DUMMY := $(call fwrite,$(C_ARGS_FILE),$(ALL_INCLUDE_DIRS),TRUNCATE))
+	$(eval DUMMY := $(call fwrite,$(C_ARGS_FILE),$(ARGS_CONTENT),TRUNCATE))
 
 
 
