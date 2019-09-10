@@ -304,8 +304,11 @@ static void I2C_MasterTX(struct i2c_i94xxx_cfg_t *cfg_hndl,
 
 	if (end_of_transmition)
 	{
-		I2C_DisableInt(i2c);
+		//NOTE: Must declare STOP before disabling interrupt due to
+		//      unknown bug that will randomly make the I2C bus freeze at
+		//      I2C_GET_STATUS(i2c_regs) = 0x00000000
 		I2C_STOP(i2c);// SI bit is cleared inside function call
+		I2C_DisableInt(i2c);
 		runtime_handle->tx_data = NULL;
 		os_queue_send_without_wait(
 				runtime_handle->WaitQueue, (void *) &dummy_msg);
@@ -462,8 +465,11 @@ static void I2C_MasterRX(struct i2c_i94xxx_cfg_t *cfg_hndl,
 
 	if (end_of_transmition)
 	{
-		I2C_DisableInt(i2c);
+		//NOTE: Must declare STOP before disabling interrupt due to
+		//      unknown bug that will randomly make the I2C bus freeze at
+		//      I2C_GET_STATUS(i2c_regs) = 0x00000000
 		I2C_STOP(i2c);// SI bit is cleared inside function call
+		I2C_DisableInt(i2c);
 		runtime_handle->rx_data = NULL;
 		os_queue_send_without_wait(
 				runtime_handle->WaitQueue, (void *) &dummy_msg);
