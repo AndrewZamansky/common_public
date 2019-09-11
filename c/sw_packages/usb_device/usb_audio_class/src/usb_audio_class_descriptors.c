@@ -530,8 +530,9 @@ static void fill_control_descriptor(struct usb_audio_class_cfg_t *cfg_hndl,
 		memcpy(&i_ctl[control_interface_start_size],
 			audio_out_terminal_descriptors,
 			sizeof(audio_out_terminal_descriptors));
+		curr_interface_idx++;
 	}
-	i_ctl[16] = curr_interface_idx;   // number of all streaming interfaces
+	i_ctl[16] = curr_interface_idx - 1;   // number of all streaming interfaces
 	usb_desc_add_interface.interface_desc = i_ctl;
 	usb_desc_add_interface.interface_desc_size = control_interface_size;
 	usb_desc_add_interface.alt_interface_desc = NULL;
