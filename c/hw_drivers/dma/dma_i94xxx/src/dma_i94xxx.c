@@ -8,6 +8,7 @@
 
 #include "_project_typedefs.h"
 #include "_project_defines.h"
+#include "errors_api.h"
 
 #include "dev_management_api.h"
 
@@ -313,7 +314,7 @@ static void init_buffers(struct dma_i94xxx_cfg_t *cfg_hndl,
 		struct dma_i94xxx_runtime_t *runtime_hndl)
 {
 	uint8_t i;
-	uint8_t buff;
+	uint8_t *buff;
 	uint8_t num_of_buffers;
 
 	num_of_buffers = cfg_hndl->num_of_buffers;
@@ -322,18 +323,14 @@ static void init_buffers(struct dma_i94xxx_cfg_t *cfg_hndl,
 	{
 		runtime_hndl->buff =
 				(uint8_t**)malloc(sizeof(uint8_t*) * num_of_buffers);
+		errors_api_check_if_malloc_secceed(runtime_hndl->buff);
 		runtime_hndl->buff_status = (uint8_t*)malloc(num_of_buffers);
-		if (NULL == runtime_hndl->buff_status)
-		{
-			CRITICAL_ERROR("not enough memory in heap");
-		}
+		errors_api_check_if_malloc_secceed(runtime_hndl->buff_status);
+
 		for (i = 0; i < num_of_buffers; i++)
 		{
 			buff = (uint8_t*)malloc(cfg_hndl->buff_size);
-			if (NULL == buff)
-			{
-				CRITICAL_ERROR("not enough memory in heap");
-			}
+			errors_api_check_if_malloc_secceed(buff);
 			runtime_hndl->buff[i] = buff;
 		}
 	}
