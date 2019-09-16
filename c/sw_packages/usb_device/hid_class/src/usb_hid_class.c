@@ -27,6 +27,8 @@
 
 
 #define TO_BE_SET_AUTOMATICALLY   0
+#define AUTO_SET_PCKT_SIZE_MSB   0x00
+#define AUTO_SET_PCKT_SIZE_LSB   0x00
 
 #define B3VAL(x) (x&0xFF), ((x >>8) & 0xFF), ((x >>16) & 0xFF)
 
@@ -48,9 +50,6 @@ static uint8_t const interface_association_descriptor[]=
 	0x00    , // bFunctionProtocol
 	0x02    ,//  iFunction
 };
-
-#define IN_MAX_PKT_SIZE     64
-#define OUT_MAX_PKT_SIZE    64
 
 #define USB_INTERFACE_DESCRIPTOR_TYPE 0x04
 #define USB_ENDPOINT_DESCRIPTOR_TYPE  0x05
@@ -106,8 +105,8 @@ static const uint8_t hid_interface[] =
 	(TO_BE_SET_AUTOMATICALLY | 0x08), /* bEndpointAddress : Input */
 	0x03,         /* bmAttributes : interrupt*/
 	/* wMaxPacketSize */
-	IN_MAX_PKT_SIZE & 0x00FF,
-	(IN_MAX_PKT_SIZE & 0xFF00) >> 8,
+	AUTO_SET_PCKT_SIZE_LSB,             /* wMaxPacketSize: */
+	AUTO_SET_PCKT_SIZE_MSB,
 	10,        /* bInterval */
 
 	/* EP Descriptor: interrupt out. */
@@ -116,8 +115,8 @@ static const uint8_t hid_interface[] =
 	TO_BE_SET_AUTOMATICALLY,   /* bEndpointAddress */
 	0x03,         /* bmAttributes : interrupt */
 	/* wMaxPacketSize */
-	OUT_MAX_PKT_SIZE & 0x00FF,
-	(OUT_MAX_PKT_SIZE & 0xFF00) >> 8,
+	AUTO_SET_PCKT_SIZE_LSB,             /* wMaxPacketSize: */
+	AUTO_SET_PCKT_SIZE_MSB,
 	10     /* bInterval */
 };
 
@@ -177,15 +176,18 @@ size_t usb_hid_pwrite(struct dev_desc_t *adev,
 	struct set_data_to_in_endpoint_t set_data_to_in_endpoint;
 	struct usb_hid_class_runtime_t  *runtime_hndl;
 	size_t sentLen;
+	uint16_t max_host_out_data_packet_size;
+
 
 	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
 	runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(adev);
 
 	usb_hw = cfg_hndl->usb_hw;
+	max_host_out_data_packet_size = cfg_hndl->max_host_out_data_packet_size;
 
-	if (aLength > OUT_MAX_PKT_SIZE)
+	if (aLength > max_host_out_data_packet_size)
 	{
-		sentLen = OUT_MAX_PKT_SIZE;
+		sentLen = max_host_out_data_packet_size;
 	}
 	else
 	{
@@ -313,9 +315,13 @@ static void configure_endpoints(struct dev_desc_t *adev,
 	uint16_t   max_pckt_sizes[2];
 	uint8_t in_endpoint_num;
 	uint8_t out_endpoint_num;
+	uint16_t max_host_in_data_packet_size;
+	uint16_t max_host_out_data_packet_size;
 
 	runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(adev);
 	usb_hw = cfg_hndl->usb_hw;
+	max_host_in_data_packet_size = cfg_hndl->max_host_in_data_packet_size;
+	max_host_out_data_packet_size = cfg_hndl->max_host_out_data_packet_size;
 
 
 	set_endpoints.num_of_endpoints = 2;
@@ -331,8 +337,8 @@ static void configure_endpoints(struct dev_desc_t *adev,
 	set_endpoints.endpoint_request_callback_func =
 							endpoint_request_callback_func;
 	set_endpoints.callback_dev = adev;
-	max_pckt_sizes[0] = IN_MAX_PKT_SIZE;
-	max_pckt_sizes[1] = OUT_MAX_PKT_SIZE;
+	max_pckt_sizes[0] = max_host_in_data_packet_size;
+	max_pckt_sizes[1] = max_host_out_data_packet_size;
 	set_endpoints.max_pckt_sizes = max_pckt_sizes;
 	endpoints_type_arr[0] = USB_DEVICE_API_EP_TYPE_INTERRUPT_IN;
 	endpoints_type_arr[1] = USB_DEVICE_API_EP_TYPE_INTERRUPT_OUT;
@@ -342,7 +348,12 @@ static void configure_endpoints(struct dev_desc_t *adev,
 	in_endpoint_num = endpoints_num_arr[0];
 	out_endpoint_num = endpoints_num_arr[1];
 	interface[18 + 2] = 0x80 | in_endpoint_num;// 0x80 for IN endpoint
+	interface[18 + 4] = max_host_in_data_packet_size & 0xFF;
+	interface[18 + 5] = (max_host_in_data_packet_size >> 8) & 0xFF;
+
 	interface[25 + 2] = out_endpoint_num;
+	interface[25 + 4] = max_host_out_data_packet_size & 0xFF;
+	interface[25 + 5] = (max_host_out_data_packet_size >> 8) & 0xFF;
 	runtime_hndl->in_endpoint_num = endpoints_num_arr[0];
 
 }
@@ -451,7 +462,7 @@ uint8_t usb_hid_class_ioctl( struct dev_desc_t *adev, uint8_t aIoctl_num,
 		runtime_hndl->tx_on = 0;
 		break;
 	case IOCTL_USB_HID_GET_IN_ENDPOINT_SIZE:
-		*(uint16_t *)aIoctl_param1 = IN_MAX_PKT_SIZE;
+		*(uint16_t *)aIoctl_param1 = cfg_hndl->max_host_in_data_packet_size;
 		break;
 	default :
 		return 1;
