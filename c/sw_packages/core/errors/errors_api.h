@@ -8,6 +8,6 @@
 
 /**********  define API  types ************/
 
-void errors_api_check_if_malloc_secceed(void *pointer);
+void errors_api_check_if_malloc_succeed(void *pointer);
 
 #endif

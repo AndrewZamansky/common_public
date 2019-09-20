@@ -250,9 +250,9 @@ void demo_LineIn(void)
 	 buffer_size = num_of_words_in_buffer_per_chenel *
 			 	 	 	 	 	 	 	 num_of_bytes_in_word * 2 ;//2 for L/R
 	 PcmRxBuff = (uint8_t*)malloc(buffer_size * 2);// 2 for double buffering
-	 errors_api_check_if_malloc_secceed(PcmRxBuff);
+	 errors_api_check_if_malloc_succeed(PcmRxBuff);
 	 PcmTxBuff = (uint8_t*)malloc(buffer_size * 2);// 2 for double buffering
-	 errors_api_check_if_malloc_secceed(PcmTxBuff);
+	 errors_api_check_if_malloc_succeed(PcmTxBuff);
 
  		/* Enable I2S Module clock */
      CLK_EnableModuleClock(I2S_MODULE);

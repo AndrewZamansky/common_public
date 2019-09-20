@@ -455,7 +455,7 @@ static void create_button_group(struct button_manager_config_t *config_handle,
 	num_of_gpio_devs = buttons_manager_group->gpio_dev_arr_size;
 	gpio_dev_arr = (struct dev_desc_t **)malloc(
 					num_of_gpio_devs * sizeof(struct dev_desc_t *));
-	errors_api_check_if_malloc_secceed(gpio_dev_arr);
+	errors_api_check_if_malloc_succeed(gpio_dev_arr);
 
 	memcpy(gpio_dev_arr, buttons_manager_group->gpio_dev_arr,
 						num_of_gpio_devs * sizeof(struct dev_desc_t *));
@@ -464,7 +464,7 @@ static void create_button_group(struct button_manager_config_t *config_handle,
 
 	curr_gpio_state_arr = (struct gpio_api_read_t *)malloc(
 					num_of_gpio_devs * sizeof(struct gpio_api_read_t));
-	errors_api_check_if_malloc_secceed(curr_gpio_state_arr);
+	errors_api_check_if_malloc_succeed(curr_gpio_state_arr);
 
 	runtime_handle->curr_gpio_state_arr = curr_gpio_state_arr;
 	runtime_handle->state = STATE_ADDING_REPORTED_EVENTS;
@@ -557,7 +557,7 @@ static void set_gpio_states_for_event(
 			(struct   button_manager_requested_gpio_values_t *) malloc(
 					num_of_gpio_devs *
 					sizeof(struct button_manager_requested_gpio_values_t));
-	errors_api_check_if_malloc_secceed(req_gpio_values_arr);
+	errors_api_check_if_malloc_succeed(req_gpio_values_arr);
 
 	btn_event->req_gpio_values_arr = req_gpio_values_arr;
 	gpio_dev_arr = config_handle->gpio_devs_arr;
@@ -567,7 +567,7 @@ static void set_gpio_states_for_event(
 							IOCTL_GPIO_PIN_READ, &gpio_read_data);
 		values_arr_size = gpio_read_data.values_arr_size;
 		pin_bitwise_requested_values_arr = (uint8_t *)malloc(values_arr_size);
-		errors_api_check_if_malloc_secceed(pin_bitwise_requested_values_arr);
+		errors_api_check_if_malloc_succeed(pin_bitwise_requested_values_arr);
 
 		req_gpio_values = &req_gpio_values_arr[i];
 		req_gpio_values->values_arr_size = values_arr_size;
@@ -605,7 +605,7 @@ static button_manager_reported_event_handle_t
 	num_of_events++;
 	btn_events_arr = (struct btn_event_t *)realloc(btn_events_arr,
 			 num_of_events * sizeof(struct btn_event_t));
-	errors_api_check_if_malloc_secceed(btn_events_arr);
+	errors_api_check_if_malloc_succeed(btn_events_arr);
 
 	config_handle->num_of_events = num_of_events;
 	new_btn_event = &btn_events_arr[num_of_events - 1];

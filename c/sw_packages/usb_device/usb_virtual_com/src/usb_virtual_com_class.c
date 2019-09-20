@@ -410,7 +410,7 @@ static void update_configuration_desc(struct dev_desc_t *adev,
 	usb_descriptors_dev = cfg_hndl->usb_descriptors_dev;
 
 	iad = (uint8_t*)malloc(sizeof(interface_association_descriptor)) ;
-	errors_api_check_if_malloc_secceed(iad);
+	errors_api_check_if_malloc_succeed(iad);
 	memcpy(iad, interface_association_descriptor,
 						sizeof(interface_association_descriptor));
 	iad[2] = usb_descriptors_alloc_interfaces->interfaces_num[0];
@@ -419,10 +419,10 @@ static void update_configuration_desc(struct dev_desc_t *adev,
 	free(iad);
 
 	i_cdc = (uint8_t*)malloc(sizeof(cdc_interface)) ;
-	errors_api_check_if_malloc_secceed(i_cdc);
+	errors_api_check_if_malloc_succeed(i_cdc);
 	memcpy(i_cdc, cdc_interface, sizeof(cdc_interface));
 	i_vcom = (uint8_t*)malloc(sizeof(vcom_interface)) ;
-	errors_api_check_if_malloc_secceed(i_vcom);
+	errors_api_check_if_malloc_succeed(i_vcom);
 	memcpy(i_vcom, vcom_interface, sizeof(vcom_interface));
 
 	i_cdc[2] = usb_descriptors_alloc_interfaces->interfaces_num[0];

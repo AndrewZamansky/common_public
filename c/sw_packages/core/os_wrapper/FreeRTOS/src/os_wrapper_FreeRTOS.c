@@ -31,7 +31,7 @@ void *pvPortRealloc(void *p, size_t xWantedSize)
 	void *pvReturn;
 
 	pvReturn = pvPortMalloc(xWantedSize);
-	errors_api_check_if_malloc_secceed(pvReturn);
+	errors_api_check_if_malloc_succeed(pvReturn);
 	memcpy(pvReturn, p, xWantedSize);
 	vPortFree(p);
 

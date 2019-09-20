@@ -26,7 +26,6 @@ extern "C" {
 
 
 /********  defines *********************/
-#define NOT_ALLOCATED_BUFFER	255
 
 /********  types  *********************/
 
@@ -47,6 +46,8 @@ char chain_inputs_module_name[] = "chain_inputs_module_name";
 static uint8_t size_of_dsp_module_type_array = 0;
 static struct dsp_module_type_t *dsp_module_type_array = NULL;
 static struct dsp_pad_t default_zero_buff =
+							{NULL, DSP_OUT_PAD_TYPE_NOT_USED, 0, 0};
+static struct dsp_pad_t dummy_output_buff =
 							{NULL, DSP_OUT_PAD_TYPE_NOT_USED, 0, 0};
 static	void *dsp_buffers_pool = NULL;
 
@@ -125,10 +126,17 @@ static struct dsp_module_inst_t * find_dsp_by_name(
 }
 
 
-uint8_t	dsp_management_api_ioctl_2_params(struct dsp_chain_t *p_chain,
+uint8_t	dsp_management_api_ioctl_2_params(chain_handle_t chain_handle,
 		char const *module_name, uint8_t ioctl_num, void *param1, void *param2)
 {
 	struct dsp_module_inst_t *module_inst;
+	struct dsp_chain_t *p_chain;
+
+	p_chain = (struct dsp_chain_t *)chain_handle;
+	if (DSP_CHAIN_STATE__READY != p_chain->chain_state)
+	{
+		CRITICAL_ERROR("chain is not ready");
+	}
 
 	module_inst = find_dsp_by_name( p_chain, module_name);
 	if ( NULL == module_inst )
@@ -139,21 +147,22 @@ uint8_t	dsp_management_api_ioctl_2_params(struct dsp_chain_t *p_chain,
 	{
 		CRITICAL_ERROR("dsp module not initialized");
 	}
-	return (module_inst->ioctl)(module_inst, ioctl_num, param1, param2);
+	return (module_inst->module_type->ioctl)(
+					module_inst, ioctl_num, param1, param2);
 }
 
-uint8_t	dsp_management_api_ioctl_1_params(struct dsp_chain_t *p_chain,
+uint8_t	dsp_management_api_ioctl_1_params(chain_handle_t chain_handle,
 		char const *module_name, uint8_t ioctl_num, void *param1)
 {
 	return dsp_management_api_ioctl_2_params(
-			p_chain, module_name, ioctl_num, param1, NULL);
+			chain_handle, module_name, ioctl_num, param1, NULL);
 }
 
-uint8_t	dsp_management_api_ioctl_0_params(struct dsp_chain_t *p_chain,
+uint8_t	dsp_management_api_ioctl_0_params(chain_handle_t chain_handle,
 		char const *module_name, uint8_t ioctl_num)
 {
 	return dsp_management_api_ioctl_1_params(
-			p_chain, module_name, ioctl_num, NULL);
+			chain_handle, module_name, ioctl_num, NULL);
 }
 
 
@@ -174,7 +183,7 @@ void _dsp_register_new_module_type(const char *a_module_name,
 	dsp_module_type_array =
 			(struct dsp_module_type_t*)os_safe_realloc(dsp_module_type_array,
 			sizeof(struct dsp_module_type_t) * size_of_dsp_module_type_array);
-	errors_api_check_if_malloc_secceed(dsp_module_type_array);
+	errors_api_check_if_malloc_succeed(dsp_module_type_array);
 
 	p_new_dsp_module =
 			&dsp_module_type_array[size_of_dsp_module_type_array - 1];
@@ -216,6 +225,11 @@ void dsp_management_api_init(size_t size_of_items_in_buffer)
 	default_zero_buff.buff_size =
 			memory_pool_get_chunk_size(dsp_buffers_pool) / sizeof(real_t);
 	default_zero_buff.pad_type = DSP_PAD_TYPE_DUMMY_ZERO_BUFFER;
+
+	dummy_output_buff.buff = (real_t*)memory_pool_malloc(dsp_buffers_pool);
+	dummy_output_buff.buff_size =
+			memory_pool_get_chunk_size(dsp_buffers_pool) / sizeof(real_t);
+	dummy_output_buff.pad_type = DSP_PAD_TYPE_DUMMY_OUTPUT_BUFFER;
 }
 
 
@@ -228,32 +242,25 @@ static struct dsp_chain_t *init_chain(uint32_t num_of_modules)
 {
 	struct dsp_chain_t *pdsp_chain;
 	struct dsp_module_inst_t *dsp_modules;
-	uint8_t i;
 	uint32_t alloc_size;
 
 
 	pdsp_chain =
 			(struct dsp_chain_t*)os_safe_malloc( sizeof(struct dsp_chain_t));
-	errors_api_check_if_malloc_secceed(pdsp_chain);
+	errors_api_check_if_malloc_succeed(pdsp_chain);
 	memset(pdsp_chain, 0, sizeof(struct dsp_chain_t));
+	pdsp_chain->chain_state = DSP_CHAIN_STATE__INITIALIZING;
 
 	alloc_size = num_of_modules * sizeof(struct dsp_module_inst_t);
 	dsp_modules = (struct dsp_module_inst_t*)os_safe_malloc(alloc_size);
-	errors_api_check_if_malloc_secceed(dsp_modules);
+	errors_api_check_if_malloc_succeed(dsp_modules);
 	pdsp_chain->module_inst_arr = dsp_modules;
 	memset(dsp_modules, 0, alloc_size);
 	pdsp_chain->num_of_modules = num_of_modules;
-
-	for (i = 0; i < MAX_NUM_OF_OUTPUT_PADS; i++)
-	{
-		pdsp_chain->chain_in_pads[i].pad_type =
-				DSP_PAD_TYPE_CHAIN_INPUT_BUFFER;
-		pdsp_chain->chain_in_pads[i].buff = NULL;
-		pdsp_chain->chain_in_pads[i].buff_size = 0;
-		pdsp_chain->chain_out_pads[i] = NULL;
-	}
-
-	pdsp_chain->magic_num = DSP_MAGIC_NUMBER;
+	pdsp_chain->chain_in_pads.max_used_output_num = 0;
+	pdsp_chain->chain_in_pads.out_pads_arr = NULL;
+	pdsp_chain->chain_out_pads.max_used_input_num = 0;
+	pdsp_chain->chain_out_pads.in_pads_arr = NULL;
 	return pdsp_chain;
 }
 
@@ -269,9 +276,6 @@ static void init_module_inst(char const *module_type_name,
 	uint8_t i;
 	struct dsp_module_type_t* module_type;
 	uint8_t retVal;
-	struct dsp_pad_t **in_pads;
-	struct dsp_pad_t *out_pads;
-	struct dsp_pad_t *curr_out_pad;
 	void *handle;
 
 
@@ -283,33 +287,24 @@ static void init_module_inst(char const *module_type_name,
 			continue;
 		}
 
-		in_pads = module_inst->in_pads;
-		out_pads = module_inst->out_pads;
-		for (i = 0; i < MAX_NUM_OF_OUTPUT_PADS; i++)
-		{
-			// set to default zero's input buffer
-			in_pads[i] = &default_zero_buff;
+		module_inst->in_pads.max_used_input_num = 0;
+		module_inst->out_pads.max_used_output_num = 0;
+		module_inst->in_pads.in_pads_arr = NULL;
+		module_inst->out_pads.out_pads_arr = NULL;
 
-			curr_out_pad = &out_pads[i];
-			curr_out_pad->pad_type = DSP_OUT_PAD_TYPE_NOT_USED;
-			curr_out_pad->total_registered_sinks = 0;
-			curr_out_pad->sinks_processed_counter = 0;
-			curr_out_pad->buff = NULL;
-			curr_out_pad->buff_size = 0;
-		}
 
 		module_inst->module_inst_name = module_inst_name;
 		module_inst->ctl = DSP_MANAGEMENT_API_MODULE_CONTROL_ON;
-		module_inst->ioctl = module_type->ioctl;
-		module_inst->dsp_func = module_type->dsp_func;
+		module_inst->module_type = module_type;
 		handle = os_safe_malloc( module_type->module_data_size );
-		errors_api_check_if_malloc_secceed(handle);
+		errors_api_check_if_malloc_succeed(handle);
 		module_inst->handle = handle;
 		memset(handle, 0, module_type->module_data_size);
 
 		module_inst->magic_num = DSP_MAGIC_NUMBER;
 
-		retVal = (module_inst->ioctl)(module_inst, IOCTL_DSP_INIT, NULL, NULL);
+		retVal = (module_inst->module_type->ioctl)(
+								module_inst, IOCTL_DSP_INIT, NULL, NULL);
 
 		// error trap in case dsp module failed to start
 		if (retVal)
@@ -326,10 +321,10 @@ static void init_module_inst(char const *module_type_name,
 
 
 static void add_modules_to_chain(struct dsp_chain_t *p_chain,
-		struct static_dsp_component arr[], uint32_t items_in_arr)
+		struct static_dsp_component_t arr[], uint32_t items_in_arr)
 {
 	uint32_t i;
-	struct static_dsp_component *curr_chain_component;
+	struct static_dsp_component_t *curr_chain_component;
 	struct dsp_module_inst_t *curr_dsp;
 
 	curr_chain_component = &arr[1];
@@ -356,150 +351,207 @@ static void add_modules_to_chain(struct dsp_chain_t *p_chain,
 }
 
 
+static struct dsp_pad_t ** get_input_pad_to_connect(
+		struct in_pads_t *in_pads, uint8_t input_pad_num)
+{
+	uint8_t max_used_input_num;
+	struct dsp_pad_t  **in_pads_arr;
 
+	in_pads_arr = in_pads->in_pads_arr;
+	max_used_input_num = in_pads->max_used_input_num;
+	if (max_used_input_num <= input_pad_num)
+	{
+		size_t i;
+
+		in_pads_arr = (struct dsp_pad_t  **)os_safe_realloc(in_pads_arr,
+							sizeof(struct dsp_pad_t *) * (input_pad_num + 1));
+		errors_api_check_if_malloc_succeed(in_pads_arr);
+		for (i = max_used_input_num; i <= input_pad_num; i++)
+		{
+			in_pads_arr[i] = NULL;
+		}
+		in_pads->in_pads_arr = in_pads_arr;
+		in_pads->max_used_input_num = input_pad_num + 1;
+	}
+	return &in_pads_arr[input_pad_num];
+}
+
+
+static struct dsp_pad_t *get_output_pad_to_connect(
+		struct out_pads_t *out_pads, uint8_t output_pad_num)
+{
+	uint8_t max_used_output_num;
+	struct dsp_pad_t  *out_pads_arr;
+	struct dsp_pad_t  *return_out_pad;
+
+	out_pads_arr = out_pads->out_pads_arr;
+	max_used_output_num = out_pads->max_used_output_num;
+	if  (max_used_output_num <= output_pad_num)
+	{
+		size_t i;
+
+		out_pads_arr = (struct dsp_pad_t  *)os_safe_realloc(out_pads_arr,
+							sizeof(struct dsp_pad_t) * (output_pad_num + 1));
+		errors_api_check_if_malloc_succeed(out_pads_arr);
+		for (i = max_used_output_num; i <= output_pad_num; i++)
+		{
+			struct dsp_pad_t  *curr_out_pad;
+
+			curr_out_pad = &out_pads_arr[i];
+			curr_out_pad->pad_type = DSP_OUT_PAD_TYPE_NOT_USED;
+			curr_out_pad->total_registered_sinks = 0;
+			curr_out_pad->sinks_processed_counter = 0;
+			curr_out_pad->buff = NULL;
+			curr_out_pad->buff_size = 0;
+		}
+		out_pads->max_used_output_num = output_pad_num + 1;
+		out_pads->out_pads_arr = out_pads_arr;
+	}
+
+	return_out_pad = &out_pads_arr[output_pad_num];
+	return return_out_pad;
+}
 
 #define MAX_LEN_OF_NAME_OF_CHAIN_INPUTS   64
 
 static void create_inter_module_link(
 		struct dsp_chain_t *p_chain, struct dsp_module_inst_t *sink_dsp,
-		struct static_dsp_source_pad source_pads[], char const *inputs_name)
+		struct static_dsp_input_pad_desc_t *input_pad_desc,
+		char const *inputs_name, uint8_t run_for_allocation_only)
 {
-	uint8_t input_pad_num;
-	struct dsp_pad_t  **in_pads;
+	struct dsp_pad_t **p_curr_in_pad_of_sink;
+	struct dsp_pad_t *p_curr_out_pad_of_source;
+	char const *src_module_inst_name;
+	struct dsp_module_inst_t *src_dsp;
+	uint8_t pad_type;
 
-	in_pads = sink_dsp->in_pads;
-	for (input_pad_num = 0;
-			input_pad_num < MAX_NUM_OF_OUTPUT_PADS; input_pad_num++)
+	while (MAX_DSP_INPUT_PAD != input_pad_desc->input_pad_num)
 	{
-		struct dsp_pad_t **p_curr_in_pad_of_sink;
-		struct dsp_pad_t *p_curr_out_pad_of_source;
-		char const *src_module_inst_name;
-		uint8_t src_output_pad_num;
-		struct static_dsp_source_pad *source_pad;
 
-		source_pad = &source_pads[input_pad_num];
-		src_module_inst_name = source_pad->src_module_inst_name;
+		p_curr_in_pad_of_sink = get_input_pad_to_connect(
+					&sink_dsp->in_pads, input_pad_desc->input_pad_num);
+
+		src_module_inst_name = input_pad_desc->src_module_inst_name;
 		if (NULL == src_module_inst_name)
 		{
-			continue;
-		}
-		src_output_pad_num = source_pad->src_output_pad_num;
-
-		p_curr_in_pad_of_sink = &in_pads[input_pad_num];
-		if (&default_zero_buff != *p_curr_in_pad_of_sink)
-		{
-			CRITICAL_ERROR("sink pad already connected");
+			CRITICAL_ERROR("module name should not be NULL");
 		}
 
 		if (0 == strncmp(src_module_inst_name,
 				inputs_name, MAX_LEN_OF_NAME_OF_CHAIN_INPUTS))
 		{
-			p_curr_out_pad_of_source =
-					&(p_chain->chain_in_pads[src_output_pad_num]) ;
-			*p_curr_in_pad_of_sink = p_curr_out_pad_of_source;
-
-			p_curr_out_pad_of_source->pad_type =
-					DSP_PAD_TYPE_CHAIN_INPUT_BUFFER;
-			p_curr_out_pad_of_source->total_registered_sinks++;
+			p_curr_out_pad_of_source = get_output_pad_to_connect(
+				&p_chain->chain_in_pads, input_pad_desc->src_output_pad_num);
+			pad_type = DSP_PAD_TYPE_CHAIN_INPUT_BUFFER;
 		}
 		else
 		{
-			struct dsp_module_inst_t *src_dsp;
-			uint8_t pad_type;
-
 			src_dsp = find_dsp_by_name( p_chain, src_module_inst_name);
 			if ( NULL == src_dsp )
 			{
 				CRITICAL_ERROR("module not found");
 			}
 
-			p_curr_out_pad_of_source = &(src_dsp->out_pads[src_output_pad_num]);
-			*p_curr_in_pad_of_sink = p_curr_out_pad_of_source;
+			p_curr_out_pad_of_source = get_output_pad_to_connect(
+					&src_dsp->out_pads, input_pad_desc->src_output_pad_num);
 
 			pad_type = p_curr_out_pad_of_source->pad_type;
-			if ( (DSP_OUT_PAD_TYPE_NOT_USED != pad_type) &&
-					(DSP_OUT_PAD_TYPE_NORMAL != pad_type) )
+			if ( (!run_for_allocation_only) &&
+				(DSP_OUT_PAD_TYPE_NOT_USED != pad_type) &&
+				(DSP_OUT_PAD_TYPE_NORMAL != pad_type) )
 			{
 				CRITICAL_ERROR("source pad already used");
 				//CRITICAL_ERROR("src pad already connected to chain output");
 			}
 
-			p_curr_out_pad_of_source->pad_type = DSP_OUT_PAD_TYPE_NORMAL;
-			p_curr_out_pad_of_source->total_registered_sinks++;
+			pad_type = DSP_OUT_PAD_TYPE_NORMAL;
 		}
+		if (!run_for_allocation_only)
+		{
+			if (NULL != *p_curr_in_pad_of_sink)
+			{
+				CRITICAL_ERROR("sink pad already connected");
+			}
+			*p_curr_in_pad_of_sink = p_curr_out_pad_of_source;
+			p_curr_out_pad_of_source->total_registered_sinks++;
+			p_curr_out_pad_of_source->pad_type = pad_type;
+		}
+		input_pad_desc++;
 	}
 }
 
 
 static void create_module_to_chain_out_link( struct dsp_chain_t *p_chain,
-		struct static_dsp_source_pad source_pads[], char const *inputs_name)
+		struct static_dsp_input_pad_desc_t *input_pad_desc,
+		char const *inputs_name, uint8_t run_for_allocation_only)
 {
-	uint8_t input_pad_num;
+	struct dsp_pad_t **p_curr_in_pad_of_sink;
+	struct dsp_pad_t *p_curr_out_pad_of_source;
+	char const *src_module_inst_name;
+	struct dsp_module_inst_t *src_dsp;
+	uint8_t pad_type;
 
-	for (input_pad_num = 0;
-			input_pad_num < MAX_NUM_OF_OUTPUT_PADS; input_pad_num++)
+	while (MAX_DSP_INPUT_PAD != input_pad_desc->input_pad_num)
 	{
-		struct dsp_pad_t *p_curr_out_pad_of_source;
-		char const *src_module_inst_name;
-		uint8_t src_output_pad_num;
-		struct static_dsp_source_pad *source_pad;
-
-		source_pad = &source_pads[input_pad_num];
-		src_module_inst_name = source_pad->src_module_inst_name;
+		src_module_inst_name = input_pad_desc->src_module_inst_name;
 		if (NULL == src_module_inst_name)
 		{
-			continue;
+			CRITICAL_ERROR("module name should not be NULL");
 		}
-		src_output_pad_num = source_pad->src_output_pad_num;
 
+		p_curr_in_pad_of_sink = get_input_pad_to_connect(
+				&p_chain->chain_out_pads, input_pad_desc->input_pad_num);
 
-		if (0 == strncmp(src_module_inst_name, inputs_name, 64))
+		if (0 == strncmp(src_module_inst_name,
+				inputs_name, MAX_LEN_OF_NAME_OF_CHAIN_INPUTS))
 		{
+			// direct connection from input of chain to output of chain
 			CRITICAL_ERROR("TODO : NOT YET IMPLEMENTED");
-
-			p_curr_out_pad_of_source =
-					&(p_chain->chain_in_pads[src_output_pad_num]) ;
-			p_chain->chain_out_pads[input_pad_num] = p_curr_out_pad_of_source;
-
-			p_curr_out_pad_of_source->pad_type =
-					DSP_PAD_TYPE_CHAIN_INPUT_BUFFER;
-			p_curr_out_pad_of_source->total_registered_sinks++;
 		}
 		else
 		{
-			struct dsp_module_inst_t *src_dsp;
-
 			src_dsp = find_dsp_by_name( p_chain, src_module_inst_name);
 			if ( NULL == src_dsp )
 			{
 				CRITICAL_ERROR("module not found");
 			}
-
-			p_curr_out_pad_of_source = &(src_dsp->out_pads[src_output_pad_num]);
-			if (DSP_OUT_PAD_TYPE_NOT_USED !=
-					p_curr_out_pad_of_source->pad_type)
-			{
-				CRITICAL_ERROR("source pad already used");
-				//CRITICAL_ERROR("src pad already connected to chain output");
-			}
-
-			p_chain->chain_out_pads[input_pad_num] = p_curr_out_pad_of_source;
-			p_curr_out_pad_of_source->pad_type =
-					DSP_PAD_TYPE_CHAIN_OUTPUT_BUFFER;
-			p_curr_out_pad_of_source->total_registered_sinks++;
+			p_curr_out_pad_of_source = get_output_pad_to_connect(
+					&src_dsp->out_pads, input_pad_desc->src_output_pad_num);
+			pad_type = DSP_PAD_TYPE_CHAIN_OUTPUT_BUFFER;
 		}
+
+		if (!run_for_allocation_only)
+		{
+			if (NULL != *p_curr_in_pad_of_sink)
+			{
+				CRITICAL_ERROR("sink pad already connected");
+			}
+			*p_curr_in_pad_of_sink = p_curr_out_pad_of_source;
+			p_curr_out_pad_of_source->total_registered_sinks++;
+			if (DSP_OUT_PAD_TYPE_NOT_USED != p_curr_out_pad_of_source->pad_type)
+			{
+				// we can set only 1 link from src module pad to chain output
+				// pad because before processing the chain, output buffer is set
+				// into p_curr_out_pad_of_source->buff, so it can be set only 1
+				// time
+				CRITICAL_ERROR("source pad already used");
+			}
+			p_curr_out_pad_of_source->pad_type = pad_type;
+		}
+		input_pad_desc++;
 	}
 }
 
 
 static void link_modules_in_chain(struct dsp_chain_t *p_chain,
-		struct static_dsp_component arr[], uint32_t items_in_arr)
+		struct static_dsp_component_t arr[], uint32_t items_in_arr,
+		uint8_t run_for_allocation_only)
 {
 	uint32_t i;
-	struct static_dsp_component *curr_chain_component;
+	struct static_dsp_component_t *curr_chain_component;
 	struct dsp_module_inst_t *module_inst_arr;
 	struct dsp_module_inst_t *curr_dsp;
-	struct static_dsp_source_pad *source_pads;
+	struct static_dsp_input_pad_desc_t *input_pads_desc;
 	char const *inputs_name;
 
 
@@ -509,16 +561,17 @@ static void link_modules_in_chain(struct dsp_chain_t *p_chain,
 	curr_chain_component = &arr[1];
 	for (i = 1; i < (items_in_arr - 1); i++)
 	{
-		source_pads = curr_chain_component->source_pads;
+		input_pads_desc = curr_chain_component->input_pads_desc;
 
 		create_inter_module_link(p_chain, curr_dsp,
-				source_pads, inputs_name);
+				input_pads_desc, inputs_name, run_for_allocation_only);
 		curr_dsp++;
 		curr_chain_component++;
 	}
 
-	source_pads = arr[items_in_arr - 1].source_pads;
-	create_module_to_chain_out_link(p_chain, source_pads, inputs_name);
+	input_pads_desc = arr[items_in_arr - 1].input_pads_desc;
+	create_module_to_chain_out_link(
+			p_chain, input_pads_desc, inputs_name, run_for_allocation_only);
 }
 
 
@@ -527,13 +580,13 @@ static void link_modules_in_chain(struct dsp_chain_t *p_chain,
  *
  * return:
  */
-struct dsp_chain_t *_dsp_management_create_static_chain(
-		struct static_dsp_component arr[], uint32_t items_in_arr)
+chain_handle_t _dsp_management_create_static_chain(
+		struct static_dsp_component_t arr[], uint32_t items_in_arr)
 {
 	struct dsp_chain_t *pdsp_chain;
 	uint32_t i;
 	uint32_t   num_of_modules;
-	struct static_dsp_component *curr_chain_component;
+	struct static_dsp_component_t *curr_chain_component;
 
 	if (NULL == dsp_buffers_pool)
 	{
@@ -579,7 +632,15 @@ struct dsp_chain_t *_dsp_management_create_static_chain(
 	num_of_modules = items_in_arr - 2;
 	pdsp_chain = init_chain(num_of_modules);
 	add_modules_to_chain(pdsp_chain, arr, items_in_arr);
-	link_modules_in_chain(pdsp_chain, arr, items_in_arr);
+
+	// run first time to allocate memories. because realloc is used.
+	link_modules_in_chain(pdsp_chain, arr, items_in_arr, 1);
+
+	// run second time to create real connections
+	link_modules_in_chain(pdsp_chain, arr, items_in_arr, 0);
+
+	dsp_management_api_process_chain(pdsp_chain);
+	pdsp_chain->chain_state = DSP_CHAIN_STATE__READY;
 
 	return pdsp_chain;
 }
@@ -590,34 +651,51 @@ struct dsp_chain_t *_dsp_management_create_static_chain(
  *
  * return:
  */
-void dsp_management_api_delete_chain(struct dsp_chain_t * ap_chain)
+void dsp_management_api_delete_chain(chain_handle_t chain_handle)
 {
 	size_t i;
 	size_t num_of_modules;
 	struct dsp_module_inst_t *module_inst;
+	struct dsp_chain_t *p_chain;
 
-	num_of_modules = ap_chain->num_of_modules;
-	module_inst = ap_chain->module_inst_arr;
-	for (i=0 ; i < num_of_modules ; i++)
+	p_chain = (struct dsp_chain_t *)chain_handle;
+	if (DSP_CHAIN_STATE__READY != p_chain->chain_state)
 	{
-		(module_inst->ioctl)(module_inst, IOCTL_DSP_DELETE, NULL, NULL);
+		CRITICAL_ERROR("chain is not ready");
+	}
+
+	num_of_modules = p_chain->num_of_modules;
+	module_inst = p_chain->module_inst_arr;
+	for (i = 0; i < num_of_modules; i++)
+	{
+		(module_inst->module_type->ioctl)(
+								module_inst, IOCTL_DSP_DELETE, NULL, NULL);
+		os_safe_free(module_inst->in_pads.in_pads_arr);
+		os_safe_free(module_inst->out_pads.out_pads_arr);
 		os_safe_free(module_inst->handle);
 		module_inst++;
 	}
-	os_safe_free(ap_chain->module_inst_arr);
-	os_safe_free(ap_chain);
+	os_safe_free(p_chain->module_inst_arr);
+	os_safe_free(p_chain);
+
+	// delete memory pool only for deleting all DSP management
+	//memory_pool_delete(dsp_buffers_pool);
 }
 
 
-void release_unused_buffers(struct dsp_pad_t **in_pads)
+void release_unused_buffers(struct in_pads_t   *in_pads)
 {
-	int i;
+	uint8_t i;
+	struct dsp_pad_t **in_pads_arr;
+	uint8_t max_used_input_num;
 
-	for (i=0; i<MAX_NUM_OF_OUTPUT_PADS ;i++)
+	in_pads_arr = in_pads->in_pads_arr;
+	max_used_input_num = in_pads->max_used_input_num;
+	for (i = 0; i < max_used_input_num; i++)
 	{
 		struct dsp_pad_t *curr_source_out_pad ;
 
-		curr_source_out_pad = in_pads[i];
+		curr_source_out_pad = in_pads_arr[i];
 
 		if (DSP_OUT_PAD_TYPE_NORMAL == curr_source_out_pad->pad_type)
 		{
@@ -644,26 +722,24 @@ void release_unused_buffers(struct dsp_pad_t **in_pads)
  *
  * return:
  */
-void dsp_process(struct dsp_module_inst_t *dsp )
+void dsp_process(struct dsp_chain_t *p_chain, struct dsp_module_inst_t *dsp )
 {
+	struct out_pads_t   *out_pads;
 	dsp_management_api_module_control_t ctl;
 	struct dsp_pad_t *curr_out_pad ;
-	struct dsp_pad_t **in_pads ;
-	struct dsp_pad_t *out_pads ;
+	struct dsp_pad_t *out_pads_arr ;
 	uint8_t i;
-	real_t *dummy_output_buff = NULL;
-	uint8_t dummy_output_buff_allocated = 0;
-	size_t buff_size;
+	uint8_t max_used_output_num;
 
 	ctl = dsp->ctl;
-	in_pads = dsp->in_pads;
-	out_pads = dsp->out_pads;
-
-	for (i = 0; i<MAX_NUM_OF_OUTPUT_PADS; i++)
+	out_pads = &dsp->out_pads;
+	out_pads_arr = out_pads->out_pads_arr;
+	max_used_output_num = out_pads->max_used_output_num;
+	for (i = 0; i < max_used_output_num; i++)
 	{
 		uint8_t pad_type;
 
-		curr_out_pad = &out_pads[i];
+		curr_out_pad = &out_pads_arr[i];
 		pad_type = curr_out_pad->pad_type;
 		if (DSP_OUT_PAD_TYPE_NORMAL == pad_type)
 		{
@@ -673,65 +749,60 @@ void dsp_process(struct dsp_module_inst_t *dsp )
 			curr_out_pad->sinks_processed_counter =
 				curr_out_pad->total_registered_sinks;
 		}
-		else if (DSP_OUT_PAD_TYPE_NOT_USED == pad_type)
-		{
-			if (0 == dummy_output_buff_allocated)
-			{
-				dummy_output_buff =
-						(real_t*)memory_pool_malloc(dsp_buffers_pool);
-				dummy_output_buff_allocated = 1;
-			}
-			curr_out_pad->buff = dummy_output_buff;
-			curr_out_pad->buff_size =
-				memory_pool_get_chunk_size(dsp_buffers_pool) / sizeof(real_t);
-		}
+	}
+
+	if (DSP_CHAIN_STATE__INITIALIZING == p_chain->chain_state)
+	{
+		// here we are flushing the chain first time to reallocate memory pools
+		// to required sizes. so no need to process modules
+		release_unused_buffers(&dsp->in_pads);
+		return;
 	}
 
 	if (DSP_MANAGEMENT_API_MODULE_CONTROL_ON == ctl)
 	{
-		dsp->dsp_func(dsp, in_pads, out_pads );
+		dsp->module_type->dsp_func(dsp);
 	}
 	else if (DSP_MANAGEMENT_API_MODULE_CONTROL_BYPASS == ctl)
 	{
-		for(i = 0; i < MAX_NUM_OF_OUTPUT_PADS; i++)
+		for (i = 0; i < max_used_output_num; i++)
 		{
-			struct dsp_pad_t *in_pad ;
-			size_t in_buf_size;
+			uint8_t pad_type;
+			size_t buff_size;
+			real_t *in_buff;
 
-			in_pad = in_pads[i];
-			in_buf_size = in_pad->buff_size;
-			curr_out_pad = &out_pads[i];
-			buff_size = curr_out_pad->buff_size;
-			if (in_buf_size < buff_size)
+			curr_out_pad = &out_pads_arr[i];
+			pad_type = curr_out_pad->pad_type;
+			if ((DSP_OUT_PAD_TYPE_NORMAL == pad_type) ||
+					(DSP_PAD_TYPE_CHAIN_OUTPUT_BUFFER == pad_type))
 			{
-				buff_size = in_buf_size;
-			}
-			if (DSP_OUT_PAD_TYPE_NOT_USED != curr_out_pad->pad_type)
-			{
-				my_memcpy(curr_out_pad->buff, in_pad->buff, buff_size);
+				dsp_get_input_buffer_from_pad(dsp, 0, &in_buff, &buff_size);
+				if (buff_size > curr_out_pad->buff_size)
+				{
+					buff_size = curr_out_pad->buff_size;
+				}
+				my_memcpy(curr_out_pad->buff, in_buff, buff_size);
 			}
 		}
 	}
 	else // if (DSP_MANAGEMENT_API_MODULE_CONTROL_MUTE == ctl)
 	{
-		for (i = 0; i < MAX_NUM_OF_OUTPUT_PADS; i++)
+		for (i = 0; i < max_used_output_num; i++)
 		{
-			curr_out_pad = &out_pads[i];
-			buff_size = curr_out_pad->buff_size;
-			if (DSP_OUT_PAD_TYPE_NOT_USED != curr_out_pad->pad_type)
+			uint8_t pad_type;
+
+			curr_out_pad = &out_pads_arr[i];
+			pad_type = curr_out_pad->pad_type;
+			if ((DSP_OUT_PAD_TYPE_NORMAL == pad_type) ||
+					(DSP_PAD_TYPE_CHAIN_OUTPUT_BUFFER == pad_type))
 			{
-				my_memset(curr_out_pad->buff, (float) 0, buff_size);
+				my_memset(
+					curr_out_pad->buff, (float)0, curr_out_pad-> buff_size);
 			}
 		}
 	}
 
-	release_unused_buffers(in_pads);
-
-	if ( 1 == dummy_output_buff_allocated)
-	{
-		memory_pool_free(dsp_buffers_pool, dummy_output_buff);
-	}
-
+	release_unused_buffers(&dsp->in_pads);
 }
 
 
@@ -740,25 +811,37 @@ void dsp_process(struct dsp_module_inst_t *dsp )
  *
  * return:
  */
-void dsp_management_api_process_chain(struct dsp_chain_t *ap_chain)
+void dsp_management_api_process_chain(chain_handle_t chain_handle)
 {
 	size_t i;
 	struct dsp_module_inst_t *module_inst_arr;
+	struct in_pads_t       *chain_out_pads;
+	struct dsp_chain_t *p_chain;
+	DSP_CHAIN_STATE_e       chain_state;
 
-	module_inst_arr = ap_chain->module_inst_arr;
-	i = ap_chain->num_of_modules;
+	p_chain = (struct dsp_chain_t *)chain_handle;
+	chain_state = p_chain->chain_state;
+	if ((DSP_CHAIN_STATE__READY != chain_state) &&
+		(DSP_CHAIN_STATE__INITIALIZING != chain_state))// for first flush
+	{
+		CRITICAL_ERROR("chain is not ready");
+	}
+	module_inst_arr = p_chain->module_inst_arr;
+	i = p_chain->num_of_modules;
 
 	while (i--)
 	{
-		dsp_process( module_inst_arr);
+		dsp_process(p_chain, module_inst_arr);
 		module_inst_arr++;
 	}
 
-	for(i = 0; i < MAX_NUM_OF_OUTPUT_PADS; i++)
+	chain_out_pads = &p_chain->chain_out_pads;
+	i = chain_out_pads->max_used_input_num;
+	while (i--)
 	{
 		struct dsp_pad_t *curr_source_out_pad ;
 
-		curr_source_out_pad = ap_chain->chain_out_pads[i];
+		curr_source_out_pad = chain_out_pads->in_pads_arr[i];
 
 		if (NULL != curr_source_out_pad)
 		{
@@ -775,15 +858,26 @@ void dsp_management_api_process_chain(struct dsp_chain_t *ap_chain)
  *
  * return:
  */
-void dsp_management_api_set_chain_input_buffer(struct dsp_chain_t *ap_chain,
-						DSP_INPUT_PADS_t sink_dsp_pad,
-						uint8_t *buffer, size_t buff_size )
+void dsp_management_api_set_chain_input_buffer(chain_handle_t chain_handle,
+				uint16_t chain_input_pad_num, uint8_t *buffer, size_t buff_size)
 {
-	struct dsp_pad_t *p_curr_out_pad_of_source;
+	struct out_pads_t  *chain_in_pads;
+	struct dsp_pad_t   *p_curr_out_pad_of_source;
+	struct dsp_chain_t *p_chain;
 
-	p_curr_out_pad_of_source = &(ap_chain->chain_in_pads[sink_dsp_pad]) ;
-	p_curr_out_pad_of_source->buff = (real_t*)buffer;
-	p_curr_out_pad_of_source->buff_size = buff_size;
+	p_chain = (struct dsp_chain_t *)chain_handle;
+	if (DSP_CHAIN_STATE__READY != p_chain->chain_state)
+	{
+		CRITICAL_ERROR("chain is not ready");
+	}
+	chain_in_pads = &p_chain->chain_in_pads;
+	if (chain_input_pad_num < chain_in_pads->max_used_output_num)
+	{
+		p_curr_out_pad_of_source =
+				&(chain_in_pads->out_pads_arr[chain_input_pad_num]);
+		p_curr_out_pad_of_source->buff = (real_t*)buffer;
+		p_curr_out_pad_of_source->buff_size = buff_size;
+	}
 }
 
 
@@ -792,16 +886,32 @@ void dsp_management_api_set_chain_input_buffer(struct dsp_chain_t *ap_chain,
  *
  * return:
  */
-void dsp_management_api_set_chain_output_buffer(struct dsp_chain_t *ap_chain,
-						DSP_OUTPUT_PADS_t output_dsp_pad,
-						uint8_t *buffer, size_t buff_size)
+void dsp_management_api_set_chain_output_buffer(chain_handle_t chain_handle,
+			uint16_t chain_output_pad_num, uint8_t *buffer, size_t buff_size)
 {
+	struct in_pads_t       *chain_out_pads;
 	struct dsp_pad_t *p_curr_out_pad_of_source;
+	struct dsp_chain_t *p_chain;
 
-	p_curr_out_pad_of_source = ap_chain->chain_out_pads[output_dsp_pad];
+	p_chain = (struct dsp_chain_t *)chain_handle;
+	if (DSP_CHAIN_STATE__READY != p_chain->chain_state)
+	{
+		CRITICAL_ERROR("chain is not ready");
+	}
+	chain_out_pads = &p_chain->chain_out_pads;
+	if (chain_output_pad_num < chain_out_pads->max_used_input_num)
+	{
+		p_curr_out_pad_of_source =
+				chain_out_pads->in_pads_arr[chain_output_pad_num];
+	}
+	else
+	{
+		CRITICAL_ERROR("chain output pad not connected to any dsp module");
+	}
+
 	if (NULL == p_curr_out_pad_of_source)
 	{
-		CRITICAL_ERROR("source pad not connected");
+		CRITICAL_ERROR("chain output pad not connected to any dsp module");
 	}
 	p_curr_out_pad_of_source->buff = (real_t*)buffer;
 	p_curr_out_pad_of_source->buff_size = buff_size;
@@ -813,12 +923,17 @@ void dsp_management_api_set_chain_output_buffer(struct dsp_chain_t *ap_chain,
  *
  * return:
  */
-void dsp_management_api_set_module_control(
-		struct dsp_chain_t *p_chain,
-		char const*module_name,
-		dsp_management_api_module_control_t ctl)
+void dsp_management_api_set_module_control(chain_handle_t chain_handle,
+			char const*module_name, dsp_management_api_module_control_t ctl)
 {
 	struct dsp_module_inst_t *module_inst;
+	struct dsp_chain_t *p_chain;
+
+	p_chain = (struct dsp_chain_t *)chain_handle;
+	if (DSP_CHAIN_STATE__READY != p_chain->chain_state)
+	{
+		CRITICAL_ERROR("chain is not ready");
+	}
 
 	module_inst = find_dsp_by_name( p_chain, module_name);
 	if ( NULL == module_inst )
@@ -831,15 +946,58 @@ void dsp_management_api_set_module_control(
 
 
 /**
- * dsp_get_buffer_from_pad()
+ * dsp_get_input_buffer_from_pad()
  *
  * return:
  */
-void dsp_get_buffer_from_pad(struct dsp_pad_t *pad, real_t **buff, size_t *buff_len)
+void dsp_get_input_buffer_from_pad( struct dsp_module_inst_t * adsp,
+						uint8_t pad_num, real_t **buff, size_t *buff_len)
 {
+	struct in_pads_t   *in_pads;
+	struct dsp_pad_t *pad;
+
+	in_pads = &adsp->in_pads;
+	if (pad_num < in_pads->max_used_input_num)
+	{
+		pad = in_pads->in_pads_arr[pad_num];
+		if (NULL == pad)
+		{
+			pad = &default_zero_buff;
+		}
+	}
+	else
+	{
+		pad = &default_zero_buff;
+	}
 	*buff = pad->buff;
 	*buff_len = pad->buff_size;
 }
 
 
+/**
+ * dsp_get_output_buffer_from_pad()
+ *
+ * return:
+ */
+void dsp_get_output_buffer_from_pad( struct dsp_module_inst_t * adsp,
+						uint8_t pad_num, real_t **buff, size_t *buff_len)
+{
+	struct out_pads_t   *out_pads;
+	struct dsp_pad_t *pad;
 
+	out_pads = &adsp->out_pads;
+	if (pad_num < out_pads->max_used_output_num)
+	{
+		pad = &out_pads->out_pads_arr[pad_num];
+		if (NULL == pad->buff)
+		{
+			pad = &dummy_output_buff;
+		}
+	}
+	else
+	{
+		pad = &dummy_output_buff;
+	}
+	*buff = pad->buff;
+	*buff_len = pad->buff_size;
+}

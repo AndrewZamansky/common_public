@@ -221,7 +221,7 @@ uint8_t flash_wrapper_ioctl(struct dev_desc_t *adev,
 				IOCTL_FLASH_WRAPPER_GET_ERASE_SIZE, &erase_block_size);
 		runtime_handle->erase_block_size = erase_block_size;
 		runtime_handle->write_buffer = (uint8_t*)malloc(erase_block_size);
-		errors_api_check_if_malloc_secceed(runtime_handle->write_buffer);
+		errors_api_check_if_malloc_succeed(runtime_handle->write_buffer);
 		DEV_IOCTL_1_PARAMS(hw_flash_dev,
 				IOCTL_FLASH_WRAPPER_GET_FLASH_SIZE, &flash_size);
 		runtime_handle->flash_size = flash_size;

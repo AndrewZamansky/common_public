@@ -63,9 +63,7 @@ volatile uint32_t __stop = 0xffffffff;
  *
  * return:
  */
-static void tone_generator_dsp(struct dsp_module_inst_t *adsp,
-		struct dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS],
-		struct dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])
+static void tone_generator_dsp(struct dsp_module_inst_t *adsp)
 {
 	struct TONE_GENERATOR_Instance_t *handle;
 	real_t *apCh1Out;
@@ -81,8 +79,8 @@ static void tone_generator_dsp(struct dsp_module_inst_t *adsp,
 
 	handle = (struct TONE_GENERATOR_Instance_t *)adsp->handle;
 
-	dsp_get_buffer_from_pad(&out_pads[0], &apCh1Out, &out_data_len1);
-	dsp_get_buffer_from_pad(&out_pads[1], &apCh2Out, &out_data_len2);
+	dsp_get_output_buffer_from_pad(adsp, 0, &apCh1Out, &out_data_len1);
+	dsp_get_output_buffer_from_pad(adsp, 1, &apCh2Out, &out_data_len2);
 
 
 	if (out_data_len1 != out_data_len2 )
