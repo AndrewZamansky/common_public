@@ -11,16 +11,15 @@
 
 struct mem_pool_chunck_t
 {
-
 	void *mem;
-	uint8_t inUse;
-
+	struct mem_pool_chunck_t *next_pool_chunks ;
 };
 
 
 struct mem_pool_t
 {
-	size_t   num_of_chunks;
+	size_t   total_num_of_chunks;
+	size_t   available_num_of_chunks;
 	size_t   size_of_chunk;
 	struct mem_pool_chunck_t *pool_chunks ;
 };

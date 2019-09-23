@@ -34,41 +34,30 @@
  */
 void *memory_pool_malloc(void *memory_pool_handle)
 {
-	size_t	i;
-	size_t	num_of_chunks;
-	struct mem_pool_chunck_t *pMemPool;
 	struct mem_pool_t* mem_pool;
-	void *mem;
-	struct mem_pool_chunck_t *pool_chunks;
 	struct mem_pool_chunck_t *pool_chunk;
+	void *mem;
 
 	mem_pool = (struct mem_pool_t*)memory_pool_handle;
-	num_of_chunks = mem_pool->num_of_chunks;
-	pMemPool = mem_pool->pool_chunks;
-	i = num_of_chunks;
-	while( i--)
+	if (mem_pool->available_num_of_chunks)
 	{
-		if(0 == pMemPool->inUse)
-		{
-			pMemPool->inUse = 1;
-			return pMemPool->mem;
-		}
-		pMemPool++;
+		pool_chunk = mem_pool->pool_chunks;
+		mem = pool_chunk->mem;
+		mem_pool->pool_chunks = pool_chunk->next_pool_chunks;
+		mem_pool->available_num_of_chunks--;
+		return mem;
 	}
 
 	//no free blocks if we got here
-	num_of_chunks++;
-	mem_pool->num_of_chunks = num_of_chunks;
-	pool_chunks = mem_pool->pool_chunks;
-	pool_chunks = (struct mem_pool_chunck_t *)realloc(pool_chunks,
-					num_of_chunks * sizeof(struct mem_pool_chunck_t));
-	errors_api_check_if_malloc_succeed(pool_chunks);
-	mem_pool->pool_chunks = pool_chunks;
-	pool_chunk = &pool_chunks[num_of_chunks - 1];
-	pool_chunk->inUse = 1;
-	mem = malloc(mem_pool->size_of_chunk);
+
+	// for fast 'free' put chunk info before memory block
+	mem = malloc(mem_pool->size_of_chunk + sizeof(struct mem_pool_chunck_t));
 	errors_api_check_if_malloc_succeed(mem);
+	pool_chunk = (struct mem_pool_chunck_t *)mem;
+	mem = ((uint8_t *)mem) + sizeof(struct mem_pool_chunck_t);
 	pool_chunk->mem = mem;
+	mem_pool->total_num_of_chunks++;
+
 	return mem;
 }
 
@@ -101,23 +90,15 @@ void *memory_pool_zmalloc(void *memory_pool_handle)
  */
 void memory_pool_free(void *memory_pool_handle, void *mem)
 {
-	size_t	num_of_chunks;
-	struct mem_pool_chunck_t *pMemPool;
+	struct mem_pool_t* mem_pool;
+	struct mem_pool_chunck_t *pool_chunk;
 
-	num_of_chunks = ((struct mem_pool_t*)memory_pool_handle)->num_of_chunks;
-	pMemPool = ((struct mem_pool_t*)memory_pool_handle)->pool_chunks;
-	while( num_of_chunks--)
-	{
-		if(mem == pMemPool->mem)
-		{
-			pMemPool->inUse = 0;
-			return ;
-		}
-		pMemPool++;
-	}
-
-	//error if we got here
-	CRITICAL_ERROR("bad memory chunk");
+	mem_pool = (struct mem_pool_t*)memory_pool_handle;
+	pool_chunk = (struct mem_pool_chunck_t *)((uint8_t*)mem -
+									sizeof(struct mem_pool_chunck_t));
+	pool_chunk->next_pool_chunks = mem_pool->pool_chunks;
+	mem_pool->pool_chunks = pool_chunk;
+	mem_pool->available_num_of_chunks++;
 }
 
 
@@ -134,7 +115,8 @@ void *memory_pool_init(size_t size_of_chunk)
 	pInstance = (struct mem_pool_t *)malloc(sizeof(struct mem_pool_t));
 	errors_api_check_if_malloc_succeed(pInstance);
 
-	pInstance->num_of_chunks = 0;
+	pInstance->total_num_of_chunks = 0;
+	pInstance->available_num_of_chunks = 0;
 	pInstance->size_of_chunk = size_of_chunk;
 	pInstance->pool_chunks = NULL;
 
@@ -150,19 +132,26 @@ void *memory_pool_init(size_t size_of_chunk)
 void memory_pool_delete(void *memory_pool_handle)
 {
 	struct mem_pool_chunck_t *pool_chunk;
-	size_t	num_of_chunks;
-	struct mem_pool_chunck_t *pMemPool;
+	struct mem_pool_t* mem_pool;
+	size_t available_num_of_chunks;
 
-	num_of_chunks = ((struct mem_pool_t*)memory_pool_handle)->num_of_chunks;
-	pool_chunk = ((struct mem_pool_t*)memory_pool_handle)->pool_chunks;
-	pMemPool = pool_chunk;
-	while( num_of_chunks--)
+	mem_pool = (struct mem_pool_t*)memory_pool_handle;
+	available_num_of_chunks = mem_pool->available_num_of_chunks;
+	if (available_num_of_chunks != mem_pool->total_num_of_chunks)
 	{
-		free(pMemPool->mem);
-		pMemPool++;
+		CRITICAL_ERROR("all chunks should be free before closing mem pool");
 	}
-	free(pool_chunk);
-	free(memory_pool_handle);
+
+	pool_chunk = mem_pool->pool_chunks;
+	while (available_num_of_chunks--)
+	{
+		struct mem_pool_chunck_t *tmp_pool_chunk;
+		tmp_pool_chunk = pool_chunk;
+		pool_chunk = pool_chunk->next_pool_chunks;
+		free(tmp_pool_chunk);
+	}
+
+	free(mem_pool);
 }
 
 /**
