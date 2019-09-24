@@ -76,20 +76,20 @@ void band_splitter_butterworth_6db_gain_dsp(struct dsp_module_inst_t * adsp)
 	dsp_get_output_buffer_from_pad(adsp, 1, &apCh2Out, &out2_data_len);
 
 	dsp_management_api_set_chain_input_buffer(filter_1_pole_dsp_chain,
-			DSP_INPUT_PAD_0, (uint8_t *)apCh1In, in_data_len);
+			IN_PAD(0), (uint8_t *)apCh1In, in_data_len);
 
 	dsp_management_api_set_chain_output_buffer(filter_1_pole_dsp_chain,
-			DSP_OUTPUT_PAD_0, (uint8_t *)apCh1Out, out1_data_len);
+			OUT_PAD(0), (uint8_t *)apCh1Out, out1_data_len);
 
 	dsp_management_api_process_chain(filter_1_pole_dsp_chain );
 
 
 
 	dsp_management_api_set_chain_input_buffer(filter_2_poles_dsp_chain,
-			DSP_INPUT_PAD_0, (uint8_t *)apCh1In, in_data_len);
+			IN_PAD(0), (uint8_t *)apCh1In, in_data_len);
 
 	dsp_management_api_set_chain_output_buffer(filter_2_poles_dsp_chain,
-			DSP_OUTPUT_PAD_0, (uint8_t *)apCh2Out, out2_data_len);
+			OUT_PAD(0), (uint8_t *)apCh2Out, out2_data_len);
 
 	dsp_management_api_process_chain(filter_2_poles_dsp_chain );
 #if 1

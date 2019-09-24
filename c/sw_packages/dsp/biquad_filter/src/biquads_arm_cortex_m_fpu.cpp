@@ -15,6 +15,7 @@ extern "C" {
 }
 
 #include "dsp_management_api.h"
+#include "dsp_management_internal_api.h"
 
 #include "_project.h"
 #include "cpu_config.h"
@@ -33,7 +34,6 @@ extern "C" {
 #include "biquad_filter.h"
 #include "biquad_filter_api.h"
 
-#include "_biquad_filter_prerequirements_check.h"
 
 #define NUM_OF_STATES_PER_STAGE   2
 

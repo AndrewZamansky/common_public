@@ -7,6 +7,18 @@
 
 #define DSP_MAGIC_NUMBER        0xa2b6
 
+#if defined(CONFIG_DSP_REAL_NUMBER_FORMAT_FLOATING_POINT)
+	#define real_t    float
+#elif defined(CONFIG_DSP_REAL_NUMBER_FORMAT_FIXED_POINT)
+	#ifdef __cplusplus
+		#include "fix16.hpp"
+	#endif
+	#define real_t    Fix16
+#else
+	#error "undefined real numbers format"
+#endif
+
+
 enum DSP_PAD_TYPE_e {
 	DSP_OUT_PAD_TYPE_NOT_USED = 0,
 	DSP_OUT_PAD_TYPE_NORMAL,

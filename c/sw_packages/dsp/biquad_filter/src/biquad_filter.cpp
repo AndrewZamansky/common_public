@@ -13,16 +13,15 @@
 extern "C" {
 #include "errors_api.h"
 }
-
+#include <string.h>
 #include "dsp_management_api.h"
 #include "dsp_management_internal_api.h"
 
 #include "biquad_filter_api.h"
 #include "biquad_filter.h"
+#include "os_wrapper.h"
 
 #include "auto_init_api.h"
-
-#include "_biquad_filter_prerequirements_check.h"
 
 /********  defines *********************/
 
@@ -89,10 +88,11 @@ static void set_number_of_bands(
 
 
 	handle->num_of_bands = num_of_bands;
-	free(handle->biquad_bands_coeffs);
-	free(handle->band_set_params);
+	os_safe_free(handle->biquad_bands_coeffs);
+	os_safe_free(handle->band_set_params);
 
-	biquad_bands_coeffs = (real_t *)malloc(	5 * sizeof(real_t) * num_of_bands);
+	biquad_bands_coeffs =
+			(real_t *)os_safe_malloc(	5 * sizeof(real_t) * num_of_bands);
 	errors_api_check_if_malloc_succeed(biquad_bands_coeffs);
 	handle->biquad_bands_coeffs = biquad_bands_coeffs;
 

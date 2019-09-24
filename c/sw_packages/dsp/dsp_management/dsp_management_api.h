@@ -8,19 +8,9 @@
 
 /**********  define API  types ************/
 
+#define DSP_CHAIN_CREATION_API_VER    20190924
+
 struct dsp_module_inst_t;
-
-#if defined(CONFIG_DSP_REAL_NUMBER_FORMAT_FLOATING_POINT)
-	#define real_t    float
-#elif defined(CONFIG_DSP_REAL_NUMBER_FORMAT_FIXED_POINT)
-	#ifdef __cplusplus
-		#include "fix16.hpp"
-	#endif
-	#define real_t    Fix16
-#else
-	#error "undefined real numbers format"
-#endif
-
 
 
 enum common_dsp_ioctl_e {
@@ -30,20 +20,8 @@ enum common_dsp_ioctl_e {
 };
 
 
-
-
-enum DSP_OUTPUT_PADS_e
-{
-	DSP_OUTPUT_PAD_0 = 0,
-	DSP_OUTPUT_PAD_1,
-	DSP_OUTPUT_PAD_2
-};
-
-enum DSP_INPUT_PADS_e {
-	DSP_INPUT_PAD_0 = 0,
-	DSP_INPUT_PAD_1,
-	DSP_INPUT_PAD_2
-};
+#define IN_PAD(num)   (num)
+#define OUT_PAD(num)  (num)
 
 
 typedef enum dsp_management_api_module_control_e {
