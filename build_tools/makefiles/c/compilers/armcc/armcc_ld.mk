@@ -118,7 +118,7 @@ ALL_OBJ_FILES += $(call rwildcard,$(OBJ_DIR)/,*.O.asm)
 ALL_OBJ_FILES :=$(sort $(ALL_OBJ_FILES))
 ALL_OBJ_FILES :=$(subst \,/,$(ALL_OBJ_FILES))
 
-# armar syntax requires library output to be the first file in list
+# arm ar syntax requires library output to be the first file in list
 ifdef CONFIG_OUTPUT_TYPE_STATIC_LIBRARY
     ALL_OBJ_FILES := $(LINKER_OUTPUT) $(ALL_OBJ_FILES)
 endif
@@ -143,14 +143,13 @@ else
 
     FMT_GLOBAL_INCLUDE_DIR := $(patsubst %,-I%,$(GLOBAL_INCLUDE_DIR))
 
-    CREATE_LDS_CMD =$(CC) -E -P $(FMT_GLOBAL_DEFINES)
-    CREATE_LDS_CMD += $(LDS_PREPROCESSOR_DEFS)
+    CREATE_LDS_CMD =$(CC) -E -P $(FMT_GLOBAL_DEFINES) $(LDS_PREPROCESSOR_DEFS)
     CREATE_LDS_CMD_REDUCED :=$(call \
          reduce_cmd_len, $(CREATE_LDS_CMD) $(FMT_GLOBAL_INCLUDE_DIR))
     LONG_LDS_CMD:=$(call check_win_cmd_len, $(CREATE_LDS_CMD_REDUCED))
 
-    LDS_ARGS_FILE :=$(strip $(if $(LONG_ASM_CMD),$(OBJ_DIR)/lds.args,))
     ifeq ($(LONG_LDS_CMD),TOO_LONG)
+        LDS_ARGS_FILE :=$(strip $(if $(LONG_ASM_CMD),$(OUT_DIR)/lds.args,))
         DUMMY := $(call \
              fwrite,$(LDS_ARGS_FILE),$(FMT_GLOBAL_INCLUDE_DIR),TRUNCATE)
         CREATE_LDS_CMD += $(CC_USE_ARGS_FROM_FILE_FLAG)$(LDS_ARGS_FILE)

@@ -4,15 +4,16 @@ config FREE_RTOS_VERSION
     string "nuc bsp version in form : xx.xx.xx"
     default "8.0.1"
 
+if !USE_ONLY_OS_API
 
 config HEAP_SIZE
 	int   "heap size"
 	default 10240
 
-
 config TEST_TASK_STACK
 	bool   "add stack logs for tasks"
 	default y
 
+endif
 
 endmenu
