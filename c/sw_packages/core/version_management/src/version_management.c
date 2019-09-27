@@ -16,7 +16,6 @@
 
 #include "version_management_api.h"
 
-#include "version_management_add_component.h"
 
 /********  defines *********************/
 
@@ -43,7 +42,7 @@
  *
  * return:
  */
-size_t version_management_pread(struct dev_desc_t *adev,
+static size_t version_management_pread(struct dev_desc_t *adev,
 				uint8_t *apData , size_t aLength, size_t aOffset)
 {
 	if((aLength + aOffset) > (sizeof(VERSION_STR) - 1))
@@ -60,3 +59,7 @@ size_t version_management_pread(struct dev_desc_t *adev,
 	memcpy(apData, &VERSION_STR[aOffset], aLength);
 	return aLength;
 }
+
+#define	MODULE_NAME             version_management
+#define	MODULE_PREAD_FUNCTION   version_management_pread
+#include "add_module.h"

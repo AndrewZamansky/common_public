@@ -9,15 +9,18 @@ else
 #    ifdef CONFIG_OUTPUT_TYPE_DYNAMIC_LIBRARY
 #        OUTPUT_NAME :=lib$(FULL_PROJECT_NAME).so
 #        HISTORY_OUTPUT_NAME :=lib$(FULL_PROJECT_NAME)_$(MAIN_VERSION_STR).so
-#    else ifdef CONFIG_OUTPUT_TYPE_APPLICATION
+    ifdef CONFIG_OUTPUT_TYPE_STATIC_LIBRARY
+        OUTPUT_NAME :=lib$(FULL_PROJECT_NAME).a
+        HISTORY_OUTPUT_NAME :=lib$(FULL_PROJECT_NAME)_$(MAIN_VERSION_STR)
+        HISTORY_OUTPUT_NAME :=$(HISTORY_OUTPUT_NAME)$(REVISION_FOR_FILE_STR).a
+    else ifdef CONFIG_OUTPUT_TYPE_APPLICATION
         OUTPUT_NAME :=$(FULL_PROJECT_NAME).elf
-
         HISTORY_OUTPUT_NAME :=$(FULL_PROJECT_NAME)_$(MAIN_VERSION_STR)
         HISTORY_OUTPUT_NAME :=$(HISTORY_OUTPUT_NAME)$(REVISION_FOR_FILE_STR).elf
-#    else
-#        $(info err: unknown output type)
-#        $(call exit,1)
-#    endif
+    else
+        $(info err: unknown output type)
+        $(call exit,1)
+    endif
 endif
 
 LINKER_OUTPUT := $(OUT_DIR)/$(OUTPUT_NAME)
@@ -178,6 +181,8 @@ DUMMY := $(call fwrite,$(ALL_OBJECTS_LIST_FILE),$(ALL_OBJ_FILES),TRUNCATE)
 
 ifdef CONFIG_USE_APPLICATION_SPECIFIC_SCATTER_FILE
     CREATE_LDS_CMD += echo using application specifc scatter file
+else ifdef CONFIG_OUTPUT_TYPE_STATIC_LIBRARY
+    CREATE_LDS_CMD += echo building library, no need in scatter file
 else
     FMT_GLOBAL_DEFINES := $(patsubst %,-D%,$(GLOBAL_DEFINES))
     #substitute " to \" for string defines  :
@@ -185,24 +190,40 @@ else
 
     FMT_GLOBAL_INCLUDE_DIR := $(patsubst %,-I%,$(GLOBAL_INCLUDE_DIR))
 
-    CREATE_LDS_CMD =$(CC) -E -P -x c $(FMT_GLOBAL_INCLUDE_DIR)
-    CREATE_LDS_CMD += $(FMT_GLOBAL_DEFINES)
+    CREATE_LDS_CMD =$(CC) -E -P -x c $(FMT_GLOBAL_DEFINES)
     CREATE_LDS_CMD += $(LDS_PREPROCESSOR_DEFS)
+    CREATE_LDS_CMD_REDUCED :=$(call \
+         reduce_cmd_len, $(CREATE_LDS_CMD) $(FMT_GLOBAL_INCLUDE_DIR))
+    LONG_LDS_CMD:=$(call check_win_cmd_len, $(CREATE_LDS_CMD_REDUCED))
+
+    ifeq ($(LONG_LDS_CMD),TOO_LONG)
+        LDS_ARGS_FILE :=$(strip $(if $(LONG_ASM_CMD),$(OUT_DIR)/lds.args,))
+        DUMMY := $(call \
+             fwrite,$(LDS_ARGS_FILE),$(FMT_GLOBAL_INCLUDE_DIR),TRUNCATE)
+        CREATE_LDS_CMD += $(CC_USE_ARGS_FROM_FILE_FLAG)$(LDS_ARGS_FILE)
+    else
+        CREATE_LDS_CMD :=$(CREATE_LDS_CMD_REDUCED)
+    endif
     CREATE_LDS_CMD += $(SCATTER_FILE_PATTERN) -o $(SCATTER_FILE)
 endif
-CREATE_LDS_CMD :=$(call reduce_cmd_len, $(CREATE_LDS_CMD))
-$(call check_win_cmd_len, $(CREATE_LDS_CMD))
 
-LINKER_CMD =$(LD) $(LDFLAGS) -T $(SCATTER_FILE) $(LIBRARIES_DIRS)
-LINKER_CMD += @$(ALL_OBJECTS_LIST_FILE) $(LIBS) -o $(LINKER_OUTPUT)
-$(call check_win_cmd_len, $(LINKER_CMD))
+AR := $(FULL_GCC_PREFIX)ar
+ifdef CONFIG_OUTPUT_TYPE_STATIC_LIBRARY
+    LINKER_CMD = $(AR) cr -o $(LINKER_OUTPUT) @$(ALL_OBJECTS_LIST_FILE)
+else
+    LINKER_CMD =$(LD) $(LDFLAGS) -T $(SCATTER_FILE) $(LIBRARIES_DIRS)
+    LINKER_CMD += @$(ALL_OBJECTS_LIST_FILE) $(LIBS) -o $(LINKER_OUTPUT)
+endif
+
 
 build_outputs :
 	$(CREATE_LDS_CMD)
 	$(LINKER_CMD)
 	$(FULL_GCC_PREFIX)objdump -d -S $(LINKER_OUTPUT) > $(OUTPUT_ASM)
+ifneq ($(findstring y,$(CONFIG_OUTPUT_TYPE_STATIC_LIBRARY)),y)
 	$(FULL_GCC_PREFIX)objcopy -O binary $(LINKER_OUTPUT) $(OUTPUT_BIN)
 	$(FULL_GCC_PREFIX)objcopy -O ihex $(LINKER_OUTPUT) $(OUTPUT_HEX)
+endif
 	$(CP)  $(LINKER_OUTPUT) $(LINKER_HISTORY_OUTPUT)
 ifeq ($(findstring y,$(CONFIG_CALCULATE_CRC32)),y)
 	$(CRC32CALC) $(OUTPUT_BIN) > $(OUTPUT_CRC32)

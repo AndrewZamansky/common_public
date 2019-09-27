@@ -241,6 +241,7 @@ static void set_params(struct dsp_module_inst_t *adsp,
 	}
 	else
 	{
+		normalizer = 1;
 		CRITICAL_ERROR("not supported channel size 2");
 	}
 	handle->normalizer = normalizer;

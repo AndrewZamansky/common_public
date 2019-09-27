@@ -21,9 +21,6 @@
 #include "os_wrapper.h"
 
 
-/*following line add module to available module list for dynamic device tree*/
-#include "shell_presets_add_component.h"
-
 /********  defines *********************/
 
 #define MAGIC_NUMBER            0xA5B6C7D8
@@ -316,3 +313,11 @@ uint8_t shell_presets_ioctl( struct dev_desc_t *adev,
 	}
 	return retVal;
 }
+
+
+#define	MODULE_NAME					shell_presets
+#define	MODULE_IOCTL_FUNCTION		shell_presets_ioctl
+#define	MODULE_PWRITE_FUNCTION		shell_presets_pwrite
+#define MODULE_CONFIG_DATA_STRUCT_TYPE		struct shell_presets_cfg_t
+#define MODULE_RUNTIME_DATA_STRUCT_TYPE		struct shell_presets_runtime_t
+#include "add_module.h"

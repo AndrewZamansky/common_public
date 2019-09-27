@@ -19,12 +19,22 @@ config NONE_RT_OS
 
 endchoice
 
+config USE_ONLY_OS_API
+	bool   "use only OS API, dont include implementation"
+	depends on !NONE_RT_OS && OUTPUT_TYPE_STATIC_LIBRARY
+	default n
+
+
 if FREE_RTOS
 source "$KCONFIG_PUBLIC_START_DIR/sw_packages/core/os_wrapper/FreeRTOS/Kconfig"
 endif
+
+if !USE_ONLY_OS_API
 
 if FREE_RTOS || ATOM_THREADS || OSA
 config RT_OS_IS_SPEED_CRITICAL
 	bool   "RT OS is speed critical"
 	default n
 endif
+
+endif #for !USE_ONLY_OS_API

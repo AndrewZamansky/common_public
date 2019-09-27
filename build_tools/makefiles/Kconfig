@@ -148,7 +148,7 @@ config OUTPUT_TYPE_APPLICATION
 	bool "application"
 
 config OUTPUT_TYPE_STATIC_LIBRARY
-	depends on XTENSA_XCC || ARMCC
+	depends on XTENSA_XCC || ARMCC || GCC || GPP || MIN_GW_GCC || MIN_GW_GPP
 	bool "static library"
 
 config OUTPUT_TYPE_DYNAMIC_LIBRARY
