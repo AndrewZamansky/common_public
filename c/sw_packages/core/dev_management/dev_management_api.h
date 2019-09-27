@@ -43,10 +43,13 @@ extern "C" {
 #define STRINGIFY(X) STRINGIFY2(X)
 #define STRINGIFY2(X) #X
 
+#define MODULE_INST2(module)  module_inst_##module
+#define MODULE_INST(module)   MODULE_INST2(module)
+
 #define STATIC_DEVICE_INCLUDE_NAME(module_name)  \
 								STATIC_DEVICE_INCLUDE_NAME2(module_name)
 
-#define STATIC_DEVICE_INCLUDE_NAME2(module_name)  module_name##_add_component.h
+#define STATIC_DEVICE_INCLUDE_NAME2(module_name)  module_name##_add_device.h
 
 #define ADD_CURRENT_DEV  \
 						STRINGIFY(STATIC_DEVICE_INCLUDE_NAME(DT_DEV_MODULE))
@@ -132,20 +135,12 @@ typedef uint8_t (*dev_callback_func_t)(struct dev_desc_t *adev,
 
 struct dev_desc_t
 {
+#if defined(CONFIG_USE_DEVICE_NAME_STRINGS)
+	char                 *dev_name;
+#endif
+	struct included_module_t *module;
 	void*               p_config_data;
 	void*               p_runtime_data;
-#if (defined(CONFIG_DYNAMIC_DEVICE_TREE) ||  \
-		defined(CONFIG_USE_RUNTIME_DEVICE_CONFIGURATION_BY_PARAMETER_NAMES) || \
-		(CONFIG_MAX_NUM_OF_DYNAMIC_DEVICES>0))
-	char                *module_name;
-#endif
-#if defined(CONFIG_USE_DEVICE_NAME_STRINGS)
-	char                 *name;
-#endif
-	dev_ioctl_func_t     ioctl;
-	dev_pwrite_func_t    pwrite;
-	dev_pread_func_t     pread;
-	dev_callback_func_t  callback;
 #ifdef CONFIG_USE_SPECIFIC_MEMORY_LOCATION_FOR_DEVICES
 	void                 *magic_number;
 #endif
@@ -179,19 +174,21 @@ struct included_module_t
 
 /*  ioctl functions */
 #define DEV_IOCTL        DEV_IOCTL_1_PARAMS
-uint8_t DEV_IOCTL_0_PARAMS(struct dev_desc_t * dev, uint8_t ioctl_num);
-uint8_t DEV_IOCTL_1_PARAMS(struct dev_desc_t * dev,
-						uint8_t ioctl_num, void *param1);
-#define DEV_IOCTL_2_PARAMS(dev, ioctl_num, ioctl_param1, ioctl_param2)    \
-		(dev)->ioctl(dev ,ioctl_num,(void*)ioctl_param1,(void*)ioctl_param2)
+#define DEV_IOCTL_0_PARAMS(dev, ioctl_num)    \
+				DEV_IOCTL_2_PARAMS(dev, ioctl_num, NULL, NULL)
+#define DEV_IOCTL_1_PARAMS(dev, ioctl_num, ioctl_param1)    \
+				DEV_IOCTL_2_PARAMS(dev, ioctl_num, ioctl_param1, NULL)
+uint8_t DEV_IOCTL_2_PARAMS(struct dev_desc_t * dev,
+						uint8_t ioctl_num, void *param1, void *param2);
 
 
 /* callback functions */
-uint8_t DEV_CALLBACK_0_PARAMS(struct dev_desc_t * dev, uint8_t ioctl_num);
-uint8_t DEV_CALLBACK_1_PARAMS(struct dev_desc_t * dev,
-						uint8_t ioctl_num, void *param1);
-#define DEV_CALLBACK_2_PARAMS(dev, callback_num, param1, param2)    \
-			dev->callback(dev, callback_num,(void*)param1, (void*)param2)
+#define DEV_CALLBACK_0_PARAMS(dev, callback_num)    \
+				DEV_CALLBACK_2_PARAMS(dev, callback_num, NULL, NULL)
+#define DEV_CALLBACK_1_PARAMS(dev, callback_num, param1)    \
+				DEV_CALLBACK_2_PARAMS(dev, callback_num, param1, NULL)
+uint8_t	DEV_CALLBACK_2_PARAMS(struct dev_desc_t *adev,
+						uint8_t ioctl_num, void *param1, void *param2);
 
 
 size_t	DEV_PWRITE(struct dev_desc_t *adev,

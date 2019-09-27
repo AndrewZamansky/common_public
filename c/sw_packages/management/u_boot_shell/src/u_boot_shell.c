@@ -26,9 +26,6 @@
 #include <stdio.h>
 #include <stdarg.h>
 
-/*following line add module to available module list for dynamic device tree*/
-#include "u_boot_shell_add_component.h"
-
 
 /********  defines *********************/
 
@@ -197,3 +194,14 @@ uint8_t u_boot_shell_ioctl( struct dev_desc_t *adev ,
 	}
 	return 0;
 }
+
+#define MODULE_NAME                     u_boot_shell
+#define MODULE_IOCTL_FUNCTION           u_boot_shell_ioctl
+#define MODULE_CALLBACK_FUNCTION        u_boot_shell_callback
+#define MODULE_CONFIG_DATA_STRUCT_TYPE  struct u_boot_shell_instance_t
+
+#define MODULE_CONFIGURABLE_PARAMS_ARRAY	{\
+			{"u_boot_server", IOCTL_SET_SERVER_DEVICE, IOCTL_VOID , \
+				DEV_PARAM_TYPE_PDEVICE, MAPPED_SET_DUMMY_PARAM() }, \
+		}
+#include "add_module.h"

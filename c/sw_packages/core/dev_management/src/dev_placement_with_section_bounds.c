@@ -31,7 +31,7 @@ struct dev_desc_t * find_static_dev_by_name(const char *device_name)
 		uint8_t data_size;
 		if((int*)DEV_MAGIC_NUMBER == curr_pdev->magic_number)
 		{
-			if (0 == strcmp( (char*)curr_pdev->name , device_name ) )
+			if (0 == strcmp( (char*)curr_pdev->dev_name , device_name ) )
 			{
 				return  curr_pdev;
 			}
@@ -91,18 +91,10 @@ static struct included_module_t * get_module(const char *module_name)
 
 void init_new_device(struct dev_desc_t * pdev )
 {
-	const char *module_name_str ;
 	struct included_module_t *module;
 
-	module_name_str = pdev->module_name;
-	module = get_module(module_name_str);
+	module = pdev->module;
 
-	if (NULL == module) return NULL;
-
-	pdev->ioctl		= module->ioctl;
-	pdev->pwrite	= module->pwrite;
-	pdev->pread		= module->pread;
-	pdev->callback	= module->callback;
 	if (NULL == pdev->p_config_data)
 	{
 		pdev->p_config_data = malloc(module->module_config_struct_size);
