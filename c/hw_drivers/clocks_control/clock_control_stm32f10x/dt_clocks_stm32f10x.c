@@ -10,7 +10,7 @@
 
 #define CLK_DT_IOCTL               clock_stm32f10x_xtal_ioctl
 
-#include ADD_CURRENT_DEV
+#include"../clk_cntl_add_device.h"
 
 
 
@@ -21,7 +21,7 @@
 
 #define CLK_DT_IOCTL              clock_stm32f10x_hsirc_ioctl
 
-#include ADD_CURRENT_DEV
+#include"../clk_cntl_add_device.h"
 
 
 /***********************************/
@@ -31,7 +31,7 @@
 
 #define CLK_DT_IOCTL              clock_stm32f10x_sysclk_ioctl
 
-#include ADD_CURRENT_DEV
+#include"../clk_cntl_add_device.h"
 
 
 
@@ -43,7 +43,7 @@
 #define CLK_DT_IOCTL              clock_stm32f10x_hclk_ioctl
 #define CLK_DT_DEFAULT_PARENT      stm32f10x_sysclk_dev
 
-#include ADD_CURRENT_DEV
+#include"../clk_cntl_add_device.h"
 
 
 /***********************************/
@@ -54,7 +54,7 @@
 #define CLK_DT_IOCTL               stm32f10x_systick_clk_ioctl
 #define CLK_DT_DEFAULT_PARENT      stm32f10x_hclk_clk_dev
 
-#include ADD_CURRENT_DEV
+#include"../clk_cntl_add_device.h"
 
 
 /***********************************/
@@ -65,7 +65,7 @@
 #define CLK_DT_IOCTL              clock_stm32f10x_apb2_ioctl
 #define CLK_DT_DEFAULT_PARENT      stm32f10x_hclk_clk_dev
 
-#include ADD_CURRENT_DEV
+#include"../clk_cntl_add_device.h"
 
 
 /***********************************/
@@ -76,4 +76,4 @@
 #define CLK_DT_IOCTL              clock_stm32f10x_adc_ioctl
 #define CLK_DT_DEFAULT_PARENT      stm32f10x_apb2_clk_dev
 
-#include ADD_CURRENT_DEV
+#include"../clk_cntl_add_device.h"

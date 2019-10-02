@@ -27,7 +27,7 @@
 #endif
 
 
-#include "add_component.h"
+#include "add_static_dev.h"
 
 /**
  *  device specific defines should be undefined

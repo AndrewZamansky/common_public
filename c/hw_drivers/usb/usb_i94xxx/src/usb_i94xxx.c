@@ -12,6 +12,7 @@
 
 #include "dev_management_api.h"
 
+#include "usb_i94xxx_api.h"
 #include "usb_i94xxx.h"
 #include "I94100.h"
 
@@ -27,8 +28,6 @@
 
 //#include "audio_class.h"
 
-/*following line add module to available module list for dynamic device tree*/
-#include "usb_i94xxx_add_component.h"
 
 #if !defined(INTERRUPT_PRIORITY_FOR_USBD)
 	#error "INTERRUPT_PRIORITY_FOR_USBD should be defined"
@@ -455,6 +454,7 @@ static void device_start(struct usb_i94xxx_cfg_t *cfg_hndl)
 	pin_control_api_set_pin_function(PIN_CONTROL_DT_I94XXX_PIN_B14_USBD_DP);
 	pin_control_api_set_pin_function(PIN_CONTROL_DT_I94XXX_PIN_B15_USBD_VBUS);
 
+	DEV_IOCTL_0_PARAMS(i94xxx_usb_clk_dev, IOCTL_DEVICE_START);
 	DEV_IOCTL_1_PARAMS(i94xxx_usb_clk_dev,
 						CLK_IOCTL_SET_PARENT, cfg_hndl->src_clock);
 	DEV_IOCTL_0_PARAMS(i94xxx_usb_clk_dev, CLK_IOCTL_ENABLE);
@@ -550,8 +550,8 @@ static void set_descriptors(struct set_device_descriptors_t *descriptors)
  *
  * return:
  */
-uint8_t usb_i94xxx_ioctl( struct dev_desc_t *adev, uint8_t aIoctl_num,
-		void * aIoctl_param1, void * aIoctl_param2)
+static uint8_t usb_i94xxx_ioctl( struct dev_desc_t *adev,
+		uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2)
 {
 	struct usb_i94xxx_cfg_t *cfg_hndl;
 
@@ -596,3 +596,8 @@ uint8_t usb_i94xxx_ioctl( struct dev_desc_t *adev, uint8_t aIoctl_num,
 	}
 	return 0;
 }
+
+#define    MODULE_NAME                  usb_i94xxx
+#define    MODULE_IOCTL_FUNCTION        usb_i94xxx_ioctl
+#define MODULE_CONFIG_DATA_STRUCT_TYPE  struct usb_i94xxx_cfg_t
+#include "add_module.h"

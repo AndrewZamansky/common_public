@@ -43,7 +43,7 @@ size_t 	uart_stm32f10x_pwrite(struct dev_desc_t *adev ,const uint8_t *apData , s
 	}
 
 
-#include "add_component.h"
+#include "add_static_dev.h"
 
 /* device specific defines should be undefined after calling #include "add_static_dev.h" */
 #undef UART_STM32f10X_DT_UART_NUMBER

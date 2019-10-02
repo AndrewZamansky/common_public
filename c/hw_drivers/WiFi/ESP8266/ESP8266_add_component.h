@@ -53,7 +53,7 @@
 
 	#endif
 
-#include "add_component.h"
+#include "add_static_dev.h"
 
 /* device specific defines should be undefined after calling #include "add_static_dev.h" */
 #undef POINTER_TO_UART_RX_PDEV

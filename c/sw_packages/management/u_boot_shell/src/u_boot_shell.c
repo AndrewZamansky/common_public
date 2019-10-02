@@ -27,23 +27,16 @@
 #include <stdarg.h>
 
 
-/********  defines *********************/
 
-
-
-/********  types  *********************/
-
-
-
-/********  externals *********************/
-
-/* ----------- Exported variables ------------------------*/
 struct dev_desc_t * gCurrReplyDev = NULL;
 
 extern int run_command(const char *cmd, int flag);
 
 /********  local defs *********************/
 
+const uint8_t UBOOT_SHELL_API_VER_VARIABLE(UBOOT_SHELL_API_VERSION);
+
+// following variable required by uboot source:
 char console_buffer[1];
 
 void clear_ctrlc (void)
@@ -126,7 +119,7 @@ void SHELL_REPLY_PRINTF(const char* Format, ...)
  *
  * return:
  */
-uint8_t u_boot_shell_callback(
+static uint8_t u_boot_shell_callback(
 		struct dev_desc_t *adev, const uint8_t aCallback_num,
 		void * aCallback_param1, void * aCallback_param2)
 {
@@ -157,7 +150,7 @@ uint8_t u_boot_shell_callback(
  *
  * return:
  */
-uint8_t u_boot_shell_ioctl( struct dev_desc_t *adev ,
+static uint8_t u_boot_shell_ioctl( struct dev_desc_t *adev ,
 		const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
 {
 	struct u_boot_shell_instance_t *config_handle;

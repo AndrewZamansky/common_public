@@ -23,13 +23,4 @@ struct button_manager_runtime_t {
 	uint32_t    curr_event_indx;
 };
 
-struct button_manager_config_t {
-	struct dev_desc_t     *client_dev;
-	struct dev_desc_t     **gpio_devs_arr;
-	struct btn_event_t   *btn_events_arr;
-	uint32_t              num_of_events;
-	uint8_t               num_of_gpio_devs;
-};
-
-
 #endif /* */

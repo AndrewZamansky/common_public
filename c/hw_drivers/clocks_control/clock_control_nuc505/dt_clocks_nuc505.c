@@ -11,7 +11,7 @@
 #define CLK_DT_IOCTL			clock_nuc505_xtal_ioctl
 #define CLK_DT_DEFAULT_RATE		CONFIG_CRYSTAL_CLOCK
 
-#include ADD_CURRENT_DEV
+#include"../clk_cntl_add_device.h"
 
 
 /***********************************/
@@ -21,7 +21,7 @@
 
 #define CLK_DT_IOCTL			clock_nuc505_core_ioctl
 
-#include ADD_CURRENT_DEV
+#include"../clk_cntl_add_device.h"
 
 
 /***********************************/
@@ -32,5 +32,5 @@
 #define CLK_DT_IOCTL			nuc505_systick_clk_ioctl
 #define CLK_DT_DEFAULT_PARENT	nuc505_core_clk_dev
 
-#include ADD_CURRENT_DEV
+#include"../clk_cntl_add_device.h"
 

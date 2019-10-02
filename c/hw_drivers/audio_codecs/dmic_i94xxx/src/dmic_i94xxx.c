@@ -12,6 +12,7 @@
 #include "dev_management_api.h"
 
 #include "dmic_i94xxx.h"
+
 #include "I94100.h"
 
 #include "irq_api.h"
@@ -20,7 +21,6 @@
 
 
 /*following line add module to available module list for dynamic device tree*/
-#include "dmic_i94xxx_add_component.h"
 
 /********  defines *********************/
 
@@ -52,6 +52,7 @@ static void dmic_init(struct dmic_i94xxx_cfg_t *cfg_hndl)
 	pin_control_api_set_pin_function(cfg_hndl->dmic_data1_pin);
 	pin_control_api_set_pin_function(cfg_hndl->dmic_clk1_pin);
 
+	DEV_IOCTL_1_PARAMS(i94xxx_dmic_clk_dev, IOCTL_DEVICE_START);
 	DEV_IOCTL_1_PARAMS(i94xxx_dmic_clk_dev, CLK_IOCTL_SET_PARENT, src_clock);
 	DEV_IOCTL_0_PARAMS(i94xxx_dmic_clk_dev, CLK_IOCTL_ENABLE);
 
@@ -98,8 +99,8 @@ static void dmic_init(struct dmic_i94xxx_cfg_t *cfg_hndl)
  *
  * return:
  */
-uint8_t dmic_i94xxx_ioctl( struct dev_desc_t *adev, uint8_t aIoctl_num,
-		void * aIoctl_param1, void * aIoctl_param2)
+static uint8_t dmic_i94xxx_ioctl( struct dev_desc_t *adev,
+		uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2)
 {
 	struct dmic_i94xxx_cfg_t *cfg_hndl;
 
@@ -140,3 +141,8 @@ uint8_t dmic_i94xxx_ioctl( struct dev_desc_t *adev, uint8_t aIoctl_num,
 	}
 	return 0;
 }
+
+#define  MODULE_NAME                     dmic_i94xxx
+#define  MODULE_IOCTL_FUNCTION           dmic_i94xxx_ioctl
+#define  MODULE_CONFIG_DATA_STRUCT_TYPE  struct dmic_i94xxx_cfg_t
+#include "add_module.h"

@@ -22,10 +22,6 @@
 #include "usb_audio_class.h"
 #include "usb_device_descriptors_api.h"
 
-/*following line add module to available module list for dynamic device tree*/
-#include "usb_audio_class_add_component.h"
-
-
 
 #define REC_STREAM_TERMINAL_ID    0x02
 #define REC_TERMINAL_ID    0x04

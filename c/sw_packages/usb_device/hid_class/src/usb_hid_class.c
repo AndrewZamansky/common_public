@@ -22,9 +22,6 @@
 #include "usb_hid_class.h"
 #include "usb_device_descriptors_api.h"
 
-/*following line add module to available module list for dynamic device tree*/
-#include "usb_hid_class_add_component.h"
-
 
 #define TO_BE_SET_AUTOMATICALLY   0
 
@@ -139,7 +136,8 @@ static void new_data_received(
 	{
 		return;
 	}
-	DEV_CALLBACK_2_PARAMS(callback_rx_dev, CALLBACK_DATA_RECEIVED, buff, size);
+	DEV_CALLBACK_2_PARAMS( callback_rx_dev,
+			CALLBACK_DATA_RECEIVED, (void*)buff, (void*)(size_t)size);
 }
 
 
@@ -169,7 +167,7 @@ static void end_of_transmit_callback(struct dev_desc_t *adev)
  *
  * return:
  */
-size_t usb_hid_pwrite(struct dev_desc_t *adev,
+static size_t usb_hid_pwrite(struct dev_desc_t *adev,
 			const uint8_t *apData, size_t aLength, size_t aOffset)
 {
 	struct dev_desc_t *usb_hw;
@@ -431,8 +429,8 @@ static void start_hid_class(struct dev_desc_t *adev,
  *
  * return:
  */
-uint8_t usb_hid_class_ioctl( struct dev_desc_t *adev, uint8_t aIoctl_num,
-		void * aIoctl_param1, void * aIoctl_param2)
+static uint8_t usb_hid_class_ioctl( struct dev_desc_t *adev,
+		uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2)
 {
 	struct usb_hid_class_cfg_t *cfg_hndl;
 	struct usb_hid_class_runtime_t *runtime_hndl;
@@ -458,3 +456,10 @@ uint8_t usb_hid_class_ioctl( struct dev_desc_t *adev, uint8_t aIoctl_num,
 	}
 	return 0;
 }
+
+#define    MODULE_NAME                  usb_hid_class
+#define    MODULE_IOCTL_FUNCTION        usb_hid_class_ioctl
+#define    MODULE_PWRITE_FUNCTION       usb_hid_pwrite
+#define MODULE_CONFIG_DATA_STRUCT_TYPE  struct usb_hid_class_cfg_t
+#define MODULE_RUNTIME_DATA_STRUCT_TYPE struct usb_hid_class_runtime_t
+#include "add_module.h"

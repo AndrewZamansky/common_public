@@ -41,8 +41,8 @@ uint8_t spi_flash_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num , voi
 		}
 #endif
 
-#include "add_component.h"
+#include "add_static_dev.h"
 
-/* device specific defines should be undefined after calling #include "add_component.h" */
+/* device specific defines should be undefined after calling #include "add_static_dev.h" */
 #undef SPI_FLASH_DT_SPI_SERVER_DEV
 #undef SPI_FLASH_DT_GPIO_SERVER_DEV

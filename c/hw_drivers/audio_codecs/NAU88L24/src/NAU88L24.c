@@ -18,7 +18,6 @@
 #include "os_wrapper.h"
 
 /*following line add module to available module list for dynamic device tree*/
-#include "NAU88L24_add_component.h"
 
 
 
@@ -404,8 +403,8 @@ static void init_88L24(struct NAU88L24_config_t *cfg_hndl)
  *
  * return:
  */
-uint8_t NAU88L24_ioctl( struct dev_desc_t *adev, uint8_t aIoctl_num,
-		void * aIoctl_param1, void * aIoctl_param2)
+static uint8_t NAU88L24_ioctl( struct dev_desc_t *adev,
+		uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2)
 {
 	struct NAU88L24_config_t *cfg_hndl;
 
@@ -422,3 +421,8 @@ uint8_t NAU88L24_ioctl( struct dev_desc_t *adev, uint8_t aIoctl_num,
 	}
 	return 0;
 }
+
+#define	MODULE_NAME                      NAU88L24
+#define	MODULE_IOCTL_FUNCTION            NAU88L24_ioctl
+#define MODULE_CONFIG_DATA_STRUCT_TYPE   struct NAU88L24_config_t
+#include "add_module.h"

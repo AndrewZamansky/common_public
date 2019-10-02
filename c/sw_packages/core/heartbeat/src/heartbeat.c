@@ -23,11 +23,6 @@
 //#include "dev_management_api.h"
 #include "os_wrapper.h"
 
-#include "_heartbeat_prerequirements_check.h"
-
-/*following line add module to available module list for dynamic device tree*/
-#include "heartbeat_add_component.h"
-
 /********  defines *********************/
 
 
@@ -41,21 +36,22 @@
 
 /********  local defs *********************/
 
-volatile uint32_t cpuUsageCounter;
-volatile uint32_t cpu1secUsageCounter = 0;
-volatile uint32_t restart_counter=1;
-volatile uint32_t callibrationDone = 0;
+static volatile uint32_t cpuUsageCounter;
+static volatile uint32_t cpu1secUsageCounter = 0;
+static volatile uint32_t restart_counter = 1;
+static volatile uint32_t callibrationDone = 0;
 //uint32_t idleCpuUsageCounter;
-static uint32_t cpu_usage_measure_mPercents=0;
-static int16_t one_sec_countdown=1000;
+static uint32_t cpu_usage_measure_mPercents = 0;
+static int16_t one_sec_countdown = 1000;
 
 
 #define SKIP_MEASURES	3
-/*--------------------------------------------------------------------------*/
+
 /* Function:        heartbeat_timer_callback
  *
- *                                                                        */
-void heartbeat_timer_callback()
+ *
+ */
+static void heartbeat_timer_callback()
 {
 	restart_counter++;
 }
@@ -65,7 +61,7 @@ void heartbeat_timer_callback()
  *
  * return:
  */
-uint8_t heartbeat_ioctl( struct dev_desc_t *adev,
+static uint8_t heartbeat_ioctl( struct dev_desc_t *adev,
 		const uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2)
 {
 	struct heartbeat_instance_t *handle;
@@ -77,10 +73,10 @@ uint8_t heartbeat_ioctl( struct dev_desc_t *adev,
 	case IOCTL_DEVICE_START :
 
 		DEV_IOCTL_1_PARAMS(handle->callibration_timer ,
-				IOCTL_TIMER_CALLBACK_SET , heartbeat_timer_callback);
-		DEV_IOCTL_0_PARAMS(handle->callibration_timer , IOCTL_DEVICE_START );
+				IOCTL_TIMER_CALLBACK_SET, heartbeat_timer_callback);
+		DEV_IOCTL_0_PARAMS(handle->callibration_timer, IOCTL_DEVICE_START );
 
-		irq_unblock_all()	;
+		irq_unblock_all();
 		while (1)
 		{
 			if ( restart_counter )
@@ -95,7 +91,7 @@ uint8_t heartbeat_ioctl( struct dev_desc_t *adev,
 			}
 			cpuUsageCounter++;
 		}
-		irq_block_all()	 ;
+		irq_block_all();
 
 		ticks_per_mSec = cpuUsageCounter;
 		//idleCpuUsageCounter = cpuUsageCounter * 1000;
@@ -124,7 +120,7 @@ uint8_t heartbeat_ioctl( struct dev_desc_t *adev,
 				cpu1secUsageCounter += cpuUsageCounter;
 				if (0 >= one_sec_countdown)
 				{
-					struct dev_desc_t * 	heartbeat_callback_dev;
+					struct dev_desc_t * heartbeat_callback_dev;
 					cpu_usage_measure_mPercents = 100000 -
 							( (cpu1secUsageCounter * 100) / ticks_per_mSec );
 					heartbeat_callback_dev = handle->heartbeat_callback_dev;
@@ -170,3 +166,9 @@ uint8_t heartbeat_ioctl( struct dev_desc_t *adev,
 	}
 	return 0;
 }
+
+#define	MODULE_NAME             heartbeat
+#define	MODULE_INIT_FUNCTION    heartbeat_init
+#define	MODULE_IOCTL_FUNCTION   heartbeat_ioctl
+#define MODULE_CONFIG_DATA_STRUCT_TYPE  struct heartbeat_instance_t
+#include "add_module.h"

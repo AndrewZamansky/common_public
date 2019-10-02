@@ -14,12 +14,7 @@
 
 /********  types  *********************/
 
-struct usb_hid_class_cfg_t {
-	struct dev_desc_t *usb_hw;
-	struct dev_desc_t *callback_tx_dev;
-	struct dev_desc_t *callback_rx_dev;
-	struct dev_desc_t *usb_descriptors_dev;
-};
+
 
 struct usb_hid_class_runtime_t {
 	size_t  sentLen;

@@ -14,10 +14,16 @@
 
 /**********  define API  functions  ************/
 
-typedef enum
-{
+enum USB_VIRTUAL_COM_API_ioctl_e {
 	IOCTL_USB_VIRTUAL_COM_START = IOCTL_LAST_COMMON_UART_IOCTL + 1,
-} USB_VIRTUAL_COM_API_ioctl_t;
+};
+
+struct usb_virtual_com_class_cfg_t {
+	struct dev_desc_t *usb_hw;
+	struct dev_desc_t *callback_tx_dev;
+	struct dev_desc_t *callback_rx_dev;
+	struct dev_desc_t *usb_descriptors_dev;
+};
 
 
 #endif

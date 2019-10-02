@@ -6,9 +6,17 @@
 
 /**********  define API  types ************/
 
+typedef void (*get_freq_func_t)(uint32_t *freq, uint32_t parent_freq);
+typedef void (*set_freq_func_t)(uint32_t freq, uint32_t parent_freq);
+typedef void (*set_parent_clk_func_t)(struct dev_desc_t *parent_clk);
+typedef void (*enable_clk_func_t)();
+
 struct cfg_clk_t {
-	uint32_t          rate;
-	struct dev_desc_t *parent_clk;
+	struct dev_desc_t  *default_parent_clk;
+	get_freq_func_t  get_freq_func;
+	set_freq_func_t  set_freq_func;
+	set_parent_clk_func_t set_parent_clk_func;
+	enable_clk_func_t enable_clk_func;
 };
 
 

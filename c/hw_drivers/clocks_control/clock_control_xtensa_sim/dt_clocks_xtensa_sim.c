@@ -11,4 +11,4 @@
 #define CLK_DT_IOCTL			clock_xtensa_sim_core_clk_ioctl
 #define CLK_DT_DEFAULT_RATE		CONFIG_XTENSA_SIM_CORE_CLOCK
 
-#include ADD_CURRENT_DEV
+#include"../clk_cntl_add_device.h"

@@ -23,11 +23,11 @@ uint8_t LM35_ioctl( void * const aHandle ,const uint8_t aIoctl_num , void * aIoc
 		}
 #endif
 
-#include "add_component.h"
+#include "add_static_dev.h"
 
 #define MODULE_CONFIGURABLE_PARAMS_ARRAY	{	\
 		{IOCTL_LM35_SET_SERVER_DEVICE , IOCTL_VOID , LM35_API_SERVER_DEVICE_STR, NOT_FOR_SAVE},	\
 	}
 
-/* device specific defines should be undefined after calling #include "add_component.h" */
+/* device specific defines should be undefined after calling #include "add_static_dev.h" */
 #undef LM35_ADC_SERVER_PDEV

@@ -87,7 +87,7 @@ typedef struct
  * Side effects:
  * Description:
 */
-uint8_t button_manager_callback(
+static uint8_t button_manager_callback(
 		struct dev_desc_t *adev ,const uint8_t aCallback_num ,
 		void * aCallback_param1, void * aCallback_param2)
 {
@@ -140,7 +140,7 @@ static uint8_t compare_gpio_state(struct gpio_api_read_t *curr_gpio_state_arr,
 }
 
 
-uint32_t end_of_debounce_on_push(struct dev_desc_t *adev)
+static uint32_t end_of_debounce_on_push(struct dev_desc_t *adev)
 {
 	struct button_manager_runtime_t *runtime_handle;
 	struct button_manager_config_t  *config_handle;
@@ -194,7 +194,7 @@ uint32_t end_of_debounce_on_push(struct dev_desc_t *adev)
 }
 
 
-uint8_t button_state_hold(struct dev_desc_t *adev, uint8_t event_idx)
+static uint8_t button_state_hold(struct dev_desc_t *adev, uint8_t event_idx)
 {
 	struct button_manager_runtime_t *runtime_handle;
 	struct button_manager_config_t  *config_handle;
@@ -242,7 +242,8 @@ uint8_t button_state_hold(struct dev_desc_t *adev, uint8_t event_idx)
 }
 
 
-uint8_t end_of_debounce_on_release(struct dev_desc_t *adev, uint8_t event_idx)
+static uint8_t end_of_debounce_on_release(
+		struct dev_desc_t *adev, uint8_t event_idx)
 {
 	struct button_manager_runtime_t *runtime_handle;
 	struct button_manager_config_t  *config_handle;
@@ -631,8 +632,8 @@ static button_manager_reported_event_handle_t
  * Side effects:
  * Description:
  */
-uint8_t button_manager_ioctl(struct dev_desc_t *adev, const uint8_t aIoctl_num,
-		void * aIoctl_param1, void * aIoctl_param2)
+static uint8_t button_manager_ioctl(struct dev_desc_t *adev,
+		const uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2)
 {
 	struct button_manager_runtime_t *runtime_handle;
 	struct button_manager_config_t *config_handle;
@@ -662,8 +663,8 @@ uint8_t button_manager_ioctl(struct dev_desc_t *adev, const uint8_t aIoctl_num,
 		break;
 
 	case IOCTL_DEVICE_START :
-		os_create_task("button_manager_task", button_manager_task ,
-				(void *)adev , BUTTON_MANAGER_CONFIG_TASK_STACK_SIZE ,
+		os_create_task("button_manager_task", button_manager_task,
+				(void *)adev, BUTTON_MANAGER_CONFIG_TASK_STACK_SIZE,
 				BUTTON_MANAGER_CONFIG_TASK_PRIORITY);
 
 		break;
@@ -674,3 +675,9 @@ uint8_t button_manager_ioctl(struct dev_desc_t *adev, const uint8_t aIoctl_num,
 	return 0;
 }
 
+#define MODULE_NAME                     button_manager
+#define MODULE_IOCTL_FUNCTION           button_manager_ioctl
+#define MODULE_CALLBACK_FUNCTION        button_manager_callback
+#define MODULE_CONFIG_DATA_STRUCT_TYPE  struct button_manager_config_t
+#define MODULE_RUNTIME_DATA_STRUCT_TYPE struct button_manager_runtime_t
+#include "add_module.h"

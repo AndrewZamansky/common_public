@@ -14,17 +14,6 @@
 
 /********  types  *********************/
 
-struct dma_i94xxx_cfg_t {
-	struct dev_desc_t *callback_dev;
-	struct dev_desc_t *peripheral_dev;
-	uint8_t    channel_num;
-	uint8_t    peripheral_type;
-	uint8_t    num_of_buffers;
-	uint8_t    num_of_prefilled_buffer_before_tx_start;
-	uint32_t   transfer_word_size;
-	uint32_t   buff_size;
-
-};
 
 struct dma_i94xxx_runtime_t {
 	uint8_t   curr_dma_buff_indx;

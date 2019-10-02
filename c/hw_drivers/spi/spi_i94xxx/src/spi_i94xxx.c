@@ -15,9 +15,6 @@
 #include "clock_control_i94xxx_api.h"
 #include "pin_control_api.h"
 
-/*following line add module to available module list for dynamic device tree*/
-#include "spi_i94xxx_add_component.h"
-
 
 
 #if !defined(INTERRUPT_PRIORITY_FOR_SPI)
@@ -193,8 +190,7 @@ static void spi_i94xxx_pread_callback(SPI_T *spi_regs,
  *
  * return: aLength minus number of bytes read. Should be 0.
  */
-
-uint8_t spi_i94xxx_callback(struct dev_desc_t *adev ,
+static uint8_t spi_i94xxx_callback(struct dev_desc_t *adev ,
 		uint8_t aCallback_num , void * aCallback_param1,
 		void * aCallback_param2)
 {
@@ -244,7 +240,7 @@ uint8_t spi_i94xxx_callback(struct dev_desc_t *adev ,
  *
  * return: size_t aLength minus number of bytes read. Should be 0.
  */
-size_t spi_i94xxx_pread(struct dev_desc_t *adev,
+static size_t spi_i94xxx_pread(struct dev_desc_t *adev,
 			uint8_t *apData, size_t aLength, size_t aOffset)
 {
 	struct spi_i94xxx_cfg_t *cfg_hndl;
@@ -306,7 +302,7 @@ size_t spi_i94xxx_pread(struct dev_desc_t *adev,
  *		specified in the Device Tree, located in the main folder.
  * return:
  */
-size_t spi_i94xxx_pwrite(struct dev_desc_t *adev ,
+static size_t spi_i94xxx_pwrite(struct dev_desc_t *adev ,
 		const uint8_t *apData , size_t aLength, size_t aOffset)
 {
 	struct spi_i94xxx_cfg_t *cfg_hndl;
@@ -357,8 +353,8 @@ size_t spi_i94xxx_pwrite(struct dev_desc_t *adev ,
  *
  * return:
  */
-uint8_t spi_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
-		, void * aIoctl_param1 , void * aIoctl_param2)
+static uint8_t spi_i94xxx_ioctl( struct dev_desc_t *adev,
+		const uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2)
 {
 	struct spi_i94xxx_cfg_t *cfg_hndl;
 	struct spi_i94xxx_runtime_t *runtime_handle;
@@ -406,6 +402,7 @@ uint8_t spi_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 		pin_control_api_set_pin_function(cfg_hndl->MOSI_pin);
 		pin_control_api_set_pin_function(cfg_hndl->SS_pin);
 
+		DEV_IOCTL_0_PARAMS(spi_clk_dev, IOCTL_DEVICE_START);
 		DEV_IOCTL_1_PARAMS(spi_clk_dev, CLK_IOCTL_SET_PARENT, src_clock);
 		DEV_IOCTL_0_PARAMS(spi_clk_dev, CLK_IOCTL_ENABLE);
 
@@ -483,3 +480,12 @@ uint8_t spi_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 	}
 	return 0;
 }
+
+#define	MODULE_NAME                     spi_i94xxx
+#define	MODULE_IOCTL_FUNCTION           spi_i94xxx_ioctl
+#define MODULE_CALLBACK_FUNCTION        spi_i94xxx_callback
+#define	MODULE_PWRITE_FUNCTION          spi_i94xxx_pwrite
+#define	MODULE_PREAD_FUNCTION           spi_i94xxx_pread
+#define MODULE_CONFIG_DATA_STRUCT_TYPE  struct spi_i94xxx_cfg_t
+#define MODULE_RUNTIME_DATA_STRUCT_TYPE struct spi_i94xxx_runtime_t
+#include "add_module.h"

@@ -21,9 +21,6 @@
 #include "usb_audio_class_api.h"
 #include "usb_audio_class.h"
 
-/*following line add module to available module list for dynamic device tree*/
-#include "usb_audio_class_add_component.h"
-
 
 enum USB_AUDIO_CLASS_buff_state_t {
 	USB_AUDIO_CLASS_BUFF_IDLE,
@@ -500,7 +497,7 @@ static uint8_t release_rx_buffer(struct usb_audio_class_cfg_t *cfg_hndl,
 }
 
 
-volatile uint32_t dbg_in_overflow_cnt =0;
+volatile uint32_t dbg_in_overflow_cnt = 0;
 static uint8_t get_empty_tx_buffer(struct usb_audio_class_cfg_t *cfg_hndl,
 		struct usb_audio_class_runtime_t *runtime_hndl,
 		uint8_t **buff, size_t *ret_buff_size)
@@ -1138,8 +1135,8 @@ static void start_audio_class(struct dev_desc_t *adev,
  *
  * return:
  */
-uint8_t usb_audio_class_ioctl( struct dev_desc_t *adev, uint8_t aIoctl_num,
-		void * aIoctl_param1, void * aIoctl_param2)
+static uint8_t usb_audio_class_ioctl( struct dev_desc_t *adev,
+		uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2)
 {
 	struct usb_audio_class_cfg_t *cfg_hndl;
 	struct usb_audio_class_runtime_t *runtime_hndl;
@@ -1177,3 +1174,9 @@ uint8_t usb_audio_class_ioctl( struct dev_desc_t *adev, uint8_t aIoctl_num,
 	}
 	return 0;
 }
+
+#define MODULE_NAME                  usb_audio_class
+#define MODULE_IOCTL_FUNCTION        usb_audio_class_ioctl
+#define MODULE_CONFIG_DATA_STRUCT_TYPE  struct usb_audio_class_cfg_t
+#define MODULE_RUNTIME_DATA_STRUCT_TYPE struct usb_audio_class_runtime_t
+#include "add_module.h"

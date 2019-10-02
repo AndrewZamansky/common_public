@@ -50,11 +50,11 @@
 
 #endif
 
-#include "add_component.h"
+#include "add_static_dev.h"
 
 /*
  *  device specific defines should be undefined
- *  after calling #include "add_component.h"
+ *  after calling #include "add_static_dev.h"
  */
 #undef I2S_NUC505_DT_SAMPLE_RATE
 #undef I2S_NUC505_DT_MASTER_OR_SLAVE_MODE

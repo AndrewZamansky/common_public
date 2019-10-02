@@ -40,7 +40,7 @@ uint8_t gpio_stm8_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num , voi
 		{IOCTL_GPIO_STM8_SET_MODE_PARAM , IOCTL_VOID , GPIO_STM8_API_MODE_STR, NOT_FOR_SAVE}	\
 	}
 
-#include "add_component.h"
+#include "add_static_dev.h"
 
 #undef GPIO_STM8_DT_PORT
 #undef GPIO_STM8_DT_PIN

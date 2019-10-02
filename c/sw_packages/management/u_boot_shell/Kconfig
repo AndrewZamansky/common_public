@@ -1,6 +1,17 @@
+config INCLUDE_ONLY_UBOOT_SHELL_API
+	bool   "include only uboot shell api"
+	default n
+	---help---
+		If you dont want to compile the sources but only use API such as
+		uboot command macros.
+		If now you are creating the library, implementation should exist in
+		other library or in base application.
+		If now you are creating application, implementation should exist in
+		some library.
 
 config SYS_MAXARGS
 	int   "maximal number of arguments"
+	depends on !INCLUDE_ONLY_UBOOT_SHELL_API
 	default 8
 
 menu "common uboot shell commands"

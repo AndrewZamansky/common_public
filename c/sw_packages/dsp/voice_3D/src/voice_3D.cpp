@@ -22,8 +22,6 @@
 #include "auto_init_api.h"
 
 
-#include "_voice_3D_prerequirements_check.h"
-
 /********  defines *********************/
 
 

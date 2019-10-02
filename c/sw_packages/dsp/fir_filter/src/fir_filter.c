@@ -21,7 +21,6 @@
 #include "auto_init_api.h"
 #include "math.h"
 
-#include "_fir_filter_prerequirements_check.h"
 
 /********  defines *********************/
 

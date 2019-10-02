@@ -44,7 +44,7 @@
  *  device specific defines should be undefined
  *  after calling #include "add_static_dev.h"
  */
-#include "add_component.h"
+#include "add_static_dev.h"
 
 #undef XTENSA_INTERNAL_TIMERS_DT_INITIAL_RATE
 #undef XTENSA_INTERNAL_TIMERS_DT_INDEX

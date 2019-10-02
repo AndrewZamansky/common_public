@@ -19,12 +19,15 @@
 #ifdef CONFIG_INCLUDE_HEARTBEAT
 #include "heartbeat_api.h"
 #endif
+#include "freertos_internal.h"
 
 extern void os_start_arch_related_components(void);
 extern void xPortSysTickHandler(void);
 
 static struct dev_desc_t * l_timer_dev = NULL;
 static struct dev_desc_t * l_heartbeat_dev = NULL;
+
+const uint8_t OS_API_VER_VARIABLE(OS_API_VERSION);
 
 void *pvPortRealloc(void *p, size_t xWantedSize)
 {

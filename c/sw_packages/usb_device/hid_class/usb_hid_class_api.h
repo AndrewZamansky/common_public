@@ -9,14 +9,19 @@
 
 
 /**********  define API  types ************/
-typedef enum
-{
+enum USB_HID_CLASS_API_ioctl_e {
 	IOCTL_USB_HID_START = IOCTL_LAST_COMMON_UART_IOCTL + 1,
 	IOCTL_USB_HID_GET_IN_ENDPOINT_SIZE,
 	IOCTL_USB_HID_SET_REPORT_DESCRIPTOR
-} USB_HID_CLASS_API_ioctl_t;
+};
 
 
+struct usb_hid_class_cfg_t {
+	struct dev_desc_t *usb_hw;
+	struct dev_desc_t *callback_tx_dev;
+	struct dev_desc_t *callback_rx_dev;
+	struct dev_desc_t *usb_descriptors_dev;
+};
 /**********  define API  functions  ************/
 
 struct usb_hid_set_report_descriptor_t {

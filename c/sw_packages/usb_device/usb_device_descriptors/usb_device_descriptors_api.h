@@ -67,6 +67,14 @@ struct usb_descriptors_add_string_t {
 			USB_DEVICE_DESCRIPTORS_ADD_STRING_DESCRIPTOR, &__str_desc_s);\
 	}
 
+
+struct usb_device_descriptors_cfg_t {
+	struct dev_desc_t *usb_hw;
+	uint16_t VID;
+	uint16_t PID;
+};
+
+
 /**********  define API  functions  ************/
 
 #endif

@@ -116,6 +116,9 @@ endif
 LIBS := $(patsubst lib%,-l%,$(GLOBAL_LIBS))
 LIBS := $(patsubst %.a,%,$(LIBS))
 
+WHOLE_LIBS := $(patsubst lib%,-l%,$(GLOBAL_WHOLE_LIBS))
+WHOLE_LIBS := $(patsubst %.a,%,$(WHOLE_LIBS))
+
 ifeq ($(findstring cortex-m,$(CONFIG_CPU_TYPE)),cortex-m)
 #	GLOBAL_LIBS_PATH := $(GLOBAL_LIBS_PATH) $(GCC_LIB_ROOT_DIR)/fpu
 #	GLOBAL_LIBS_PATH := $(GLOBAL_LIBS_PATH) $(GCC_LIB_ROOT_DIR)/thumb
@@ -212,7 +215,9 @@ ifdef CONFIG_OUTPUT_TYPE_STATIC_LIBRARY
     LINKER_CMD = $(AR) cr -o $(LINKER_OUTPUT) @$(ALL_OBJECTS_LIST_FILE)
 else
     LINKER_CMD =$(LD) $(LDFLAGS) -T $(SCATTER_FILE) $(LIBRARIES_DIRS)
-    LINKER_CMD += @$(ALL_OBJECTS_LIST_FILE) $(LIBS) -o $(LINKER_OUTPUT)
+    LINKER_CMD += @$(ALL_OBJECTS_LIST_FILE)
+    LINKER_CMD += -Wl,--whole-archive $(WHOLE_LIBS) -Wl,--no-whole-archive
+    LINKER_CMD += $(LIBS) -o $(LINKER_OUTPUT)
 endif
 
 

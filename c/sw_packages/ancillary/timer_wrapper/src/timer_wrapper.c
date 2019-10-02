@@ -21,9 +21,6 @@
 //#define DEBUG
 #include "PRINTF_api.h"
 
-/*following line add module to available module list for dynamic device tree*/
-#include "timer_wrapper_add_component.h"
-
 /********  defines *********************/
 
 
@@ -182,3 +179,9 @@ uint8_t timer_wrapper_ioctl( struct dev_desc_t *adev,
 	}
 	return 0;
 }
+
+#define	MODULE_NAME                      timer_wrapper
+#define	MODULE_IOCTL_FUNCTION            timer_wrapper_ioctl
+#define MODULE_CONFIG_DATA_STRUCT_TYPE   struct timer_wrapper_cfg_t
+#define MODULE_RUNTIME_DATA_STRUCT_TYPE  struct timer_wrapper_runtime_t
+#include "add_module.h"

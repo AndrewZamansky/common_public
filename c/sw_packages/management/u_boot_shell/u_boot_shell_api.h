@@ -2,17 +2,26 @@
 #ifndef _u_boot_shell_API_H_
 #define _u_boot_shell_API_H_
 
-#include "dev_management_api.h"
-#include "PRINTF_api.h"
+#include "project_config.h"
 
+#ifndef CONFIG_INCLUDE_ONLY_UBOOT_SHELL_API
+	#include "dev_management_api.h"
+#endif
 
 /*****************  defines  **************/
+#define UBOOT_SHELL_API_VERSION  20191007
+
 
 #define  U_BOOT_SHELL_API_SERVER_DEVICE_STR  "server_dev"
 /**********  define API  types ************/
 
 
 
+#ifndef CONFIG_INCLUDE_ONLY_UBOOT_SHELL_API
+	struct u_boot_shell_instance_t {
+		struct dev_desc_t * server_dev;
+	};
+#endif
 
 /**********  define API  functions  ************/
 

@@ -26,11 +26,19 @@ endef
 
 
 # spaces in ' $(strip $(1)) ' are important
-define ADD_TO_GLOBAL_LIBRARIES =
+define ADD_TO_GLOBAL_LIBS =
     $(call _APPEND_IF_NOT_EXISTS,GLOBAL_LIBS, $(strip $(1)) )
 endef
 #usage :
-#    $(eval $(call ADD_TO_GLOBAL_LIBRARIES , var))
+#    $(eval $(call ADD_TO_GLOBAL_LIBS, var))
+
+
+# spaces in ' $(strip $(1)) ' are important
+define ADD_TO_GLOBAL_WHOLE_LIBS =
+    $(call _APPEND_IF_NOT_EXISTS,GLOBAL_WHOLE_LIBS, $(strip $(1)) )
+endef
+#usage :
+#    $(eval $(call ADD_TO_GLOBAL_WHOLE_LIBS, var))
 
 
 # spaces in ' $(strip $(1)) ' are important
@@ -50,11 +58,11 @@ endef
 
 
 # spaces in ' $(strip $(1)) ' are important
-define ADD_TO_GLOBAL_LIBRARIES_PATH =
+define ADD_TO_GLOBAL_LIBS_PATH =
     $(call _APPEND_IF_NOT_EXISTS,GLOBAL_LIBS_PATH, $(strip $(1)) )
 endef
 #usage :
-#    $(eval $(call ADD_TO_GLOBAL_LIBRARIES_PATH , var))
+#    $(eval $(call ADD_TO_GLOBAL_LIBS_PATH , var))
 
 
 # spaces in ' $(strip $(1)) ' are important

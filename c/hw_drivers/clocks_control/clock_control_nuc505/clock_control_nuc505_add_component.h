@@ -20,10 +20,10 @@
 
 #endif
 
-#include "add_component.h"
+#include "add_static_dev.h"
 
 /*
  *  device specific defines should be undefined
- *  after calling #include "add_component.h"
+ *  after calling #include "add_static_dev.h"
  */
 #undef CLOCK_CONTROL_NUC505_DT_CORE_RATE

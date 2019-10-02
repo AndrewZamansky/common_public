@@ -15,6 +15,8 @@
 #include "dev_management.h"
 
 #include "auto_init_api.h"
+#include "os_wrapper.h"
+#include "string.h"
 
 
 /***************   defines    *******************/
@@ -45,6 +47,13 @@ uint8_t	DEV_IOCTL_2_PARAMS(struct dev_desc_t *adev,
 	{
 		CRITICAL_ERROR("access NULL device");
 	}
+/*	dont check for 	adev->p_runtime_data for static devices because for very
+	small SOC malloc is not used, so runtime_data MUST be allocated
+	during compilation time.
+	if ( NULL == adev->p_runtime_data )
+	{
+	}
+ */
 	return (adev->module->ioctl)(adev, ioctl_num, param1, param2);
 }
 
@@ -176,7 +185,7 @@ struct dev_desc_t * DEV_OPEN(const char *device_name)
 	if (NULL != curr_pdev) return curr_pdev;
 #elif CONFIG_MAX_NUM_OF_DYNAMIC_DEVICES > 0
 	curr_pdev =  &dev_descriptors[0];
-	while (curr_pdev <  &dev_descriptors[CONFIG_MAX_NUM_OF_DYNAMIC_DEVICES])
+	while (curr_pdev < &dev_descriptors[CONFIG_MAX_NUM_OF_DYNAMIC_DEVICES])
 	{
 		if (0 == strcmp(curr_pdev->dev_name, (char*)device_name ) )
 		{
@@ -222,7 +231,7 @@ struct dev_desc_t * DEV_API_add_device(const char* module_name_str,
 			uint8_t name_str_len;
 
 			name_str_len = strlen(device_name_str);
-			new_str = (char*) malloc(name_str_len);
+			new_str = (char*) os_safe_malloc(name_str_len);
 			errors_api_check_if_malloc_secceed(new_str);
 
 			strcpy(new_str,  device_name_str);

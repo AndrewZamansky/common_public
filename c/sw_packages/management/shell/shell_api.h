@@ -2,27 +2,16 @@
 #ifndef _Shell_API_H_
 #define _Shell_API_H_
 
-#ifdef CONFIG_INCLUDE_SHELL
 
-
-/*****************  defines  **************/
-
-
-/**********  define API  types ************/
-
-
-
-#define SHELL_API_SERVER_DEVICE_STR  	"server_device"
-
-
-/**********  define API  functions  ************/
-
-
-#else
+#define SHELL_API_SERVER_DEVICE_STR  "server_device"
 
 #include "dev_management_api.h"
 
-#endif
-
+struct shell_cfg_t {
+	struct dev_desc_t * server_tx_dev;
+	struct dev_desc_t * server_rx_dev;
+	struct dev_desc_t *   callback_dev;
+	struct dev_desc_t *   cmd_save_dev;
+};
 
 #endif

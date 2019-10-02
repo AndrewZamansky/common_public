@@ -9,10 +9,10 @@
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 
+#include "i2c_i94xxx_api.h"
 #include "i2c_i94xxx.h"
 
 #include "i2c_api.h"
-#include "i2c_i94xxx_add_component.h"
 
 #include "dev_management_api.h"
 
@@ -477,7 +477,7 @@ static void I2C_MasterRX(struct i2c_i94xxx_cfg_t *cfg_hndl,
 }
 
 
-uint8_t i2c_i94xxx_callback(struct dev_desc_t *adev ,
+static uint8_t i2c_i94xxx_callback(struct dev_desc_t *adev ,
 		uint8_t aCallback_num , void * aCallback_param1,
 		void * aCallback_param2)
 {
@@ -527,7 +527,7 @@ uint8_t i2c_i94xxx_callback(struct dev_desc_t *adev ,
  *
  * return:
  */
-size_t i2c_i94xxx_pwrite(struct dev_desc_t *adev,
+static size_t i2c_i94xxx_pwrite(struct dev_desc_t *adev,
 			const uint8_t *apData, size_t aLength, size_t aOffset)
 {
 	struct i2c_i94xxx_cfg_t *cfg_hndl;
@@ -776,6 +776,7 @@ static uint8_t  device_start(struct dev_desc_t *adev)
 	}
 
 
+	DEV_IOCTL_0_PARAMS(i2c_clk_dev, IOCTL_DEVICE_START);
 	DEV_IOCTL_0_PARAMS(i2c_clk_dev, CLK_IOCTL_ENABLE);
 
 	/* Reset I2C module */
@@ -807,8 +808,8 @@ static uint8_t  device_start(struct dev_desc_t *adev)
  *
  * return:
  */
-uint8_t i2c_i94xxx_ioctl( struct dev_desc_t *adev, uint8_t aIoctl_num,
-		void * aIoctl_param1, void * aIoctl_param2)
+static uint8_t i2c_i94xxx_ioctl( struct dev_desc_t *adev,
+		uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2)
 {
 	struct i2c_i94xxx_cfg_t *cfg_hndl;
 	I2C_T *i2c_regs;
@@ -843,3 +844,11 @@ uint8_t i2c_i94xxx_ioctl( struct dev_desc_t *adev, uint8_t aIoctl_num,
 	}
 	return 0;
 }
+
+#define MODULE_NAME                     i2c_i94xxx
+#define MODULE_IOCTL_FUNCTION           i2c_i94xxx_ioctl
+#define MODULE_CALLBACK_FUNCTION        i2c_i94xxx_callback
+#define MODULE_PWRITE_FUNCTION          i2c_i94xxx_pwrite
+#define MODULE_CONFIG_DATA_STRUCT_TYPE  struct i2c_i94xxx_cfg_t
+#define MODULE_RUNTIME_DATA_STRUCT_TYPE struct i2c_i94xxx_runtime_t
+#include "add_module.h"

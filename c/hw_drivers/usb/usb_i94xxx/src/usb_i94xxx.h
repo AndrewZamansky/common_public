@@ -13,9 +13,6 @@
 
 /********  types  *********************/
 
-struct usb_i94xxx_cfg_t {
-	struct dev_desc_t *   src_clock;
-};
 
 
 #endif

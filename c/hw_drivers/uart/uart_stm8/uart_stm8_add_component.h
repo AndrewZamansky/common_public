@@ -42,7 +42,7 @@ size_t uart_stm8_pwrite( struct dev_desc_t *adev ,const uint8_t *apData , size_t
 
 	#endif
 
-#include "add_component.h"
+#include "add_static_dev.h"
 
 /* device specific defines should be undefined after calling #include "add_static_dev.h" */
 #undef RX_CALLBACK_PDEV

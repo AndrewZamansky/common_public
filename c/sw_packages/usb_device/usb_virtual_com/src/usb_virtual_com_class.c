@@ -18,8 +18,6 @@
 #include "usb_device_api.h"
 #include "usb_device_descriptors_api.h"
 
-/*following line add module to available module list for dynamic device tree*/
-#include "usb_virtual_com_class_add_component.h"
 
 /********  defines *********************/
 
@@ -176,7 +174,8 @@ static void new_data_received(
 	{
 		return;
 	}
-	DEV_CALLBACK_2_PARAMS(callback_rx_dev, CALLBACK_DATA_RECEIVED, buff, size);
+	DEV_CALLBACK_2_PARAMS(callback_rx_dev,
+			CALLBACK_DATA_RECEIVED, (void*)buff, (void*)(size_t)size);
 }
 
 
@@ -488,8 +487,8 @@ static void start_virtual_com_class(struct dev_desc_t *adev,
  *
  * return:
  */
-uint8_t usb_virtual_com_class_ioctl(struct dev_desc_t *adev, uint8_t aIoctl_num,
-		void * aIoctl_param1, void * aIoctl_param2)
+static uint8_t usb_virtual_com_class_ioctl(struct dev_desc_t *adev,
+		uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2)
 {
 	struct usb_virtual_com_class_cfg_t *cfg_hndl;
 	struct usb_virtual_com_class_runtime_t *runtime_hndl;
@@ -512,3 +511,10 @@ uint8_t usb_virtual_com_class_ioctl(struct dev_desc_t *adev, uint8_t aIoctl_num,
 	}
 	return 0;
 }
+
+#define    MODULE_NAME                  usb_virtual_com_class
+#define    MODULE_IOCTL_FUNCTION        usb_virtual_com_class_ioctl
+#define    MODULE_PWRITE_FUNCTION       usb_virtual_com_pwrite
+#define MODULE_CONFIG_DATA_STRUCT_TYPE  struct usb_virtual_com_class_cfg_t
+#define MODULE_RUNTIME_DATA_STRUCT_TYPE struct usb_virtual_com_class_runtime_t
+#include "add_module.h"

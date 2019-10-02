@@ -14,13 +14,12 @@
 
 #include "cortexM_systick_api.h"
 #include "cortexM_systick.h"
+
 #include "irq_api.h"
 #include "clock_control_api.h"
 #include "hw_timer_api.h"
 
 
-/*following line add module to available module list for dynamic device tree*/
-#include "cortexM_systick_add_component.h"
 
 //locally disable IRQn_Type defined in soc
 #define IRQn_Type IRQn_Type_local
@@ -61,15 +60,15 @@ typedef enum IRQn_local {
 
 static cortexM_systick_instance_t *pcortexM_systick_instanceParams;
 
-//static volatile uint64_t currentTick=0;
-volatile uint64_t currentTick=0;
+static volatile uint64_t currentTick=0;
+//volatile uint64_t currentTick = 0;
 
 /*
  * SysTick_IRQHandler()
  *
  * return:
  */
-void __attribute__((interrupt("IRQ"))) SysTick_IRQHandler(void)
+static void __attribute__((interrupt("IRQ"))) SysTick_IRQHandler(void)
 {
 	timer_callback_func_t timer_callback;
 
@@ -88,7 +87,7 @@ void __attribute__((interrupt("IRQ"))) SysTick_IRQHandler(void)
  *
  * return:
  */
-uint8_t cortexM_systick_ioctl( struct dev_desc_t *adev,
+static uint8_t cortexM_systick_ioctl( struct dev_desc_t *adev,
 		const uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2)
 {
 	cortexM_systick_instance_t *config_handle;
@@ -113,6 +112,7 @@ uint8_t cortexM_systick_ioctl( struct dev_desc_t *adev,
 		break;
 
 	case IOCTL_DEVICE_START :
+		DEV_IOCTL_0_PARAMS(config_handle->clock_dev, IOCTL_DEVICE_START);
 		DEV_IOCTL_1_PARAMS(config_handle->clock_dev,
 				CLK_IOCTL_GET_FREQ, &core_clock_rate );
 		pcortexM_systick_instanceParams = config_handle;
@@ -145,3 +145,8 @@ uint8_t cortexM_systick_ioctl( struct dev_desc_t *adev,
 	}
 	return 0;
 }
+
+#define	MODULE_NAME						cortexM_systick
+#define	MODULE_IOCTL_FUNCTION			cortexM_systick_ioctl
+#define MODULE_CONFIG_DATA_STRUCT_TYPE	cortexM_systick_instance_t
+#include "add_module.h"

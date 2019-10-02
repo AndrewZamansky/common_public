@@ -19,7 +19,6 @@
 
 #include "math.h"
 
-#include "_biquad_filter_prerequirements_check.h"
 
 /********  defines *********************/
 

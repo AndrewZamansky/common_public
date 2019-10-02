@@ -138,6 +138,11 @@ SECTIONS
 		*(EXCLUDE_FILE ( FILES_TO_FORCE_IN_RAM ) .rodata )
 	}  > CODE_LOCATION
 
+	.variables_to_keep . :
+	{
+		KEEP(*(.const_variables_to_keep*))
+	} > CODE_LOCATION
+
 	. = ALIGN(4);
 	.u_boot_list . :
 	{

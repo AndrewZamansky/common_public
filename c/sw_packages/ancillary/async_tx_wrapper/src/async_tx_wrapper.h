@@ -14,7 +14,6 @@
 #include "dev_management_api.h"
 #include "os_wrapper.h"
 
-#include "src/_async_tx_wrapper_prerequirements_check.h"
 
 /***************   typedefs    *******************/
 
@@ -33,11 +32,6 @@
 		#endif
 	#endif
 #endif
-
-struct async_tx_wrapper_cfg_t {
-	struct dev_desc_t *server_dev;
-	uint32_t           char_timeout; // max time to transmit one char
-};
 
 
 struct async_tx_wrapper_runtime_t {

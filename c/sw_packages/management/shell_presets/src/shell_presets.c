@@ -50,7 +50,7 @@ static uint32_t magic_number = MAGIC_NUMBER;
  *
  * return:
  */
-size_t shell_presets_pwrite(struct dev_desc_t *adev,
+static size_t shell_presets_pwrite(struct dev_desc_t *adev,
 			const uint8_t *apData, size_t aLength, size_t aOffset)
 {
 	struct shell_presets_runtime_t *runtime_handle;
@@ -239,7 +239,7 @@ static uint8_t set_preset_to_default(struct shell_presets_cfg_t *config_handle,
  *
  * return:
  */
-uint8_t shell_presets_ioctl( struct dev_desc_t *adev,
+static uint8_t shell_presets_ioctl( struct dev_desc_t *adev,
 		const uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2)
 {
 	uint8_t retVal;
@@ -315,9 +315,9 @@ uint8_t shell_presets_ioctl( struct dev_desc_t *adev,
 }
 
 
-#define	MODULE_NAME					shell_presets
-#define	MODULE_IOCTL_FUNCTION		shell_presets_ioctl
-#define	MODULE_PWRITE_FUNCTION		shell_presets_pwrite
-#define MODULE_CONFIG_DATA_STRUCT_TYPE		struct shell_presets_cfg_t
-#define MODULE_RUNTIME_DATA_STRUCT_TYPE		struct shell_presets_runtime_t
+#define MODULE_NAME                      shell_presets
+#define MODULE_IOCTL_FUNCTION            shell_presets_ioctl
+#define MODULE_PWRITE_FUNCTION           shell_presets_pwrite
+#define MODULE_CONFIG_DATA_STRUCT_TYPE   struct shell_presets_cfg_t
+#define MODULE_RUNTIME_DATA_STRUCT_TYPE  struct shell_presets_runtime_t
 #include "add_module.h"

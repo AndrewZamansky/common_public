@@ -86,970 +86,856 @@ __attribute__((weak)) void SystemCoreClockUpdate(void)
  //   CyclesPerUs = (SystemCoreClock + 500000) / 1000000;
 }
 
-
-uint8_t clock_i94xxx_xtal_ioctl( struct dev_desc_t *adev,
-		const uint8_t aIoctl_num, void * aIoctl_param1,
-		void * aIoctl_param2)
+/***************************************/
+/********** i94xxx_xtal_clk_dev ********/
+static void clock_i94xxx_xtal_enable()
 {
-	struct cfg_clk_t *cfg_clk;
-	uint32_t rate;
+	CLK_EnableXtalRC(CLK_PWRCTL_HXTEN_Msk);
+	CLK_WaitClockReady(CLK_STATUS_HXTSTB_Msk);
+}
 
-	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(adev);
-	switch(aIoctl_num)
+static void clock_i94xxx_xtal_set_freq(uint32_t freq, uint32_t parent_freq)
+{
+	__HXT = freq;
+	gau32ClkSrcTbl[0] = freq;
+}
+
+#define DT_DEV_NAME                i94xxx_xtal_clk_dev
+#define DT_DEV_MODULE              clk_cntl
+
+#define CLK_DT_ENABLE_CLK_FUNC    clock_i94xxx_xtal_enable
+#define CLK_DT_SET_FREQ_FUNC      clock_i94xxx_xtal_set_freq
+
+#include "clk_cntl_add_device.h"
+
+
+
+/****************************************/
+/********** i94xxx_lxtal_clk_dev ********/
+static void clock_i94xxx_lxtal_enable()
+{
+	CLK_EnableXtalRC(CLK_PWRCTL_LXTEN_Msk);
+	CLK_WaitClockReady(CLK_STATUS_LXTSTB_Msk);
+}
+
+static void clock_i94xxx_lxtal_set_freq(uint32_t freq, uint32_t parent_freq)
+{
+	__LXT = freq;
+	gau32ClkSrcTbl[1] = freq;
+}
+
+#define DT_DEV_NAME                i94xxx_lxtal_clk_dev
+#define DT_DEV_MODULE              clk_cntl
+
+#define CLK_DT_ENABLE_CLK_FUNC    clock_i94xxx_lxtal_enable
+#define CLK_DT_SET_FREQ_FUNC      clock_i94xxx_lxtal_set_freq
+
+#include "clk_cntl_add_device.h"
+
+
+
+/***************************************/
+/********** i94xxx_hirc_clk_dev ********/
+static void clock_i94xxx_hirc_enable()
+{
+	CLK_EnableXtalRC(CLK_PWRCTL_HIRCEN_Msk);
+	CLK_WaitClockReady(CLK_STATUS_HIRCSTB_Msk);
+}
+
+static void clock_i94xxx_hirc_set_freq(uint32_t freq, uint32_t parent_freq)
+{
+	if (48000000 == freq)
 	{
-	case CLK_IOCTL_ENABLE :
-		CLK_EnableXtalRC(CLK_PWRCTL_HXTEN_Msk);
-		CLK_WaitClockReady(CLK_STATUS_HXTSTB_Msk);
-		break;
-	case CLK_IOCTL_SET_FREQ :
-		rate = *(uint32_t*)aIoctl_param1;
-		cfg_clk->rate = rate;
-		__HXT = rate;
-		gau32ClkSrcTbl[0] = rate;
-		break;
-	case CLK_IOCTL_GET_FREQ :
-		*(uint32_t*)aIoctl_param1 = cfg_clk->rate;
-		break;
-	default :
-		return 1;
+		CLK_SELECT_TRIM_HIRC(CLK_CLKSEL0_HIRCFSEL_48M);
 	}
-	return 0;
+	else if (49152000 == freq)
+	{
+		CLK_SELECT_TRIM_HIRC(CLK_CLKSEL0_HIRCFSEL_49M);
+	}
+	else
+	{
+		CRITICAL_ERROR("bad clock rate \n");
+	}
+	__HIRC = freq;
+}
+
+#define DT_DEV_NAME               i94xxx_hirc_clk_dev
+#define DT_DEV_MODULE             clk_cntl
+
+#define CLK_DT_ENABLE_CLK_FUNC    clock_i94xxx_hirc_enable
+#define CLK_DT_SET_FREQ_FUNC      clock_i94xxx_hirc_set_freq
+
+#include "clk_cntl_add_device.h"
+
+
+/***************************************/
+/********** i94xxx_pll_clk_dev ********/
+static void clock_i94xxx_pll_set_freq(uint32_t freq, uint32_t parent_freq)
+{
+	if (CLK->PLLCTL & CLK_PLLCTL_PLLSRC_Msk)
+	{
+		CLK_EnablePLL(CLK_PLLCTL_PLLSRC_HIRC, freq );
+	}
+	else
+	{
+		CLK_EnablePLL(CLK_PLLCTL_PLLSRC_HXT, freq);
+	}
+}
+
+static void clock_i94xxx_pll_get_freq(uint32_t *freq, uint32_t parent_freq)
+{
+	*freq = CLK_GetPLLClockFreq();
 }
 
 
-uint8_t clock_i94xxx_lxtal_ioctl( struct dev_desc_t *adev,
-		const uint8_t aIoctl_num, void * aIoctl_param1,
-		void * aIoctl_param2)
+static void clock_i94xxx_pll_set_parent_clk(struct dev_desc_t *parent_clk)
 {
-	struct cfg_clk_t *cfg_clk;
-	uint32_t rate;
-
-	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(adev);
-	switch(aIoctl_num)
+	if (i94xxx_xtal_clk_dev == parent_clk)
 	{
-	case CLK_IOCTL_ENABLE :
-		CLK_EnableXtalRC(CLK_PWRCTL_LXTEN_Msk);
-		CLK_WaitClockReady(CLK_STATUS_LXTSTB_Msk);
-		break;
-	case CLK_IOCTL_SET_FREQ :
-		rate = *(uint32_t*)aIoctl_param1;
-		cfg_clk->rate = rate;
-		__LXT = rate;
-		gau32ClkSrcTbl[1] = rate;
-		break;
-	case CLK_IOCTL_GET_FREQ :
-		*(uint32_t*)aIoctl_param1 = cfg_clk->rate;
-		break;
-	default :
-		return 1;
+		CLK->PLLCTL &= ~CLK_PLLCTL_PLLSRC_Msk;
 	}
-	return 0;
-}
-
-
-uint8_t clock_i94xxx_hirc_ioctl( struct dev_desc_t *adev,
-		const uint8_t aIoctl_num, void * aIoctl_param1,
-		void * aIoctl_param2)
-{
-	struct cfg_clk_t *cfg_clk;
-	uint32_t rate;
-
-	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(adev);
-
-	switch(aIoctl_num)
+	else if (i94xxx_hirc_clk_dev == parent_clk)
 	{
-	case CLK_IOCTL_ENABLE :
-		CLK_EnableXtalRC(CLK_PWRCTL_HIRCEN_Msk);
-		CLK_WaitClockReady(CLK_STATUS_HIRCSTB_Msk);
-		break;
-	case CLK_IOCTL_SET_FREQ :
-		rate = *(uint32_t*)aIoctl_param1;
-		if (48000000 == rate)
-		{
-			CLK_SELECT_TRIM_HIRC(CLK_CLKSEL0_HIRCFSEL_48M);
-		}
-		else if (49152000 == rate)
-		{
-			CLK_SELECT_TRIM_HIRC(CLK_CLKSEL0_HIRCFSEL_49M);
-		}
-		else
-		{
-			CRITICAL_ERROR("bad clock rate \n");
-		}
-		__HIRC = rate;
-		cfg_clk->rate = rate;
-		break;
-	case CLK_IOCTL_GET_FREQ :
-		*(uint32_t*)aIoctl_param1 = cfg_clk->rate;
-		break;
-	default :
-		return 1;
+		CLK->PLLCTL |= CLK_PLLCTL_PLLSRC_Msk;
 	}
-	return 0;
-}
-
-
-uint8_t clock_i94xxx_pll_ioctl( struct dev_desc_t *adev,
-		const uint8_t aIoctl_num, void * aIoctl_param1,
-		void * aIoctl_param2)
-{
-	struct cfg_clk_t *cfg_clk;
-	uint32_t rate;
-
-	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(adev);
-	switch(aIoctl_num)
+	else
 	{
-	case CLK_IOCTL_SET_PARENT :
-		if (i94xxx_xtal_clk_dev == aIoctl_param1)
-		{
-			CLK->PLLCTL &= ~CLK_PLLCTL_PLLSRC_Msk;
-		}
-		else if (i94xxx_hirc_clk_dev == aIoctl_param1)
-		{
-			CLK->PLLCTL |= CLK_PLLCTL_PLLSRC_Msk;
-		}
-		else
-		{
-			CRITICAL_ERROR("bad parent clock \n");
-		}
-		cfg_clk->parent_clk = aIoctl_param1;
-		break;
-	case CLK_IOCTL_SET_FREQ :
-		rate = *(uint32_t*)aIoctl_param1;
-		if (CLK->PLLCTL & CLK_PLLCTL_PLLSRC_Msk)
-		{
-			CLK_EnablePLL(CLK_PLLCTL_PLLSRC_HIRC, rate );
-		}
-		else
-		{
-			CLK_EnablePLL(CLK_PLLCTL_PLLSRC_HXT, rate);
-		}
-		cfg_clk->rate = rate;
-		break;
-	case CLK_IOCTL_GET_FREQ :
-		*(uint32_t*)aIoctl_param1 = CLK_GetPLLClockFreq();
-		break;
-	default :
-		return 1;
-	}
-	return 0;
-}
-
-
-uint8_t clock_i94xxx_hclk_ioctl( struct dev_desc_t *adev,
-		const uint8_t aIoctl_num, void * aIoctl_param1,
-		void * aIoctl_param2)
-{
-	struct cfg_clk_t *cfg_clk;
-	uint32_t rate;
-	uint32_t u32HclkDiv;
-
-	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(adev);
-	switch(aIoctl_num)
-	{
-	case CLK_IOCTL_SET_PARENT :
-		if (i94xxx_xtal_clk_dev == aIoctl_param1)
-		{
-			CLK_SetHCLK(CLK_CLKSEL0_HCLKSEL_HIRC, CLK_CLKDIV0_HCLK(1));
-		}
-		else if (i94xxx_hirc_clk_dev == aIoctl_param1)
-		{
-			CLK_SetHCLK(CLK_CLKSEL0_HCLKSEL_HIRC, CLK_CLKDIV0_HCLK(1));
-		}
-		else if (i94xxx_pll_clk_dev == aIoctl_param1)
-		{
-			CLK_SetHCLK(CLK_CLKSEL0_HCLKSEL_PLL, CLK_CLKDIV0_HCLK(1));
-		}
-		else
-		{
-			CRITICAL_ERROR("bad parent clock \n");
-		}
-		cfg_clk->parent_clk = aIoctl_param1;
-		break;
-	case CLK_IOCTL_SET_FREQ :
-		rate = *(uint32_t*)aIoctl_param1;
-		//TODO :
-		cfg_clk->rate = rate;
-		break;
-	case CLK_IOCTL_GET_FREQ :
-		DEV_IOCTL_1_PARAMS(cfg_clk->parent_clk,	CLK_IOCTL_GET_FREQ, &rate);
-		u32HclkDiv = (CLK->CLKDIV0 & CLK_CLKDIV0_HCLKDIV_Msk) + 1;
-		*(uint32_t*)aIoctl_param1 = rate / u32HclkDiv;
-		break;
-	default :
-		return 1;
-	}
-	return 0;
-}
-
-
-uint8_t clock_i94xxx_pclk0_ioctl( struct dev_desc_t *adev,
-		const uint8_t aIoctl_num, void * aIoctl_param1,
-		void * aIoctl_param2)
-{
-	struct cfg_clk_t *cfg_clk;
-	uint32_t parent_rate;
-	uint32_t div;
-	uint32_t req_rate;
-
-	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(adev);
-	switch(aIoctl_num)
-	{
-	case CLK_IOCTL_SET_FREQ :
-		req_rate = *(uint32_t*)aIoctl_param1;
-		DEV_IOCTL_1_PARAMS(i94xxx_hclk_clk_dev,
-				CLK_IOCTL_GET_FREQ, &parent_rate);
-		div = parent_rate / req_rate;
-		if (div)
-		{
-			div--;
-		}
-		CLK->PCLKDIV = (CLK->PCLKDIV & (~CLK_PCLKDIV_APB0DIV_Msk))
-							| (div << CLK_PCLKDIV_APB0DIV_Pos);
-		cfg_clk->rate = req_rate;
-		break;
-	case CLK_IOCTL_GET_FREQ :
-		*(uint32_t*)aIoctl_param1 = CLK_GetPCLK0Freq();
-		break;
-	default :
-		return 1;
-	}
-	return 0;
-}
-
-
-uint8_t clock_i94xxx_pclk1_ioctl( struct dev_desc_t *adev,
-		const uint8_t aIoctl_num, void * aIoctl_param1,
-		void * aIoctl_param2)
-{
-	struct cfg_clk_t *cfg_clk;
-	uint32_t parent_rate;
-	uint32_t div;
-	uint32_t req_rate;
-
-	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(adev);
-	switch(aIoctl_num)
-	{
-	case CLK_IOCTL_SET_FREQ :
-		req_rate = *(uint32_t*)aIoctl_param1;
-		DEV_IOCTL_1_PARAMS(i94xxx_hclk_clk_dev,
-						CLK_IOCTL_GET_FREQ, &parent_rate);
-		div = parent_rate / req_rate;
-		if (div)
-		{
-			div--;
-		}
-		CLK->PCLKDIV = (CLK->PCLKDIV & (~CLK_PCLKDIV_APB1DIV_Msk))
-							| (div << CLK_PCLKDIV_APB1DIV_Pos);
-		cfg_clk->rate = req_rate;
-		break;
-	case CLK_IOCTL_GET_FREQ :
-		*(uint32_t*)aIoctl_param1 = CLK_GetPCLK1Freq();
-		break;
-	default :
-		return 1;
-	}
-	return 0;
-}
-
-
-uint8_t clock_i94xxx_usb_ioctl( struct dev_desc_t *adev,
-		const uint8_t aIoctl_num, void * aIoctl_param1,
-		void * aIoctl_param2)
-{
-	struct cfg_clk_t *cfg_clk;
-	uint32_t parent_rate;
-	uint32_t div;
-	uint32_t req_rate;
-
-	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(adev);
-	switch(aIoctl_num)
-	{
-	case CLK_IOCTL_SET_PARENT :
-		if (i94xxx_hirc_clk_dev == aIoctl_param1)
-		{
-			//CLK->CLKSEL4 &= ~(0x1ul << 24); //CLKSEL4 not exist yet in BSP
-			*((uint32_t *)0x40000224) &= ~(0x1ul << 24);
-		}
-		else if (i94xxx_pll_clk_dev == aIoctl_param1)
-		{
-			//CLK->CLKSEL4 |= (0x1ul << 24); //CLKSEL4 not exist yet in BSP
-			*((uint32_t *)0x40000224) |= (0x1UL<<24);
-		}
-		else
-		{
-			CRITICAL_ERROR("bad parent clock \n");
-		}
-		cfg_clk->parent_clk = aIoctl_param1;
-		break;
-	case CLK_IOCTL_ENABLE :
-		CLK_EnableModuleClock(USBD_MODULE);
-		break;
-	case CLK_IOCTL_SET_FREQ :
-		req_rate = *(uint32_t*)aIoctl_param1;
-		DEV_IOCTL_1_PARAMS(cfg_clk->parent_clk,
-						CLK_IOCTL_GET_FREQ, &parent_rate);
-
-		div = (parent_rate / req_rate);
-		if (div)
-		{
-			div--;
-		}
-
-		CLK->CLKDIV0 = (CLK->CLKDIV0 & (~CLK_CLKDIV0_USBDIV_Msk))
-							| (div << CLK_CLKDIV0_USBDIV_Pos);
-		cfg_clk->rate = req_rate;
-		break;
-	case CLK_IOCTL_GET_FREQ :
-		DEV_IOCTL_1_PARAMS(cfg_clk->parent_clk,
-						CLK_IOCTL_GET_FREQ, &parent_rate);
-		div = ((CLK->CLKDIV0 & CLK_CLKDIV0_USBDIV_Msk) >>
-				CLK_CLKDIV0_USBDIV_Pos) + 1;
-		*(uint32_t*)aIoctl_param1 = parent_rate / div;
-		break;
-	default :
-		return 1;
-	}
-	return 0;
-}
-
-
-uint8_t i94xxx_systick_clk_ioctl( struct dev_desc_t *adev,
-		const uint8_t aIoctl_num, void * aIoctl_param1,
-		void * aIoctl_param2)
-{
-	struct cfg_clk_t *cfg_clk;
-
-	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(adev);
-	switch(aIoctl_num)
-	{
-	case CLK_IOCTL_SET_PARENT :
-		//TODO:
 		CRITICAL_ERROR("bad parent clock \n");
-		cfg_clk->parent_clk = aIoctl_param1;
-		break;
-
-	case CLK_IOCTL_SET_FREQ :
-		//TODO:
-		break;
-	default :
-		return common_clock_api_standard_clk_ioctls(
-				adev, aIoctl_num, aIoctl_param1, aIoctl_param2);
 	}
-	return 0;
 }
 
+#define DT_DEV_NAME               i94xxx_pll_clk_dev
+#define DT_DEV_MODULE             clk_cntl
 
-uint8_t clock_i94xxx_spi2clk_ioctl( struct dev_desc_t *adev,
-		const uint8_t aIoctl_num, void * aIoctl_param1,
-		void * aIoctl_param2)
+#define CLK_DT_SET_FREQ_FUNC        clock_i94xxx_pll_set_freq
+#define CLK_DT_GET_FREQ_FUNC        clock_i94xxx_pll_get_freq
+#define CLK_DT_SET_PARENT_CLK_FUNC  clock_i94xxx_pll_set_parent_clk
+
+#include "clk_cntl_add_device.h"
+
+
+
+/***************************************/
+/********** i94xxx_hclk_clk_dev ********/
+static void clock_i94xxx_hclk_set_parent_clk(struct dev_desc_t *parent_clk)
 {
-	struct cfg_clk_t *cfg_clk;
-
-	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(adev);
-	switch(aIoctl_num)
+	if (i94xxx_xtal_clk_dev == parent_clk)
 	{
-	case CLK_IOCTL_SET_PARENT :
-		if (i94xxx_xtal_clk_dev == aIoctl_param1)
-		{
-			CLK_SetModuleClock(SPI2_MODULE,
-					CLK_CLKSEL2_SPI2SEL_HXT, MODULE_NoMsk);
-		}
-		else if (i94xxx_hirc_clk_dev == aIoctl_param1)
-		{
-			CLK_SetModuleClock(SPI2_MODULE,
-					CLK_CLKSEL2_SPI2SEL_HIRC, MODULE_NoMsk);
-		}
-		else if (i94xxx_pll_clk_dev == aIoctl_param1)
-		{
-			CLK_SetModuleClock(SPI2_MODULE,
-					CLK_CLKSEL2_SPI2SEL_PLL, MODULE_NoMsk);
-		}
-		else if (i94xxx_pclk1_clk_dev == aIoctl_param1)
-		{
-			CLK_SetModuleClock(SPI2_MODULE,
-					CLK_CLKSEL2_SPI2SEL_PCLK0, MODULE_NoMsk);
-		}
-		else
-		{
-			CRITICAL_ERROR("bad parent clock \n");
-		}
-		cfg_clk->parent_clk = aIoctl_param1;
-		break;
-	case CLK_IOCTL_ENABLE :
-		CLK_EnableModuleClock(SPI2_MODULE);
-		break;
-	default :
-		return common_clock_api_standard_clk_ioctls(
-				adev, aIoctl_num, aIoctl_param1, aIoctl_param2);
+		CLK_SetHCLK(CLK_CLKSEL0_HCLKSEL_HIRC, CLK_CLKDIV0_HCLK(1));
 	}
-	return 0;
-}
-
-uint8_t clock_i94xxx_spi1clk_ioctl( struct dev_desc_t *adev,
-		const uint8_t aIoctl_num, void * aIoctl_param1,
-		void * aIoctl_param2)
-{
-	struct cfg_clk_t *cfg_clk;
-
-	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(adev);
-	switch(aIoctl_num)
+	else if (i94xxx_hirc_clk_dev == parent_clk)
 	{
-	case CLK_IOCTL_SET_PARENT :
-		if (i94xxx_xtal_clk_dev == aIoctl_param1)
-		{
-			CLK_SetModuleClock(SPI1_MODULE,
-					CLK_CLKSEL2_SPI1SEL_HXT, MODULE_NoMsk);
-		}
-		else if (i94xxx_hirc_clk_dev == aIoctl_param1)
-		{
-			CLK_SetModuleClock(SPI1_MODULE,
-					CLK_CLKSEL2_SPI1SEL_HIRC, MODULE_NoMsk);
-		}
-		else if (i94xxx_pll_clk_dev == aIoctl_param1)
-		{
-			CLK_SetModuleClock(SPI1_MODULE,
-					CLK_CLKSEL2_SPI1SEL_PLL, MODULE_NoMsk);
-		}
-		else if (i94xxx_pclk1_clk_dev == aIoctl_param1)
-		{
-			CLK_SetModuleClock(SPI1_MODULE,
-					CLK_CLKSEL2_SPI1SEL_PCLK1, MODULE_NoMsk);
-		}
-		else
-		{
-			CRITICAL_ERROR("bad parent clock \n");
-		}
-		cfg_clk->parent_clk = aIoctl_param1;
-		break;
-	case CLK_IOCTL_ENABLE :
-		CLK_EnableModuleClock(SPI1_MODULE);
-		break;
-	default :
-		return common_clock_api_standard_clk_ioctls(
-				adev, aIoctl_num, aIoctl_param1, aIoctl_param2);
+		CLK_SetHCLK(CLK_CLKSEL0_HCLKSEL_HIRC, CLK_CLKDIV0_HCLK(1));
 	}
-	return 0;
+	else if (i94xxx_pll_clk_dev == parent_clk)
+	{
+		CLK_SetHCLK(CLK_CLKSEL0_HCLKSEL_PLL, CLK_CLKDIV0_HCLK(1));
+	}
+	else
+	{
+		CRITICAL_ERROR("bad parent clock \n");
+	}
 }
 
+#define DT_DEV_NAME               i94xxx_hclk_clk_dev
+#define DT_DEV_MODULE             clk_cntl
 
-uint8_t clock_i94xxx_i2s_ioctl( struct dev_desc_t *adev,
-		const uint8_t aIoctl_num, void * aIoctl_param1,
-		void * aIoctl_param2)
+#define CLK_DT_SET_PARENT_CLK_FUNC      clock_i94xxx_hclk_set_parent_clk
+
+#include "clk_cntl_add_device.h"
+
+
+
+/****************************************/
+/********** i94xxx_pclk0_clk_dev ********/
+static void clock_i94xxx_pclk0_set_freq(uint32_t freq, uint32_t parent_freq)
 {
-	struct cfg_clk_t *cfg_clk;
+	uint32_t div;
+	uint32_t parent_rate;
+
+	DEV_IOCTL_1_PARAMS(i94xxx_hclk_clk_dev, CLK_IOCTL_GET_FREQ, &parent_rate);
+	div = parent_rate / freq;
+	if (div)
+	{
+		div--;
+	}
+	CLK->PCLKDIV = (CLK->PCLKDIV & (~CLK_PCLKDIV_APB0DIV_Msk)) |
+									(div << CLK_PCLKDIV_APB0DIV_Pos);
+}
+
+static void clock_i94xxx_pclk0_get_freq(uint32_t *freq, uint32_t parent_freq)
+{
+	*freq = CLK_GetPCLK0Freq();
+}
+
+#define DT_DEV_NAME               i94xxx_pclk0_clk_dev
+#define DT_DEV_MODULE             clk_cntl
+
+#define CLK_DT_SET_FREQ_FUNC      clock_i94xxx_pclk0_set_freq
+#define CLK_DT_GET_FREQ_FUNC      clock_i94xxx_pclk0_get_freq
+
+#include "clk_cntl_add_device.h"
+
+
+
+/****************************************/
+/********** i94xxx_pclk1_clk_dev ********/
+static void clock_i94xxx_pclk1_set_freq(uint32_t freq, uint32_t parent_freq)
+{
+	uint32_t div;
+	uint32_t parent_rate;
+
+	DEV_IOCTL_1_PARAMS(i94xxx_hclk_clk_dev,
+					CLK_IOCTL_GET_FREQ, &parent_rate);
+	div = parent_rate / freq;
+	if (div)
+	{
+		div--;
+	}
+	CLK->PCLKDIV = (CLK->PCLKDIV & (~CLK_PCLKDIV_APB1DIV_Msk)) |
+									(div << CLK_PCLKDIV_APB1DIV_Pos);
+}
+
+static void clock_i94xxx_pclk1_get_freq(uint32_t *freq, uint32_t parent_freq)
+{
+	*freq = CLK_GetPCLK1Freq();
+}
+
+#define DT_DEV_NAME               i94xxx_pclk1_clk_dev
+#define DT_DEV_MODULE             clk_cntl
+
+#define CLK_DT_SET_FREQ_FUNC      clock_i94xxx_pclk1_set_freq
+#define CLK_DT_GET_FREQ_FUNC      clock_i94xxx_pclk1_get_freq
+
+#include "clk_cntl_add_device.h"
+
+
+
+/***************************************/
+/********** i94xxx_usb_clk_dev ********/
+static void clock_i94xxx_usb_enable()
+{
+	CLK_EnableModuleClock(USBD_MODULE);
+}
+
+static void clock_i94xxx_usb_set_freq(uint32_t freq, uint32_t parent_freq)
+{
+	uint32_t div;
+
+	div = (parent_freq / freq);
+	if (div)
+	{
+		div--;
+	}
+
+	CLK->CLKDIV0 = (CLK->CLKDIV0 & (~CLK_CLKDIV0_USBDIV_Msk))
+						| (div << CLK_CLKDIV0_USBDIV_Pos);
+}
+
+static void clock_i94xxx_usb_get_freq(uint32_t *freq, uint32_t parent_freq)
+{
+	uint32_t div;
+
+	div =
+		((CLK->CLKDIV0 & CLK_CLKDIV0_USBDIV_Msk) >> CLK_CLKDIV0_USBDIV_Pos) + 1;
+	*freq = parent_freq / div;
+}
+
+static void clock_i94xxx_usb_set_parent_clk(struct dev_desc_t *parent_clk)
+{
+	if (i94xxx_hirc_clk_dev == parent_clk)
+	{
+		//CLK->CLKSEL4 &= ~(0x1ul << 24); //CLKSEL4 not exist yet in BSP
+		*((uint32_t *)0x40000224) &= ~(0x1ul << 24);
+	}
+	else if (i94xxx_pll_clk_dev == parent_clk)
+	{
+		//CLK->CLKSEL4 |= (0x1ul << 24); //CLKSEL4 not exist yet in BSP
+		*((uint32_t *)0x40000224) |= (0x1UL<<24);
+	}
+	else
+	{
+		CRITICAL_ERROR("bad parent clock \n");
+	}
+}
+
+#define DT_DEV_NAME               i94xxx_usb_clk_dev
+#define DT_DEV_MODULE             clk_cntl
+
+#define CLK_DT_ENABLE_CLK_FUNC      clock_i94xxx_usb_enable
+#define CLK_DT_SET_FREQ_FUNC        clock_i94xxx_usb_set_freq
+#define CLK_DT_GET_FREQ_FUNC        clock_i94xxx_usb_get_freq
+#define CLK_DT_SET_PARENT_CLK_FUNC  clock_i94xxx_usb_set_parent_clk
+
+#include "clk_cntl_add_device.h"
+
+
+
+
+/******************************************/
+/********** i94xxx_systick_clk_dev ********/
+#define DT_DEV_NAME                i94xxx_systick_clk_dev
+#define DT_DEV_MODULE              clk_cntl
+
+#define CLK_DT_DEFAULT_PARENT       i94xxx_hclk_clk_dev
+
+#include "clk_cntl_add_device.h"
+
+
+/***************************************/
+/********** i94xxx_spi2_clk_dev ********/
+static void clock_i94xxx_spi2_enable()
+{
+	CLK_EnableModuleClock(SPI2_MODULE);
+}
+
+static void clock_i94xxx_spi2_set_parent_clk(struct dev_desc_t *parent_clk)
+{
+	if (i94xxx_xtal_clk_dev == parent_clk)
+	{
+		CLK_SetModuleClock(SPI2_MODULE,
+				CLK_CLKSEL2_SPI2SEL_HXT, MODULE_NoMsk);
+	}
+	else if (i94xxx_hirc_clk_dev == parent_clk)
+	{
+		CLK_SetModuleClock(SPI2_MODULE,
+				CLK_CLKSEL2_SPI2SEL_HIRC, MODULE_NoMsk);
+	}
+	else if (i94xxx_pll_clk_dev == parent_clk)
+	{
+		CLK_SetModuleClock(SPI2_MODULE,
+				CLK_CLKSEL2_SPI2SEL_PLL, MODULE_NoMsk);
+	}
+	else if (i94xxx_pclk1_clk_dev == parent_clk)
+	{
+		CLK_SetModuleClock(SPI2_MODULE,
+				CLK_CLKSEL2_SPI2SEL_PCLK0, MODULE_NoMsk);
+	}
+	else
+	{
+		CRITICAL_ERROR("bad parent clock \n");
+	}
+}
+
+#define DT_DEV_NAME               i94xxx_spi2_clk_dev
+#define DT_DEV_MODULE             clk_cntl
+
+#define CLK_DT_ENABLE_CLK_FUNC       clock_i94xxx_spi2_enable
+#define CLK_DT_SET_PARENT_CLK_FUNC   clock_i94xxx_spi2_set_parent_clk
+
+#include "clk_cntl_add_device.h"
+
+
+
+/***************************************/
+/********** i94xxx_spi1_clk_dev ********/
+static void clock_i94xxx_spi1_enable()
+{
+	CLK_EnableModuleClock(SPI1_MODULE);
+}
+
+static void clock_i94xxx_spi1_set_parent_clk(struct dev_desc_t *parent_clk)
+{
+	if (i94xxx_xtal_clk_dev == parent_clk)
+	{
+		CLK_SetModuleClock(SPI1_MODULE,
+				CLK_CLKSEL2_SPI1SEL_HXT, MODULE_NoMsk);
+	}
+	else if (i94xxx_hirc_clk_dev == parent_clk)
+	{
+		CLK_SetModuleClock(SPI1_MODULE,
+				CLK_CLKSEL2_SPI1SEL_HIRC, MODULE_NoMsk);
+	}
+	else if (i94xxx_pll_clk_dev == parent_clk)
+	{
+		CLK_SetModuleClock(SPI1_MODULE,
+				CLK_CLKSEL2_SPI1SEL_PLL, MODULE_NoMsk);
+	}
+	else if (i94xxx_pclk1_clk_dev == parent_clk)
+	{
+		CLK_SetModuleClock(SPI1_MODULE,
+				CLK_CLKSEL2_SPI1SEL_PCLK1, MODULE_NoMsk);
+	}
+	else
+	{
+		CRITICAL_ERROR("bad parent clock \n");
+	}
+}
+
+#define DT_DEV_NAME               i94xxx_spi1_clk_dev
+#define DT_DEV_MODULE             clk_cntl
+
+#define CLK_DT_ENABLE_CLK_FUNC       clock_i94xxx_spi1_enable
+#define CLK_DT_SET_PARENT_CLK_FUNC   clock_i94xxx_spi1_set_parent_clk
+
+#include "clk_cntl_add_device.h"
+
+
+
+/***************************************/
+/********** i94xxx_i2s_clk_dev ********/
+static void clock_i94xxx_i2s_enable()
+{
+	CLK->APBCLK0 |= CLK_APBCLK0_I2S0CKEN_Msk;
+}
+
+static void clock_i94xxx_i2s_set_parent_clk(struct dev_desc_t *parent_clk)
+{
 	uint32_t curr_val;
 
-	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(adev);
-	switch(aIoctl_num)
+	curr_val = (CLK->CLKSEL3 & ~ CLK_CLKSEL3_I2S0SEL_Msk);
+	if (i94xxx_xtal_clk_dev == parent_clk)
 	{
-	case CLK_IOCTL_SET_PARENT :
-		curr_val = (CLK->CLKSEL3 & ~ CLK_CLKSEL3_I2S0SEL_Msk);
-		if (i94xxx_xtal_clk_dev == aIoctl_param1)
-		{
-			CLK->CLKSEL3 = curr_val | CLK_CLKSEL3_I2S0SEL_HXT;
-		}
-		else if (i94xxx_hirc_clk_dev == aIoctl_param1)
-		{
-			CLK->CLKSEL3 = curr_val | CLK_CLKSEL3_I2S0SEL_HIRC;
-		}
-		else if (i94xxx_pll_clk_dev == aIoctl_param1)
-		{
-			CLK->CLKSEL3 = curr_val | CLK_CLKSEL3_I2S0SEL_PLL;
-		}
-		else if (i94xxx_pclk0_clk_dev == aIoctl_param1)
-		{
-			CLK->CLKSEL3 = curr_val | CLK_CLKSEL3_I2S0SEL_PCLK0;
-		}
-		else
-		{
-			CRITICAL_ERROR("bad parent clock \n");
-		}
-		cfg_clk->parent_clk = aIoctl_param1;
-		break;
-	case CLK_IOCTL_ENABLE :
-		CLK->APBCLK0 |= CLK_APBCLK0_I2S0CKEN_Msk;
-		break;
-	default :
-		return common_clock_api_standard_clk_ioctls(
-				adev, aIoctl_num, aIoctl_param1, aIoctl_param2);
+		CLK->CLKSEL3 = curr_val | CLK_CLKSEL3_I2S0SEL_HXT;
 	}
-	return 0;
+	else if (i94xxx_hirc_clk_dev == parent_clk)
+	{
+		CLK->CLKSEL3 = curr_val | CLK_CLKSEL3_I2S0SEL_HIRC;
+	}
+	else if (i94xxx_pll_clk_dev == parent_clk)
+	{
+		CLK->CLKSEL3 = curr_val | CLK_CLKSEL3_I2S0SEL_PLL;
+	}
+	else if (i94xxx_pclk0_clk_dev == parent_clk)
+	{
+		CLK->CLKSEL3 = curr_val | CLK_CLKSEL3_I2S0SEL_PCLK0;
+	}
+	else
+	{
+		CRITICAL_ERROR("bad parent clock \n");
+	}
 }
 
+#define DT_DEV_NAME               i94xxx_i2s_clk_dev
+#define DT_DEV_MODULE             clk_cntl
 
-uint8_t clock_i94xxx_dmic_ioctl( struct dev_desc_t *adev,
-		const uint8_t aIoctl_num, void * aIoctl_param1,
-		void * aIoctl_param2)
+#define CLK_DT_ENABLE_CLK_FUNC      clock_i94xxx_i2s_enable
+#define CLK_DT_SET_PARENT_CLK_FUNC  clock_i94xxx_i2s_set_parent_clk
+
+#include "clk_cntl_add_device.h"
+
+
+
+/***************************************/
+/********** i94xxx_dmic_clk_dev ********/
+static void clock_i94xxx_dmic_enable()
 {
-	struct cfg_clk_t *cfg_clk;
+	CLK->APBCLK0 |= CLK_APBCLK0_DMICCKEN_Msk;
+}
+
+static void clock_i94xxx_dmic_set_parent_clk(struct dev_desc_t *parent_clk)
+{
 	uint32_t curr_val;
 
-	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(adev);
-	switch(aIoctl_num)
+	curr_val = (CLK->CLKSEL2 & (~CLK_CLKSEL2_DMICSEL_Msk));
+	if (i94xxx_xtal_clk_dev == parent_clk)
 	{
-	case CLK_IOCTL_SET_PARENT :
-		curr_val = (CLK->CLKSEL2 & (~CLK_CLKSEL2_DMICSEL_Msk));
-		if (i94xxx_xtal_clk_dev == aIoctl_param1)
-		{
-			CLK->CLKSEL2 = curr_val | CLK_CLKSEL2_DMICSEL_HXT;
-		}
-		else if (i94xxx_hirc_clk_dev == aIoctl_param1)
-		{
-			CLK->CLKSEL2 = curr_val | CLK_CLKSEL2_DMICSEL_HIRC;
-		}
-		else if (i94xxx_pll_clk_dev == aIoctl_param1)
-		{
-			CLK->CLKSEL2 = curr_val | CLK_CLKSEL2_DMICSEL_PLL;
-		}
-		else if (i94xxx_pclk0_clk_dev == aIoctl_param1)
-		{
-			CLK->CLKSEL2 = curr_val | CLK_CLKSEL2_DMICSEL_PCLK0;
-		}
-		else
-		{
-			CRITICAL_ERROR("bad parent clock \n");
-		}
-		cfg_clk->parent_clk = aIoctl_param1;
-		break;
-	case CLK_IOCTL_ENABLE :
-		CLK->APBCLK0 |= CLK_APBCLK0_DMICCKEN_Msk;
-		break;
-	default :
-		return common_clock_api_standard_clk_ioctls(
-				adev, aIoctl_num, aIoctl_param1, aIoctl_param2);
+		CLK->CLKSEL2 = curr_val | CLK_CLKSEL2_DMICSEL_HXT;
 	}
-	return 0;
+	else if (i94xxx_hirc_clk_dev == parent_clk)
+	{
+		CLK->CLKSEL2 = curr_val | CLK_CLKSEL2_DMICSEL_HIRC;
+	}
+	else if (i94xxx_pll_clk_dev == parent_clk)
+	{
+		CLK->CLKSEL2 = curr_val | CLK_CLKSEL2_DMICSEL_PLL;
+	}
+	else if (i94xxx_pclk0_clk_dev == parent_clk)
+	{
+		CLK->CLKSEL2 = curr_val | CLK_CLKSEL2_DMICSEL_PCLK0;
+	}
+	else
+	{
+		CRITICAL_ERROR("bad parent clock \n");
+	}
 }
 
+#define DT_DEV_NAME                i94xxx_dmic_clk_dev
+#define DT_DEV_MODULE              clk_cntl
 
-uint8_t i94xxx_I2S_MCLK_ioctl( struct dev_desc_t *adev,
-		const uint8_t aIoctl_num, void * aIoctl_param1,
-		void * aIoctl_param2)
+#define CLK_DT_ENABLE_CLK_FUNC      clock_i94xxx_dmic_enable
+#define CLK_DT_SET_PARENT_CLK_FUNC  clock_i94xxx_dmic_set_parent_clk
+
+#include "clk_cntl_add_device.h"
+
+
+
+/*******************************************/
+/********** i94xxx_I2S_MCLK_clk_dev ********/
+static void clock_i94xxx_I2S_MCLK_get_freq(uint32_t *freq, uint32_t parent_freq)
 {
-	struct cfg_clk_t *cfg_clk;
-	uint32_t freq;
 	uint32_t mclkdiv;
-
-	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(adev);
-	switch(aIoctl_num)
+	mclkdiv = I2S0->CLKDIV & I2S_CLKDIV_MCLKDIV_Msk;
+	if (0 == mclkdiv)
 	{
-	case CLK_IOCTL_GET_FREQ :
-		clock_control_common_api_get_parent_clock_rate(cfg_clk, &freq);
-		mclkdiv = I2S0->CLKDIV & I2S_CLKDIV_MCLKDIV_Msk;
-		if (0 == mclkdiv)
-		{
-			*(uint32_t *)aIoctl_param1 = freq;
-		}
-		else
-		{
-			*(uint32_t *)aIoctl_param1 = freq / 2;
-		}
-		break;
-	default :
-		return 1;
+		*freq = parent_freq;
 	}
-	return 0;
+	else
+	{
+		*freq = parent_freq / 2;
+	}
 }
 
+#define DT_DEV_NAME                i94xxx_I2S_MCLK_clk_dev
+#define DT_DEV_MODULE              clk_cntl
 
-uint8_t i94xxx_I2S_BCLK_ioctl( struct dev_desc_t *adev,
-		const uint8_t aIoctl_num, void * aIoctl_param1,
-		void * aIoctl_param2)
+#define CLK_DT_GET_FREQ_FUNC        clock_i94xxx_I2S_MCLK_get_freq
+#define CLK_DT_DEFAULT_PARENT      i94xxx_i2s_clk_dev
+
+#include "clk_cntl_add_device.h"
+
+
+
+/*******************************************/
+/********** i94xxx_I2S_BCLK_clk_dev ********/
+static void clock_i94xxx_I2S_BCLK_get_freq(uint32_t *freq, uint32_t parent_freq)
 {
-	struct cfg_clk_t *cfg_clk;
-	uint32_t freq;
 	uint32_t bclkdiv;
 
-	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(adev);
-	switch(aIoctl_num)
-	{
-	case CLK_IOCTL_GET_FREQ :
-		clock_control_common_api_get_parent_clock_rate(cfg_clk, &freq);
-		bclkdiv = (I2S0->CLKDIV & I2S_CLKDIV_BCLKDIV_Msk) >>
-												I2S_CLKDIV_BCLKDIV_Pos;
-		*(uint32_t *)aIoctl_param1 = freq / (2 * (bclkdiv + 1));
-		break;
-	default :
-		return 1;
-	}
-	return 0;
+	bclkdiv = (I2S0->CLKDIV & I2S_CLKDIV_BCLKDIV_Msk) >>
+											I2S_CLKDIV_BCLKDIV_Pos;
+	*freq = parent_freq / (2 * (bclkdiv + 1));
 }
 
+#define DT_DEV_NAME                i94xxx_I2S_BCLK_clk_dev
+#define DT_DEV_MODULE              clk_cntl
 
-uint8_t i94xxx_I2S_FSCLK_ioctl( struct dev_desc_t *adev,
-		const uint8_t aIoctl_num, void * aIoctl_param1,
-		void * aIoctl_param2)
+#define CLK_DT_GET_FREQ_FUNC       clock_i94xxx_I2S_BCLK_get_freq
+#define CLK_DT_DEFAULT_PARENT      i94xxx_i2s_clk_dev
+
+#include "clk_cntl_add_device.h"
+
+
+/********************************************/
+/********** i94xxx_I2S_FSCLK_clk_dev ********/
+static void clock_i94xxx_I2S_FSCLK_get_freq(
+						uint32_t *freq, uint32_t parent_freq)
 {
-	struct cfg_clk_t *cfg_clk;
-	uint32_t freq;
 	uint16_t num_of_channels;
 	uint16_t channel_width;
 
-	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(adev);
-	switch(aIoctl_num)
-	{
-	case CLK_IOCTL_GET_FREQ :
-		clock_control_common_api_get_parent_clock_rate(cfg_clk, &freq);
-		num_of_channels =
-				(I2S0->CTL0 & I2S_CTL0_TDMCHNUM_Msk) >> I2S_CTL0_TDMCHNUM_Pos;
-		num_of_channels = 2 * (1 + num_of_channels);
-		channel_width =
-				(I2S0->CTL0 & I2S_CTL0_CHWIDTH_Msk) >> I2S_CTL0_CHWIDTH_Pos;
-		channel_width = 8 * (1 + channel_width);
-		*(uint32_t *)aIoctl_param1 = freq / (num_of_channels * channel_width);
-		break;
-	default :
-		return 1;
-	}
-	return 0;
+	num_of_channels =
+			(I2S0->CTL0 & I2S_CTL0_TDMCHNUM_Msk) >> I2S_CTL0_TDMCHNUM_Pos;
+	num_of_channels = 2 * (1 + num_of_channels);
+	channel_width =
+			(I2S0->CTL0 & I2S_CTL0_CHWIDTH_Msk) >> I2S_CTL0_CHWIDTH_Pos;
+	channel_width = 8 * (1 + channel_width);
+	*freq = parent_freq / (num_of_channels * channel_width);
 }
 
+#define DT_DEV_NAME                i94xxx_I2S_FSCLK_clk_dev
+#define DT_DEV_MODULE              clk_cntl
 
-uint8_t i94xxx_I2S_onSPI1_MCLK_ioctl( struct dev_desc_t *adev,
-		const uint8_t aIoctl_num, void * aIoctl_param1,
-		void * aIoctl_param2)
+#define CLK_DT_GET_FREQ_FUNC       clock_i94xxx_I2S_FSCLK_get_freq
+#define CLK_DT_DEFAULT_PARENT      i94xxx_I2S_BCLK_clk_dev
+
+#include "clk_cntl_add_device.h"
+
+
+
+/**************************************************/
+/********** i94xxx_I2S_onSPI1_MCLK_clk_dev ********/
+static void clock_i94xxx_I2S_onSPI1_MCLK_get_freq(
+							uint32_t *freq, uint32_t parent_freq)
 {
-	struct cfg_clk_t *cfg_clk;
-	uint32_t freq;
 	uint32_t mclkdiv;
 
-	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(adev);
-	switch(aIoctl_num)
+	mclkdiv = ((SPI_T*)SPI1_BASE)->I2SCLK & SPI_I2SCLK_MCLKDIV_Msk;
+	if (0 == mclkdiv)
 	{
-	case CLK_IOCTL_GET_FREQ :
-		clock_control_common_api_get_parent_clock_rate(cfg_clk, &freq);
-		mclkdiv = ((SPI_T*)SPI1_BASE)->I2SCLK & SPI_I2SCLK_MCLKDIV_Msk;
-		if (0 == mclkdiv)
-		{
-			*(uint32_t *)aIoctl_param1 = freq;
-		}
-		else
-		{
-			*(uint32_t *)aIoctl_param1 = freq / 2;
-		}
-		break;
-	default :
-		return 1;
+		*freq = parent_freq;
 	}
-	return 0;
+	else
+	{
+		*freq = parent_freq / 2;
+	}
 }
 
+#define DT_DEV_NAME                i94xxx_I2S_onSPI1_MCLK_clk_dev
+#define DT_DEV_MODULE              clk_cntl
 
-uint8_t i94xxx_I2S_onSPI1_BCLK_ioctl( struct dev_desc_t *adev,
-		const uint8_t aIoctl_num, void * aIoctl_param1,
-		void * aIoctl_param2)
+#define CLK_DT_GET_FREQ_FUNC       clock_i94xxx_I2S_onSPI1_MCLK_get_freq
+#define CLK_DT_DEFAULT_PARENT      i94xxx_spi1_clk_dev
+
+#include "clk_cntl_add_device.h"
+
+
+
+/**************************************************/
+/********** i94xxx_I2S_onSPI1_BCLK_clk_dev ********/
+static void clock_i94xxx_I2S_onSPI1_BCLK_get_freq(
+									uint32_t *freq, uint32_t parent_freq)
 {
-	struct cfg_clk_t *cfg_clk;
-	uint32_t freq;
 	uint32_t bclkdiv;
-
-	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(adev);
-	switch(aIoctl_num)
-	{
-	case CLK_IOCTL_GET_FREQ :
-		clock_control_common_api_get_parent_clock_rate(cfg_clk, &freq);
-		bclkdiv = (((SPI_T*)SPI1_BASE)->I2SCLK & SPI_I2SCLK_BCLKDIV_Msk) >>
-											SPI_I2SCLK_BCLKDIV_Pos;
-		*(uint32_t *)aIoctl_param1 = freq / (2 * (bclkdiv + 1));
-		break;
-	default :
-		return 1;
-	}
-	return 0;
+	bclkdiv = (((SPI_T*)SPI1_BASE)->I2SCLK & SPI_I2SCLK_BCLKDIV_Msk) >>
+													SPI_I2SCLK_BCLKDIV_Pos;
+	*freq = parent_freq / (2 * (bclkdiv + 1));
 }
 
+#define DT_DEV_NAME                i94xxx_I2S_onSPI1_BCLK_clk_dev
+#define DT_DEV_MODULE              clk_cntl
 
-uint8_t i94xxx_I2S_onSPI1_FSCLK_ioctl( struct dev_desc_t *adev,
-		const uint8_t aIoctl_num, void * aIoctl_param1,
-		void * aIoctl_param2)
+#define CLK_DT_GET_FREQ_FUNC       clock_i94xxx_I2S_onSPI1_BCLK_get_freq
+#define CLK_DT_DEFAULT_PARENT      i94xxx_spi1_clk_dev
+
+#include "clk_cntl_add_device.h"
+
+
+
+/***************************************************/
+/********** i94xxx_I2S_FSCLK_onSPI1_clk_dev ********/
+static void clock_i94xxx_I2S_onSPI1_FSCLK_get_freq(
+										uint32_t *freq, uint32_t parent_freq)
 {
-	struct cfg_clk_t *cfg_clk;
-	uint32_t freq;
 	uint16_t num_of_channels;
 	uint16_t channel_width;
 
-	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(adev);
-	switch(aIoctl_num)
-	{
-	case CLK_IOCTL_GET_FREQ :
-		clock_control_common_api_get_parent_clock_rate(cfg_clk, &freq);
-		num_of_channels = 2;
-		channel_width =
-				(((SPI_T*)SPI1_BASE)->I2SCTL & SPI_I2SCTL_WDWIDTH_Msk) >>
+	num_of_channels = 2;
+	channel_width = (((SPI_T*)SPI1_BASE)->I2SCTL & SPI_I2SCTL_WDWIDTH_Msk) >>
 														SPI_I2SCTL_WDWIDTH_Pos;
-		channel_width = 8 * (1 + channel_width);
-		*(uint32_t *)aIoctl_param1 = freq / (num_of_channels * channel_width);
-		break;
-	default :
-		return 1;
-	}
-	return 0;
+	channel_width = 8 * (1 + channel_width);
+	*freq = parent_freq / (num_of_channels * channel_width);
 }
 
+#define DT_DEV_NAME                i94xxx_I2S_onSPI1_FSCLK_clk_dev
+#define DT_DEV_MODULE              clk_cntl
 
-uint8_t i94xxx_I2S_onSPI2_MCLK_ioctl( struct dev_desc_t *adev,
-		const uint8_t aIoctl_num, void * aIoctl_param1,
-		void * aIoctl_param2)
+#define CLK_DT_GET_FREQ_FUNC       clock_i94xxx_I2S_onSPI1_FSCLK_get_freq
+#define CLK_DT_DEFAULT_PARENT      i94xxx_I2S_onSPI1_BCLK_clk_dev
+
+#include "clk_cntl_add_device.h"
+
+
+/**************************************************/
+/********** i94xxx_I2S_onSPI2_MCLK_clk_dev ********/
+static void clock_i94xxx_I2S_onSPI2_MCLK_get_freq(
+							uint32_t *freq, uint32_t parent_freq)
 {
-	struct cfg_clk_t *cfg_clk;
-	uint32_t freq;
 	uint32_t mclkdiv;
 
-	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(adev);
-	switch(aIoctl_num)
+	mclkdiv = ((SPI_T*)SPI2_BASE)->I2SCLK & SPI_I2SCLK_MCLKDIV_Msk;
+	if (0 == mclkdiv)
 	{
-	case CLK_IOCTL_GET_FREQ :
-		clock_control_common_api_get_parent_clock_rate(cfg_clk, &freq);
-		mclkdiv = ((SPI_T*)SPI2_BASE)->I2SCLK & SPI_I2SCLK_MCLKDIV_Msk;
-		if (0 == mclkdiv)
-		{
-			*(uint32_t *)aIoctl_param1 = freq;
-		}
-		else
-		{
-			*(uint32_t *)aIoctl_param1 = freq / 2;
-		}
-		break;
-	default :
-		return 1;
+		*freq = parent_freq;
 	}
-	return 0;
+	else
+	{
+		*freq = parent_freq / 2;
+	}
 }
 
+#define DT_DEV_NAME                i94xxx_I2S_onSPI2_MCLK_clk_dev
+#define DT_DEV_MODULE              clk_cntl
 
-uint8_t i94xxx_I2S_onSPI2_BCLK_ioctl( struct dev_desc_t *adev,
-		const uint8_t aIoctl_num, void * aIoctl_param1,
-		void * aIoctl_param2)
+#define CLK_DT_GET_FREQ_FUNC       clock_i94xxx_I2S_onSPI2_MCLK_get_freq
+#define CLK_DT_DEFAULT_PARENT      i94xxx_spi2_clk_dev
+
+#include "clk_cntl_add_device.h"
+
+
+
+/**************************************************/
+/********** i94xxx_I2S_onSPI2_BCLK_clk_dev ********/
+static void clock_i94xxx_I2S_onSPI2_BCLK_get_freq(
+									uint32_t *freq, uint32_t parent_freq)
 {
-	struct cfg_clk_t *cfg_clk;
-	uint32_t freq;
 	uint32_t bclkdiv;
-
-	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(adev);
-	switch(aIoctl_num)
-	{
-	case CLK_IOCTL_GET_FREQ :
-		clock_control_common_api_get_parent_clock_rate(cfg_clk, &freq);
-		bclkdiv = (((SPI_T*)SPI2_BASE)->I2SCLK & SPI_I2SCLK_BCLKDIV_Msk) >>
-											SPI_I2SCLK_BCLKDIV_Pos;
-		*(uint32_t *)aIoctl_param1 = freq / (2 * (bclkdiv + 1));
-		break;
-	default :
-		return 1;
-	}
-	return 0;
+	bclkdiv = (((SPI_T*)SPI2_BASE)->I2SCLK & SPI_I2SCLK_BCLKDIV_Msk) >>
+													SPI_I2SCLK_BCLKDIV_Pos;
+	*freq = parent_freq / (2 * (bclkdiv + 1));
 }
 
+#define DT_DEV_NAME                i94xxx_I2S_onSPI2_BCLK_clk_dev
+#define DT_DEV_MODULE              clk_cntl
 
-uint8_t i94xxx_I2S_onSPI2_FSCLK_ioctl( struct dev_desc_t *adev,
-		const uint8_t aIoctl_num, void * aIoctl_param1,
-		void * aIoctl_param2)
+#define CLK_DT_GET_FREQ_FUNC       clock_i94xxx_I2S_onSPI2_BCLK_get_freq
+#define CLK_DT_DEFAULT_PARENT      i94xxx_spi2_clk_dev
+
+#include "clk_cntl_add_device.h"
+
+
+
+/***************************************************/
+/********** i94xxx_I2S_FSCLK_onSPI2_clk_dev ********/
+static void clock_i94xxx_I2S_onSPI2_FSCLK_get_freq(
+										uint32_t *freq, uint32_t parent_freq)
 {
-	struct cfg_clk_t *cfg_clk;
-	uint32_t freq;
 	uint16_t num_of_channels;
 	uint16_t channel_width;
 
-	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(adev);
-	switch(aIoctl_num)
-	{
-	case CLK_IOCTL_GET_FREQ :
-		clock_control_common_api_get_parent_clock_rate(cfg_clk, &freq);
-		num_of_channels = 2;
-		channel_width =
-				(((SPI_T*)SPI2_BASE)->I2SCTL & SPI_I2SCTL_WDWIDTH_Msk) >>
+	num_of_channels = 2;
+	channel_width = (((SPI_T*)SPI2_BASE)->I2SCTL & SPI_I2SCTL_WDWIDTH_Msk) >>
 														SPI_I2SCTL_WDWIDTH_Pos;
-		channel_width = 8 * (1 + channel_width);
-		*(uint32_t *)aIoctl_param1 = freq / (num_of_channels * channel_width);
-		break;
-	default :
-		return 1;
-	}
-	return 0;
+	channel_width = 8 * (1 + channel_width);
+	*freq = parent_freq / (num_of_channels * channel_width);
 }
 
+#define DT_DEV_NAME                i94xxx_I2S_onSPI2_FSCLK_clk_dev
+#define DT_DEV_MODULE              clk_cntl
+
+#define CLK_DT_GET_FREQ_FUNC       clock_i94xxx_I2S_onSPI2_FSCLK_get_freq
+#define CLK_DT_DEFAULT_PARENT      i94xxx_I2S_onSPI2_BCLK_clk_dev
+
+#include "clk_cntl_add_device.h"
 
 
-uint8_t clock_i94xxx_dpwm_ioctl( struct dev_desc_t *adev,
-		const uint8_t aIoctl_num, void * aIoctl_param1,
-		void * aIoctl_param2)
+
+/***************************************/
+/********** i94xxx_dpwm_clk_dev ********/
+static void clock_i94xxx_dpwm_enable()
 {
-	struct cfg_clk_t *cfg_clk;
+	CLK->APBCLK1 |= CLK_APBCLK1_DPWMCKEN_Msk;
+}
+
+static void clock_i94xxx_dpwm_set_parent_clk(struct dev_desc_t *parent_clk)
+{
 	uint32_t curr_val;
-
-	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(adev);
-	switch(aIoctl_num)
+	curr_val = (CLK->CLKSEL2 & ~ CLK_CLKSEL2_DPWMSEL_Msk);
+	if (i94xxx_xtal_clk_dev == parent_clk)
 	{
-	case CLK_IOCTL_SET_PARENT :
-		curr_val = (CLK->CLKSEL2 & ~ CLK_CLKSEL2_DPWMSEL_Msk);
-		if (i94xxx_xtal_clk_dev == aIoctl_param1)
-		{
-			CLK->CLKSEL2 = curr_val | CLK_CLKSEL2_DPWMSEL_HXT;
-		}
-		else if (i94xxx_hirc_clk_dev == aIoctl_param1)
-		{
-			CLK->CLKSEL2 = curr_val | CLK_CLKSEL2_DPWMSEL_HIRC;
-		}
-		else if (i94xxx_pll_clk_dev == aIoctl_param1)
-		{
-			CLK->CLKSEL2 = curr_val | CLK_CLKSEL2_DPWMSEL_PLL;
-		}
-		else if (i94xxx_pclk0_clk_dev == aIoctl_param1)
-		{
-			CLK->CLKSEL2 = curr_val | CLK_CLKSEL2_DPWMSEL_PCLK0;
-		}
-		else
-		{
-			CRITICAL_ERROR("bad parent clock \n");
-		}
-		cfg_clk->parent_clk = aIoctl_param1;
-		break;
-	case CLK_IOCTL_ENABLE :
-		CLK->APBCLK1 |= CLK_APBCLK1_DPWMCKEN_Msk;
-		break;
-	default :
-		return common_clock_api_standard_clk_ioctls(
-				adev, aIoctl_num, aIoctl_param1, aIoctl_param2);
+		CLK->CLKSEL2 = curr_val | CLK_CLKSEL2_DPWMSEL_HXT;
 	}
-	return 0;
+	else if (i94xxx_hirc_clk_dev == parent_clk)
+	{
+		CLK->CLKSEL2 = curr_val | CLK_CLKSEL2_DPWMSEL_HIRC;
+	}
+	else if (i94xxx_pll_clk_dev == parent_clk)
+	{
+		CLK->CLKSEL2 = curr_val | CLK_CLKSEL2_DPWMSEL_PLL;
+	}
+	else if (i94xxx_pclk0_clk_dev == parent_clk)
+	{
+		CLK->CLKSEL2 = curr_val | CLK_CLKSEL2_DPWMSEL_PCLK0;
+	}
+	else
+	{
+		CRITICAL_ERROR("bad parent clock \n");
+	}
 }
 
+#define DT_DEV_NAME                i94xxx_dpwm_clk_dev
+#define DT_DEV_MODULE              clk_cntl
+
+#define CLK_DT_ENABLE_CLK_FUNC      clock_i94xxx_dpwm_enable
+#define CLK_DT_SET_PARENT_CLK_FUNC  clock_i94xxx_dpwm_set_parent_clk
+
+#include "clk_cntl_add_device.h"
 
 
-uint8_t clock_i94xxx_uart0clk_ioctl( struct dev_desc_t *adev,
-		const uint8_t aIoctl_num, void * aIoctl_param1,
-		void * aIoctl_param2)
+
+
+/***********************************/
+/********** i94xxx_uart0_dev ********/
+static void clock_i94xxx_uart0_enable()
 {
-	struct cfg_clk_t *cfg_clk;
-
-	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(adev);
-	switch(aIoctl_num)
-	{
-	case CLK_IOCTL_SET_PARENT :
-		if (i94xxx_xtal_clk_dev == aIoctl_param1)
-		{
-			CLK_SetModuleClock(UART0_MODULE,
-					CLK_CLKSEL1_UART0SEL_HXT, CLK_CLKDIV0_UART0(1));
-		}
-		else if (i94xxx_hirc_clk_dev == aIoctl_param1)
-		{
-			CLK_SetModuleClock(UART0_MODULE,
-					CLK_CLKSEL1_UART0SEL_HIRC, CLK_CLKDIV0_UART0(1));
-		}
-		else if (i94xxx_pll_clk_dev == aIoctl_param1)
-		{
-			CLK_SetModuleClock(UART0_MODULE,
-					CLK_CLKSEL1_UART0SEL_PLL, CLK_CLKDIV0_UART0(1));
-		}
-		else
-		{
-			CRITICAL_ERROR("bad parent clock \n");
-		}
-		cfg_clk->parent_clk = aIoctl_param1;
-		break;
-	case CLK_IOCTL_ENABLE :
-		CLK_EnableModuleClock(UART0_MODULE);
-		break;
-	default :
-		return common_clock_api_standard_clk_ioctls(
-				adev, aIoctl_num, aIoctl_param1, aIoctl_param2);
-	}
-	return 0;
+	CLK_EnableModuleClock(UART0_MODULE);
 }
 
-
-uint8_t clock_i94xxx_i2c1_ioctl( struct dev_desc_t *adev,
-		const uint8_t aIoctl_num, void * aIoctl_param1,
-		void * aIoctl_param2)
+static void clock_i94xxx_uart0_set_parent_clk(struct dev_desc_t *parent_clk)
 {
-//	struct cfg_clk_t *cfg_clk;
-//
-//	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(adev);
-	switch(aIoctl_num)
+	if (i94xxx_xtal_clk_dev == parent_clk)
 	{
-	case CLK_IOCTL_ENABLE :
-		CLK_EnableModuleClock(I2C1_MODULE);
-		break;
-	case CLK_IOCTL_GET_FREQ :
-		DEV_IOCTL_1_PARAMS(i94xxx_pclk1_clk_dev,
-						CLK_IOCTL_GET_FREQ, aIoctl_param1);
-		break;
-	default :
-		return 1;
+		CLK_SetModuleClock(UART0_MODULE,
+				CLK_CLKSEL1_UART0SEL_HXT, CLK_CLKDIV0_UART0(1));
 	}
-	return 0;
+	else if (i94xxx_hirc_clk_dev == parent_clk)
+	{
+		CLK_SetModuleClock(UART0_MODULE,
+				CLK_CLKSEL1_UART0SEL_HIRC, CLK_CLKDIV0_UART0(1));
+	}
+	else if (i94xxx_pll_clk_dev == parent_clk)
+	{
+		CLK_SetModuleClock(UART0_MODULE,
+				CLK_CLKSEL1_UART0SEL_PLL, CLK_CLKDIV0_UART0(1));
+	}
+	else
+	{
+		CRITICAL_ERROR("bad parent clock \n");
+	}
 }
 
-uint8_t clock_i94xxx_i2c0_ioctl( struct dev_desc_t *adev,
-		const uint8_t aIoctl_num, void * aIoctl_param1,
-		void * aIoctl_param2)
+#define DT_DEV_NAME               i94xxx_uart0_clk_dev
+#define DT_DEV_MODULE             clk_cntl
+
+#define CLK_DT_ENABLE_CLK_FUNC      clock_i94xxx_uart0_enable
+#define CLK_DT_SET_PARENT_CLK_FUNC  clock_i94xxx_uart0_set_parent_clk
+
+#include "clk_cntl_add_device.h"
+
+
+/***************************************/
+/********** i94xxx_i2c1_clk_dev ********/
+static void clock_i94xxx_i2c1_enable()
 {
-	switch(aIoctl_num)
-	{
-	case CLK_IOCTL_ENABLE :
-		CLK_EnableModuleClock(I2C0_MODULE);
-		break;
-	case CLK_IOCTL_GET_FREQ :
-		DEV_IOCTL_1_PARAMS(i94xxx_pclk0_clk_dev,
-						CLK_IOCTL_GET_FREQ, aIoctl_param1);
-		break;
-	default :
-		return 1;
-	}
-	return 0;
+	CLK_EnableModuleClock(I2C1_MODULE);
 }
 
+#define DT_DEV_NAME                i94xxx_i2c1_clk_dev
+#define DT_DEV_MODULE              clk_cntl
+
+#define CLK_DT_ENABLE_CLK_FUNC      clock_i94xxx_i2c1_enable
+#define CLK_DT_DEFAULT_PARENT       i94xxx_pclk1_clk_dev
+
+#include "clk_cntl_add_device.h"
 
 
-uint8_t clock_i94xxx_spi0_ioctl( struct dev_desc_t *adev,
-		const uint8_t aIoctl_num, void * aIoctl_param1,
-		void * aIoctl_param2)
+/***************************************/
+/********** i94xxx_i2c0_clk_dev ********/
+static void clock_i94xxx_i2c0_enable()
 {
-	struct cfg_clk_t *cfg_clk;
-
-	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(adev);
-	switch(aIoctl_num)
-	{
-	case CLK_IOCTL_SET_PARENT :
-		if (i94xxx_xtal_clk_dev == aIoctl_param1)
-		{
-			CLK_SetModuleClock(SPI0_MODULE,
-					CLK_CLKSEL2_SPI0SEL_HXT, MODULE_NoMsk);
-		}
-		else if (i94xxx_pclk0_clk_dev == aIoctl_param1)
-		{
-			CLK_SetModuleClock(SPI0_MODULE,
-					CLK_CLKSEL2_SPI0SEL_PCLK0, MODULE_NoMsk);
-		}
-		else if (i94xxx_pll_clk_dev == aIoctl_param1)
-		{
-			CLK_SetModuleClock(SPI0_MODULE,
-					CLK_CLKSEL2_SPI0SEL_PLL, MODULE_NoMsk);
-		}
-		else if (i94xxx_hirc_clk_dev == aIoctl_param1)
-		{
-			CLK_SetModuleClock(SPI0_MODULE,
-					CLK_CLKSEL2_SPI0SEL_HIRC, MODULE_NoMsk);
-		}
-		else
-		{
-			CRITICAL_ERROR("bad parent clock \n");
-		}
-		cfg_clk->parent_clk = aIoctl_param1;
-		break;
-	case CLK_IOCTL_ENABLE :
-		CLK_EnableModuleClock(SPI0_MODULE);
-		break;
-	case CLK_IOCTL_GET_FREQ :
-		DEV_IOCTL_1_PARAMS(i94xxx_pclk1_clk_dev,
-						CLK_IOCTL_GET_FREQ, aIoctl_param1);
-		break;
-	default :
-		return 1;
-	}
-	return 0;
+	CLK_EnableModuleClock(I2C0_MODULE);
 }
+
+#define DT_DEV_NAME                i94xxx_i2c0_clk_dev
+#define DT_DEV_MODULE              clk_cntl
+
+#define CLK_DT_ENABLE_CLK_FUNC      clock_i94xxx_i2c0_enable
+#define CLK_DT_DEFAULT_PARENT       i94xxx_pclk0_clk_dev
+
+#include "clk_cntl_add_device.h"
+
+
+
+/***************************************/
+/********** i94xxx_spi0_clk_dev ********/
+static void clock_i94xxx_spi0_enable()
+{
+	CLK_EnableModuleClock(SPI0_MODULE);
+}
+
+static void clock_i94xxx_spi0_set_parent_clk(struct dev_desc_t *parent_clk)
+{
+	if (i94xxx_xtal_clk_dev == parent_clk)
+	{
+		CLK_SetModuleClock(SPI0_MODULE, CLK_CLKSEL2_SPI0SEL_HXT, MODULE_NoMsk);
+	}
+	else if (i94xxx_pclk0_clk_dev == parent_clk)
+	{
+		CLK_SetModuleClock(SPI0_MODULE,
+				CLK_CLKSEL2_SPI0SEL_PCLK0, MODULE_NoMsk);
+	}
+	else if (i94xxx_pll_clk_dev == parent_clk)
+	{
+		CLK_SetModuleClock(SPI0_MODULE, CLK_CLKSEL2_SPI0SEL_PLL, MODULE_NoMsk);
+	}
+	else if (i94xxx_hirc_clk_dev == parent_clk)
+	{
+		CLK_SetModuleClock(SPI0_MODULE, CLK_CLKSEL2_SPI0SEL_HIRC, MODULE_NoMsk);
+	}
+	else
+	{
+		CRITICAL_ERROR("bad parent clock \n");
+	}
+}
+
+#define DT_DEV_NAME                i94xxx_spi0_clk_dev
+#define DT_DEV_MODULE              clk_cntl
+
+#define CLK_DT_ENABLE_CLK_FUNC      clock_i94xxx_spi0_enable
+#define CLK_DT_SET_PARENT_CLK_FUNC  clock_i94xxx_spi0_set_parent_clk
+#define CLK_DT_DEFAULT_PARENT       i94xxx_pclk1_clk_dev
+
+#include "clk_cntl_add_device.h"
 
 
 static void init_clocks(struct clk_cntl_i94xxx_cfg_t *cfg_hndl)
@@ -1058,6 +944,7 @@ static void init_clocks(struct clk_cntl_i94xxx_cfg_t *cfg_hndl)
 
 	if (0 != cfg_hndl->xtal_rate)
 	{
+		DEV_IOCTL_0_PARAMS(i94xxx_xtal_clk_dev, IOCTL_DEVICE_START);
 		DEV_IOCTL_0_PARAMS(i94xxx_xtal_clk_dev, CLK_IOCTL_ENABLE);
 		DEV_IOCTL_1_PARAMS(i94xxx_xtal_clk_dev,
 				CLK_IOCTL_SET_FREQ, &cfg_hndl->xtal_rate);
@@ -1065,20 +952,23 @@ static void init_clocks(struct clk_cntl_i94xxx_cfg_t *cfg_hndl)
 
 	if (0 != cfg_hndl->hirc_rate)
 	{
+		DEV_IOCTL_0_PARAMS(i94xxx_hirc_clk_dev, IOCTL_DEVICE_START);
 		DEV_IOCTL_0_PARAMS(i94xxx_hirc_clk_dev, CLK_IOCTL_ENABLE);
 		DEV_IOCTL_1_PARAMS(i94xxx_hirc_clk_dev,
 				CLK_IOCTL_SET_FREQ, &cfg_hndl->hirc_rate);
 	}
 
+	DEV_IOCTL_0_PARAMS(i94xxx_pll_clk_dev, IOCTL_DEVICE_START);
 	DEV_IOCTL_1_PARAMS(i94xxx_pll_clk_dev,
 			CLK_IOCTL_SET_PARENT, cfg_hndl->pll_src_clk_dev);
 	DEV_IOCTL_1_PARAMS(i94xxx_pll_clk_dev,
 			CLK_IOCTL_SET_FREQ, &cfg_hndl->pll_rate);
 
+	DEV_IOCTL_0_PARAMS(i94xxx_hclk_clk_dev, IOCTL_DEVICE_START);
 	DEV_IOCTL_1_PARAMS(i94xxx_hclk_clk_dev,
 			CLK_IOCTL_SET_PARENT, i94xxx_pll_clk_dev);
-	DEV_IOCTL_1_PARAMS(i94xxx_hclk_clk_dev,
-			CLK_IOCTL_SET_FREQ, &cfg_hndl->hclk_rate);
+//	DEV_IOCTL_1_PARAMS(i94xxx_hclk_clk_dev,
+//			CLK_IOCTL_SET_FREQ, &cfg_hndl->hclk_rate);
 
 
 	DEV_IOCTL_1_PARAMS(i94xxx_hclk_clk_dev,	CLK_IOCTL_GET_FREQ, &rate);
@@ -1092,7 +982,9 @@ static void init_clocks(struct clk_cntl_i94xxx_cfg_t *cfg_hndl)
 	{
 		rate = rate / 2;
 	}
+	DEV_IOCTL_0_PARAMS(i94xxx_pclk0_clk_dev, IOCTL_DEVICE_START);
 	DEV_IOCTL_1_PARAMS(i94xxx_pclk0_clk_dev, CLK_IOCTL_SET_FREQ, &rate);
+	DEV_IOCTL_0_PARAMS(i94xxx_pclk1_clk_dev, IOCTL_DEVICE_START);
 	DEV_IOCTL_1_PARAMS(i94xxx_pclk1_clk_dev, CLK_IOCTL_SET_FREQ, &rate);
 
 }
@@ -1103,7 +995,7 @@ static void init_clocks(struct clk_cntl_i94xxx_cfg_t *cfg_hndl)
  *
  * return:
  */
-uint8_t clock_control_i94xxx_ioctl( struct dev_desc_t *adev,
+static uint8_t clock_control_i94xxx_ioctl( struct dev_desc_t *adev,
 		const uint8_t aIoctl_num, void * aIoctl_param1,
 		void * aIoctl_param2)
 {
@@ -1121,3 +1013,8 @@ uint8_t clock_control_i94xxx_ioctl( struct dev_desc_t *adev,
 	}
 	return 0;
 }
+
+#define	MODULE_NAME						clock_control_i94xxx
+#define	MODULE_IOCTL_FUNCTION			clock_control_i94xxx_ioctl
+#define MODULE_CONFIG_DATA_STRUCT_TYPE	struct clk_cntl_i94xxx_cfg_t
+#include "add_module.h"

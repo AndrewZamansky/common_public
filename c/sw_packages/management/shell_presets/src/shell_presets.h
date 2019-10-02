@@ -14,13 +14,6 @@
 
 /***************   typedefs    *******************/
 
-struct shell_presets_cfg_t{
-	struct dev_desc_t * storage_dev;
-	struct dev_desc_t *   shell_callback_dev;
-	uint16_t preset_size;
-	uint16_t max_number_of_presets;
-};
-
 struct shell_presets_runtime_t {
 	uint8_t state;
 	uint16_t preset_actual_size;

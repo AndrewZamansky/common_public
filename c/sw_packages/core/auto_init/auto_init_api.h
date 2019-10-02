@@ -9,6 +9,8 @@
 #include "arch.h"
 
 /**********  defines ************/
+#define  AUTO_INIT_API_VERSION    20191007
+
 
 #ifdef COMPILING_FOR_HOST
 	#if defined(_MSC_VER)  // microsoft compiler

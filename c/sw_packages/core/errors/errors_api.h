@@ -4,6 +4,7 @@
 
 
 /*****************  defines  **************/
+#define  ERRORS_API_VERSION    20191007
 
 
 /**********  define API  types ************/

@@ -11,7 +11,12 @@
 #include "_project_defines.h"
 #include "_project_func_declarations.h"
 
-#include "dev_management_api.h"
+#define OS_API_VERSION  20191007
+
+
+#ifndef CONFIG_USE_ONLY_OS_API
+	#include "dev_management_api.h"
+#endif
 
 #include "FreeRTOS.h"
 #include "queue.h"
@@ -45,6 +50,7 @@ typedef QueueHandle_t  os_queue_t;
 
 
 
+#ifndef CONFIG_USE_ONLY_OS_API
 
 /***********  init os **********/
 /** function : [os_init()]  **/
@@ -65,6 +71,7 @@ void  os_set_heartbeat_dev(struct dev_desc_t *a_heartbeat_dev);
 /** function : [os_start()]  **/
 void  os_start(void);
 
+#endif //#ifndef CONFIG_USE_ONLY_OS_API
 
 
 /***********  mutex creation **********/

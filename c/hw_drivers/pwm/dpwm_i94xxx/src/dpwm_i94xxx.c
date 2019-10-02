@@ -23,9 +23,6 @@
 #include "dpwm.h"
 
 
-/*following line add module to available module list for dynamic device tree*/
-#include "dpwm_i94xxx_add_component.h"
-
 
 //#define  DEBUG_USE_INTERRUPT
 
@@ -77,7 +74,7 @@ static uint8_t init_done = 0;
 #endif
 
 
-void DPWM_MuxPins(struct dpwm_i94xxx_cfg_t *cfg_hndl)
+static void DPWM_MuxPins(struct dpwm_i94xxx_cfg_t *cfg_hndl)
 {
 	pin_control_api_set_pin_function(cfg_hndl->left_ch_p);
 	pin_control_api_set_pin_function(cfg_hndl->left_ch_n);
@@ -91,7 +88,7 @@ void DPWM_MuxPins(struct dpwm_i94xxx_cfg_t *cfg_hndl)
 }
 
 
-uint32_t try_to_calclulate_clk_div(uint32_t needed_sample_rate,
+static uint32_t try_to_calclulate_clk_div(uint32_t needed_sample_rate,
 		uint32_t src_clk_rate, uint16_t work_clock, uint16_t *clkdiv)
 {
 	uint16_t l_clkdiv;
@@ -139,6 +136,7 @@ static void dpwm_init(struct dpwm_i94xxx_cfg_t *cfg_hndl)
 	src_clock = cfg_hndl->src_clock;
 	sample_rate = cfg_hndl->sample_rate_hz;
 
+	DEV_IOCTL_0_PARAMS(clk_dev, IOCTL_DEVICE_START);
 	DEV_IOCTL_1_PARAMS(clk_dev,	CLK_IOCTL_SET_PARENT, src_clock);
 	DEV_IOCTL_1_PARAMS(clk_dev,	CLK_IOCTL_GET_FREQ, &src_clk_rate);
 	DEV_IOCTL_0_PARAMS(clk_dev, CLK_IOCTL_ENABLE);
@@ -200,7 +198,7 @@ static void dpwm_init(struct dpwm_i94xxx_cfg_t *cfg_hndl)
  *
  * return:
  */
-uint8_t dpwm_i94xxx_ioctl( struct dev_desc_t *adev,
+static uint8_t dpwm_i94xxx_ioctl( struct dev_desc_t *adev,
 		const uint8_t aIoctl_num, void * aIoctl_param1 , void * aIoctl_param2)
 {
 	struct dpwm_i94xxx_cfg_t *cfg_hndl;
@@ -237,3 +235,8 @@ uint8_t dpwm_i94xxx_ioctl( struct dev_desc_t *adev,
 	}
 	return 0;
 }
+
+#define	MODULE_NAME                     dpwm_i94xxx
+#define	MODULE_IOCTL_FUNCTION           dpwm_i94xxx_ioctl
+#define MODULE_CONFIG_DATA_STRUCT_TYPE  struct dpwm_i94xxx_cfg_t
+#include "add_module.h"

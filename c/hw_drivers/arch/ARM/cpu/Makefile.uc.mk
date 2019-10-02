@@ -73,6 +73,8 @@ ifeq (y,$(USING_GCC_COMPILER))
         ifdef CONFIG_ARBEL
             $(eval $(call ADD_TO_GLOBAL_CFLAGS , -mstrict-align ))
         endif
+    else ifdef CONFIG_CORTEX_M4
+        LIB_LOCATION := $(ARM_CMSIS_PATH)/CMSIS/Lib/GCC
     endif
     SRC += src/SWI.c
     ifndef CONFIG_OUTPUT_TYPE_STATIC_LIBRARY
@@ -88,4 +90,16 @@ else ifdef CONFIG_ARMCC
     endif
 endif
 
-include $(COMMON_CC)
+$(eval $(call ADD_TO_GLOBAL_LIBS_PATH, $(LIB_LOCATION)))
+
+IS_LIBRARY :=$(CONFIG_OUTPUT_TYPE_STATIC_LIBRARY)
+
+ifdef COMMON_CC#  COMMON_CC is defined during compilation stage
+IS_LIBRARY :=$(filter y,$(IS_LIBRARY))
+ifeq ($(IS_LIBRARY),y)
+all:
+	@echo no need to compile cpu related code in library
+else
+    include $(COMMON_CC)
+endif
+endif #for ifdef COMMON_CC

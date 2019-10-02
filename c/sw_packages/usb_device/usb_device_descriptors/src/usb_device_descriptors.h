@@ -14,11 +14,5 @@
 
 /********  types  *********************/
 
-struct usb_device_descriptors_cfg_t {
-	struct dev_desc_t *usb_hw;
-	uint16_t VID;
-	uint16_t PID;
-};
-
 
 #endif

@@ -103,11 +103,10 @@ ifdef CONFIG_RT_OS_IS_SPEED_CRITICAL
     SPEED_CRITICAL_FILES +=$(SRC)
 endif
 
-ifdef COMMON_CC
-ifndef CONFIG_USE_ONLY_OS_API
-    include $(COMMON_CC)
-else
-all:
-	@echo no need to compile free RTOS
+ifdef CONFIG_USE_ONLY_OS_API
+    DEFINES += OS_PROJ_NAME=$(CONFIG_PROJECT_NAME)
+    #only compile following file:
+    SRC := src/os_api_check.c
 endif
-endif #for ifdef COMMON_CC
+
+include $(COMMON_CC)

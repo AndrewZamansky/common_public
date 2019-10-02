@@ -20,5 +20,5 @@ size_t spi_stm8_pread(struct dev_desc_t *adev ,uint8_t *apData , size_t aLength,
 		}
 #endif
 
-#include "add_component.h"
+#include "add_static_dev.h"
 

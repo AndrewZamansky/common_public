@@ -2,8 +2,8 @@
 ifeq ($(sort $(CONFIG_LINUX_OS_WRAPPER)),y)
 	INCLUDE_THIS_COMPONENT := y
 
-    DUMMY := $(call ADD_TO_GLOBAL_LIBRARIES , libpthread )
-    DUMMY := $(call ADD_TO_GLOBAL_LIBRARIES , librt )
+    DUMMY := $(call ADD_TO_GLOBAL_LIBS , libpthread )
+    DUMMY := $(call ADD_TO_GLOBAL_LIBS , librt )
 
 
 

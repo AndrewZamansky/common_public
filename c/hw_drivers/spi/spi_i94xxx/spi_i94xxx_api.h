@@ -18,5 +18,17 @@ enum SPI_I94XXX_API_ioctl_e {
 	IOCTL_SPI_API_SET_CLK
 };
 
+struct spi_i94xxx_cfg_t {
+	struct dev_desc_t *   src_clock;
+	uint32_t   clk_freq;
+	size_t     base_address;
+	uint32_t    CLK_pin;
+	uint32_t    SS_pin;
+	uint32_t    MISO_pin;
+	uint32_t    MOSI_pin;
+	uint8_t    data_width;
+	uint8_t    rx_fifo_threshold;
+	uint8_t    tx_fifo_threshold;
+};
 
 #endif

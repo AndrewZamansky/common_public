@@ -35,7 +35,7 @@
 
 /*----------------------------------------------------------------------------*/
 /*!<USB Device Descriptor */
-uint8_t gu8DeviceDescriptor[] =
+static uint8_t gu8DeviceDescriptor[] =
 {
 	0x12,        /* bLength */
 	0x01,       /* bDescriptorType */
@@ -78,7 +78,7 @@ static const uint8_t gu8StringLang[4] =
 
 
 /*!<USB BOS Descriptor */
-uint8_t gu8BOSDescriptor[] = 
+static uint8_t gu8BOSDescriptor[] =
 {
 	0x05,        /* bLength */
 	0x0F,       /* bDescriptorType : BOS*/
@@ -95,19 +95,19 @@ uint8_t gu8BOSDescriptor[] =
 };
 
 
-uint8_t const **gpu8UsbString = NULL;
+static uint8_t const **gpu8UsbString = NULL;
 
 #define MAX_INTERFACE_NUM_FOR_HID  6
-uint8_t const *gu8UsbHidReport[MAX_INTERFACE_NUM_FOR_HID] = {NULL};
-uint32_t gu32UsbHidReportLen[MAX_INTERFACE_NUM_FOR_HID] = {0};
-uint32_t gu32ConfigHidDescIdx[MAX_INTERFACE_NUM_FOR_HID] = {0};
+static uint8_t const *gu8UsbHidReport[MAX_INTERFACE_NUM_FOR_HID] = {NULL};
+static uint32_t gu32UsbHidReportLen[MAX_INTERFACE_NUM_FOR_HID] = {0};
+static uint32_t gu32ConfigHidDescIdx[MAX_INTERFACE_NUM_FOR_HID] = {0};
 
 
 
 static uint8_t *configuration_desc;
-uint16_t configuration_desc_size;
-uint16_t interface_count = 0;
-uint16_t string_index_count = 0;
+static uint16_t configuration_desc_size;
+static uint16_t interface_count = 0;
+static uint16_t string_index_count = 0;
 static uint8_t init_done = 0;
 
 static void increase_configuration_desc(uint16_t additional_size)
@@ -311,7 +311,7 @@ static void add_string_descriptor(struct usb_device_descriptors_cfg_t *cfg_hndl,
  *
  * return:
  */
-uint8_t usb_device_descriptors_ioctl(
+static uint8_t usb_device_descriptors_ioctl(
 		struct dev_desc_t *adev, uint8_t aIoctl_num,
 		void * aIoctl_param1, void * aIoctl_param2)
 {
@@ -349,3 +349,8 @@ uint8_t usb_device_descriptors_ioctl(
 	}
 	return 0;
 }
+
+#define    MODULE_NAME                  usb_device_descriptors
+#define    MODULE_IOCTL_FUNCTION        usb_device_descriptors_ioctl
+#define MODULE_CONFIG_DATA_STRUCT_TYPE  struct usb_device_descriptors_cfg_t
+#include "add_module.h"

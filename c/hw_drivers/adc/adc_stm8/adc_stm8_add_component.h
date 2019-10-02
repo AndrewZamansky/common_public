@@ -21,8 +21,8 @@ uint8_t adc_stm8_ioctl( void * const aHandle ,const uint8_t aIoctl_num , void * 
 		}
 #endif
 
-#include "add_component.h"
+#include "add_static_dev.h"
 
 
-/* device specific defines should be undefined after calling #include "add_component.h" */
+/* device specific defines should be undefined after calling #include "add_static_dev.h" */
 #undef ADC_STM8_CHANNEL

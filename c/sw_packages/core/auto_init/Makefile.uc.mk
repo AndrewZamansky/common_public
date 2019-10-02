@@ -1,5 +1,5 @@
 
-INCLUDE_THIS_COMPONENT := y
+INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_AUTO_INIT)
 
 
 #DEFINES = 
@@ -58,6 +58,13 @@ ifneq ($(USE_GCC_AUTO_INIT_HELPER),)
 endif
 ifeq ($(CONFIG_ARMCC),y)
     SRC += auto_init_armcc_helper.c
+endif
+
+
+ifdef CONFIG_INCLUDE_ONLY_AUTO_INIT_API
+    DEFINES += AUTO_INIT_PROJ_NAME=$(CONFIG_PROJECT_NAME)
+    #only compile following file:
+    SRC := auto_init_api_check.c
 endif
 
 VPATH = src

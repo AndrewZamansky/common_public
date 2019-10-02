@@ -13,17 +13,15 @@
 #include "dev_management_api.h"
 
 #include "dma_i94xxx.h"
-
+#include "dma_i94xxx_api.h"
 
 #include "I94100.h"
 
 #include "irq_api.h"
 #include "os_wrapper.h"
 
-#include "_dma_i94xxx_prerequirements_check.h"
 
 /*following line add module to available module list for dynamic device tree*/
-#include "dma_i94xxx_add_component.h"
 
 
 #if !defined(INTERRUPT_PRIORITY_FOR_DMA)
@@ -863,3 +861,9 @@ uint8_t dma_i94xxx_ioctl( struct dev_desc_t *adev, const uint8_t aIoctl_num,
 
 	return ret;
 }
+
+#define	MODULE_NAME                         dma_i94xxx
+#define	MODULE_IOCTL_FUNCTION               dma_i94xxx_ioctl
+#define MODULE_CONFIG_DATA_STRUCT_TYPE      struct dma_i94xxx_cfg_t
+#define MODULE_RUNTIME_DATA_STRUCT_TYPE     struct dma_i94xxx_runtime_t
+#include "add_module.h"

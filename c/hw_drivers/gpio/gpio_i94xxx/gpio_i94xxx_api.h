@@ -35,6 +35,16 @@ enum  GPIO_I94XXX_API_IOCTLE_E
 #define GPIO_I94XXX_API_MODE_IN		 	GPIO_MODE_INPUT
 
 
+struct gpio_i94xxx_config_t
+{
+	struct dev_desc_t *client_dev;
+	uint32_t    port_num;
+	uint8_t     pin_arr_size;
+	uint8_t     *pin_arr;
+	uint8_t     *pin_arr_idle_state;
+	uint8_t     mode;
+};
+
 /**********  define API  functions  ************/
 
 #endif

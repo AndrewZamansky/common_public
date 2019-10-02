@@ -12,6 +12,7 @@
 #include "_project_defines.h"
 extern "C" {
 #include "errors_api.h"
+#include "os_wrapper.h"
 }
 
 #include "dsp_management_api.h"
@@ -33,7 +34,6 @@ extern "C" {
 #include "biquad_filter.h"
 #include "biquad_filter_api.h"
 
-#include "_biquad_filter_prerequirements_check.h"
 
 #define NUM_OF_STATES_PER_STAGE   2
 
@@ -90,16 +90,18 @@ void *biquads_alloc(uint8_t num_of_stages, float *pCoeffs )
 	arm_biquad_cascade_df2T_instance_f32* p_arm_filter_inst;
 	float* p_filter_state;
 
-	p_biquads_cascading_filter = (struct biquads_cascading_filter_t *)malloc(
+	p_biquads_cascading_filter =
+			(struct biquads_cascading_filter_t *)os_safe_malloc(
 									sizeof(struct biquads_cascading_filter_t));
 	errors_api_check_if_malloc_secceed(p_biquads_cascading_filter);
 
-	p_arm_filter_inst = (arm_biquad_cascade_df2T_instance_f32*) malloc(
+	p_arm_filter_inst =
+			(arm_biquad_cascade_df2T_instance_f32*)os_safe_malloc(
 								sizeof(arm_biquad_cascade_df2T_instance_f32));
 	errors_api_check_if_malloc_secceed(p_arm_filter_inst);
 	p_biquads_cascading_filter->pFilterParams = p_arm_filter_inst;
 
-	p_filter_state = (float*)malloc(
+	p_filter_state = (float*)os_safe_malloc(
 			NUM_OF_STATES_PER_STAGE * num_of_stages * sizeof(float));
 	errors_api_check_if_malloc_secceed(p_filter_state);
 	p_biquads_cascading_filter->p_filter_state = p_filter_state;
@@ -121,9 +123,9 @@ void biquads_free(void *pFilter)
 
 	p_biquads_cascading_filter = (struct biquads_cascading_filter_t*)pFilter;
 
-	free(p_biquads_cascading_filter->p_filter_state);
-	free(p_biquads_cascading_filter->pFilterParams);
-	free(p_biquads_cascading_filter);
+	os_safe_free(p_biquads_cascading_filter->p_filter_state);
+	os_safe_free(p_biquads_cascading_filter->pFilterParams);
+	os_safe_free(p_biquads_cascading_filter);
 }
 
 

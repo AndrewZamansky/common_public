@@ -7,7 +7,6 @@
 #ifndef _BIQUAD_FILTER_H
 #define _BIQUAD_FILTER_H
 
-#include "src/_biquad_filter_prerequirements_check.h"
 #include "biquad_filter_api.h"
 
 

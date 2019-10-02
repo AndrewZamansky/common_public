@@ -27,8 +27,6 @@
 #include "clock_control_i94xxx_api.h"
 #include "pin_control_api.h"
 
-/*following line add module to available module list for dynamic device tree*/
-#include "I2S_i94xxx_add_component.h"
 
 
 //#define  DEBUG_USE_INTERRUPT
@@ -61,7 +59,7 @@
 volatile int g_u32DataCount = 0;
 volatile int status = 0;
 #define TEST_COUNT   100
-uint32_t data[TEST_COUNT+1] = {0};
+uint32_t i2s_data[TEST_COUNT+1] = {0};
 volatile int pos = 0;
 void I2S_IRQHandler()
 {
@@ -75,7 +73,7 @@ void I2S_IRQHandler()
 		{
 			pos++;
 		}
-		data[pos] = I2S0->RXFIFO;
+		its_data[pos] = I2S0->RXFIFO;
     }
     g_u32DataCount += 2;
 }
@@ -145,8 +143,12 @@ static void i94xxx_I2S_init(struct I2S_i94xxx_cfg_t *cfg_hndl,
 	num_of_bytes_in_word = cfg_hndl->num_of_bytes_in_word;
 	src_clock = cfg_hndl->src_clock;
 
+	DEV_IOCTL_0_PARAMS(i94xxx_i2s_clk_dev, IOCTL_DEVICE_START);
 	DEV_IOCTL_1_PARAMS(i94xxx_i2s_clk_dev, CLK_IOCTL_SET_PARENT, src_clock);
 	DEV_IOCTL_0_PARAMS(i94xxx_i2s_clk_dev, CLK_IOCTL_ENABLE);
+	DEV_IOCTL_0_PARAMS(i94xxx_I2S_FSCLK_clk_dev, IOCTL_DEVICE_START);
+	DEV_IOCTL_0_PARAMS(i94xxx_I2S_BCLK_clk_dev, IOCTL_DEVICE_START);
+	DEV_IOCTL_0_PARAMS(i94xxx_I2S_MCLK_clk_dev, IOCTL_DEVICE_START);
 
 	configure_pinout(cfg_hndl);
 
@@ -252,8 +254,8 @@ static void i94xxx_sync_to_dpwm_fs_rate(struct I2S_i94xxx_cfg_t *cfg_hndl,
  *
  * return:
  */
-uint8_t I2S_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
-		, void * aIoctl_param1 , void * aIoctl_param2)
+static uint8_t I2S_i94xxx_ioctl( struct dev_desc_t *adev,
+		const uint8_t aIoctl_num, void * aIoctl_param1 , void * aIoctl_param2)
 {
 	struct I2S_i94xxx_cfg_t *cfg_hndl;
 	struct I2S_i94xxx_runtime_t *runtime_handle;
@@ -300,3 +302,9 @@ uint8_t I2S_i94xxx_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 	}
 	return 0;
 }
+
+#define	MODULE_NAME                       I2S_i94xxx
+#define	MODULE_IOCTL_FUNCTION             I2S_i94xxx_ioctl
+#define MODULE_CONFIG_DATA_STRUCT_TYPE    struct I2S_i94xxx_cfg_t
+#define MODULE_RUNTIME_DATA_STRUCT_TYPE   struct I2S_i94xxx_runtime_t
+#include "add_module.h"

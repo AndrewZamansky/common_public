@@ -22,9 +22,6 @@
 
 #include "flash_wrapper_api.h"
 
-#include "_flash_i94xxx_prerequirements_check.h"
-
-#include "internal_flash_i94xxx_add_component.h"
 
 /***************   defines    *******************/
 #define ERASE_BLOCK_SIZE   0x1000    /* 4k */
@@ -61,7 +58,7 @@ static uint32_t get_actual_read_write_len( uint32_t aLength, uint32_t aOffset)
  *
  * return:
  */
-size_t internal_flash_i94xxx_pwrite(struct dev_desc_t *adev,
+static size_t internal_flash_i94xxx_pwrite(struct dev_desc_t *adev,
 						const uint8_t *apData, size_t aLength, size_t aOffset)
 {
 	size_t written_len;
@@ -123,7 +120,7 @@ size_t internal_flash_i94xxx_pwrite(struct dev_desc_t *adev,
  *
  * return:
  */
-size_t internal_flash_i94xxx_pread(struct dev_desc_t *adev,
+static size_t internal_flash_i94xxx_pread(struct dev_desc_t *adev,
 					uint8_t *apData, size_t aLength, size_t aOffset)
 {
 	size_t read_len;
@@ -214,7 +211,7 @@ static int  set_data_flash_base(uint32_t u32DFBA)
  *
  * return:
  */
-uint8_t internal_flash_i94xxx_ioctl(struct dev_desc_t *adev,
+static uint8_t internal_flash_i94xxx_ioctl(struct dev_desc_t *adev,
 		const uint8_t aIoctl_num, void * aIoctl_param1 , void * aIoctl_param2)
 {
 //	struct I2S_onSPI_i94xxx_cfg_t *cfg_hndl;
@@ -260,3 +257,9 @@ uint8_t internal_flash_i94xxx_ioctl(struct dev_desc_t *adev,
 	}
 	return 0;
 }
+
+#define	MODULE_NAME             internal_flash_i94xxx
+#define	MODULE_IOCTL_FUNCTION   internal_flash_i94xxx_ioctl
+#define MODULE_PWRITE_FUNCTION  internal_flash_i94xxx_pwrite
+#define MODULE_PREAD_FUNCTION   internal_flash_i94xxx_pread
+#include "add_module.h"

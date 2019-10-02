@@ -19,11 +19,6 @@
 #include "shell.h"
 #include "management_api.h"
 
-#include "_shell_prerequirements_check.h"
-
-/*following line add module to available module list for dynamic device tree*/
-#include "shell_add_component.h"
-
 
 /********  defines *********************/
 
@@ -66,7 +61,8 @@ static os_queue_t xQueue = NULL;
  *
  * return:
  */
-uint8_t shell_callback(struct dev_desc_t *adev ,const uint8_t aCallback_num,
+static uint8_t shell_callback(struct dev_desc_t *adev,
+		const uint8_t aCallback_num,
 		void * aCallback_param1, void * aCallback_param2)
 {
 	xMessage_t  queueMsg;
@@ -360,7 +356,7 @@ static void Shell_Task( void *pvParameters )
  *
  * return:
  */
-uint8_t shell_ioctl( struct dev_desc_t *adev,
+static uint8_t shell_ioctl( struct dev_desc_t *adev,
 		const uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2)
 {
 	struct shell_cfg_t *config_handle;
@@ -406,3 +402,16 @@ uint8_t shell_ioctl( struct dev_desc_t *adev,
 	}
 	return 0;
 }
+
+#define	MODULE_NAME                      shell
+#define	MODULE_IOCTL_FUNCTION            shell_ioctl
+#define	MODULE_CALLBACK_FUNCTION         shell_callback
+#define MODULE_CONFIG_DATA_STRUCT_TYPE   struct shell_cfg_t
+#define MODULE_RUNTIME_DATA_STRUCT_TYPE  struct shell_runtime_instance_t
+
+#define MODULE_CONFIGURABLE_PARAMS_ARRAY { \
+			{"shell_server", IOCTL_SET_SERVER_DEVICE, IOCTL_VOID, \
+				DEV_PARAM_TYPE_PDEVICE, MAPPED_SET_DUMMY_PARAM() }   \
+		}
+
+#include "add_module.h"

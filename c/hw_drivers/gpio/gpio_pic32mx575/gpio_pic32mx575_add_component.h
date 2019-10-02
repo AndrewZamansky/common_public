@@ -41,8 +41,8 @@ uint8_t gpio_pic32mx575_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 #endif
 
 
-#include "add_component.h"
+#include "add_static_dev.h"
 
-/* device specific defines should be undefined after calling #include "add_component.h" */
+/* device specific defines should be undefined after calling #include "add_static_dev.h" */
 #undef GPIO_PIC32MX575_DT_PACKAGE_PIN_NUMBER
 #undef GPIO_PIC32MX575_DT_MODE

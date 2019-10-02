@@ -69,10 +69,10 @@
 								GPIO_STM32F10X_API_MODE_STR, NOT_FOR_SAVE}, \
 	}
 
-#include "add_component.h"
+#include "add_static_dev.h"
 
 /* device specific defines should be undefined
- * after calling #include "add_component.h"
+ * after calling #include "add_static_dev.h"
  */
 #undef GPIO_STM32F10X_DT_PORT
 #undef GPIO_STM32F10X_DT_PINS

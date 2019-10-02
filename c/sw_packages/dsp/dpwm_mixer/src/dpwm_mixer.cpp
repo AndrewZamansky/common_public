@@ -20,7 +20,6 @@
 
 #include "auto_init_api.h"
 
-#include "_dpwm_mixer_prerequirements_check.h"
 
 /********  defines *********************/
 #ifndef ABS

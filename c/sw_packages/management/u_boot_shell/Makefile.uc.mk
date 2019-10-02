@@ -1,16 +1,18 @@
-
-
 ifeq ($(sort $(CONFIG_INCLUDE_UBOOT_SHELL)),y)
-
     INCLUDE_THIS_COMPONENT := y
 
-    CURR_UBOOT_COMPONENT_LOCATION := $(patsubst %/Makefile.uc.mk,%,$(realpath $(filter %u_boot_shell/Makefile.uc.mk,$(MAKEFILE_LIST))))
+    EXPANDED_MAKEFILE_LIST := $(realpath $(MAKEFILE_LIST))
+    CURR_FILE_SUFFIX :=u_boot_shell/Makefile.uc.mk
+    CURR_MAKEFILE :=$(filter %$(CURR_FILE_SUFFIX), $(EXPANDED_MAKEFILE_LIST))
+    CURR_MAKEFILE :=$(sort $(CURR_MAKEFILE)) # remove dublicates
+    CURR_COMPONENT_DIR := $(patsubst %/Makefile.uc.mk,%,$(CURR_MAKEFILE))
+
     U_BOOT_PATH :=$(EXTERNAL_SOURCE_ROOT_DIR)/u-boot
     ifeq ("$(wildcard $(U_BOOT_PATH))","")
         $(info   )
         $(info !--- u-boot path $(U_BOOT_PATH) dont exists )
-        $(info !--- get u-boot repository from git://git.denx.de/u-boot.git $(U_BOOT_PATH)  )
-        $(info !--- make sure that .git directory is located in $(U_BOOT_PATH)/  after unpacking   )
+        $(info !--- get u-boot repository from git://git.denx.de/u-boot.git $(U_BOOT_PATH))
+        $(info !--- make sure that .git directory is located in $(U_BOOT_PATH)/  after unpacking)
         $(error )
     endif
 
@@ -18,13 +20,13 @@ ifeq ($(sort $(CONFIG_INCLUDE_UBOOT_SHELL)),y)
     # as required by application
     CURR_GIT_REPO_DIR :=$(U_BOOT_PATH)
     CURR_GIT_COMMIT_HASH_VARIABLE :=CONFIG_UBOOT_GIT_COMMIT_HASH
-    CURR_GIT_BUNDLE :=$(CURR_UBOOT_COMPONENT_LOCATION)/u-boot.bundle
+    CURR_GIT_BUNDLE :=$(CURR_COMPONENT_DIR)/u-boot.bundle
     include $(MAKEFILES_ROOT_DIR)/_include_functions/git_prebuild_repo_check.mk
 
 endif
 
-DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH ,  $(CURR_UBOOT_COMPONENT_LOCATION)/include )
-DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(EXTERNAL_SOURCE_ROOT_DIR)/)
+DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH ,$(CURR_COMPONENT_DIR)/include )
+DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH ,$(EXTERNAL_SOURCE_ROOT_DIR))
 
 DEFINES =
 CFLAGS =
@@ -37,7 +39,9 @@ ifdef CONFIG_MICROSOFT_COMPILER
     CFLAGS += /wd4189
     CFLAGS += /wd4127
     CFLAGS += /wd4200
-	DEFINES += _CRT_SECURE_NO_WARNINGS # to disable deprecation in windows compiler
+    
+    # to disable deprecation in windows compiler :
+	DEFINES += _CRT_SECURE_NO_WARNINGS
 endif
 
 #ASMFLAGS =
@@ -83,5 +87,12 @@ SRC += cmd_help.c
 
 
 VPATH += | $(U_BOOT_PATH)/common
+
+
+ifdef CONFIG_INCLUDE_ONLY_UBOOT_SHELL_API
+    DEFINES += UBOOT_SHELL_PROJ_NAME=$(CONFIG_PROJECT_NAME)
+    #only compile following file:
+    SRC := uboot_shell_api_check.c
+endif
 
 include $(COMMON_CC)

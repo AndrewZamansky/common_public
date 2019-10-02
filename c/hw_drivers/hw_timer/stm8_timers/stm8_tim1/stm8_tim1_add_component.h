@@ -49,9 +49,9 @@ uint8_t stm8_tim1_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num , voi
 		STM8_TIM1_DT_MODE  }
 #endif
 
-#include "add_component.h"
+#include "add_static_dev.h"
 
-/* device specific defines should be undefined after calling #include "add_component.h" */
+/* device specific defines should be undefined after calling #include "add_static_dev.h" */
 #undef STM8_TIM1_DT_INITIAL_RATE
 #undef STM8_TIM1_DT_CLOCK_PDEV
 #undef STM8_TIM1_DT_CLOCK_INDEX

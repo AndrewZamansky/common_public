@@ -28,8 +28,8 @@ $(info  )
 $(info usefull makefile calls :)
 $(info  DUMMY := $$(call ADD_TO_GLOBAL_INCLUDE_PATH , your/include/path))
 $(info  DUMMY := $$(call ADD_TO_GLOBAL_DEFINES , your_define=xx))
-$(info  DUMMY := $$(call ADD_TO_GLOBAL_LIBRARIES , var ))
-$(info  DUMMY := $$(call ADD_TO_GLOBAL_LIBRARIES_PATH , var ))
+$(info  DUMMY := $$(call ADD_TO_GLOBAL_LIBS , var ))
+$(info  DUMMY := $$(call ADD_TO_GLOBAL_LIBS_PATH , var ))
 
 
 list_var :

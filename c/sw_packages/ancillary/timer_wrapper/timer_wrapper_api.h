@@ -10,8 +10,7 @@
 /**********  define API  types ************/
 
 
-typedef enum
-{
+enum TIMER_WRAPPER_API_ioctl_e {
 	IOCTL_TIMER_WRAPPER_API_SET_COUNTDOWN_uSEC_AND_RESET
 										= IOCTL_LAST_COMMON_IOCTL + 1,
 	IOCTL_TIMER_WRAPPER_API_SET_COUNTDOWN_mSEC_AND_RESET,
@@ -20,7 +19,11 @@ typedef enum
 	IOCTL_TIMER_WRAPPER_API_RESTART_COUNTER,
 	IOCTL_TIMER_WRAPPER_API_GET_COUNTER,
 	IOCTL_TIMER_WRAPPER_API_BUSY_WAIT
-}TIMER_WRAPPER_API_ioctl_t;
+};
+
+struct timer_wrapper_cfg_t {
+	struct dev_desc_t *hw_timer_wrapper;
+};
 
 
 /**********  define API  functions  ************/

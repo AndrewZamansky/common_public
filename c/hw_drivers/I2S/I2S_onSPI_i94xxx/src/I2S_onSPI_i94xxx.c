@@ -22,7 +22,6 @@
 	#include "dpwm_i94xxx_api.h"
 #endif
 
-#include "I2S_onSPI_i94xxx_add_component.h"
 
 /********  defines *********************/
 
@@ -59,7 +58,7 @@
  * TODO: Make a data transfer interface.
  */
 
-uint8_t I2S_onSPI_i94xxx_callback(struct dev_desc_t *adev ,
+static uint8_t I2S_onSPI_i94xxx_callback(struct dev_desc_t *adev ,
 		uint8_t aCallback_num , void * aCallback_param1,
 		void * aCallback_param2)
 {
@@ -235,6 +234,9 @@ static void i94xxx_I2S_onSPI_init(struct dev_desc_t *adev,
 {
 	SPI_T  *I2S_SPI_module;
 	struct dev_desc_t  *clk_dev;
+	struct dev_desc_t  *fs_clk_dev;
+	struct dev_desc_t  *bclk_clk_dev;
+	struct dev_desc_t  *mclk_clk_dev;
 	struct dev_desc_t  *src_clock;
 	uint32_t clk_mode;
 	uint32_t sample_rate;
@@ -253,11 +255,17 @@ static void i94xxx_I2S_onSPI_init(struct dev_desc_t *adev,
 
 	if ((SPI_T*)SPI1_BASE == I2S_SPI_module)
 	{
-		clk_dev = i94xxx_spi1clk_clk_dev;
+		clk_dev = i94xxx_spi1_clk_dev;
+		fs_clk_dev = i94xxx_I2S_onSPI1_FSCLK_clk_dev;
+		bclk_clk_dev = i94xxx_I2S_onSPI1_BCLK_clk_dev;
+		mclk_clk_dev = i94xxx_I2S_onSPI1_MCLK_clk_dev;
 	}
 	else if ((SPI_T*)SPI2_BASE == I2S_SPI_module)
 	{
-		clk_dev = i94xxx_spi2clk_clk_dev;
+		clk_dev = i94xxx_spi2_clk_dev;
+		fs_clk_dev = i94xxx_I2S_onSPI2_FSCLK_clk_dev;
+		bclk_clk_dev = i94xxx_I2S_onSPI2_BCLK_clk_dev;
+		mclk_clk_dev = i94xxx_I2S_onSPI2_MCLK_clk_dev;
 	}
 	else
 	{
@@ -266,8 +274,12 @@ static void i94xxx_I2S_onSPI_init(struct dev_desc_t *adev,
 
 	configure_i2s_spi_pinout(cfg_hndl);
 
+	DEV_IOCTL_0_PARAMS(clk_dev, IOCTL_DEVICE_START);
 	DEV_IOCTL_1_PARAMS(clk_dev, CLK_IOCTL_SET_PARENT, src_clock);
 	DEV_IOCTL_0_PARAMS(clk_dev, CLK_IOCTL_ENABLE);
+	DEV_IOCTL_0_PARAMS(fs_clk_dev, IOCTL_DEVICE_START);
+	DEV_IOCTL_0_PARAMS(bclk_clk_dev, IOCTL_DEVICE_START);
+	DEV_IOCTL_0_PARAMS(mclk_clk_dev, IOCTL_DEVICE_START);
 
 	SPI_I2SOpen(I2S_SPI_module, clk_mode, sample_rate, data_width,
 										audio_format, txrx_format);
@@ -339,14 +351,14 @@ static void i94xxx_sync_to_dpwm_fs_rate(struct I2S_onSPI_i94xxx_cfg_t *cfg_hndl,
 			DPWM_I94XXX_GET_ROOT_CLK_DEV, &dpwm_root_clk_dev);
 	if ((SPI_T*)SPI1_BASE == I2S_SPI_module)
 	{
-		DEV_IOCTL_1_PARAMS(i94xxx_spi1clk_clk_dev,
+		DEV_IOCTL_1_PARAMS(i94xxx_spi1_clk_dev,
 				CLK_IOCTL_GET_ROOT_CLK, &i2s_root_clk_dev);
 		DEV_IOCTL_1_PARAMS(i94xxx_I2S_onSPI1_FSCLK_clk_dev,
 				CLK_IOCTL_GET_FREQ, &i2s_sample_rate_hz);
 	}
 	else if ((SPI_T*)SPI2_BASE == I2S_SPI_module)
 	{
-		DEV_IOCTL_1_PARAMS(i94xxx_spi2clk_clk_dev,
+		DEV_IOCTL_1_PARAMS(i94xxx_spi2_clk_dev,
 				CLK_IOCTL_GET_ROOT_CLK, &i2s_root_clk_dev);
 		DEV_IOCTL_1_PARAMS(i94xxx_I2S_onSPI2_FSCLK_clk_dev,
 				CLK_IOCTL_GET_FREQ, &i2s_sample_rate_hz);
@@ -433,3 +445,10 @@ uint8_t I2S_onSPI_i94xxx_ioctl( struct dev_desc_t *adev,
 	}
 	return 0;
 }
+
+#define MODULE_NAME                     I2S_onSPI_i94xxx
+#define MODULE_IOCTL_FUNCTION           I2S_onSPI_i94xxx_ioctl
+#define MODULE_CALLBACK_FUNCTION        I2S_onSPI_i94xxx_callback
+#define MODULE_CONFIG_DATA_STRUCT_TYPE  struct I2S_onSPI_i94xxx_cfg_t
+#define MODULE_RUNTIME_DATA_STRUCT_TYPE struct I2S_onSPI_i94xxx_runtime_t
+#include "add_module.h"

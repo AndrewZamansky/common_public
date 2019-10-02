@@ -14,11 +14,8 @@
 
 #include "async_rx_wrapper_api.h"
 #include "async_rx_wrapper.h"
-
-#include "_async_rx_wrapper_prerequirements_check.h"
-
-/*following line add module to available module list for dynamic device tree*/
-#include "async_rx_wrapper_add_component.h"
+#include "os_wrapper.h"
+#include <string.h>
 
 
 /********  defines *********************/
@@ -42,7 +39,7 @@
  *
  * return:
  */
-uint8_t async_rx_wrapper_callback(struct dev_desc_t *adev ,
+static uint8_t async_rx_wrapper_callback(struct dev_desc_t *adev ,
 	  uint8_t aCallback_num , void * aCallback_param1, void * aCallback_param2)
 {
 	struct async_rx_wrapper_cfg_t *config_handle;
@@ -69,12 +66,7 @@ uint8_t async_rx_wrapper_callback(struct dev_desc_t *adev ,
 		if (NULL == rx_buff) return 1;
 
 		WritePos = runtime_handle->WritePos;
-	#ifdef CONFIG_ASYNC_RX_WRAPPER_USE_MALLOC
-		rx_buff_size=config_handle->rx_buff_size;
-	#else
-		rx_buff_size = CONFIG_ASYNC_RX_WRAPPER_RX_BUFFER_SIZE;
-	#endif
-
+		rx_buff_size = config_handle->rx_buff_size;
 		if (0 == runtime_handle->isDataInUse)
 		{
 			rx_int_size_t ReadPos;
@@ -117,8 +109,8 @@ uint8_t async_rx_wrapper_callback(struct dev_desc_t *adev ,
  *
  * return:
  */
-uint8_t async_rx_wrapper_ioctl(struct dev_desc_t *adev, uint8_t aIoctl_num,
-					void * aIoctl_param1 , void * aIoctl_param2)
+static uint8_t async_rx_wrapper_ioctl(struct dev_desc_t *adev,
+		uint8_t aIoctl_num, void * aIoctl_param1 , void * aIoctl_param2)
 {
 	struct async_rx_wrapper_cfg_t *config_handle;
 	struct async_rx_wrapper_runtime_t *runtime_handle;
@@ -187,7 +179,8 @@ uint8_t async_rx_wrapper_ioctl(struct dev_desc_t *adev, uint8_t aIoctl_num,
 	case IOCTL_DEVICE_START :
 
 #ifdef CONFIG_ASYNC_RX_WRAPPER_USE_MALLOC
-		config_handle->rx_buff = (uint8_t*)malloc(config_handle->rx_buff_size);
+		config_handle->rx_buff =
+				(uint8_t*)os_safe_malloc(config_handle->rx_buff_size);
 		errors_api_check_if_malloc_secceed(config_handle->rx_buff);
 #endif
 
@@ -199,3 +192,21 @@ uint8_t async_rx_wrapper_ioctl(struct dev_desc_t *adev, uint8_t aIoctl_num,
 	}
 	return 0;
 }
+
+#define MODULE_NAME                       async_rx_wrapper
+#define MODULE_IOCTL_FUNCTION             async_rx_wrapper_ioctl
+#define MODULE_CALLBACK_FUNCTION          async_rx_wrapper_callback
+#define MODULE_CONFIG_DATA_STRUCT_TYPE    struct async_rx_wrapper_cfg_t
+#define MODULE_RUNTIME_DATA_STRUCT_TYPE   struct async_rx_wrapper_runtime_t
+
+#define MODULE_CONFIGURABLE_PARAMS_ARRAY  { \
+			{	ASYNC_RX_WRAPPER_API_RX_BUFF_SIZE_STR ,                \
+				IOCTL_ASYNC_RX_WRAPPER_SET_BUFF_SIZE	, IOCTL_VOID , \
+				DEV_PARAM_TYPE_UINT32  , MAPPED_SET_DUMMY_PARAM()  },  \
+															\
+			{	ASYNC_RX_WRAPPER_API_SERVER_DEVICE_STR ,                \
+				IOCTL_SET_SERVER_DEVICE 	, IOCTL_VOID ,              \
+				DEV_PARAM_TYPE_PDEVICE , MAPPED_SET_DUMMY_PARAM() },    \
+		}
+
+#include "add_module.h"

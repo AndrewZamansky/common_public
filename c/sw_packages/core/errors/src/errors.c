@@ -11,24 +11,9 @@
 #include "errors_api.h"
 #include "_project_typedefs.h"
 #include "_project_defines.h"
+#include "errors.h"
 
-
-/********  defines *********************/
-
-
-/********  types  *********************/
-
-
-/********  externals *********************/
-
-/********  globals *********************/
-
-/***********************************/
-/********** ver_dev ********/
-
-
-/********  local defs *********************/
-
+const uint8_t ERRORS_API_VER_VARIABLE(ERRORS_API_VERSION);
 
 void errors_api_check_if_malloc_secceed(void *pointer)
 {

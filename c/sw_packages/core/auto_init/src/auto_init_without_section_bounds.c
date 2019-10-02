@@ -1,6 +1,6 @@
 /*
  *
- *   file  :  auto_init.c
+ *   file  :  auto_init_without_section_bounds.c
  *
  */
 
@@ -9,17 +9,14 @@
 #include "_project_defines.h"
 
 #include "auto_init_api.h"
+#include "auto_init.h"
 
 
-/***************   defines    *******************/
-
-/***************   typedefs    *******************/
-
-/**********   external variables    **************/
-
-/***********   global variables    **************/
-
-/***********   local variables    **************/
+/* will create variable auto_init_ver_XXXXXXX that will be referenced from
+ * library or application to test that API is matching between libraries
+ * and application
+*/
+const uint8_t AUTO_INIT_API_VER_VARIABLE(AUTO_INIT_API_VERSION);
 
 extern auto_init_struct_t
 					AUTO_INIT_FUNCTION_PLACEMENT auto_init_dummy_auto_init;
@@ -39,6 +36,7 @@ static void _auto_init(int16_t struct_size)
 	}
 }
 
+static uint8_t auto_init_done = 0;
 
 /*
  * function : auto_init_api()
@@ -47,8 +45,13 @@ static void _auto_init(int16_t struct_size)
  */
 void auto_init_api(void)
 {
-	_auto_init( (uint8_t)sizeof(auto_init_struct_t));
-	_auto_init(- (uint8_t)sizeof(auto_init_struct_t));
+	if (auto_init_done)
+	{
+		return;
+	}
+	_auto_init(   (uint8_t)sizeof(auto_init_struct_t)  );
+	_auto_init( -((uint8_t)sizeof(auto_init_struct_t)) );
+	auto_init_done = 1;
 }
 
 void dummy_auto_init(void){}

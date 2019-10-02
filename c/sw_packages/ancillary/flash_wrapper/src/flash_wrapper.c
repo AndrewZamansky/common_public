@@ -18,9 +18,6 @@
 #include "flash_wrapper.h"
 #include "flash_wrapper_api.h"
 
-/*following line add module to available module list for dynamic device tree*/
-#include "flash_wrapper_add_component.h"
-
 /***************   defines    *******************/
 
 
@@ -41,9 +38,9 @@ static void save_to_flash_and_fetch_new_block( struct dev_desc_t *adev,
 {
 	struct flash_wrapper_runtime_t *runtime_handle;
 	struct flash_wrapper_cfg_t *cfg_hndl;
-	struct dev_desc_t	*hw_flash_dev;
-	uint8_t 	*write_buffer;
-	uint32_t	erase_block_size;
+	struct dev_desc_t  *hw_flash_dev;
+	uint8_t  *write_buffer;
+	uint32_t  erase_block_size;
 
 	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
 	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
@@ -70,18 +67,18 @@ static void save_to_flash_and_fetch_new_block( struct dev_desc_t *adev,
  *
  * return:
  */
-size_t flash_wrapper_pwrite(struct dev_desc_t *adev,
+static size_t flash_wrapper_pwrite(struct dev_desc_t *adev,
 						const uint8_t *apData, size_t aLength, size_t aOffset)
 {
 	struct flash_wrapper_runtime_t *runtime_handle;
-	uint32_t	erase_block_size;
-	uint8_t 	*write_buffer;
-    uint32_t 	pageAddr;
-    uint32_t	 wrAddr;
-    uint32_t 	written_size;
-	uint32_t	flash_size;
-	uint32_t	page_mask;
-	uint32_t	curr_block_addr;
+	uint32_t  erase_block_size;
+	uint8_t  *write_buffer;
+    uint32_t  pageAddr;
+    uint32_t  wrAddr;
+    uint32_t  written_size;
+	uint32_t  flash_size;
+	uint32_t  page_mask;
+	uint32_t  curr_block_addr;
 
 	os_mutex_take_infinite_wait(flash_wrapper_mutex);
 
@@ -142,16 +139,16 @@ size_t flash_wrapper_pwrite(struct dev_desc_t *adev,
  *
  * return:
  */
-size_t flash_wrapper_pread(struct dev_desc_t *adev,
+static size_t flash_wrapper_pread(struct dev_desc_t *adev,
 					uint8_t *apData, size_t aLength, size_t aOffset)
 {
 	struct flash_wrapper_cfg_t *cfg_hndl;
-	struct dev_desc_t	*hw_flash_dev;
+	struct dev_desc_t  *hw_flash_dev;
 
 	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
 	hw_flash_dev = cfg_hndl->hw_flash_dev;
 
-	return DEV_PREAD(hw_flash_dev, apData,	aLength, aOffset);
+	return DEV_PREAD(hw_flash_dev, apData, aLength, aOffset);
 }
 
 
@@ -200,14 +197,14 @@ static void flash_wrapper_task( void *adev )
  *
  * return:
  */
-uint8_t flash_wrapper_ioctl(struct dev_desc_t *adev,
+static uint8_t flash_wrapper_ioctl(struct dev_desc_t *adev,
 		const uint8_t aIoctl_num, void * aIoctl_param1 , void * aIoctl_param2)
 {
 	struct flash_wrapper_cfg_t *cfg_hndl;
-	struct dev_desc_t	*hw_flash_dev;
+	struct dev_desc_t  *hw_flash_dev;
 	struct flash_wrapper_runtime_t *runtime_handle;
-	uint32_t	erase_block_size;
-	uint32_t	flash_size;
+	uint32_t  erase_block_size;
+	uint32_t  flash_size;
 
 	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
 	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
@@ -226,7 +223,7 @@ uint8_t flash_wrapper_ioctl(struct dev_desc_t *adev,
 				IOCTL_FLASH_WRAPPER_GET_FLASH_SIZE, &flash_size);
 		runtime_handle->flash_size = flash_size;
 		runtime_handle->curr_block_addr = flash_size;//dummy address
-    	runtime_handle->curr_block_is_dirty = 0;
+		runtime_handle->curr_block_is_dirty = 0;
 
 		flash_wrapper_mutex = os_create_mutex();
 		os_create_task("flash_wrapper_task",
@@ -241,3 +238,11 @@ uint8_t flash_wrapper_ioctl(struct dev_desc_t *adev,
 	}
 	return 0;
 }
+
+#define	MODULE_NAME                      flash_wrapper
+#define	MODULE_IOCTL_FUNCTION            flash_wrapper_ioctl
+#define MODULE_PWRITE_FUNCTION           flash_wrapper_pwrite
+#define MODULE_PREAD_FUNCTION            flash_wrapper_pread
+#define MODULE_CONFIG_DATA_STRUCT_TYPE   struct flash_wrapper_cfg_t
+#define MODULE_RUNTIME_DATA_STRUCT_TYPE  struct flash_wrapper_runtime_t
+#include "add_module.h"

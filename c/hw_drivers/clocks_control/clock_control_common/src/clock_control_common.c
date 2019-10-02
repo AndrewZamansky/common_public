@@ -16,7 +16,7 @@
 #include "clock_control_api.h"
 
 #include "clock_control_common_api.h"
-
+#include "clock_control_common.h"
 
 /********  defines *********************/
 
@@ -32,40 +32,88 @@
 static void get_root_clock(struct dev_desc_t *adev,
 								struct dev_desc_t **root_clk_dev)
 {
-	struct cfg_clk_t *cfg_clk;
+	struct runtime_clk_t *runtime_data;
 
-	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(adev);
-	while (NULL != cfg_clk->parent_clk)
+	runtime_data = DEV_GET_RUNTIME_DATA_POINTER(adev);
+
+	while (NULL != runtime_data->parent_clk)
 	{
-		adev = cfg_clk->parent_clk;
-		cfg_clk = DEV_GET_CONFIG_DATA_POINTER(adev);
+		adev = runtime_data->parent_clk;
+		runtime_data = DEV_GET_RUNTIME_DATA_POINTER(adev);
 	}
 	*root_clk_dev = adev;
 }
 
 
-void clock_control_common_api_get_parent_clock_rate(
-								struct cfg_clk_t *cfg_clk, uint32_t *rate)
-{
-	struct dev_desc_t * parent_clk_dev;
-
-	parent_clk_dev = cfg_clk->parent_clk;
-	if (NULL == parent_clk_dev) CRITICAL_ERROR("bad parent clock\n");
-	DEV_IOCTL_1_PARAMS(parent_clk_dev, CLK_IOCTL_GET_FREQ, rate);
-}
-
-
-uint8_t common_clock_api_standard_clk_ioctls(struct dev_desc_t *adev,
+static uint8_t clk_cntl_ioctl(struct dev_desc_t *adev,
 		const uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2)
 {
 	struct cfg_clk_t *cfg_clk;
+	struct runtime_clk_t *runtime_data;
+	struct dev_desc_t  *parent_clk;
+	uint32_t parent_rate;
 
 	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(adev);
+	runtime_data = DEV_GET_RUNTIME_DATA_POINTER(adev);
+	parent_clk = runtime_data->parent_clk;
+	parent_rate = 0;
+
+	if ((IOCTL_DEVICE_START != aIoctl_num) && (0 == runtime_data->init_done))
+	{
+		CRITICAL_ERROR("clock not initialized yet\n");
+	}
 
 	switch(aIoctl_num)
 	{
+	case IOCTL_DEVICE_START :
+		runtime_data->parent_clk = cfg_clk->default_parent_clk;
+		runtime_data->init_done = 1;
+		break;
 	case CLK_IOCTL_GET_FREQ :
-		clock_control_common_api_get_parent_clock_rate(cfg_clk, aIoctl_param1);
+		if (NULL != parent_clk)
+		{
+			DEV_IOCTL_1_PARAMS(parent_clk, CLK_IOCTL_GET_FREQ, &parent_rate);
+		}
+		if (NULL != cfg_clk->get_freq_func)
+		{
+			cfg_clk->get_freq_func(aIoctl_param1, parent_rate);
+		}
+		else
+		{
+			if (0 == runtime_data->rate)
+			{
+				*(uint32_t*)aIoctl_param1 = parent_rate;
+			}
+			else
+			{
+				*(uint32_t*)aIoctl_param1 = runtime_data->rate;
+			}
+		}
+		break;
+	case CLK_IOCTL_SET_FREQ :
+		if (NULL != cfg_clk->set_freq_func)
+		{
+			if (NULL != parent_clk)
+			{
+				DEV_IOCTL_1_PARAMS(
+						parent_clk, CLK_IOCTL_GET_FREQ, &parent_rate);
+			}
+			cfg_clk->set_freq_func(*(uint32_t*)aIoctl_param1, parent_rate);
+			runtime_data->rate = *(uint32_t*)aIoctl_param1;
+		}
+		break;
+	case CLK_IOCTL_SET_PARENT :
+		if (NULL != cfg_clk->set_parent_clk_func)
+		{
+			cfg_clk->set_parent_clk_func(aIoctl_param1);
+			runtime_data->parent_clk = aIoctl_param1;
+		}
+		break;
+	case CLK_IOCTL_ENABLE:
+		if (NULL != cfg_clk->enable_clk_func)
+		{
+			cfg_clk->enable_clk_func();
+		}
 		break;
 	case CLK_IOCTL_GET_ROOT_CLK:
 		get_root_clock(adev, aIoctl_param1);
@@ -75,3 +123,9 @@ uint8_t common_clock_api_standard_clk_ioctls(struct dev_desc_t *adev,
 	}
 	return 0;
 }
+
+#define MODULE_NAME                      clk_cntl
+#define MODULE_IOCTL_FUNCTION            clk_cntl_ioctl
+#define MODULE_CONFIG_DATA_STRUCT_TYPE   struct cfg_clk_t
+#define MODULE_RUNTIME_DATA_STRUCT_TYPE  struct runtime_clk_t
+#include "add_module.h"

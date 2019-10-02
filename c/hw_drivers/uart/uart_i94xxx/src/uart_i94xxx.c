@@ -12,6 +12,7 @@
 
 #include "dev_management_api.h"
 
+#include "uart_i94xxx_api.h"
 #include "uart_i94xxx.h"
 #include "I94100.h"
 
@@ -21,8 +22,7 @@
 #include "pin_control_api.h"
 #include <stdio.h>
 
-/*following line add module to available module list for dynamic device tree*/
-#include "uart_i94xxx_add_component.h"
+
 //#define DEBUG
 #include "PRINTF_api.h"
 
@@ -83,9 +83,9 @@ static uint8_t  rcv_data[UART_I94XXX_RCV_DATA_SIZE_BUFFER];
 static size_t   send_data_len;
 static uint8_t init_done = 0;
 
-uint32_t  uart_i94xxx_rx_fifo_overflow_cnt = 0;
+static uint32_t  uart_i94xxx_rx_fifo_overflow_cnt = 0;
 
-uint8_t uart_i94xxx_callback(struct dev_desc_t *adev ,
+static uint8_t uart_i94xxx_callback(struct dev_desc_t *adev ,
 		uint8_t aCallback_num , void * aCallback_param1,
 		void * aCallback_param2)
 {
@@ -126,7 +126,7 @@ uint8_t uart_i94xxx_callback(struct dev_desc_t *adev ,
 				}
 			}
 			DEV_CALLBACK_2_PARAMS(callback_rx_dev,
-					CALLBACK_DATA_RECEIVED,  rcv_data,  rcv_data_len);
+				CALLBACK_DATA_RECEIVED,  rcv_data, (void*)(size_t)rcv_data_len);
 			rcv_data_len = 0;// start getting data again
 		}
 	}
@@ -168,7 +168,7 @@ uint8_t uart_i94xxx_callback(struct dev_desc_t *adev ,
  *
  * return:
  */
-size_t uart_i94xxx_pwrite(struct dev_desc_t *adev,
+static size_t uart_i94xxx_pwrite(struct dev_desc_t *adev,
 			const uint8_t *apData, size_t aLength, size_t aOffset)
 {
 	UART_T *uart_regs;
@@ -215,15 +215,14 @@ size_t uart_i94xxx_pwrite(struct dev_desc_t *adev,
  *
  * return:
  */
-uint8_t uart_i94xxx_ioctl( struct dev_desc_t *adev, uint8_t aIoctl_num,
-		void * aIoctl_param1, void * aIoctl_param2)
+static uint8_t uart_i94xxx_ioctl( struct dev_desc_t *adev,
+		uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2)
 {
 	struct uart_i94xxx_cfg_t *cfg_hndl;
 	UART_T *uart_regs;
 	int uart_irq;
 	uint32_t uart_module_rst;
 	struct dev_desc_t  *src_clock;
-	struct dev_desc_t  *uart_clk_dev;
 
 	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
 	if ((0 == init_done) && (IOCTL_DEVICE_START != aIoctl_num))
@@ -247,9 +246,10 @@ uint8_t uart_i94xxx_ioctl( struct dev_desc_t *adev, uint8_t aIoctl_num,
 		pin_control_api_set_pin_function(cfg_hndl->rx_pin);
 
 		src_clock = cfg_hndl->src_clock;
-		uart_clk_dev = i94xxx_uart0clk_clk_dev;
-		DEV_IOCTL_1_PARAMS(uart_clk_dev, CLK_IOCTL_SET_PARENT, src_clock);
-		DEV_IOCTL_0_PARAMS(uart_clk_dev, CLK_IOCTL_ENABLE);
+		DEV_IOCTL_0_PARAMS(i94xxx_uart0_clk_dev, IOCTL_DEVICE_START);
+		DEV_IOCTL_1_PARAMS(
+				i94xxx_uart0_clk_dev, CLK_IOCTL_SET_PARENT, src_clock);
+		DEV_IOCTL_0_PARAMS(i94xxx_uart0_clk_dev, CLK_IOCTL_ENABLE);
 
 		uart_module_rst = UART0_RST;
 		SYS_ResetModule(uart_module_rst);
@@ -288,3 +288,10 @@ uint8_t uart_i94xxx_ioctl( struct dev_desc_t *adev, uint8_t aIoctl_num,
 	}
 	return 0;
 }
+
+#define MODULE_NAME                  uart_i94xxx
+#define MODULE_IOCTL_FUNCTION        uart_i94xxx_ioctl
+#define MODULE_CALLBACK_FUNCTION     uart_i94xxx_callback
+#define MODULE_PWRITE_FUNCTION       uart_i94xxx_pwrite
+#define MODULE_CONFIG_DATA_STRUCT_TYPE  struct uart_i94xxx_cfg_t
+#include "add_module.h"

@@ -2,6 +2,36 @@
 
 menu "core"
 
+menuconfig INCLUDE_AUTO_INIT
+	bool  "include auto init"
+	default n
+
+config INCLUDE_ONLY_AUTO_INIT_API
+	bool   "include only auto init api"
+	depends on INCLUDE_AUTO_INIT
+	default n
+	---help---
+		If you dont want to compile the sources but only use API such as
+		auto init macros.
+		If now you are creating the library, implementation should exist in
+		other library or in base application.
+		If now you are creating application, implementation should exist in
+		some library.
+
+menuconfig INCLUDE_ERROR_HANDLING
+	bool  "include error handling"
+	default n
+
+config INCLUDE_ONLY_ERROR_HANDLING_API
+	bool   "include only error handling api"
+	depends on INCLUDE_ERROR_HANDLING
+	default n
+	---help---
+		If now you are creating the library, implementation should exist in
+		other library or in base application.
+		If now you are creating application, implementation should exist in
+		some library.
+
 menuconfig INCLUDE_DEV_MENAGMENT
 	bool  "include devices manager"
 	default n

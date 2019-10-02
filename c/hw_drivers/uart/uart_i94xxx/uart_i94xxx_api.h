@@ -6,12 +6,14 @@
 
 /*****************  defines  **************/
 
-
-enum uart_i94xxx_pinout {
-	UART_I94XXX_UART0_TX_RX_PINS_PORT_B_PINS_8_9,
-	UART_I94XXX_UART0_TX_RX_PINS_PORT_D_PINS_14_15
+struct uart_i94xxx_cfg_t {
+	struct dev_desc_t *   callback_tx_dev;
+	struct dev_desc_t *   callback_rx_dev;
+	struct dev_desc_t *   src_clock;
+	uint32_t baud_rate;
+	uint32_t tx_pin;
+	uint32_t rx_pin;
 };
-
 
 /**********  define API  types ************/
 

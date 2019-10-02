@@ -31,7 +31,7 @@
 		}
 #endif
 
-#include "add_component.h"
+#include "add_static_dev.h"
 
 #undef  ARDUINO_SD_SPI_DT_SPI_DEV
 #undef  _POINTER_TO_SPI_DEV
