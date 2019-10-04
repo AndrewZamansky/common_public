@@ -9,6 +9,7 @@
 /***************   includes    *******************/
 #include "_project_typedefs.h"
 #include "_project_defines.h"
+#include "errors_api.h"
 
 #include "dev_management_api.h"
 #include "dev_management.h"
@@ -237,11 +238,15 @@ struct dev_desc_t * DEV_API_add_device(const char* module_name_str,
 
 			name_str_len = strlen(device_name_str);
 			new_str = (char*) malloc(name_str_len);
+			errors_api_check_if_malloc_secceed(new_str);
+
 			strcpy(new_str,  module_name_str);
 			dev->module_name =  new_str;
 
 			name_str_len = strlen(device_name_str);
 			new_str = (char*) malloc(name_str_len);
+			errors_api_check_if_malloc_secceed(new_str);
+
 			strcpy(new_str,  device_name_str);
 			dev->name =  new_str;
 

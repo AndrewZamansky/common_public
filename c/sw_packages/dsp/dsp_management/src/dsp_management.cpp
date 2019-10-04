@@ -21,6 +21,7 @@
 extern "C" {
 #include "memory_pool_api.h"
 #include "os_wrapper.h"
+#include "errors_api.h"
 }
 
 
@@ -173,6 +174,8 @@ void _dsp_register_new_module_type(const char *a_module_name,
 	dsp_module_type_array =
 			(struct dsp_module_type_t*)os_safe_realloc(dsp_module_type_array,
 			sizeof(struct dsp_module_type_t) * size_of_dsp_module_type_array);
+	errors_api_check_if_malloc_secceed(dsp_module_type_array);
+
 	p_new_dsp_module =
 			&dsp_module_type_array[size_of_dsp_module_type_array - 1];
 	p_new_dsp_module->name = a_module_name;
@@ -231,10 +234,12 @@ static struct dsp_chain_t *init_chain(uint32_t num_of_modules)
 
 	pdsp_chain =
 			(struct dsp_chain_t*)os_safe_malloc( sizeof(struct dsp_chain_t));
+	errors_api_check_if_malloc_secceed(pdsp_chain);
 	memset(pdsp_chain, 0, sizeof(struct dsp_chain_t));
 
 	alloc_size = num_of_modules * sizeof(struct dsp_module_inst_t);
 	dsp_modules = (struct dsp_module_inst_t*)os_safe_malloc(alloc_size);
+	errors_api_check_if_malloc_secceed(dsp_modules);
 	pdsp_chain->module_inst_arr = dsp_modules;
 	memset(dsp_modules, 0, alloc_size);
 	pdsp_chain->num_of_modules = num_of_modules;
@@ -298,6 +303,7 @@ static void init_module_inst(char const *module_type_name,
 		module_inst->ioctl = module_type->ioctl;
 		module_inst->dsp_func = module_type->dsp_func;
 		handle = os_safe_malloc( module_type->module_data_size );
+		errors_api_check_if_malloc_secceed(handle);
 		module_inst->handle = handle;
 		memset(handle, 0, module_type->module_data_size);
 

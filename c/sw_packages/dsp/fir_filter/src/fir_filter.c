@@ -105,16 +105,23 @@ uint8_t fir_filter_ioctl(struct dsp_module_inst_t *adsp,
 
 	case IOCTL_FIR_FILTER_SET_FIR_COEFFICIENTS :
 		p_band_set_params = ((fir_filter_api_set_params_t *)aIoctl_param1);
-		number_of_filter_coefficients = p_band_set_params->number_of_filter_coefficients;
+		number_of_filter_coefficients =
+				p_band_set_params->number_of_filter_coefficients;
 		handle->number_of_filter_coefficients = number_of_filter_coefficients;
-		predefined_data_block_size = p_band_set_params->predefined_data_block_size;
+		predefined_data_block_size =
+				p_band_set_params->predefined_data_block_size;
 		handle->predefined_data_block_size = predefined_data_block_size;
 
-		p_coefficients=(float *)realloc(handle->p_coefficients, sizeof(float) * number_of_filter_coefficients);
-		memcpy(p_coefficients,p_band_set_params->p_coefficients , sizeof(float)*number_of_filter_coefficients);
+		p_coefficients=(float *)realloc(handle->p_coefficients,
+				sizeof(float) * number_of_filter_coefficients);
+		errors_api_check_if_malloc_secceed(p_coefficients);
+
+		memcpy(p_coefficients, p_band_set_params->p_coefficients,
+							sizeof(float) * number_of_filter_coefficients);
 		handle->p_coefficients = p_coefficients;
 
-		handle->p_fir_filter = fir_alloc(number_of_filter_coefficients , p_coefficients ,predefined_data_block_size );
+		handle->p_fir_filter = fir_alloc( number_of_filter_coefficients,
+								p_coefficients , predefined_data_block_size );
 		break;
 
 	default :

@@ -10,9 +10,6 @@
 /**********  define API  functions  ************/
 
 
-uint8_t  adc_stm32f10x_api_init_dev_descriptor(struct dev_desc_t *aDevDescriptor);
 
 
-#else
-#pragma message( "warning : this header file had already been included" )
 #endif

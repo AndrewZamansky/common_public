@@ -7,6 +7,7 @@
 /********  includes *********************/
 #include "_project_typedefs.h"
 #include "_project_defines.h"
+#include "errors_api.h"
 
 #include "dev_management_api.h"
 #include "os_wrapper.h"
@@ -249,7 +250,9 @@ void demo_LineIn(void)
 	 buffer_size = num_of_words_in_buffer_per_chenel *
 			 	 	 	 	 	 	 	 num_of_bytes_in_word * 2 ;//2 for L/R
 	 PcmRxBuff = (uint8_t*)malloc(buffer_size * 2);// 2 for double buffering
+	 errors_api_check_if_malloc_secceed(PcmRxBuff);
 	 PcmTxBuff = (uint8_t*)malloc(buffer_size * 2);// 2 for double buffering
+	 errors_api_check_if_malloc_secceed(PcmTxBuff);
 
  		/* Enable I2S Module clock */
      CLK_EnableModuleClock(I2S_MODULE);

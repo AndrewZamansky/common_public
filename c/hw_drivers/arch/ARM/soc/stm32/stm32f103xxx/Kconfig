@@ -10,14 +10,14 @@ choice
 	default stm32f103xC
 
 config stm32f103x8
-	bool "stm32f103xC"
+	bool "stm32f103x8"
 	select STM32F103x8_64K_FLASH
 	select STM32F103x8_20K_SRAM
 
 config stm32f103xB
 	bool "stm32f103xC"
 	select STM32F103xB_128K_FLASH
-	select STM32F103x8_20K_SRAM
+	select STM32F103xB_20K_SRAM
 
 config stm32f103xC
 	bool "stm32f103xC"
@@ -68,6 +68,9 @@ config STM32F103xF_768K_FLASH
 	def_bool n
 
 
+
+config STM32F103x8_20K_SRAM
+	def_bool n
 
 config STM32F103xB_20K_SRAM
 	def_bool n

@@ -11,6 +11,7 @@
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 #include "_project_tasks_defines.h"
+#include "errors_api.h"
 
 #include "dev_management_api.h"
 
@@ -215,6 +216,8 @@ size_t async_tx_wrapper_pwrite(struct dev_desc_t *adev,
 #ifdef CONFIG_ASYNC_TX_WRAPPER_USE_MALLOC
 		xMessage.pData =
 				(uint8_t*)os_safe_malloc(curr_transmit_len * sizeof(uint8_t));
+		errors_api_check_if_malloc_secceed(xMessage.pData);
+
 #else
 		if ( CONFIG_ASYNC_TX_WRAPPER_MAX_TX_BUFFER_SIZE < curr_transmit_len )
 		{

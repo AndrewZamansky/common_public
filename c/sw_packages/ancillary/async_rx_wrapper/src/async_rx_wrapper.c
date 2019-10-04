@@ -8,6 +8,7 @@
 
 #include "_project_typedefs.h"
 #include "_project_defines.h"
+#include "errors_api.h"
 
 #include "dev_management_api.h"
 
@@ -187,6 +188,7 @@ uint8_t async_rx_wrapper_ioctl(struct dev_desc_t *adev, uint8_t aIoctl_num,
 
 #ifdef CONFIG_ASYNC_RX_WRAPPER_USE_MALLOC
 		config_handle->rx_buff = (uint8_t*)malloc(config_handle->rx_buff_size);
+		errors_api_check_if_malloc_secceed(config_handle->rx_buff);
 #endif
 
 		DEV_IOCTL_0_PARAMS(server_dev, IOCTL_DEVICE_START );

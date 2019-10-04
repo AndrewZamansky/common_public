@@ -67,15 +67,18 @@ static void channel_copy_16bit(uint8_t *pRxBuf, real_t *outChannel,
 
 
 static void channel_copy_32bit(uint8_t *pRxBuf, real_t *outChannel,
-		size_t num_of_frames, uint8_t frame_size_bytes, real_t normalizer)
+		size_t num_of_frames, uint8_t frame_size_bytes)
 {
 	size_t i;
+	real_t normalizer;
+
+	normalizer = 0x7fffffff;
 	for (i = 0; i < num_of_frames; i++)
 	{
 		real_t in_real;
 
 		in_real = *(int32_t*)pRxBuf;
-		*outChannel++ = in_real * normalizer;
+		*outChannel++ = in_real / normalizer;
 		pRxBuf += frame_size_bytes;
 	}
 }
@@ -148,7 +151,7 @@ static void pcm_splitter_dsp_16and32bit(struct dsp_module_inst_t *adsp,
 		else if (4 == subframe_size_bytes)
 		{
 			channel_copy_32bit(pRxBuf, curr_ChOut,
-					num_of_frames, frame_size_bytes, normalizer);
+					num_of_frames, frame_size_bytes);
 		}
 		pRxBuf += subframe_size_bytes;
 	}

@@ -10,6 +10,7 @@
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 #include "_project_func_declarations.h"
+#include "errors_api.h"
 
 #include "memory_pool_api.h"
 
@@ -61,14 +62,12 @@ void *memory_pool_malloc(void *memory_pool_handle)
 	pool_chunks = mem_pool->pool_chunks;
 	pool_chunks = (struct mem_pool_chunck_t *)realloc(pool_chunks,
 					num_of_chunks * sizeof(struct mem_pool_chunck_t));
-	if (NULL == pool_chunks)
-	{
-		CRITICAL_ERROR("not enough memory in heap");
-	}
+	errors_api_check_if_malloc_secceed(pool_chunks);
 	mem_pool->pool_chunks = pool_chunks;
 	pool_chunk = &pool_chunks[num_of_chunks - 1];
 	pool_chunk->inUse = 1;
 	mem = malloc(mem_pool->size_of_chunk);
+	errors_api_check_if_malloc_secceed(mem);
 	pool_chunk->mem = mem;
 	return mem;
 }
@@ -133,7 +132,7 @@ void *memory_pool_init(size_t size_of_chunk)
 	struct mem_pool_t *pInstance;
 
 	pInstance = (struct mem_pool_t *)malloc(sizeof(struct mem_pool_t));
-	if(NULL == pInstance) return NULL;
+	errors_api_check_if_malloc_secceed(pInstance);
 
 	pInstance->num_of_chunks = 0;
 	pInstance->size_of_chunk = size_of_chunk;

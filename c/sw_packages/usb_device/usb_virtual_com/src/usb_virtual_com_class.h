@@ -20,6 +20,7 @@ struct usb_virtual_com_class_cfg_t {
 	struct dev_desc_t *callback_tx_dev;
 	struct dev_desc_t *callback_rx_dev;
 	struct dev_desc_t *usb_descriptors_dev;
+	uint16_t  max_data_packet_size;
 };
 
 struct usb_virtual_com_class_runtime_t {

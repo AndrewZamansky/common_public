@@ -1,0 +1,11 @@
+# run following commands or add them in script file:
+
+TERM.METHOD ARMSWI
+TERM.Mode string
+TERM.GATE
+
+# if Eclipse is used:
+# in .map file find symbol _startup_semihosting and put address of this symbol
+# in Eclipsy/"debug configurations"/"GDB Hardware Debugging"/"project_XXX"/Startup/"Set program conter at"
+# also make sure that previous field is checked.
+# semihosting prints will appear in TERM window

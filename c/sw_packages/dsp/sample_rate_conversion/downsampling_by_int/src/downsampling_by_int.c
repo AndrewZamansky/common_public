@@ -126,8 +126,12 @@ uint8_t downsampling_by_int_ioctl(struct dsp_module_inst_t *adsp,
 				p_band_set_params->predefined_data_block_size;
 		handle->predefined_data_block_size = predefined_data_block_size;
 
-		p_coefficients=(float *)realloc(handle->p_coefficients, sizeof(float) * number_of_filter_coefficients);
-		memcpy(p_coefficients,p_band_set_params->p_coefficients , sizeof(float)*number_of_filter_coefficients);
+		p_coefficients=(float *)realloc(handle->p_coefficients,
+						sizeof(float) * number_of_filter_coefficients);
+		errors_api_check_if_malloc_secceed(p_coefficients);
+
+		memcpy(p_coefficients,p_band_set_params->p_coefficients,
+							sizeof(float) * number_of_filter_coefficients);
 		handle->p_coefficients = p_coefficients;
 
 		handle->p_downsampling_by_int_filter =

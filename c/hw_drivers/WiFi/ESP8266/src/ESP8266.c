@@ -6,6 +6,7 @@
 
 /********  includes *********************/
 #include "_project.h"
+#include "errors_api.h"
 
 #include "dev_management_api.h" // for device manager defines and typedefs
 #define DEBUG
@@ -1110,6 +1111,8 @@ static ESP8266_State_t process_open_socket_message(
 			socket_handle->socket_in_use = 1;
 			socket_handle->recvedData =
 					(uint8_t*)os_safe_malloc(MAX_RCVD_BUFFER_SIZE);
+			errors_api_check_if_malloc_secceed(socket_handle->recvedData);
+
 			socket_handle->curr_data_size = 0;
 
 			new_socket_pdev = socket_pdev;

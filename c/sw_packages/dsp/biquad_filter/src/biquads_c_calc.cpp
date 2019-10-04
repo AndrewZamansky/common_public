@@ -10,7 +10,9 @@
 /********  includes *********************/
 #include "_project_typedefs.h"
 #include "_project_defines.h"
-
+extern "C" {
+#include "errors_api.h"
+}
 #include "dsp_management_api.h"
 
 #include "biquad_filter.h"
@@ -124,9 +126,11 @@ void *biquads_alloc(uint8_t num_of_stages, real_t *pCoeffs )
 
 	p_biquads_cascading_filter =(struct biquads_cascading_filter_t *)malloc(
 			sizeof(struct biquads_cascading_filter_t));
+	errors_api_check_if_malloc_secceed(p_biquads_cascading_filter);
 
 	size_of_states = NUM_OF_STATES_PER_STAGE * num_of_stages * sizeof(real_t);
 	pStates = (real_t *)malloc(size_of_states);
+	errors_api_check_if_malloc_secceed(pStates);
 	memset(pStates, 0, size_of_states);
 
 	p_biquads_cascading_filter->pStates = pStates;

@@ -43,7 +43,7 @@ endif
 
 config INCLUDE_INTERNAL_UART
 	bool   "internal uart"
-	depends on NUC505 || STM32F103RC || NPCE586 || STM8S103F || I94XXX
+	depends on NUC505 || STM32F10X || NPCE586 || STM8S103F || I94XXX
 	default n
 
 config INCLUDE_LINUX_UART
@@ -58,27 +58,27 @@ config INCLUDE_INTERNAL_I2C
 
 config INCLUDE_INTERNAL_SPI
 	bool   "internal spi"
-	depends on STM32F103RC || STM8S103F || I94XXX
+	depends on STM32F10X || STM8S103F || I94XXX
 	default n
 
 config INCLUDE_INTERNAL_ADC
 	bool   "internal adc"
-	depends on STM32F103RC || STM8S103F
+	depends on STM32F10X || STM8S103F
 	default n
 
 config INCLUDE_INTERNAL_TIMER
 	bool   "internal timer"
-	depends on NUC505 || STM32F103RC || NPCE586 || STM8S103F || XTENSA_SIM || XTENSA_FPGA_SIM
+	depends on NUC505 || STM32F10X || NPCE586 || STM8S103F || XTENSA_SIM || XTENSA_FPGA_SIM
 	default n
 
 config INCLUDE_INTERNAL_FLASH
 	bool   "internal flash"
-	depends on STM32F10x || I94XXX
+	depends on STM32F10X || I94XXX
 	default n
 
 config INCLUDE_INTERNAL_GPIO
 	bool   "internal gpio"
-	depends on NUC505 || STM32F103XXX || NPCE586 || STM8S103F || PIC32MX575 || I94XXX
+	depends on NUC505 || STM32F10X || NPCE586 || STM8S103F || PIC32MX575 || I94XXX
 	default n
 
 
@@ -89,7 +89,7 @@ menuconfig INCLUDE_INTERNAL_DMA
 	
 config INCLUDE_INTERNAL_SERIAL_NUMBER
 	bool   "internal serial number"
-	depends on STM32F10x
+	depends on STM32F10X
 	default n
 	
 menuconfig INCLUDE_INTERNAL_I2S
@@ -115,23 +115,12 @@ config INTERNAL_PWM_IS_SPEED_CRITICAL
 
 config INCLUDE_INTERNAL_USB_DEVICE
 	bool   "internal usb device"
-	depends on STM32F103RC || STM8S103F || I94XXX
+	depends on STM32F103XXX || STM8S103F || I94XXX
 	default n
 
-
-config INCLUDE_USB_VIRTUAL_COM
-	bool   "usb virtual com"
-	depends on STM32F10x
-	default n
 	
 config INCLUDE_ESP8266
 	bool   "ESP8266"
-	default n
-
-	
-config INCLUDE_USB_MASS_STORAGE
-	bool   "usb mass storage"
-	depends on STM32F10x
 	default n
 
 
@@ -139,10 +128,6 @@ config INCLUDE_LM35
 	bool   "lm35 thermal sensor"
 	default n
 
-config INCLUDE_INTERNAL_ADC
-	bool   "internal adc"
-	depends on STM32F10x
-	default n
 
 config INCLUDE_GPIO_REMOTE
 	bool   "remote gpio"

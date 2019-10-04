@@ -7,6 +7,7 @@
 
 
 #include "_project.h"
+#include "errors_api.h"
 
 #ifdef CONFIG_TEST_TASK_STACK
 	#define DEBUG
@@ -23,13 +24,15 @@ extern void os_start_arch_related_components(void);
 extern void xPortSysTickHandler(void);
 
 static struct dev_desc_t * l_timer_dev = NULL;
-
 static struct dev_desc_t * l_heartbeat_dev = NULL;
 
-void *pvPortRealloc( void *p , size_t xWantedSize )
+void *pvPortRealloc(void *p, size_t xWantedSize)
 {
-	void *pvReturn = pvPortMalloc(xWantedSize);
-	if( pvReturn != NULL )  memcpy(pvReturn,p,xWantedSize);
+	void *pvReturn;
+
+	pvReturn = pvPortMalloc(xWantedSize);
+	errors_api_check_if_malloc_secceed(pvReturn);
+	memcpy(pvReturn, p, xWantedSize);
 	vPortFree(p);
 
 	#if( configUSE_MALLOC_FAILED_HOOK == 1 )
@@ -60,14 +63,13 @@ void *os_create_task_FreeRTOS(
 	#define portEND_SWITCHING_ISR(...)   portYIELD_FROM_ISR()
 #endif
 
-uint8_t os_queue_send_without_wait(os_queue_t queue ,  void * pData  )
+uint8_t os_queue_send_without_wait(os_queue_t queue, void * pData)
 {
 	uint8_t retVal;
 	BaseType_t xHigherPriorityTaskWoken ;
 
 	xHigherPriorityTaskWoken = pdFALSE ;
-	retVal = xQueueSendFromISR( queue,
-			( void * ) pData,  &xHigherPriorityTaskWoken );
+	retVal = xQueueSendFromISR(queue, (void*)pData, &xHigherPriorityTaskWoken);
 	if ((pdTRUE == retVal) && (pdTRUE == xHigherPriorityTaskWoken))
 	{
 		portEND_SWITCHING_ISR( xHigherPriorityTaskWoken );
@@ -92,7 +94,7 @@ void system_tick_callback(void)
 #ifdef CONFIG_INCLUDE_HEARTBEAT
 	if(NULL != l_heartbeat_dev)
 	{
-		DEV_IOCTL_0_PARAMS(l_heartbeat_dev , HEARTBEAT_API_EACH_1mS_CALL );
+		DEV_IOCTL_0_PARAMS(l_heartbeat_dev, HEARTBEAT_API_EACH_1mS_CALL );
 	}
 #endif
 	xPortSysTickHandler();
@@ -103,7 +105,7 @@ void vApplicationIdleHook()
 #ifdef CONFIG_INCLUDE_HEARTBEAT
 	if(NULL != l_heartbeat_dev)
 	{
-		DEV_IOCTL_0_PARAMS(l_heartbeat_dev , HEARTBEAT_API_CALL_FROM_IDLE_TASK);
+		DEV_IOCTL_0_PARAMS(l_heartbeat_dev, HEARTBEAT_API_CALL_FROM_IDLE_TASK);
 	}
 #endif
 }
@@ -136,14 +138,14 @@ void os_init(void)
 #ifdef CONFIG_INCLUDE_HEARTBEAT
 	if(NULL != l_heartbeat_dev)
 	{
-		DEV_IOCTL_0_PARAMS(l_heartbeat_dev , IOCTL_DEVICE_START );
+		DEV_IOCTL_0_PARAMS(l_heartbeat_dev, IOCTL_DEVICE_START);
 	}
 #endif
 }
 
 #ifdef CONFIG_TEST_TASK_STACK
 
-void os_stack_test_free_rtos(uint32_t *p_lowest_stack ,const char *task_name )
+void os_stack_test_free_rtos(uint32_t *p_lowest_stack, const char *task_name)
 {
 	uint32_t stackLeft;
 
@@ -152,7 +154,7 @@ void os_stack_test_free_rtos(uint32_t *p_lowest_stack ,const char *task_name )
 	if(*p_lowest_stack > stackLeft)
 	{
 		*p_lowest_stack = stackLeft;
-		PRINTF_DBG("%s stack left = %d\r\n" , task_name ,*p_lowest_stack);
+		PRINTF_DBG("%s stack left = %d\r\n", task_name, *p_lowest_stack);
 	}
 }
 
