@@ -46,7 +46,7 @@ endef
 
 
 # function : fix_path_if_in_windows
-# usage    : $(call check_if_selected,$(VAR))
+# usage    : $(call fix_path_if_in_windows,$(VAR))
 #
 # changes slash '/' to backslash '\' if we are building in Windows OS
 fix_path_if_in_windows =$(if \
