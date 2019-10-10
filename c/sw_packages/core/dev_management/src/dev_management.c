@@ -232,7 +232,7 @@ struct dev_desc_t * DEV_API_add_device(const char* module_name_str,
 
 			name_str_len = strlen(device_name_str);
 			new_str = (char*) os_safe_malloc(name_str_len);
-			errors_api_check_if_malloc_secceed(new_str);
+			errors_api_check_if_malloc_succeed(new_str);
 
 			strcpy(new_str,  device_name_str);
 			dev->dev_name =  new_str;

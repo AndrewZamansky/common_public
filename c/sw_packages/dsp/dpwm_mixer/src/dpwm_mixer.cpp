@@ -48,9 +48,7 @@ char dpwm_mixer_module_name[] = "dpwm_mixer";
  *
  * return:
  */
-void dpwm_mixer_dsp(struct dsp_module_inst_t *adsp,
-		struct dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] ,
-		struct dsp_pad_t  out_pads[MAX_NUM_OF_OUTPUT_PADS])
+void dpwm_mixer_dsp(struct dsp_module_inst_t *adsp)
 {
 	real_t *apCh1In;
 	real_t *apCh2In;
@@ -67,9 +65,9 @@ void dpwm_mixer_dsp(struct dsp_module_inst_t *adsp,
 
 	handle = (struct DPWM_MIXER_Instance_t *)adsp->handle;
 
-	dsp_get_buffer_from_pad(in_pads[0], &apCh1In, &in_data_len1);
-	dsp_get_buffer_from_pad(in_pads[1], &apCh2In, &in_data_len2);
-	dsp_get_buffer_from_pad(&out_pads[0], &pTxBuf, &out_data_len);
+	dsp_get_input_buffer_from_pad(adsp, 0, &apCh1In, &in_data_len1);
+	dsp_get_input_buffer_from_pad(adsp, 1, &apCh2In, &in_data_len2);
+	dsp_get_output_buffer_from_pad(adsp, 0, &pTxBuf, &out_data_len);
 
 	if (in_data_len1 != in_data_len2 )
 	{

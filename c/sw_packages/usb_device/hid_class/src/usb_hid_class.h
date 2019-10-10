@@ -14,8 +14,6 @@
 
 /********  types  *********************/
 
-
-
 struct usb_hid_class_runtime_t {
 	size_t  sentLen;
 	uint8_t in_endpoint_num;

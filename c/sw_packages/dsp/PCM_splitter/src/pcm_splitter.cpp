@@ -44,9 +44,7 @@ char pcm_splitter_module_name[] = "pcm_splitter";
  *
  * return:
  */
-static void pcm_splitter_dsp_default(struct dsp_module_inst_t *adsp,
-		struct dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] ,
-		struct dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])
+static void pcm_splitter_dsp_default(struct dsp_module_inst_t *adsp)
 {
 	CRITICAL_ERROR("should use another dsp function");
 }
@@ -83,14 +81,15 @@ static void channel_copy_32bit(uint8_t *pRxBuf, real_t *outChannel,
 	}
 }
 
+
+#define MAX_NUM_OF_OUTPUT_PADS  4
+
 /**
  * pcm_splitter_dsp_16and32bit()
  *
  * return:
  */
-static void pcm_splitter_dsp_16and32bit(struct dsp_module_inst_t *adsp,
-		struct dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] ,
-		struct dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])
+static void pcm_splitter_dsp_16and32bit(struct dsp_module_inst_t *adsp)
 {
 	real_t *apChOut[MAX_NUM_OF_OUTPUT_PADS];
 	size_t num_of_frames;
@@ -116,7 +115,7 @@ static void pcm_splitter_dsp_16and32bit(struct dsp_module_inst_t *adsp,
 
 	for (i = 0; i < num_of_channels; i++)
 	{
-		dsp_get_buffer_from_pad(&out_pads[i], &apChOut[i], &out_data_len[i]);
+		dsp_get_output_buffer_from_pad(adsp, i, &apChOut[i], &out_data_len[i]);
 		if (out_data_len[0] != out_data_len[i] )
 		{
 			CRITICAL_ERROR("bad output buffer size");
@@ -128,7 +127,7 @@ static void pcm_splitter_dsp_16and32bit(struct dsp_module_inst_t *adsp,
 	 * casting here is just to avoid warning as we are aware that
 	 * pRxBuf has some INT type
 	 */
-	dsp_get_buffer_from_pad(in_pads[0], (real_t**)&pRxBuf, &num_of_frames);
+	dsp_get_input_buffer_from_pad(adsp, 0, (real_t**)&pRxBuf, &num_of_frames);
 
 	num_of_frames /= ( num_of_channels * subframe_size_bytes);
 	if (num_of_frames != out_data_len[0] )
@@ -203,12 +202,12 @@ static void set_params(struct dsp_module_inst_t *adsp,
 	if (16 == channel_size_bits)
 	{
 		normalizer = (float)(1.0f / (float)0x7fff);
-		adsp->dsp_func = pcm_splitter_dsp_16and32bit;
+		adsp->module_type->dsp_func = pcm_splitter_dsp_16and32bit;
 	}
 	else if (32 == channel_size_bits)
 	{
 		normalizer = (float)(1.0f / (float)0x7fffffff);
-		adsp->dsp_func = pcm_splitter_dsp_16and32bit;
+		adsp->module_type->dsp_func = pcm_splitter_dsp_16and32bit;
 	}
 	else
 	{

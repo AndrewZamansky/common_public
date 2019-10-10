@@ -72,7 +72,7 @@ os_queue_t os_create_queue(uint32_t num_of_elements, uint32_t size_of_elements)
 	snprintf(name, 16, "/queue%u", i);
 	os_queue =
 			(struct os_wrapper_queue *)malloc(sizeof(struct os_wrapper_queue));
-	errors_api_check_if_malloc_secceed(os_queue);
+	errors_api_check_if_malloc_succeed(os_queue);
 	queues_in_use[i] = os_queue;
 
 	if (NULL == os_queue)
@@ -208,7 +208,7 @@ os_mutex_t os_create_mutex(void)
 
 	new_mutex =
 			(pthread_mutex_t *)malloc(sizeof(pthread_mutex_t));
-	errors_api_check_if_malloc_secceed(new_mutex);
+	errors_api_check_if_malloc_succeed(new_mutex);
 
 	if (NULL == new_mutex)
 	{

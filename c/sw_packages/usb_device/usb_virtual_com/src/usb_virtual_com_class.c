@@ -50,7 +50,6 @@ typedef struct
 
 /********  local defs *********************/
 
-#define USB_MAX_DATA_SIZE   64
 
 #define USB_INTERFACE_DESCRIPTOR_TYPE 0x04
 #define USB_ENDPOINT_DESCRIPTOR_TYPE  0x05
@@ -108,9 +107,10 @@ static uint8_t const cdc_interface[]=
 	0x05,   /* bFunctionLength */
 	0x24,   /* bDescriptorType: CS_INTERFACE */
 	0x06,   /* bDescriptorSubtype: Union func desc */
-	TO_BE_SET_AUTOMATICALLY,   /* bMasterInterface: Communication class interface */
+	TO_BE_SET_AUTOMATICALLY,/* bMasterInterface: Communication class interface*/
 	TO_BE_SET_AUTOMATICALLY,   /* bSlaveInterface0: Data Class Interface */
-	/*Endpoint 2 Descriptor*/
+
+	/*Endpoint for control Descriptor*/
 	0x07,   /* bLength: Endpoint Descriptor size */
 	USB_ENDPOINT_DESCRIPTOR_TYPE,   /* bDescriptorType: Endpoint */
 	TO_BE_SET_AUTOMATICALLY,   /* bEndpointAddress: (IN) */
@@ -133,21 +133,23 @@ static uint8_t const vcom_interface[]=
 	    0x00,   /* bInterfaceSubClass: */
 	    0x00,   /* bInterfaceProtocol: */
 	    0x00,   /* iInterface: */
-	    /*Endpoint 3 Descriptor*/
+
+	    /*Endpoint data hostOUT Descriptor*/
 	    0x07,   /* bLength: Endpoint Descriptor size */
 	    USB_ENDPOINT_DESCRIPTOR_TYPE,   /* bDescriptorType: Endpoint */
 	    TO_BE_SET_AUTOMATICALLY,   /* bEndpointAddress: (OUT) */
 	    0x02,   /* bmAttributes: Bulk */
-	    USB_MAX_DATA_SIZE,             /* wMaxPacketSize: */
-	    0x00,
+		AUTO_SET_PCKT_SIZE_LSB,             /* wMaxPacketSize: */
+		AUTO_SET_PCKT_SIZE_MSB,
 	    0x00,   /* bInterval: ignore for Bulk transfer */
-	    /*Endpoint 1 Descriptor*/
+
+	    /*Endpoint data hostIN Descriptor*/
 	    0x07,   /* bLength: Endpoint Descriptor size */
 	    USB_ENDPOINT_DESCRIPTOR_TYPE,   /* bDescriptorType: Endpoint */
 	    TO_BE_SET_AUTOMATICALLY,   /* bEndpointAddress: (IN) */
 	    0x02,   /* bmAttributes: Bulk */
-	    USB_MAX_DATA_SIZE,             /* wMaxPacketSize: */
-	    0x00,
+		AUTO_SET_PCKT_SIZE_LSB,             /* wMaxPacketSize: */
+		AUTO_SET_PCKT_SIZE_MSB,
 	    0x00,    /* bInterval */
 };
 
@@ -214,15 +216,17 @@ size_t usb_virtual_com_pwrite(struct dev_desc_t *adev,
 	struct set_data_to_in_endpoint_t set_data_to_in_endpoint;
 	struct usb_virtual_com_class_runtime_t  *runtime_hndl;
 	size_t sentLen;
+	uint16_t max_data_packet_size;
 
 	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
 	runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(adev);
 
 	usb_hw = cfg_hndl->usb_hw;
+	max_data_packet_size = cfg_hndl->max_data_packet_size;
 
-	if (aLength > USB_MAX_DATA_SIZE)
+	if (aLength > max_data_packet_size)
 	{
-		sentLen = USB_MAX_DATA_SIZE;
+		sentLen = max_data_packet_size;
 	}
 	else
 	{
@@ -347,9 +351,11 @@ static void configure_endpoints(struct dev_desc_t *adev,
 	usb_dev_endpoint_request_callback_func_t  endpoint_request_callback_func[3];
 	uint8_t    endpoints_type_arr[3];
 	uint16_t   max_pckt_sizes[3];
+	uint16_t max_data_packet_size;
 
 	runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(adev);
 	usb_hw = cfg_hndl->usb_hw;
+	max_data_packet_size = cfg_hndl->max_data_packet_size;
 
 	set_endpoints.num_of_endpoints = 3;
 	set_endpoints.endpoints_num_arr = endpoints_num_arr;
@@ -368,8 +374,8 @@ static void configure_endpoints(struct dev_desc_t *adev,
 							endpoint_request_callback_func;
 	set_endpoints.callback_dev = adev;
 	max_pckt_sizes[0] = USB_DESC_INT_SIZE;
-	max_pckt_sizes[1] = USB_MAX_DATA_SIZE;
-	max_pckt_sizes[2] = USB_MAX_DATA_SIZE;
+	max_pckt_sizes[1] = max_data_packet_size;
+	max_pckt_sizes[2] = max_data_packet_size;
 	set_endpoints.max_pckt_sizes = max_pckt_sizes;
 	endpoints_type_arr[0] = USB_DEVICE_API_EP_TYPE_INTERRUPT_IN;
 	endpoints_type_arr[1] = USB_DEVICE_API_EP_TYPE_BULK_OUT;
@@ -378,8 +384,14 @@ static void configure_endpoints(struct dev_desc_t *adev,
 	DEV_IOCTL_1_PARAMS(usb_hw, IOCTL_USB_DEVICE_SET_ENDPOINTS, &set_endpoints);
 
 	i_cdc[28 + 2] = 0x80 | endpoints_num_arr[0];// 0x80 for IN endpoint
+
 	i_vcom[9 + 2] = endpoints_num_arr[1];
+	i_vcom[9 + 4] = max_data_packet_size & 0xFF;
+	i_vcom[9 + 5] = (max_data_packet_size >> 8) & 0xFF;
+
 	i_vcom[16 + 2] = 0x80 | endpoints_num_arr[2];
+	i_vcom[16 + 4] = max_data_packet_size & 0xFF;
+	i_vcom[16 + 5] = (max_data_packet_size >> 8) & 0xFF;
 	runtime_hndl->in_endpoint_num = endpoints_num_arr[2];
 }
 
@@ -397,7 +409,7 @@ static void update_configuration_desc(struct dev_desc_t *adev,
 	usb_descriptors_dev = cfg_hndl->usb_descriptors_dev;
 
 	iad = (uint8_t*)malloc(sizeof(interface_association_descriptor)) ;
-	errors_api_check_if_malloc_secceed(iad);
+	errors_api_check_if_malloc_succeed(iad);
 	memcpy(iad, interface_association_descriptor,
 						sizeof(interface_association_descriptor));
 	iad[2] = usb_descriptors_alloc_interfaces->interfaces_num[0];
@@ -406,10 +418,10 @@ static void update_configuration_desc(struct dev_desc_t *adev,
 	free(iad);
 
 	i_cdc = (uint8_t*)malloc(sizeof(cdc_interface)) ;
-	errors_api_check_if_malloc_secceed(i_cdc);
+	errors_api_check_if_malloc_succeed(i_cdc);
 	memcpy(i_cdc, cdc_interface, sizeof(cdc_interface));
 	i_vcom = (uint8_t*)malloc(sizeof(vcom_interface)) ;
-	errors_api_check_if_malloc_secceed(i_vcom);
+	errors_api_check_if_malloc_succeed(i_vcom);
 	memcpy(i_vcom, vcom_interface, sizeof(vcom_interface));
 
 	i_cdc[2] = usb_descriptors_alloc_interfaces->interfaces_num[0];

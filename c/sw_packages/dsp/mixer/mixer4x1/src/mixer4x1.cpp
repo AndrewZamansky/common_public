@@ -45,9 +45,7 @@ char mixer4x1_module_name[] = "mixer4x1";
  *
  * return:
  */
-void mixer4x1_dsp(struct dsp_module_inst_t *adsp,
-		struct dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS],
-		struct dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])
+void mixer4x1_dsp(struct dsp_module_inst_t *adsp)
 {
 	struct mixer4x1_instance_t *handle;
 	real_t *apCh1In;
@@ -69,11 +67,11 @@ void mixer4x1_dsp(struct dsp_module_inst_t *adsp,
 
 	handle = (struct mixer4x1_instance_t *)adsp->handle;
 
-	dsp_get_buffer_from_pad(in_pads[0], &apCh1In, &in_data_len1);
-	dsp_get_buffer_from_pad(in_pads[1], &apCh2In, &in_data_len2);
-	dsp_get_buffer_from_pad(in_pads[2], &apCh3In, &in_data_len3);
-	dsp_get_buffer_from_pad(in_pads[3], &apCh4In, &in_data_len4);
-	dsp_get_buffer_from_pad(&out_pads[0], &apCh1Out, &out_data_len);
+	dsp_get_input_buffer_from_pad(adsp, 0, &apCh1In, &in_data_len1);
+	dsp_get_input_buffer_from_pad(adsp, 1, &apCh2In, &in_data_len2);
+	dsp_get_input_buffer_from_pad(adsp, 2, &apCh3In, &in_data_len3);
+	dsp_get_input_buffer_from_pad(adsp, 3, &apCh4In, &in_data_len4);
+	dsp_get_output_buffer_from_pad(adsp, 0, &apCh1Out, &out_data_len);
 
 	if (in_data_len1 != in_data_len2 )
 	{

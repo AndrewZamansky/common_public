@@ -11,8 +11,9 @@
 #include "_project_defines.h"
 
 #include "dsp_management_api.h"
+#include "dsp_management_internal_api.h"
 
-#include "biquad_filter_api.h" //place first to test that header file is self-contained
+#include "biquad_filter_api.h"
 #include "biquad_filter.h"
 
 #include "auto_init_api.h"

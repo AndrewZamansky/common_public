@@ -15,7 +15,7 @@
 
 const uint8_t ERRORS_API_VER_VARIABLE(ERRORS_API_VERSION);
 
-void errors_api_check_if_malloc_secceed(void *pointer)
+void errors_api_check_if_malloc_succeed(void *pointer)
 {
 	if (NULL == pointer)
 	{

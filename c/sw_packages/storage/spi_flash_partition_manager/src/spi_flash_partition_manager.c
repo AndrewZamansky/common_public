@@ -291,7 +291,7 @@ uint8_t  SPI_FLASH_PARTITION_MANAGER_Format(const void *apHandle)
 	size_t i,j;
 
 	block_data = (uint8_t *)malloc(0x200);// = 512
-	errors_api_check_if_malloc_secceed(block_data);
+	errors_api_check_if_malloc_succeed(block_data);
 
 	// writing MBR
 	memset(block_data ,0 , 0x200);

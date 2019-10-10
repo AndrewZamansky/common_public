@@ -49,9 +49,7 @@ char pcm_mixer_module_name[] = "pcm_mixer";
  *
  * return:
  */
-static void pcm_mixer_dsp_default(struct dsp_module_inst_t *adsp,
-		struct dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] ,
-		struct dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])
+static void pcm_mixer_dsp_default(struct dsp_module_inst_t *adsp)
 {
 	CRITICAL_ERROR("should use another dsp function");
 }
@@ -88,14 +86,13 @@ static void channel_copy_32bit(real_t *pRxBuf, uint8_t *outChannel,
 
 }
 
+#define MAX_NUM_OF_OUTPUT_PADS  4
 /**
  * pcm_mixer_dsp_16and32bit()
  *
  * return:
  */
-void pcm_mixer_dsp_16and32bit(struct dsp_module_inst_t *adsp,
-		struct dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] ,
-		struct dsp_pad_t  out_pads[MAX_NUM_OF_OUTPUT_PADS])
+void pcm_mixer_dsp_16and32bit(struct dsp_module_inst_t *adsp)
 {
 	real_t *apChIn[MAX_NUM_OF_OUTPUT_PADS];
 	size_t in_data_len[MAX_NUM_OF_OUTPUT_PADS] ;
@@ -122,7 +119,7 @@ void pcm_mixer_dsp_16and32bit(struct dsp_module_inst_t *adsp,
 
 	for (i = 0; i < num_of_channels; i++)
 	{
-		dsp_get_buffer_from_pad(in_pads[i], &apChIn[i], &in_data_len[i]);
+		dsp_get_input_buffer_from_pad(adsp, i, &apChIn[i], &in_data_len[i]);
 		if (in_data_len[0] != in_data_len[i])
 		{
 			CRITICAL_ERROR("bad input buffer size");
@@ -134,7 +131,7 @@ void pcm_mixer_dsp_16and32bit(struct dsp_module_inst_t *adsp,
 	 * casting here is just to avoid warning as we are aware that
 	 * pTxBuf has some INT type
 	 */
-	dsp_get_buffer_from_pad(&out_pads[0], (real_t**)&pTxBuf, &num_of_frames);
+	dsp_get_output_buffer_from_pad(adsp, 0, (real_t**)&pTxBuf, &num_of_frames);
 
 	subframe_size_bytes = set_params->subframe_size_bytes;
 	num_of_frames /= ( num_of_channels * subframe_size_bytes);
@@ -232,12 +229,12 @@ static void set_params(struct dsp_module_inst_t *adsp,
 	if (16 == channel_size_bits)
 	{
 		normalizer = (float)0x7fff;
-		adsp->dsp_func = pcm_mixer_dsp_16and32bit;
+		adsp->module_type->dsp_func = pcm_mixer_dsp_16and32bit;
 	}
 	else if (32 == channel_size_bits)
 	{
 		normalizer = (float)0x7fffffff;
-		adsp->dsp_func = pcm_mixer_dsp_16and32bit;
+		adsp->module_type->dsp_func = pcm_mixer_dsp_16and32bit;
 	}
 	else
 	{

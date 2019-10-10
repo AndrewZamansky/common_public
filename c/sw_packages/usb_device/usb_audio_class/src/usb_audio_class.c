@@ -1052,17 +1052,17 @@ static void init_audio_host_out(struct usb_audio_class_cfg_t *cfg_hndl,
 	num_of_rx_buffers = cfg_hndl->num_of_rx_buffers;
 	get_rx_buff_size = cfg_hndl->get_rx_buff_size;
 	rx_buff = (uint8_t **)malloc(num_of_rx_buffers * sizeof(uint8_t*));
-	errors_api_check_if_malloc_secceed(rx_buff);
+	errors_api_check_if_malloc_succeed(rx_buff);
 	runtime_hndl->rx_buff = rx_buff;
 
 	rx_buff_status = (uint8_t *)malloc(num_of_rx_buffers);
-	errors_api_check_if_malloc_secceed(rx_buff_status);
+	errors_api_check_if_malloc_succeed(rx_buff_status);
 	runtime_hndl->rx_buff_status = rx_buff_status;
 
 	for (i = 0; i < num_of_rx_buffers; i++)
 	{
 		new_buff = (uint8_t*)malloc(get_rx_buff_size);
-		errors_api_check_if_malloc_secceed(new_buff);
+		errors_api_check_if_malloc_succeed(new_buff);
 		rx_buff[i] = new_buff;
 		rx_buff_status[i] = USB_AUDIO_CLASS_BUFF_IDLE ;
 	}
@@ -1086,7 +1086,7 @@ static void init_audio_host_in(struct usb_audio_class_cfg_t *cfg_hndl,
 	max_host_in_pckt_size =
 			normal_host_in_pckt_size + all_tx_channels_sample_size;
 	new_buff = (uint8_t*)malloc(max_host_in_pckt_size);
-	errors_api_check_if_malloc_secceed(new_buff);
+	errors_api_check_if_malloc_succeed(new_buff);
 	runtime_hndl->tx_pckt_buff = new_buff;
 
 	runtime_hndl->curr_write_pos_in_tx_buffer = 0;
@@ -1094,7 +1094,7 @@ static void init_audio_host_in(struct usb_audio_class_cfg_t *cfg_hndl,
 
 	// init tx_buff last, as it serves for detecting if host_in is initialized
 	new_buff = (uint8_t*)malloc(cfg_hndl->get_tx_buff_size * NUM_OF_TX_BUFFERS);
-	errors_api_check_if_malloc_secceed(new_buff);
+	errors_api_check_if_malloc_succeed(new_buff);
 	runtime_hndl->tx_buff = new_buff;
 }
 

@@ -263,7 +263,7 @@ static uint8_t shell_presets_ioctl( struct dev_desc_t *adev,
 	{
 	case IOCTL_DEVICE_START :
 		curr_preset_buf = (uint8_t *)os_safe_malloc(preset_size);
-		errors_api_check_if_malloc_secceed(curr_preset_buf);
+		errors_api_check_if_malloc_succeed(curr_preset_buf);
 		runtime_handle->curr_preset_buf = curr_preset_buf;
 		DEV_IOCTL_0_PARAMS(storage_dev, IOCTL_DEVICE_START);
 		DEV_PREAD(storage_dev, curr_preset_buf, preset_size, 0);

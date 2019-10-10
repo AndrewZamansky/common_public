@@ -13,13 +13,11 @@
 /***************   typedefs    *******************/
 
 
-struct biquads_filter_t{
-
+struct biquads_filter_t {
 	void *pBiquadFilter   ;
 	size_t num_of_bands ;
 	real_t *biquad_bands_coeffs; /* b0,b1,b2,a1,a2*/
 	struct biquad_filter_api_band_set_params_t *band_set_params;
-
 };
 
 
@@ -32,8 +30,6 @@ struct biquads_filter_t{
  */
 void *biquads_alloc(uint8_t num_of_stages, real_t *pCoeffs );
 
-/*  func : biquads_free()
- */
 void biquads_free(void *pFilter );
 
 void biquads_cascading_filter(void *pFilter,

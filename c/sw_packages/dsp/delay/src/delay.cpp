@@ -56,9 +56,7 @@ static void memcpy_real(real_t *dest1, real_t *src1, size_t len)
  *
  * return:
  */
-void delay_dsp(struct dsp_module_inst_t *adsp,
-		struct dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS],
-		struct dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])
+void delay_dsp(struct dsp_module_inst_t *adsp)
 {
 	struct delay_instance_t *handle;
 	real_t *apCh1In;
@@ -70,8 +68,8 @@ void delay_dsp(struct dsp_module_inst_t *adsp,
 
 	handle = (struct delay_instance_t *)adsp->handle;
 
-	dsp_get_buffer_from_pad(in_pads[0], &apCh1In, &in_data_len1);
-	dsp_get_buffer_from_pad(&out_pads[0], &apCh1Out, &out_data_len1);
+	dsp_get_input_buffer_from_pad(adsp, 0, &apCh1In, &in_data_len1);
+	dsp_get_output_buffer_from_pad(adsp, 0, &apCh1Out, &out_data_len1);
 
 	if (in_data_len1 != out_data_len1 )
 	{

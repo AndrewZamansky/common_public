@@ -73,15 +73,15 @@ void *fir_alloc(size_t number_of_filter_coefficients,
 	float *p_fir_filter_state;
 
 	p_fir_filter=(fir_filter_t *)malloc(sizeof(fir_filter_t));
-	errors_api_check_if_malloc_secceed(p_fir_filter);
+	errors_api_check_if_malloc_succeed(p_fir_filter);
 
 	p_filter_instance = malloc(sizeof(arm_fir_instance_f32));
-	errors_api_check_if_malloc_secceed(p_filter_instance);
+	errors_api_check_if_malloc_succeed(p_filter_instance);
 	p_fir_filter->p_filter_instance = p_filter_instance;
 
 	p_fir_filter_state = (float*)malloc(sizeof(float) *
 			(number_of_filter_coefficients + predefined_data_block_size - 1));
-	errors_api_check_if_malloc_secceed(p_fir_filter_state);
+	errors_api_check_if_malloc_succeed(p_fir_filter_state);
 	p_fir_filter->p_fir_filter_state = p_fir_filter_state;
 
 	arm_fir_init_f32 (p_filter_instance,

@@ -21,6 +21,8 @@ struct usb_hid_class_cfg_t {
 	struct dev_desc_t *callback_tx_dev;
 	struct dev_desc_t *callback_rx_dev;
 	struct dev_desc_t *usb_descriptors_dev;
+	uint16_t  max_host_in_data_packet_size;
+	uint16_t  max_host_out_data_packet_size;
 };
 /**********  define API  functions  ************/
 

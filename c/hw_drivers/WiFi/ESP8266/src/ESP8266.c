@@ -1111,7 +1111,7 @@ static ESP8266_State_t process_open_socket_message(
 			socket_handle->socket_in_use = 1;
 			socket_handle->recvedData =
 					(uint8_t*)os_safe_malloc(MAX_RCVD_BUFFER_SIZE);
-			errors_api_check_if_malloc_secceed(socket_handle->recvedData);
+			errors_api_check_if_malloc_succeed(socket_handle->recvedData);
 
 			socket_handle->curr_data_size = 0;
 

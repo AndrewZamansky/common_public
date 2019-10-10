@@ -48,9 +48,7 @@ char fir_filter_module_name[] = "fir_filter";
  *
  * return:
  */
-static void fir_filter_dsp(struct dsp_module_inst_t *adsp,
-		struct dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS],
-		struct dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])
+static void fir_filter_dsp(struct dsp_module_inst_t *adsp)
 {
 	float *apCh1In  ;
 	float *apCh1Out ;
@@ -65,8 +63,8 @@ static void fir_filter_dsp(struct dsp_module_inst_t *adsp,
 		return;
 	}
 
-	dsp_get_buffer_from_pad(in_pads[0], &apCh1In, &in_data_len);
-	dsp_get_buffer_from_pad(&out_pads[0], &apCh1Out, &out_data_len);
+	dsp_get_input_buffer_from_pad(adsp, 0, &apCh1In, &in_data_len);
+	dsp_get_output_buffer_from_pad(adsp, 0, &apCh1Out, &out_data_len);
 
 	if (in_data_len > out_data_len )
 	{
@@ -113,7 +111,7 @@ uint8_t fir_filter_ioctl(struct dsp_module_inst_t *adsp,
 
 		p_coefficients=(float *)realloc(handle->p_coefficients,
 				sizeof(float) * number_of_filter_coefficients);
-		errors_api_check_if_malloc_secceed(p_coefficients);
+		errors_api_check_if_malloc_succeed(p_coefficients);
 
 		memcpy(p_coefficients, p_band_set_params->p_coefficients,
 							sizeof(float) * number_of_filter_coefficients);

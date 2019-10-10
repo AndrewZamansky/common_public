@@ -181,7 +181,7 @@ static uint8_t async_rx_wrapper_ioctl(struct dev_desc_t *adev,
 #ifdef CONFIG_ASYNC_RX_WRAPPER_USE_MALLOC
 		config_handle->rx_buff =
 				(uint8_t*)os_safe_malloc(config_handle->rx_buff_size);
-		errors_api_check_if_malloc_secceed(config_handle->rx_buff);
+		errors_api_check_if_malloc_succeed(config_handle->rx_buff);
 #endif
 
 		DEV_IOCTL_0_PARAMS(server_dev, IOCTL_DEVICE_START );

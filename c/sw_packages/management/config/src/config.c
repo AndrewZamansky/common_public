@@ -391,9 +391,9 @@ uint8_t Config_API_Init(void)
 	uint32_t braces_stack;
 
 	tokens=(jsmntok_t*)malloc(sizeof(jsmntok_t)*MAX_JSMN_TOKEN_ALLOWED);
-	errors_api_check_if_malloc_secceed(tokens);
+	errors_api_check_if_malloc_succeed(tokens);
 	cfg_buff=(uint8_t*)malloc(MAX_JSMN_BUFFER_SIZE);
-	errors_api_check_if_malloc_secceed(cfg_buff);
+	errors_api_check_if_malloc_succeed(cfg_buff);
 
 	if(FR_OK!=f_open(&fp,CONFIG_FILE_NAME, FA_READ))
 	{

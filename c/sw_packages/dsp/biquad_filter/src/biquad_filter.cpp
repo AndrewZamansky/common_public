@@ -16,12 +16,13 @@ extern "C" {
 #include "string.h"
 
 }
-
+#include <string.h>
 #include "dsp_management_api.h"
 #include "dsp_management_internal_api.h"
 
 #include "biquad_filter_api.h"
 #include "biquad_filter.h"
+#include "os_wrapper.h"
 
 #include "auto_init_api.h"
 
@@ -51,9 +52,7 @@ char biquad_filter_module_name[] = "biquad_filter";
  *
  * return:
  */
-void biquad_filter_dsp(struct dsp_module_inst_t *adsp,
-		struct dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS],
-		struct dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])
+void biquad_filter_dsp(struct dsp_module_inst_t *adsp)
 {
 	real_t *apCh1In  ;
 	real_t *apCh1Out ;
@@ -68,8 +67,8 @@ void biquad_filter_dsp(struct dsp_module_inst_t *adsp,
 		CRITICAL_ERROR("at least 1 band should be set");
 	}
 
-	dsp_get_buffer_from_pad(in_pads[0], &apCh1In, &in_data_len);
-	dsp_get_buffer_from_pad(&out_pads[0], &apCh1Out, &out_data_len);
+	dsp_get_input_buffer_from_pad(adsp, 0, &apCh1In, &in_data_len);
+	dsp_get_output_buffer_from_pad(adsp, 0, &apCh1Out, &out_data_len);
 
 	if (in_data_len > out_data_len )
 	{
@@ -97,13 +96,13 @@ static void set_number_of_bands(
 
 	biquad_bands_coeffs =
 			(real_t *)os_safe_malloc(	5 * sizeof(real_t) * num_of_bands);
-	errors_api_check_if_malloc_secceed(biquad_bands_coeffs);
+	errors_api_check_if_malloc_succeed(biquad_bands_coeffs);
 	handle->biquad_bands_coeffs = biquad_bands_coeffs;
 
 	p_band_set_params =
 		(struct  biquad_filter_api_band_set_params_t *)malloc(num_of_bands *
 						sizeof(struct  biquad_filter_api_band_set_params_t));
-	errors_api_check_if_malloc_secceed(p_band_set_params);
+	errors_api_check_if_malloc_succeed(p_band_set_params);
 	handle->band_set_params = p_band_set_params;
 
 	for (i = 0; i < num_of_bands; i++)

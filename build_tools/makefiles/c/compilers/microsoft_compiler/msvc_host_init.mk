@@ -211,4 +211,5 @@ else ifdef CONFIG_MSC_TARGET_ARCH_X64
 endif
 
 CC   := $(MSVC_SET_ADDITIONAL_PATHS) "$(CL_BIN_DIR)\cl.exe" /c
+CCPP := $(MSVC_SET_ADDITIONAL_PATHS) "$(CL_BIN_DIR)\cl.exe" /c
 ASM  := $(MSVC_SET_ADDITIONAL_PATHS) "$(CL_BIN_DIR)\cl.exe" /c
