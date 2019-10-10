@@ -505,6 +505,7 @@ static void create_module_to_chain_out_link( struct dsp_chain_t *p_chain,
 		if (0 == strncmp(src_module_inst_name,
 				inputs_name, MAX_LEN_OF_NAME_OF_CHAIN_INPUTS))
 		{
+			p_curr_out_pad_of_source = NULL; // TODO
 			// direct connection from input of chain to output of chain
 			CRITICAL_ERROR("TODO : NOT YET IMPLEMENTED");
 		}
@@ -898,6 +899,7 @@ void dsp_management_api_set_chain_output_buffer(chain_handle_t chain_handle,
 	{
 		CRITICAL_ERROR("chain is not ready");
 	}
+	p_curr_out_pad_of_source = NULL;
 	chain_out_pads = &p_chain->chain_out_pads;
 	if (chain_output_pad_num < chain_out_pads->max_used_input_num)
 	{
