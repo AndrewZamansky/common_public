@@ -21,6 +21,7 @@
 #include "usb_audio_class_api.h"
 #include "usb_audio_class.h"
 
+//#define DEBUG
 
 enum USB_AUDIO_CLASS_buff_state_t {
 	USB_AUDIO_CLASS_BUFF_IDLE,
@@ -94,11 +95,12 @@ static volatile int16_t g_usbd_PlayResVolume = 0x0400;
 static uint8_t g_usbd_RecStarted = 0;
 
 
-#define DEBUG
-
-
 #define SMOOTH_VALUE    300
 static uint16_t skip_repeat_smooth = 0;
+
+
+#ifdef  DEBUG
+#define DBG_MAX_BUFF_SIZE    32
 
 volatile uint32_t dbg_out_thr_overflow_cnt = 0;
 volatile uint32_t dbg_out_thr_underflow_cnt = 0;
@@ -106,7 +108,19 @@ volatile uint32_t dbg_out_overflow_cnt = 0;
 volatile uint32_t dbg_out_underflow_cnt = 0;
 volatile uint32_t dbg_num_of_data_ready_buffers = 0;
 volatile uint32_t dbg_cnt11 = 0;
+
+volatile uint32_t dbg_in_underflow_cnt = 0;
+volatile uint32_t dbg_available_data_size = 0;
+volatile uint32_t dbg_copy_size = 0;
+volatile uint32_t dbg_in_thr_overflow_cnt = 0;
+volatile uint32_t dbg_in_thr_underflow_cnt = 0;
+
+volatile uint32_t dbg_in_overflow_cnt =0;
+
+static uint8_t dbg_buffer[DBG_MAX_BUFF_SIZE] = {0};
+
 struct usb_audio_class_runtime_t * dbg_usb_audio_class_runtime_hndl;
+#endif
 
 #define BUFFER_TO_SKIP   20
 static uint8_t skip_first_buffers = BUFFER_TO_SKIP;
@@ -156,7 +170,9 @@ static uint8_t test_overflow_threshold(
 	if ((USB_AUDIO_CLASS_RX_BUFF_IS_FILLING != curr_buff_status) &&
 			((USB_AUDIO_CLASS_BUFF_IDLE != curr_buff_status) ))
 	{
+#ifdef  DEBUG
 		dbg_cnt11++;
+#endif
 		return USB_AUDIO_CLASS_RX_BUFF_OVERFLOWED;
 	}
 
@@ -165,7 +181,9 @@ static uint8_t test_overflow_threshold(
 	next_lookup_status = rx_buff_status[next_lookup_indx];
 	if (USB_AUDIO_CLASS_BUFF_IDLE != next_lookup_status)
 	{
+#ifdef  DEBUG
 		dbg_out_thr_overflow_cnt++;
+#endif
 		// frame is 1ms so sample rate *1000
 		runtime_hndl->usb_feedback_sample_rate =
 			host_out_sample_rate_hz - (HOST_OUT_MAX_ADDITIONAL_SAMPLES * 1000);
@@ -177,7 +195,9 @@ static uint8_t test_overflow_threshold(
 	prev_lookup_status = rx_buff_status[prev_lookup_status];
 	if (USB_AUDIO_CLASS_RX_BUFF_IS_READY != prev_lookup_status)
 	{
+#ifdef  DEBUG
 		dbg_out_thr_underflow_cnt++;
+#endif
 		// frame is 1ms so sample rate *1000
 		runtime_hndl->usb_feedback_sample_rate =
 			host_out_sample_rate_hz + (HOST_OUT_MAX_ADDITIONAL_SAMPLES * 1000);
@@ -215,7 +235,9 @@ static  void copy_to_current_rx_buffer(struct usb_audio_class_cfg_t *cfg_hndl,
 			cfg_hndl->host_out_sample_rate_hz);
 	if (USB_AUDIO_CLASS_RX_BUFF_OVERFLOWED  == buff_overflow_threshold_status)
 	{
+#ifdef  DEBUG
 		dbg_out_overflow_cnt++;
+#endif
 		*size = 0;
 		return ;
 	}
@@ -253,6 +275,18 @@ static  void copy_to_current_rx_buffer(struct usb_audio_class_cfg_t *cfg_hndl,
 	all_rx_buff_status[curr_buff_indx] = USB_AUDIO_CLASS_RX_BUFF_IS_FILLING;
 	memcpy(&curr_buff[curr_pos_in_rx_buffer], *p_buff, bytes_to_copy);
 	curr_pos_in_rx_buffer = curr_pos_in_rx_buffer + bytes_to_copy;
+
+#ifdef DEBUG
+	if(DBG_MAX_BUFF_SIZE < bytes_to_copy)
+	{
+		memcpy(dbg_buffer, *p_buff, DBG_MAX_BUFF_SIZE);
+	}
+	else
+	{
+		memcpy(dbg_buffer, *p_buff, bytes_to_copy);
+	}
+#endif
+
 
 	if ((USB_AUDIO_CLASS_RX_BUFF_ABOUT_TO_OVERFLOW ==
 										buff_overflow_threshold_status) &&
@@ -309,12 +343,6 @@ void new_usb_audio_received(
 }
 
 
-uint32_t volatile dbg_in_underflow_cnt = 0;
-size_t  volatile dbg_available_data_size = 0;
-size_t  volatile dbg_copy_size = 0;
-size_t  volatile dbg_in_thr_overflow_cnt = 0;
-size_t  volatile dbg_in_thr_underflow_cnt = 0;
-
 void new_usb_audio_requested(struct dev_desc_t *adev)
 {
 	struct usb_audio_class_cfg_t *cfg_hndl;
@@ -345,8 +373,9 @@ void new_usb_audio_requested(struct dev_desc_t *adev)
 		available_data_size = tx_buff_size -
 				(curr_read_pos_in_tx_buffer - curr_write_pos_in_tx_buffer);
 	}
-
+#ifdef  DEBUG
 	dbg_available_data_size = available_data_size;
+#endif
 	if (available_data_size > get_tx_buff_size)
 	{
 		struct set_data_to_in_endpoint_t  data_to_endpoint;
@@ -360,15 +389,21 @@ void new_usb_audio_requested(struct dev_desc_t *adev)
 		if (available_data_size < (2 * get_tx_buff_size))
 		{// reduce speed(clock)
 			data_to_copy -= (num_of_bytes_per_sample_all_channels);
+#ifdef  DEBUG
 			dbg_in_thr_underflow_cnt++;
+#endif
 		}
 		else if (available_data_size >
 					((NUM_OF_TX_BUFFERS - 2) * get_tx_buff_size))
 		{// increase speed(clock)
 			data_to_copy += (num_of_bytes_per_sample_all_channels);
+#ifdef  DEBUG
 			dbg_in_thr_overflow_cnt++;
+#endif
 		}
+#ifdef  DEBUG
 		dbg_copy_size = data_to_copy;
+#endif
 		tx_buff = runtime_hndl->tx_buff;
 		tx_pckt_buff = runtime_hndl->tx_pckt_buff;
 		data_to_endpoint.endpoint_num = runtime_hndl->in_endpoint_num;
@@ -391,7 +426,9 @@ void new_usb_audio_requested(struct dev_desc_t *adev)
 	{
 		/* Setup error, stall the device */
 		DEV_IOCTL_0_PARAMS(cfg_hndl->usb_hw, IOCTL_USB_DEVICE_SET_STALL);
+#ifdef  DEBUG
 		dbg_in_underflow_cnt++;
+#endif
 	}
 }
 
@@ -453,7 +490,9 @@ static uint8_t get_full_rx_buffer(struct usb_audio_class_cfg_t *cfg_hndl,
 			{
 				*buff = NULL;
 				*get_rx_buff_size = 0;
+#ifdef  DEBUG
 				dbg_out_underflow_cnt++;
+#endif
 				return 0;
 			}
 		}
@@ -466,7 +505,9 @@ static uint8_t get_full_rx_buffer(struct usb_audio_class_cfg_t *cfg_hndl,
 	{
 		*buff = NULL;
 		*get_rx_buff_size = 0;
+#ifdef  DEBUG
 		dbg_out_underflow_cnt++;
+#endif
 		if (0 == rx_was_stoped)
 		{
 			skip_first_buffers = BUFFER_TO_SKIP;
@@ -497,7 +538,6 @@ static uint8_t release_rx_buffer(struct usb_audio_class_cfg_t *cfg_hndl,
 }
 
 
-volatile uint32_t dbg_in_overflow_cnt = 0;
 static uint8_t get_empty_tx_buffer(struct usb_audio_class_cfg_t *cfg_hndl,
 		struct usb_audio_class_runtime_t *runtime_hndl,
 		uint8_t **buff, size_t *ret_buff_size)
@@ -512,7 +552,9 @@ static uint8_t get_empty_tx_buffer(struct usb_audio_class_cfg_t *cfg_hndl,
 	if ((0 == cfg_hndl->enable_recording) ||
 			(NULL == runtime_hndl->tx_buff))
 	{
+#ifdef  DEBUG
 		dbg_in_overflow_cnt++;
+#endif
 		*buff = NULL;
 		*ret_buff_size = 0;
 		runtime_hndl->tx_buffer_was_supplied = 0;
@@ -522,7 +564,9 @@ static uint8_t get_empty_tx_buffer(struct usb_audio_class_cfg_t *cfg_hndl,
 
 	if (1 == runtime_hndl->tx_buffer_was_supplied)
 	{
+#ifdef  DEBUG
 		dbg_in_overflow_cnt++;
+#endif
 		*buff = NULL;
 		*ret_buff_size = 0;
 		return 1;
@@ -568,7 +612,9 @@ static uint8_t get_empty_tx_buffer(struct usb_audio_class_cfg_t *cfg_hndl,
 	}
 	else
 	{
+#ifdef  DEBUG
 		dbg_in_overflow_cnt++;
+#endif
 		*buff = NULL;
 		*ret_buff_size = 0;
 		runtime_hndl->tx_buffer_was_supplied = 0;
@@ -1103,7 +1149,9 @@ static void start_audio_class(struct dev_desc_t *adev,
 		struct usb_audio_class_cfg_t *cfg_hndl,
 		struct usb_audio_class_runtime_t *runtime_hndl)
 {
+#ifdef DEBUG
 	dbg_usb_audio_class_runtime_hndl = runtime_hndl;
+#endif
 
 	if (0 != cfg_hndl->enable_recording)
 	{
