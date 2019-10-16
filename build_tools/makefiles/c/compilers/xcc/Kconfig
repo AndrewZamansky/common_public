@@ -10,6 +10,9 @@ config XCC_TOOLS_VER_2017_6
 config XCC_TOOLS_VER_2017_7
 	bool "RG-2017.7"
 
+config XCC_TOOLS_VER_RI_2018_0
+	bool "RI-2018.0"
+
 endchoice
 
 

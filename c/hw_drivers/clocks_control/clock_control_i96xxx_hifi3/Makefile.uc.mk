@@ -1,4 +1,4 @@
-ifeq ($(sort $(XTENSA_FUSIONF1_FPGA_2)),y)
+ifeq ($(sort $(CONFIG_XTENSA_HIFI3_NTCA)),y)
     INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_INTERNAL_CLOCK_CONTROL)
 endif
 
@@ -13,7 +13,7 @@ endif
 
 
 
-SRC = clock_control_xtensa_fpga.c
+SRC = clock_control_i96xxx_hifi3.c
 VPATH = src
 
 

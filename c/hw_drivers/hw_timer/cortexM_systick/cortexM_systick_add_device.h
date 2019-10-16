@@ -3,7 +3,7 @@
 #include  "cortexM_systick_api.h"
 #include  "src/cortexM_systick.h"
 
-#define MODULE_CONFIG_DATA_STRUCT_TYPE	cortexM_systick_instance_t
+#define MODULE_CONFIG_DATA_STRUCT_TYPE  struct cortexM_systick_instance_t
 
 
 #ifndef CORTEXM_SYSTICK_DT_CLOCK_PDEV

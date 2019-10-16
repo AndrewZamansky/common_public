@@ -14,7 +14,7 @@
 #include "string.h"
 #include "errors_api.h"
 
-#ifdef CONFIG_USE_SPECIFIC_MEMORY_LOCATION_FOR_DEVICES
+#ifdef CONFIG_USE_DEVICE_NAME_STRINGS
 
 
 extern int *__start_static_devs_section ;

@@ -58,7 +58,7 @@ typedef enum IRQn_local {
 
 /***********   local variables    **************/
 
-static cortexM_systick_instance_t *pcortexM_systick_instanceParams;
+static struct cortexM_systick_instance_t *pcortexM_systick_instanceParams;
 
 static volatile uint64_t currentTick=0;
 //volatile uint64_t currentTick = 0;
@@ -90,7 +90,7 @@ static void __attribute__((interrupt("IRQ"))) SysTick_IRQHandler(void)
 static uint8_t cortexM_systick_ioctl( struct dev_desc_t *adev,
 		const uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2)
 {
-	cortexM_systick_instance_t *config_handle;
+	struct cortexM_systick_instance_t *config_handle;
 	uint32_t core_clock_rate;
 
 	config_handle = DEV_GET_CONFIG_DATA_POINTER(adev);
@@ -125,7 +125,7 @@ static uint8_t cortexM_systick_ioctl( struct dev_desc_t *adev,
 		SysTick->VAL   = 0;
 		 /* Enable SysTick IRQ and SysTick Timer */
 		SysTick->CTRL  = SysTick_CTRL_CLKSOURCE_Msk |
-					   SysTick_CTRL_TICKINT_Msk | SysTick_CTRL_ENABLE_Msk;
+						SysTick_CTRL_TICKINT_Msk | SysTick_CTRL_ENABLE_Msk;
 
 		irq_register_interrupt(SysTick_IRQn_local, SysTick_IRQHandler);
 		//	irq_enable_interrupt(SysTick_IRQn);
@@ -133,7 +133,7 @@ static uint8_t cortexM_systick_ioctl( struct dev_desc_t *adev,
 		break;
 
 	case IOCTL_TIMER_STOP :
-		  SysTick->CTRL  = SysTick_CTRL_CLKSOURCE_Msk;
+		SysTick->CTRL  = SysTick_CTRL_CLKSOURCE_Msk;
 		break;
 
 	case IOCTL_GET_CURRENT_TIMER_VALUE :
@@ -146,7 +146,7 @@ static uint8_t cortexM_systick_ioctl( struct dev_desc_t *adev,
 	return 0;
 }
 
-#define	MODULE_NAME						cortexM_systick
-#define	MODULE_IOCTL_FUNCTION			cortexM_systick_ioctl
-#define MODULE_CONFIG_DATA_STRUCT_TYPE	cortexM_systick_instance_t
+#define MODULE_NAME                     cortexM_systick
+#define MODULE_IOCTL_FUNCTION           cortexM_systick_ioctl
+#define MODULE_CONFIG_DATA_STRUCT_TYPE  struct cortexM_systick_instance_t
 #include "add_module.h"

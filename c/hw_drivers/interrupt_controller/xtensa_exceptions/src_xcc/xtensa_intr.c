@@ -26,6 +26,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   Also see xtensa_intr_asm.S.
 ******************************************************************************/
 
+#include "project_config.h"
 #include <stdlib.h>
 #include <stdint.h>
 

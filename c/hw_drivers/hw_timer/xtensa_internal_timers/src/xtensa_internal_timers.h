@@ -18,13 +18,6 @@
 
 /********  types  *********************/
 
-struct xtensa_internal_timers_instance_t {
-	uint32_t rate;
-	struct dev_desc_t *   clock_dev;
-	timer_callback_func_t timer_callback;
-	uint8_t timer_index;
-};
-
 
 struct xtensa_internal_timers_runtime_t {
 	volatile uint64_t currentTick;

@@ -94,6 +94,7 @@ else ifeq ($(sort $(CONFIG_XTENSA_XCC)),y)
 	SRC += FreeRTOS/Source/portable/XCC/Xtensa/xtensa_context.S
 	SRC += FreeRTOS/Source/portable/XCC/Xtensa/portclib.c
 	SRC += FreeRTOS/Source/portable/XCC/Xtensa/xtensa_overlay_os_hook.c
+	SRC += FreeRTOS/Source/portable/XCC/Xtensa/port.c
 	SRC += src/freeRtos_xtensa_port.c
 endif
 

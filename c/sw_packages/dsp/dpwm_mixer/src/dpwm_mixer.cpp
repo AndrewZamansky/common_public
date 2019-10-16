@@ -23,7 +23,7 @@
 
 /********  defines *********************/
 #ifndef ABS
-#define ABS(x)  (x > 0 ? x : -x)
+#define ABS(x)  (x > 0 ? x : (zero - x))
 #endif
 
 /********  types  *********************/
@@ -61,6 +61,7 @@ void dpwm_mixer_dsp(struct dsp_module_inst_t *adsp)
 	real_t *pTxBuf;
 	real_t inVal1;
 	real_t inVal2;
+	real_t zero = 0;
 	uint32_t i;
 
 	handle = (struct DPWM_MIXER_Instance_t *)adsp->handle;

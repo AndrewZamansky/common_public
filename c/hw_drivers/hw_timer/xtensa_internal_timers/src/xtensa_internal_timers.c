@@ -23,12 +23,6 @@
 #include    <xtensa/config/core.h>
 
 
-#include "_xtensa_internal_timers_prerequirements_check.h"
-
-/*following line add module to available module list for dynamic device tree*/
-#include "xtensa_internal_timers_add_component.h"
-
-
 /***************   defines    *******************/
 
 
@@ -147,3 +141,8 @@ uint8_t xtensa_internal_timers_ioctl( struct dev_desc_t *adev,
 	}
 	return 0;
 }
+
+#define MODULE_NAME                     xtensa_internal_timers
+#define MODULE_IOCTL_FUNCTION           xtensa_internal_timers_ioctl
+#define MODULE_CONFIG_DATA_STRUCT_TYPE  struct xtensa_internal_timers_instance_t
+#include "add_module.h"

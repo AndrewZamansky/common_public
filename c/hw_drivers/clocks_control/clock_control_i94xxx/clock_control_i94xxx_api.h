@@ -37,4 +37,12 @@ extern struct dev_desc_t  *i94xxx_I2S_onSPI2_BCLK_clk_dev;
 extern struct dev_desc_t  *i94xxx_I2S_onSPI2_FSCLK_clk_dev;
 extern struct dev_desc_t  *i94xxx_dmic_clk_dev;
 
+struct clk_cntl_i94xxx_cfg_t {
+	uint32_t           xtal_rate;
+	uint32_t           hirc_rate;
+	uint32_t           pll_rate;
+	uint32_t           hclk_rate;
+	struct dev_desc_t  *pll_src_clk_dev;
+} ;
+
 #endif

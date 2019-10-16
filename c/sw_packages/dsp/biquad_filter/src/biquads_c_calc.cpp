@@ -12,13 +12,14 @@
 #include "_project_defines.h"
 extern "C" {
 #include "errors_api.h"
+#include "os_wrapper.h"
 }
 #include "dsp_management_api.h"
+#include "dsp_management_internal_api.h"
 
 #include "biquad_filter.h"
 #include "biquad_filter_api.h"
 
-#include "_biquad_filter_prerequirements_check.h"
 
 #define NUM_OF_STATES_PER_STAGE	2
 

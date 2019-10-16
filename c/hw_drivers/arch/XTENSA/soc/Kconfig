@@ -41,6 +41,10 @@ config XTENSA_FUSIONF1_FPGA_2
 	bool "FusionF1_FPGA_2"
 	depends on XCC_TOOLS_VER_2017_7
 
+config XTENSA_HIFI3_NTCA
+	bool "hifi3_ntca"
+	depends on XCC_TOOLS_VER_RI_2018_0
+
 endchoice
 
 endif

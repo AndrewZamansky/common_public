@@ -1,17 +1,18 @@
 /*
  *
- *clock_control_i94xxx.h
+ *clock_control_i96xxx_hifi3.h
  *
  *
  */
 
-#ifndef _CLOCK_CONTROL_I94XXX_H_
-#define _CLOCK_CONTROL_I94XXX_H_
+#ifndef _CLOCK_CONTROL_I96XXX_HIFI3X_H_
+#define _CLOCK_CONTROL_I96XXX_HIFI3X_H_
 
 /********  includes *********************/
 
 
 /********  types  *********************/
+
 
 
 #endif

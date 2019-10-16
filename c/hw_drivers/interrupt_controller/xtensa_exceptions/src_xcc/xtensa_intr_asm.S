@@ -26,6 +26,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   Also see xtensa_intr.c and xtensa_vectors.S.
 ******************************************************************************/
 
+#include "project_config.h"
 #include <xtensa/hal.h>
 #include <xtensa/config/core.h>
 

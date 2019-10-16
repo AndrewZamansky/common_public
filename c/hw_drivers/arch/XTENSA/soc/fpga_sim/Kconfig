@@ -1,8 +1,5 @@
-menu "`--->  simulator configurations"
+menu "`---> FPGA simulator configurations"
 
-config XTENSA_FPGA_SIM_CORE_CLOCK
-    int "crystal clock in Hz"
-    default 100000000 
 
 endmenu
 

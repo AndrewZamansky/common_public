@@ -3,6 +3,8 @@ ifdef CONFIG_XCC_TOOLS_VER_2017_6
     TOOLS_VER :=RG-2017.6
 else ifdef CONFIG_XCC_TOOLS_VER_2017_7
     TOOLS_VER :=RG-2017.7
+else ifdef CONFIG_XCC_TOOLS_VER_RI_2018_0
+    TOOLS_VER :=RI-2018.0
 endif
 
 ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
@@ -127,12 +129,15 @@ ifdef CONFIG_XTENSA_HIFI3_BD5
 	XCC_CORE :=hifi3_bd5
 else ifdef CONFIG_XTENSA_FUSIONF1_FPGA_2
 	XCC_CORE :=FusionF1_FPGA_2
+else ifdef CONFIG_XTENSA_HIFI3_NTCA
+	XCC_CORE :=HIFI3_NTCA
 else
     $(info err: unknown core)
     $(call exit,1)
 endif
 
 CORE_CONFIG_DIR :=$(REDEFINE_XTENSA_CONFIGS_DIR)/$(TOOLS_VER)/$(XCC_CORE)/config
+CORE_CONFIG_DIR :=$(call fix_path_if_in_windows,$(CORE_CONFIG_DIR))
 
 ifeq ("$(wildcard $(CORE_CONFIG_DIR))","")
     $(info err: $(CORE_CONFIG_DIR) does not exists)
@@ -156,8 +161,8 @@ endif
 GLOBAL_CFLAGS += --xtensa-core=$(XCC_CORE)
 GLOBAL_CFLAGS += --xtensa-system=$(CORE_CONFIG_DIR)
 
-DUMMY := $(call ADD_TO_GLOBAL_DEFINES , PROC_$(XCC_CORE))
-DUMMY := $(call ADD_TO_GLOBAL_DEFINES , CONFIG_$(XCC_CORE))
+$(eval $(call ADD_TO_GLOBAL_DEFINES , PROC_$(XCC_CORE)))
+$(eval $(call ADD_TO_GLOBAL_DEFINES , CONFIG_$(XCC_CORE)))
 
 #stop GLOBAL_CFLAGS calculation each time it used:
 GLOBAL_CFLAGS := $(GLOBAL_CFLAGS)
@@ -173,11 +178,13 @@ xtensa_remove_config = $(filter-out $(SUB_CONFIG_DEFINES),$(GLOBAL_DEFINES))
 define xtensa_use_custom_config =
     $(eval GLOBAL_DEFINES := $(call xtensa_remove_config) PROC_$(1) CONFIG_$(1))
 endef
+# unexport xtensa_use_custom_config,
+# otherwise will be expanded every recurcive call to makefile
+unexport xtensa_use_custom_config 
 
-#COMPILER_INCLUDE_DIR 	:= $(GCC_ROOT_DIR)/$(GNU_COMPILATION_PREFIX)/include
-#COMPILER_INCLUDE_DIR 	:= $(ANDROID_NDK_ROOT_DIR)/platforms/android-21/arch-arm/usr/include
 
 CC   :=	$(XCC_ROOT_DIR)/bin/xt-xcc -c
+CCPP := $(XCC_ROOT_DIR)/bin/xt-xc++ -c
 ASM  :=	$(XCC_ROOT_DIR)/bin/xt-xcc -c
 LD   :=	$(XCC_ROOT_DIR)/bin/xt-xc++
 AR   :=	$(XCC_ROOT_DIR)/bin/xt-ar

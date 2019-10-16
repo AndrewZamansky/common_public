@@ -165,7 +165,7 @@ typedef unsigned long phys_size_t;
 	#define debug(fmt, args...)			\
 		debug_cond(_DEBUG, fmt, ##args)
 
-	#if defined(__ARMCC_VERSION)
+	#if (defined(__ARMCC_VERSION) || defined(CONFIG_XTENSA_XCC))
 		typedef unsigned long ulong;
 	#endif
 #else
