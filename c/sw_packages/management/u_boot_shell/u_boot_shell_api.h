@@ -21,6 +21,9 @@
 	struct u_boot_shell_instance_t {
 		struct dev_desc_t * server_dev;
 	};
+
+	SET_CONFIG_TYPE(u_boot_shell, struct u_boot_shell_instance_t);
+
 #endif
 
 /**********  define API  functions  ************/

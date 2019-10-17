@@ -13,29 +13,20 @@
 #endif
 
 
-#define DEV_CONFIG_DATA_INST(pdev)   DEV_CONFIG_DATA_INST2(pdev)
-#define DEV_CONFIG_DATA_INST2(pdev)  config_data_inst_##pdev
 
 #define DEV_RUNTIME_DATA_INST(pdev)   DEV_RUNTIME_DATA_INST2(pdev)
 #define DEV_RUNTIME_DATA_INST2(pdev)  runtime_data_inst_##pdev
 
 
 
-#ifndef	MODULE_CONFIG_DATA_STRUCT_TYPE
+#ifdef MODULE_HAS_NO_CONFIG_DATA
 
+	// set dummy type as protection. if it was already set, then we get warning
+	// or error during compilation
+	SET_CONFIG_TYPE(DT_DEV_MODULE, uint8_t);
 	#define	HANDLE_TO_DEV_CONFIG_DATA_STRUCT    NULL
-	#ifdef STATIC_DEV_DATA_STRUCT
-		#error "STATIC_DEV_DATA_STRUCT defined, so MODULE_CONFIG_DATA_STRUCT_TYPE must be defined"
-	#endif
+
 #else
-
-	#ifndef STATIC_DEV_DATA_STRUCT
-		#error "STATIC_DEV_DATA_STRUCT should be defined"
-	#endif
-
-	EXTERN_DECLARATION_TO_STATIC_DEVICE_INST(DT_DEV_NAME);
-	MODULE_CONFIG_DATA_STRUCT_TYPE  DEVICE_DATA_PLACEMENT \
-				DEV_CONFIG_DATA_INST(DT_DEV_NAME) = STATIC_DEV_DATA_STRUCT;
 
 	#define	HANDLE_TO_DEV_CONFIG_DATA_STRUCT  &DEV_CONFIG_DATA_INST(DT_DEV_NAME)
 
@@ -44,8 +35,11 @@
 
 
 
-#ifndef	MODULE_RUNTIME_DATA_STRUCT_TYPE
+#ifdef MODULE_HAS_NO_RUNTIME_DATA
 
+	// set dummy type as protection. if it was already set, then we get warning
+	// or error during compilation
+	SET_RUNTIME_DATA_TYPE(DT_DEV_MODULE, uint8_t);
 	#define	HANDLE_TO_DEV_RUNTIME_DATA_STRUCT   NULL
 
 #else
@@ -57,7 +51,7 @@
 		#pragma GCC diagnostic ignored "-Wmissing-braces"
 	#endif
 
-	MODULE_RUNTIME_DATA_STRUCT_TYPE  DEVICE_DATA_PLACEMENT \
+	MODULE_RUNTIME_DATA_TYPE(DT_DEV_MODULE)  DEVICE_DATA_PLACEMENT \
 								DEV_RUNTIME_DATA_INST(DT_DEV_NAME) = {0};
 
 	#define	HANDLE_TO_DEV_RUNTIME_DATA_STRUCT  \
@@ -113,8 +107,7 @@ DEVICE_PLACEMENT struct dev_desc_t STATIC_DEVICE_INST(DT_DEV_NAME) =
 
 #undef  DT_DEV_MODULE
 #undef  DT_DEV_NAME
-#undef  STATIC_DEV_DATA_STRUCT
-#undef  MODULE_RUNTIME_DATA_STRUCT_TYPE
 #undef  HANDLE_TO_DEV_CONFIG_DATA_STRUCT
 #undef  HANDLE_TO_DEV_RUNTIME_DATA_STRUCT
-#undef	MODULE_CONFIG_DATA_STRUCT_TYPE
+#undef  MODULE_HAS_NO_CONFIG_DATA
+#undef  MODULE_HAS_NO_RUNTIME_DATA

@@ -36,12 +36,26 @@ uint8_t MODULE_CALLBACK_FUNCTION(struct dev_desc_t *adev,
 
 
 
-#ifndef	MODULE_CONFIG_DATA_STRUCT_TYPE
-	#define MODULE_CONFIG_DATA_STRUCT_TYPE    uint8_t
+#ifdef MODULE_HAS_NO_CONFIG_DATA
+
+	// set dummy type as protection. if it was already set, then we get warning
+	// or error during compilation
+	SET_CONFIG_TYPE(DT_DEV_MODULE, uint8_t);
+	#define	MODULE_CONFIG_DATA_SIZE    0
+#else
+	#define	MODULE_CONFIG_DATA_SIZE sizeof(MODULE_CONFIG_DATA_TYPE(MODULE_NAME))
 #endif
 
-#ifndef	MODULE_RUNTIME_DATA_STRUCT_TYPE
-	#define MODULE_RUNTIME_DATA_STRUCT_TYPE   uint8_t
+
+#ifdef MODULE_HAS_NO_RUNTIME_DATA
+
+	// set dummy type as protection. if it was already set, then we get warning
+	// or error during compilation
+	SET_RUNTIME_DATA_TYPE(DT_DEV_MODULE, uint8_t);
+	#define	MODULE_RUNTIME_DATA_SIZE    0
+#else
+	#define	MODULE_RUNTIME_DATA_SIZE   \
+				sizeof(MODULE_RUNTIME_DATA_TYPE(MODULE_NAME))
 #endif
 
 
@@ -74,8 +88,8 @@ MODULES_PLACEMENT struct included_module_t MODULE_INST(MODULE_NAME) =
 		POINTER_TO_CONFIGURABLE_PARAMS_ARRAY,
 		SIZE_OF_POINTER_TO_CONFIGURABLE_PARAMS_ARRAY ,
 #endif
-		sizeof(MODULE_CONFIG_DATA_STRUCT_TYPE),
-		sizeof(MODULE_RUNTIME_DATA_STRUCT_TYPE),
+		MODULE_CONFIG_DATA_SIZE,
+		MODULE_RUNTIME_DATA_SIZE,
 		(void*)MODULE_MAGIC_NUMBER
 	};
 

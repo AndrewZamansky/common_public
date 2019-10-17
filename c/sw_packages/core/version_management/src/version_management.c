@@ -62,4 +62,6 @@ static size_t version_management_pread(struct dev_desc_t *adev,
 
 #define	MODULE_NAME             version_management
 #define	MODULE_PREAD_FUNCTION   version_management_pread
+#define MODULE_HAS_NO_CONFIG_DATA
+#define MODULE_HAS_NO_RUNTIME_DATA
 #include "add_module.h"

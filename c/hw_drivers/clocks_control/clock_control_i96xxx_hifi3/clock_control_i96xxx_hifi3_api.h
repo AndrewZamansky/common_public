@@ -16,4 +16,6 @@ struct clk_cntl_i96xxx_hifi3_cfg_t {
 	uint32_t           dsp_rate;
 };
 
+SET_CONFIG_TYPE(clock_control_i96xxx_hifi3, struct clk_cntl_i96xxx_hifi3_cfg_t);
+
 #endif

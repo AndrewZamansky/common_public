@@ -20,5 +20,6 @@ struct runtime_clk_t {
 	uint8_t init_done;
 };
 
+SET_RUNTIME_DATA_TYPE(clk_cntl, struct runtime_clk_t);
 
 #endif

@@ -13,4 +13,7 @@ struct xtensa_internal_timers_instance_t {
 	uint8_t timer_index;
 };
 
+SET_CONFIG_TYPE(
+		xtensa_internal_timers, struct xtensa_internal_timers_instance_t);
+
 #endif

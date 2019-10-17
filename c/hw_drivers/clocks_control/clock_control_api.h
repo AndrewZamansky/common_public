@@ -19,6 +19,7 @@ struct cfg_clk_t {
 	enable_clk_func_t enable_clk_func;
 };
 
+SET_CONFIG_TYPE(clk_cntl, struct cfg_clk_t);
 
 enum clk_ioctl_t {
 	CLK_IOCTL_SET_FREQ = IOCTL_LAST_COMMON_IOCTL + 1,

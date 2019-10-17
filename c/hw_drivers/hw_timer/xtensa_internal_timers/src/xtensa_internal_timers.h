@@ -23,4 +23,7 @@ struct xtensa_internal_timers_runtime_t {
 	volatile uint64_t currentTick;
 };
 
+SET_RUNTIME_DATA_TYPE(
+		xtensa_internal_timers, struct xtensa_internal_timers_runtime_t);
+
 #endif

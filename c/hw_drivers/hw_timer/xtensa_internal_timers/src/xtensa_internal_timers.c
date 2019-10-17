@@ -23,19 +23,12 @@
 #include    <xtensa/config/core.h>
 
 
-/***************   defines    *******************/
+#define MODULE_NAME                     xtensa_internal_timers
 
-
-
-/***************   typedefs    *******************/
-
-/**********   external variables    **************/
 
 extern void _xtensa_internal_timer_timer_asm_init(void);
 extern void _xtensa_internal_timer_timer_asm_rearm(void);
 
-
-/***********   local variables    **************/
 
 
 /* cached number of cycles per tick */
@@ -55,8 +48,8 @@ static void xtensa_internal_timer_tick_handler( struct dev_desc_t *adev)
 
 	timer_callback_func_t timer_callback;
 
-	config_handle = DEV_GET_CONFIG_DATA_POINTER(adev);
-	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
+	config_handle = DEV_GET_CONFIG_DATA_POINTER(MODULE_NAME, adev);
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(MODULE_NAME, adev);
 
 	_xtensa_internal_timer_timer_asm_rearm();
 
@@ -83,8 +76,8 @@ uint8_t xtensa_internal_timers_ioctl( struct dev_desc_t *adev,
 	uint32_t core_clock_rate;
 	uint8_t timer_index;
 
-	config_handle = DEV_GET_CONFIG_DATA_POINTER(adev);
-	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
+	config_handle = DEV_GET_CONFIG_DATA_POINTER(MODULE_NAME, adev);
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(MODULE_NAME, adev);
 
 	switch(aIoctl_num)
 	{
@@ -142,7 +135,5 @@ uint8_t xtensa_internal_timers_ioctl( struct dev_desc_t *adev,
 	return 0;
 }
 
-#define MODULE_NAME                     xtensa_internal_timers
 #define MODULE_IOCTL_FUNCTION           xtensa_internal_timers_ioctl
-#define MODULE_CONFIG_DATA_STRUCT_TYPE  struct xtensa_internal_timers_instance_t
 #include "add_module.h"

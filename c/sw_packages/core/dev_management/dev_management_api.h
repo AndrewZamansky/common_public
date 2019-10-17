@@ -83,7 +83,27 @@ extern "C" {
 
 #define DT_UINT8_ARRAY_SIZE(arr_name)  \
 					sizeof(DT_ARRAY_NAME(pins_arr))/sizeof(uint8_t)
-struct dev_desc_t;
+
+
+
+#define MODULE_RUNTIME_DATA_TYPE2(module)   _module_##module##_runtime_data_t
+#define MODULE_RUNTIME_DATA_TYPE(module)    MODULE_RUNTIME_DATA_TYPE2(module)
+#define MODULE_CONFIG_DATA_TYPE2(module)  _module_##module##_config_t
+#define MODULE_CONFIG_DATA_TYPE(module)   MODULE_CONFIG_DATA_TYPE2(module)
+
+#define SET_CONFIG_TYPE(module, type)  \
+				typedef type MODULE_CONFIG_DATA_TYPE(module)
+
+#define DEV_CONFIG_DATA_INST(pdev)   DEV_CONFIG_DATA_INST2(pdev)
+#define DEV_CONFIG_DATA_INST2(pdev)  config_data_inst_##pdev
+// declare extern current device in case it's pointer used in config data
+#define SET_STATIC_DEV_CONFIG(module) \
+	EXTERN_DECLARATION_TO_STATIC_DEVICE_INST(DT_DEV_NAME);\
+	DEVICE_DATA_PLACEMENT  MODULE_CONFIG_DATA_TYPE(module)\
+							DEV_CONFIG_DATA_INST(DT_DEV_NAME)
+
+#define SET_RUNTIME_DATA_TYPE(module, type)  \
+								typedef type MODULE_RUNTIME_DATA_TYPE(module)
 
 typedef enum
 {
@@ -124,6 +144,7 @@ typedef enum
 }params_status_t;
 
 
+struct dev_desc_t;// pre-declare dev_desc_t structure to avoid warnings
 
 typedef uint8_t (*dev_ioctl_func_t)(struct dev_desc_t *adev,
 		 uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2);
@@ -175,11 +196,17 @@ struct included_module_t
 
 /**********  define API  functions  ************/
 
-/*  get data functions */
-#define DEV_GET_CONFIG_DATA_POINTER(dev)   \
-						(((struct dev_desc_t *)dev)->p_config_data)
-#define DEV_GET_RUNTIME_DATA_POINTER(dev)  \
-						(((struct dev_desc_t *)dev)->p_runtime_data)
+/*  get data functions
+ * add 'module' parameter as protection. it will create module casting.
+ * in the case that type of receiving variable will not match,
+ * then we receive warning or error that needed to be fixed.
+ */
+#define DEV_GET_CONFIG_DATA_POINTER(module, dev)   \
+		(MODULE_CONFIG_DATA_TYPE(module)*)\
+			(((struct dev_desc_t *)dev)->p_config_data)
+#define DEV_GET_RUNTIME_DATA_POINTER(module, dev)  \
+	(MODULE_RUNTIME_DATA_TYPE(module)*)( \
+			((struct dev_desc_t *)dev)->p_runtime_data)
 
 /*  ioctl functions */
 #define DEV_IOCTL        DEV_IOCTL_1_PARAMS

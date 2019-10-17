@@ -3,8 +3,6 @@
 #include  "clock_control_api.h"
 #include  "clock_control_common/src/clock_control_common.h"
 
-#define MODULE_CONFIG_DATA_STRUCT_TYPE   struct cfg_clk_t
-#define MODULE_RUNTIME_DATA_STRUCT_TYPE  struct runtime_clk_t
 
 #ifndef CLK_DT_DEFAULT_PARENT
 	#define CLK_DEFAULT_PARENT     NULL
@@ -29,13 +27,14 @@
 	#define  CLK_DT_ENABLE_CLK_FUNC     NULL
 #endif
 
-#define STATIC_DEV_DATA_STRUCT  {  \
-	CLK_DEFAULT_PARENT,         \
-	CLK_DT_GET_FREQ_FUNC,       \
-	CLK_DT_SET_FREQ_FUNC,       \
-	CLK_DT_SET_PARENT_CLK_FUNC, \
-	CLK_DT_ENABLE_CLK_FUNC      \
-	}
+SET_STATIC_DEV_CONFIG(clk_cntl) =
+{
+	CLK_DEFAULT_PARENT,
+	CLK_DT_GET_FREQ_FUNC,
+	CLK_DT_SET_FREQ_FUNC,
+	CLK_DT_SET_PARENT_CLK_FUNC,
+	CLK_DT_ENABLE_CLK_FUNC
+};
 
 
 #include "add_static_dev.h"

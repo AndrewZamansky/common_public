@@ -18,15 +18,8 @@
 #include "clock_control_common_api.h"
 #include "clock_control_common.h"
 
-/********  defines *********************/
 
-/********  types  *********************/
-
-
-/********  externals *********************/
-
-
-/********  local variables *********************/
+#define MODULE_NAME                      clk_cntl
 
 
 static void get_root_clock(struct dev_desc_t *adev,
@@ -34,12 +27,12 @@ static void get_root_clock(struct dev_desc_t *adev,
 {
 	struct runtime_clk_t *runtime_data;
 
-	runtime_data = DEV_GET_RUNTIME_DATA_POINTER(adev);
+	runtime_data = DEV_GET_RUNTIME_DATA_POINTER(MODULE_NAME, adev);
 
 	while (NULL != runtime_data->parent_clk)
 	{
 		adev = runtime_data->parent_clk;
-		runtime_data = DEV_GET_RUNTIME_DATA_POINTER(adev);
+		runtime_data = DEV_GET_RUNTIME_DATA_POINTER(MODULE_NAME, adev);
 	}
 	*root_clk_dev = adev;
 }
@@ -53,8 +46,8 @@ static uint8_t clk_cntl_ioctl(struct dev_desc_t *adev,
 	struct dev_desc_t  *parent_clk;
 	uint32_t parent_rate;
 
-	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(adev);
-	runtime_data = DEV_GET_RUNTIME_DATA_POINTER(adev);
+	cfg_clk = DEV_GET_CONFIG_DATA_POINTER(MODULE_NAME, adev);
+	runtime_data = DEV_GET_RUNTIME_DATA_POINTER(MODULE_NAME, adev);
 	parent_clk = runtime_data->parent_clk;
 	parent_rate = 0;
 
@@ -124,8 +117,5 @@ static uint8_t clk_cntl_ioctl(struct dev_desc_t *adev,
 	return 0;
 }
 
-#define MODULE_NAME                      clk_cntl
 #define MODULE_IOCTL_FUNCTION            clk_cntl_ioctl
-#define MODULE_CONFIG_DATA_STRUCT_TYPE   struct cfg_clk_t
-#define MODULE_RUNTIME_DATA_STRUCT_TYPE  struct runtime_clk_t
 #include "add_module.h"
