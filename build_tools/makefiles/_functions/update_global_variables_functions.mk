@@ -13,7 +13,7 @@ define ADD_TO_GLOBAL_INCLUDE_PATH =
     $(call _APPEND_IF_NOT_EXISTS,GLOBAL_INCLUDE_DIR, $(strip $(1)) )
 endef
 #usage :
-#    $(eval $(call ADD_TO_GLOBAL_INCLUDE_PATH , path/to/include/dir))
+#    $(eval $(call ADD_TO_GLOBAL_INCLUDE_PATH, path/to/include/dir))
 
 
 # spaces in ' $(strip $(1)) ' are important
@@ -21,8 +21,8 @@ define ADD_TO_GLOBAL_DEFINES =
     $(call _APPEND_IF_NOT_EXISTS,GLOBAL_DEFINES, $(strip $(1)) )
 endef
 #usage :
-#    $(eval $(call ADD_TO_GLOBAL_DEFINES , var))
-#    $(eval $(call ADD_TO_GLOBAL_DEFINES , var=val))
+#    $(eval $(call ADD_TO_GLOBAL_DEFINES, var))
+#    $(eval $(call ADD_TO_GLOBAL_DEFINES, var=val))
 
 
 # spaces in ' $(strip $(1)) ' are important
@@ -46,7 +46,7 @@ define ADD_TO_GLOBAL_CFLAGS =
     $(call _APPEND_IF_NOT_EXISTS,GLOBAL_CFLAGS, $(strip $(1)) )
 endef
 #usage :
-#    $(eval $(call ADD_TO_GLOBAL_CFLAGS , var))
+#    $(eval $(call ADD_TO_GLOBAL_CFLAGS, var))
 
 
 # spaces in ' $(strip $(1)) ' are important
@@ -62,7 +62,7 @@ define ADD_TO_GLOBAL_LIBS_PATH =
     $(call _APPEND_IF_NOT_EXISTS,GLOBAL_LIBS_PATH, $(strip $(1)) )
 endef
 #usage :
-#    $(eval $(call ADD_TO_GLOBAL_LIBS_PATH , var))
+#    $(eval $(call ADD_TO_GLOBAL_LIBS_PATH, var))
 
 
 # spaces in ' $(strip $(1)) ' are important
@@ -70,4 +70,4 @@ define ADD_TO_GLOBAL_ARCHIVES =
     $(call _APPEND_IF_NOT_EXISTS,GLOBAL_ARCHIVES, $(strip $(1)) )
 endef
 #usage :
-#    $(eval $(call ADD_TO_GLOBAL_ARCHIVES , var))
+#    $(eval $(call ADD_TO_GLOBAL_ARCHIVES, var))

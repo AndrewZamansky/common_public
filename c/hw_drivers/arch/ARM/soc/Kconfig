@@ -7,6 +7,10 @@ choice
 config NUC505
 	bool "nuc505"
 	select PUBLIC_SOC_SELECTED
+	select CORTEX_M4
+	select SOC_HAS_DSP
+	select INTERNAL_FLASH_EXISTS
+	select INTERNAL_SRAM_EXISTS
 
 config POLEG
 	bool "poleg"
@@ -30,7 +34,15 @@ config STM32F103XXX
 config I94XXX
 	bool "I94XXX"
 	select PUBLIC_SOC_SELECTED
-	select I94XXX_ADDITIONAL_OPTIONS
+	select CORTEX_M4
+	select SOC_HAS_DSP
+	select INTERNAL_FLASH_EXISTS
+	select INTERNAL_SRAM_EXISTS
+
+config I96XXX_M0
+	bool "I96XXX_M0"
+	select PUBLIC_SOC_SELECTED
+	select CORTEX_M0
 	select INTERNAL_FLASH_EXISTS
 	select INTERNAL_SRAM_EXISTS
 
@@ -48,6 +60,10 @@ config CORTEX_M4
     default n
 
 config CORTEX_M3
+    bool
+    default n
+
+config CORTEX_M0
     bool
     default n
 
@@ -70,6 +86,10 @@ config SOC_HAS_DSP
 
 if I94XXX
 source "$KCONFIG_PUBLIC_START_DIR/hw_drivers/arch/ARM/soc/i94xxx/Kconfig"
+endif
+
+if I96XXX_M0
+source "$KCONFIG_PUBLIC_START_DIR/hw_drivers/arch/ARM/soc/i96xxx_M0/Kconfig"
 endif
 
 if STM32F103XXX

@@ -1,0 +1,15 @@
+menu "`--->  I96XXX configurations"
+
+
+config I96XXX_BSP_VERSION
+	string "i96xxx bsp version in form : xx.xx[.xx]"
+	default "00.0x"
+
+config  SPIM_FLASH_SIZE
+	hex   "spim flash size"
+	default 0x100000
+
+
+endmenu
+
+	

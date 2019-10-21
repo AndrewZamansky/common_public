@@ -30,7 +30,9 @@
 
 
 
-#if 1 == CONFIG_CORTEX_M4
+#if 1 == CONFIG_CORTEX_M0
+ #include "core_cm0.h"
+#elif 1 == CONFIG_CORTEX_M4
  #include "core_cm4.h"
 #elif 1 == CONFIG_CORTEX_M3
  #include "core_cm3.h"
@@ -138,10 +140,20 @@ static volatile uint32_t R0_r, R1_r, R2_r, R3_r, R12_r, LR_r, PC_r, PSR_r;
 	(
 		/* bit 2 in EXC_RETURN value (in LR) shows what
 		 stack was used before exception happened*/
+#ifdef CONFIG_CORTEX_M0
+	"movs r0,#0x4    \n"
+	"mov r1,lr    \n"
+	"tst r1,r0    \n"
+	"beq exception_triggered_during_MSP    \n"
+	"mrs r0, PSP    \n"
+"exception_triggered_during_MSP:    \n"
+	"mrs r0, MSP    \n"
+#else /*for cortex-M > cortex-M0*/
 		"tst lr, #4    \n"
 		"ite eq        \n"
 		"mrseq r0, MSP \n"
 		"mrsne r0, PSP \n"
+#endif
 		"mov %[stack], r0 \n"
 		: [stack]"=r" (stack)::"r0","memory"
 	);
@@ -227,15 +239,16 @@ void  NVIC_API_Init(void)
 	int16_t  i;
 
 	// get number of external interrupts
-	i = SCnSCB->ICTR ;
-	/*
-	 * Disable all interrupts.
-	 */
-
+#ifdef  CONFIG_CORTEX_M0
+	i = (NUMBER_OF_NVIC_EXTERNAL_INTERRUPTS - 1) / 32;
+#else
 	/*
 	 * SCnSCB->ICTR   shows number of interrupts in chunks of 32
 	 */
-	if ( (NUMBER_OF_NVIC_EXTERNAL_INTERRUPTS / 32) != i )
+	i = SCnSCB->ICTR ;
+#endif
+
+	if ( ((NUMBER_OF_NVIC_EXTERNAL_INTERRUPTS - 1) / 32) != i )
 	{
 		CRITICAL_ERROR("total number of interrupts defined in HW not match to maximal interrupt number defined in project configuration");
 	}
@@ -256,12 +269,14 @@ void  NVIC_API_Init(void)
 #if (1 == CONFIG_CORTEX_M3 ) && (__CM3_REV < 0x0201)  /* core<r2p1 */
     /*set base to start of RAM*/
     SCB->VTOR = RAM_START_ADDR & SCB_VTOR_TBLBASE_Msk;
-#else
+#elif (1 == CONFIG_CORTEX_M4)
 	// make sure that in cortex-m3 with revision < r2p1 bit 29 is 1
 	SCB->VTOR = RAM_START_ADDR;
 #endif
 
+#if (1 == CONFIG_CORTEX_M3) || (1 == CONFIG_CORTEX_M4)
 	NVIC_SetPriorityGrouping(NVIC_PriorityGroup_4);
+#endif
 
 	irq_register_interrupt(HardFault_IRQn_local, isr_hard_fault);
 	irq_register_interrupt(SVCall_IRQn_local, do_software_interrupt_asm);

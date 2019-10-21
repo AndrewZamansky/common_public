@@ -15,17 +15,32 @@
 do_software_interrupt_asm:
 	/* bit 2 in EXC_RETURN value (in LR) shows what
 	 stack was used before exception happened*/
+#ifdef CONFIG_CORTEX_M0
+	movs r0,#0x4
+	mov r1,lr
+	tst r1,r0
+	beq exception_triggered_during_MSP
+	mrs r0, PSP
+exception_triggered_during_MSP:
+	mrs r0, MSP
+#else /*for cortex-M > cortex-M0*/
 	tst lr, #4
 	ite eq
 	mrseq r0, MSP
 	mrsne r0, PSP
+#endif
 
 	/* on cortex-m3 stack on svc is : r0,r1,r2,r3,r12,lr,pc,xpsr  */
 	ldr r1,[r0, 6 * 4] /* load pc that was before SWI exception*/
 
 	/* [pc - 2] is pointing on 'bkpt imm' in code that caused this exception.
 	* bkpt imm = 0xDFXX; when XX is imm value. */
+#ifdef CONFIG_CORTEX_M0
+	subs r1,r1,#-2
+	LDRB r0, [r1] /*load imm to r0*/
+#else/*for cortex-M > cortex-M0*/
 	LDRB r0, [r1, #-2] /*load imm to r0*/
+#endif
 
 	CMP r0,#0xAB
 	BNE not_semihosting_swi /*  if  not OS then skip :  */
@@ -46,7 +61,7 @@ not_semihosting_swi:
 .global return_from_semihosting
 .thumb_func
 return_from_semihosting:
-	movs pc,lr
+	mov pc,lr
 
 /********* next function is called externally *********/
 .global bkpt_asm

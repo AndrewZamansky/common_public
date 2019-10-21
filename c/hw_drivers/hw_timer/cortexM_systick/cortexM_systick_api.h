@@ -5,7 +5,6 @@
 #include "dev_management_api.h"
 #include "hw_timer_api.h"
 
-/**********  define API  types ************/
 
 struct cortexM_systick_instance_t {
 	uint32_t rate;
@@ -17,6 +16,6 @@ struct cortexM_systick_instance_t {
 
 
 
-/**********  define API  functions  ************/
+SET_CONFIG_TYPE(cortexM_systick, struct cortexM_systick_instance_t);
 
 #endif

@@ -4,13 +4,8 @@
 
 #include "_project_typedefs.h"
 #include "_project_defines.h"
+#include "dev_management_api.h"
 #include "dev_common_ioctl_and_types.h"
-
-/*****************  defines  **************/
-
-
-/**********  define API  types ************/
-
 
 enum HEARTBEAT_API_ioctl_t {
 	HEARTBEAT_API_SET_CALLBACK_FUNC_IOCTL = IOCTL_LAST_COMMON_IOCTL+1,
@@ -30,7 +25,7 @@ struct heartbeat_instance_t {
 	struct dev_desc_t * callibration_timer;
 };
 
-/**********  define API  functions  ************/
+SET_CONFIG_TYPE(heartbeat, struct heartbeat_instance_t);
 
 
 #endif

@@ -9,7 +9,8 @@ ENTRY(_startup)
 	#include "arm_gcc_cortex_a9_calc_exception_size.lds"
 #elif defined(CONFIG_CORTEX_A35)
 	#include "arm_gcc_cortex_a35_calc_exception_size.lds"
-#elif defined(CONFIG_CORTEX_M4) || defined(CONFIG_CORTEX_M3)
+#elif defined(CONFIG_CORTEX_M0) || \
+		defined(CONFIG_CORTEX_M4) || defined(CONFIG_CORTEX_M3)
 	#include "arm_gcc_cortex_m_calc_exception_size.lds"
 #endif
 
@@ -203,7 +204,8 @@ SECTIONS
 	#include "arm_gcc_cortex_a9_stacks.lds"
 #elif defined(CONFIG_CORTEX_A35)
 	#include "arm_gcc_cortex_a35_stacks.lds"
-#elif defined(CONFIG_CORTEX_M4) || defined(CONFIG_CORTEX_M3)
+#elif defined(CONFIG_CORTEX_M0) || \
+		defined(CONFIG_CORTEX_M4) || defined(CONFIG_CORTEX_M3)
 	#include "arm_gcc_cortex_m_stacks.lds"
 #endif
 		. = ALIGN (8); /*cortex requirement*/

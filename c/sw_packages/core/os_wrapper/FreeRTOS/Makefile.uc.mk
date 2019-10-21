@@ -21,7 +21,9 @@ ifeq ($(sort $(CONFIG_FREE_RTOS)),y)
     DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(MAIN_FREE_RTOS_INCLUDE_PATH))
 
     FREE_RTOS_PORT_PATH :=$(FREE_RTOS_PATH)/FreeRTOS/Source/portable
-    ifdef CONFIG_CORTEX_M3
+    ifdef CONFIG_CORTEX_M0
+        FREE_RTOS_PORT_INCLUDE_PATH :=$(FREE_RTOS_PORT_PATH)/GCC/ARM_CM0
+    else ifdef CONFIG_CORTEX_M3
         FREE_RTOS_PORT_INCLUDE_PATH :=$(FREE_RTOS_PORT_PATH)/GCC/ARM_CM3
     else ifdef CONFIG_CORTEX_M4
         ifeq ($(sort $(CONFIG_INCLUDE_CORTEX_M_FPU)),y)
@@ -67,7 +69,14 @@ SRC += FreeRTOS/Source/portable/MemMang/heap_3.c
 #SRC += FreeRTOS/Source/portable/MemMang/heap_4.c
 
 
-ifeq ($(sort $(CONFIG_CORTEX_M3)),y)
+ifeq ($(sort $(CONFIG_CORTEX_M0)),y)
+	SRC += src/freeRtos_cortex_M_port.c
+    ifeq ($(sort $(CONFIG_GCC) $(CONFIG_GPP)),y)
+        SRC += FreeRTOS/Source/portable/GCC/ARM_CM0/port.c
+    else ifdef CONFIG_ARMCC
+        SRC += FreeRTOS/Source/portable/RVDS/ARM_CM0/port.c
+    endif
+else ifeq ($(sort $(CONFIG_CORTEX_M3)),y)
 	SRC += src/freeRtos_cortex_M_port.c
     ifeq ($(sort $(CONFIG_GCC) $(CONFIG_GPP)),y)
         SRC += FreeRTOS/Source/portable/GCC/ARM_CM3/port.c

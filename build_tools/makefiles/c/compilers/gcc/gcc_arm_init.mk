@@ -59,7 +59,9 @@ else ifdef CONFIG_GCC_OPTIMISE_ULTRA_SPEED
     CONFIG_OPTIMIZE_LEVEL := O3
 endif
 
-ifdef CONFIG_CORTEX_M3
+ifdef CONFIG_CORTEX_M0
+    CONFIG_CPU_TYPE := cortex-m0
+else ifdef CONFIG_CORTEX_M3
     CONFIG_CPU_TYPE := cortex-m3
 else ifdef CONFIG_CORTEX_M4
     CONFIG_CPU_TYPE := cortex-m4
@@ -89,7 +91,9 @@ else
 endif
 
 
-ifdef CONFIG_CORTEX_M3
+ifdef CONFIG_CORTEX_M0
+    GLOBAL_CFLAGS += -mfloat-abi=soft
+else ifdef CONFIG_CORTEX_M3
     GLOBAL_CFLAGS += -mfloat-abi=soft
 else ifdef CONFIG_CORTEX_M4
     ifdef CONFIG_INCLUDE_CORTEX_M_FPU

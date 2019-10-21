@@ -1,0 +1,336 @@
+/*
+ *
+ * file :   clocks_control_i96xxx_m0.c
+ *
+ *
+ */
+
+
+
+/********  includes *********************/
+#include "_project_typedefs.h"
+#include "_project_defines.h"
+
+#include "dev_management_api.h"
+
+#include "clock_control_api.h"
+#include "clock_control_common_api.h"
+#include "clock_control_i96xxx_m0_api.h"
+#include "clock_control_i96xxx_m0.h"
+
+#include "I96100.h"
+
+#include "clk.h"
+
+#define MODULE_NAME     clock_control_i96xxx_m0
+
+
+/*-----
+  SystemCoreClock,__HXT, __LXT, __HIRC are BSP required  variables.
+  add weak attribute for case when we compile library so this variable
+  declared outside of library
+ *------------------*/
+uint32_t SystemCoreClock __attribute__((weak));
+uint32_t __HXT __attribute__((weak));
+uint32_t __LXT __attribute__((weak));
+uint32_t __HIRC __attribute__((weak));
+static uint32_t gau32ClkSrcTbl[] = {0, 0, 0, __LIRC, 0, 0, 0, 0};
+
+/*-----
+  SystemCoreClockUpdate() BSP required  function.
+  add weak attribute for case when we compile library so this function can
+  be implemented outside of library
+ *------------------*/
+__attribute__((weak)) void SystemCoreClockUpdate(void)
+{
+	uint32_t  PllClock;
+
+	uint32_t u32Freq, u32ClkSrc;
+	uint32_t u32HclkDiv;
+
+	/* Update PLL Clock */
+	PllClock = CLK_GetPLLClockFreq();
+
+	u32ClkSrc = CLK->CLKSEL0 & CLK_CLKSEL0_HCLKSEL_Msk;
+
+	if(u32ClkSrc == CLK_CLKSEL0_HCLKSEL_PLL)
+	{
+		/* Use PLL clock */
+		u32Freq = PllClock;
+	}
+	else
+	{
+		/* Use the clock sources directly */
+		u32Freq = gau32ClkSrcTbl[u32ClkSrc];
+	}
+
+	u32HclkDiv = (CLK->CLKDIV0 & CLK_CLKDIV0_HCLKDIV_Msk) + 1;
+
+	/* Update System Core Clock */
+	SystemCoreClock = u32Freq / u32HclkDiv;
+
+
+	//if(SystemCoreClock == 0)
+	//	__BKPT(0);
+
+ //   CyclesPerUs = (SystemCoreClock + 500000) / 1000000;
+}
+
+/***************************************/
+/********** i96xxx_xtal_clk_dev ********/
+static void clock_i96xxx_xtal_enable()
+{
+	CLK_EnableXtalRC(CLK_PWRCTL_HXTEN_Msk);
+	CLK_WaitClockReady(CLK_STATUS_HXTSTB_Msk);
+}
+
+static void clock_i96xxx_xtal_set_freq(uint32_t freq, uint32_t parent_freq)
+{
+	__HXT = freq;
+	gau32ClkSrcTbl[0] = freq;
+}
+
+#define DT_DEV_NAME                i96xxx_xtal_clk_dev
+#define DT_DEV_MODULE              clk_cntl
+
+#define CLK_DT_ENABLE_CLK_FUNC    clock_i96xxx_xtal_enable
+#define CLK_DT_SET_FREQ_FUNC      clock_i96xxx_xtal_set_freq
+
+#include "clk_cntl_add_device.h"
+
+
+
+/****************************************/
+/********** i96xxx_lxtal_clk_dev ********/
+static void clock_i96xxx_lxtal_enable()
+{
+	CLK_EnableXtalRC(CLK_PWRCTL_LXTEN_Msk);
+	CLK_WaitClockReady(CLK_STATUS_LXTSTB_Msk);
+}
+
+static void clock_i96xxx_lxtal_set_freq(uint32_t freq, uint32_t parent_freq)
+{
+	__LXT = freq;
+	gau32ClkSrcTbl[1] = freq;
+}
+
+#define DT_DEV_NAME                i96xxx_lxtal_clk_dev
+#define DT_DEV_MODULE              clk_cntl
+
+#define CLK_DT_ENABLE_CLK_FUNC    clock_i96xxx_lxtal_enable
+#define CLK_DT_SET_FREQ_FUNC      clock_i96xxx_lxtal_set_freq
+
+#include "clk_cntl_add_device.h"
+
+
+
+/***************************************/
+/********** i96xxx_hirc_clk_dev ********/
+static void clock_i96xxx_hirc_enable()
+{
+	CLK_EnableXtalRC(CLK_PWRCTL_HIRCEN_Msk);
+	CLK_WaitClockReady(CLK_STATUS_HIRCSTB_Msk);
+}
+
+static void clock_i96xxx_hirc_set_freq(uint32_t freq, uint32_t parent_freq)
+{
+	if (48000000 == freq)
+	{
+		CLK_SELECT_TRIM_HIRC(CLK_CLKSEL0_HIRCFSEL_48M);
+	}
+	else if (49152000 == freq)
+	{
+		CLK_SELECT_TRIM_HIRC(CLK_CLKSEL0_HIRCFSEL_49M);
+	}
+	else
+	{
+#ifndef I96XXX_FPGA_SIMULATION
+		CRITICAL_ERROR("bad clock rate \n");
+#endif
+	}
+	__HIRC = freq;
+}
+
+#define DT_DEV_NAME               i96xxx_hirc_clk_dev
+#define DT_DEV_MODULE             clk_cntl
+
+#define CLK_DT_ENABLE_CLK_FUNC    clock_i96xxx_hirc_enable
+#define CLK_DT_SET_FREQ_FUNC      clock_i96xxx_hirc_set_freq
+
+#include "clk_cntl_add_device.h"
+
+
+/***************************************/
+/********** i96xxx_pll_clk_dev ********/
+static void clock_i96xxx_pll_set_freq(uint32_t freq, uint32_t parent_freq)
+{
+	uint32_t PLL_Src;
+
+	if (CLK->PLLCTL & CLK_PLLCTL_PLLSRC_Msk)
+	{
+		PLL_Src = CLK_PLLCTL_PLLSRC_HIRC;
+	}
+	else
+	{
+		PLL_Src = CLK_PLLCTL_PLLSRC_HXT;
+	}
+	if (0 == CLK_EnablePLL(PLL_Src, freq ))
+	{
+		CRITICAL_ERROR("cannot set PLL clock");
+	}
+}
+
+static void clock_i96xxx_pll_get_freq(uint32_t *freq, uint32_t parent_freq)
+{
+	*freq = CLK_GetPLLClockFreq();
+}
+
+
+static void clock_i96xxx_pll_set_parent_clk(struct dev_desc_t *parent_clk)
+{
+	if (i96xxx_xtal_clk_dev == parent_clk)
+	{
+		CLK->PLLCTL &= ~CLK_PLLCTL_PLLSRC_Msk;
+	}
+	else if (i96xxx_hirc_clk_dev == parent_clk)
+	{
+		CLK->PLLCTL |= CLK_PLLCTL_PLLSRC_Msk;
+	}
+	else
+	{
+		CRITICAL_ERROR("bad parent clock \n");
+	}
+}
+
+#define DT_DEV_NAME               i96xxx_pll_clk_dev
+#define DT_DEV_MODULE             clk_cntl
+
+#define CLK_DT_SET_FREQ_FUNC        clock_i96xxx_pll_set_freq
+#define CLK_DT_GET_FREQ_FUNC        clock_i96xxx_pll_get_freq
+#define CLK_DT_SET_PARENT_CLK_FUNC  clock_i96xxx_pll_set_parent_clk
+
+#include "clk_cntl_add_device.h"
+
+
+
+/***************************************/
+/********** i96xxx_hclk_clk_dev ********/
+static void clock_i96xxx_hclk_set_parent_clk(struct dev_desc_t *parent_clk)
+{
+	if (i96xxx_xtal_clk_dev == parent_clk)
+	{
+		CLK_SetHCLK(CLK_CLKSEL0_HCLKSEL_HIRC, CLK_CLKDIV0_HCLK(1));
+	}
+	else if (i96xxx_hirc_clk_dev == parent_clk)
+	{
+		CLK_SetHCLK(CLK_CLKSEL0_HCLKSEL_HIRC, CLK_CLKDIV0_HCLK(1));
+	}
+	else if (i96xxx_pll_clk_dev == parent_clk)
+	{
+		CLK_SetHCLK(CLK_CLKSEL0_HCLKSEL_PLL, CLK_CLKDIV0_HCLK(1));
+	}
+	else
+	{
+		CRITICAL_ERROR("bad parent clock \n");
+	}
+}
+
+#define DT_DEV_NAME               i96xxx_hclk_clk_dev
+#define DT_DEV_MODULE             clk_cntl
+
+#define CLK_DT_SET_PARENT_CLK_FUNC      clock_i96xxx_hclk_set_parent_clk
+
+#include "clk_cntl_add_device.h"
+
+
+/******************************************/
+/********** i96xxx_systick_clk_dev ********/
+#define DT_DEV_NAME                i96xxx_systick_clk_dev
+#define DT_DEV_MODULE              clk_cntl
+
+#define CLK_DT_DEFAULT_PARENT       i96xxx_hclk_clk_dev
+
+#include "clk_cntl_add_device.h"
+
+
+static void init_clocks(struct clk_cntl_i96xxx_m0_cfg_t *cfg_hndl)
+{
+	uint32_t rate;
+
+	if (0 != cfg_hndl->xtal_rate)
+	{
+		DEV_IOCTL_0_PARAMS(i96xxx_xtal_clk_dev, IOCTL_DEVICE_START);
+		DEV_IOCTL_0_PARAMS(i96xxx_xtal_clk_dev, CLK_IOCTL_ENABLE);
+		DEV_IOCTL_1_PARAMS(i96xxx_xtal_clk_dev,
+				CLK_IOCTL_SET_FREQ, &cfg_hndl->xtal_rate);
+	}
+
+	if (0 != cfg_hndl->hirc_rate)
+	{
+		DEV_IOCTL_0_PARAMS(i96xxx_hirc_clk_dev, IOCTL_DEVICE_START);
+		DEV_IOCTL_0_PARAMS(i96xxx_hirc_clk_dev, CLK_IOCTL_ENABLE);
+		DEV_IOCTL_1_PARAMS(i96xxx_hirc_clk_dev,
+				CLK_IOCTL_SET_FREQ, &cfg_hndl->hirc_rate);
+	}
+
+	if (0 != cfg_hndl->pll_rate)
+	{
+		DEV_IOCTL_0_PARAMS(i96xxx_pll_clk_dev, IOCTL_DEVICE_START);
+		DEV_IOCTL_1_PARAMS(i96xxx_pll_clk_dev,
+				CLK_IOCTL_SET_PARENT, cfg_hndl->pll_src_clk_dev);
+		DEV_IOCTL_1_PARAMS(i96xxx_pll_clk_dev,
+				CLK_IOCTL_SET_FREQ, &cfg_hndl->pll_rate);
+	}
+
+	DEV_IOCTL_0_PARAMS(i96xxx_hclk_clk_dev, IOCTL_DEVICE_START);
+	DEV_IOCTL_1_PARAMS(i96xxx_hclk_clk_dev,
+			CLK_IOCTL_SET_PARENT, cfg_hndl->hclk_src_clk_dev);
+//	DEV_IOCTL_1_PARAMS(i96xxx_hclk_clk_dev,
+//			CLK_IOCTL_SET_FREQ, &cfg_hndl->hclk_rate);
+
+
+	DEV_IOCTL_1_PARAMS(i96xxx_hclk_clk_dev,	CLK_IOCTL_GET_FREQ, &rate);
+
+	/* PCLK cannot be greater than 80mhz*/
+	if (160000000 < rate)
+	{
+		rate = rate / 4;
+	}
+	else if (80000000 < rate)
+	{
+		rate = rate / 2;
+	}
+//	DEV_IOCTL_0_PARAMS(i96xxx_pclk0_clk_dev, IOCTL_DEVICE_START);
+//	DEV_IOCTL_1_PARAMS(i96xxx_pclk0_clk_dev, CLK_IOCTL_SET_FREQ, &rate);
+//	DEV_IOCTL_0_PARAMS(i96xxx_pclk1_clk_dev, IOCTL_DEVICE_START);
+//	DEV_IOCTL_1_PARAMS(i96xxx_pclk1_clk_dev, CLK_IOCTL_SET_FREQ, &rate);
+}
+
+
+/**
+ * clock_control_i96xxx_m0_ioctl()
+ *
+ * return:
+ */
+static uint8_t clock_control_i96xxx_m0_ioctl( struct dev_desc_t *adev,
+		const uint8_t aIoctl_num, void * aIoctl_param1,
+		void * aIoctl_param2)
+{
+	struct clk_cntl_i96xxx_m0_cfg_t *cfg_hndl;
+
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(MODULE_NAME, adev);
+
+	switch(aIoctl_num)
+	{
+	case IOCTL_DEVICE_START :
+		init_clocks(cfg_hndl);
+		break;
+	default :
+		return 1;
+	}
+	return 0;
+}
+
+#define MODULE_IOCTL_FUNCTION          clock_control_i96xxx_m0_ioctl
+#define MODULE_HAS_NO_RUNTIME_DATA
+#include "add_module.h"

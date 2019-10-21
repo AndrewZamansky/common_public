@@ -23,18 +23,7 @@
 //#include "dev_management_api.h"
 #include "os_wrapper.h"
 
-/********  defines *********************/
-
-
-
-/********  types  *********************/
-
-
-/********  externals *********************/
-
-
-
-/********  local defs *********************/
+#define MODULE_NAME             heartbeat
 
 static volatile uint32_t cpuUsageCounter;
 static volatile uint32_t cpu1secUsageCounter = 0;
@@ -67,7 +56,7 @@ static uint8_t heartbeat_ioctl( struct dev_desc_t *adev,
 	struct heartbeat_instance_t *handle;
 	static size_t ticks_per_mSec = 1;
 
-	handle = DEV_GET_CONFIG_DATA_POINTER(adev);
+	handle = DEV_GET_CONFIG_DATA_POINTER(MODULE_NAME, adev);
 	switch (aIoctl_num)
 	{
 	case IOCTL_DEVICE_START :
@@ -167,8 +156,7 @@ static uint8_t heartbeat_ioctl( struct dev_desc_t *adev,
 	return 0;
 }
 
-#define	MODULE_NAME             heartbeat
-#define	MODULE_INIT_FUNCTION    heartbeat_init
-#define	MODULE_IOCTL_FUNCTION   heartbeat_ioctl
-#define MODULE_CONFIG_DATA_STRUCT_TYPE  struct heartbeat_instance_t
+#define MODULE_INIT_FUNCTION    heartbeat_init
+#define MODULE_IOCTL_FUNCTION   heartbeat_ioctl
+#define MODULE_HAS_NO_RUNTIME_DATA
 #include "add_module.h"

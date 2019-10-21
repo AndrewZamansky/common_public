@@ -7,7 +7,7 @@
 #ifndef _cpu_config_H
 #define _cpu_config_H
 
-/*  just copy from NUC505Series.h */
+/*  just copy from I94100.h */
 
 #define ARM_MATH_CM4	1
 

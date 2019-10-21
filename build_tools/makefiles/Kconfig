@@ -21,7 +21,7 @@ endchoice
 
 config INCLUDE_CORTEX_M_FPU
 	bool   "compile with fpu support"
-	depends on CORTEX_M4
+	depends on CORTEX_M4 && SOC_HAS_DSP
 	default n
 
 config DISABLE_ARM_FPU

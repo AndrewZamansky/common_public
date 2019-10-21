@@ -1014,7 +1014,7 @@ static uint8_t clock_control_i94xxx_ioctl( struct dev_desc_t *adev,
 	return 0;
 }
 
-#define	MODULE_NAME						clock_control_i94xxx
-#define	MODULE_IOCTL_FUNCTION			clock_control_i94xxx_ioctl
-#define MODULE_CONFIG_DATA_STRUCT_TYPE	struct clk_cntl_i94xxx_cfg_t
+#define MODULE_NAME                     clock_control_i94xxx
+#define MODULE_IOCTL_FUNCTION           clock_control_i94xxx_ioctl
+#define MODULE_CONFIG_DATA_STRUCT_TYPE  struct clk_cntl_i94xxx_cfg_t
 #include "add_module.h"

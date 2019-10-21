@@ -216,7 +216,9 @@ ifdef CONFIG_OUTPUT_TYPE_STATIC_LIBRARY
 else
     LINKER_CMD =$(LD) $(LDFLAGS) -T $(SCATTER_FILE) $(LIBRARIES_DIRS)
     LINKER_CMD += @$(ALL_OBJECTS_LIST_FILE)
-    LINKER_CMD += -Wl,--whole-archive $(WHOLE_LIBS) -Wl,--no-whole-archive
+    ifneq ($(strip $(WHOLE_LIBS)),)
+        LINKER_CMD += -Wl,--whole-archive $(WHOLE_LIBS) -Wl,--no-whole-archive
+    endif
     LINKER_CMD += $(LIBS) -o $(LINKER_OUTPUT)
 endif
 

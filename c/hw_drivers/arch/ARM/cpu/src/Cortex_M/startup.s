@@ -34,7 +34,7 @@ do_startup_with_debugger:
 
 	/* enable semihosting */
  	ldr	  r0, =smihosting_is_active
- 	mov   r1,#0x01
+ 	movs   r1,#0x01
  	str   r1,[r0]
 
  	ldr r0, =main

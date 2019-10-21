@@ -20,7 +20,8 @@ extern "C" {
 
 
 #if defined(CONFIG_USE_SPECIFIC_MEMORY_LOCATION_FOR_DEVICES) &&  \
-	( (defined(CONFIG_CORTEX_M3) || defined(CONFIG_CORTEX_M4) || \
+	( (defined(CONFIG_CORTEX_M0) || defined(CONFIG_CORTEX_M3) || \
+		defined(CONFIG_CORTEX_M4) || \
 		defined(CONFIG_CORTEX_A9) || defined(CONFIG_CORTEX_A35) )  &&  \
 		defined(CONFIG_GCC) )
 

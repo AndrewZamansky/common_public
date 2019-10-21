@@ -19,7 +19,7 @@
 
 #include "math.h"
 #if (defined(CONFIG_ARM) && \
-		defined(CONFIG_CORTEX_M4) && defined(CONFIG_SOC_HAS_DSP))
+		defined(CONFIG_CORTEX_M4) && defined(CONFIG_INCLUDE_CORTEX_M_FPU))
 	#ifndef ARM_MATH_CM4
 		#define ARM_MATH_CM4
 	#endif
@@ -98,7 +98,7 @@ static void tone_generator_dsp(struct dsp_module_inst_t *adsp)
 		real_t cur_val;
 
 #if (defined(CONFIG_ARM) && \
-		defined(CONFIG_CORTEX_M4) && defined(CONFIG_SOC_HAS_DSP))
+		defined(CONFIG_CORTEX_M4) && defined(CONFIG_INCLUDE_CORTEX_M_FPU))
 		cur_val = arm_sin_f32(curr_time);
 #else
 		cur_val = sin(curr_time);
