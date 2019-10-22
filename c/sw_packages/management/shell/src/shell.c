@@ -20,11 +20,6 @@
 #include "management_api.h"
 
 
-/********  defines *********************/
-
-
-
-/********  types  *********************/
 typedef struct
 {
 	struct dev_desc_t * pdev;
@@ -32,9 +27,6 @@ typedef struct
 
 
 
-/********  externals *********************/
-
-/********  local variables *********************/
 static uint8_t task_is_running=0;
 
 static const char erase_seq[] = "\b \b";		/* erase sequence	*/
@@ -306,8 +298,8 @@ static void Shell_Task( void *pvParameters )
 				os_queue_receive_infinite_wait( xQueue, &( pxRxedMessage )) )
 		{
 			curr_dev = pxRxedMessage.pdev;
-			config_handle = DEV_GET_CONFIG_DATA_POINTER(curr_dev);
-			runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(curr_dev);
+			config_handle = DEV_GET_CONFIG_DATA_POINTER(shell, curr_dev);
+			runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(shell, curr_dev);
 			curr_rx_dev = config_handle->server_rx_dev;
 			curr_tx_dev = config_handle->server_tx_dev;
 
@@ -362,7 +354,7 @@ static uint8_t shell_ioctl( struct dev_desc_t *adev,
 	struct shell_cfg_t *config_handle;
 	struct dev_desc_t *   server_dev ;
 
-	config_handle = DEV_GET_CONFIG_DATA_POINTER(adev);
+	config_handle = DEV_GET_CONFIG_DATA_POINTER(shell, adev);
 
 	switch(aIoctl_num)
 	{
@@ -406,8 +398,6 @@ static uint8_t shell_ioctl( struct dev_desc_t *adev,
 #define	MODULE_NAME                      shell
 #define	MODULE_IOCTL_FUNCTION            shell_ioctl
 #define	MODULE_CALLBACK_FUNCTION         shell_callback
-#define MODULE_CONFIG_DATA_STRUCT_TYPE   struct shell_cfg_t
-#define MODULE_RUNTIME_DATA_STRUCT_TYPE  struct shell_runtime_instance_t
 
 #define MODULE_CONFIGURABLE_PARAMS_ARRAY { \
 			{"shell_server", IOCTL_SET_SERVER_DEVICE, IOCTL_VOID, \

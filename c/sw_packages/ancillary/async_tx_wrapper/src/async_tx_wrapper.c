@@ -5,9 +5,6 @@
  *
  */
 
-
-
-/********  includes *********************/
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 #include "_project_tasks_defines.h"
@@ -22,12 +19,9 @@
 #include "uart_api.h"
 
 
-/********  defines *********************/
 #define 	TRANSMIT_IN_PROGRESS	0
 #define 	TRANSMIT_DONE			1
 
-
-/********  types  *********************/
 typedef struct
 {
 	tx_int_size_t len;
@@ -37,18 +31,6 @@ typedef struct
    uint8_t pData[CONFIG_ASYNC_TX_WRAPPER_MAX_TX_BUFFER_SIZE];
 #endif
 } xMessage_t;
-
-
-
-/********  externals *********************/
-
-
-
-/**********   external variables    **************/
-
-
-
-/***********   local variables    **************/
 
 static uint8_t dummy_msg;
 
@@ -69,8 +51,8 @@ static uint8_t async_tx_wrapper_callback(struct dev_desc_t *adev,
 
 	transmitedSize = (tx_int_size_t)((size_t)aCallback_param1);
 
-	config_handle = DEV_GET_CONFIG_DATA_POINTER(adev);
-	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
+	config_handle = DEV_GET_CONFIG_DATA_POINTER(async_tx_wrapper, adev);
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(async_tx_wrapper, adev);
 
 	data_length = (tx_int_size_t)runtime_handle->data_length;
 
@@ -129,7 +111,7 @@ static void sw_uart_send_and_wait_for_end(struct dev_desc_t *adev,
 	tx_int_size_t length ;
 	tx_int_size_t last_checked_length ;
 
-	config_handle = DEV_GET_CONFIG_DATA_POINTER(adev);
+	config_handle = DEV_GET_CONFIG_DATA_POINTER(async_tx_wrapper, adev);
 
 	pData = xMessage->pData;
 	length = xMessage->len;
@@ -198,7 +180,7 @@ static size_t async_tx_wrapper_pwrite(struct dev_desc_t *adev,
 	uint8_t *pSendData;
 
 
-	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(async_tx_wrapper, adev);
 
 	while(dataLen)
 	{
@@ -272,7 +254,7 @@ static void ASYNC_TX_WRAPPER_Send_Task( void *adev )
 
 	os_queue_t xQueue ;
 
-	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(async_tx_wrapper, adev);
 
 	xQueue = os_create_queue(
 			CONFIG_ASYNC_TX_WRAPPER_MAX_QUEUE_LEN , sizeof(xMessage_t ) );
@@ -307,8 +289,8 @@ static uint8_t async_tx_wrapper_ioctl(struct dev_desc_t *adev,
 	struct async_tx_wrapper_runtime_t *runtime_handle;
 	struct dev_desc_t *   server_dev;
 
-	config_handle = DEV_GET_CONFIG_DATA_POINTER(adev);
-	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
+	config_handle = DEV_GET_CONFIG_DATA_POINTER(async_tx_wrapper, adev);
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(async_tx_wrapper, adev);
 
 	server_dev  = config_handle->server_dev;
 
@@ -352,13 +334,10 @@ static uint8_t async_tx_wrapper_ioctl(struct dev_desc_t *adev,
 #define MODULE_IOCTL_FUNCTION               async_tx_wrapper_ioctl
 #define MODULE_PWRITE_FUNCTION              async_tx_wrapper_pwrite
 #define MODULE_CALLBACK_FUNCTION            async_tx_wrapper_callback
-#define MODULE_CONFIG_DATA_STRUCT_TYPE      struct async_tx_wrapper_cfg_t
-#define MODULE_RUNTIME_DATA_STRUCT_TYPE     struct async_tx_wrapper_runtime_t
 
 #define MODULE_CONFIGURABLE_PARAMS_ARRAY { \
 		{"async_tx_server", IOCTL_SET_SERVER_DEVICE, IOCTL_VOID, \
 			DEV_PARAM_TYPE_PDEVICE , MAPPED_SET_DUMMY_PARAM() },\
 	}
-
 
 #include "add_module.h"

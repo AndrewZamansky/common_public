@@ -3,10 +3,6 @@
 #include "async_rx_wrapper_api.h"
 #include "src/async_rx_wrapper.h"
 
-#define MODULE_CONFIG_DATA_STRUCT_TYPE    struct async_rx_wrapper_cfg_t
-#define MODULE_RUNTIME_DATA_STRUCT_TYPE   struct async_rx_wrapper_runtime_t
-
-
 #ifndef ASYNC_RX_WRAPPER_DT_SERVER_PDEV
 	#error "ASYNC_RX_WRAPPER_DT_SERVER_PDEV should be defined"
 #endif
@@ -36,13 +32,13 @@ EXTERN_DECLARATION_TO_STATIC_DEVICE_INST(ASYNC_RX_WRAPPER_DT_SERVER_PDEV) ;
 #endif
 
 
-#define STATIC_DEV_DATA_STRUCT                                    \
-	{                                                             \
-		P_TO_STATIC_DEVICE_INST(ASYNC_RX_WRAPPER_DT_SERVER_PDEV) ,\
-		POINTER_TO_CLIENT_PDEV,            /* .client_dev */      \
-		ASYNC_RX_WRAPPER_DT_RX_BUFFER_SIZE,                       \
-		RX_BUFFER_STRUCT_DATA                                     \
-	}
+SET_STATIC_DEV_CONFIG(async_rx_wrapper) =
+{
+	P_TO_STATIC_DEVICE_INST(ASYNC_RX_WRAPPER_DT_SERVER_PDEV),
+	POINTER_TO_CLIENT_PDEV,
+	ASYNC_RX_WRAPPER_DT_RX_BUFFER_SIZE,
+	RX_BUFFER_STRUCT_DATA
+};
 
 
 

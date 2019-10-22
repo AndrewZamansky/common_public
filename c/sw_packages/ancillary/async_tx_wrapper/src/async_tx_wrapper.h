@@ -15,10 +15,6 @@
 #include "os_wrapper.h"
 
 
-/***************   typedefs    *******************/
-
-
-
 #if defined(CONFIG_ASYNC_TX_WRAPPER_USE_MALLOC)
 	typedef size_t tx_int_size_t;
 #else
@@ -42,4 +38,6 @@ struct async_tx_wrapper_runtime_t {
 
 };
 
-#endif /* */
+SET_RUNTIME_DATA_TYPE(async_tx_wrapper, struct async_tx_wrapper_runtime_t);
+
+#endif

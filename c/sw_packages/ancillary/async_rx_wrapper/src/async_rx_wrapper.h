@@ -10,10 +10,7 @@
 #include "_project_defines.h"
 #include "dev_management_api.h"
 
-
-/***************   typedefs    *******************/
-
-struct async_rx_wrapper_runtime_t{
+struct async_rx_wrapper_runtime_t {
 
 	rx_int_size_t WritePos;
 	rx_int_size_t ReadPos;
@@ -22,4 +19,6 @@ struct async_rx_wrapper_runtime_t{
 
 };
 
-#endif /* */
+SET_RUNTIME_DATA_TYPE(async_rx_wrapper, struct async_rx_wrapper_runtime_t);
+
+#endif

@@ -19,8 +19,6 @@
 #include "clock_control_api.h"
 #include "hw_timer_api.h"
 
-#define MODULE_NAME                     cortexM_systick
-
 
 //locally disable IRQn_Type defined in soc
 #define IRQn_Type IRQn_Type_local
@@ -48,18 +46,6 @@ typedef enum IRQn_local {
  #error unknown cortex-m type
 #endif
 
-
-/***************   defines    *******************/
-
-
-
-/***************   typedefs    *******************/
-
-/**********   external variables    **************/
-
-
-
-/***********   local variables    **************/
 
 static struct cortexM_systick_instance_t *pcortexM_systick_instanceParams;
 
@@ -96,7 +82,7 @@ static uint8_t cortexM_systick_ioctl( struct dev_desc_t *adev,
 	struct cortexM_systick_instance_t *config_handle;
 	uint32_t core_clock_rate;
 
-	config_handle = DEV_GET_CONFIG_DATA_POINTER(MODULE_NAME, adev);
+	config_handle = DEV_GET_CONFIG_DATA_POINTER(cortexM_systick, adev);
 	switch(aIoctl_num)
 	{
 	case IOCTL_TIMER_RATE_HZ_SET :
@@ -149,6 +135,7 @@ static uint8_t cortexM_systick_ioctl( struct dev_desc_t *adev,
 	return 0;
 }
 
-#define MODULE_IOCTL_FUNCTION           cortexM_systick_ioctl
+#define MODULE_NAME                  cortexM_systick
+#define MODULE_IOCTL_FUNCTION        cortexM_systick_ioctl
 #define MODULE_HAS_NO_RUNTIME_DATA
 #include "add_module.h"

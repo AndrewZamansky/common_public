@@ -21,23 +21,13 @@
 //#define DEBUG
 #include "PRINTF_api.h"
 
-/********  defines *********************/
 
-
-
-/********  types  *********************/
 enum sec_type_t {
 	SEC,
 	mSEC,
 	uSEC
 };
 
-
-/********  externals *********************/
-
-
-
-/********  local variables *********************/
 
 
 
@@ -123,8 +113,8 @@ uint8_t timer_wrapper_ioctl( struct dev_desc_t *adev,
 	uint64_t curr_timer_wrapper_val;
 	struct dev_desc_t *hw_timer_wrapper;
 
-	config_handle = DEV_GET_CONFIG_DATA_POINTER(adev);
-	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
+	config_handle = DEV_GET_CONFIG_DATA_POINTER(timer_wrapper, adev);
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(timer_wrapper, adev);
 	hw_timer_wrapper = config_handle->hw_timer_wrapper;
 
 	switch(aIoctl_num)
@@ -182,6 +172,4 @@ uint8_t timer_wrapper_ioctl( struct dev_desc_t *adev,
 
 #define	MODULE_NAME                      timer_wrapper
 #define	MODULE_IOCTL_FUNCTION            timer_wrapper_ioctl
-#define MODULE_CONFIG_DATA_STRUCT_TYPE   struct timer_wrapper_cfg_t
-#define MODULE_RUNTIME_DATA_STRUCT_TYPE  struct timer_wrapper_runtime_t
 #include "add_module.h"

@@ -22,8 +22,6 @@
 
 #include "clk.h"
 
-#define MODULE_NAME     clock_control_i96xxx_m0
-
 
 /*-----
   SystemCoreClock,__HXT, __LXT, __HIRC are BSP required  variables.
@@ -253,6 +251,46 @@ static void clock_i96xxx_hclk_set_parent_clk(struct dev_desc_t *parent_clk)
 #include "clk_cntl_add_device.h"
 
 
+/***********************************/
+/********** i9xxxx_uart0_dev ********/
+static void clock_i9xxxx_uart0_enable()
+{
+	CLK_EnableModuleClock(UART0_MODULE);
+}
+
+static void clock_i9xxxx_uart0_set_parent_clk(struct dev_desc_t *parent_clk)
+{
+	if (i96xxx_xtal_clk_dev == parent_clk)
+	{
+		CLK_SetModuleClock(UART0_MODULE,
+				CLK_CLKSEL1_UART0SEL_HXT, CLK_CLKDIV0_UART0(1));
+	}
+	else if (i96xxx_hirc_clk_dev == parent_clk)
+	{
+		CLK_SetModuleClock(UART0_MODULE,
+				CLK_CLKSEL1_UART0SEL_HIRC, CLK_CLKDIV0_UART0(1));
+	}
+	else if (i96xxx_pll_clk_dev == parent_clk)
+	{
+		CLK_SetModuleClock(UART0_MODULE,
+				CLK_CLKSEL1_UART0SEL_PLL, CLK_CLKDIV0_UART0(1));
+	}
+	else
+	{
+		CRITICAL_ERROR("bad parent clock \n");
+	}
+}
+
+#define DT_DEV_NAME               i9xxxx_uart0_clk_dev
+#define DT_DEV_MODULE             clk_cntl
+
+#define CLK_DT_ENABLE_CLK_FUNC      clock_i9xxxx_uart0_enable
+#define CLK_DT_SET_PARENT_CLK_FUNC  clock_i9xxxx_uart0_set_parent_clk
+
+#include "clk_cntl_add_device.h"
+
+
+
 static void init_clocks(struct clk_cntl_i96xxx_m0_cfg_t *cfg_hndl)
 {
 	uint32_t rate;
@@ -318,7 +356,7 @@ static uint8_t clock_control_i96xxx_m0_ioctl( struct dev_desc_t *adev,
 {
 	struct clk_cntl_i96xxx_m0_cfg_t *cfg_hndl;
 
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(MODULE_NAME, adev);
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(clock_control_i96xxx_m0, adev);
 
 	switch(aIoctl_num)
 	{
@@ -331,6 +369,7 @@ static uint8_t clock_control_i96xxx_m0_ioctl( struct dev_desc_t *adev,
 	return 0;
 }
 
-#define MODULE_IOCTL_FUNCTION          clock_control_i96xxx_m0_ioctl
+#define MODULE_NAME                clock_control_i96xxx_m0
+#define MODULE_IOCTL_FUNCTION      clock_control_i96xxx_m0_ioctl
 #define MODULE_HAS_NO_RUNTIME_DATA
 #include "add_module.h"

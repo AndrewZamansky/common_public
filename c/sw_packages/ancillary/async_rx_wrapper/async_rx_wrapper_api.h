@@ -5,11 +5,6 @@
 #include "_project_defines.h"
 #include "dev_management_api.h"
 
-/*****************  defines  **************/
-
-
-/**********  define API  types ************/
-
 
 #define ASYNC_RX_WRAPPER_API_RX_BUFF_SIZE_STR   "rx_buff_size"
 #define ASYNC_RX_WRAPPER_API_SERVER_DEVICE_STR  "server_device"
@@ -50,8 +45,6 @@ struct async_rx_wrapper_cfg_t {
 
 };
 
-/**********  define API  functions  ************/
-
-
+SET_CONFIG_TYPE(async_rx_wrapper, struct async_rx_wrapper_cfg_t);
 
 #endif

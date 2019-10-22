@@ -16,6 +16,7 @@ extern struct dev_desc_t  *i96xxx_hirc_clk_dev;
 extern struct dev_desc_t  *i96xxx_pll_clk_dev;
 extern struct dev_desc_t  *i96xxx_hclk_clk_dev;
 extern struct dev_desc_t  *i96xxx_systick_clk_dev;
+extern struct dev_desc_t  *i9xxxx_uart0_clk_dev;
 
 struct clk_cntl_i96xxx_m0_cfg_t {
 	uint32_t           xtal_rate;

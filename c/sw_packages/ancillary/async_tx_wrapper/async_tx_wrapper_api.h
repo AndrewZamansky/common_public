@@ -4,11 +4,6 @@
 
 #include "dev_management_api.h"
 
-/*****************  defines  **************/
-
-
-/**********  define API  types ************/
-
 
 #define ASYNC_TX_WRAPPER_API_RX_BUFF_SIZE_STR   "rx_buff_size"
 #define ASYNC_TX_WRAPPER_API_SERVER_DEVICE_STR   "server_device"
@@ -20,13 +15,12 @@ enum ASYNC_TX_WRAPPER_API_ioctl_e {
 	IOCTL_ASYNC_TX_WRAPPER_ENABLE_TX,
 };
 
-/**********  define API  functions  ************/
-
 
 struct async_tx_wrapper_cfg_t {
 	struct dev_desc_t *server_dev;
 	uint32_t           char_timeout; // max time to transmit one char
 };
 
+SET_CONFIG_TYPE(async_tx_wrapper, struct async_tx_wrapper_cfg_t);
 
 #endif

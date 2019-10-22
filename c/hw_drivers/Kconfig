@@ -43,7 +43,7 @@ endif
 
 config INCLUDE_INTERNAL_UART
 	bool   "internal uart"
-	depends on NUC505 || STM32F10X || NPCE586 || STM8S103F || I94XXX
+	depends on NUC505 || STM32F10X || NPCE586 || STM8S103F || I94XXX || I96XXX_M0
 	default n
 
 config INCLUDE_LINUX_UART

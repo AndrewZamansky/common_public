@@ -26,14 +26,11 @@
 #include <stdio.h>
 #include <stdarg.h>
 
-#define MODULE_NAME                     u_boot_shell
-
 
 struct dev_desc_t * gCurrReplyDev = NULL;
 
 extern int run_command(const char *cmd, int flag);
 
-/********  local defs *********************/
 
 const uint8_t UBOOT_SHELL_API_VER_VARIABLE(UBOOT_SHELL_API_VERSION);
 
@@ -157,7 +154,7 @@ static uint8_t u_boot_shell_ioctl( struct dev_desc_t *adev ,
 	struct u_boot_shell_instance_t *config_handle;
 	struct dev_desc_t *   server_dev ;
 
-	config_handle = DEV_GET_CONFIG_DATA_POINTER(MODULE_NAME, adev);
+	config_handle = DEV_GET_CONFIG_DATA_POINTER(u_boot_shell, adev);
 
 	switch(aIoctl_num)
 	{
@@ -189,6 +186,7 @@ static uint8_t u_boot_shell_ioctl( struct dev_desc_t *adev ,
 	return 0;
 }
 
+#define MODULE_NAME                     u_boot_shell
 #define MODULE_IOCTL_FUNCTION           u_boot_shell_ioctl
 #define MODULE_CALLBACK_FUNCTION        u_boot_shell_callback
 #define MODULE_HAS_NO_RUNTIME_DATA

@@ -8,14 +8,10 @@
 	#include "dev_management_api.h"
 #endif
 
-/*****************  defines  **************/
 #define UBOOT_SHELL_API_VERSION  20191007
 
 
 #define  U_BOOT_SHELL_API_SERVER_DEVICE_STR  "server_dev"
-/**********  define API  types ************/
-
-
 
 #ifndef CONFIG_INCLUDE_ONLY_UBOOT_SHELL_API
 	struct u_boot_shell_instance_t {
@@ -26,7 +22,6 @@
 
 #endif
 
-/**********  define API  functions  ************/
 
 void SHELL_REPLY_PRINTF(const char* Format, ...);
 void SHELL_REPLY_STR(const char* str);

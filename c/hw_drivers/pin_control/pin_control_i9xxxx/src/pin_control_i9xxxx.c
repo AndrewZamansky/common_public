@@ -1,6 +1,6 @@
 /*
  *
- * file :   pin_control_i94xxx.c
+ * file :   pin_control_i9xxxx.c
  *
  *
  */
@@ -8,14 +8,17 @@
 
 
 /********  includes *********************/
-#include "pin_control_i94xxx.h"
+#include "pin_control_i9xxxx.h"
 
+#include "pin_control_api.h"
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 
-#include "pin_control_api.h"
-
-#include "I94100.h"
+#ifdef CONFIG_I94XXX
+	#include "I94100.h"
+#elif CONFIG_I96XXX_M0
+	#include "I96100.h"
+#endif
 
 
 /********  defines *********************/

@@ -13,9 +13,6 @@ struct cortexM_systick_instance_t {
 	uint8_t mode;
 };
 
-
-
-
 SET_CONFIG_TYPE(cortexM_systick, struct cortexM_systick_instance_t);
 
 #endif

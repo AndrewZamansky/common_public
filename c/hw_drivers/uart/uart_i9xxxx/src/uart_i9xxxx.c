@@ -1,6 +1,6 @@
 /*
  *
- * uart_i94xxx.c
+ * uart_i9xxxx.c
 
  *
  */
@@ -12,19 +12,24 @@
 
 #include "dev_management_api.h"
 
-#include "uart_i94xxx_api.h"
-#include "uart_i94xxx.h"
-#include "I94100.h"
+#ifdef CONFIG_I94XXX
+	#include "I94100.h"
+	#include "clock_control_i94xxx_api.h"
+#elif CONFIG_I96XXX_M0
+	#include "I96100.h"
+	#include "clock_control_i96xxx_m0_api.h"
+#endif
 
 #include "irq_api.h"
 #include "uart_api.h"
-#include "clock_control_i94xxx_api.h"
 #include "pin_control_api.h"
 #include <stdio.h>
 
+#include "uart_i9xxxx_api.h"
 
 //#define DEBUG
 #include "PRINTF_api.h"
+#include "uart_i9xxxx.h"
 
 
 #if !defined(INTERRUPT_PRIORITY_FOR_UART)
@@ -37,22 +42,10 @@
 
 
 
-/********  defines *********************/
-
-
 //#define MAX_ERR_STR_LEN   255
 
 #define DEBUG_UART  0
 //#define PRINT_BIN_DATA
-
-/********  types  *********************/
-
-
-/* ------------ External variables ---------------------------------*/
-
-/* ------------------------ External functions ------------*/
-
-/* ------------------------ Exported variables --------*/
 
 
 uint8_t _do_uart_dbg_print = 0;
@@ -78,26 +71,24 @@ static void dbg_print(uint8_t const *data, size_t len)
 static void dbg_print(uint8_t const *data, size_t len){}
 #endif
 
-#define   UART_I94XXX_RCV_DATA_SIZE_BUFFER  32
-static uint8_t  rcv_data[UART_I94XXX_RCV_DATA_SIZE_BUFFER];
-static size_t   send_data_len;
-static uint8_t init_done = 0;
 
-static uint32_t  uart_i94xxx_rx_fifo_overflow_cnt = 0;
-
-static uint8_t uart_i94xxx_callback(struct dev_desc_t *adev ,
+static uint8_t uart_i9xxxx_callback(struct dev_desc_t *adev ,
 		uint8_t aCallback_num , void * aCallback_param1,
 		void * aCallback_param2)
 {
-	struct uart_i94xxx_cfg_t *cfg_hndl;
+	struct uart_i9xxxx_cfg_t *cfg_hndl;
+	struct i9xxx_uart_runtime_t *i9xxx_uart_runtime;
 	uint32_t u32IntSts ;
 	UART_T *uart_regs;
 	size_t rcv_data_len;
 	struct dev_desc_t * callback_rx_dev ;
+	uint8_t  *rcv_data;
 
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
-	uart_regs =(UART_T *)UART0_BASE;
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(uart_i9xxxx, adev);
+	i9xxx_uart_runtime = DEV_GET_RUNTIME_DATA_POINTER(uart_i9xxxx, adev);
 
+	uart_regs = (UART_T *)cfg_hndl->base_address;
+	rcv_data = i9xxx_uart_runtime->rcv_data;
 	u32IntSts = uart_regs->INTSTS;
 
 	rcv_data_len = 0;
@@ -107,14 +98,14 @@ static uint8_t uart_i94xxx_callback(struct dev_desc_t *adev ,
 	if (uart_regs->FIFOSTS & UART_FIFOSTS_RXOVIF_Msk)
 	{
 		//CRITICAL_ERROR("uart rx FIFO was overflowed");
-		uart_i94xxx_rx_fifo_overflow_cnt++;
+		i9xxx_uart_runtime->rx_fifo_overflow_cnt++;
 		uart_regs->FIFOSTS = UART_FIFOSTS_RXOVIF_Msk;
 	}
 	while (0 == UART_GET_RX_EMPTY(uart_regs))
 	{
 		rcv_data[rcv_data_len] = UART_READ(uart_regs);
 		rcv_data_len++;
-		if ( (UART_I94XXX_RCV_DATA_SIZE_BUFFER == rcv_data_len) &&
+		if ( (UART_I9XXXX_RCV_DATA_SIZE_BUFFER == rcv_data_len) &&
 				(NULL != callback_rx_dev))
 		{
 			if ((DEBUG_UART) && (0 != _do_uart_dbg_print))
@@ -154,8 +145,8 @@ static uint8_t uart_i94xxx_callback(struct dev_desc_t *adev ,
 		UART_DISABLE_INT(uart_regs,  UART_INTEN_TXENDIEN_Msk);
 		if (NULL != callback_tx_dev)
 		{
-			DEV_CALLBACK_1_PARAMS(
-					callback_tx_dev , CALLBACK_TX_DONE, (void*)send_data_len);
+			DEV_CALLBACK_1_PARAMS( callback_tx_dev,
+					CALLBACK_TX_DONE, (void*)i9xxx_uart_runtime->send_data_len);
 		}
 	}
 
@@ -164,13 +155,17 @@ static uint8_t uart_i94xxx_callback(struct dev_desc_t *adev ,
 
 
 /**
- * uart_i94xxx_pwrite()
+ * uart_i9xxxx_pwrite()
  *
  * return:
  */
-static size_t uart_i94xxx_pwrite(struct dev_desc_t *adev,
+static size_t uart_i9xxxx_pwrite(struct dev_desc_t *adev,
 			const uint8_t *apData, size_t aLength, size_t aOffset)
 {
+	struct uart_i9xxxx_cfg_t *cfg_hndl;
+	struct i9xxx_uart_runtime_t *i9xxx_uart_runtime;
+	size_t   send_data_len;
+
 	UART_T *uart_regs;
 #if (0 != DEBUG_UART)
 	const uint8_t *start_of_data = apData;
@@ -181,7 +176,9 @@ static size_t uart_i94xxx_pwrite(struct dev_desc_t *adev,
 		return 0;
 	}
 
-	uart_regs =(UART_T *)UART0_BASE;
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(uart_i9xxxx, adev);
+	i9xxx_uart_runtime = DEV_GET_RUNTIME_DATA_POINTER(uart_i9xxxx, adev);
+	uart_regs = (UART_T *)cfg_hndl->base_address;
 
 	// wait till busy
 	while ((uart_regs->INTEN & UART_INTEN_TXENDIEN_Msk) ||
@@ -194,6 +191,7 @@ static size_t uart_i94xxx_pwrite(struct dev_desc_t *adev,
 		aLength--;
 		UART_WRITE(uart_regs, *apData++);
 	}
+	i9xxx_uart_runtime->send_data_len = send_data_len;
 	UART_EnableInt(uart_regs,  UART_INTEN_TXENDIEN_Msk );
 
 	if ((DEBUG_UART) && (0 != _do_uart_dbg_print))
@@ -211,26 +209,30 @@ static size_t uart_i94xxx_pwrite(struct dev_desc_t *adev,
 }
 
 /**
- * uart_i94xxx_ioctl()
+ * uart_i9xxxx_ioctl()
  *
  * return:
  */
-static uint8_t uart_i94xxx_ioctl( struct dev_desc_t *adev,
+static uint8_t uart_i9xxxx_ioctl( struct dev_desc_t *adev,
 		uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2)
 {
-	struct uart_i94xxx_cfg_t *cfg_hndl;
+	struct uart_i9xxxx_cfg_t *cfg_hndl;
+	struct i9xxx_uart_runtime_t *i9xxx_uart_runtime;
 	UART_T *uart_regs;
 	int uart_irq;
 	uint32_t uart_module_rst;
 	struct dev_desc_t  *src_clock;
+	struct dev_desc_t  *uart_clock;
 
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
-	if ((0 == init_done) && (IOCTL_DEVICE_START != aIoctl_num))
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(uart_i9xxxx, adev);
+	i9xxx_uart_runtime = DEV_GET_RUNTIME_DATA_POINTER(uart_i9xxxx, adev);
+	if ((0 == i9xxx_uart_runtime->init_done) &&
+					(IOCTL_DEVICE_START != aIoctl_num))
 	{
 		CRITICAL_ERROR("not initialized yet");
 	}
 
-	uart_regs = (UART_T *)UART0_BASE;
+	uart_regs = (UART_T *)cfg_hndl->base_address;
 	switch(aIoctl_num)
 	{
 	case IOCTL_UART_SET_BAUD_RATE :
@@ -238,7 +240,7 @@ static uint8_t uart_i94xxx_ioctl( struct dev_desc_t *adev,
 		UART_Open(uart_regs, cfg_hndl->baud_rate);
 		break;
 	case IOCTL_DEVICE_START :
-		if (init_done)
+		if (i9xxx_uart_runtime->init_done)
 		{
 			break;
 		}
@@ -246,12 +248,20 @@ static uint8_t uart_i94xxx_ioctl( struct dev_desc_t *adev,
 		pin_control_api_set_pin_function(cfg_hndl->rx_pin);
 
 		src_clock = cfg_hndl->src_clock;
-		DEV_IOCTL_0_PARAMS(i94xxx_uart0_clk_dev, IOCTL_DEVICE_START);
-		DEV_IOCTL_1_PARAMS(
-				i94xxx_uart0_clk_dev, CLK_IOCTL_SET_PARENT, src_clock);
-		DEV_IOCTL_0_PARAMS(i94xxx_uart0_clk_dev, CLK_IOCTL_ENABLE);
+		if ((UART_T *)UART0_BASE == uart_regs)
+		{
+			uart_clock = i9xxxx_uart0_clk_dev;
+			uart_module_rst = UART0_RST;
+			uart_irq = UART0_IRQn;
+		}
+		else
+		{
+			CRITICAL_ERROR("TODO");
+		}
+		DEV_IOCTL_0_PARAMS(uart_clock, IOCTL_DEVICE_START);
+		DEV_IOCTL_1_PARAMS(uart_clock, CLK_IOCTL_SET_PARENT, src_clock);
+		DEV_IOCTL_0_PARAMS(uart_clock, CLK_IOCTL_ENABLE);
 
-		uart_module_rst = UART0_RST;
 		SYS_ResetModule(uart_module_rst);
 
 		UART_Open(uart_regs, cfg_hndl->baud_rate);
@@ -260,16 +270,15 @@ static uint8_t uart_i94xxx_ioctl( struct dev_desc_t *adev,
 		UART_EnableInt(uart_regs,
 				(UART_INTEN_RDAIEN_Msk  | UART_INTEN_RXTOIEN_Msk));
 
-		uart_irq = UART0_IRQn;
 		irq_register_device_on_interrupt(uart_irq, adev);
 		irq_set_priority(uart_irq, INTERRUPT_PRIORITY_FOR_UART );
 		irq_enable_interrupt(uart_irq);
-		init_done = 1;
+		i9xxx_uart_runtime->init_done = 1;
 		break;
 
 	case IOCTL_UART_DISABLE_TX :
 		UART_DISABLE_INT(uart_regs,  UART_INTEN_TXENDIEN_Msk);
-		send_data_len = 0;
+		i9xxx_uart_runtime->send_data_len = 0;
 		break;
 
 	case IOCTL_UART_ENABLE_TX :
@@ -289,9 +298,8 @@ static uint8_t uart_i94xxx_ioctl( struct dev_desc_t *adev,
 	return 0;
 }
 
-#define MODULE_NAME                  uart_i94xxx
-#define MODULE_IOCTL_FUNCTION        uart_i94xxx_ioctl
-#define MODULE_CALLBACK_FUNCTION     uart_i94xxx_callback
-#define MODULE_PWRITE_FUNCTION       uart_i94xxx_pwrite
-#define MODULE_CONFIG_DATA_STRUCT_TYPE  struct uart_i94xxx_cfg_t
+#define MODULE_NAME                  uart_i9xxxx
+#define MODULE_IOCTL_FUNCTION        uart_i9xxxx_ioctl
+#define MODULE_CALLBACK_FUNCTION     uart_i9xxxx_callback
+#define MODULE_PWRITE_FUNCTION       uart_i9xxxx_pwrite
 #include "add_module.h"

@@ -3,11 +3,6 @@
 #include  "async_tx_wrapper_api.h"
 #include "src/async_tx_wrapper.h"
 
-
-#define MODULE_CONFIG_DATA_STRUCT_TYPE   struct async_tx_wrapper_cfg_t
-#define MODULE_RUNTIME_DATA_STRUCT_TYPE  struct async_tx_wrapper_runtime_t
-
-
 #ifndef ASYNC_TX_WRAPPER_DT_SERVER_PDEV
 	#error "ASYNC_TX_WRAPPER_DT_SERVER_PDEV should be defined"
 #endif
@@ -21,11 +16,11 @@
 
 EXTERN_DECLARATION_TO_STATIC_DEVICE_INST(ASYNC_TX_WRAPPER_DT_SERVER_PDEV) ;
 
-#define STATIC_DEV_DATA_STRUCT                                     \
-	{                                                              \
-		P_TO_STATIC_DEVICE_INST(ASYNC_TX_WRAPPER_DT_SERVER_PDEV),  \
-		__ASYNC_TX_WRAPPER_DT_CHAR_TIMEOUT                         \
-	}
+SET_STATIC_DEV_CONFIG(async_tx_wrapper) =
+{
+	P_TO_STATIC_DEVICE_INST(ASYNC_TX_WRAPPER_DT_SERVER_PDEV),
+	__ASYNC_TX_WRAPPER_DT_CHAR_TIMEOUT
+};
 
 
 

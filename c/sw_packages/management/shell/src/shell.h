@@ -9,14 +9,11 @@
 
 #include "dev_management_api.h"
 
-
-/***************   typedefs    *******************/
-
-
-
 struct shell_runtime_instance_t {
 	uint32_t lastTestedBytePos;
 	uint8_t lastEOLchar;
 };
 
-#endif /* */
+SET_RUNTIME_DATA_TYPE(shell, struct shell_runtime_instance_t);
+
+#endif

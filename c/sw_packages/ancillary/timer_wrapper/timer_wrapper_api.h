@@ -4,12 +4,6 @@
 
 #include "dev_management_api.h"
 
-/*****************  defines  **************/
-
-
-/**********  define API  types ************/
-
-
 enum TIMER_WRAPPER_API_ioctl_e {
 	IOCTL_TIMER_WRAPPER_API_SET_COUNTDOWN_uSEC_AND_RESET
 										= IOCTL_LAST_COMMON_IOCTL + 1,
@@ -25,7 +19,6 @@ struct timer_wrapper_cfg_t {
 	struct dev_desc_t *hw_timer_wrapper;
 };
 
-
-/**********  define API  functions  ************/
+SET_CONFIG_TYPE(timer_wrapper, struct timer_wrapper_cfg_t);
 
 #endif

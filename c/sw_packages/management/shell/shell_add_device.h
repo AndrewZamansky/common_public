@@ -3,9 +3,6 @@
 #include  "shell_api.h"
 #include  "src/shell.h"
 
-#define MODULE_CONFIG_DATA_STRUCT_TYPE   struct shell_cfg_t
-#define MODULE_RUNTIME_DATA_STRUCT_TYPE  struct shell_runtime_instance_t
-
 
 #ifndef SHELL_DT_TX_SERVER_PDEV
 	#error "SHELL_DT_TX_SERVER_PDEV should be defined"
@@ -32,13 +29,13 @@
 
 EXTERN_DECLARATION_TO_STATIC_DEVICE_INST(SHELL_DT_TX_SERVER_PDEV);
 EXTERN_DECLARATION_TO_STATIC_DEVICE_INST(SHELL_DT_RX_SERVER_PDEV);
-#define STATIC_DEV_DATA_STRUCT      \
-	{                               \
-		P_TO_STATIC_DEVICE_INST(SHELL_DT_TX_SERVER_PDEV) ,  \
-		P_TO_STATIC_DEVICE_INST(SHELL_DT_RX_SERVER_PDEV) ,  \
-		_CALLBACK_PDEV,         \
-		_CMD_SAVE_PDEV          \
-	}
+SET_STATIC_DEV_CONFIG(shell) =
+{
+	P_TO_STATIC_DEVICE_INST(SHELL_DT_TX_SERVER_PDEV),
+	P_TO_STATIC_DEVICE_INST(SHELL_DT_RX_SERVER_PDEV),
+	_CALLBACK_PDEV,
+	_CMD_SAVE_PDEV
+};
 
 #include "add_static_dev.h"
 

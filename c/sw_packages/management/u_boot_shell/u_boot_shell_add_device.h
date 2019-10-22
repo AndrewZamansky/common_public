@@ -4,9 +4,6 @@
 #include "src/u_boot_shell.h"
 
 
-#define MODULE_CONFIG_DATA_STRUCT_TYPE  struct u_boot_shell_instance_t
-
-
 #ifdef U_BOOT_SHELL_DT_SERVER_PDEV
 	EXTERN_DECLARATION_TO_STATIC_DEVICE_INST(U_BOOT_SHELL_DT_SERVER_PDEV);
 	#define POINTER_TO_SERVER_PDEV  \
@@ -15,12 +12,12 @@
 	#define POINTER_TO_SERVER_PDEV   NULL
 #endif
 
-#define STATIC_DEV_DATA_STRUCT    \
-	{                             \
-		POINTER_TO_SERVER_PDEV ,  \
-	};
+SET_STATIC_DEV_CONFIG(u_boot_shell) =
+{
+	POINTER_TO_SERVER_PDEV,
+};
 
-
+#define MODULE_HAS_NO_RUNTIME_DATA
 
 #include "add_static_dev.h"
 

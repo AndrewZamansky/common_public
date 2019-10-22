@@ -825,13 +825,13 @@ static void clock_i94xxx_dpwm_set_parent_clk(struct dev_desc_t *parent_clk)
 
 
 /***********************************/
-/********** i94xxx_uart0_dev ********/
-static void clock_i94xxx_uart0_enable()
+/********** i9xxxx_uart0_dev ********/
+static void clock_i9xxxx_uart0_enable()
 {
 	CLK_EnableModuleClock(UART0_MODULE);
 }
 
-static void clock_i94xxx_uart0_set_parent_clk(struct dev_desc_t *parent_clk)
+static void clock_i9xxxx_uart0_set_parent_clk(struct dev_desc_t *parent_clk)
 {
 	if (i94xxx_xtal_clk_dev == parent_clk)
 	{
@@ -854,11 +854,11 @@ static void clock_i94xxx_uart0_set_parent_clk(struct dev_desc_t *parent_clk)
 	}
 }
 
-#define DT_DEV_NAME               i94xxx_uart0_clk_dev
+#define DT_DEV_NAME               i9xxxx_uart0_clk_dev
 #define DT_DEV_MODULE             clk_cntl
 
-#define CLK_DT_ENABLE_CLK_FUNC      clock_i94xxx_uart0_enable
-#define CLK_DT_SET_PARENT_CLK_FUNC  clock_i94xxx_uart0_set_parent_clk
+#define CLK_DT_ENABLE_CLK_FUNC      clock_i9xxxx_uart0_enable
+#define CLK_DT_SET_PARENT_CLK_FUNC  clock_i9xxxx_uart0_set_parent_clk
 
 #include "clk_cntl_add_device.h"
 

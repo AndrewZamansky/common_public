@@ -14,4 +14,6 @@ struct shell_cfg_t {
 	struct dev_desc_t *   cmd_save_dev;
 };
 
+SET_CONFIG_TYPE(shell, struct shell_cfg_t);
+
 #endif

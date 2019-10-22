@@ -17,4 +17,6 @@ struct timer_wrapper_runtime_t {
 	uint64_t  countdown_value;
 };
 
+SET_RUNTIME_DATA_TYPE(timer_wrapper, struct timer_wrapper_runtime_t);
+
 #endif /* */

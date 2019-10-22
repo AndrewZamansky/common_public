@@ -1,15 +1,13 @@
 #ifndef _PIN_CONTROL_API_H_
 #define _PIN_CONTROL_API_H_
 
-#include "dt_pin_control_i94xxx.h"
+#if defined(CONFIG_I94XXX)
+	#include "dt_pin_control_i94xxx.h"
+#elif defined(CONFIG_I96XXX_M0)
+	#include "dt_pin_control_i96xxx.h"
+#endif
 
-/**********  defines ************/
-
-
-/**********  define API  types ************/
-
-
-/**********  define API  functions  ************/
+#include <stdint.h>
 
 uint8_t pin_control_api_set_pin_function(uint32_t  new_pin_info);
 

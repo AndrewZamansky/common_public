@@ -17,23 +17,6 @@
 #include "os_wrapper.h"
 #include <string.h>
 
-
-/********  defines *********************/
-
-
-/********  types  *********************/
-
-
-/********  externals *********************/
-
-
-
-/**********   external variables    **************/
-
-
-
-/***********   local variables    **************/
-
 /**
  * async_rx_wrapper_callback()
  *
@@ -52,8 +35,8 @@ static uint8_t async_rx_wrapper_callback(struct dev_desc_t *adev ,
 	rcvdData = (uint8_t *)aCallback_param1;
 	rcvdDataLen = (rx_int_size_t)((size_t)aCallback_param2);
 
-	config_handle = DEV_GET_CONFIG_DATA_POINTER(adev);
-	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
+	config_handle = DEV_GET_CONFIG_DATA_POINTER(async_rx_wrapper, adev);
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(async_rx_wrapper, adev);
 
 	client_dev = config_handle->client_dev;
 	if (CALLBACK_DATA_RECEIVED == aCallback_num)
@@ -118,8 +101,8 @@ static uint8_t async_rx_wrapper_ioctl(struct dev_desc_t *adev,
 	struct dev_desc_t *   server_dev;
 	struct ioctl_get_data_buffer_t * ioctl_get_data_buffer;
 
-	config_handle = DEV_GET_CONFIG_DATA_POINTER(adev);
-	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
+	config_handle = DEV_GET_CONFIG_DATA_POINTER(async_rx_wrapper, adev);
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(async_rx_wrapper, adev);
 
 	server_dev  = config_handle->server_dev;
 
@@ -196,8 +179,6 @@ static uint8_t async_rx_wrapper_ioctl(struct dev_desc_t *adev,
 #define MODULE_NAME                       async_rx_wrapper
 #define MODULE_IOCTL_FUNCTION             async_rx_wrapper_ioctl
 #define MODULE_CALLBACK_FUNCTION          async_rx_wrapper_callback
-#define MODULE_CONFIG_DATA_STRUCT_TYPE    struct async_rx_wrapper_cfg_t
-#define MODULE_RUNTIME_DATA_STRUCT_TYPE   struct async_rx_wrapper_runtime_t
 
 #define MODULE_CONFIGURABLE_PARAMS_ARRAY  { \
 			{	ASYNC_RX_WRAPPER_API_RX_BUFF_SIZE_STR ,                \
