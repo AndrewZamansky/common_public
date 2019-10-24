@@ -5,9 +5,6 @@
  *
  */
 
-
-
-/********  includes *********************/
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 
@@ -251,6 +248,67 @@ static void clock_i96xxx_hclk_set_parent_clk(struct dev_desc_t *parent_clk)
 #include "clk_cntl_add_device.h"
 
 
+
+/****************************************/
+/********** i96xxx_pclk0_clk_dev ********/
+static void clock_i96xxx_pclk0_set_freq(uint32_t freq, uint32_t parent_freq)
+{
+	uint32_t div;
+
+	div = parent_freq / freq;
+	if (div)
+	{
+		div--;
+	}
+	CLK->PCLKDIV = (CLK->PCLKDIV & (~CLK_PCLKDIV_APB0DIV_Msk)) |
+									(div << CLK_PCLKDIV_APB0DIV_Pos);
+}
+
+static void clock_i96xxx_pclk0_get_freq(uint32_t *freq, uint32_t parent_freq)
+{
+	*freq = CLK_GetPCLK0Freq();
+}
+
+#define DT_DEV_NAME               i96xxx_pclk0_clk_dev
+#define DT_DEV_MODULE             clk_cntl
+
+#define CLK_DT_SET_FREQ_FUNC      clock_i96xxx_pclk0_set_freq
+#define CLK_DT_GET_FREQ_FUNC      clock_i96xxx_pclk0_get_freq
+
+#include "clk_cntl_add_device.h"
+
+
+
+/****************************************/
+/********** i96xxx_pclk1_clk_dev ********/
+static void clock_i96xxx_pclk1_set_freq(uint32_t freq, uint32_t parent_freq)
+{
+	uint32_t div;
+
+	div = parent_freq / freq;
+	if (div)
+	{
+		div--;
+	}
+	CLK->PCLKDIV = (CLK->PCLKDIV & (~CLK_PCLKDIV_APB1DIV_Msk)) |
+									(div << CLK_PCLKDIV_APB1DIV_Pos);
+}
+
+static void clock_i96xxx_pclk1_get_freq(uint32_t *freq, uint32_t parent_freq)
+{
+	*freq = CLK_GetPCLK1Freq();
+}
+
+#define DT_DEV_NAME               i96xxx_pclk1_clk_dev
+#define DT_DEV_MODULE             clk_cntl
+
+#define CLK_DT_DEFAULT_PARENT     i96xxx_hclk_clk_dev
+#define CLK_DT_SET_FREQ_FUNC      clock_i96xxx_pclk1_set_freq
+#define CLK_DT_GET_FREQ_FUNC      clock_i96xxx_pclk1_get_freq
+
+#include "clk_cntl_add_device.h"
+
+
 /***********************************/
 /********** i9xxxx_uart0_dev ********/
 static void clock_i9xxxx_uart0_enable()
@@ -290,11 +348,125 @@ static void clock_i9xxxx_uart0_set_parent_clk(struct dev_desc_t *parent_clk)
 #include "clk_cntl_add_device.h"
 
 
+/***************************************/
+/********** i96xxx_i2s0_clk_dev ********/
+static void clock_i96xxx_i2s0_enable()
+{
+	CLK->APBCLK0 |= CLK_APBCLK0_I2S0CKEN_Msk;
+}
+
+static void clock_i96xxx_i2s0_set_parent_clk(struct dev_desc_t *parent_clk)
+{
+	uint32_t curr_val;
+
+	curr_val = (CLK->CLKSEL3 & ~ CLK_CLKSEL3_I2S0SEL_Msk);
+	if (i96xxx_xtal_clk_dev == parent_clk)
+	{
+		CLK->CLKSEL3 = curr_val | CLK_CLKSEL3_I2S0SEL_HXT;
+	}
+	else if (i96xxx_hirc_clk_dev == parent_clk)
+	{
+		CLK->CLKSEL3 = curr_val | CLK_CLKSEL3_I2S0SEL_HIRC;
+	}
+	else if (i96xxx_pll_clk_dev == parent_clk)
+	{
+		CLK->CLKSEL3 = curr_val | CLK_CLKSEL3_I2S0SEL_PLL;
+	}
+	else if (i96xxx_pclk0_clk_dev == parent_clk)
+	{
+		CLK->CLKSEL3 = curr_val | CLK_CLKSEL3_I2S0SEL_PCLK0;
+	}
+	else
+	{
+		CRITICAL_ERROR("bad parent clock \n");
+	}
+}
+
+#define DT_DEV_NAME               i96xxx_i2s0_clk_dev
+#define DT_DEV_MODULE             clk_cntl
+
+#define CLK_DT_ENABLE_CLK_FUNC      clock_i96xxx_i2s0_enable
+#define CLK_DT_SET_PARENT_CLK_FUNC  clock_i96xxx_i2s0_set_parent_clk
+
+#include "clk_cntl_add_device.h"
+
+
+/*******************************************/
+/********** i96xxx_I2S0_MCLK_clk_dev ********/
+static void clock_i96xxx_I2S0_MCLK_get_freq(uint32_t *freq, uint32_t parent_freq)
+{
+	uint32_t mclkdiv;
+	mclkdiv = I2S0->CLKDIV & I2S_CLKDIV_MCLKDIV_Msk;
+	if (0 == mclkdiv)
+	{
+		*freq = parent_freq;
+	}
+	else
+	{
+		*freq = parent_freq / 2;
+	}
+}
+
+#define DT_DEV_NAME                i96xxx_I2S0_MCLK_clk_dev
+#define DT_DEV_MODULE              clk_cntl
+
+#define CLK_DT_GET_FREQ_FUNC       clock_i96xxx_I2S0_MCLK_get_freq
+#define CLK_DT_DEFAULT_PARENT      i96xxx_i2s0_clk_dev
+
+#include "clk_cntl_add_device.h"
+
+
+
+/*******************************************/
+/********** i96xxx_I2S0_BCLK_clk_dev ********/
+static void clock_i96xxx_I2S0_BCLK_get_freq(uint32_t *freq, uint32_t parent_freq)
+{
+	uint32_t bclkdiv;
+
+	bclkdiv = (I2S0->CLKDIV & I2S_CLKDIV_BCLKDIV_Msk) >>
+											I2S_CLKDIV_BCLKDIV_Pos;
+	*freq = parent_freq / (2 * (bclkdiv + 1));
+}
+
+#define DT_DEV_NAME                i96xxx_I2S0_BCLK_clk_dev
+#define DT_DEV_MODULE              clk_cntl
+
+#define CLK_DT_GET_FREQ_FUNC       clock_i96xxx_I2S0_BCLK_get_freq
+#define CLK_DT_DEFAULT_PARENT      i96xxx_i2s0_clk_dev
+
+#include "clk_cntl_add_device.h"
+
+
+/********************************************/
+/********** i96xxx_I2S0_FSCLK_clk_dev ********/
+static void clock_i96xxx_I2S0_FSCLK_get_freq(
+						uint32_t *freq, uint32_t parent_freq)
+{
+	uint16_t num_of_channels;
+	uint16_t channel_width;
+
+	num_of_channels =
+			(I2S0->CTL0 & I2S_CTL0_TDMCHNUM_Msk) >> I2S_CTL0_TDMCHNUM_Pos;
+	num_of_channels = 2 * (1 + num_of_channels);
+	channel_width =
+			(I2S0->CTL0 & I2S_CTL0_CHWIDTH_Msk) >> I2S_CTL0_CHWIDTH_Pos;
+	channel_width = 8 * (1 + channel_width);
+	*freq = parent_freq / (num_of_channels * channel_width);
+}
+
+#define DT_DEV_NAME                i96xxx_I2S0_FSCLK_clk_dev
+#define DT_DEV_MODULE              clk_cntl
+
+#define CLK_DT_GET_FREQ_FUNC       clock_i96xxx_I2S0_FSCLK_get_freq
+#define CLK_DT_DEFAULT_PARENT      i96xxx_I2S0_BCLK_clk_dev
+
+#include "clk_cntl_add_device.h"
+
+
+
 
 static void init_clocks(struct clk_cntl_i96xxx_m0_cfg_t *cfg_hndl)
 {
-	uint32_t rate;
-
 	if (0 != cfg_hndl->xtal_rate)
 	{
 		DEV_IOCTL_0_PARAMS(i96xxx_xtal_clk_dev, IOCTL_DEVICE_START);
@@ -326,22 +498,19 @@ static void init_clocks(struct clk_cntl_i96xxx_m0_cfg_t *cfg_hndl)
 //	DEV_IOCTL_1_PARAMS(i96xxx_hclk_clk_dev,
 //			CLK_IOCTL_SET_FREQ, &cfg_hndl->hclk_rate);
 
-
-	DEV_IOCTL_1_PARAMS(i96xxx_hclk_clk_dev,	CLK_IOCTL_GET_FREQ, &rate);
-
-	/* PCLK cannot be greater than 80mhz*/
-	if (160000000 < rate)
+	if (0 != cfg_hndl->pclk0_rate)
 	{
-		rate = rate / 4;
+		DEV_IOCTL_0_PARAMS(i96xxx_pclk0_clk_dev, IOCTL_DEVICE_START);
+		DEV_IOCTL_1_PARAMS(i96xxx_pclk0_clk_dev,
+				CLK_IOCTL_SET_FREQ, &cfg_hndl->pclk0_rate);
 	}
-	else if (80000000 < rate)
+
+	if (0 != cfg_hndl->pclk1_rate)
 	{
-		rate = rate / 2;
+		DEV_IOCTL_0_PARAMS(i96xxx_pclk1_clk_dev, IOCTL_DEVICE_START);
+		DEV_IOCTL_1_PARAMS(i96xxx_pclk1_clk_dev,
+				CLK_IOCTL_SET_FREQ, &cfg_hndl->pclk1_rate);
 	}
-//	DEV_IOCTL_0_PARAMS(i96xxx_pclk0_clk_dev, IOCTL_DEVICE_START);
-//	DEV_IOCTL_1_PARAMS(i96xxx_pclk0_clk_dev, CLK_IOCTL_SET_FREQ, &rate);
-//	DEV_IOCTL_0_PARAMS(i96xxx_pclk1_clk_dev, IOCTL_DEVICE_START);
-//	DEV_IOCTL_1_PARAMS(i96xxx_pclk1_clk_dev, CLK_IOCTL_SET_FREQ, &rate);
 }
 
 

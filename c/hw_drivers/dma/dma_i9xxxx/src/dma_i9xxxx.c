@@ -1,6 +1,6 @@
 /*
  *
- * dma_i94xxx.c
+ * dma_i9xxxx.c
  *
  */
 
@@ -12,10 +12,16 @@
 
 #include "dev_management_api.h"
 
-#include "dma_i94xxx.h"
-#include "dma_i94xxx_api.h"
+#include "dma_i9xxxx.h"
+#include "dma_i9xxxx_api.h"
 
-#include "I94100.h"
+#ifdef CONFIG_I94XXX
+	#include "I94100.h"
+	#include "clock_control_i94xxx_api.h"
+#elif CONFIG_I96XXX_M0
+	#include "I96100.h"
+	#include "clock_control_i96xxx_m0_api.h"
+#endif
 
 #include "irq_api.h"
 #include "os_wrapper.h"
@@ -32,7 +38,13 @@
 	#error "priority should be lower then maximal priority for os syscalls"
 #endif
 
-/********  defines *********************/
+#ifdef CONFIG_I96XXX_M0
+	#define PDMA_INTSTS_ALIGNF_Msk    PDMA_INT0STS_ALIGNF_Msk
+	#define PDMA_INTSTS_ABTIF_Msk     PDMA_INT0STS_ABTIF_Msk
+	#define PDMA_INTSTS_TDIF_Msk      PDMA_INT0STS_TDIF_Msk
+	#define SPI_I2SCTL_TXEN_Msk       SPI2_I2SCTL_TXEN_Msk
+	#define SPI_PDMACTL_TXPDMAEN_Msk  SPI2_PDMACTL_TXPDMAEN_Msk
+#endif
 
 #define DMA_TO_PERIPHERAL   0
 #define DMA_FROM_PERIPHERAL 1
@@ -48,13 +60,13 @@
 
 typedef enum
 {
-	DMA_I94XXX_BUFF_IDLE,
-	DMA_I94XXX_BUFF_DMA_IN_PROCCESS,
-	DMA_I94XXX_BUFF_TX_DATA_IS_FILLING,
-	DMA_I94XXX_BUFF_TX_DATA_IS_READY,
-	DMA_I94XXX_BUFF_RX_RADA_READY,
-	DMA_I94XXX_BUFF_RX_RADA_PROCESSING
-} DMA_I94XXX_buff_state_t;
+	DMA_I9XXXX_BUFF_IDLE,
+	DMA_I9XXXX_BUFF_DMA_IN_PROCCESS,
+	DMA_I9XXXX_BUFF_TX_DATA_IS_FILLING,
+	DMA_I9XXXX_BUFF_TX_DATA_IS_READY,
+	DMA_I9XXXX_BUFF_RX_RADA_READY,
+	DMA_I9XXXX_BUFF_RX_RADA_PROCESSING
+} DMA_I9XXXX_buff_state_t;
 
 /* ------------ External variables ---------------------------------*/
 
@@ -64,18 +76,18 @@ typedef enum
 #define MAX_NUMBER_OF_CHANNELS	16
 struct dev_desc_t * channel_pdev[MAX_NUMBER_OF_CHANNELS] = {0};
 
-//#define DMA_I94XXX_DEBUG
+//#define DMA_I9XXXX_DEBUG
 
-#ifdef DMA_I94XXX_DEBUG
-	volatile int dma_i94xxx_dbg_cnt1 = 0;
-	volatile int dma_i94xxx_dbg_cnt2 = 0;
-	volatile int dma_i94xxx_dbg_cnt3 = 0;
-	volatile int dma_i94xxx_dbg_cnt4 = 0;
-	volatile int dma_i94xxx_dbg_cnt5 = 0;
-	volatile int dma_i94xxx_dbg_cnt6 = 0;
-	volatile int dma_i94xxx_dbg_cnt7 = 0;
-	volatile int dma_i94xxx_dbg_cnt8 = 0;
-	volatile  struct dma_i94xxx_runtime_t *runtime_hndl_tmp;
+#ifdef DMA_I9XXXX_DEBUG
+	volatile int dma_i9xxxx_dbg_cnt1 = 0;
+	volatile int dma_i9xxxx_dbg_cnt2 = 0;
+	volatile int dma_i9xxxx_dbg_cnt3 = 0;
+	volatile int dma_i9xxxx_dbg_cnt4 = 0;
+	volatile int dma_i9xxxx_dbg_cnt5 = 0;
+	volatile int dma_i9xxxx_dbg_cnt6 = 0;
+	volatile int dma_i9xxxx_dbg_cnt7 = 0;
+	volatile int dma_i9xxxx_dbg_cnt8 = 0;
+	volatile  struct dma_i9xxxx_runtime_t *runtime_hndl_tmp;
 
 	volatile int g_status = 0;
 	volatile int bytecount0 = 0;
@@ -92,7 +104,7 @@ struct dev_desc_t * channel_pdev[MAX_NUMBER_OF_CHANNELS] = {0};
  *
  */
 static void put_new_buffer_in_pdma(uint8_t channel_num, uint8_t *buff_status,
-		struct dma_i94xxx_runtime_t *runtime_hndl, uint8_t next_dma_buff_indx)
+		struct dma_i9xxxx_runtime_t *runtime_hndl, uint8_t next_dma_buff_indx)
 {
 	DSCT_T *DSCT;
 	uint32_t reg_addr;
@@ -104,7 +116,7 @@ static void put_new_buffer_in_pdma(uint8_t channel_num, uint8_t *buff_status,
 	}
 
 	/* reinit PDMA */
-	buff_status[next_dma_buff_indx] = DMA_I94XXX_BUFF_DMA_IN_PROCCESS;
+	buff_status[next_dma_buff_indx] = DMA_I9XXXX_BUFF_DMA_IN_PROCCESS;
 	runtime_hndl->curr_dma_buff_indx = next_dma_buff_indx;
 
 	PDMA_SET_TRANS_CNT(channel_num, runtime_hndl->buff_size_in_transfer_words);
@@ -120,19 +132,19 @@ static void put_new_buffer_in_pdma(uint8_t channel_num, uint8_t *buff_status,
  *
  */
 static void update_tx_buffer(struct dev_desc_t * ch_pdev,
-		struct dma_i94xxx_runtime_t *runtime_hndl)
+		struct dma_i9xxxx_runtime_t *runtime_hndl)
 {
 	uint8_t	curr_dma_buff_indx;
 	uint8_t	next_dma_buff_indx;
 	uint8_t look_foward_tx_buffer;
 	struct dev_desc_t *callback_dev;
-	struct dma_i94xxx_cfg_t *cfg_hndl;
+	struct dma_i9xxxx_cfg_t *cfg_hndl;
 	uint8_t *buff_status;
 	uint8_t channel_num;
 	uint8_t **buffers;
 	uint8_t num_of_buffers;
 
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(ch_pdev);
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(dma_i9xxxx, ch_pdev);
 	buff_status = runtime_hndl->buff_status;
 	callback_dev = cfg_hndl->callback_dev;
 	curr_dma_buff_indx = runtime_hndl->curr_dma_buff_indx;
@@ -140,11 +152,11 @@ static void update_tx_buffer(struct dev_desc_t * ch_pdev,
 	next_dma_buff_indx = (curr_dma_buff_indx + 1) % num_of_buffers;
 	look_foward_tx_buffer = (next_dma_buff_indx + 1) % num_of_buffers;
 
-	#ifdef DMA_I94XXX_DEBUG
-	dma_i94xxx_dbg_cnt1++;
+	#ifdef DMA_I9XXXX_DEBUG
+	dma_i9xxxx_dbg_cnt1++;
 	#endif
 
-	if (DMA_I94XXX_BUFF_TX_DATA_IS_READY !=
+	if (DMA_I9XXXX_BUFF_TX_DATA_IS_READY !=
 			runtime_hndl->buff_status[look_foward_tx_buffer])
 	{
 		if (NULL != callback_dev)
@@ -152,15 +164,15 @@ static void update_tx_buffer(struct dev_desc_t * ch_pdev,
 			DEV_CALLBACK_1_PARAMS( callback_dev,
 					CALLBACK_BUFFER_UNDERFLOW_THRESHOLD_REACHED, ch_pdev);
 		}
-		#ifdef DMA_I94XXX_DEBUG
-		dma_i94xxx_dbg_cnt7++;
+		#ifdef DMA_I9XXXX_DEBUG
+		dma_i9xxxx_dbg_cnt7++;
 		bytecount1 = PDMA_GET_TRANS_CNT(2);
 		#endif
 	}
 
 
-	buff_status[curr_dma_buff_indx] = DMA_I94XXX_BUFF_IDLE;
-	if (DMA_I94XXX_BUFF_TX_DATA_IS_READY == buff_status[next_dma_buff_indx])
+	buff_status[curr_dma_buff_indx] = DMA_I9XXXX_BUFF_IDLE;
+	if (DMA_I9XXXX_BUFF_TX_DATA_IS_READY == buff_status[next_dma_buff_indx])
 	{
 		channel_num = cfg_hndl->channel_num;
 		buffers = runtime_hndl->buff;
@@ -182,26 +194,26 @@ static void update_tx_buffer(struct dev_desc_t * ch_pdev,
  *
  */
 static void update_rx_buffer(struct dev_desc_t * ch_pdev,
-		struct dma_i94xxx_runtime_t *runtime_hndl)
+		struct dma_i9xxxx_runtime_t *runtime_hndl)
 {
 	uint8_t	curr_dma_buff_indx;
 	uint8_t	next_dma_buff_indx;
 	struct dev_desc_t *callback_dev;
-	struct dma_i94xxx_cfg_t *cfg_hndl;
+	struct dma_i9xxxx_cfg_t *cfg_hndl;
 	uint8_t *buff_status;
 	uint8_t channel_num;
 	uint8_t **buffers;
 	uint8_t num_of_buffers;
 
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(ch_pdev);
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(dma_i9xxxx, ch_pdev);
 	buff_status = runtime_hndl->buff_status;
 	callback_dev = cfg_hndl->callback_dev;
 	curr_dma_buff_indx = runtime_hndl->curr_dma_buff_indx;
 	num_of_buffers = cfg_hndl->num_of_buffers;
 	next_dma_buff_indx = (curr_dma_buff_indx + 1) % num_of_buffers;
 
-	#ifdef DMA_I94XXX_DEBUG
-		dma_i94xxx_dbg_cnt2++;
+	#ifdef DMA_I9XXXX_DEBUG
+		dma_i9xxxx_dbg_cnt2++;
 	#endif
 
 	if (NULL != callback_dev)
@@ -209,8 +221,8 @@ static void update_rx_buffer(struct dev_desc_t * ch_pdev,
 		DEV_CALLBACK_1_PARAMS(callback_dev, CALLBACK_NEW_DATA_ARRIVED, ch_pdev);
 	}
 
-	buff_status[curr_dma_buff_indx] =	DMA_I94XXX_BUFF_RX_RADA_READY;
-	if (DMA_I94XXX_BUFF_IDLE != buff_status[next_dma_buff_indx])
+	buff_status[curr_dma_buff_indx] =	DMA_I9XXXX_BUFF_RX_RADA_READY;
+	if (DMA_I9XXXX_BUFF_IDLE != buff_status[next_dma_buff_indx])
 	{
 		// TODO : fix underflow
 		CRITICAL_ERROR("next rx buffer not ready\n");
@@ -233,7 +245,7 @@ static void transmit_done(void)
 	uint32_t curr_mask;
 	uint32_t done_status;
 	struct dev_desc_t * ch_pdev;
-	struct dma_i94xxx_runtime_t *runtime_hndl;
+	struct dma_i9xxxx_runtime_t *runtime_hndl;
 
 	done_status = PDMA_GET_TD_STS();
 	curr_mask = 1;
@@ -251,7 +263,7 @@ static void transmit_done(void)
 			CRITICAL_ERROR("not initialized channel\n");
 			continue;
 		}
-		runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(ch_pdev);
+		runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(dma_i9xxxx, ch_pdev);
 		if (DMA_TO_PERIPHERAL == runtime_hndl->dma_peripheral_direction)
 		{
 			update_tx_buffer(ch_pdev, runtime_hndl);
@@ -276,8 +288,8 @@ static void PDMA_IRQHandler(void)
 	status = PDMA_GET_INT_STATUS();
 	if(status & PDMA_INTSTS_ALIGNF_Msk)
 	{
-		#ifdef DMA_I94XXX_DEBUG
-			dma_i94xxx_dbg_cnt3++;
+		#ifdef DMA_I9XXXX_DEBUG
+			dma_i9xxxx_dbg_cnt3++;
 		#endif
 		//CRITICAL_ERROR("dma align trap !!\n");
 	}
@@ -308,8 +320,8 @@ static void PDMA_IRQHandler(void)
 
 
 
-static void init_buffers(struct dma_i94xxx_cfg_t *cfg_hndl,
-		struct dma_i94xxx_runtime_t *runtime_hndl)
+static void init_buffers(struct dma_i9xxxx_cfg_t *cfg_hndl,
+		struct dma_i9xxxx_runtime_t *runtime_hndl)
 {
 	uint8_t i;
 	uint8_t *buff;
@@ -334,7 +346,7 @@ static void init_buffers(struct dma_i94xxx_cfg_t *cfg_hndl,
 	}
 	for (i = 0; i < num_of_buffers; i++)
 	{
-		runtime_hndl->buff_status[i] = DMA_I94XXX_BUFF_IDLE ;
+		runtime_hndl->buff_status[i] = DMA_I9XXXX_BUFF_IDLE ;
 	}
 
 	runtime_hndl->next_supplied_tx_buffer = 0;
@@ -344,8 +356,8 @@ static void init_buffers(struct dma_i94xxx_cfg_t *cfg_hndl,
 /* func : set_peripheral_dma
  *
  */
-static uint8_t set_peripheral_dma(struct dma_i94xxx_cfg_t *cfg_hndl,
-		struct dma_i94xxx_runtime_t *runtime_hndl)
+static uint8_t set_peripheral_dma(struct dma_i9xxxx_cfg_t *cfg_hndl,
+		struct dma_i9xxxx_runtime_t *runtime_hndl)
 {
 	uint32_t src_ctrl;
 	uint32_t dest_ctrl;
@@ -363,6 +375,7 @@ static uint8_t set_peripheral_dma(struct dma_i94xxx_cfg_t *cfg_hndl,
 	dest_addr = NULL;
 	switch (peripheral_type)
 	{
+#ifdef CONFIG_I94XXX
 	case PDMA_SPI1_RX :
 		src_addr =(void*) &SPI1->RX;
 		src_ctrl = PDMA_SAR_FIX;
@@ -376,7 +389,7 @@ static uint8_t set_peripheral_dma(struct dma_i94xxx_cfg_t *cfg_hndl,
 		dest_ctrl = PDMA_DAR_FIX;
 		dma_peripheral_direction = DMA_TO_PERIPHERAL;
 		break;
-
+#endif
 	case PDMA_SPI2_RX :
 		src_addr =(void*) &SPI2->RX;
 		src_ctrl = PDMA_SAR_FIX;
@@ -457,7 +470,7 @@ static uint8_t set_peripheral_dma(struct dma_i94xxx_cfg_t *cfg_hndl,
 /* func : set_transfer_size
  *
  */
-static void set_transfer_size(struct dma_i94xxx_runtime_t *runtime_hndl,
+static void set_transfer_size(struct dma_i9xxxx_runtime_t *runtime_hndl,
 		uint8_t channel_num, uint32_t transfer_word_size, uint32_t buff_size)
 {
 	uint32_t   buff_size_in_transfer_words;
@@ -486,12 +499,12 @@ static void set_transfer_size(struct dma_i94xxx_runtime_t *runtime_hndl,
 }
 
 
-/* func : start_dma_i94xxx_device
+/* func : start_dma_i9xxxx_device
  *
  */
-static uint8_t start_dma_i94xxx_device(struct dev_desc_t *adev,
-		struct dma_i94xxx_cfg_t *cfg_hndl,
-		struct dma_i94xxx_runtime_t *runtime_hndl)
+static uint8_t start_dma_i9xxxx_device(struct dev_desc_t *adev,
+		struct dma_i9xxxx_cfg_t *cfg_hndl,
+		struct dma_i9xxxx_runtime_t *runtime_hndl)
 {
 	uint8_t channel_num;
 	uint8_t peripheral_type;
@@ -546,8 +559,8 @@ static uint8_t start_dma_i94xxx_device(struct dev_desc_t *adev,
 }
 
 
-static uint8_t get_full_rx_buffer(struct dma_i94xxx_cfg_t *cfg_hndl,
-		struct dma_i94xxx_runtime_t *runtime_hndl,
+static uint8_t get_full_rx_buffer(struct dma_i9xxxx_cfg_t *cfg_hndl,
+		struct dma_i9xxxx_runtime_t *runtime_hndl,
 		uint8_t **buff, size_t *buff_size)
 {
 	uint8_t next_supplied_rx_buffer;
@@ -565,11 +578,11 @@ static uint8_t get_full_rx_buffer(struct dma_i94xxx_cfg_t *cfg_hndl,
 	 */
 	next_supplied_rx_buffer = runtime_hndl->next_supplied_rx_buffer ;
 	buffer_state = &runtime_hndl->buff_status[next_supplied_rx_buffer];
-	if (DMA_I94XXX_BUFF_RX_RADA_READY == *buffer_state)
+	if (DMA_I9XXXX_BUFF_RX_RADA_READY == *buffer_state)
 	{
 		*buff = runtime_hndl->buff[next_supplied_rx_buffer];
 		*buff_size = cfg_hndl->buff_size;
-		*buffer_state =	DMA_I94XXX_BUFF_RX_RADA_PROCESSING;
+		*buffer_state =	DMA_I9XXXX_BUFF_RX_RADA_PROCESSING;
 	}
 	else
 	{
@@ -580,8 +593,8 @@ static uint8_t get_full_rx_buffer(struct dma_i94xxx_cfg_t *cfg_hndl,
 }
 
 
-static uint8_t release_rx_buffer(struct dma_i94xxx_cfg_t *cfg_hndl,
-		struct dma_i94xxx_runtime_t *runtime_hndl)
+static uint8_t release_rx_buffer(struct dma_i9xxxx_cfg_t *cfg_hndl,
+		struct dma_i9xxxx_runtime_t *runtime_hndl)
 {
 	uint8_t next_supplied_rx_buffer;
 	uint8_t num_of_buffers;
@@ -589,11 +602,11 @@ static uint8_t release_rx_buffer(struct dma_i94xxx_cfg_t *cfg_hndl,
 
 	next_supplied_rx_buffer = runtime_hndl->next_supplied_rx_buffer;
 	buffer_state = &runtime_hndl->buff_status[next_supplied_rx_buffer];
-	if (DMA_I94XXX_BUFF_RX_RADA_PROCESSING != *buffer_state)
+	if (DMA_I9XXXX_BUFF_RX_RADA_PROCESSING != *buffer_state)
 	{
 		return 1;
 	}
-	*buffer_state = DMA_I94XXX_BUFF_IDLE;
+	*buffer_state = DMA_I9XXXX_BUFF_IDLE;
 	num_of_buffers = cfg_hndl->num_of_buffers;
 	next_supplied_rx_buffer = (next_supplied_rx_buffer + 1) % num_of_buffers;
 	runtime_hndl->next_supplied_rx_buffer = next_supplied_rx_buffer;
@@ -603,8 +616,8 @@ static uint8_t release_rx_buffer(struct dma_i94xxx_cfg_t *cfg_hndl,
 
 
 static uint8_t get_empty_tx_buffer(struct dev_desc_t *ch_pdev,
-		struct dma_i94xxx_cfg_t *cfg_hndl,
-		struct dma_i94xxx_runtime_t *runtime_hndl,
+		struct dma_i9xxxx_cfg_t *cfg_hndl,
+		struct dma_i9xxxx_runtime_t *runtime_hndl,
 		uint8_t **buff, size_t *buff_size)
 {
 	uint8_t next_supplied_tx_buffer;
@@ -623,8 +636,8 @@ static uint8_t get_empty_tx_buffer(struct dev_desc_t *ch_pdev,
 	 * until we not change buff state from IDLE to READY in
 	 * interrupt , curr_dma_buff_indx will not be changed
 	 */
-	#ifdef DMA_I94XXX_DEBUG
-	dma_i94xxx_dbg_cnt4++;
+	#ifdef DMA_I9XXXX_DEBUG
+	dma_i9xxxx_dbg_cnt4++;
 	#endif
 	callback_dev = cfg_hndl->callback_dev;
 
@@ -635,10 +648,10 @@ static uint8_t get_empty_tx_buffer(struct dev_desc_t *ch_pdev,
 
 
 	buffer_state = &runtime_hndl->buff_status[look_foward_tx_buffer];
-	if (DMA_I94XXX_BUFF_IDLE != *buffer_state)
+	if (DMA_I9XXXX_BUFF_IDLE != *buffer_state)
 	{
-		#ifdef DMA_I94XXX_DEBUG
-		dma_i94xxx_dbg_cnt5++;
+		#ifdef DMA_I9XXXX_DEBUG
+		dma_i9xxxx_dbg_cnt5++;
 		#endif
 		if (NULL != callback_dev)
 		{
@@ -649,15 +662,15 @@ static uint8_t get_empty_tx_buffer(struct dev_desc_t *ch_pdev,
 
 
 	buffer_state = &runtime_hndl->buff_status[next_supplied_tx_buffer];
-	if (DMA_I94XXX_BUFF_IDLE == *buffer_state)
+	if (DMA_I9XXXX_BUFF_IDLE == *buffer_state)
 	{
 		*buff = runtime_hndl->buff[next_supplied_tx_buffer];
 		*buff_size = cfg_hndl->buff_size;
-		*buffer_state = DMA_I94XXX_BUFF_TX_DATA_IS_FILLING;
+		*buffer_state = DMA_I9XXXX_BUFF_TX_DATA_IS_FILLING;
 	}
 	else
 	{
-		#ifdef DMA_I94XXX_DEBUG
+		#ifdef DMA_I9XXXX_DEBUG
 //			bytecount0 = PDMA_GET_TRANS_CNT(0);
 //			bytecount1 = PDMA_GET_TRANS_CNT(1);
 //			bytecount2 = PDMA_GET_TRANS_CNT(2);
@@ -683,16 +696,17 @@ static void enable_peripheral_output( uint8_t peripheral_type,
 			struct dev_desc_t *peripheral_dev, uint8_t channel_num)
 {
 	// Need to use these variables to keep modularity and abstraction.
-//	struct I2S_onSPI_i94xxx_cfg_t *cfg_hndl;
+//	struct I2S_onSPI_i9xxxx_cfg_t *cfg_hndl;
 //	SPI_T	*I2S_SPI_module;
 
 	switch (peripheral_type)
 	{
+#ifdef CONFIG_I94XXX
 	case PDMA_SPI1_TX :
 
 		//TODO: Doesn't work, using direct bit access
 
-//		cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(peripheral_dev);
+//		cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(dma_i9xxxx, peripheral_dev);
 //		I2S_SPI_module = (SPI_T *)cfg_hndl->base_address;
 //		SPI_I2S_ENABLE_TX(I2S_SPI_module);
 //		SPI_I2S_ENABLE_TXDMA(I2S_SPI_module);
@@ -707,7 +721,7 @@ static void enable_peripheral_output( uint8_t peripheral_type,
 		PDMA_Trigger(channel_num); // needed for SPI module
 
 		break;
-
+#endif
 	case PDMA_SPI2_TX :
 
 		//Currently using I2S protocol on SPI bus.
@@ -738,8 +752,8 @@ static void enable_peripheral_output( uint8_t peripheral_type,
 }
 
 
-static uint8_t release_tx_buffer(struct dma_i94xxx_cfg_t *cfg_hndl,
-		struct dma_i94xxx_runtime_t *runtime_hndl)
+static uint8_t release_tx_buffer(struct dma_i9xxxx_cfg_t *cfg_hndl,
+		struct dma_i9xxxx_runtime_t *runtime_hndl)
 {
 	uint8_t	next_supplied_tx_buffer;
 	uint8_t *supplied_tx_buffer_status;
@@ -762,9 +776,9 @@ static uint8_t release_tx_buffer(struct dma_i94xxx_cfg_t *cfg_hndl,
 	supplied_tx_buffer_status =
 			&runtime_hndl->buff_status[next_supplied_tx_buffer];
 
-	if (DMA_I94XXX_BUFF_TX_DATA_IS_FILLING != *supplied_tx_buffer_status)
+	if (DMA_I9XXXX_BUFF_TX_DATA_IS_FILLING != *supplied_tx_buffer_status)
 	{
-		#ifdef DMA_I94XXX_DEBUG
+		#ifdef DMA_I9XXXX_DEBUG
 //			bytecount0 = PDMA_GET_TRANS_CNT(0);
 //			bytecount1 = PDMA_GET_TRANS_CNT(1);
 //			bytecount2 = PDMA_GET_TRANS_CNT(2);
@@ -773,7 +787,7 @@ static uint8_t release_tx_buffer(struct dma_i94xxx_cfg_t *cfg_hndl,
 		return 1;
 	}
 
-	*supplied_tx_buffer_status = DMA_I94XXX_BUFF_TX_DATA_IS_READY;
+	*supplied_tx_buffer_status = DMA_I9XXXX_BUFF_TX_DATA_IS_READY;
 	num_of_buffers = cfg_hndl->num_of_buffers;
 	num_of_prefilled_buffer_before_tx_start =
 			cfg_hndl->num_of_prefilled_buffer_before_tx_start;
@@ -814,42 +828,42 @@ static uint8_t release_tx_buffer(struct dma_i94xxx_cfg_t *cfg_hndl,
 
 
 /**
- * dma_i94xxx_ioctl()
+ * dma_i9xxxx_ioctl()
  *
  * return:
  */
-uint8_t dma_i94xxx_ioctl( struct dev_desc_t *adev, const uint8_t aIoctl_num,
+uint8_t dma_i9xxxx_ioctl( struct dev_desc_t *adev, const uint8_t aIoctl_num,
 		void * aIoctl_param1, void * aIoctl_param2)
 {
 	uint8_t ret;
-	struct dma_i94xxx_cfg_t *cfg_hndl;
-	struct dma_i94xxx_runtime_t *runtime_hndl;
+	struct dma_i9xxxx_cfg_t *cfg_hndl;
+	struct dma_i9xxxx_runtime_t *runtime_hndl;
 
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
-	runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(adev);
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(dma_i9xxxx, adev);
+	runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(dma_i9xxxx, adev);
 
 	ret = 0;
 	switch(aIoctl_num)
 	{
 	case IOCTL_DEVICE_START :
-		ret = start_dma_i94xxx_device(adev, cfg_hndl, runtime_hndl);
+		ret = start_dma_i9xxxx_device(adev, cfg_hndl, runtime_hndl);
 		break;
 
-	case DMA_I94XXX_IOCTL_GET_RX_BUFF :
+	case DMA_I9XXXX_IOCTL_GET_RX_BUFF :
 		ret = get_full_rx_buffer(cfg_hndl,
 				runtime_hndl, aIoctl_param1, aIoctl_param2);
 		break;
 
-	case DMA_I94XXX_IOCTL_RELEASE_RX_BUFF :
+	case DMA_I9XXXX_IOCTL_RELEASE_RX_BUFF :
 		ret = release_rx_buffer(cfg_hndl, runtime_hndl);
 		break;
 
-	case DMA_I94XXX_IOCTL_GET_EMPTY_TX_BUFF :
+	case DMA_I9XXXX_IOCTL_GET_EMPTY_TX_BUFF :
 		ret = get_empty_tx_buffer(adev, cfg_hndl,
 				runtime_hndl, aIoctl_param1, aIoctl_param2);
 		break;
 
-	case DMA_I94XXX_IOCTL_RELEASE_TX_BUFF :
+	case DMA_I9XXXX_IOCTL_RELEASE_TX_BUFF :
 		ret = release_tx_buffer(cfg_hndl, runtime_hndl);
 		break;
 
@@ -862,8 +876,6 @@ uint8_t dma_i94xxx_ioctl( struct dev_desc_t *adev, const uint8_t aIoctl_num,
 	return ret;
 }
 
-#define	MODULE_NAME                         dma_i94xxx
-#define	MODULE_IOCTL_FUNCTION               dma_i94xxx_ioctl
-#define MODULE_CONFIG_DATA_STRUCT_TYPE      struct dma_i94xxx_cfg_t
-#define MODULE_RUNTIME_DATA_STRUCT_TYPE     struct dma_i94xxx_runtime_t
+#define	MODULE_NAME                         dma_i9xxxx
+#define	MODULE_IOCTL_FUNCTION               dma_i9xxxx_ioctl
 #include "add_module.h"

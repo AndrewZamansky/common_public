@@ -5,9 +5,6 @@
  *
  */
 
-
-
-/********  includes *********************/
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 
@@ -38,6 +35,39 @@ static void get_root_clock(struct dev_desc_t *adev,
 }
 
 
+static void get_rate(struct cfg_clk_t *cfg_clk,
+		struct runtime_clk_t *runtime_data, struct dev_desc_t  *parent_clk,
+		uint32_t *rate)
+{
+	uint32_t parent_rate;
+
+	parent_rate = 0;
+	if (NULL != parent_clk)
+	{
+		DEV_IOCTL_1_PARAMS(parent_clk, CLK_IOCTL_GET_FREQ, &parent_rate);
+	}
+	if (NULL != cfg_clk->get_freq_func)
+	{
+		cfg_clk->get_freq_func(rate, parent_rate);
+	}
+	else
+	{
+		if (0 == runtime_data->rate)
+		{
+			if (NULL == parent_clk)
+			{
+				CRITICAL_ERROR("parent clock was not set");
+			}
+			*rate = parent_rate;
+		}
+		else
+		{
+			*rate = runtime_data->rate;
+		}
+	}
+}
+
+
 static uint8_t clk_cntl_ioctl(struct dev_desc_t *adev,
 		const uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2)
 {
@@ -63,25 +93,7 @@ static uint8_t clk_cntl_ioctl(struct dev_desc_t *adev,
 		runtime_data->init_done = 1;
 		break;
 	case CLK_IOCTL_GET_FREQ :
-		if (NULL != parent_clk)
-		{
-			DEV_IOCTL_1_PARAMS(parent_clk, CLK_IOCTL_GET_FREQ, &parent_rate);
-		}
-		if (NULL != cfg_clk->get_freq_func)
-		{
-			cfg_clk->get_freq_func(aIoctl_param1, parent_rate);
-		}
-		else
-		{
-			if (0 == runtime_data->rate)
-			{
-				*(uint32_t*)aIoctl_param1 = parent_rate;
-			}
-			else
-			{
-				*(uint32_t*)aIoctl_param1 = runtime_data->rate;
-			}
-		}
+		get_rate(cfg_clk, runtime_data, parent_clk, aIoctl_param1);
 		break;
 	case CLK_IOCTL_SET_FREQ :
 		if (NULL != cfg_clk->set_freq_func)

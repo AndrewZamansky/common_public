@@ -17,12 +17,20 @@ extern struct dev_desc_t  *i96xxx_pll_clk_dev;
 extern struct dev_desc_t  *i96xxx_hclk_clk_dev;
 extern struct dev_desc_t  *i96xxx_systick_clk_dev;
 extern struct dev_desc_t  *i9xxxx_uart0_clk_dev;
+extern struct dev_desc_t  *i96xxx_i2s0_clk_dev;
+extern struct dev_desc_t  *i96xxx_I2S0_MCLK_clk_dev;
+extern struct dev_desc_t  *i96xxx_I2S0_BCLK_clk_dev;
+extern struct dev_desc_t  *i96xxx_I2S0_FSCLK_clk_dev;
+extern struct dev_desc_t  *i96xxx_pclk0_clk_dev;
+extern struct dev_desc_t  *i96xxx_pclk1_clk_dev;
 
 struct clk_cntl_i96xxx_m0_cfg_t {
 	uint32_t           xtal_rate;
 	uint32_t           hirc_rate;
 	uint32_t           pll_rate;
 	uint32_t           hclk_rate;
+	uint32_t           pclk0_rate;
+	uint32_t           pclk1_rate;
 	struct dev_desc_t  *pll_src_clk_dev;
 	struct dev_desc_t  *hclk_src_clk_dev;
 };

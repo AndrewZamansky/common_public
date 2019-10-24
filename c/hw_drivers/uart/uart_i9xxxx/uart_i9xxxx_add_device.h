@@ -3,7 +3,7 @@
 #include "src/uart_i9xxxx.h"
 #include "uart_i9xxxx_api.h"
 
-#ifdef CONFIG_I96XXX
+#ifdef CONFIG_I94XXX
 	#include "I94100.h"
 	#undef UART_I9XXXX_DT_BASE_ADDRESS
 	#define UART_I9XXXX_DT_BASE_ADDRESS (size_t)UART0_BASE

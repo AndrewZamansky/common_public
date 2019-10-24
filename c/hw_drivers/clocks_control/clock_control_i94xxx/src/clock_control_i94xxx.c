@@ -5,9 +5,6 @@
  *
  */
 
-
-
-/********  includes *********************/
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 
@@ -23,17 +20,6 @@
 #include "clk.h"
 #include "i2s.h"
 
-
-
-/********  defines *********************/
-
-/********  types  *********************/
-
-
-/********  externals *********************/
-
-
-/********  local variables *********************/
 
 /*-----
   SystemCoreClock,__HXT, __LXT, __HIRC are BSP required  variables.
@@ -251,10 +237,8 @@ static void clock_i94xxx_hclk_set_parent_clk(struct dev_desc_t *parent_clk)
 static void clock_i94xxx_pclk0_set_freq(uint32_t freq, uint32_t parent_freq)
 {
 	uint32_t div;
-	uint32_t parent_rate;
 
-	DEV_IOCTL_1_PARAMS(i94xxx_hclk_clk_dev, CLK_IOCTL_GET_FREQ, &parent_rate);
-	div = parent_rate / freq;
+	div = parent_freq / freq;
 	if (div)
 	{
 		div--;
@@ -283,11 +267,8 @@ static void clock_i94xxx_pclk0_get_freq(uint32_t *freq, uint32_t parent_freq)
 static void clock_i94xxx_pclk1_set_freq(uint32_t freq, uint32_t parent_freq)
 {
 	uint32_t div;
-	uint32_t parent_rate;
 
-	DEV_IOCTL_1_PARAMS(i94xxx_hclk_clk_dev,
-					CLK_IOCTL_GET_FREQ, &parent_rate);
-	div = parent_rate / freq;
+	div = parent_freq / freq;
 	if (div)
 	{
 		div--;
