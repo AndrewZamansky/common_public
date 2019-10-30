@@ -11,19 +11,6 @@
 #include "_project.h"
 #include "auto_init_api.h"
 
-/***************   defines    *******************/
-
-
-
-
-/***************   typedefs    *******************/
-
-
-
-/**********   external variables    **************/
-
-
-
 extern uint32_t __bss_start__;
 extern uint32_t __bss_end__;
 extern uint32_t __tables_relocation_section_start_on_RAM__;
@@ -35,19 +22,6 @@ extern uint32_t __relocation_section_start_on_ROM__;
 
 uint32_t board_init_before_main_function(void);
 void core_init(uint32_t curr_stack);
-
-/***********   loacal variables    **************/
-
-
-/******************** default interrupt handlers ******************/
-
-
-
-
-/******************-------------------*****************************/
-
-
-/******************-------------------*****************************/
 
 
 

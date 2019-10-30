@@ -4,9 +4,6 @@
  *
  */
 
-
-
-/********  includes *********************/
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 #include "errors_api.h"
@@ -21,27 +18,21 @@
 #include "os_wrapper.h"
 
 
-/********  defines *********************/
-
 #define MAGIC_NUMBER            0xA5B6C7D8
-#define MAGIC_NUMBER_SIZE       4
-#define PRESET_SIZE_WORD_POS    (MAGIC_NUMBER_SIZE)
-#define PRESET_SIZE_WORD_SIZE   2
-#define DATA_POSITION           (MAGIC_NUMBER_SIZE + PRESET_SIZE_WORD_SIZE)
+#define MAGIC_NUMBER_POS        (0)
+#define MAGIC_NUMBER_SIZE       (4)
+#define PRESET_SIZE_WORD_POS    (MAGIC_NUMBER_POS + MAGIC_NUMBER_SIZE)
+#define PRESET_SIZE_WORD_SIZE   (2)
+#define DATA_POSITION           (PRESET_SIZE_WORD_SIZE + MAGIC_NUMBER_SIZE)
 
-
-/********  types  *********************/
 
 enum state_t {
 	SHELL_PRESET_STATE_IDLE,
 	SHELL_PRESET_STATE_RECORDING,
+	SHELL_PRESET_STATE_RECORDING_OVERFLOW,
 	SHELL_PRESET_STATE_LOADING
 };
 
-/********  externals *********************/
-
-
-/********  local variables *********************/
 
 static uint32_t magic_number = MAGIC_NUMBER;
 
@@ -59,17 +50,18 @@ static size_t shell_presets_pwrite(struct dev_desc_t *adev,
 	uint16_t preset_actual_size;
 	uint16_t preset_size;
 
-	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(shell_presets, adev);
 	if (SHELL_PRESET_STATE_RECORDING != runtime_handle->state)
 	{
 		return 0;
 	}
 
 	preset_actual_size = runtime_handle->preset_actual_size;
-	config_handle = DEV_GET_CONFIG_DATA_POINTER(adev);
+	config_handle = DEV_GET_CONFIG_DATA_POINTER(shell_presets, adev);
 	preset_size = config_handle->preset_size;
 	if (preset_size < (preset_actual_size + aLength))
 	{
+		runtime_handle->state = SHELL_PRESET_STATE_RECORDING_OVERFLOW;
 		return 0;
 	}
 
@@ -106,7 +98,8 @@ static uint8_t save_preset( struct shell_presets_cfg_t *config_handle,
 		return 1;
 	}
 
-	memcpy(curr_preset_buf, &magic_number, MAGIC_NUMBER_SIZE);
+	memcpy(&curr_preset_buf[MAGIC_NUMBER_POS],
+					&magic_number, MAGIC_NUMBER_SIZE);
 	memcpy(&curr_preset_buf[PRESET_SIZE_WORD_POS],
 			&runtime_handle->preset_actual_size, PRESET_SIZE_WORD_SIZE);
 	DEV_PWRITE(storage_dev,
@@ -143,7 +136,8 @@ static uint8_t get_preset(struct shell_presets_cfg_t *config_handle,
 	DEV_PREAD(storage_dev, curr_preset_buf,
 			preset_size, preset_size * num_of_preset);
 
-	if (0 != memcmp(curr_preset_buf, &magic_number, MAGIC_NUMBER_SIZE))
+	if (0 != memcmp(&curr_preset_buf[MAGIC_NUMBER_POS],
+							&magic_number, MAGIC_NUMBER_SIZE))
 	{
 		return 1;
 	}
@@ -250,8 +244,8 @@ static uint8_t shell_presets_ioctl( struct dev_desc_t *adev,
 	uint8_t *curr_preset_buf;
 	uint8_t curr_state;
 
-	config_handle = DEV_GET_CONFIG_DATA_POINTER(adev);
-	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
+	config_handle = DEV_GET_CONFIG_DATA_POINTER(shell_presets, adev);
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(shell_presets, adev);
 
 	storage_dev = config_handle->storage_dev;
 	preset_size = config_handle->preset_size;
@@ -262,6 +256,10 @@ static uint8_t shell_presets_ioctl( struct dev_desc_t *adev,
 	switch(aIoctl_num)
 	{
 	case IOCTL_DEVICE_START :
+		if (DATA_POSITION >= preset_size)
+		{
+			CRITICAL_ERROR("too small preset size");
+		}
 		curr_preset_buf = (uint8_t *)os_safe_malloc(preset_size);
 		errors_api_check_if_malloc_succeed(curr_preset_buf);
 		runtime_handle->curr_preset_buf = curr_preset_buf;
@@ -275,7 +273,6 @@ static uint8_t shell_presets_ioctl( struct dev_desc_t *adev,
 			return 0;
 		}
 		runtime_handle->state = SHELL_PRESET_STATE_RECORDING;
-		curr_preset_buf = runtime_handle->curr_preset_buf;
 		runtime_handle->preset_actual_size = DATA_POSITION;
 		break;
 
@@ -318,6 +315,4 @@ static uint8_t shell_presets_ioctl( struct dev_desc_t *adev,
 #define MODULE_NAME                      shell_presets
 #define MODULE_IOCTL_FUNCTION            shell_presets_ioctl
 #define MODULE_PWRITE_FUNCTION           shell_presets_pwrite
-#define MODULE_CONFIG_DATA_STRUCT_TYPE   struct shell_presets_cfg_t
-#define MODULE_RUNTIME_DATA_STRUCT_TYPE  struct shell_presets_runtime_t
 #include "add_module.h"

@@ -3,11 +3,7 @@
 #define _USB_DEVICE_DESCRIPTORS_API_H_
 
 
-/*****************  defines  **************/
-
-
-
-/**********  define API  types ************/
+#include "dev_management_api.h"
 
 
 enum USB_DEVICE_DESCRIPTORS_API_ioctl_e {
@@ -73,8 +69,7 @@ struct usb_device_descriptors_cfg_t {
 	uint16_t VID;
 	uint16_t PID;
 };
+SET_CONFIG_TYPE(usb_device_descriptors, struct usb_device_descriptors_cfg_t);
 
-
-/**********  define API  functions  ************/
 
 #endif

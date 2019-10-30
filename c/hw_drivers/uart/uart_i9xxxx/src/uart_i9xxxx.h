@@ -7,11 +7,7 @@
 #ifndef _UART_I9XXXX_H_
 #define _UART_I9XXXX_H_
 
-/********  includes *********************/
-
 #include "dev_management_api.h"
-
-/********  types  *********************/
 
 #define   UART_I9XXXX_RCV_DATA_SIZE_BUFFER  20
 struct i9xxx_uart_runtime_t {
@@ -22,6 +18,5 @@ struct i9xxx_uart_runtime_t {
 };
 
 SET_RUNTIME_DATA_TYPE(uart_i9xxxx, struct i9xxx_uart_runtime_t);
-
 
 #endif

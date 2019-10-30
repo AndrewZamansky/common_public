@@ -324,8 +324,8 @@ void new_usb_audio_received(
 	struct usb_audio_class_cfg_t *cfg_hndl;
 	struct usb_audio_class_runtime_t *runtime_hndl;
 
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
-	runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(adev);
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(usb_audio_class, adev);
+	runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(usb_audio_class, adev);
 
 	if (skip_first_buffers)
 	{
@@ -355,8 +355,8 @@ void new_usb_audio_requested(struct dev_desc_t *adev)
 	uint8_t  *tx_buff;
 	uint8_t  *tx_pckt_buff;
 
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
-	runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(adev);
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(usb_audio_class, adev);
+	runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(usb_audio_class, adev);
 
 	get_tx_buff_size = cfg_hndl->get_tx_buff_size;
 	tx_buff_size = get_tx_buff_size * NUM_OF_TX_BUFFERS;
@@ -441,8 +441,8 @@ void new_sample_rate_requested(struct dev_desc_t *adev)
 	uint8_t  tx_buff[3];
 	uint32_t usb_feedback_sample_rate;
 
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
-	runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(adev);
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(usb_audio_class, adev);
+	runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(usb_audio_class, adev);
 
 	usb_feedback_sample_rate = runtime_hndl->usb_feedback_sample_rate;
 	/* reported sample rate is in format 10.14 and number of samples per frame
@@ -989,7 +989,7 @@ void uac_interface_class_request(
 	struct usb_audio_class_cfg_t *cfg_hndl;
 	struct dev_desc_t *usb_hw;
 
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(callback_dev);
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(usb_audio_class, callback_dev);
 	usb_hw = cfg_hndl->usb_hw;
 
 	if(request[0] & 0x80)    /* request data transfer direction */
@@ -1066,8 +1066,8 @@ void uac_endpoint_class_request(
 	struct usb_audio_class_cfg_t *cfg_hndl;
 	struct dev_desc_t *usb_hw;
 
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(callback_dev);
-	runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(callback_dev);
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(usb_audio_class, callback_dev);
+	runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(usb_audio_class, callback_dev);
 	usb_hw = cfg_hndl->usb_hw;
 
 	if(request[0] & 0x80) // Device to host
@@ -1189,8 +1189,8 @@ static uint8_t usb_audio_class_ioctl( struct dev_desc_t *adev,
 	struct usb_audio_class_cfg_t *cfg_hndl;
 	struct usb_audio_class_runtime_t *runtime_hndl;
 
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
-	runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(adev);
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(usb_audio_class, adev);
+	runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(usb_audio_class, adev);
 
 	switch(aIoctl_num)
 	{
@@ -1225,6 +1225,4 @@ static uint8_t usb_audio_class_ioctl( struct dev_desc_t *adev,
 
 #define MODULE_NAME                  usb_audio_class
 #define MODULE_IOCTL_FUNCTION        usb_audio_class_ioctl
-#define MODULE_CONFIG_DATA_STRUCT_TYPE  struct usb_audio_class_cfg_t
-#define MODULE_RUNTIME_DATA_STRUCT_TYPE struct usb_audio_class_runtime_t
 #include "add_module.h"

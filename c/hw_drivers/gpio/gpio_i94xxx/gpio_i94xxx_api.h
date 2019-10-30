@@ -7,9 +7,6 @@
 #include "gpio_api.h"
 
 
-/**********  define API  types ************/
-
-
 #define GPIO_I94XXX_API_PORT_STR   			"port"
 #define GPIO_I94XXX_API_SINGLE_PIN_STR   	"single_pin"
 #define GPIO_I94XXX_API_MODE_STR   			"mode"
@@ -35,8 +32,7 @@ enum  GPIO_I94XXX_API_IOCTLE_E
 #define GPIO_I94XXX_API_MODE_IN		 	GPIO_MODE_INPUT
 
 
-struct gpio_i94xxx_config_t
-{
+struct gpio_i94xxx_config_t {
 	struct dev_desc_t *client_dev;
 	uint32_t    port_num;
 	uint8_t     pin_arr_size;
@@ -44,7 +40,6 @@ struct gpio_i94xxx_config_t
 	uint8_t     *pin_arr_idle_state;
 	uint8_t     mode;
 };
-
-/**********  define API  functions  ************/
+SET_CONFIG_TYPE(gpio_i94xxx, struct gpio_i94xxx_config_t);
 
 #endif

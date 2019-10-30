@@ -5,8 +5,6 @@
  *
  */
 
-/********  includes *********************/
-
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 
@@ -38,7 +36,6 @@
 #endif
 
 
-/********  defines *********************/
 /* Define EP maximum packet size */
 #define EP0_MAX_PKT_SIZE    64 // must be aligned by 8 bytes
 #define EP1_MAX_PKT_SIZE    EP0_MAX_PKT_SIZE // must be aligned by 8 bytes
@@ -51,16 +48,6 @@
 #define EP1_BUF_LEN         (EP1_MAX_PKT_SIZE)
 
 
-/********  types  *********************/
-
-
-/* ------------ External variables ---------------------------------*/
-
-/* ------------------------ External functions ------------*/
-
-/* ------------------------ Exported variables --------*/
-
-/* ------------------------ local variables --------*/
 static S_USBD_INFO_T l_gsInfo;
 
 #define MAX_NUM_OF_ENDPOINTS    12
@@ -84,7 +71,7 @@ static uint32_t available_buff_pointer = EP1_BUF_BASE + EP1_BUF_LEN;
 #define USB_STATE_STARTED  1
 static uint8_t usb_state = USB_STATE_SETTING;
 static uint8_t init_done = 0;
-/*--------------------------------------------------------------------------*/
+
 
 //Windows 10 Compiler failed without this variable even though called in an
 // 		unused function.
@@ -560,7 +547,7 @@ static uint8_t usb_i94xxx_ioctl( struct dev_desc_t *adev,
 		CRITICAL_ERROR("not initialized yet");
 	}
 
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(usb_i94xxx, adev);
 
 	switch(aIoctl_num)
 	{
@@ -597,7 +584,7 @@ static uint8_t usb_i94xxx_ioctl( struct dev_desc_t *adev,
 	return 0;
 }
 
-#define    MODULE_NAME                  usb_i94xxx
-#define    MODULE_IOCTL_FUNCTION        usb_i94xxx_ioctl
-#define MODULE_CONFIG_DATA_STRUCT_TYPE  struct usb_i94xxx_cfg_t
+#define MODULE_NAME                  usb_i94xxx
+#define MODULE_IOCTL_FUNCTION        usb_i94xxx_ioctl
+#define MODULE_HAS_NO_RUNTIME_DATA
 #include "add_module.h"

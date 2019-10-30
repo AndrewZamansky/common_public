@@ -8,7 +8,4 @@
 #define _HEARTBEAT_H
 
 
-
-/***************   typedefs    *******************/
-
-#endif /* */
+#endif

@@ -8,8 +8,6 @@
  */
 
 
-
-/********  includes *********************/
 #include "_project_tasks_defines.h"
 #include "errors_api.h"
 
@@ -29,10 +27,6 @@
 	#error  "BUTTON_MANAGER_CONFIG_TASK_STACK_SIZE should be define in project"
 #endif
 
-/********  defines *********************/
-
-
-/********  types  *********************/
 
 struct button_manager_requested_gpio_values_t {
 	uint8_t   values_arr_size;
@@ -44,10 +38,7 @@ struct btn_event_t {
 	void     *callback_private_data;
 	struct   button_manager_requested_gpio_values_t *req_gpio_values_arr;
 };
-/********  externals *********************/
 
-
-/********  local defs *********************/
 
 #define  DEBOUNCE_DELAY  10
 #define  VERY_LONG_WAIT  100000
@@ -56,12 +47,6 @@ struct btn_event_t {
 #define MAX_NUM_OF_EVENTS  0xfffffffe
 
 
-/**********   external variables    **************/
-
-
-
-/***********   local variables    **************/
-
 typedef enum
 {
 	BTN_STATE_IDLE,
@@ -69,13 +54,6 @@ typedef enum
 	BTN_STATE_HOLD,
 	BTN_STATE_DEBOUNCING_ON_RELEASE
 }btn_state_t;
-
-
-typedef struct
-{
-	uint8_t dummy;
-} xMessage_t;
-
 
 
 /*
@@ -93,9 +71,9 @@ static uint8_t button_manager_callback(
 {
 	struct button_manager_runtime_t *runtime_handle;
 	os_queue_t xButtonQueue ;
-	xMessage_t xTxMessage;
+	uint32_t xTxMessage;
 
-	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(button_manager, adev);
 
 	xButtonQueue = runtime_handle->xButtonQueue;
 
@@ -154,8 +132,8 @@ static uint32_t end_of_debounce_on_push(struct dev_desc_t *adev)
 	uint8_t event_found;
 	struct btn_event_t *btn_events_arr;
 
-	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
-	config_handle = DEV_GET_CONFIG_DATA_POINTER(adev);
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(button_manager, adev);
+	config_handle = DEV_GET_CONFIG_DATA_POINTER(button_manager, adev);
 
 	curr_gpio_state_arr = runtime_handle->curr_gpio_state_arr;
 
@@ -203,8 +181,8 @@ static uint8_t button_state_hold(struct dev_desc_t *adev, uint8_t event_idx)
 	uint32_t   hold_count;
 	void *callback_private_data;
 
-	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
-	config_handle = DEV_GET_CONFIG_DATA_POINTER(adev);
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(button_manager, adev);
+	config_handle = DEV_GET_CONFIG_DATA_POINTER(button_manager, adev);
 
 	client_dev = config_handle->client_dev;
 	if (NULL == client_dev)
@@ -253,8 +231,8 @@ static uint8_t end_of_debounce_on_release(
 	uint8_t num_of_gpio_devs;
 	struct gpio_api_read_t *curr_gpio_state_arr;
 
-	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
-	config_handle = DEV_GET_CONFIG_DATA_POINTER(adev);
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(button_manager, adev);
+	config_handle = DEV_GET_CONFIG_DATA_POINTER(button_manager, adev);
 
 	curr_gpio_state_arr = runtime_handle->curr_gpio_state_arr;
 	gpio_devs_arr = config_handle->gpio_devs_arr;
@@ -324,7 +302,7 @@ static void state_machine(struct dev_desc_t *adev,
 	uint32_t   queue_wait_delay;
 	uint32_t   curr_event_indx;
 
-	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(button_manager, adev);
 
 	manager_state = runtime_handle->manager_state;
 	queue_wait_delay = runtime_handle->queue_wait_delay;
@@ -404,11 +382,11 @@ static void button_manager_task( void *adev )
 {
 	struct button_manager_runtime_t *runtime_handle;
 	os_queue_t xButtonQueue;
-	xMessage_t xTxMessage;
+	uint32_t xTxMessage;
 
-	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(button_manager, adev);
 
-	xButtonQueue =  os_create_queue( 1 , sizeof(xMessage_t ) );
+	xButtonQueue =  os_create_queue( 1 , sizeof(uint32_t) );
 	runtime_handle->xButtonQueue = xButtonQueue;
 
 	runtime_handle->manager_state = BTN_STATE_IDLE;
@@ -639,8 +617,8 @@ static uint8_t button_manager_ioctl(struct dev_desc_t *adev,
 	struct button_manager_config_t *config_handle;
 
 
-	config_handle = DEV_GET_CONFIG_DATA_POINTER(adev);
-	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
+	config_handle = DEV_GET_CONFIG_DATA_POINTER(button_manager, adev);
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(button_manager, adev);
 
 	switch(aIoctl_num)
 	{
@@ -678,6 +656,4 @@ static uint8_t button_manager_ioctl(struct dev_desc_t *adev,
 #define MODULE_NAME                     button_manager
 #define MODULE_IOCTL_FUNCTION           button_manager_ioctl
 #define MODULE_CALLBACK_FUNCTION        button_manager_callback
-#define MODULE_CONFIG_DATA_STRUCT_TYPE  struct button_manager_config_t
-#define MODULE_RUNTIME_DATA_STRUCT_TYPE struct button_manager_runtime_t
 #include "add_module.h"

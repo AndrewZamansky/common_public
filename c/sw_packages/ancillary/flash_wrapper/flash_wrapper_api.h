@@ -4,12 +4,6 @@
 
 #include "dev_management_api.h"
 
-/**********      defines      ************/
-
-/**********  define API  types ************/
-
-
-/**********  define API  functions  ************/
 
 enum flash_wrapper_ioctl_e {
 	IOCTL_FLASH_WRAPPER_GET_ERASE_SIZE = IOCTL_LAST_COMMON_IOCTL + 1,
@@ -21,5 +15,7 @@ enum flash_wrapper_ioctl_e {
 struct flash_wrapper_cfg_t {
 	struct dev_desc_t *   hw_flash_dev;
 };
+SET_CONFIG_TYPE(flash_wrapper, struct flash_wrapper_cfg_t);
+
 
 #endif

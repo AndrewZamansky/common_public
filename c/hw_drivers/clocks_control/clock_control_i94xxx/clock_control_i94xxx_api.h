@@ -5,10 +5,7 @@
 #include "dev_management_api.h"
 #include "clock_control_api.h"
 
-/**********  define API  types ************/
 
-
-/**********  define API  functions  ************/
 extern struct dev_desc_t  *i94xxx_xtal_clk_dev;
 extern struct dev_desc_t  *i94xxx_lxtal_clk_dev;
 extern struct dev_desc_t  *i94xxx_hirc_clk_dev;
@@ -44,5 +41,6 @@ struct clk_cntl_i94xxx_cfg_t {
 	uint32_t           hclk_rate;
 	struct dev_desc_t  *pll_src_clk_dev;
 };
+SET_CONFIG_TYPE(clock_control_i94xxx, struct clk_cntl_i94xxx_cfg_t);
 
 #endif

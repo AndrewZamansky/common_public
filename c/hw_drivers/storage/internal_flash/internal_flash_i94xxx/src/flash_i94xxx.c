@@ -4,9 +4,6 @@
  *
  */
 
-
-
-/***************   includes    *******************/
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 
@@ -23,20 +20,9 @@
 #include "flash_wrapper_api.h"
 
 
-/***************   defines    *******************/
 #define ERASE_BLOCK_SIZE   0x1000    /* 4k */
 #define DATA_FLASH_BASE    0x40000    /* Data Flash  start address */
 #define DATA_FLASH_SIZE   (FMC_APROM_END - DATA_FLASH_BASE)
-
-/***************   typedefs    *******************/
-
-
-/**********   external variables    **************/
-
-
-
-/***********   local variables    **************/
-
 
 
 static uint32_t get_actual_read_write_len( uint32_t aLength, uint32_t aOffset)
@@ -73,8 +59,8 @@ static size_t internal_flash_i94xxx_pwrite(struct dev_desc_t *adev,
 
 	FMC_ENABLE_AP_UPDATE();
 
-	word_offset = wrAddr & 0xf;
-	wrAddr = (wrAddr & (~0xf));
+	word_offset = wrAddr & 0x3;// read/write are in chunks of 4 bytes
+	wrAddr = (wrAddr & (~0x3));
 	if (0 != word_offset)
 	{
 		uint8_t *u32_addr;
@@ -99,8 +85,8 @@ static size_t internal_flash_i94xxx_pwrite(struct dev_desc_t *adev,
 		memcpy(&write_u32, apData, 4);
 		FMC_Write(wrAddr, write_u32);
 		aLength -= 4;
-		apData +=4;
-		wrAddr +=4;
+		apData += 4;
+		wrAddr += 4;
 	}
 
 	if (aLength)
@@ -206,6 +192,8 @@ static int  set_data_flash_base(uint32_t u32DFBA)
 #endif
 
 
+extern uint32_t __relocation_section_end_on_ROM__;
+
 /**
  * internal_flash_i94xxx_ioctl()
  *
@@ -224,6 +212,10 @@ static uint8_t internal_flash_i94xxx_ioctl(struct dev_desc_t *adev,
 	switch(aIoctl_num)
 	{
 	case IOCTL_DEVICE_START :
+		if (DATA_FLASH_BASE < ((size_t)&__relocation_section_end_on_ROM__))
+		{
+			CRITICAL_ERROR("application overlap with data storage location");
+		}
 		FMC_Open();
 
 		/* following can be removed after adding erase of config page and
@@ -262,4 +254,6 @@ static uint8_t internal_flash_i94xxx_ioctl(struct dev_desc_t *adev,
 #define	MODULE_IOCTL_FUNCTION   internal_flash_i94xxx_ioctl
 #define MODULE_PWRITE_FUNCTION  internal_flash_i94xxx_pwrite
 #define MODULE_PREAD_FUNCTION   internal_flash_i94xxx_pread
+#define MODULE_HAS_NO_CONFIG_DATA
+#define MODULE_HAS_NO_RUNTIME_DATA
 #include "add_module.h"

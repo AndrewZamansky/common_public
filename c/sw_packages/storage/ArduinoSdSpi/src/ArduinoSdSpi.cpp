@@ -7,7 +7,6 @@
 
 
 
-/********  includes *********************/
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 
@@ -28,12 +27,6 @@ extern "C" {
 	#include "hw_timer_api.h"
 	#include "spi_i94xxx_api.h"
 }
-/*following line add module to available module list for dynamic device tree*/
-//#include "ArduinoSdSpi_add_component.h"
-
-
-/********  defines *********************/
-
 
 #define MAX_NUMBER_OF_ARDUINO_SPI_SD_INSTANCES   2
 
@@ -43,17 +36,12 @@ extern "C" {
 extern struct dev_desc_t *systick_dev;
 
 static uint8_t g_num_dev_inst = 0;
-
-/********  types  *********************/
-
 struct lookup_table_t {
 	struct dev_desc_t *spi_dev;
 };
 
 static lookup_table_t
 	lookup_table[MAX_NUMBER_OF_ARDUINO_SPI_SD_INSTANCES] = {NULL};
-
-/********  externals *********************/
 
 // following variables are used in external library and need to be declared
 Particle_class Particle;
@@ -64,25 +52,27 @@ extern "C" {
 
 	static SdSpiCardEX *SdSpiCard_inst;
 
-	uint8_t cSdSpiCardEX_begin(
+	static uint8_t cSdSpiCardEX_begin(
 		SdSpiDriver* spi, uint8_t csPin, SPISettings spiSettings);
 
-	uint8_t ArduinoSdSpi_pwrite(struct dev_desc_t *adev,  //Device in .h file
+	static size_t ArduinoSdSpi_pwrite(
+			struct dev_desc_t *adev, //Device in .h file
 			const uint8_t *apData,  /* Data buffer to write data from */
 			size_t aLength, 		/* Amount of data to write in blocks*512 */
 			size_t  aOffset);   		/* Position*512 to write into device*/
 
-	uint8_t ArduinoSdSpi_pread(struct dev_desc_t *adev,  //Device in .h file
+	static size_t ArduinoSdSpi_pread(
+			struct dev_desc_t *adev,  //Device in .h file
 			uint8_t *apData,  /* Data buffer to read data into */
 			size_t aLength, 		/* Amount of data to read in blocks*512 */
 			size_t  aOffset);   		/* Position*512 to read from device*/
 
-	uint8_t ArduinoSdSpi_ioctl( struct dev_desc_t *adev ,
-		const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2);
+	static uint8_t ArduinoSdSpi_ioctl( struct dev_desc_t *adev,
+		const uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2);
 }
 
 
-uint8_t cSdSpiCardEX_begin(
+static uint8_t cSdSpiCardEX_begin(
 		SdSpiDriver* spi, uint8_t csPin, SPISettings spiSettings)
 {
 	if(SdSpiCard_inst->begin(spi, csPin, spiSettings))
@@ -97,15 +87,14 @@ uint8_t cSdSpiCardEX_begin(
 
 
 
-uint8_t ArduinoSdSpi_pwrite(struct dev_desc_t *adev,  //Device in .h file
+static size_t ArduinoSdSpi_pwrite(struct dev_desc_t *adev,  //Device in .h file
 		const uint8_t *apData,  /* Data buffer to write data from */
 		size_t aLength, 		/* Amount of data to write in blocks*512 */
 		size_t  aOffset)   		/* Position*512 to write into device*/
 {
 	struct arduino_sd_spi_runtime_t *runtime_handle;
 
-	runtime_handle = (struct arduino_sd_spi_runtime_t *)
-							DEV_GET_RUNTIME_DATA_POINTER(adev);
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(ArduinoSdSpi, adev);
 
 	// This should be handled by setup
 	//config_handle->sd_spi_inst = (void*) (new SdSpiCardEX);
@@ -137,15 +126,14 @@ uint8_t ArduinoSdSpi_pwrite(struct dev_desc_t *adev,  //Device in .h file
 }
 
 
-uint8_t ArduinoSdSpi_pread(struct dev_desc_t *adev,  //Device in .h file
+static size_t ArduinoSdSpi_pread(struct dev_desc_t *adev,  //Device in .h file
 		uint8_t *apData,  /* Data buffer to read data into */
 		size_t aLength, 		/* Amount of data to read in blocks*512 */
 		size_t  aOffset)   		/* Position*512 to read from device*/
 {
 	struct arduino_sd_spi_runtime_t *runtime_handle;
 
-	runtime_handle = (struct arduino_sd_spi_runtime_t *)
-							DEV_GET_RUNTIME_DATA_POINTER(adev);
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(ArduinoSdSpi, adev);
 
 	// This should be handled by setup
 	//config_handle->sd_spi_inst = (void*) (new SdSpiCardEX);
@@ -271,7 +259,7 @@ void SdSpiAltDriver::send(const uint8_t* buf, size_t n)
  *
  * return:
  */
-uint8_t ArduinoSdSpi_ioctl( struct dev_desc_t *adev,
+static uint8_t ArduinoSdSpi_ioctl( struct dev_desc_t *adev,
 		const uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2)
 {
 	struct arduino_sd_spi_cfg_t *config_handle;
@@ -279,10 +267,8 @@ uint8_t ArduinoSdSpi_ioctl( struct dev_desc_t *adev,
 	struct dev_desc_t *spi_dev;
 	uint8_t num_dev_inst;
 
-	config_handle =
-		(struct arduino_sd_spi_cfg_t *)DEV_GET_CONFIG_DATA_POINTER(adev);
-	runtime_handle =
-		(struct arduino_sd_spi_runtime_t *)DEV_GET_RUNTIME_DATA_POINTER(adev);
+	config_handle = DEV_GET_CONFIG_DATA_POINTER(ArduinoSdSpi, adev);
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(ArduinoSdSpi, adev);
 	spi_dev = config_handle->spi_dev;
 	uint32_t clk_freq = (uint32_t)config_handle->clk_freq;
 
@@ -328,4 +314,12 @@ uint8_t ArduinoSdSpi_ioctl( struct dev_desc_t *adev,
 		return 1;
 	}
 	return 0;
+}
+
+#define	MODULE_NAME               ArduinoSdSpi
+#define	MODULE_PWRITE_FUNCTION    ArduinoSdSpi_pwrite
+#define	MODULE_PREAD_FUNCTION     ArduinoSdSpi_pread
+#define	MODULE_IOCTL_FUNCTION     ArduinoSdSpi_ioctl
+extern "C" {
+	#include "add_module.h"
 }

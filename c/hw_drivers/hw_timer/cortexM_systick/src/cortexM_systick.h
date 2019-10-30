@@ -11,9 +11,5 @@
 #ifndef _CORTEXM_SYSTICK_H_
 #define _CORTEXM_SYSTICK_H_
 
-/********  includes *********************/
-
-
-/********  types  *********************/
 
 #endif

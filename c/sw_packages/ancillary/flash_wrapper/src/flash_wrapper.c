@@ -4,9 +4,6 @@
  *
  */
 
-
-
-/***************   includes    *******************/
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 #include "_project_tasks_defines.h"
@@ -17,18 +14,6 @@
 #include "os_wrapper.h"
 #include "flash_wrapper.h"
 #include "flash_wrapper_api.h"
-
-/***************   defines    *******************/
-
-
-/***************   typedefs    *******************/
-
-
-/**********   external variables    **************/
-
-
-
-/***********   local variables    **************/
 
 
 static os_mutex_t  flash_wrapper_mutex;
@@ -42,8 +27,8 @@ static void save_to_flash_and_fetch_new_block( struct dev_desc_t *adev,
 	uint8_t  *write_buffer;
 	uint32_t  erase_block_size;
 
-	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(flash_wrapper, adev);
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(flash_wrapper, adev);
 	erase_block_size = runtime_handle->erase_block_size;
 	hw_flash_dev = cfg_hndl->hw_flash_dev;
 	write_buffer = runtime_handle->write_buffer;
@@ -82,7 +67,7 @@ static size_t flash_wrapper_pwrite(struct dev_desc_t *adev,
 
 	os_mutex_take_infinite_wait(flash_wrapper_mutex);
 
-	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(flash_wrapper, adev);
 	erase_block_size = runtime_handle->erase_block_size;
 	write_buffer = runtime_handle->write_buffer;
 	flash_size = runtime_handle->flash_size;
@@ -145,7 +130,7 @@ static size_t flash_wrapper_pread(struct dev_desc_t *adev,
 	struct flash_wrapper_cfg_t *cfg_hndl;
 	struct dev_desc_t  *hw_flash_dev;
 
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(flash_wrapper, adev);
 	hw_flash_dev = cfg_hndl->hw_flash_dev;
 
 	return DEV_PREAD(hw_flash_dev, apData, aLength, aOffset);
@@ -163,7 +148,7 @@ static void flash_wrapper_task( void *adev )
 	uint32_t	curr_block_addr;
 	uint8_t		curr_block_is_dirty;
 
-	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(flash_wrapper, adev);
 
 	for( ;; )
 	{
@@ -206,8 +191,8 @@ static uint8_t flash_wrapper_ioctl(struct dev_desc_t *adev,
 	uint32_t  erase_block_size;
 	uint32_t  flash_size;
 
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
-	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(flash_wrapper, adev);
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(flash_wrapper, adev);
 	hw_flash_dev = cfg_hndl->hw_flash_dev;
 
 	switch(aIoctl_num)
@@ -243,6 +228,4 @@ static uint8_t flash_wrapper_ioctl(struct dev_desc_t *adev,
 #define	MODULE_IOCTL_FUNCTION            flash_wrapper_ioctl
 #define MODULE_PWRITE_FUNCTION           flash_wrapper_pwrite
 #define MODULE_PREAD_FUNCTION            flash_wrapper_pread
-#define MODULE_CONFIG_DATA_STRUCT_TYPE   struct flash_wrapper_cfg_t
-#define MODULE_RUNTIME_DATA_STRUCT_TYPE  struct flash_wrapper_runtime_t
 #include "add_module.h"

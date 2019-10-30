@@ -4,13 +4,6 @@
 
 #include "dev_management_api.h"
 
-/*****************  defines  **************/
-
-
-/**********  define API  types ************/
-
-
-/**********  define API  functions  ************/
 enum GPIO_API_IOCTL_E
 {
 	IOCTL_GPIO_PIN_SET = IOCTL_LAST_COMMON_IOCTL + 1,

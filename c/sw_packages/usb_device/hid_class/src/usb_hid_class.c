@@ -128,7 +128,7 @@ static void new_data_received(
 	struct usb_hid_class_cfg_t *cfg_hndl;
 	struct dev_desc_t * callback_rx_dev ;
 
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(usb_hid_class, adev);
 
 	callback_rx_dev = cfg_hndl->callback_rx_dev;
 	if (NULL == callback_rx_dev)
@@ -147,12 +147,12 @@ static void end_of_transmit_callback(struct dev_desc_t *adev)
 	struct usb_hid_class_runtime_t  *runtime_hndl;
 	struct dev_desc_t * callback_tx_dev ;
 
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
-	runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(adev);
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(usb_hid_class, adev);
+	runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(usb_hid_class, adev);
 
 
 	callback_tx_dev = cfg_hndl->callback_tx_dev;
-	if ((NULL != callback_tx_dev) && (1 == runtime_hndl->tx_on))
+	if (NULL != callback_tx_dev)
 	{
 		DEV_CALLBACK_1_PARAMS(callback_tx_dev,
 							CALLBACK_TX_DONE, (void*)(runtime_hndl->sentLen));
@@ -177,8 +177,8 @@ static size_t usb_hid_pwrite(struct dev_desc_t *adev,
 	uint16_t max_host_out_data_packet_size;
 
 
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
-	runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(adev);
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(usb_hid_class, adev);
+	runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(usb_hid_class, adev);
 
 	usb_hw = cfg_hndl->usb_hw;
 	max_host_out_data_packet_size = cfg_hndl->max_host_out_data_packet_size;
@@ -193,7 +193,6 @@ static size_t usb_hid_pwrite(struct dev_desc_t *adev,
 	}
 
 	runtime_hndl->sentLen = sentLen;
-	runtime_hndl->tx_on = 1;
 
 	set_data_to_in_endpoint.endpoint_num = runtime_hndl->in_endpoint_num;
 	set_data_to_in_endpoint.data = apData;
@@ -285,7 +284,7 @@ static void hid_class_request(struct dev_desc_t *callback_dev, uint8_t *request)
 	struct usb_hid_class_cfg_t *cfg_hndl;
 	struct dev_desc_t *usb_hw;
 
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(callback_dev);
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(usb_hid_class, callback_dev);
 	usb_hw = cfg_hndl->usb_hw;
 
 	if(request[0] & 0x80)    /* request data transfer direction */
@@ -316,7 +315,7 @@ static void configure_endpoints(struct dev_desc_t *adev,
 	uint16_t max_host_in_data_packet_size;
 	uint16_t max_host_out_data_packet_size;
 
-	runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(adev);
+	runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(usb_hid_class, adev);
 	usb_hw = cfg_hndl->usb_hw;
 	max_host_in_data_packet_size = cfg_hndl->max_host_in_data_packet_size;
 	max_host_out_data_packet_size = cfg_hndl->max_host_out_data_packet_size;
@@ -446,8 +445,8 @@ static uint8_t usb_hid_class_ioctl( struct dev_desc_t *adev,
 	struct usb_hid_class_cfg_t *cfg_hndl;
 	struct usb_hid_class_runtime_t *runtime_hndl;
 
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
-	runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(adev);
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(usb_hid_class, adev);
+	runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(usb_hid_class, adev);
 
 	switch(aIoctl_num)
 	{
@@ -455,9 +454,6 @@ static uint8_t usb_hid_class_ioctl( struct dev_desc_t *adev,
 
 	case IOCTL_DEVICE_START :
 		start_hid_class(adev, cfg_hndl, runtime_hndl);
-		break;
-	case IOCTL_UART_DISABLE_TX :
-		runtime_hndl->tx_on = 0;
 		break;
 	case IOCTL_USB_HID_GET_IN_ENDPOINT_SIZE:
 		*(uint16_t *)aIoctl_param1 = cfg_hndl->max_host_in_data_packet_size;
@@ -468,9 +464,7 @@ static uint8_t usb_hid_class_ioctl( struct dev_desc_t *adev,
 	return 0;
 }
 
-#define    MODULE_NAME                  usb_hid_class
-#define    MODULE_IOCTL_FUNCTION        usb_hid_class_ioctl
-#define    MODULE_PWRITE_FUNCTION       usb_hid_pwrite
-#define MODULE_CONFIG_DATA_STRUCT_TYPE  struct usb_hid_class_cfg_t
-#define MODULE_RUNTIME_DATA_STRUCT_TYPE struct usb_hid_class_runtime_t
+#define MODULE_NAME                  usb_hid_class
+#define MODULE_IOCTL_FUNCTION        usb_hid_class_ioctl
+#define MODULE_PWRITE_FUNCTION       usb_hid_pwrite
 #include "add_module.h"

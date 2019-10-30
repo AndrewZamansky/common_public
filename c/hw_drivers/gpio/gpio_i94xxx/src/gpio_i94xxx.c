@@ -4,9 +4,6 @@
  *
  */
 
-
-
-/***************   includes    *******************/
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 
@@ -35,18 +32,6 @@
 	#error "priority should be lower then maximal priority for os syscalls"
 #endif
 
-/***************   defines    *******************/
-
-
-
-/***************   typedefs    *******************/
-
-
-/**********   external variables    **************/
-
-
-
-/***********   local variables    **************/
 
 static uint8_t  num_of_device_on_intA = 0;
 static struct dev_desc_t **dev_on_int_listA = NULL;
@@ -75,13 +60,13 @@ static void notify_listeners(GPIO_T *GPIOx,
 		struct gpio_i94xxx_config_t *config_handle;
 
 		curr_dev = dev_on_int_list[i];
-		runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(curr_dev);
+		runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(gpio_i94xxx, curr_dev);
 		if ( 0 == (runtime_handle->pin_mask & int_flag))
 		{
 			continue;
 		}
 
-		config_handle = DEV_GET_CONFIG_DATA_POINTER(curr_dev);
+		config_handle = DEV_GET_CONFIG_DATA_POINTER(gpio_i94xxx, curr_dev);
 		callback_dev = config_handle->client_dev;
 		if (NULL != callback_dev)
 		{
@@ -139,7 +124,7 @@ uint8_t gpio_i94xxx_register_interrupt(struct dev_desc_t *adev,
 		CRITICAL_ERROR("Device not specified");
 	}
 
-	config_handle = DEV_GET_CONFIG_DATA_POINTER(adev);
+	config_handle = DEV_GET_CONFIG_DATA_POINTER(gpio_i94xxx, adev);
 	pin_arr_size = config_handle->pin_arr_size;
 	pin_arr = config_handle->pin_arr;
 	GPIOx = (GPIO_T*)config_handle->port_num;
@@ -397,8 +382,8 @@ static uint8_t gpio_i94xxx_ioctl(struct dev_desc_t *adev,
 	struct gpio_i94xxx_config_t *config_handle;
 	struct gpio_i94xxx_runtime_t *runtime_handle;
 
-	config_handle = DEV_GET_CONFIG_DATA_POINTER(adev);
-	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
+	config_handle = DEV_GET_CONFIG_DATA_POINTER(gpio_i94xxx, adev);
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(gpio_i94xxx, adev);
 	if ((0 == runtime_handle->init_done) && (IOCTL_DEVICE_START != aIoctl_num))
 	{
 		CRITICAL_ERROR("not initialized yet");
@@ -460,8 +445,6 @@ static uint8_t gpio_i94xxx_ioctl(struct dev_desc_t *adev,
 
 #define MODULE_NAME               gpio_i94xxx
 #define MODULE_IOCTL_FUNCTION     gpio_i94xxx_ioctl
-#define MODULE_CONFIG_DATA_STRUCT_TYPE  struct gpio_i94xxx_config_t
-#define MODULE_RUNTIME_DATA_STRUCT_TYPE struct gpio_i94xxx_runtime_t
 
 /* add this #ifdef block to avoid unused variable warning*/
 #ifdef CONFIG_USE_RUNTIME_DEVICE_CONFIGURATION_BY_PARAMETER_NAMES

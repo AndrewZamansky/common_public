@@ -6,7 +6,7 @@
  *
  * @note
  ******************************************************************************/
-/*!<Includes */
+
 #include <string.h>
 
 #include "usb_device_api.h"
@@ -317,7 +317,7 @@ static uint8_t usb_device_descriptors_ioctl(
 {
 	struct usb_device_descriptors_cfg_t *cfg_hndl;
 
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(usb_device_descriptors, adev);
 
 	if ((0 == init_done) && (IOCTL_DEVICE_START != aIoctl_num))
 	{
@@ -350,7 +350,7 @@ static uint8_t usb_device_descriptors_ioctl(
 	return 0;
 }
 
-#define    MODULE_NAME                  usb_device_descriptors
-#define    MODULE_IOCTL_FUNCTION        usb_device_descriptors_ioctl
-#define MODULE_CONFIG_DATA_STRUCT_TYPE  struct usb_device_descriptors_cfg_t
+#define MODULE_NAME             usb_device_descriptors
+#define MODULE_IOCTL_FUNCTION   usb_device_descriptors_ioctl
+#define MODULE_HAS_NO_RUNTIME_DATA
 #include "add_module.h"

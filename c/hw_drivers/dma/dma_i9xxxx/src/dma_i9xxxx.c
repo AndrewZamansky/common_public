@@ -806,8 +806,9 @@ static uint8_t release_tx_buffer(struct dma_i9xxxx_cfg_t *cfg_hndl,
 			return 0;
 		}
 
-		next_dma_buff_indx = ( num_of_buffers + next_supplied_tx_buffer -
-					num_of_prefilled_buffer_before_tx_start ) % num_of_buffers;
+		// (next_supplied_tx_buffer - 1) is location of last filled buffer
+		next_dma_buff_indx = ( num_of_buffers + ((next_supplied_tx_buffer - 1) -
+					num_of_prefilled_buffer_before_tx_start)) % num_of_buffers;
 		runtime_hndl->curr_dma_buff_indx = next_dma_buff_indx;
 		peripheral_type = cfg_hndl->peripheral_type;
 		channel_num = cfg_hndl->channel_num;

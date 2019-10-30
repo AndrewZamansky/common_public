@@ -5,11 +5,6 @@
 
 #include "dev_management_api.h"
 
-/*****************  defines  **************/
-
-
-/**********  define API  types ************/
-
 
 enum shell_presets_api_ioctl_e {
 	IOCTL_SHELL_PRESETS_START_RECORDING = IOCTL_LAST_COMMON_IOCTL + 1,
@@ -25,9 +20,7 @@ struct shell_presets_cfg_t{
 	uint16_t preset_size;
 	uint16_t max_number_of_presets;
 };
-
-/**********  define API  functions  ************/
-
+SET_CONFIG_TYPE(shell_presets, struct shell_presets_cfg_t);
 
 
 #endif

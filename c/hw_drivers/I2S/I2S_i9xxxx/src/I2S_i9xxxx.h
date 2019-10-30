@@ -8,12 +8,7 @@
 #ifndef _I2S_I9XXXX_H_
 #define _I2S_I9XXXX_H_
 
-/********  includes *********************/
-
 #include "dev_management_api.h"
-
-/********  types  *********************/
-
 
 struct I2S_i9xxxx_runtime_t {
 	uint32_t    actual_sample_rate;

@@ -5,10 +5,6 @@
 #include "dev_management_api.h"
 #include "clock_control_api.h"
 
-/**********  define API  types ************/
-
-
-/**********  define API  functions  ************/
 void clock_control_common_api_get_parent_clock_rate(
 								struct cfg_clk_t *cfg_clk, uint32_t *rate);
 

@@ -2,9 +2,8 @@
 #ifndef _I2C_I94XXX_API_H_
 #define _I2C_I94XXX_API_H_
 
+#include "dev_management_api.h"
 #include "I94100.h"
-
-/*****************  defines  **************/
 
 #define I2C_I94XXX_API_BASE_ADDRESS_I2C0  (size_t)I2C0_BASE
 #define I2C_I94XXX_API_BASE_ADDRESS_I2C1  (size_t)I2C1_BASE
@@ -24,11 +23,7 @@ struct i2c_i94xxx_cfg_t {
 	uint32_t SDA_pinout;
 	uint8_t slave_address;
 };
+SET_CONFIG_TYPE(i2c_i94xxx, struct i2c_i94xxx_cfg_t);
 
-/**********  define API  types ************/
-
-
-
-/**********  define API  functions  ************/
 
 #endif

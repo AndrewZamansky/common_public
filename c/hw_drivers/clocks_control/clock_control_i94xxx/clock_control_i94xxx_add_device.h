@@ -3,8 +3,6 @@
 #include  "clock_control_i94xxx_api.h"
 #include 	"src/clock_control_i94xxx.h"
 
-#define MODULE_CONFIG_DATA_STRUCT_TYPE	struct clk_cntl_i94xxx_cfg_t
-
 
 #ifndef CLOCK_CONTROL_I94XXX_XTAL_RATE
 	#error "CLOCK_CONTROL_I94XXX_XTAL_RATE should be defined"
@@ -32,13 +30,16 @@
 #endif
 
 
-#define STATIC_DEV_DATA_STRUCT {        \
-	CLOCK_CONTROL_I94XXX_XTAL_RATE,     \
-	CLOCK_CONTROL_I94XXX_HIRC_RATE,     \
-	CLOCK_CONTROL_I94XXX_DT_PLL_RATE,   \
-	CLOCK_CONTROL_I94XXX_DT_HCLK_RATE,  \
-	_CLOCK_CONTROL_SRC_CLK_PDEV         \
-	}
+SET_STATIC_DEV_CONFIG(clock_control_i94xxx) =
+{
+	CLOCK_CONTROL_I94XXX_XTAL_RATE,
+	CLOCK_CONTROL_I94XXX_HIRC_RATE,
+	CLOCK_CONTROL_I94XXX_DT_PLL_RATE,
+	CLOCK_CONTROL_I94XXX_DT_HCLK_RATE,
+	_CLOCK_CONTROL_SRC_CLK_PDEV
+};
+
+#define MODULE_HAS_NO_RUNTIME_DATA
 
 #include "add_static_dev.h"
 

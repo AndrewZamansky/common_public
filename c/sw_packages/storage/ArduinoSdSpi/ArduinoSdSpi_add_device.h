@@ -1,0 +1,25 @@
+/* !! DONT PUT HEADER FILE PROTECTIONS IN THIS FILE !! */
+
+#include "ArduinoSdSpi_api.h"
+#include "src/ArduinoSdSpi.h"
+
+#ifndef ARDUINO_SD_SPI_DT_SPI_DEV
+	#error "ARDUINO_SD_SPI_DT_SPI_DEV should be defined"
+#endif
+EXTERN_DECLARATION_TO_STATIC_DEVICE_INST(ARDUINO_SD_SPI_DT_SPI_DEV);
+#define _POINTER_TO_SPI_DEV  P_TO_STATIC_DEVICE_INST(ARDUINO_SD_SPI_DT_SPI_DEV)
+
+#ifndef ARDUINO_SD_SPI_DT_CLK_FREQ
+	#error "ARDUINO_SD_SPI_DT_CLK_FREQ should be defined"
+#endif
+
+SET_STATIC_DEV_CONFIG(ArduinoSdSpi) =
+{
+	_POINTER_TO_SPI_DEV,
+	ARDUINO_SD_SPI_DT_CLK_FREQ
+};
+
+#include "add_static_dev.h"
+
+#undef  ARDUINO_SD_SPI_DT_SPI_DEV
+#undef  _POINTER_TO_SPI_DEV

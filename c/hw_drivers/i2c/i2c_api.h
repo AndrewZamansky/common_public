@@ -2,15 +2,8 @@
 #ifndef _I2C_API_H_
 #define _I2C_API_H_
 
-#include "dev_management_api.h" // for device manager defines and typedefs
+#include "dev_management_api.h"
 
-/*****************  defines  **************/
-
-
-/**********  define API  types ************/
-
-
-/**********  define API  functions  ************/
 typedef enum
 {
 	IOCTL_I2C_TURN_OFF = IOCTL_LAST_COMMON_IOCTL+1,

@@ -3,10 +3,6 @@
 #include  "gpio_i94xxx_api.h"
 #include "src/gpio_i94xxx.h"
 
-#define MODULE_CONFIG_DATA_STRUCT_TYPE  struct gpio_i94xxx_config_t
-#define MODULE_RUNTIME_DATA_STRUCT_TYPE struct gpio_i94xxx_runtime_t
-
-
 #ifndef GPIO_I94XXX_DT_PORT
 	#error "GPIO_I94XXX_DT_PORT should be defined"
 #endif
@@ -41,15 +37,15 @@
 #endif
 
 
-#define STATIC_DEV_DATA_STRUCT  \
-	{                           \
-		P_GPIO_CLIENT_DEV,      \
-		GPIO_I94XXX_DT_PORT,    \
-		DT_UINT8_ARRAY_SIZE(pins_arr),  \
-		DT_ARRAY_NAME(pins_arr),\
-		DT_ARRAY_NAME(pins_idle_state_arr),\
-		GPIO_I94XXX_DT_MODE     \
-	}
+SET_STATIC_DEV_CONFIG(gpio_i94xxx) =
+{
+	P_GPIO_CLIENT_DEV,
+	GPIO_I94XXX_DT_PORT,
+	DT_UINT8_ARRAY_SIZE(pins_arr),
+	DT_ARRAY_NAME(pins_arr),
+	DT_ARRAY_NAME(pins_idle_state_arr),
+	GPIO_I94XXX_DT_MODE
+};
 
 
 #include "add_static_dev.h"

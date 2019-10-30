@@ -2,6 +2,7 @@
 #ifndef _UART_I9XXXX_API_H_
 #define _UART_I9XXXX_API_H_
 
+#include "dev_management_api.h"
 
 #ifdef CONFIG_I96XXX_M0
 	#include "I96100.h"
@@ -18,7 +19,6 @@ struct uart_i9xxxx_cfg_t {
 	uint32_t tx_pin;
 	uint32_t rx_pin;
 };
-
 SET_CONFIG_TYPE(uart_i9xxxx, struct uart_i9xxxx_cfg_t);
 
 #endif

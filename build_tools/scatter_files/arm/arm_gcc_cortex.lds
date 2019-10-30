@@ -185,6 +185,8 @@ SECTIONS
 	} > DATA_LOCATION
 
 	__relocation_section_end_on_RAM__ = .;
+	__relocation_section_end_on_ROM__ =
+			 data_section_start_on_ROM + SIZEOF(.data);
 
 
 

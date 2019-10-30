@@ -4,7 +4,6 @@
  *
  */
 
-/********  includes *********************/
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 #include "os_wrapper.h"
@@ -14,6 +13,8 @@
 
 #include "clock_control_i94xxx_api.h"
 #include "pin_control_api.h"
+#include "spi_i94xxx_api.h"
+#include "spi_i94xxx.h"
 
 
 
@@ -26,9 +27,7 @@
 #endif
 
 
-/********  defines *********************/
 #define ENABLE_I94XX_SPI_INT
-
 #define ENABLE_I94XX_SPI_MUTEX
 
 /* replace original SPI_SET_SS_HIGH / SPI_SET_SS_LOW because SPI_SSCTL_SS_Msk
@@ -63,17 +62,6 @@
 #define SPI_GET_RX_FIFO_FULL_FLAG(spi)	\
 		(((spi)->STATUS & SPI_STATUS_RXFULL_Msk) >> SPI_STATUS_RXFULL_Pos)
 
-/********  types  *********************/
-
-
-/* ------------------------ External variables ------------------------------*/
-
-/* ------------------------ External functions ------------------------------*/
-
-/* ------------------------ Exported variables ------------------------------*/
-
-
-/********  local defs *********************/
 
 #ifdef ENABLE_I94XX_SPI_INT
 
@@ -200,8 +188,8 @@ static uint8_t spi_i94xxx_callback(struct dev_desc_t *adev ,
 
 	SPI_T *spi_regs;
 
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
-	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(spi_i94xxx, adev);
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(spi_i94xxx, adev);
 	spi_regs =(SPI_T *)cfg_hndl->base_address;
 
 	//Clear all flags before read/write to prevent previous flag
@@ -252,8 +240,8 @@ static size_t spi_i94xxx_pread(struct dev_desc_t *adev,
 
 	//Get configurations and initial runtime handle from device tree and/or
 	//   during initialization.
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
-	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(spi_i94xxx, adev);
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(spi_i94xxx, adev);
 
 	//Select SPI port address, os mutex for RX, and queuing signal for interrupt
 	spi_regs = (SPI_T *)cfg_hndl->base_address;
@@ -315,8 +303,8 @@ static size_t spi_i94xxx_pwrite(struct dev_desc_t *adev ,
 
 	//Get configurations and initial runtime handle from device tree and/or
 	//   during initialization.
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
-	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(spi_i94xxx, adev);
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(spi_i94xxx, adev);
 
 	//Select SPI port address, os mutex for tx, and queuing signal for interrupt
 	spi_regs = (SPI_T *)cfg_hndl->base_address;
@@ -370,8 +358,8 @@ static uint8_t spi_i94xxx_ioctl( struct dev_desc_t *adev,
 	uint8_t tx_fifo_threshold;
 	uint8_t rx_fifo_threshold;
 
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
-	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(spi_i94xxx, adev);
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(spi_i94xxx, adev);
 	src_clock = cfg_hndl->src_clock;
 	spi_regs = (SPI_T *)cfg_hndl->base_address;
 
@@ -486,6 +474,4 @@ static uint8_t spi_i94xxx_ioctl( struct dev_desc_t *adev,
 #define MODULE_CALLBACK_FUNCTION        spi_i94xxx_callback
 #define	MODULE_PWRITE_FUNCTION          spi_i94xxx_pwrite
 #define	MODULE_PREAD_FUNCTION           spi_i94xxx_pread
-#define MODULE_CONFIG_DATA_STRUCT_TYPE  struct spi_i94xxx_cfg_t
-#define MODULE_RUNTIME_DATA_STRUCT_TYPE struct spi_i94xxx_runtime_t
 #include "add_module.h"

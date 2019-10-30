@@ -5,9 +5,6 @@
  *
  */
 
-
-
-/********  includes *********************/
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 
@@ -19,26 +16,8 @@
 #include "FatFs.h"
 
 
-
-/*following line add module to available module list for dynamic device tree*/
-#include "FatFs_add_component.h"
-
-
-/********  defines *********************/
-
-
-
-/********  types  *********************/
-
-
-
-/********  externals *********************/
-
-/* ----------- Exported variables ------------------------*/
-
-/********  local defs *********************/
-
-struct dev_desc_t *   storage_dev ;
+// following variable should be moved to runtime_data or to partition array
+struct dev_desc_t *   storage_for_fatFs_dev ;
 
 
 /**
@@ -51,14 +30,14 @@ uint8_t FatFs_ioctl( struct dev_desc_t *adev ,
 {
 	struct FatFs_instance_t *config_handle;
 
-	config_handle = DEV_GET_CONFIG_DATA_POINTER(adev);
+	config_handle = DEV_GET_CONFIG_DATA_POINTER(FatFs, adev);
 
 	switch(aIoctl_num)
 	{
 
 	case IOCTL_DEVICE_START :
-		storage_dev = config_handle->storage_dev;
-		DEV_IOCTL_0_PARAMS(storage_dev, IOCTL_DEVICE_START);
+		storage_for_fatFs_dev = config_handle->storage_dev;
+		DEV_IOCTL_0_PARAMS(storage_for_fatFs_dev, IOCTL_DEVICE_START);
 
 		break;
 
@@ -67,3 +46,8 @@ uint8_t FatFs_ioctl( struct dev_desc_t *adev ,
 	}
 	return 0;
 }
+
+#define MODULE_NAME            FatFs
+#define MODULE_IOCTL_FUNCTION  FatFs_ioctl
+#define MODULE_HAS_NO_RUNTIME_DATA
+#include "add_module.h"

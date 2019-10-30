@@ -4,7 +4,6 @@
  *
  */
 
-/********  includes *********************/
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 #include "_project_func_declarations.h"
@@ -19,36 +18,17 @@
 #include "usb_device_descriptors_api.h"
 
 
-/********  defines *********************/
-
 #define SET_LINE_CODING             0x20
 #define GET_LINE_CODING             0x21
 #define SET_LINE_CONTROL            0x22
 
-/********  types  *********************/
 
-
-/* ------------------- External variables ---------------------------------*/
-
-/* ------------------------ External functions ------------------------------*/
-
-/* ------------------------ Exported variables ------------------------------*/
-
-
-
-typedef struct
-{
+struct line_coding_t {
   uint32_t bitrate;
   uint8_t format;
   uint8_t paritytype;
   uint8_t datatype;
-}LINE_CODING;
-
-
-/********  externals *********************/
-
-
-/********  local defs *********************/
+};
 
 
 #define USB_INTERFACE_DESCRIPTOR_TYPE 0x04
@@ -154,13 +134,13 @@ static uint8_t const vcom_interface[]=
 };
 
 
-LINE_CODING linecoding =
-  {
-    115200, /* baud rate*/
-    0x00,   /* stop bits-1*/
-    0x00,   /* parity - none*/
-    0x08    /* no. of bits 8*/
-  };
+struct line_coding_t linecoding =
+{
+	115200, /* baud rate*/
+	0x00,   /* stop bits-1*/
+	0x00,   /* parity - none*/
+	0x08    /* no. of bits 8*/
+};
 
 
 static void new_data_received(
@@ -169,7 +149,7 @@ static void new_data_received(
 	struct usb_virtual_com_class_cfg_t *cfg_hndl;
 	struct dev_desc_t * callback_rx_dev ;
 
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(usb_virtual_com_class, adev);
 
 	callback_rx_dev = cfg_hndl->callback_rx_dev;
 	if (NULL == callback_rx_dev)
@@ -189,8 +169,8 @@ static void end_of_transmit_callback(struct dev_desc_t *adev)
 	struct usb_virtual_com_class_runtime_t  *runtime_hndl;
 	struct dev_desc_t * callback_tx_dev ;
 
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
-	runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(adev);
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(usb_virtual_com_class, adev);
+	runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(usb_virtual_com_class, adev);
 
 
 	callback_tx_dev = cfg_hndl->callback_tx_dev;
@@ -218,8 +198,8 @@ size_t usb_virtual_com_pwrite(struct dev_desc_t *adev,
 	size_t sentLen;
 	uint16_t max_data_packet_size;
 
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
-	runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(adev);
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(usb_virtual_com_class, adev);
+	runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(usb_virtual_com_class, adev);
 
 	usb_hw = cfg_hndl->usb_hw;
 	max_data_packet_size = cfg_hndl->max_data_packet_size;
@@ -324,7 +304,7 @@ static void vcom_class_request(
 	struct usb_virtual_com_class_cfg_t *cfg_hndl;
 	struct dev_desc_t *usb_hw;
 
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(callback_dev);
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(usb_virtual_com_class, callback_dev);
 	usb_hw = cfg_hndl->usb_hw;
 
 	if(request[0] & 0x80)    /* request data transfer direction */
@@ -353,7 +333,7 @@ static void configure_endpoints(struct dev_desc_t *adev,
 	uint16_t   max_pckt_sizes[3];
 	uint16_t max_data_packet_size;
 
-	runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(adev);
+	runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(usb_virtual_com_class, adev);
 	usb_hw = cfg_hndl->usb_hw;
 	max_data_packet_size = cfg_hndl->max_data_packet_size;
 
@@ -505,8 +485,8 @@ static uint8_t usb_virtual_com_class_ioctl(struct dev_desc_t *adev,
 	struct usb_virtual_com_class_cfg_t *cfg_hndl;
 	struct usb_virtual_com_class_runtime_t *runtime_hndl;
 
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
-	runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(adev);
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(usb_virtual_com_class, adev);
+	runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(usb_virtual_com_class, adev);
 
 	switch(aIoctl_num)
 	{
@@ -527,6 +507,4 @@ static uint8_t usb_virtual_com_class_ioctl(struct dev_desc_t *adev,
 #define    MODULE_NAME                  usb_virtual_com_class
 #define    MODULE_IOCTL_FUNCTION        usb_virtual_com_class_ioctl
 #define    MODULE_PWRITE_FUNCTION       usb_virtual_com_pwrite
-#define MODULE_CONFIG_DATA_STRUCT_TYPE  struct usb_virtual_com_class_cfg_t
-#define MODULE_RUNTIME_DATA_STRUCT_TYPE struct usb_virtual_com_class_runtime_t
 #include "add_module.h"

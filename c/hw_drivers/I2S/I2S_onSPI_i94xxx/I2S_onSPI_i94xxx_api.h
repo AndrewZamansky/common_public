@@ -2,7 +2,7 @@
 #ifndef _I2S_onSPI_I94XXX_API_H_
 #define _I2S_onSPI_I94XXX_API_H_
 
-#include "dev_management_api.h" // for device manager defines and typedefs
+#include "dev_management_api.h"
 #include "spi.h"
 
 /*****************  defines  **************/
@@ -55,7 +55,6 @@ struct I2S_onSPI_i94xxx_cfg_t {
 	// fix for uint8_t/uint16_t access if needed:
 	uint8_t     do_reordering_for_16or8bit_channels;
 };
-
-/**********  define API  functions  ************/
+SET_CONFIG_TYPE(I2S_onSPI_i94xxx, struct I2S_onSPI_i94xxx_cfg_t);
 
 #endif

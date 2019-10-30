@@ -8,12 +8,7 @@
 #ifndef _USB_AUDIO_CLASS_H_
 #define _USB_AUDIO_CLASS_H_
 
-/********  includes *********************/
-
 #include "dev_management_api.h"
-
-#include "_project_defines.h"
-
 
 /* Define Terminal and Unit ID  */
 #define PLAY_IT_ID              0x01
@@ -26,8 +21,6 @@
 
 //for changing sample rate(like in async mode)
 #define  HOST_OUT_MAX_ADDITIONAL_SAMPLES   2
-
-/********  types  *********************/
 
 
 struct usb_audio_class_runtime_t {
@@ -47,4 +40,6 @@ struct usb_audio_class_runtime_t {
 	size_t  curr_write_pos_in_tx_buffer;
 	size_t  curr_read_pos_in_tx_buffer;
 };
+SET_RUNTIME_DATA_TYPE(usb_audio_class, struct usb_audio_class_runtime_t);
+
 #endif

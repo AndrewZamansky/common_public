@@ -3,10 +3,6 @@
 #include  "usb_device_descriptors_api.h"
 #include  "src/usb_device_descriptors.h"
 
-
-#define MODULE_CONFIG_DATA_STRUCT_TYPE  struct usb_device_descriptors_cfg_t
-
-
 #ifndef USB_DESC_DT_USB_PDEV
 	#error "USB_DESC_DT_USB_PDEV should be defined"
 #endif
@@ -19,13 +15,15 @@ EXTERN_DECLARATION_TO_STATIC_DEVICE_INST(USB_DESC_DT_USB_PDEV);
 #ifndef USB_DESC_DT_USB_PID
 	#error "USB_DESC_DT_USB_PID should be defined"
 #endif
-#define STATIC_DEV_DATA_STRUCT   \
-	{                            \
-		_POINTER_TO_USB_PDEV ,   \
-		USB_DESC_DT_USB_VID,     \
-		USB_DESC_DT_USB_PID      \
-	}
 
+SET_STATIC_DEV_CONFIG(usb_device_descriptors) =
+{
+	_POINTER_TO_USB_PDEV,
+	USB_DESC_DT_USB_VID,
+	USB_DESC_DT_USB_PID
+};
+
+#define MODULE_HAS_NO_RUNTIME_DATA
 
 #include "add_static_dev.h"
 

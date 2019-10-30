@@ -2,14 +2,13 @@
 #ifndef _USB_AUDIO_CLASS_API_H_
 #define _USB_AUDIO_CLASS_API_H_
 
-
-/*****************  defines  **************/
+#include "dev_management_api.h"
 
 #define USB_AUDIO_CLASS_NO_PLAYBACK                      0
 #define USB_AUDIO_CLASS_SYNC_WITH_CORRECTIONS_PLAYBACK   1
 #define USB_AUDIO_CLASS_ASYNC_PLAYBACK                   2
 
-/**********  define API  types ************/
+
 enum USB_AUDIO_CLASS_API_ioctl_e {
 	USB_AUDIO_CLASS_IOCTL_GET_RX_BUFF = IOCTL_LAST_COMMON_IOCTL + 1,
 	USB_AUDIO_CLASS_IOCTL_RELEASE_RX_BUFF,
@@ -38,6 +37,6 @@ struct usb_audio_class_cfg_t {
 	uint8_t  playback_type;
 	uint8_t  enable_recording;
 };
-/**********  define API  functions  ************/
+SET_CONFIG_TYPE(usb_audio_class, struct usb_audio_class_cfg_t);
 
 #endif

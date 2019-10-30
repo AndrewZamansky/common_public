@@ -6,7 +6,7 @@
 #ifdef CONFIG_I94XXX
 	#include "I94100.h"
 	#undef I2S_I9XXXX_DT_BASE_ADDRESS
-	#define I2S_I9XXXX_DT_BASE_ADDRESS (size_t)I2S0_BASE
+	#define I2S_I9XXXX_DT_BASE_ADDRESS  (size_t)I2S0_BASE
 #else
 	#ifndef I2S_I9XXXX_DT_BASE_ADDRESS
 		#error "I2S_I9XXXX_DT_BASE_ADDRESS should be defined"

@@ -20,7 +20,7 @@
 //#define USB		2	/* Example: Map USB drive to drive number 2 */
 
 
-extern struct dev_desc_t *storage_dev;
+extern struct dev_desc_t *storage_for_fatFs_dev;
 
 /*-----------------------------------------------------------------------*/
 /* Get Drive Status                                                      */
@@ -112,7 +112,7 @@ DRESULT disk_read (
 )
 {
 
-	DEV_PREAD(storage_dev, buff, count * 512, sector * 512);
+	DEV_PREAD(storage_for_fatFs_dev, buff, count * 512, sector * 512);
 
 	return RES_OK;
 }
@@ -132,7 +132,7 @@ DRESULT disk_write (
 )
 {
 
-	DEV_PWRITE(storage_dev, buff, count * 512, sector * 512);
+	DEV_PWRITE(storage_for_fatFs_dev, buff, count * 512, sector * 512);
 
 
 	return RES_OK;

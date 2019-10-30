@@ -7,12 +7,8 @@
 #ifndef _clock_control_common_H_
 #define _clock_control_common_H_
 
-/********  includes *********************/
-
 #include "dev_management_api.h"
 
-
-/********  types  *********************/
 
 struct runtime_clk_t {
 	uint32_t          rate;

@@ -141,7 +141,7 @@ static void i9xxxx_I2S_init(struct I2S_i9xxxx_cfg_t *cfg_hndl,
 	src_clock = cfg_hndl->src_clock;
 #ifdef CONFIG_I94XXX
 	runtime_handle->i9xxxx_i2s_clk_dev = i94xxx_i2s_clk_dev;
-	runtime_handle->i9xxxx_I2S_MCLK_clk_dev = i94xxx_i2s_clk_dev;
+	runtime_handle->i9xxxx_I2S_MCLK_clk_dev = i94xxx_I2S_MCLK_clk_dev;
 	runtime_handle->i9xxxx_I2S_BCLK_clk_dev = i94xxx_I2S_BCLK_clk_dev;
 	runtime_handle->i9xxxx_I2S_FSCLK_clk_dev = i94xxx_I2S_FSCLK_clk_dev;
 #elif CONFIG_I96XXX_M0

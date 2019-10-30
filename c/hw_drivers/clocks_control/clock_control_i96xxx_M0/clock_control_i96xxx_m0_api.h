@@ -5,11 +5,6 @@
 #include "dev_management_api.h"
 #include "clock_control_api.h"
 
-/**********  define API  types ************/
-
-
-/**********  define API  functions  ************/
-
 extern struct dev_desc_t  *i96xxx_xtal_clk_dev;
 extern struct dev_desc_t  *i96xxx_lxtal_clk_dev;
 extern struct dev_desc_t  *i96xxx_hirc_clk_dev;

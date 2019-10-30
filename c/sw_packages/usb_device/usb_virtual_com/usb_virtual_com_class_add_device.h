@@ -4,10 +4,6 @@
 #include  "src/usb_virtual_com_class.h"
 
 
-#define MODULE_CONFIG_DATA_STRUCT_TYPE  struct usb_virtual_com_class_cfg_t
-#define MODULE_RUNTIME_DATA_STRUCT_TYPE struct usb_virtual_com_class_runtime_t
-
-
 #ifndef USB_VIRTUAL_COM_CLASS_DT_CALLBACK_TX_PDEV
 	#define _USB_VIRTUAL_COM_CLASS_CALLBACK_TX_PDEV   NULL
 #else
@@ -43,13 +39,13 @@ EXTERN_DECLARATION_TO_STATIC_DEVICE_INST(
 #define _POINTER_TO_USB_DESCRIPTOR_PDEV     \
 	P_TO_STATIC_DEVICE_INST(USB_VIRTUAL_COM_CLASS_DT_USB_DESCRIPTOR_PDEV)
 
-#define STATIC_DEV_DATA_STRUCT           \
-	{                                    \
-		_POINTER_TO_USB_PDEV ,           \
-		_USB_VIRTUAL_COM_CLASS_CALLBACK_TX_PDEV,  \
-		_USB_VIRTUAL_COM_CLASS_CALLBACK_RX_PDEV,  \
-		_POINTER_TO_USB_DESCRIPTOR_PDEV, \
-	}
+SET_STATIC_DEV_CONFIG(usb_virtual_com_class) =
+{
+	_POINTER_TO_USB_PDEV,
+	_USB_VIRTUAL_COM_CLASS_CALLBACK_TX_PDEV,
+	_USB_VIRTUAL_COM_CLASS_CALLBACK_RX_PDEV,
+	_POINTER_TO_USB_DESCRIPTOR_PDEV,
+};
 
 
 #include "add_static_dev.h"

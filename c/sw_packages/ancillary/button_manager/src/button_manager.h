@@ -9,9 +9,7 @@
 
 #include "dev_management_api.h"
 #include "os_wrapper.h"
-
-/***************   typedefs    *******************/
-
+#include "gpio_api.h"
 
 struct button_manager_runtime_t {
 	os_queue_t  xButtonQueue;
@@ -23,4 +21,6 @@ struct button_manager_runtime_t {
 	uint32_t    curr_event_indx;
 };
 
-#endif /* */
+SET_RUNTIME_DATA_TYPE(button_manager, struct button_manager_runtime_t);
+
+#endif

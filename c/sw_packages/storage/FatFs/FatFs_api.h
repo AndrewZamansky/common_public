@@ -6,17 +6,11 @@
 #include "dev_management_api.h"
 #include "ff.h"
 
-/*****************  defines  **************/
 
-
-/**********  define API  types ************/
-
-
-/**********  define API  functions  ************/
-
-
-
-
+struct FatFs_instance_t {
+	struct dev_desc_t *storage_dev;
+};
+SET_CONFIG_TYPE(FatFs, struct FatFs_instance_t);
 
 
 

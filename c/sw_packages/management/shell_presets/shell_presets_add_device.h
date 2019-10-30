@@ -3,11 +3,6 @@
 #include  "shell_presets_api.h"
 #include  "src/shell_presets.h"
 
-
-#define MODULE_CONFIG_DATA_STRUCT_TYPE   struct shell_presets_cfg_t
-#define MODULE_RUNTIME_DATA_STRUCT_TYPE  struct shell_presets_runtime_t
-
-
 #ifndef SHELL_PRESETS_DT_STORAGE_PDEV
 	#error "SHELL_PRESETS_DT_STORAGE_PDEV should be defined"
 #endif
@@ -27,12 +22,12 @@
 
 
 EXTERN_DECLARATION_TO_STATIC_DEVICE_INST(SHELL_PRESETS_DT_STORAGE_PDEV) ;
-#define STATIC_DEV_DATA_STRUCT        \
-	{                                 \
-		P_TO_STATIC_DEVICE_INST(SHELL_PRESETS_DT_STORAGE_PDEV), \
-		_CALLBACK_PDEV,                                         \
-		SHELL_PRESETS_DT_PRESET_SIZE                            \
-	}
+SET_STATIC_DEV_CONFIG(shell_presets) =
+{
+	P_TO_STATIC_DEVICE_INST(SHELL_PRESETS_DT_STORAGE_PDEV),
+	_CALLBACK_PDEV,
+	SHELL_PRESETS_DT_PRESET_SIZE
+};
 
 
 

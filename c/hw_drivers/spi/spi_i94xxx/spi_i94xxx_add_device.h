@@ -3,11 +3,6 @@
 #include  "spi_i94xxx_api.h"
 #include  "src/spi_i94xxx.h"
 
-
-#define MODULE_CONFIG_DATA_STRUCT_TYPE  struct spi_i94xxx_cfg_t
-#define MODULE_RUNTIME_DATA_STRUCT_TYPE struct spi_i94xxx_runtime_t
-
-
 #ifndef SPI_I94XXX_DT_BASE_ADDRESS
 	#error "SPI_I94XXX_DT_BASE_ADDRESS should be defined"
 #endif
@@ -50,19 +45,19 @@
 	#error "SPI_I94XXX_DT_TX_FIFO_THRESHOLD should be defined"
 #endif
 
-#define STATIC_DEV_DATA_STRUCT      \
-	{                               \
-		POINTER_TO_SRC_CLOCK_PDEV,  \
-		SPI_I94XXX_DT_CLK_FREQ,     \
-		SPI_I94XXX_DT_BASE_ADDRESS, \
-		SPI_I94XXX_DT_CLK_PIN,      \
-		SPI_I94XXX_DT_SS_PIN,       \
-		SPI_I94XXX_DT_MISO_PIN,     \
-		SPI_I94XXX_DT_MOSI_PIN,     \
-		SPI_I94XXX_DT_DATA_WIDTH_BITS,    \
-		SPI_I94XXX_DT_RX_FIFO_THRESHOLD,     \
-		SPI_I94XXX_DT_TX_FIFO_THRESHOLD    \
-	}
+SET_STATIC_DEV_CONFIG(spi_i94xxx) =
+{
+	POINTER_TO_SRC_CLOCK_PDEV,
+	SPI_I94XXX_DT_CLK_FREQ,
+	SPI_I94XXX_DT_BASE_ADDRESS,
+	SPI_I94XXX_DT_CLK_PIN,
+	SPI_I94XXX_DT_SS_PIN,
+	SPI_I94XXX_DT_MISO_PIN,
+	SPI_I94XXX_DT_MOSI_PIN,
+	SPI_I94XXX_DT_DATA_WIDTH_BITS,
+	SPI_I94XXX_DT_RX_FIFO_THRESHOLD,
+	SPI_I94XXX_DT_TX_FIFO_THRESHOLD
+};
 
 #include "add_static_dev.h"
 

@@ -8,12 +8,8 @@
 #ifndef _I2C_I94XXX_H_
 #define _I2C_I94XXX_H_
 
-/********  includes *********************/
-
 #include "dev_management_api.h"
 #include "os_wrapper.h"
-
-/********  types  *********************/
 
 
 #define		I2C_I94XXX_RCV_DATA_SIZE_BUFFER	64
@@ -34,4 +30,6 @@ struct i2c_i94xxx_runtime_t {
 	os_mutex_t mutex;
 	uint8_t   i2c_error;
 };
+SET_RUNTIME_DATA_TYPE(i2c_i94xxx, struct i2c_i94xxx_runtime_t);
+
 #endif

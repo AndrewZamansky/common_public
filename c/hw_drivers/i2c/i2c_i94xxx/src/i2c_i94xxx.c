@@ -5,7 +5,6 @@
  *
  */
 
-/********  includes *********************/
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 
@@ -35,18 +34,8 @@
 #endif
 
 
-/********  defines *********************/
-
 #define  NUM_OF_TRIES_TO_ACCESS_I2C_DEVICE  8
 
-/********  types  *********************/
-
-
-/* ------------ External variables ---------------------------------*/
-
-/* ------------------------ External functions ------------*/
-
-/* ------------------------ Exported variables --------*/
 
 static uint8_t dummy_msg;
 static size_t status_debug;
@@ -128,8 +117,8 @@ static void I2C_SlaveTRx(
 	struct i2c_i94xxx_cfg_t *cfg_hndl;
 	uint16_t curr_data_pos;
 
-	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(i2c_i94xxx, adev);
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(i2c_i94xxx, adev);
 
 	in_buff = runtime_handle->rcv_data;
 	curr_data_pos = runtime_handle->curr_data_pos;
@@ -486,8 +475,8 @@ static uint8_t i2c_i94xxx_callback(struct dev_desc_t *adev ,
 	uint32_t u32Status;
 	I2C_T *i2c_regs;
 
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
-	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(i2c_i94xxx, adev);
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(i2c_i94xxx, adev);
 	i2c_regs =(I2C_T *)cfg_hndl->base_address;
 
 
@@ -542,8 +531,8 @@ static size_t i2c_i94xxx_pwrite(struct dev_desc_t *adev,
 		return 0;
 	}
 
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
-	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(i2c_i94xxx, adev);
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(i2c_i94xxx, adev);
 
 	i2c_regs =(I2C_T *)cfg_hndl->base_address;
 
@@ -603,8 +592,8 @@ static void master_write(struct dev_desc_t *adev,
 		return ;
 	}
 
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
-	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(i2c_i94xxx, adev);
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(i2c_i94xxx, adev);
 
 	WaitQueue = runtime_handle->WaitQueue;
 	mutex = runtime_handle->mutex;
@@ -675,8 +664,8 @@ static void master_read(struct dev_desc_t *adev,
 		return;
 	}
 
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
-	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(i2c_i94xxx, adev);
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(i2c_i94xxx, adev);
 
 	if (I2C_I94XXX_API_MASTER_MODE != cfg_hndl->master_slave_mode)
 	{
@@ -742,8 +731,8 @@ static uint8_t  device_start(struct dev_desc_t *adev)
 	struct dev_desc_t	*i2c_clk_dev;
 	struct i2c_i94xxx_runtime_t *runtime_handle;
 
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
-	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(i2c_i94xxx, adev);
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(i2c_i94xxx, adev);
 	i2c_regs = (I2C_T *)cfg_hndl->base_address;
 
 	runtime_handle->WaitQueue = os_create_queue(1, sizeof(uint8_t ));
@@ -814,7 +803,7 @@ static uint8_t i2c_i94xxx_ioctl( struct dev_desc_t *adev,
 	struct i2c_i94xxx_cfg_t *cfg_hndl;
 	I2C_T *i2c_regs;
 
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(i2c_i94xxx, adev);
 	i2c_regs = (I2C_T *)cfg_hndl->base_address;
 	switch(aIoctl_num)
 	{
@@ -849,6 +838,4 @@ static uint8_t i2c_i94xxx_ioctl( struct dev_desc_t *adev,
 #define MODULE_IOCTL_FUNCTION           i2c_i94xxx_ioctl
 #define MODULE_CALLBACK_FUNCTION        i2c_i94xxx_callback
 #define MODULE_PWRITE_FUNCTION          i2c_i94xxx_pwrite
-#define MODULE_CONFIG_DATA_STRUCT_TYPE  struct i2c_i94xxx_cfg_t
-#define MODULE_RUNTIME_DATA_STRUCT_TYPE struct i2c_i94xxx_runtime_t
 #include "add_module.h"

@@ -4,7 +4,6 @@
  *
  */
 
-/********  includes *********************/
 #include "dev_management_api.h" // for device manager defines and typedefs
 
 #include "I2S_onSPI_i94xxx_api.h"
@@ -23,7 +22,6 @@
 #endif
 
 
-/********  defines *********************/
 
 //#define USE_SPI_I2S_INTERRUPT
 
@@ -38,20 +36,6 @@
 #endif
 
 
-
-/********  types  *********************/
-
-
-/* ---------------- External variables --------------------------*/
-
-/* ---------------- External functions --------------------------*/
-
-/* ---------------- Exported variables --------------------------*/
-
-/* ---------------- Main variables ------------------------------*/
-
-
-/* ---------------- Interrupt Routine ---------------------------*/
 
 /*
  * Currently I2S_onSPI_i94xxx_callback() is a loopback function, TX = RX.
@@ -71,7 +55,7 @@ static uint8_t I2S_onSPI_i94xxx_callback(struct dev_desc_t *adev ,
 
 	uint8_t i;
 
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(I2S_onSPI_i94xxx, adev);
 	I2S_SPI_module = (SPI_T*)cfg_hndl->base_address;
 	audio_format = cfg_hndl->audio_format;
 	data_width = cfg_hndl->data_width;
@@ -394,8 +378,8 @@ uint8_t I2S_onSPI_i94xxx_ioctl( struct dev_desc_t *adev,
 	struct I2S_onSPI_i94xxx_runtime_t *runtime_hndl;
 	SPI_T	*I2S_SPI_module;
 
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
-	runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(adev);
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(I2S_onSPI_i94xxx, adev);
+	runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(I2S_onSPI_i94xxx, adev);
 
 	if ((0 == runtime_hndl->init_done) && (IOCTL_DEVICE_START != aIoctl_num))
 	{
@@ -449,6 +433,4 @@ uint8_t I2S_onSPI_i94xxx_ioctl( struct dev_desc_t *adev,
 #define MODULE_NAME                     I2S_onSPI_i94xxx
 #define MODULE_IOCTL_FUNCTION           I2S_onSPI_i94xxx_ioctl
 #define MODULE_CALLBACK_FUNCTION        I2S_onSPI_i94xxx_callback
-#define MODULE_CONFIG_DATA_STRUCT_TYPE  struct I2S_onSPI_i94xxx_cfg_t
-#define MODULE_RUNTIME_DATA_STRUCT_TYPE struct I2S_onSPI_i94xxx_runtime_t
 #include "add_module.h"

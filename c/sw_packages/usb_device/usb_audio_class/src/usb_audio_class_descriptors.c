@@ -336,7 +336,7 @@ static void configure_endpoints(struct dev_desc_t *adev,
 	uint16_t max_host_out_pckt_size;
 	uint16_t max_host_in_pckt_size;
 
-	runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(adev);
+	runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(usb_audio_class, adev);
 
 	usb_hw = cfg_hndl->usb_hw;
 	playback_type = cfg_hndl->playback_type;

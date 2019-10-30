@@ -8,13 +8,8 @@
 #ifndef _SPI_I94XXX_H_
 #define _SPI_I94XXX_H_
 
-/********  includes *********************/
-
+#include "dev_management_api.h"
 #include "os_wrapper.h"
-
-/********  types  *********************/
-
-
 
 struct spi_i94xxx_runtime_t {
 	uint8_t  *rx_buff;
@@ -25,6 +20,7 @@ struct spi_i94xxx_runtime_t {
 	os_queue_t xRX_WaitQueue;
 	os_mutex_t  spi_mutex;
 };
+SET_RUNTIME_DATA_TYPE(spi_i94xxx, struct spi_i94xxx_runtime_t);
 
 
 #endif

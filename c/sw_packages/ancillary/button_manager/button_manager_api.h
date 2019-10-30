@@ -23,12 +23,6 @@
 #include "dev_management_api.h"
 
 
-/*****************  defines  **************/
-
-
-/**********  define API  types ************/
-
-
 /*
  * Button Reports:
  *
@@ -110,6 +104,7 @@ struct set_gpio_states_for_reported_event_t
 	struct  gpio_state_for_reported_event_t   *gpio_state_arr;
 	uint8_t  gpio_state_arr_size;
 };
+/****************************************************/
 
 
 /*
@@ -135,14 +130,6 @@ struct button_manager_config_t {
 	uint32_t              num_of_events;
 	uint8_t               num_of_gpio_devs;
 };
-
-/****************************************************/
-
-
-
-
-/**********  define API  functions  ************/
-
-
+SET_CONFIG_TYPE(button_manager, struct button_manager_config_t);
 
 #endif
