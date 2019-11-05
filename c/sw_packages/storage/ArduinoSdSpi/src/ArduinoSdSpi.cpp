@@ -278,7 +278,6 @@ static uint8_t ArduinoSdSpi_ioctl( struct dev_desc_t *adev,
 	case IOCTL_DEVICE_START :
 
 		//Wait 1ms for sdcard to power up at minimum.
-		os_delay_ms(1);
 
 		if(MAX_NUMBER_OF_ARDUINO_SPI_SD_INSTANCES <= g_num_dev_inst)
 		{
@@ -288,6 +287,8 @@ static uint8_t ArduinoSdSpi_ioctl( struct dev_desc_t *adev,
 		if (NULL == runtime_handle->sd_spi_inst )
 		{
 			DEV_IOCTL_0_PARAMS(spi_dev, IOCTL_DEVICE_START );
+
+			os_delay_ms(1);
 
 			num_dev_inst = g_num_dev_inst++;
 			runtime_handle->num_dev_inst = num_dev_inst;

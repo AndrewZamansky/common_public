@@ -63,7 +63,7 @@ fix_path_if_in_windows =$(if \
 # if we are building in Windows7 and length of tested
 # string is more then 8100 then build proccess will stop because
 # of windows shell limitiation on command length.
-# on Windows10 limitiation is 5000. so we take lower limit.
+# on Windows10 limitiation is 4900. so we take lower limit.
 
 # functions for string length :
 ASCII := A B C D E F G H I J K L M N O P Q R S T U V W X Y Z
@@ -99,7 +99,7 @@ test_if_string_len_less =$(if \
 
 
 __check_cmd_len =$(if \
-    $(findstring no,$(call test_if_string_len_less,$1,5000)),TOO_LONG,)
+    $(findstring no,$(call test_if_string_len_less,$1,4900)),TOO_LONG,)
 
 check_win_cmd_len =$(if \
       $(findstring WINDOWS,$(COMPILER_HOST_OS)),$(call __check_cmd_len,$1),)

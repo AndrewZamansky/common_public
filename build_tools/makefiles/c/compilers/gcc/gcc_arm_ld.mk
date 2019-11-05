@@ -195,19 +195,22 @@ else
 
     CREATE_LDS_CMD =$(CC) -E -P -x c $(FMT_GLOBAL_DEFINES)
     CREATE_LDS_CMD += $(LDS_PREPROCESSOR_DEFS)
-    CREATE_LDS_CMD_REDUCED :=$(call \
-         reduce_cmd_len, $(CREATE_LDS_CMD) $(FMT_GLOBAL_INCLUDE_DIR))
+
+    CREATE_LDS_CMD_TEST := $(CREATE_LDS_CMD) $(FMT_GLOBAL_INCLUDE_DIR)
+    CREATE_LDS_CMD_TEST += $(SCATTER_FILE_PATTERN) -o $(SCATTER_FILE)
+    CREATE_LDS_CMD_REDUCED :=$(call reduce_cmd_len, $(CREATE_LDS_CMD_TEST))
     LONG_LDS_CMD:=$(call check_win_cmd_len, $(CREATE_LDS_CMD_REDUCED))
 
     ifeq ($(LONG_LDS_CMD),TOO_LONG)
-        LDS_ARGS_FILE :=$(strip $(if $(LONG_ASM_CMD),$(OUT_DIR)/lds.args,))
+        LDS_ARGS_CONTENT :=$(subst \,/,$(FMT_GLOBAL_INCLUDE_DIR))
+        LDS_ARGS_FILE :=$(OUT_DIR)/lds.args
         DUMMY := $(call \
-             fwrite,$(LDS_ARGS_FILE),$(FMT_GLOBAL_INCLUDE_DIR),TRUNCATE)
+             fwrite,$(LDS_ARGS_FILE),$(LDS_ARGS_CONTENT),TRUNCATE)
         CREATE_LDS_CMD += $(CC_USE_ARGS_FROM_FILE_FLAG)$(LDS_ARGS_FILE)
+        CREATE_LDS_CMD += $(SCATTER_FILE_PATTERN) -o $(SCATTER_FILE)
     else
         CREATE_LDS_CMD :=$(CREATE_LDS_CMD_REDUCED)
     endif
-    CREATE_LDS_CMD += $(SCATTER_FILE_PATTERN) -o $(SCATTER_FILE)
 endif
 
 AR := $(FULL_GCC_PREFIX)ar
@@ -221,6 +224,7 @@ else
     endif
     LINKER_CMD += $(LIBS) -o $(LINKER_OUTPUT)
 endif
+
 
 
 build_outputs :
