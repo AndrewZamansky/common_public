@@ -56,6 +56,7 @@ struct usb_descriptors_add_string_t {
 #define USB_DEVICE_DESCRIPTORS_ADD_STRING(                    \
 	__usb_device_descriptors_dev, __str_desc_s, string_desc, string_type)   \
 	{                                                         \
+		struct usb_descriptors_add_string_t  __str_desc_s;     \
 		__str_desc_s.type_of_string = string_type;              \
 		__str_desc_s.string_descriptor = string_desc;           \
 		__str_desc_s.size_of_descriptor = sizeof(string_desc);  \

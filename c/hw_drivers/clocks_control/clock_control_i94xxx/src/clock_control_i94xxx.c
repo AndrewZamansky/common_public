@@ -255,6 +255,7 @@ static void clock_i94xxx_pclk0_get_freq(uint32_t *freq, uint32_t parent_freq)
 #define DT_DEV_NAME               i94xxx_pclk0_clk_dev
 #define DT_DEV_MODULE             clk_cntl
 
+#define CLK_DT_DEFAULT_PARENT     i94xxx_hclk_clk_dev
 #define CLK_DT_SET_FREQ_FUNC      clock_i94xxx_pclk0_set_freq
 #define CLK_DT_GET_FREQ_FUNC      clock_i94xxx_pclk0_get_freq
 
@@ -285,6 +286,7 @@ static void clock_i94xxx_pclk1_get_freq(uint32_t *freq, uint32_t parent_freq)
 #define DT_DEV_NAME               i94xxx_pclk1_clk_dev
 #define DT_DEV_MODULE             clk_cntl
 
+#define CLK_DT_DEFAULT_PARENT     i94xxx_hclk_clk_dev
 #define CLK_DT_SET_FREQ_FUNC      clock_i94xxx_pclk1_set_freq
 #define CLK_DT_GET_FREQ_FUNC      clock_i94xxx_pclk1_get_freq
 

@@ -56,8 +56,6 @@
 	((PDMA->DSCT[(u32Ch)].CTL & PDMA_DSCT_CTL_TXCNT_Msk) >>     \
 												PDMA_DSCT_CTL_TXCNT_Pos)
 
-/********  types  *********************/
-
 typedef enum
 {
 	DMA_I9XXXX_BUFF_IDLE,
@@ -68,11 +66,6 @@ typedef enum
 	DMA_I9XXXX_BUFF_RX_RADA_PROCESSING
 } DMA_I9XXXX_buff_state_t;
 
-/* ------------ External variables ---------------------------------*/
-
-/* ------------------------ External functions ------------*/
-
-/* ------------------------ Exported variables --------*/
 #define MAX_NUMBER_OF_CHANNELS	16
 struct dev_desc_t * channel_pdev[MAX_NUMBER_OF_CHANNELS] = {0};
 
@@ -96,8 +89,6 @@ struct dev_desc_t * channel_pdev[MAX_NUMBER_OF_CHANNELS] = {0};
 #endif
 
 
-
-/********  types  *********************/
 
 
 /* func : put_new_buffer_in_pdma

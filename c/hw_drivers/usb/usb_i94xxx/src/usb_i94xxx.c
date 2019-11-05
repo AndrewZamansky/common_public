@@ -372,6 +372,10 @@ static void set_endpoint_func(struct set_endpoints_t *set_endpoints)
 		/* Buffer range for endpoint */
 		USBD_SET_EP_BUF_ADDR(endpoints_count, available_buff_pointer);
 		max_pckt_size = set_endpoints->max_pckt_sizes[i];
+		if ((0 == max_pckt_size) || (1024 <= max_pckt_size))
+		{
+			CRITICAL_ERROR("unsupported endpoint size\n");
+		}
 		available_buff_pointer += max_pckt_size;
 		// hw requires alignment by 8 bytes:
 		available_buff_pointer = (available_buff_pointer + 7) & (~0x7);

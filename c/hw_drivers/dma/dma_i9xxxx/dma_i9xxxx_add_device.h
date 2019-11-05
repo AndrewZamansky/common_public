@@ -4,6 +4,36 @@
 #include  "src/dma_i9xxxx.h"
 
 
+#if defined(CONFIG_I94XXX)
+	#define I9XXXX_TEST_IF_PERIFERAL(type) \
+		((type == DMA_I94XXX_API_TYPE_SPI1_RX) || \
+		(type == DMA_I94XXX_API_TYPE_SPI1_TX) || \
+		(type == DMA_I94XXX_API_TYPE_SPI2_RX) || \
+		(type == DMA_I94XXX_API_TYPE_SPI2_TX) || \
+		(type == DMA_I94XXX_API_TYPE_I2S_RX) || \
+		(type == DMA_I94XXX_API_TYPE_I2S_TX) || \
+		(type == DMA_I94XXX_API_TYPE_DPWM) || \
+		(type == DMA_I94XXX_API_TYPE_DMIC))
+	#define I9XXXX_TEST_IF_TX_PERIFERAL(type) \
+		((type == DMA_I94XXX_API_TYPE_SPI1_TX) || \
+		(type == DMA_I94XXX_API_TYPE_SPI2_TX) || \
+		(type == DMA_I94XXX_API_TYPE_I2S_TX) || \
+		(type == DMA_I94XXX_API_TYPE_DPWM))
+#elif defined(CONFIG_I96XXX_M0)
+	#define I9XXXX_TEST_IF_PERIFERAL(type) \
+		((type == DMA_I94XXX_API_TYPE_SPI2_RX) || \
+		(type == DMA_I94XXX_API_TYPE_SPI2_TX) || \
+		(type == DMA_I94XXX_API_TYPE_I2S0_RX) || \
+		(type == DMA_I94XXX_API_TYPE_I2S0_TX) || \
+		(type == DMA_I94XXX_API_TYPE_I2S1_RX) || \
+		(type == DMA_I94XXX_API_TYPE_I2S1_TX))
+	#define I9XXXX_TEST_IF_TX_PERIFERAL(type) \
+		((type == DMA_I94XXX_API_TYPE_SPI2_TX) || \
+		(type == DMA_I94XXX_API_TYPE_I2S0_TX) || \
+		(type == DMA_I94XXX_API_TYPE_I2S1_TX))
+#endif
+
+
 #ifndef DMA_I9XXXX_DT_CALLBACK_PDEV
 	#define _DMA_I9XXXX_CALLBACK_PDEV   NULL
 #else
@@ -46,7 +76,7 @@
 #endif
 
 
-#if I9XXXX_TEST_IF_PERIFERAL(I9XXXX_TEST_IF_TX_PERIFERAL)
+#if I9XXXX_TEST_IF_TX_PERIFERAL(DMA_I9XXXX_DT_PERIPHERAL_TYPE)
 	#ifndef DMA_I9XXXX_DT_NUM_OF_PREFILLED_BUFFERS_BEFORE_TX_START
 		#error "DMA_I9XXXX_DT_NUM_OF_PREFILLED_BUFFERS_BEFORE_TX_START should be defined"
 	#endif
@@ -83,6 +113,8 @@ SET_STATIC_DEV_CONFIG(dma_i9xxxx) =
  *  device specific defines should be undefined
  *  after calling #include "add_static_dev.h"
  */
+#undef I9XXXX_TEST_IF_PERIFERAL
+#undef I9XXXX_TEST_IF_TX_PERIFERAL
 #undef DMA_I9XXXX_DT_CALLBACK_PDEV
 #undef _DMA_I9XXXX_CALLBACK_PDEV
 #undef DMA_I9XXXX_DT_PERIPHERAL_PDEV
