@@ -9,7 +9,10 @@
 /***************   includes    *******************/
 #include "_project_typedefs.h"
 #include "_project_defines.h"
-#include "errors_api.h"
+
+#if CONFIG_MAX_NUM_OF_DYNAMIC_DEVICES > 0
+	#include "errors_api.h"
+#endif
 
 #include "dev_management_api.h"
 #include "dev_management.h"

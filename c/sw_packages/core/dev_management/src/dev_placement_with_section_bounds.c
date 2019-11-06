@@ -12,7 +12,11 @@
 #include "dev_management.h"
 #include "arch.h"
 #include "string.h"
-#include "errors_api.h"
+
+#if (defined(CONFIG_DYNAMIC_DEVICE_TREE) ||  \
+	(CONFIG_MAX_NUM_OF_DYNAMIC_DEVICES > 0))
+	#include "errors_api.h"
+#endif
 
 #ifdef CONFIG_USE_DEVICE_NAME_STRINGS
 

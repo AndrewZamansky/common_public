@@ -7,7 +7,6 @@
 	@description :
 ***************************************** */
 
-/* ------------------------ INCLUDES ---------------------------------------*/
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 
@@ -22,25 +21,6 @@
 #include "semihosting.h"
 #include "stdio.h"
 #include "string.h"
-
-
-/*following line add module to available module list for dynamic device tree*/
-#include "semihosting_add_component.h"
-
-/* ------------------------ defines ------------------------------*/
-
-/* ------------------------typedefs ------------------------------*/
-
-/* ---------------------------- External variables -------------------------*/
-
-/* ------------------------ External functions ------------------------------*/
-
-/* ------------------------------ Exported variables -----------------------*/
-
-/* ------------------------------ Local variables ---------------------------*/
-
-
-/* ------------------------ Local Functions  -------------------------------*/
 
 
 static int BKPT(int op, void* p1, void* p2) ;
@@ -60,14 +40,7 @@ static int terminal_hndl = -1;
 
 
 
-/********  types  *********************/
-
-/********  externals *********************/
 extern uint32_t bkpt_asm(int op, void* p1, void* p2);
-
-
-/********  local defs *********************/
-
 
 
 
@@ -238,7 +211,7 @@ size_t semihosting_pwrite( struct dev_desc_t *adev,
 	{
 		return 0;
 	}
-	handle = DEV_GET_CONFIG_DATA_POINTER(adev);
+	handle = DEV_GET_CONFIG_DATA_POINTER(semihosting, adev);
 	callback_dev = handle->callback_dev;
 	ARM_API_SH_Write(terminal_hndl, apData, aLength);
 	if(NULL != callback_dev)
@@ -301,7 +274,7 @@ static void test_for_input_ready( struct dev_desc_t *adev  )
 
 	static uint8_t run_state = RUN_STATE_PREINIT;
 
-	handle = DEV_GET_CONFIG_DATA_POINTER(adev);
+	handle = DEV_GET_CONFIG_DATA_POINTER(semihosting, adev);
 
 	if (RUN_STATE_PREINIT == run_state)
 	{
@@ -424,7 +397,7 @@ uint8_t semihosting_ioctl( struct dev_desc_t *adev,
 {
 	struct semihosting_instance_t *handle;
 
-	handle = DEV_GET_CONFIG_DATA_POINTER(adev);
+	handle = DEV_GET_CONFIG_DATA_POINTER(semihosting, adev);
 	switch(aIoctl_num)
 	{
 		case IOCTL_DEVICE_START :
@@ -456,3 +429,9 @@ uint8_t semihosting_ioctl( struct dev_desc_t *adev,
 	}
 	return 0;
 }
+
+
+#define	MODULE_NAME             semihosting
+#define	MODULE_IOCTL_FUNCTION   semihosting_ioctl
+#define MODULE_HAS_NO_RUNTIME_DATA
+#include "add_module.h"
