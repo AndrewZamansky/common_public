@@ -165,7 +165,7 @@ static uint8_t load_preset(struct shell_presets_cfg_t *config_handle,
 	uint8_t *curr_pos;
 	uint8_t *last_pos;
 	uint8_t *end_of_cmd_pos;
-	struct dev_desc_t *   shell_callback_dev;
+	struct dev_desc_t *   shell_backend_dev;
 	struct rcvd_cmd_t	rcvd_cmd;
 
 	retVal = get_preset(config_handle, runtime_handle, num_of_preset);
@@ -175,8 +175,8 @@ static uint8_t load_preset(struct shell_presets_cfg_t *config_handle,
 		return 1;
 	}
 
-	shell_callback_dev = config_handle->shell_callback_dev;
-	if (NULL == shell_callback_dev)
+	shell_backend_dev = config_handle->shell_backend_dev;
+	if (NULL == shell_backend_dev)
 	{
 		return 0;
 	}
@@ -194,8 +194,8 @@ static uint8_t load_preset(struct shell_presets_cfg_t *config_handle,
 			rcvd_cmd.reply_dev = NULL;
 			rcvd_cmd.cmd_buf = curr_pos;
 			rcvd_cmd.cmd_len = (end_of_cmd_pos - curr_pos) + 1;
-			DEV_CALLBACK_1_PARAMS(
-					shell_callback_dev, CALLBACK_DATA_RECEIVED, &rcvd_cmd);
+			DEV_IOCTL_1_PARAMS(
+				shell_backend_dev, IOCTL_SHELL_NEW_FRAME_RECEIVED, &rcvd_cmd);
 			end_of_cmd_pos++;
 			curr_pos = end_of_cmd_pos;
 		}

@@ -1,6 +1,6 @@
 /*
  *
- * file :   shell.c
+ * file :   shell_frontend.c
  *
  *
  */
@@ -12,22 +12,21 @@
 #include "dev_management_api.h"
 
 #include "os_wrapper.h"
-#include "shell_api.h"
-#include "shell.h"
+#include "shell_frontend_api.h"
+#include "shell_frontend.h"
 #include "management_api.h"
 
 
-typedef struct
-{
+struct xMessage_t {
 	struct dev_desc_t * pdev;
-} xMessage_t;
+};
 
 
 
 static uint8_t task_is_running=0;
 
-static const char erase_seq[] = "\b \b";		/* erase sequence	*/
-static const char eol_seq[] = "\r\n";		/* end of line sequence	*/
+static const char erase_seq[] = "\b \b";   /* erase sequence */
+static const char eol_seq[] = "\r\n";      /* end of line sequence */
 static char EOF_MARKER_STR[] = "\r\n~2@5\r\n";
 
 
@@ -46,15 +45,15 @@ static os_queue_t xQueue = NULL;
 
 
 /**
- * shell_callback()
+ * shell_frontend_callback()
  *
  * return:
  */
-static uint8_t shell_callback(struct dev_desc_t *adev,
+static uint8_t shell_frontend_callback(struct dev_desc_t *adev,
 		const uint8_t aCallback_num,
 		void * aCallback_param1, void * aCallback_param2)
 {
-	xMessage_t  queueMsg;
+	struct xMessage_t  queueMsg;
 
 	if (NULL == xQueue)
 	{
@@ -80,7 +79,8 @@ static void reply_data(const char *data, size_t len)
 
 #define SUMS_OF_EOLS	('\r'+'\n')
 
-static uint8_t get_valid_line(struct shell_runtime_instance_t *runtime_handle,
+static uint8_t get_valid_line(
+		struct shell_frontend_runtime_instance_t *runtime_handle,
 		uint8_t **pBuffer, size_t *p_total_length, size_t *p_bytesConsumed)
 {
 	uint8_t validCommadFound;
@@ -220,10 +220,10 @@ static uint8_t *extract_command_from_line(
 }
 
 
-static void consume_line(struct shell_cfg_t *config_handle,
+static void consume_line(struct shell_frontend_cfg_t *config_handle,
 							uint8_t *pBufferStart, size_t EOL_pos)
 {
-	struct dev_desc_t *   callback_dev;
+	struct dev_desc_t *   shell_backend_dev;
 	struct dev_desc_t *   cmd_save_dev;
 	struct rcvd_cmd_t  rcvd_cmd;
 	uint8_t *pCmd;
@@ -237,14 +237,14 @@ static void consume_line(struct shell_cfg_t *config_handle,
 		{
 			reply_data("\r\n", 2);
 		}
-		callback_dev = config_handle->callback_dev;
-		if (callback_dev )
+		shell_backend_dev = config_handle->shell_backend_dev;
+		if (shell_backend_dev )
 		{
 			rcvd_cmd.reply_dev = config_handle->server_tx_dev;
 			rcvd_cmd.cmd_buf = pCmd;
 			rcvd_cmd.cmd_len = EOL_pos + 1;
-			DEV_CALLBACK_1_PARAMS(
-					callback_dev, CALLBACK_DATA_RECEIVED, &rcvd_cmd);
+			DEV_IOCTL_1_PARAMS(
+				shell_backend_dev, IOCTL_SHELL_NEW_FRAME_RECEIVED, &rcvd_cmd);
 		}
 		cmd_save_dev = config_handle->cmd_save_dev;
 		if (cmd_save_dev )
@@ -268,90 +268,94 @@ static void consume_line(struct shell_cfg_t *config_handle,
 }
 
 /**
- * Shell_Task()
+ * shell_frontend_Task()
  *
  * return:
  */
-static void Shell_Task( void *pvParameters )
+static void shell_frontend_Task( void *pvParameters )
 {
-	xMessage_t pxRxedMessage;
+	struct xMessage_t pxRxedMessage;
 	size_t total_length;
 	size_t bytesConsumed;
 	size_t EOL_pos;
 	uint8_t *pBufferStart;
 	struct ioctl_get_data_buffer_t data_buffer_info;
-	struct shell_runtime_instance_t  *runtime_handle;
-	struct shell_cfg_t *config_handle;
+	struct shell_frontend_runtime_instance_t  *runtime_handle;
+	struct shell_frontend_cfg_t *config_handle;
 	struct dev_desc_t *   curr_rx_dev;
 	struct dev_desc_t *   curr_dev;
 
-	xQueue = os_create_queue( CONFIG_SHELL_MAX_QUEUE_LEN, sizeof(xMessage_t) );
+	xQueue = os_create_queue(
+			CONFIG_SHELL_FRONTEND_MAX_QUEUE_LEN, sizeof(struct xMessage_t) );
 
-    if ( 0 == xQueue  ) return ;
+	if ( 0 == xQueue  ) return ;
 
 	for ( ;; )
 	{
-		if ( OS_QUEUE_RECEIVE_SUCCESS ==
+		if ( OS_QUEUE_RECEIVE_SUCCESS !=
 				os_queue_receive_infinite_wait( xQueue, &( pxRxedMessage )) )
 		{
-			curr_dev = pxRxedMessage.pdev;
-			config_handle = DEV_GET_CONFIG_DATA_POINTER(shell, curr_dev);
-			runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(shell, curr_dev);
-			curr_rx_dev = config_handle->server_rx_dev;
-			curr_tx_dev = config_handle->server_tx_dev;
-
-			DEV_IOCTL(curr_rx_dev,
-					IOCTL_GET_AND_LOCK_DATA_BUFFER, &data_buffer_info);
-
-			total_length = data_buffer_info.TotalLength ;
-			pBufferStart = data_buffer_info.pBufferStart ;
-
-			if(0 != data_buffer_info.bufferWasOverflowed)
-			{
-				runtime_handle->lastTestedBytePos = 0;
-				runtime_handle->lastEOLchar = 0;
-			}
-
-			while (total_length)
-			{
-				bytesConsumed=0;
-
-				// will return total_length if EOL not found
-				EOL_pos = get_valid_line(runtime_handle,
-						&pBufferStart, &total_length, &bytesConsumed);
-
-				if (EOL_pos < total_length)
-				{
-					consume_line(config_handle, pBufferStart, EOL_pos);
-
-					EOL_pos++;// add first EOL char
-					bytesConsumed += EOL_pos;
-				}
-				pBufferStart = &pBufferStart[EOL_pos];
-				total_length -= EOL_pos;
-
-				DEV_IOCTL(curr_rx_dev,IOCTL_SET_BYTES_CONSUMED_IN_DATA_BUFFER,
-						(void *)((uint32_t)bytesConsumed));
-			}
-			DEV_IOCTL(curr_rx_dev, IOCTL_SET_UNLOCK_DATA_BUFFER ,(void *) 0);
+			continue;
 		}
+
+		curr_dev = pxRxedMessage.pdev;
+		config_handle = DEV_GET_CONFIG_DATA_POINTER(shell_frontend, curr_dev);
+		runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(shell_frontend, curr_dev);
+		curr_rx_dev = config_handle->server_rx_dev;
+		curr_tx_dev = config_handle->server_tx_dev;
+
+		DEV_IOCTL(curr_rx_dev,
+				IOCTL_GET_AND_LOCK_DATA_BUFFER, &data_buffer_info);
+
+		total_length = data_buffer_info.TotalLength ;
+		pBufferStart = data_buffer_info.pBufferStart ;
+
+		if(0 != data_buffer_info.bufferWasOverflowed)
+		{
+			runtime_handle->lastTestedBytePos = 0;
+			runtime_handle->lastEOLchar = 0;
+		}
+
+		while (total_length)
+		{
+			bytesConsumed = 0;
+
+			// will return total_length if EOL not found
+			EOL_pos = get_valid_line(runtime_handle,
+					&pBufferStart, &total_length, &bytesConsumed);
+
+			if (EOL_pos < total_length)
+			{
+				consume_line(config_handle, pBufferStart, EOL_pos);
+
+				EOL_pos++;// add first EOL char
+				bytesConsumed += EOL_pos;
+			}
+			pBufferStart = &pBufferStart[EOL_pos];
+			total_length -= EOL_pos;
+
+			DEV_IOCTL(curr_rx_dev, IOCTL_SET_BYTES_CONSUMED_IN_DATA_BUFFER,
+					(void *)((uint32_t)bytesConsumed));
+		}
+		DEV_IOCTL(curr_rx_dev, IOCTL_SET_UNLOCK_DATA_BUFFER ,(void *) 0);
+
 		os_stack_test();
 	}
 }
 
 
 /**
- * shell_ioctl()
+ * shell_frontend_ioctl()
  *
  * return:
  */
-static uint8_t shell_ioctl( struct dev_desc_t *adev,
+static uint8_t shell_frontend_ioctl( struct dev_desc_t *adev,
 		const uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2)
 {
-	struct shell_cfg_t *config_handle;
+	struct shell_frontend_cfg_t *config_handle;
 	struct dev_desc_t *   server_dev ;
 
-	config_handle = DEV_GET_CONFIG_DATA_POINTER(shell, adev);
+	config_handle = DEV_GET_CONFIG_DATA_POINTER(shell_frontend, adev);
 
 	switch(aIoctl_num)
 	{
@@ -368,16 +372,13 @@ static uint8_t shell_ioctl( struct dev_desc_t *adev,
 			config_handle->server_rx_dev = server_dev;
 		}
 		break;
-	case IOCTL_SET_CALLBACK_DEV:
-		config_handle->callback_dev = (struct dev_desc_t *) aIoctl_param1;
-		break;
 #endif
 	case IOCTL_DEVICE_START :
 		if (0 == task_is_running)
 		{
 			task_is_running = 1;
-			os_create_task("shell_task", Shell_Task,
-					NULL, SHELL_TASK_STACK_SIZE, SHELL_TASK_PRIORITY);
+			os_create_task("shell_frontend_task", shell_frontend_Task, NULL,
+				SHELL_FRONTEND_TASK_STACK_SIZE, SHELL_FRONTEND_TASK_PRIORITY);
 		}
 		server_dev = config_handle->server_tx_dev;
 		DEV_IOCTL_0_PARAMS(server_dev, IOCTL_DEVICE_START );
@@ -392,12 +393,12 @@ static uint8_t shell_ioctl( struct dev_desc_t *adev,
 	return 0;
 }
 
-#define	MODULE_NAME                      shell
-#define	MODULE_IOCTL_FUNCTION            shell_ioctl
-#define	MODULE_CALLBACK_FUNCTION         shell_callback
+#define MODULE_NAME                 shell_frontend
+#define MODULE_IOCTL_FUNCTION       shell_frontend_ioctl
+#define MODULE_CALLBACK_FUNCTION    shell_frontend_callback
 
 #define MODULE_CONFIGURABLE_PARAMS_ARRAY { \
-			{"shell_server", IOCTL_SET_SERVER_DEVICE, IOCTL_VOID, \
+		{"shell_frontend_server", IOCTL_SET_SERVER_DEVICE, IOCTL_VOID, \
 				DEV_PARAM_TYPE_PDEVICE, MAPPED_SET_DUMMY_PARAM() }   \
 		}
 

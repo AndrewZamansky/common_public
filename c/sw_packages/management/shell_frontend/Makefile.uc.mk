@@ -1,0 +1,19 @@
+
+INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_SHELL)
+
+#INCLUDE_DIR =
+
+#DEFINES =
+
+#CFLAGS =
+
+#ASMFLAGS =
+
+
+
+SRC = shell_frontend.c
+
+
+VPATH = src
+
+include $(COMMON_CC)

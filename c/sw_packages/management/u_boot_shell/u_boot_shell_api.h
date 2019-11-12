@@ -11,11 +11,16 @@
 #define UBOOT_SHELL_API_VERSION  20191007
 
 
-#define  U_BOOT_SHELL_API_SERVER_DEVICE_STR  "server_dev"
+#define  U_BOOT_SHELL_API_SHELL_FRONTEND_DEVICE_STR  "shell_frontend_dev"
+
+enum U_BOOT_SHELL_API_IOCTL_E
+{
+	IOCTL_U_BOOT_SHELL_API_SET_SHELL_FRONTEND = IOCTL_LAST_COMMON_IOCTL + 1,
+};
 
 #ifndef CONFIG_INCLUDE_ONLY_UBOOT_SHELL_API
 	struct u_boot_shell_instance_t {
-		struct dev_desc_t * server_dev;
+		struct dev_desc_t * shell_frontend_dev;
 	};
 
 	SET_CONFIG_TYPE(u_boot_shell, struct u_boot_shell_instance_t);

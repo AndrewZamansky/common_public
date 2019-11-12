@@ -1,5 +1,5 @@
 #
-	
-config  SHELL_MAX_QUEUE_LEN
+
+config  SHELL_FRONTEND_MAX_QUEUE_LEN
 	int   "internal queue length"
 	default 3

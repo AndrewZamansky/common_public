@@ -2,15 +2,13 @@
 #ifndef _management_api_h_
 #define _management_api_h_
 
-#include "dev_management_api.h" // for device manager defines and typedefs
+#include "dev_management_api.h"
 
-/*****************  defines  **************/
+enum SHELL_API_IOCTL_E
+{
+	IOCTL_SHELL_NEW_FRAME_RECEIVED = IOCTL_LAST_COMMON_IOCTL + 1,
+};
 
-
-/**********  define API  types ************/
-
-
-/**********  define API  functions  ************/
 struct rcvd_cmd_t {
 	struct dev_desc_t * reply_dev;
 	uint8_t  *cmd_buf;
