@@ -4,8 +4,6 @@
  *
  */
 
-/********  includes *********************/
-
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 
@@ -18,21 +16,10 @@
 #include "irq_api.h"
 #include "dmic_i94xxx_api.h"
 #include "clock_control_i94xxx_api.h"
+#include "pin_control_api.h"
 
 
 /*following line add module to available module list for dynamic device tree*/
-
-/********  defines *********************/
-
-
-/********  types  *********************/
-
-
-/* ------------ External variables ---------------------------------*/
-
-/* ------------------------ External functions ------------*/
-
-/* ------------------------ Exported variables --------*/
 
 
 static void dmic_init(struct dmic_i94xxx_cfg_t *cfg_hndl)
@@ -52,7 +39,7 @@ static void dmic_init(struct dmic_i94xxx_cfg_t *cfg_hndl)
 	pin_control_api_set_pin_function(cfg_hndl->dmic_data1_pin);
 	pin_control_api_set_pin_function(cfg_hndl->dmic_clk1_pin);
 
-	DEV_IOCTL_1_PARAMS(i94xxx_dmic_clk_dev, IOCTL_DEVICE_START);
+	DEV_IOCTL_0_PARAMS(i94xxx_dmic_clk_dev, IOCTL_DEVICE_START);
 	DEV_IOCTL_1_PARAMS(i94xxx_dmic_clk_dev, CLK_IOCTL_SET_PARENT, src_clock);
 	DEV_IOCTL_0_PARAMS(i94xxx_dmic_clk_dev, CLK_IOCTL_ENABLE);
 
@@ -104,7 +91,7 @@ static uint8_t dmic_i94xxx_ioctl( struct dev_desc_t *adev,
 {
 	struct dmic_i94xxx_cfg_t *cfg_hndl;
 
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(dmic_i94xxx, adev);
 	switch(aIoctl_num)
 	{
 	case IOCTL_DEVICE_START :
@@ -145,4 +132,5 @@ static uint8_t dmic_i94xxx_ioctl( struct dev_desc_t *adev,
 #define  MODULE_NAME                     dmic_i94xxx
 #define  MODULE_IOCTL_FUNCTION           dmic_i94xxx_ioctl
 #define  MODULE_CONFIG_DATA_STRUCT_TYPE  struct dmic_i94xxx_cfg_t
+#define MODULE_HAS_NO_RUNTIME_DATA
 #include "add_module.h"
