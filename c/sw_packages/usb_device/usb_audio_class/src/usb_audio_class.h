@@ -20,7 +20,7 @@
 
 
 //for changing sample rate(like in async mode)
-#define  HOST_OUT_MAX_ADDITIONAL_SAMPLES   2
+#define  HOST_OUT_MAX_ADDITIONAL_SAMPLES   3
 
 
 struct usb_audio_class_runtime_t {

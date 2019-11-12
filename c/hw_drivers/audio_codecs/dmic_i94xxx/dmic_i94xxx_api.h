@@ -4,8 +4,6 @@
 
 #include "I94100.h"
 
-/*****************  defines  **************/
-
 
 enum  dmic_i94xxx_pinout_e {
 	DMIC_I94XXX_DMIC_DATA0_A0,
@@ -21,10 +19,16 @@ enum DMIC_I94XXX_API_ioctl_e
 };
 
 
-/**********  define API  types ************/
+struct dmic_i94xxx_cfg_t {
+	struct dev_desc_t *   src_clock;
+	uint32_t sample_rate;
+	uint8_t num_of_channels;
+	uint8_t dmic_data0_pin;
+	uint8_t dmic_clk0_pin;
+	uint8_t dmic_data1_pin;
+	uint8_t dmic_clk1_pin;
+};
+SET_CONFIG_TYPE(dmic_i94xxx, struct dmic_i94xxx_cfg_t);
 
-
-
-/**********  define API  functions  ************/
 
 #endif

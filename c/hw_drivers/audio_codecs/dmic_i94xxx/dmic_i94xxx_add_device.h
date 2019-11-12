@@ -3,8 +3,6 @@
 #include  "dmic_i94xxx_api.h"
 #include  "src/dmic_i94xxx.h"
 
-#define  MODULE_CONFIG_DATA_STRUCT_TYPE  struct dmic_i94xxx_cfg_t
-
 
 #ifndef DMIC_I94XXX_DT_SAMPLE_RATE
 	#error "DMIC_I94XXX_DT_BAUD_RATE should be defined"
@@ -36,17 +34,18 @@
 	#error "DMIC_I94XXX_DT_CLK1_PIN should be defined"
 #endif
 
-#define STATIC_DEV_DATA_STRUCT          \
-	{                                   \
-		POINTER_TO_SRC_CLOCK_PDEV   ,   \
-		DMIC_I94XXX_DT_SAMPLE_RATE,     \
-		DMIC_I94XXX_DT_NUM_OF_CHANNELS, \
-		DMIC_I94XXX_DT_DATA0_PIN,       \
-		DMIC_I94XXX_DT_CLK0_PIN,        \
-		DMIC_I94XXX_DT_DATA1_PIN,       \
-		DMIC_I94XXX_DT_CLK1_PIN         \
-	}
+SET_STATIC_DEV_CONFIG(dmic_i94xxx) =
+{
+	POINTER_TO_SRC_CLOCK_PDEV,
+	DMIC_I94XXX_DT_SAMPLE_RATE,
+	DMIC_I94XXX_DT_NUM_OF_CHANNELS,
+	DMIC_I94XXX_DT_DATA0_PIN,
+	DMIC_I94XXX_DT_CLK0_PIN,
+	DMIC_I94XXX_DT_DATA1_PIN,
+	DMIC_I94XXX_DT_CLK1_PIN
+};
 
+#define MODULE_HAS_NO_RUNTIME_DATA
 
 #include "add_static_dev.h"
 
