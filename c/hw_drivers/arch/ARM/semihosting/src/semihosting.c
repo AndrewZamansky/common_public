@@ -433,5 +433,6 @@ uint8_t semihosting_ioctl( struct dev_desc_t *adev,
 
 #define	MODULE_NAME             semihosting
 #define	MODULE_IOCTL_FUNCTION   semihosting_ioctl
+#define	MODULE_PWRITE_FUNCTION   semihosting_pwrite
 #define MODULE_HAS_NO_RUNTIME_DATA
 #include "add_module.h"
