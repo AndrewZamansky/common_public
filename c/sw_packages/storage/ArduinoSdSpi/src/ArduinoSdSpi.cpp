@@ -115,7 +115,7 @@ static size_t ArduinoSdSpi_pwrite(struct dev_desc_t *adev,  //Device in .h file
 	if (SdSpiCard_inst->writeBlocks(
 			aOffset / 512, (uint8_t *)apData, (size_t)(aLength / 512)))
 	{
-		return 1;
+		return aLength;
 	}
 	else
 	{
@@ -154,7 +154,7 @@ static size_t ArduinoSdSpi_pread(struct dev_desc_t *adev,  //Device in .h file
 	if (SdSpiCard_inst->readBlocks(
 			aOffset / 512, (uint8_t *)apData, (size_t)(aLength / 512)))
 	{
-		return 1;
+		return aLength;
 	}
 	else
 	{

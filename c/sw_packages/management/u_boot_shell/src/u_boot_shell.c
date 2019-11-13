@@ -22,8 +22,9 @@
 
 #include <stdio.h>
 #include <stdarg.h>
+#include "os_wrapper.h"
 
-
+static 	os_mutex_t  u_boot_shell_mutex = NULL;
 struct dev_desc_t * gCurrReplyDev = NULL;
 
 extern int run_command(const char *cmd, int flag);
@@ -140,44 +141,23 @@ static void new_frame_received(struct rcvd_cmd_t *rcvd_cmd)
 static uint8_t u_boot_shell_ioctl( struct dev_desc_t *adev,
 		const uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2)
 {
-	struct u_boot_shell_instance_t *config_handle;
-	struct u_boot_shell_runtime_t *runtime_handle;
-	struct dev_desc_t *   shell_frontend_dev ;
-	os_mutex_t  mutex;
-
-	config_handle = DEV_GET_CONFIG_DATA_POINTER(u_boot_shell, adev);
-	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(u_boot_shell, adev);
-	mutex = runtime_handle->mutex;
-
 	switch(aIoctl_num)
 	{
-#ifdef CONFIG_USE_RUNTIME_DEVICE_CONFIGURATION
-	case IOCTL_U_BOOT_SHELL_API_SET_SHELL_FRONTEND :
-		{
-			shell_frontend_dev = (struct dev_desc_t *)aIoctl_param1;
-			config_handle->shell_frontend_dev=shell_frontend_dev;
-		}
-		break;
-#endif
 	case IOCTL_DEVICE_START :
-		if (NULL == mutex)
+		if (NULL != u_boot_shell_mutex)
 		{
-			runtime_handle->mutex = os_create_mutex();
-			shell_frontend_dev = config_handle->shell_frontend_dev;
-			if (NULL != shell_frontend_dev)
-			{
-				DEV_IOCTL_0_PARAMS(shell_frontend_dev , IOCTL_DEVICE_START );
-			}
+			CRITICAL_ERROR("u_boot_shell can be only 1 instance");
 		}
+		u_boot_shell_mutex = os_create_mutex();
 		break;
 	case IOCTL_SHELL_NEW_FRAME_RECEIVED:
-		if (NULL == mutex)
+		if (NULL == u_boot_shell_mutex)
 		{
 			CRITICAL_ERROR("uboot shell not initialized yet");
 		}
-		os_mutex_take_infinite_wait(mutex);
+		os_mutex_take_infinite_wait(u_boot_shell_mutex);
 		new_frame_received(aIoctl_param1);
-		os_mutex_give(mutex);
+		os_mutex_give(u_boot_shell_mutex);
 		break;
 	default :
 		return 1;
@@ -187,9 +167,6 @@ static uint8_t u_boot_shell_ioctl( struct dev_desc_t *adev,
 
 #define MODULE_NAME                     u_boot_shell
 #define MODULE_IOCTL_FUNCTION           u_boot_shell_ioctl
-
-#define MODULE_CONFIGURABLE_PARAMS_ARRAY	{\
-	{"u_boot_server", IOCTL_U_BOOT_SHELL_API_SET_SHELL_FRONTEND, IOCTL_VOID , \
-				DEV_PARAM_TYPE_PDEVICE, MAPPED_SET_DUMMY_PARAM() }, \
-	}
+#define MODULE_HAS_NO_RUNTIME_DATA
+#define MODULE_HAS_NO_CONFIG_DATA
 #include "add_module.h"
