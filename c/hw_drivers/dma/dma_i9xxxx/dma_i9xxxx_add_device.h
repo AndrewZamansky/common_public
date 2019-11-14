@@ -21,16 +21,16 @@
 		(type == DMA_I94XXX_API_TYPE_DPWM))
 #elif defined(CONFIG_I96XXX_M0)
 	#define I9XXXX_TEST_IF_PERIFERAL(type) \
-		((type == DMA_I94XXX_API_TYPE_SPI2_RX) || \
-		(type == DMA_I94XXX_API_TYPE_SPI2_TX) || \
-		(type == DMA_I94XXX_API_TYPE_I2S0_RX) || \
-		(type == DMA_I94XXX_API_TYPE_I2S0_TX) || \
-		(type == DMA_I94XXX_API_TYPE_I2S1_RX) || \
-		(type == DMA_I94XXX_API_TYPE_I2S1_TX))
+		((type == DMA_I96XXX_API_TYPE_SPI2_RX) || \
+		(type == DMA_I96XXX_API_TYPE_SPI2_TX) || \
+		(type == DMA_I96XXX_API_TYPE_I2S0_RX) || \
+		(type == DMA_I96XXX_API_TYPE_I2S0_TX) || \
+		(type == DMA_I96XXX_API_TYPE_I2S1_RX) || \
+		(type == DMA_I96XXX_API_TYPE_I2S1_TX))
 	#define I9XXXX_TEST_IF_TX_PERIFERAL(type) \
-		((type == DMA_I94XXX_API_TYPE_SPI2_TX) || \
-		(type == DMA_I94XXX_API_TYPE_I2S0_TX) || \
-		(type == DMA_I94XXX_API_TYPE_I2S1_TX))
+		((type == DMA_I96XXX_API_TYPE_SPI2_TX) || \
+		(type == DMA_I96XXX_API_TYPE_I2S0_TX) || \
+		(type == DMA_I96XXX_API_TYPE_I2S1_TX))
 #endif
 
 
