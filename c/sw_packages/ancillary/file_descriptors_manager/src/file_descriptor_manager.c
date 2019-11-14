@@ -55,17 +55,17 @@ static struct file_desc_t* get_file_desc(int fd)
 		return NULL;
 	}
 	return &file_desc[fd];
-;
 }
 
 
 #ifdef CONFIG_USE_INTERNAL_SOCKETS_IMPLEMENTATION
 
-#define  MAX_NUM_OF_SOCKETS_DEVS  1
-static struct dev_desc_t *  underlying_socket_dev_arr[
-												MAX_NUM_OF_SOCKETS_DEVS] = {0};
+#define  MAX_NUM_OF_INET_DEVS  1
+static struct dev_desc_t *underlying_INET_dev_arr[MAX_NUM_OF_INET_DEVS] = {0};
+#define  MAX_NUM_OF_IPC_DEVS  1
+static struct dev_desc_t *underlying_INET_dev_arr[MAX_NUM_OF_IPC_DEVS] = {0};
 
-uint8_t file_descriptor_manager_api_register_socket_device(
+uint8_t file_descriptor_manager_api_register_INET_device(
 											struct dev_desc_t * ap_dev)
 {
 	int i;
@@ -77,11 +77,38 @@ uint8_t file_descriptor_manager_api_register_socket_device(
 	}
 	os_mutex_take_infinite_wait(fd_mutex);
 
-	for (i = 0; i < MAX_NUM_OF_SOCKETS_DEVS; i++)
+	for (i = 0; i < MAX_NUM_OF_INET_DEVS; i++)
 	{
-		if (NULL == underlying_socket_dev_arr[i])
+		if (NULL == underlying_INET_dev_arr[i])
 		{
-			underlying_socket_dev_arr[i] = ap_dev;
+			underlying_INET_dev_arr[i] = ap_dev;
+			ret_val = 0;
+			goto exit;
+		}
+	}
+	ret_val = -1;// no free descriptor
+exit :
+	os_mutex_give(fd_mutex);
+	return ret_val;
+}
+
+uint8_t file_descriptor_manager_api_register_IPC_device(
+											struct dev_desc_t * ap_dev)
+{
+	int i;
+	int ret_val;
+
+	if (NULL == fd_mutex)
+	{
+		CRITICAL_ERROR("file descriptor manager not initialized");
+	}
+	os_mutex_take_infinite_wait(fd_mutex);
+
+	for (i = 0; i < MAX_NUM_OF_IPC_DEVS; i++)
+	{
+		if (NULL == underlying_IPC_dev_arr[i])
+		{
+			underlying_IPC_dev_arr[i] = ap_dev;
 			ret_val = 0;
 			goto exit;
 		}
@@ -93,11 +120,11 @@ exit :
 }
 
 
+
 int socket_uCprojects(int socket_family, int socket_type, int protocol)
 {
 	size_t i;
 	int ret_val;
-	struct dev_desc_t * underlying_dev;
 
 	if (NULL == fd_mutex)
 	{
@@ -105,25 +132,11 @@ int socket_uCprojects(int socket_family, int socket_type, int protocol)
 	}
 	os_mutex_take_infinite_wait(fd_mutex);
 
-	for (i = 0; i < MAX_NUM_OF_SOCKETS_DEVS; i++)
-	{
-		underlying_dev = underlying_socket_dev_arr[i];
-		if (NULL != underlying_dev)
-		{
-			break;
-		}
-	}
-
-	if ( i == MAX_NUM_OF_SOCKETS_DEVS)
-	{
-		CRITICAL_ERROR("no valid socket device");
-		ret_val = -1;
-		goto exit;
-	}
-
 	switch (socket_family)
 	{
 		case AF_INET:
+			break;
+		case AF_IPC:
 			break;
 		default:
 			PRINTF_DBG("socket_family = %d\n", socket_family);
@@ -155,30 +168,18 @@ int socket_uCprojects(int socket_family, int socket_type, int protocol)
 
 	for (i = 0; i < CONFIG_MAX_NUMBER_OF_OPENED_FILE_DESCRIPTORS; i++)
 	{
-		if (0 == file_desc[i].used)
-		{
-			uint8_t retVal;
+		struct file_desc_t  *file_desc;
 
-			struct file_descriptor_manager_ioctl_socket_open_t  sock_oprn_s;
-			sock_oprn_s.socket_family = socket_family;
-			sock_oprn_s.socket_type = socket_type;
-			sock_oprn_s.protocol = protocol;
-			sock_oprn_s.new_socket_descriptor = &file_desc[i];
-			retVal = DEV_IOCTL_1_PARAMS(underlying_dev ,
-										IOCTL_OPEN_SOCKET, &sock_oprn_s);
-			if (0 == retVal)
-			{
-				file_desc[i].used = 1;
-				file_desc[i].underlying_dev = underlying_dev;
-				PRINTF_DBG("%s : open socket fd = %d\n",__FUNCTION__, i);
-				ret_val = i;
-				goto exit;
-			}
-			else
-			{
-				ret_val = -1;
-				goto exit;
-			}
+		file_desc = &file_desc[i];
+		file_desc->socket_family = socket_family;
+		file_desc->socket_type = socket_type;
+		file_desc->protocol = protocol;
+		if (0 == file_desc->used)
+		{
+			file_desc->used = 1;
+			ret_val = i;
+			PRINTF_DBG("%s : open socket fd = %d\n",__FUNCTION__, i);
+			goto exit;
 		}
 	}
 
@@ -202,10 +203,15 @@ int closesocket_uCprojects(int sockfd)
 		goto exit;
 	}
 
-	ret_val = curr_fd->file_desc_ops.closesocket_func(curr_fd->internal_desc);
+	if (NULL != curr_fd->underlying_dev)
+	{
+		ret_val = curr_fd->file_desc_ops.closesocket_func(
+												curr_fd->internal_desc);
+	}
 	if (0 == ret_val)
 	{
 		curr_fd->used = 0;
+		curr_fd->underlying_dev = NULL;
 	}
 exit:
 	os_mutex_give(fd_mutex);
@@ -216,7 +222,13 @@ exit:
 int connect_uCprojects(
 		int sockfd, const struct sockaddr *addr, unsigned int addrlen)
 {
+	struct file_descriptor_manager_ioctl_socket_open_t  sock_open;
 	struct file_desc_t  *curr_fd;
+	int ret_val;
+	size_t dev_arr_size;
+	struct dev_desc_t **underlying_dev_arr;
+	struct dev_desc_t *underlying_dev;
+	uint16_t i;
 
 	curr_fd = get_file_desc(sockfd);
 	if (NULL == curr_fd)
@@ -224,8 +236,48 @@ int connect_uCprojects(
 		return -1;
 	}
 
-	return curr_fd->file_desc_ops.connect_func(curr_fd->internal_desc,
-															addr, addrlen);
+	switch (curr_fd->socket_family)
+	{
+		case AF_INET:
+			underlying_dev_arr = underlying_INET_dev_arr;
+			dev_arr_size = MAX_NUM_OF_INET_DEVS;
+			break;
+		case AF_IPC:
+			underlying_dev_arr = underlying_IPC_dev_arr;
+			dev_arr_size = MAX_NUM_OF_IPC_DEVS;
+			break;
+		default :
+			return -1;
+	}
+
+	ret_val = -1;
+	sock_open.new_socket_descriptor = curr_fd;
+	for (i = 0; i < dev_arr_size; i++)
+	{
+		underlying_dev = underlying_dev_arr[i];
+		if (NULL == underlying_dev)
+		{
+			continue;
+		}
+
+		if (0 == DEV_IOCTL_1_PARAMS(underlying_dev,
+										IOCTL_OPEN_SOCKET, &sock_open))
+		{
+			ret_val = curr_fd->file_desc_ops.connect_func(
+								curr_fd->internal_desc, addr, addrlen);
+			if (0 < ret_val)
+			{
+				file_desc->underlying_dev = underlying_dev;
+				break; // connection succeed so we can exit
+			}
+			else
+			{
+				ret_val = curr_fd->file_desc_ops.closesocket_func(
+													curr_fd->internal_desc);
+			}
+		}
+	}
+	return ret_val;
 }
 
 
@@ -238,7 +290,7 @@ ssize_t recv_uCprojects(int sockfd, void *buf, size_t len, int flags)
 	uint8_t  retVal;
 
 	curr_fd = get_file_desc(sockfd);
-	if (NULL == curr_fd)
+	if ((NULL == curr_fd) || (NULL == curr_fd->underlying_dev))
 	{
 		return -1;
 	}
@@ -277,14 +329,6 @@ ssize_t recv_uCprojects(int sockfd, void *buf, size_t len, int flags)
 		errno = ENOTCONN;
 		return -1;
 	}
-
-
-//	static volatile int xxx=0;
-//	xxx++;
-//	if(2 == xxx)
-//	{
-//		xxx++;
-//	}
 	return size_received;
 }
 
@@ -423,7 +467,7 @@ int setsockopt_uCprojects(int sockfd, int level,
 		CRITICAL_ERROR("unknown option level");
 	}
 
-	if (1 == need_to_update_low_level)
+	if ((1 == need_to_update_low_level)  && (NULL != curr_fd->underlying_dev))
 	{
 		return curr_fd->file_desc_ops.setsockopt_func(
 				curr_fd->internal_desc, level, optname, optval, optlen);
@@ -437,7 +481,7 @@ int bind_uCprojects(int sockfd, const struct sockaddr *addr, socklen_t addrlen)
 	struct file_desc_t  *curr_fd;
 
 	curr_fd = get_file_desc(sockfd);
-	if (NULL == curr_fd)
+	if ((NULL == curr_fd) || (NULL == curr_fd->underlying_dev))
 	{
 		return -1;
 	}
@@ -461,7 +505,7 @@ int getsockname_uCprojects(
 	struct ioctl_net_device_get_local_addr_t ioctl_net_device_get_local_addr;
 
 	curr_fd = get_file_desc(sockfd);
-	if (NULL == curr_fd)
+	if ((NULL == curr_fd) || (NULL == curr_fd->underlying_dev))
 	{
 		return -1;
 	}
@@ -504,7 +548,7 @@ int getpeername_uCprojects(
 	struct file_desc_t  *curr_fd;
 
 	curr_fd = get_file_desc(sockfd);
-	if (NULL == curr_fd)
+	if ((NULL == curr_fd) || (NULL == curr_fd->underlying_dev))
 	{
 		return -1;
 	}
@@ -520,7 +564,7 @@ ssize_t send_uCprojects(
 	struct file_desc_t  *curr_fd;
 
 	curr_fd = get_file_desc(sockfd);
-	if (NULL == curr_fd)
+	if ((NULL == curr_fd) || (NULL == curr_fd->underlying_dev))
 	{
 		return -1;
 	}
@@ -656,8 +700,13 @@ int select_uCprojects(int nfds, fd_set *readfds, fd_set *writefds,
 				uint8_t read_ready;
 
 				curr_fd = &file_desc[i];
-				retVal = curr_fd->file_desc_ops.is_data_available_func(
+				retVal = 0;
+				read_ready = 0;
+				if (curr_fd->used || (NULL == curr_fd->underlying_dev))
+				{
+					retVal = curr_fd->file_desc_ops.is_data_available_func(
 										curr_fd->internal_desc, &read_ready);
+				}
 				if(0 != retVal)
 				{
 					PRINTF_DBG(

@@ -130,6 +130,7 @@ struct servent {
 #define  AF_ROUTE  17    /* Internal Routing Protocol */
 #define  AF_LINK    18    /* Link layer interface */
 #define  pseudo_AF_XTP  19    /* eXpress Transfer Protocol (no AF) */
+#define  AF_IPC    20 /* inter-process communication */
 
 #define  AF_MAX    20
 

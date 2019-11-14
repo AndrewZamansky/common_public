@@ -7,11 +7,6 @@
 
 #include "sys/socket.h"
 
-/*****************  defines  **************/
-
-
-/**********  define API  types ************/
-
 #ifdef  __cplusplus
 extern "C" {
 #endif
@@ -45,6 +40,9 @@ struct file_desc_ops_t {
 };
 
 struct file_desc_t {
+	int socket_family;
+	int socket_type;
+	int protocol;
 	struct dev_desc_t * underlying_dev;
 	void *internal_desc;
 	struct file_desc_ops_t file_desc_ops;
@@ -56,15 +54,12 @@ struct file_desc_t {
 #ifdef CONFIG_USE_INTERNAL_SOCKETS_IMPLEMENTATION
 
 struct file_descriptor_manager_ioctl_socket_open_t {
-	int socket_family;
-	int socket_type;
-	int protocol;
 	struct file_desc_t*  new_socket_descriptor;
 };
 
 uint8_t file_descriptor_manager_api_init(void);
-uint8_t file_descriptor_manager_api_register_socket_device(
-											struct dev_desc_t * ap_dev);
+uint8_t file_descriptor_manager_api_register_INET_device(
+										struct dev_desc_t * ap_dev);
 
 #endif
 

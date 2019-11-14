@@ -2,7 +2,7 @@
 #include "sys/socket.h"
 //#include <sys/type.h>
 
-#include "dev_management_api.h" // for device manager defines and typedefs
+#include "dev_management_api.h"
 #include "ESP8266_api.h"
 #include "file_descriptor_manager_api.h"
 #include "std_net_functions_api.h"
@@ -268,7 +268,8 @@ static uint8_t open_socket(struct dev_desc_t *adev,
 	struct file_desc_t*  new_socket_descriptor;
 	struct file_desc_ops_t* p_file_desc_ops;
 
-	switch (socket_open_s->socket_family)
+	new_socket_descriptor = socket_open_s->new_socket_descriptor;
+	switch (new_socket_descriptor->socket_family)
 	{
 		case AF_INET:
 			break;
@@ -277,7 +278,7 @@ static uint8_t open_socket(struct dev_desc_t *adev,
 			CRITICAL_ERROR("this socket family not implemented yet");
 	}
 
-	switch (socket_open_s->socket_type)
+	switch (new_socket_descriptor->socket_type)
 	{
 		case SOCK_STREAM:
 			break;
@@ -285,7 +286,7 @@ static uint8_t open_socket(struct dev_desc_t *adev,
 			CRITICAL_ERROR("this socket type not implemented yet");
 	}
 
-	switch (socket_open_s->protocol)
+	switch (new_socket_descriptor->protocol)
 	{
 		case IPPROTO_IP:
 		case IPPROTO_TCP:
@@ -294,7 +295,6 @@ static uint8_t open_socket(struct dev_desc_t *adev,
 			CRITICAL_ERROR("this protocol not implemented yet");
 	}
 
-	new_socket_descriptor = socket_open_s->new_socket_descriptor;
 	ioctl_socket_open.new_socket_descriptor =
 					(struct dev_desc_t **)&new_socket_descriptor->internal_desc;
 	retVal = DEV_IOCTL_1_PARAMS(

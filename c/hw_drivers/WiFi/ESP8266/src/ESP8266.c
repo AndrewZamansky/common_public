@@ -4,7 +4,6 @@
  *
  */
 
-/********  includes *********************/
 #include "_project.h"
 #include "errors_api.h"
 
