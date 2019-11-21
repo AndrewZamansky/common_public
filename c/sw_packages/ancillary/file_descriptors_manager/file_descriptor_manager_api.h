@@ -25,6 +25,11 @@ typedef int (*getpeername_func_t)(void *sockfd,
 						struct sockaddr *addr, socklen_t *addrlen);
 typedef ssize_t (*send_func_t)(void *sockfd,
 					const void *buffer, size_t length, int flags);
+typedef int (*accept_func_t)(
+		void *sockfd, struct sockaddr *addr, socklen_t *addrlen);
+typedef int (*listen_func_t)(void *sockfd, int backlog);
+typedef int (*getsockname_func_t)(
+		void *sockfd, struct sockaddr *local_addr, socklen_t *addrlen);
 
 struct file_desc_ops_t {
 #ifdef CONFIG_USE_INTERNAL_SOCKETS_IMPLEMENTATION
@@ -33,7 +38,10 @@ struct file_desc_ops_t {
 	recv_func_t   recv_func;
 	setsockopt_func_t  setsockopt_func;
 	bind_func_t   bind_func;
+	listen_func_t listen_func;
+	accept_func_t accept_func;
 	getpeername_func_t  getpeername_func;
+	getsockname_func_t  getsockname_func;
 	send_func_t  send_func;
 #endif
 	is_data_available_func_t  is_data_available_func;
@@ -57,8 +65,14 @@ struct file_descriptor_manager_ioctl_socket_open_t {
 	struct file_desc_t*  new_socket_descriptor;
 };
 
+struct file_descriptor_manager_ioctl_fill_socket_func_t {
+	struct file_desc_t*  new_socket_descriptor;
+};
+
 uint8_t file_descriptor_manager_api_init(void);
 uint8_t file_descriptor_manager_api_register_INET_device(
+										struct dev_desc_t * ap_dev);
+uint8_t file_descriptor_manager_api_register_IPC_device(
 										struct dev_desc_t * ap_dev);
 
 #endif

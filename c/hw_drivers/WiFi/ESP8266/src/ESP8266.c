@@ -7,7 +7,7 @@
 #include "_project.h"
 #include "errors_api.h"
 
-#include "dev_management_api.h" // for device manager defines and typedefs
+#include "dev_management_api.h"
 #define DEBUG
 #include "PRINTF_api.h"
 #include "ESP8266_api.h"
@@ -26,7 +26,6 @@
 #endif
 
 
-/********  defines *********************/
 
 #define AP_CONNECT_TIMEOUT  15000
 #define ESP8266_TIMEOUT     10000//3000
@@ -36,20 +35,10 @@
 #define SEND_TO_ESP8266(dev, data, len)    DEV_WRITE(dev , data , len)
 #define HANDSHAKE_TRIES  3
 
-/********  types  *********************/
-/********  externals *********************/
-
-/********  local defs *********************/
-
-/********  types  *********************/
-
-
-/**********   external variables    **************/
 
 extern uint8_t _do_uart_dbg_print;
 
 
-/***********   local variables    **************/
 static uint8_t dummy_msg;
 
 static void set_AP(
@@ -1620,6 +1609,23 @@ static uint8_t send_get_data_rcvd_msg(struct dev_desc_t *adev,
 }
 
 
+static uint8_t send_get_ip_msg_from_socket(struct dev_desc_t *adev,
+		struct esp8266_runtime_t *esp8266_runtime_hndl,
+		struct ioctl_net_device_get_local_addr_t *p_get_local_addr)
+{
+	struct esp8266_message_t  queueMsg;
+	uint8_t retVal;
+
+	queueMsg.type = GET_IP;
+	queueMsg.msg_data.msg_getIP.IPstr = p_get_local_addr->addr_str;
+	queueMsg.msg_data.msg_getIP.strIPLen = p_get_local_addr->addr_str_len;
+	retVal = send_message_and_wait(esp8266_runtime_hndl, &queueMsg);
+
+	*p_get_local_addr->port = 0xffff;// TODO : implement read of port
+	return retVal;
+}
+
+
 /*
  * ESP8266_socket_ioctl()
  *
@@ -1664,6 +1670,11 @@ static uint8_t ESP8266_socket_ioctl(struct dev_desc_t *adev,
 	case IOCTL_ESP8266_SOCKET_GET_OPTIONS:
 		*(uint32_t*)aIoctl_param1 = socket_cfg_handle->socket_options;
 		break;
+	case IOCTL_NET_DEVICE_GET_LOCAL_ADDR:
+		retVal = send_get_ip_msg_from_socket(
+				adev, esp8266_runtime_hndl, aIoctl_param1);
+		break;
+
 	default :
 		return 1;
 	}

@@ -260,13 +260,84 @@ static ssize_t esp8266_send(void* socketfd,
 }
 
 
+static int esp8266_listen(int sockfd, int backlog)
+{
+	CRITICAL_ERROR("esp8266_listen not implemented yet");
+	return 0;
+}
+
+
+static int esp8266_accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen)
+{
+	CRITICAL_ERROR("esp8266_accept not implemented yet");
+	return 0;
+}
+
+
+#define MAX_ADDR_LEN  20
+
+static int esp8266_getsockname(
+		int socketfd, struct sockaddr *local_addr, socklen_t *addrlen)
+{
+	struct dev_desc_t * socket_dev;
+	struct sockaddr_in   *lp_sockaddr;
+	struct  in_addr *sin_addr;
+	char *ipAddrStr;
+	char ipAddr[MAX_ADDR_LEN] = {0};
+	uint8_t retVal;
+	struct ioctl_net_device_get_local_addr_t ioctl_net_device_get_local_addr;
+
+	socket_dev = (struct dev_desc_t *)socketfd;
+	lp_sockaddr = (struct sockaddr_in *)local_addr;
+	sin_addr = &(lp_sockaddr->sin_addr);
+
+
+	ioctl_net_device_get_local_addr.addr_str = ipAddr;
+	ioctl_net_device_get_local_addr.addr_str_len = MAX_ADDR_LEN - 1 ;
+	retVal = DEV_IOCTL_1_PARAMS(socket_dev,
+			IOCTL_NET_DEVICE_GET_LOCAL_ADDR , &ioctl_net_device_get_local_addr);
+	if (0 != retVal) return 1 ;
+
+	ipAddrStr = ipAddr;
+	sin_addr->S_un.S_un_b.s_b1 = atoi(ipAddrStr);
+	ipAddrStr = strchr(ipAddrStr,'.');
+	if(NULL == ipAddrStr) return ENOBUFS;
+	ipAddrStr++;
+	sin_addr->S_un.S_un_b.s_b2 = atoi(ipAddrStr);
+	ipAddrStr = strchr(ipAddrStr + 1,'.');
+	if(NULL == ipAddrStr) return ENOBUFS;
+	ipAddrStr++;
+	sin_addr->S_un.S_un_b.s_b3 = atoi(ipAddrStr);
+	ipAddrStr = strchr(ipAddrStr + 1,'.');
+	if(NULL == ipAddrStr) return ENOBUFS;
+	ipAddrStr++;
+	sin_addr->S_un.S_un_b.s_b4 = atoi(ipAddrStr);
+
+	lp_sockaddr->sin_port = htons(ioctl_net_device_get_local_addr.port);
+}
+
+static uint8_t __fill_socket_functions(struct file_desc_ops_t* p_file_desc_ops)
+{
+	p_file_desc_ops->closesocket_func = esp8266_closesocket;
+	p_file_desc_ops->connect_func = esp8266_connect;
+	p_file_desc_ops->is_data_available_func = esp8266_is_data_available;
+	p_file_desc_ops->recv_func = esp8266_recv;
+	p_file_desc_ops->setsockopt_func = esp8266_setsockopt;
+	p_file_desc_ops->bind_func = esp8266_bind;
+	p_file_desc_ops->getpeername_func = esp8266_getpeername;
+	p_file_desc_ops->send_func = esp8266_send;
+	p_file_desc_ops->listen_func = esp8266_listen;
+	p_file_desc_ops->accept_func = esp8266_accept;
+	p_file_desc_ops->getsockname_func = esp8266_getsockname;
+}
+
+
 static uint8_t open_socket(struct dev_desc_t *adev,
 		struct file_descriptor_manager_ioctl_socket_open_t * socket_open_s)
 {
 	uint8_t retVal;
 	struct ESP8266_ioctl_socket_open_t ioctl_socket_open;
 	struct file_desc_t*  new_socket_descriptor;
-	struct file_desc_ops_t* p_file_desc_ops;
 
 	new_socket_descriptor = socket_open_s->new_socket_descriptor;
 	switch (new_socket_descriptor->socket_family)
@@ -301,17 +372,9 @@ static uint8_t open_socket(struct dev_desc_t *adev,
 			adev, IOCTL_ESP8266_SOCKET_OPEN , &ioctl_socket_open);
 	if (0 != retVal)
 	{
-		return 1;
+		return -1;
 	}
-	p_file_desc_ops = &new_socket_descriptor->file_desc_ops;
-	p_file_desc_ops->closesocket_func = esp8266_closesocket;
-	p_file_desc_ops->connect_func = esp8266_connect;
-	p_file_desc_ops->is_data_available_func = esp8266_is_data_available;
-	p_file_desc_ops->recv_func = esp8266_recv;
-	p_file_desc_ops->setsockopt_func = esp8266_setsockopt;
-	p_file_desc_ops->bind_func = esp8266_bind;
-	p_file_desc_ops->getpeername_func = esp8266_getpeername;
-	p_file_desc_ops->send_func = esp8266_send;
+	__fill_socket_functions(&new_socket_descriptor->file_desc_ops);
 	return 0;
 }
 

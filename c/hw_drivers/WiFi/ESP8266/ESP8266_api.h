@@ -2,17 +2,9 @@
 #ifndef _ESP8266_API_H_
 #define _ESP8266_API_H_
 
-/*****************  defines  **************/
-
-
-/**********  define API  types ************/
-
 #ifdef  __cplusplus
 extern "C" {
 #endif
-
-typedef void*  ESP8266_API_Handle_t;
-
 
 
 #define ESP8266_API_CHIP_TYPE_STR  				"chip"
@@ -22,8 +14,7 @@ typedef void*  ESP8266_API_Handle_t;
 #define ESP8266_API_SSID_PSWRD_REDANDENCY_STR  	"ssid_pswrd_redandancy"
 #define ESP8266_API_SERVER_DEVICE_STR  			"server_device"
 
-typedef enum
-{
+enum ESP8266_err_code_e {
 	ESP8266_NO_ERR = 0,
 	ESP8266_ERR_UNKOWN,
 	ESP8266_ERR_SOCKET_NOT_AVAILABLE,
@@ -33,10 +24,9 @@ typedef enum
 	ESP8266_ERR_CANNOT_CONNECT,
 	ESP8266_ERR_CANNOT_CONNECT_LINK_ERR,
 	ESP8266_ERR_CANNOT_CLOSE
-}ESP8266_err_code_t;
+};
 
-typedef enum
-{
+enum ESP8266_API_ioctl_e {
 	IOCTL_ESP8266_SET_CHIP_TYPE = IOCTL_LAST_COMMON_IOCTL+1,
 	IOCTL_ESP8266_SET_SSID_NAME,
 	IOCTL_ESP8266_SET_SSID_PSWRD,
@@ -51,7 +41,7 @@ typedef enum
 	IOCTL_ESP8266_SOCKET_GET_OPEN_CONNECTION_STATUS,
 	IOCTL_ESP8266_SOCKET_SET_OPTIONS,
 	IOCTL_ESP8266_SOCKET_GET_OPTIONS
-}ESP8266_API_ioctl_t;
+};
 
 
 struct ESP8266_ioctl_socket_open_t {
@@ -78,7 +68,6 @@ struct ESP8266_ioctl_data_received_t {
 	size_t *size_received;
 };
 
-/**********  define API  functions  ************/
 
 
 #ifdef  __cplusplus

@@ -18,8 +18,6 @@
 #define ESP8266_MAX_SSID_NAME_LEN    32
 #define ESP8266_MAX_SSID_PSWRD_LEN  32
 
-/***************   typedefs    *******************/
-
 
 struct esp8266_cfg_t {
 	struct dev_desc_t *   timer_dev;

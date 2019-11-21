@@ -27,7 +27,7 @@ menuconfig INCLUDE_SHELL
 	default n
 	
 if INCLUDE_SHELL
-source "$KCONFIG_PUBLIC_START_DIR/sw_packages/management/shell/Kconfig"
+source "$KCONFIG_PUBLIC_START_DIR/sw_packages/management/shell_frontend/Kconfig"
 endif
 
 

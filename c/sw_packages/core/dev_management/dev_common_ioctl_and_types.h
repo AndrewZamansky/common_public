@@ -60,6 +60,7 @@ struct ioctl_net_device_get_host_addr_t
 struct ioctl_net_device_get_local_addr_t {
 	char *addr_str;
 	uint8_t addr_str_len;
+	uint16_t  port;
 };
 
 #endif

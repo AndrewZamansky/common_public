@@ -1,0 +1,18 @@
+
+INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_INTERNAL_IPC)
+ 
+
+
+#INCLUDE_DIR +=
+
+#DEFINES +=
+
+#CFLAGS +=
+
+#ASMFLAGS +=
+
+SRC += ipc_i96xxx.c
+VPATH = src
+
+
+include $(COMMON_CC)

@@ -33,7 +33,7 @@
 #endif
 
 static struct file_desc_t
-			file_desc[CONFIG_MAX_NUMBER_OF_OPENED_FILE_DESCRIPTORS] = {{0}};
+			file_desc_arr[CONFIG_MAX_NUMBER_OF_OPENED_FILE_DESCRIPTORS] = {{0}};
 
 static os_mutex_t fd_mutex = NULL;
 
@@ -47,14 +47,14 @@ uint8_t file_descriptor_manager_api_init()
 static struct file_desc_t* get_file_desc(int fd)
 {
 	if ((CONFIG_MAX_NUMBER_OF_OPENED_FILE_DESCRIPTORS <= fd) ||
-			(0 == file_desc[fd].used))
+			(0 == file_desc_arr[fd].used))
 
 	{
 		//PRINTF_DBG("%s :  fd = %d\n",__FUNCTION__, fd);
 		CRITICAL_ERROR("bad socket fd");
 		return NULL;
 	}
-	return &file_desc[fd];
+	return &file_desc_arr[fd];
 }
 
 
@@ -63,7 +63,7 @@ static struct file_desc_t* get_file_desc(int fd)
 #define  MAX_NUM_OF_INET_DEVS  1
 static struct dev_desc_t *underlying_INET_dev_arr[MAX_NUM_OF_INET_DEVS] = {0};
 #define  MAX_NUM_OF_IPC_DEVS  1
-static struct dev_desc_t *underlying_INET_dev_arr[MAX_NUM_OF_IPC_DEVS] = {0};
+static struct dev_desc_t *underlying_IPC_dev_arr[MAX_NUM_OF_IPC_DEVS] = {0};
 
 uint8_t file_descriptor_manager_api_register_INET_device(
 											struct dev_desc_t * ap_dev)
@@ -121,10 +121,27 @@ exit :
 
 
 
-int socket_uCprojects(int socket_family, int socket_type, int protocol)
+static int get_free_file_desc(struct file_desc_t  **file_desc)
 {
 	size_t i;
+	for (i = 0; i < CONFIG_MAX_NUMBER_OF_OPENED_FILE_DESCRIPTORS; i++)
+	{
+		*file_desc = &file_desc_arr[i];
+		if (0 == file_desc_arr[i].used)
+		{
+			file_desc_arr[i].used = 1;
+			PRINTF_DBG("%s : open socket fd = %d\n",__FUNCTION__, i);
+			return i;
+		}
+	}
+	return -1;
+}
+
+
+int socket_uCprojects(int socket_family, int socket_type, int protocol)
+{
 	int ret_val;
+	struct file_desc_t  *file_desc;
 
 	if (NULL == fd_mutex)
 	{
@@ -145,45 +162,37 @@ int socket_uCprojects(int socket_family, int socket_type, int protocol)
 			goto exit;
 	}
 
-	switch (socket_type)
+	if (AF_INET == socket_family)
 	{
-		case SOCK_STREAM:
-			break;
-		default:
-			CRITICAL_ERROR("this socket type not implemented yet");
-			ret_val = -1;
-			goto exit;
-	}
-
-	switch (protocol)
-	{
-		case IPPROTO_IP:
-		case IPPROTO_TCP:
-			break;
-		default:
-			CRITICAL_ERROR("this protocol not implemented yet");
-			ret_val = -1;
-			goto exit;
-	}
-
-	for (i = 0; i < CONFIG_MAX_NUMBER_OF_OPENED_FILE_DESCRIPTORS; i++)
-	{
-		struct file_desc_t  *file_desc;
-
-		file_desc = &file_desc[i];
-		file_desc->socket_family = socket_family;
-		file_desc->socket_type = socket_type;
-		file_desc->protocol = protocol;
-		if (0 == file_desc->used)
+		switch (socket_type)
 		{
-			file_desc->used = 1;
-			ret_val = i;
-			PRINTF_DBG("%s : open socket fd = %d\n",__FUNCTION__, i);
-			goto exit;
+			case SOCK_STREAM:
+				break;
+			default:
+				CRITICAL_ERROR("this socket type not implemented yet");
+				ret_val = -1;
+				goto exit;
+		}
+
+		switch (protocol)
+		{
+			case IPPROTO_IP:
+			case IPPROTO_TCP:
+				break;
+			default:
+				CRITICAL_ERROR("this protocol not implemented yet");
+				ret_val = -1;
+				goto exit;
 		}
 	}
 
-	ret_val = -1;
+	ret_val = get_free_file_desc(&file_desc);
+	if (-1 != ret_val)
+	{
+		file_desc->socket_family = socket_family;
+		file_desc->socket_type = socket_type;
+		file_desc->protocol = protocol;
+	}
 exit :
 	os_mutex_give(fd_mutex);
 	return ret_val;
@@ -203,6 +212,7 @@ int closesocket_uCprojects(int sockfd)
 		goto exit;
 	}
 
+	ret_val = -1;
 	if (NULL != curr_fd->underlying_dev)
 	{
 		ret_val = curr_fd->file_desc_ops.closesocket_func(
@@ -267,7 +277,7 @@ int connect_uCprojects(
 								curr_fd->internal_desc, addr, addrlen);
 			if (0 < ret_val)
 			{
-				file_desc->underlying_dev = underlying_dev;
+				curr_fd->underlying_dev = underlying_dev;
 				break; // connection succeed so we can exit
 			}
 			else
@@ -381,41 +391,59 @@ int getsockopt_uCprojects(int sockfd, int level, int optname,
 }
 
 
-static uint8_t set_tcp_level_option(int optname,
-		const void *optval, socklen_t optlen, uint32_t *socket_options)
+static uint8_t set_tcp_level_option(int optname, const void *optval,
+		socklen_t optlen, uint32_t *socket_options,
+		uint8_t *need_to_update_low_level)
 {
-	uint8_t need_to_update_low_level;
-
-	need_to_update_low_level = 0;
+	*need_to_update_low_level = 0;
 	switch(optname)
 	{
 		case TCP_NODELAY:
-			need_to_update_low_level = 1;
+			*need_to_update_low_level = 1;
 			break;
 		default:
 			CRITICAL_ERROR("this tcp option is not implemented yet");
 	}
-	return need_to_update_low_level;
+	return 0;
 }
 
 
-static uint8_t set_socket_level_option( int optname,
-		const void *optval, socklen_t optlen, uint32_t *socket_options)
+static int set_socket_level_option(struct file_desc_t  *curr_fd,
+						int optname, const void *optval, socklen_t optlen,
+						uint8_t *need_to_update_low_level)
 {
 	uint32_t val;
-	uint8_t need_to_update_low_level;
+	uint32_t socket_options;
 
-	need_to_update_low_level = 0;
-
+	*need_to_update_low_level = 0;
+	socket_options = curr_fd->socket_options;
 
 	switch(optname)
 	{
 		case SO_ERROR:
 			break;
+		case SO_BINDTODEVICE:
+		{
+			struct dev_desc_t * underlying_dev;
+			struct file_descriptor_manager_ioctl_socket_open_t  sock_open;
+
+			underlying_dev = *(struct dev_desc_t **)optval;
+			sock_open.new_socket_descriptor = curr_fd;
+			if (0 == DEV_IOCTL_1_PARAMS(underlying_dev,
+											IOCTL_OPEN_SOCKET, &sock_open))
+			{
+				curr_fd->underlying_dev = underlying_dev;
+			}
+			else
+			{
+				return -1;
+			}
+			break;
+		}
 		case SO_NONBLOCK:
 			break;
 		case SO_KEEPALIVE:
-			need_to_update_low_level = 1;
+			*need_to_update_low_level = 1;
 			// TODO : ESP32 has keep alive parameter for port, ESP8266 doesn't
 			break;
 
@@ -432,9 +460,10 @@ static uint8_t set_socket_level_option( int optname,
 		val = (*(int *)optval) ? 1 : 0 ;
 	}
 
-	*socket_options &= ~(1 << optname);
-	*socket_options |= (val << optname);
-	return need_to_update_low_level;
+	socket_options &= ~(1 << optname);
+	socket_options |= (val << optname);
+	curr_fd->socket_options = socket_options;
+	return 0;
 }
 
 
@@ -444,6 +473,7 @@ int setsockopt_uCprojects(int sockfd, int level,
 	struct file_desc_t  *curr_fd;
 	uint32_t *socket_options;
 	uint8_t need_to_update_low_level;
+	int ret_val;
 
 	curr_fd = get_file_desc(sockfd);
 	if (NULL == curr_fd)
@@ -451,20 +481,25 @@ int setsockopt_uCprojects(int sockfd, int level,
 		return -1;
 	}
 
+	ret_val = -1;
 	socket_options = &curr_fd->socket_options;
 	switch(level)
 	{
 	case SOL_SOCKET:
-		need_to_update_low_level = set_socket_level_option(
-								optname, optval, optlen, socket_options);
+		 ret_val = set_socket_level_option(
+				curr_fd, optname, optval, optlen, &need_to_update_low_level);
 		break;
 	case IPPROTO_TCP:
-		need_to_update_low_level =
-				set_tcp_level_option(optname, optval, optlen, socket_options);
+		ret_val = set_tcp_level_option(
+			optname, optval, optlen, socket_options, &need_to_update_low_level);
 		break;
 
 	default:
 		CRITICAL_ERROR("unknown option level");
+	}
+	if (-1 == ret_val)
+	{
+		return -1;
 	}
 
 	if ((1 == need_to_update_low_level)  && (NULL != curr_fd->underlying_dev))
@@ -486,23 +521,15 @@ int bind_uCprojects(int sockfd, const struct sockaddr *addr, socklen_t addrlen)
 		return -1;
 	}
 
-	PRINTF_DBG("%s :  fd = %d\n", __FUNCTION__, sockfd);
-	CRITICAL_ERROR("bind_uCprojects not implemented yet");
-	return 0;
+	return curr_fd->file_desc_ops.bind_func(
+					curr_fd->internal_desc, addr, addrlen);
 }
 
-#define MAX_ADDR_LEN  20
 
 int getsockname_uCprojects(
 		int sockfd, struct sockaddr *local_addr, socklen_t *addrlen)
 {
 	struct file_desc_t  *curr_fd;
-	struct sockaddr_in   *lp_sockaddr;
-	struct  in_addr *sin_addr;
-	char *ipAddrStr;
-	char ipAddr[MAX_ADDR_LEN] = {0};
-	uint8_t retVal;
-	struct ioctl_net_device_get_local_addr_t ioctl_net_device_get_local_addr;
 
 	curr_fd = get_file_desc(sockfd);
 	if ((NULL == curr_fd) || (NULL == curr_fd->underlying_dev))
@@ -510,35 +537,8 @@ int getsockname_uCprojects(
 		return -1;
 	}
 
-	lp_sockaddr = (struct sockaddr_in   *)local_addr;
-	sin_addr = &(lp_sockaddr->sin_addr);
-
-
-	ioctl_net_device_get_local_addr.addr_str = ipAddr;
-	ioctl_net_device_get_local_addr.addr_str_len = MAX_ADDR_LEN - 1 ;
-	retVal = DEV_IOCTL_1_PARAMS(curr_fd->underlying_dev ,
-			IOCTL_NET_DEVICE_GET_LOCAL_ADDR , &ioctl_net_device_get_local_addr);
-	if (0 != retVal) return 1 ;
-
-	ipAddrStr = ipAddr;
-	sin_addr->S_un.S_un_b.s_b1 = atoi(ipAddrStr);
-	ipAddrStr = strchr(ipAddrStr,'.');
-	if(NULL == ipAddrStr) return ENOBUFS;
-	ipAddrStr++;
-	sin_addr->S_un.S_un_b.s_b2 = atoi(ipAddrStr);
-	ipAddrStr = strchr(ipAddrStr + 1,'.');
-	if(NULL == ipAddrStr) return ENOBUFS;
-	ipAddrStr++;
-	sin_addr->S_un.S_un_b.s_b3 = atoi(ipAddrStr);
-	ipAddrStr = strchr(ipAddrStr + 1,'.');
-	if(NULL == ipAddrStr) return ENOBUFS;
-	ipAddrStr++;
-	sin_addr->S_un.S_un_b.s_b4 = atoi(ipAddrStr);
-
-	lp_sockaddr->sin_port = htons(sockfd);
-	lp_sockaddr->sin_family = AF_INET;
-
-	return 0;
+	return curr_fd->file_desc_ops.getpeername_func(
+								curr_fd->internal_desc, local_addr, addrlen);
 }
 
 
@@ -581,15 +581,54 @@ ssize_t send_uCprojects(
 
 int listen_uCprojects(int sockfd, int backlog)
 {
-	CRITICAL_ERROR("listen_uCprojects not implemented yet");
-	return 0;
+	struct file_desc_t  *curr_fd;
+
+	curr_fd = get_file_desc(sockfd);
+	if ((NULL == curr_fd) || (NULL == curr_fd->underlying_dev))
+	{
+		return -1;
+	}
+
+	return curr_fd->file_desc_ops.listen_func(curr_fd->internal_desc, backlog);
 }
 
 
 int accept_uCprojects(int sockfd, struct sockaddr *addr, socklen_t *addrlen)
 {
-	CRITICAL_ERROR("accept_uCprojects not implemented yet");
-	return 0;
+	struct file_desc_t  *main_fd;
+	struct file_desc_t  *new_fd;
+	struct file_desc_t  *new_internal_fd;
+	int new_fd_num;
+
+	main_fd = get_file_desc(sockfd);
+	if ((NULL == main_fd) || (NULL == main_fd->underlying_dev))
+	{
+		return -1;
+	}
+
+	if (sizeof(int) != sizeof(void*))
+	{
+		CRITICAL_ERROR("not supported types");
+	}
+	new_internal_fd =
+		(struct file_desc_t*)(size_t)main_fd->file_desc_ops.accept_func(
+							main_fd->internal_desc, addr, addrlen);
+
+	if (-1 == (int)((size_t)new_internal_fd))
+	{
+		return -1;
+	}
+
+	new_fd_num = get_free_file_desc(&new_fd);
+	if (-1 == new_fd_num)
+	{
+		main_fd->file_desc_ops.closesocket_func(new_internal_fd);
+		return -1;
+	}
+	memcpy(new_fd, main_fd, sizeof(struct file_desc_t));
+	new_fd->internal_desc = new_internal_fd;
+
+	return new_fd_num;
 }
 
 
@@ -649,7 +688,8 @@ int select_uCprojects(int nfds, fd_set *readfds, fd_set *writefds,
 		{
 			writefds_for_print = 0;
 		}
-		PRINTF_DBG("%s: in *(uint32_t*)readfds= %u, *(uint32_t*)writefds = %u\n",
+		PRINTF_DBG("%s: in *(uint32_t*)readfds= %u,"
+				"*(uint32_t*)writefds = %u\n",
 				__FUNCTION__, readfds_for_print, writefds_for_print);
 	}
 #endif
@@ -699,7 +739,7 @@ int select_uCprojects(int nfds, fd_set *readfds, fd_set *writefds,
 				uint8_t retVal;
 				uint8_t read_ready;
 
-				curr_fd = &file_desc[i];
+				curr_fd = &file_desc_arr[i];
 				retVal = 0;
 				read_ready = 0;
 				if (curr_fd->used || (NULL == curr_fd->underlying_dev))

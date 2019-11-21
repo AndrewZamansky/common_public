@@ -4,9 +4,6 @@
  *
  */
 
-
-
-/***************   includes    *******************/
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 
