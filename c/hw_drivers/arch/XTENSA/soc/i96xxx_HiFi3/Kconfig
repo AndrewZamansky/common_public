@@ -1,0 +1,8 @@
+menu "`---> I96XXX HIFI3 configurations"
+
+config I96XXX_BSP_VERSION_HIFI3
+	string "i96xxx bsp version in form : xx.xx[.xx]"
+	default "00.0x"
+
+endmenu
+

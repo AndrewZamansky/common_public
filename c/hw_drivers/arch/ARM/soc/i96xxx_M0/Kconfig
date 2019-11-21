@@ -1,4 +1,4 @@
-menu "`--->  I96XXX configurations"
+menu "`--->  I96XXX M0 configurations"
 
 
 config I96XXX_BSP_VERSION

@@ -17,6 +17,10 @@ config XTENSA_FPGA_SIM
 	bool "fpga simulator"
 	select PUBLIC_SOC_SELECTED
 
+config I96XXX_HIFI3
+	bool "i96xxx hifi3"
+	select PUBLIC_SOC_SELECTED
+
 endchoice
 
 if XTENSA_SIM || XTENSA_FPGA_SIM
