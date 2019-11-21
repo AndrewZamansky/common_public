@@ -47,7 +47,7 @@ extern xt_exc_handler xt_set_exception_handler(int n, xt_exc_handler f);
 extern xt_handler xt_set_interrupt_handler(int n, xt_handler f, void * arg);
 
 #define irq_register_interrupt(n, isr)  \
-						xt_set_exception_handler(n,(xt_handler)isr)
+				xt_set_interrupt_handler(n,(xt_handler)isr, NULL)
 
 
 /*
