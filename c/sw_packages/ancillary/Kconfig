@@ -40,7 +40,7 @@ endif
 
 config INCLUDE_TIMER_WRAPPER
 	bool   "timer wrapper"
-	depends on INCLUDE_CORTEXM_SYSTICK || INCLUDE_LINUX_TIMER
+	depends on INCLUDE_HW_TIMER || INCLUDE_LINUX_TIMER
 	default n
 
 

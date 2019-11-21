@@ -4,10 +4,6 @@
  *
  *
  */
-
-
-
-/********  includes *********************/
 #include "project_config.h"
 #include "_project_typedefs.h"
 #include "_project_defines.h"
@@ -24,15 +20,8 @@
 #if defined(COMPILING_FOR_LINUX_HOST)
 	#include <unistd.h>
 #endif
-/********  defines *********************/
+
 #define MAX_NUM_OF_PRINTF_INSTANCES 4
-/********  types  *********************/
-
-
-/********  externals *********************/
-
-
-/********  local defs *********************/
 
 #if (CONFIG_USE_MINIMAL_PRINTF)
 

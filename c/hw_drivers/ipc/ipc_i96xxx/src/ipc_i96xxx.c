@@ -973,9 +973,9 @@ static uint8_t ipc_i96xxx_device_start(struct dev_desc_t *adev)
 	irq_set_priority(P2P1_IRQn , INTERRUPT_PRIORITY_FOR_IPC_I96XXX );
 	irq_enable_interrupt(P2P1_IRQn);
 #else
-	#define P2P0_IRQn_HIFI2  5
-	IRQn = P2P0_IRQn_HIFI2;
-#error "TODO"
+	#define P2P0_IRQn_HIFI3  8
+	irq_register_interrupt(P2P0_IRQn_HIFI3, ipc_isr_callback);
+	irq_enable_interrupt(P2P0_IRQn_HIFI3);
 #endif
 
 	return 0;

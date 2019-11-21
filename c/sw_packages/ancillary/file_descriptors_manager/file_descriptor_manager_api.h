@@ -6,10 +6,12 @@
 #include "_project_defines.h"
 
 #include "sys/socket.h"
+#include "sys/types.h"
 
 #ifdef  __cplusplus
 extern "C" {
 #endif
+
 
 typedef int (*closesocket_func_t)(void *sockfd);
 typedef int (*connect_func_t)(

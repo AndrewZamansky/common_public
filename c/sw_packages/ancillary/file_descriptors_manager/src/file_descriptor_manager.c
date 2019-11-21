@@ -786,7 +786,7 @@ int select_uCprojects(int nfds, fd_set *readfds, fd_set *writefds,
 }
 
 
-
+#ifndef CONFIG_XTENSA_XCC
 struct stat {
 	uint8_t dummy;
 };
@@ -852,3 +852,4 @@ int _read(int file, char *ptr, int len)
 	CRITICAL_ERROR("_read not implemented yet");
 	return 0;
 }
+#endif

@@ -34,6 +34,7 @@ typedef void (*xt_exc_handler)(XtExcFrame *);
 extern xt_exc_handler xt_set_exception_handler(int n, xt_exc_handler f);
 
 
+
 /*
 -------------------------------------------------------------------------------
   Call this function to set a handler for the specified interrupt.
@@ -44,6 +45,9 @@ extern xt_exc_handler xt_set_exception_handler(int n, xt_exc_handler f);
 -------------------------------------------------------------------------------
 */
 extern xt_handler xt_set_interrupt_handler(int n, xt_handler f, void * arg);
+
+#define irq_register_interrupt(n, isr)  \
+						xt_set_exception_handler(n,(xt_handler)isr)
 
 
 /*
@@ -58,6 +62,8 @@ extern xt_handler xt_set_interrupt_handler(int n, xt_handler f, void * arg);
 #else
 	#define xt_ints_on _xtos_ints_on
 #endif
+
+#define irq_enable_interrupt(int_num)  xt_ints_on( 1 << int_num )
 
 /*
 -------------------------------------------------------------------------------
