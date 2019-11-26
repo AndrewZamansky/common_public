@@ -55,14 +55,39 @@ GLOBAL_ARCHIVES := $(sort $(GLOBAL_ARCHIVES))
 TMP :=$(MAKE_TEMPORARY_FILES_DIR)
 export #export all variables declared before
 
-
+SUBDIRS_LAST := $(filter %auto_generated_command_list,$(SUBDIRS))
+SUBDIRS := $(filter-out %auto_generated_command_list,$(SUBDIRS))
 
 build_all : build_outputs
 	$(MAKE) -r -f $(MAKEFILES_ROOT_DIR)/c/post_build.mk
 
-build_outputs :  $(SUBDIRS)
+ifeq (,$(strip $(SUBDIRS_LAST)))
+
+build_outputs: $(SUBDIRS)
 	$(MAKE) -r -f $(MAKEFILES_ROOT_DIR)/c/build_final_outputs.mk
 
+else
+
+build_outputs: $(SUBDIRS_LAST)
+	$(MAKE) -r -f $(MAKEFILES_ROOT_DIR)/c/build_final_outputs.mk
+
+$(SUBDIRS_LAST): $(SUBDIRS)
+	$(eval COMMON_CC := $(MAKEFILES_ROOT_DIR)/c/compilers/common_cc.mk)
+	$(eval SRC :=)
+	$(eval VPATH :=)
+	$(eval CFLAGS :=)
+	$(eval DEFINES :=)
+	$(eval ASMFLAGS :=)
+	$(eval export COMMON_CC)
+	$(eval export SRC)
+	$(eval export CFLAGS)
+	$(eval export DEFINES)
+	$(eval export ASMFLAGS)
+	$(eval export VPATH)
+	$(info - $(patsubst $(PARENT_OF_COMMON_PUBLIC_DIR)/%,%,$@))
+	$(MAKE) -r -C $@ -f Makefile.uc.mk all
+
+endif
 
 $(SUBDIRS):
 	$(eval COMMON_CC := $(MAKEFILES_ROOT_DIR)/c/compilers/common_cc.mk)
@@ -81,4 +106,4 @@ $(SUBDIRS):
 	$(MAKE) -r -C $@ -f Makefile.uc.mk all
 
 
-.PHONY: default  archive clean all $(SUBDIRS)
+.PHONY: default  archive clean all $(SUBDIRS) $(SUBDIRS_LAST)

@@ -67,6 +67,7 @@ SRC_CPP   :=$(filter %.cpp,$(SRC))
 SRC_ASM    :=$(filter %.s,$(SRC)) $(filter %.S,$(SRC))
 SRC_ASM_S    :=$(filter %.S,$(SRC))
 SRC_OBJ := $(patsubst %.c,$(CURR_OBJ_DIR)/%.o,$(SRC_C))
+SRC_PREPROC := $(patsubst %.c,$(CURR_OBJ_DIR)/%.preproc,$(SRC_C))
 SRC_CC_OBJ := $(patsubst %.cc,$(CURR_OBJ_DIR)/%.oo,$(SRC_CC))
 SRC_CPP_OBJ := $(patsubst %.cpp,$(CURR_OBJ_DIR)/%.oop,$(SRC_CPP))
 ASM_OBJ := $(patsubst %.s,$(CURR_OBJ_DIR)/%.o.asm,$(SRC_ASM))
@@ -114,7 +115,10 @@ $(ASM_ARGS_FILE): $(ALL_DEPS)
 
 
 ALL_CFLAGS := $(GLOBAL_CFLAGS) $(CFLAGS)
+C_PREPROCESSOR_CMD := $(CC) -E $(ALL_CFLAGS) $(ALL_DEFINES)
 C_COMPILATION_CMD := $(CC) $(ALL_CFLAGS) $(ALL_DEFINES)
+C_PREPROCESSOR_REDUCED_CMD :=$(call \
+               reduce_cmd_len, $(C_PREPROCESSOR_CMD) $(ALL_INCLUDE_DIRS))
 C_COMPILATION_REDUCED_CMD :=$(call \
                reduce_cmd_len, $(C_COMPILATION_CMD) $(ALL_INCLUDE_DIRS))
 LONG_C_CMD :=$(call check_win_cmd_len, $(C_COMPILATION_REDUCED_CMD))
@@ -122,12 +126,17 @@ LONG_C_CMD :=$(call check_win_cmd_len, $(C_COMPILATION_REDUCED_CMD))
 C_ARGS_FILE :=$(strip $(if $(LONG_C_CMD),$(CURR_OBJ_DIR)/c.args,))
 ifeq ($(LONG_C_CMD),TOO_LONG)
     C_COMPILATION_CMD += $(CC_USE_ARGS_FROM_FILE_FLAG)$(C_ARGS_FILE)
+    C_PREPROCESSOR_CMD +=  $(CC_USE_ARGS_FROM_FILE_FLAG)$(C_ARGS_FILE)
 else
     C_COMPILATION_CMD :=$(C_COMPILATION_REDUCED_CMD)
+    C_PREPROCESSOR_CMD :=$(C_PREPROCESSOR_REDUCED_CMD)
 endif
 
+$(CURR_OBJ_DIR)/%.preproc: %.c $(ALL_DEPS) $(C_ARGS_FILE)
+	$(call mkdir_if_not_exists, $(dir $@))
+	$(C_PREPROCESSOR_CMD) $(CC_OUTPUT_FLAG_AND_FILE) $<
 
-$(CURR_OBJ_DIR)/%.o: %.c $(ALL_DEPS) $(C_ARGS_FILE)
+$(CURR_OBJ_DIR)/%.o: %.c $(CURR_OBJ_DIR)/%.preproc $(ALL_DEPS) $(C_ARGS_FILE)
 	$(info .    Compiling $<)
 	$(call mkdir_if_not_exists, $(dir $@))
 	$(eval SRC_FILE := $(realpath $<))
