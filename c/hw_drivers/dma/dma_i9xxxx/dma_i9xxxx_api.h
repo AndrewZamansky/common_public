@@ -5,12 +5,11 @@
 #include "dev_management_api.h"
 #include "pdma.h"
 
-#define DMA_I9XXXX_API_TYPE_SPI2_RX  PDMA_SPI2_RX
-#define DMA_I9XXXX_API_TYPE_SPI2_TX  PDMA_SPI2_TX
-
 #if defined(CONFIG_I94XXX)
 	#define DMA_I94XXX_API_TYPE_SPI1_RX  PDMA_SPI1_RX
 	#define DMA_I94XXX_API_TYPE_SPI1_TX  PDMA_SPI1_TX
+	#define DMA_I94XXX_API_TYPE_SPI2_RX  PDMA_SPI2_RX
+	#define DMA_I94XXX_API_TYPE_SPI2_TX  PDMA_SPI2_TX
 	#define DMA_I94XXX_API_TYPE_I2S_RX   PDMA_I2S0_RX
 	#define DMA_I94XXX_API_TYPE_I2S_TX   PDMA_I2S0_TX
 	#define DMA_I94XXX_API_TYPE_DPWM     PDMA_DPWM
@@ -21,6 +20,8 @@
 	#define DMA_I96XXX_API_TYPE_I2S0_TX   PDMA_I2S0_TX
 	#define DMA_I96XXX_API_TYPE_I2S1_RX   PDMA_I2S1_RX
 	#define DMA_I96XXX_API_TYPE_I2S1_TX   PDMA_I2S1_TX
+	#define DMA_I96XXX_API_TYPE_SPI2_RX   PDMA_SPI2_RX
+	#define DMA_I96XXX_API_TYPE_SPI2_TX   PDMA_SPI2_TX
 #endif
 
 
@@ -47,7 +48,6 @@ struct dma_i9xxxx_cfg_t {
 	uint32_t   buff_size;
 
 };
-
 SET_CONFIG_TYPE(dma_i9xxxx, struct dma_i9xxxx_cfg_t);
 
 #endif

@@ -3,12 +3,6 @@
 #define _DPWM_I94XXX_API_H_
 
 #include "dev_management_api.h"
-//#include "src/dpwm.h"
-
-/*****************  defines  **************/
-
-
-/**********  define API  types ************/
 
 enum DPWM_I94XXX_API_ioctl_e {
 	DPWM_I94XXX_ENABLE_OUTPUT_IOCTL = IOCTL_LAST_COMMON_IOCTL + 1,
@@ -27,8 +21,6 @@ struct dpwm_i94xxx_cfg_t {
 	uint32_t  sub_ch_p;
 	uint32_t  sub_ch_n;
 };
-
-
-/**********  define API  functions  ************/
+SET_CONFIG_TYPE(dpwm_i94xxx, struct dpwm_i94xxx_cfg_t);
 
 #endif

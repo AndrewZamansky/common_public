@@ -203,7 +203,7 @@ static uint8_t dpwm_i94xxx_ioctl( struct dev_desc_t *adev,
 {
 	struct dpwm_i94xxx_cfg_t *cfg_hndl;
 
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(dpwm_i94xxx, adev);
 	if ((0 == init_done) && (IOCTL_DEVICE_START != aIoctl_num))
 	{
 		CRITICAL_ERROR("not initialized yet");
@@ -239,4 +239,5 @@ static uint8_t dpwm_i94xxx_ioctl( struct dev_desc_t *adev,
 #define	MODULE_NAME                     dpwm_i94xxx
 #define	MODULE_IOCTL_FUNCTION           dpwm_i94xxx_ioctl
 #define MODULE_CONFIG_DATA_STRUCT_TYPE  struct dpwm_i94xxx_cfg_t
+#define MODULE_HAS_NO_RUNTIME_DATA
 #include "add_module.h"
