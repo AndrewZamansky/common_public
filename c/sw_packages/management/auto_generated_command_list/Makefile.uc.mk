@@ -1,6 +1,6 @@
 ifeq ($(sort $(CONFIG_OUTPUT_TYPE_STATIC_LIBRARY)),y)
     ifeq ($(sort $(CONFIG_INCLUDE_UBOOT_SHELL)),y)
-        INCLUDE_THIS_COMPONENT := y
+        INCLUDE_THIS_COMPONENT := n# not ready yet
     endif
 endif
 
