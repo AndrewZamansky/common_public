@@ -188,6 +188,7 @@ uint8_t voice_3D_ioctl(struct dsp_module_inst_t *adsp,
 			break;
 		case IOCTL_VOICE_3D_SET_VOICE_ON :
 			handle->enable_voice = *((uint8_t*)aIoctl_param1);
+			break;
 		case IOCTL_VOICE_3D_SET_3D_ON :
 			handle->enable_3D = *((uint8_t*)aIoctl_param1);
 			break;
@@ -202,6 +203,7 @@ uint8_t voice_3D_ioctl(struct dsp_module_inst_t *adsp,
 			break;
 		case IOCTL_VOICE_3D_GET_VOICE_ON :
 			*((uint8_t*)aIoctl_param1) = handle->enable_voice;
+			break;
 		case IOCTL_VOICE_3D_GET_3D_ON :
 			*((uint8_t*)aIoctl_param1) = handle->enable_3D;
 			break;
