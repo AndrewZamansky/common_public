@@ -68,6 +68,7 @@ SRC_ASM    :=$(filter %.s,$(SRC)) $(filter %.S,$(SRC))
 SRC_ASM_S    :=$(filter %.S,$(SRC))
 SRC_OBJ := $(patsubst %.c,$(CURR_OBJ_DIR)/%.o,$(SRC_C))
 SRC_PREPROC := $(patsubst %.c,$(CURR_OBJ_DIR)/%.preproc,$(SRC_C))
+SRC_CMDS := $(patsubst %.c,$(CURR_OBJ_DIR)/cmds/%.cmd,$(SRC_C))
 SRC_CC_OBJ := $(patsubst %.cc,$(CURR_OBJ_DIR)/%.oo,$(SRC_CC))
 SRC_CPP_OBJ := $(patsubst %.cpp,$(CURR_OBJ_DIR)/%.oop,$(SRC_CPP))
 ASM_OBJ := $(patsubst %.s,$(CURR_OBJ_DIR)/%.o.asm,$(SRC_ASM))
@@ -136,9 +137,10 @@ $(CURR_OBJ_DIR)/%.preproc: %.c $(ALL_DEPS) $(C_ARGS_FILE)
 	$(call mkdir_if_not_exists, $(dir $@))
 	$(C_PREPROCESSOR_CMD) $(CC_OUTPUT_FLAG_AND_FILE) $<
 
-$(CURR_OBJ_DIR)/%.o: %.c $(CURR_OBJ_DIR)/%.preproc $(ALL_DEPS) $(C_ARGS_FILE)
+include $(MAKEFILES_ROOT_DIR)/c/compilers/commands_collection.mk
+
+$(CURR_OBJ_DIR)/%.o: %.c $(CURR_OBJ_DIR)/cmds/%.cmd $(ALL_DEPS) $(C_ARGS_FILE)
 	$(info .    Compiling $<)
-	$(call mkdir_if_not_exists, $(dir $@))
 	$(eval SRC_FILE := $(realpath $<))
 	$(info .    Compiling $(SRC_FILE))
 	$(C_COMPILATION_CMD) $(CC_OUTPUT_FLAG_AND_FILE) $<

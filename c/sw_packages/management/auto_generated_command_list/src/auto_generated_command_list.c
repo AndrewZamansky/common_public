@@ -1,11 +1,11 @@
 #include "_project.h"
 #include "u-boot/include/command.h"
 
-int do_get_version (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]);
+#include "all_cmd_ext.c"
 
 cmd_tbl_t u_boot_cmd_table[] =
 {
-#include "cmd.list"
+#include "all_cmd.c"
 };
 
 const int u_boot_cmd_table_size = sizeof(u_boot_cmd_table)/sizeof(cmd_tbl_t);
