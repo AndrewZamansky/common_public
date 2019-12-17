@@ -30,18 +30,22 @@ const uint8_t AUTO_INIT_API_VER_VARIABLE(AUTO_INIT_API_VERSION);
 
 void auto_init_api(void)
 {
-	auto_init_struct_t *p_curr_auto_init;
-	auto_init_struct_t *p_end_of_auto_init;
+	struct auto_init_struct_t *p_curr_auto_init;
+	struct auto_init_struct_t *p_end_of_auto_init;
 
 	if (auto_init_done) return;
 
 #if defined(_MSC_VER) || defined(__ARMCC_VERSION)
     #pragma message( "change to __start_auto_init_section in " __FILE__ )
-	p_curr_auto_init = (auto_init_struct_t *)&init_functions_section_start;
-	p_end_of_auto_init = (auto_init_struct_t *)&init_functions_section_end;
+	p_curr_auto_init =
+			(struct  auto_init_struct_t *)&init_functions_section_start;
+	p_end_of_auto_init =
+			(struct  auto_init_struct_t *)&init_functions_section_end;
 #else
-	p_curr_auto_init = (auto_init_struct_t *)&__start_auto_init_section;
-	p_end_of_auto_init = (auto_init_struct_t *)&__stop_auto_init_section;
+	p_curr_auto_init =
+			(struct  auto_init_struct_t *)&__start_auto_init_section;
+	p_end_of_auto_init =
+			(struct  auto_init_struct_t *)&__stop_auto_init_section;
 #endif
 
 	while(p_curr_auto_init < p_end_of_auto_init)
@@ -53,15 +57,15 @@ void auto_init_api(void)
 
 			init_function = p_curr_auto_init->auto_init_func ;
 			init_function();
-			data_size = sizeof(auto_init_struct_t);
+			data_size = sizeof(struct  auto_init_struct_t);
 		}
 		else
 		{
 			/*for compilers that insert spaces between data (like MSVC)*/
 			data_size = sizeof(int*);
 		}
-		p_curr_auto_init =
-			(auto_init_struct_t *)( ((uint8_t*)p_curr_auto_init) + data_size);
+		p_curr_auto_init = (struct  auto_init_struct_t *)(
+								((uint8_t*)p_curr_auto_init) + data_size);
 	}
 	auto_init_done = 1;
 }

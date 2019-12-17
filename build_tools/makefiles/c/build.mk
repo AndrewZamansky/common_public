@@ -55,13 +55,22 @@ GLOBAL_ARCHIVES := $(sort $(GLOBAL_ARCHIVES))
 TMP :=$(MAKE_TEMPORARY_FILES_DIR)
 export #export all variables declared before
 
-SUBDIRS_LAST := $(filter %auto_generated_command_list,$(SUBDIRS))
+# if need to compile auto_generated_command_list then compile it one of last
+# because it will create info from compilations of other files
+SUBDIR_LAST := $(filter %auto_generated_command_list,$(SUBDIRS))
 SUBDIRS := $(filter-out %auto_generated_command_list,$(SUBDIRS))
+SUBDIRS_LAST := $(SUBDIRS_LAST) $(SUBDIR_LAST)
+
+# if need to compile auto_init then compile it one of last
+# because it will create info from compilations of other files
+SUBDIR_LAST := $(filter %auto_init,$(SUBDIRS))
+SUBDIRS := $(filter-out %auto_init,$(SUBDIRS))
+SUBDIRS_LAST := $(SUBDIRS_LAST) $(SUBDIR_LAST)
 
 build_all : build_outputs
 	$(MAKE) -r -f $(MAKEFILES_ROOT_DIR)/c/post_build.mk
 
-ifeq (,$(strip $(SUBDIRS_LAST)))
+ifeq (,$(strip $(SUBDIRS_LAST))) # if SUBDIRS_LAST is empty
 
 build_outputs: $(SUBDIRS)
 	$(MAKE) -r -f $(MAKEFILES_ROOT_DIR)/c/build_final_outputs.mk

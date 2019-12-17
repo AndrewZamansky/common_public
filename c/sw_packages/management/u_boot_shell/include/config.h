@@ -2,6 +2,7 @@
 #define _U_BOOT_SHELL_CONFIG_123456_H
 
 
+#include "project_config.h"
 #include "_project.h"
 #include "string.h"
 #include "stdio.h"

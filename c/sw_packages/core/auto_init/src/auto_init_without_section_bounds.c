@@ -18,12 +18,12 @@
 */
 const uint8_t AUTO_INIT_API_VER_VARIABLE(AUTO_INIT_API_VERSION);
 
-extern auto_init_struct_t
+extern struct auto_init_struct_t
 					AUTO_INIT_FUNCTION_PLACEMENT auto_init_dummy_auto_init;
 
 static void _auto_init(int16_t struct_size)
 {
-	auto_init_struct_t const *p_curr_auto_init;
+	struct auto_init_struct_t const *p_curr_auto_init;
 	auto_init_func_t init_function ;
 
 	p_curr_auto_init = &auto_init_dummy_auto_init;
@@ -31,8 +31,8 @@ static void _auto_init(int16_t struct_size)
 	{
 		init_function = p_curr_auto_init->auto_init_func ;
 		init_function();
-		p_curr_auto_init =
-			(auto_init_struct_t *)( ((uint8_t*)p_curr_auto_init) + struct_size);
+		p_curr_auto_init = (struct auto_init_struct_t *)(
+							((uint8_t*)p_curr_auto_init) + struct_size);
 	}
 }
 
@@ -49,8 +49,8 @@ void auto_init_api(void)
 	{
 		return;
 	}
-	_auto_init(   (uint8_t)sizeof(auto_init_struct_t)  );
-	_auto_init( -((uint8_t)sizeof(auto_init_struct_t)) );
+	_auto_init(   (uint8_t)sizeof(struct auto_init_struct_t)  );
+	_auto_init( -((uint8_t)sizeof(struct auto_init_struct_t)) );
 	auto_init_done = 1;
 }
 

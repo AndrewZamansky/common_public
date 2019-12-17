@@ -133,13 +133,18 @@ else
     C_PREPROCESSOR_CMD :=$(C_PREPROCESSOR_REDUCED_CMD)
 endif
 
-$(CURR_OBJ_DIR)/%.preproc: %.c $(ALL_DEPS) $(C_ARGS_FILE)
+
+####### extract info from preprocessed files
+$(CURR_OBJ_DIR)/%.preproc: % $(ALL_DEPS) $(C_ARGS_FILE)
+	$(info .    Preprocessing $<)
 	$(call mkdir_if_not_exists, $(dir $@))
 	$(C_PREPROCESSOR_CMD) $(CC_OUTPUT_FLAG_AND_FILE) $<
 
-include $(MAKEFILES_ROOT_DIR)/c/compilers/commands_collection.mk
+include $(MAKEFILES_ROOT_DIR)/c/compilers/preprocessor_analyzer.mk
 
-$(CURR_OBJ_DIR)/%.o: %.c $(CURR_OBJ_DIR)/cmds/%.cmd $(ALL_DEPS) $(C_ARGS_FILE)
+
+C_DEPS := %.c $(CURR_OBJ_DIR)/%.c.analyzer $(ALL_DEPS) $(C_ARGS_FILE)
+$(CURR_OBJ_DIR)/%.o: $(C_DEPS)
 	$(info .    Compiling $<)
 	$(eval SRC_FILE := $(realpath $<))
 	$(info .    Compiling $(SRC_FILE))
@@ -172,22 +177,17 @@ else
 endif
 
 
-#	open line to create preproccesor file
-#	$(CC) -E -P $(ALL_CFLAGS) $(ALL_INCLUDE_DIRS) $(ALL_DEFINES) $< -o  $@.pre
-
-$(CURR_OBJ_DIR)/%.oo: %.cc $(ALL_DEPS) $(CPP_ARGS_FILE)
+CC_DEPS := %.cc $(CURR_OBJ_DIR)/%.cc.analyzer $(ALL_DEPS) $(CPP_ARGS_FILE)
+$(CURR_OBJ_DIR)/%.oo: $(CC_DEPS)
 	$(info .    Compiling $<)
 	$(call mkdir_if_not_exists, $(dir $@))
 	$(CPP_COMPILATION_CMD) $(CC_OUTPUT_FLAG_AND_FILE) $<
-#	open line to create preproccesor file
-#	$(CC) -E -P $(ALL_CFLAGS) $(ALL_INCLUDE_DIRS) $(ALL_DEFINES) $< -o  $@.pre
 
-$(CURR_OBJ_DIR)/%.oop: %.cpp $(ALL_DEPS) $(CPP_ARGS_FILE)
+CPP_DEPS := %.cpp $(CURR_OBJ_DIR)/%.cpp.analyzer $(ALL_DEPS) $(CPP_ARGS_FILE)
+$(CURR_OBJ_DIR)/%.oop: $(CPP_DEPS)
 	$(info .    Compiling $<)
 	$(call mkdir_if_not_exists, $(dir $@))
 	$(CPP_COMPILATION_CMD) $(CC_OUTPUT_FLAG_AND_FILE) $<
-#	open line to create preproccesor file
-#	$(CC) -E -P $(ALL_CFLAGS) $(ALL_INCLUDE_DIRS) $(ALL_DEFINES) $< -o  $@.pre
 
 $(CPP_ARGS_FILE): $(ALL_DEPS)
 	$(eval DUMMY :=$(call fwrite,$(CPP_ARGS_FILE),$(ARGS_CONTENT),TRUNCATE))

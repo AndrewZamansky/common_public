@@ -3,7 +3,7 @@
 
 #include "all_cmd_ext.c"
 
-cmd_tbl_t u_boot_cmd_table[] =
+const cmd_tbl_t u_boot_cmd_table[] =
 {
 #include "all_cmd.c"
 };
