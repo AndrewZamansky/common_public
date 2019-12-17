@@ -777,7 +777,7 @@ void dsp_process(struct dsp_chain_t *p_chain, struct dsp_module_inst_t *dsp )
 			if ((DSP_OUT_PAD_TYPE_NORMAL == pad_type) ||
 					(DSP_PAD_TYPE_CHAIN_OUTPUT_BUFFER == pad_type))
 			{
-				dsp_get_input_buffer_from_pad(dsp, 0, &in_buff, &buff_size);
+				dsp_get_input_buffer_from_pad(dsp, i, &in_buff, &buff_size);
 				if (buff_size > curr_out_pad->buff_size)
 				{
 					buff_size = curr_out_pad->buff_size;
