@@ -48,7 +48,9 @@ endif
 
 INCLUDE_DIR = $(U_BOOT_PATH)/include#  $(U_BOOT_PATH)/arch/arm/include/asm/
 
-SRC = u_boot_shell.c
+ifneq ($(sort $(CONFIG_OUTPUT_TYPE_STATIC_LIBRARY)),y)
+    SRC = u_boot_shell.c
+endif
 
 ifdef CONFIG_UBOOT_CMD_GET_SERIAL
     SRC += cmd_get_serial.c

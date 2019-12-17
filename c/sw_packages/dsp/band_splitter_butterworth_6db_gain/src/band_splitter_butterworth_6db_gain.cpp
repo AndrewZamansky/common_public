@@ -5,9 +5,6 @@
  *
  */
 
-
-
-/********  includes *********************/
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 
@@ -25,27 +22,8 @@
 #define DEBUG
 #include "biquad_filter_api.h"
 
-
-/********  defines *********************/
-
-
-/********  types  *********************/
-
-/********  externals *********************/
-
-
-/********  exported variables *********************/
-
 char band_splitter_butterworth_6db_gain_module_name[] =
 										"band_splitter_butterworth_6db_gain";
-
-
-/**********   external variables    **************/
-
-
-
-/***********   local variables    **************/
-
 
 
 /**
@@ -270,7 +248,7 @@ uint8_t band_splitter_butterworth_6db_gain_ioctl(struct dsp_module_inst_t * adsp
  *
  * return:
  */
-void  band_splitter_butterworth_6db_gain_init(void)
+extern "C" void  band_splitter_butterworth_6db_gain_init(void)
 {
 	DSP_REGISTER_NEW_MODULE("band_splitter_butterworth_6db_gain",
 			band_splitter_butterworth_6db_gain_ioctl ,

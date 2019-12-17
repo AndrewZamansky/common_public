@@ -4,15 +4,8 @@
 
 #include "dsp_management_api.h"
 
-/*****************  defines  **************/
 
-
-/**********  define API  types ************/
-
-
-
-typedef enum
-{
+enum VOICE_3D_API_ioctl_e {
 	IOCTL_VOICE_3D_SET_CENTER_GAIN = IOCTL_DSP_LAST_COMMON_IOCTL + 1,
 	IOCTL_VOICE_3D_SET_SIDE_GAIN,
 	IOCTL_VOICE_3D_SET_3D_GAIN,
@@ -23,11 +16,8 @@ typedef enum
 	IOCTL_VOICE_3D_GET_3D_GAIN,
 	IOCTL_VOICE_3D_GET_VOICE_ON,
 	IOCTL_VOICE_3D_GET_3D_ON,
-}VOICE_3D_API_ioctl_t;
+};
 
-
-
-/**********  define API  functions  ************/
 
 #ifdef __cplusplus
 extern "C" {

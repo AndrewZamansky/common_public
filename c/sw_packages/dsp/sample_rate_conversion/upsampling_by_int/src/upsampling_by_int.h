@@ -8,8 +8,6 @@
 #define _UPSAMPLING_BY_INT_FILTER_H
 
 
-/***************   typedefs    *******************/
-
 
 struct UPSAMPLING_BY_INT_Instance_t {
 	void *p_upsampling_by_int_filter   ;

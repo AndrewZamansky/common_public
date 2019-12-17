@@ -3,20 +3,9 @@
 #define _I2S_splitter_API_H_
 
 
-/*****************  defines  **************/
-
-
-/**********  define API  types ************/
-
-
-/**********  define API  functions  ************/
-
-
-
-typedef enum
-{
+enum I2S_SPLITTER_API_ioctl_e {
 	IOCTL_PCM_SPLITTER_SET_PARAMS = IOCTL_DSP_LAST_COMMON_IOCTL + 1,
-}I2S_SPLITTER_API_ioctl_t;
+};
 
 
 enum pcm_splitter_channel_justification_e {

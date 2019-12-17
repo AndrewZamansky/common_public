@@ -8,9 +8,6 @@
 #define _MULTIPLIER_2CH_H
 
 
-/***************   typedefs    *******************/
-
-
 struct multiplier_2ch_instance_t
 {
 	real_t weight ;

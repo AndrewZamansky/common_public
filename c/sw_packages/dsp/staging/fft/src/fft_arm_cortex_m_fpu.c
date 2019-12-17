@@ -4,9 +4,6 @@
  *
  */
 
-
-
-/********  includes *********************/
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 #include "errors_api.h"
@@ -23,38 +20,11 @@
 #include "cpu_config.h"
 #include "arm_math.h"
 
-#include "_fft_prerequirements_check.h"
-
-/********  defines *********************/
-
-
-/********  types  *********************/
-
-/********  externals *********************/
-
-
-/********  local defs *********************/
-
-
-
-/**********   external variables    **************/
-
-
-
-/***********   local variables    **************/
 
 #define FFT_SIZE	I2S_BUFF_LEN/2
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        fft_dsp                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
+/*
+ * Function:        fft_dsp
+ */
 void fft_dsp(struct dsp_module_inst_t *adsp, size_t data_len,
 		struct dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS],
 		struct dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])
@@ -78,17 +48,9 @@ void fft_dsp(struct dsp_module_inst_t *adsp, size_t data_len,
 
 
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        fft_ioctl                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
+/*
+ * Function:        fft_ioctl
+ */
 uint8_t fft_ioctl(struct dsp_module_inst_t *adsp,
 		const uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2)
 {
@@ -110,17 +72,10 @@ uint8_t fft_ioctl(struct dsp_module_inst_t *adsp,
 
 
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        FFT_API_Init_Dev_Descriptor                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
+/*
+ * Function:        FFT_API_Init_Dev_Descriptor
+ *
+ */
 uint8_t  fft_api_init_dsp_descriptor(struct dsp_module_inst_t aDspDescriptor)
 {
 	struct FFT_Instance_t *pInstance;

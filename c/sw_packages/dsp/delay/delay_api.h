@@ -4,21 +4,11 @@
 
 #include "dsp_management_api.h"
 
-/*****************  defines  **************/
-
-
-/**********  define API  types ************/
-
-
-
-typedef enum
-{
+enum DELAY_API_ioctl_e {
 	IOCTL_DELAY_SET_DELAY_SAMPLES = IOCTL_DSP_LAST_COMMON_IOCTL + 1,
-}DELAY_API_ioctl_t;
+};
 
 
-
-/**********  define API  functions  ************/
 
 #ifdef __cplusplus
 extern "C" {

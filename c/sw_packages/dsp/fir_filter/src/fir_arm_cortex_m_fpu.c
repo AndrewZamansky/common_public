@@ -3,10 +3,6 @@
  * file :   firs.c
  *
  */
-
-
-
-/********  includes *********************/
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 extern "C" {
@@ -23,36 +19,22 @@ extern "C" {
 
 #include "_fir_filter_prerequirements_check.h"
 
-/********  defines *********************/
 
-
-/********  types  *********************/
-
-typedef struct
-{
+struct fir_filter_t {
 	void *p_filter_instance;
 	float *p_fir_filter_state;
-}fir_filter_t;
+};
 
 
-
-/********  externals *********************/
-
-
-/********  local defs *********************/
-
-
-/**********   external variables    **************/
-
-
-
-/***********   local variables    **************/
-
-void fir_filter_function(void *pFilter,float *apIn,float *apOut,size_t buff_len)
+void fir_filter_function(
+		void *pFilter, float *apIn, float *apOut, size_t buff_len)
 {
 	arm_fir_instance_f32 *filter_params;
-	filter_params = ((arm_fir_instance_f32*)(((fir_filter_t *)pFilter)->p_filter_instance));
-	arm_fir_f32(filter_params,apIn,apOut ,buff_len );
+	struct fir_filter_t * fir_filter;
+
+	fir_filter = (struct fir_filter_t *)pFilter;
+	filter_params = (arm_fir_instance_f32*)(fir_filter->p_filter_instance);
+	arm_fir_f32(filter_params, apIn, apOut, buff_len);
 }
 
 
@@ -68,11 +50,11 @@ void fir_filter_function(void *pFilter,float *apIn,float *apOut,size_t buff_len)
 void *fir_alloc(size_t number_of_filter_coefficients,
 		float *p_coefficients ,size_t predefined_data_block_size)
 {
-	fir_filter_t *p_fir_filter;
+	struct fir_filter_t *p_fir_filter;
 	arm_fir_instance_f32* p_filter_instance;
 	float *p_fir_filter_state;
 
-	p_fir_filter=(fir_filter_t *)malloc(sizeof(fir_filter_t));
+	p_fir_filter=(struct fir_filter_t *)malloc(sizeof(struct fir_filter_t));
 	errors_api_check_if_malloc_succeed(p_fir_filter);
 
 	p_filter_instance = malloc(sizeof(arm_fir_instance_f32));
@@ -95,7 +77,7 @@ void *fir_alloc(size_t number_of_filter_coefficients,
  */
 void firs_free(void *pFilter )
 {
-	free(((fir_filter_t *)pFilter)->p_fir_filter_state);
-	free(((fir_filter_t *)pFilter)->p_filter_instance);
+	free(((struct fir_filter_t *)pFilter)->p_fir_filter_state);
+	free(((struct fir_filter_t *)pFilter)->p_filter_instance);
 	free(pFilter);
 }

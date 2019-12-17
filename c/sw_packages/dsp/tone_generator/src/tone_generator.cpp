@@ -6,8 +6,6 @@
  */
 
 
-
-/********  includes *********************/
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 
@@ -37,25 +35,11 @@
 #include "auto_init_api.h"
 
 
-/********  defines *********************/
-
 #define  PI_mult_2  6.28318530718f
 
-/********  types  *********************/
-
-/********  externals *********************/
-
-
-/********  exported variables *********************/
 
 char tone_generator_module_name[] = "tone_generator";
 
-
-/**********   external variables    **************/
-
-
-
-/***********   local variables    **************/
 
 volatile uint32_t __stop = 0xffffffff;
 /**
@@ -175,7 +159,7 @@ uint8_t tone_generator_ioctl(struct dsp_module_inst_t *adsp,
  *
  * return:
  */
-void  tone_generator_init(void)
+extern "C" void  tone_generator_init(void)
 {
 	DSP_REGISTER_NEW_MODULE("tone_generator", tone_generator_ioctl,
 					tone_generator_dsp, struct TONE_GENERATOR_Instance_t);

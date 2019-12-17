@@ -5,9 +5,6 @@
  *
  */
 
-
-
-/********  includes *********************/
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 extern "C" {
@@ -23,11 +20,6 @@ extern "C" {
 
 #define NUM_OF_STATES_PER_STAGE	2
 
-/********  defines *********************/
-
-
-/********  types  *********************/
-
 struct biquads_cascading_filter_t
 {
 	uint8_t numOfStages;
@@ -35,19 +27,6 @@ struct biquads_cascading_filter_t
 	real_t *  pStates; // should be allocated numOfStages*4
 };
 
-
-
-/********  externals *********************/
-
-
-/********  local defs *********************/
-
-
-/**********   external variables    **************/
-
-
-
-/***********   local variables    **************/
 
 void biquads_cascading_filter(void *pFilter,
 		real_t *apIn, real_t *apOut, size_t buff_len)
@@ -164,7 +143,7 @@ void biquads_free(void *pFilter)
  *
  *    {b10, b11, b12, a11, a12, b20, b21, b22, a21, a22, ...}
  */
-void biquads_coefficients_calculation(biquads_filter_mode_t filter_mode,
+void biquads_coefficients_calculation(enum biquads_filter_mode_e filter_mode,
 		real_t FreqC, real_t QValue, real_t Gain_dB,
 		real_t SamplingRate, real_t *pCoeffs )
 {

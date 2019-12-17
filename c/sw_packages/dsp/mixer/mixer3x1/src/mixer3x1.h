@@ -8,10 +8,6 @@
 #define _MIXER3X1_H
 
 
-
-/***************   typedefs    *******************/
-
-
 struct MIXER3X1_Instance_t {
 	real_t channels_weights[3];
 };

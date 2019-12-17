@@ -3,10 +3,6 @@
  * file :   biquad_filter.c
  *
  */
-
-
-
-/********  includes *********************/
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 
@@ -21,26 +17,6 @@
 #include "math.h"
 
 
-/********  defines *********************/
-
-
-/********  types  *********************/
-
-/********  externals *********************/
-
-
-/********  exported variables *********************/
-
-
-
-/**********   external variables    **************/
-
-
-
-/***********   local variables    **************/
-
-
-
 /*   func : biquads_coefficients_calculation_common()
  *    The coefficients are stored in the array pCoeffs in the following order:
  *
@@ -48,7 +24,8 @@
  *
  *    {b10, b11, b12, a11, a12, b20, b21, b22, a21, a22, ...}
  */
-void biquads_coefficients_calculation_common(biquads_filter_mode_t filter_mode,
+void biquads_coefficients_calculation_common(
+		enum biquads_filter_mode_e filter_mode,
 		real_t FreqC, real_t QValue, real_t Gain_dB,
 		real_t SamplingRate, real_t *pCoeffs )
 {

@@ -10,9 +10,6 @@
 #include "biquad_filter_api.h"
 
 
-/***************   typedefs    *******************/
-
-
 struct biquads_filter_t {
 	void *pBiquadFilter   ;
 	size_t num_of_bands ;
@@ -35,14 +32,13 @@ void biquads_free(void *pFilter );
 void biquads_cascading_filter(void *pFilter,
 		real_t *pin, real_t *pOut, size_t buff_len);
 
-void biquads_coefficients_calculation_common(biquads_filter_mode_t filter_mode,
+void biquads_coefficients_calculation_common(
+		enum biquads_filter_mode_e filter_mode,
 		real_t FreqC, real_t QValue, real_t Gain_dB,
 		real_t SamplingRate, real_t *pCoeffs);
 
-void biquads_coefficients_calculation(biquads_filter_mode_t filter_mode,
+void biquads_coefficients_calculation(enum biquads_filter_mode_e filter_mode,
 		real_t FreqC, real_t QValue, real_t Gain_dB,
 		real_t SamplingRate, real_t *pCoeffs);
 
-
-
-#endif /* */
+#endif

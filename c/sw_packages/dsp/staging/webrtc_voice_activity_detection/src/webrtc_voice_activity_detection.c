@@ -4,9 +4,6 @@
  *
  */
 
-
-
-/********  includes *********************/
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 #include "errors_api.h"
@@ -22,25 +19,9 @@
 
 #include "webrtc/common_audio/vad/include/webrtc_vad.h"
 
-#include "_webrtc_voice_activity_detection_prerequirements_check.h"
 
-/********  defines *********************/
 char webrtc_voice_activity_detection_module_name[] = "voice_activity_detection";
 
-
-/********  types  *********************/
-
-/********  externals *********************/
-
-
-/********  local defs *********************/
-
-
-
-/**********   external variables    **************/
-
-
-/***********   local variables    **************/
 
 
 /**
@@ -153,7 +134,7 @@ void once(void (*func)(void)) {
  *
  * return:
  */
-void  webrtc_voice_activity_detection_init(void)
+extern "C" void  webrtc_voice_activity_detection_init(void)
 {
 	DSP_REGISTER_NEW_MODULE(WEBRTC_VOICE_ACTIVITY_DETECTION_DSPT,
 			webrtc_voice_activity_detection_ioctl,

@@ -8,10 +8,6 @@
 #define _MIXER4X1_H
 
 
-
-/***************   typedefs    *******************/
-
-
 struct mixer4x1_instance_t {
 	real_t channels_weights[4];
 };

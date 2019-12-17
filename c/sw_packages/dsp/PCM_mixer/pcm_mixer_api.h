@@ -4,19 +4,12 @@
 
 #include "dsp_management_api.h"
 
-/*****************  defines  **************/
-
-
-/**********  define API  types ************/
-
-
-typedef enum
-{
+enum PCM_MIXER_API_ioctl_e {
 	IOCTL_PCM_MIXER_ENABLE_TEST_CLIPPING = IOCTL_DSP_LAST_COMMON_IOCTL + 1,
 	IOCTL_PCM_MIXER_DISABLE_TEST_CLIPPING,
 	IOCTL_PCM_MIXER_GET_MAX_OUTPUT_VALUE,
 	IOCTL_PCM_MIXER_SET_PARAMS
-}PCM_MIXER_API_ioctl_t;
+};
 
 
 enum pcm_mixer_channel_justification_e {
@@ -31,7 +24,6 @@ struct pcm_mixer_api_set_params_t {
 	uint8_t channel_justification; /**/
 };
 
-/**********  define API  functions  ************/
 
 #ifdef __cplusplus
 extern "C" {
@@ -43,7 +35,6 @@ extern char pcm_mixer_module_name[] ;
 #ifdef __cplusplus
 }
 #endif
-
 
 
 #endif

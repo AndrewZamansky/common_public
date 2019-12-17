@@ -5,20 +5,13 @@
 
 #include "dsp_management_api.h"
 
-/*****************  defines  **************/
-
-
-/**********  define API  types ************/
-
-typedef enum
-{
+enum WEBRTC_VOICE_ACTIVITY_DETECTION_API_ioctl_e {
 	IOCTL_WEBRTC_VOICE_ACTIVITY_DETECTION_GET_RESULT =
 								IOCTL_DSP_LAST_COMMON_IOCTL + 1,
 	IOCTL_WEBRTC_VOICE_ACTIVITY_DETECTION_SET_AGRESSIVNESS
-}WEBRTC_VOICE_ACTIVITY_DETECTION_API_ioctl_t;
+};
 
 
-/**********  define API  functions  ************/
 
 #ifdef __cplusplus
 extern "C" {

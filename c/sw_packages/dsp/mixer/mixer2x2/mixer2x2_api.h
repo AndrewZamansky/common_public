@@ -3,19 +3,6 @@
 #define _mixer2x2_API_H_
 
 
-
-
-/*****************  defines  **************/
-
-
-/**********  define API  types ************/
-
-
-
-
-
-/**********  define API  functions  ************/
-
 #ifdef __cplusplus
 extern "C" {
 #endif

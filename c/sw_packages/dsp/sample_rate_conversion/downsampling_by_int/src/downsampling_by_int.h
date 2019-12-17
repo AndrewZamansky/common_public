@@ -9,9 +9,6 @@
 #define _DOWNSAMPLING_BY_INT_FILTER_H
 
 
-/***************   typedefs    *******************/
-
-
 struct DOWNSAMPLING_BY_INT_Instance_t {
 	void *p_downsampling_by_int_filter   ;
 	void *p_coefficients   ;
@@ -28,7 +25,7 @@ void *downsampling_by_int_alloc(size_t factor,
 void downsampling_by_int_free(void *pFilter);
 
 void downsampling_by_int_function(void *pFilter,
-					float *pin, float *pOut ,size_t buff_len);
+					float *pin, float *pOut, size_t buff_len);
 
 
 #endif

@@ -82,7 +82,7 @@ struct auto_init_struct_t {
 	#define AUTO_INIT_FUNCTION(func)   \
 		extern struct auto_init_struct_t AUTO_INIT_FUNCTION_PLACEMENT \
 													auto_init_##func;\
-		auto_init_struct_t AUTO_INIT_FUNCTION_PLACEMENT \
+		struct auto_init_struct_t AUTO_INIT_FUNCTION_PLACEMENT \
 		auto_init_##func = { (int*)AUTO_INIT_MAGIC_NUMBER , func}
 
 #endif

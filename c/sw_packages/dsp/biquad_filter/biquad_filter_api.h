@@ -4,15 +4,7 @@
 
 #include "dsp_management_api.h"
 
-
-/*****************  defines  **************/
-
-
-/**********  define API  types ************/
-
-
-/**********  define API  types ************/
-typedef enum _biquads_filter_mode_t {
+enum biquads_filter_mode_e {
     BIQUADS_TRANSPARENT_MODE,
     BIQUADS_LOWPASS_MODE_1_POLE,
     BIQUADS_LOWPASS_MODE_2_POLES,
@@ -24,18 +16,14 @@ typedef enum _biquads_filter_mode_t {
     BIQUADS_HIGHSHELF_MODE,
     BIQUADS_ALL_PASS_BUTTERWORTH_1_POLE,
     BIQUADS_ALL_PASS_BUTTERWORTH_2_POLES,
-} biquads_filter_mode_t;
+};
 
 
-
-
-
-typedef enum
-{
+enum BIQUAD_FILTER_API_ioctl_e {
 	IOCTL_BIQUAD_FILTER_SET_BAND = IOCTL_DSP_LAST_COMMON_IOCTL+1,
 	IOCTL_BIQUAD_FILTER_SET_NUM_OF_BANDS,
 	IOCTL_BIQUAD_FILTER_GET_BAND
-}BIQUAD_FILTER_API_ioctl_t;
+};
 
 
 struct biquad_filter_api_band_set_params_t
@@ -43,7 +31,7 @@ struct biquad_filter_api_band_set_params_t
 	float Fc;
 	float QValue;
 	float Gain_db;
-	biquads_filter_mode_t filter_mode;
+	enum biquads_filter_mode_e filter_mode;
 	uint8_t bypass;
 };
 
@@ -53,7 +41,6 @@ struct biquad_filter_api_band_set_t
 	uint8_t band_num;
 };
 
-/**********  define API  functions  ************/
 
 #ifdef __cplusplus
 extern "C" {

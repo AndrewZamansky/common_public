@@ -4,10 +4,6 @@
  *
  *
  */
-
-
-
-/********  includes *********************/
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 
@@ -24,25 +20,7 @@
 #include "string.h"
 #include "math.h"
 
-
-/********  defines *********************/
-
-/********  types  *********************/
-
-/********  externals *********************/
-
-
-/********  exported variables *********************/
-
 char multiplier_1ch_module_name[] = "multiplier_1ch";
-
-
-/**********   external variables    **************/
-
-
-
-/***********   local variables    **************/
-
 
 /**
  * multiplier_1ch_dsp()
@@ -144,13 +122,12 @@ uint8_t multiplier_1ch_ioctl(struct dsp_module_inst_t *adsp,
 }
 
 
-
 /**
  * multiplier_1ch_init()
  *
  * return:
  */
-void  multiplier_1ch_init(void)
+extern "C" void  multiplier_1ch_init(void)
 {
 	DSP_REGISTER_NEW_MODULE("multiplier_1ch", multiplier_1ch_ioctl,
 			multiplier_1ch_dsp , struct multiplier_1ch_instance_t);

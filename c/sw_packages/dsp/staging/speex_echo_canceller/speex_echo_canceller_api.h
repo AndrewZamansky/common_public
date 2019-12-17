@@ -4,22 +4,6 @@
 
 #include "dsp_management_api.h"
 
-/*****************  defines  **************/
-
-
-/**********  define API  types ************/
-
-
-
-//typedef enum
-//{
-//	IOCTL_SPEEX_ECHO_CANCELLER_SET_GAIN = IOCTL_DSP_LAST_COMMON_IOCTL+1,
-//}SPEEX_ECHO_CANCELLER_API_ioctl_t;
-
-
-
-/**********  define API  functions  ************/
-
 
 uint8_t  speex_echo_canceller_api_init_dsp_descriptor(struct dsp_module_inst_t aDspDescriptor);
 

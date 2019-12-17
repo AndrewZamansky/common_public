@@ -4,10 +4,6 @@
  *
  *
  */
-
-
-
-/********  includes *********************/
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 
@@ -23,25 +19,8 @@
 #include "auto_init_api.h"
 
 
-
-/********  defines *********************/
-
-
-/********  types  *********************/
-
-/********  externals *********************/
-
-
-/********  exported variables *********************/
-
 char rms_module_name[] = "rms";
 
-
-/**********   external variables    **************/
-
-
-
-/***********   local variables    **************/
 
 #define  ALPHA   0.00004f
 #define  ONE_MINUS_ALPHA   (1.0f - ALPHA)
@@ -115,14 +94,12 @@ uint8_t rms_ioctl(struct dsp_module_inst_t *adsp,
 }
 
 
-
-
 /**
  * rms_init()
  *
  * return:
  */
-void  rms_init(void)
+extern "C" void  rms_init(void)
 {
 	DSP_REGISTER_NEW_MODULE("rms",
 			rms_ioctl, rms_dsp, struct rms_instance_t);

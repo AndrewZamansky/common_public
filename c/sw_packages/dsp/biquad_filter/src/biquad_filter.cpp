@@ -4,10 +4,6 @@
  *
  *
  */
-
-
-
-/********  includes *********************/
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 extern "C" {
@@ -26,25 +22,7 @@ extern "C" {
 
 #include "auto_init_api.h"
 
-/********  defines *********************/
-
-
-/********  types  *********************/
-
-/********  externals *********************/
-
-
-/********  exported variables *********************/
-
 char biquad_filter_module_name[] = "biquad_filter";
-
-
-/**********   external variables    **************/
-
-
-
-/***********   local variables    **************/
-
 
 
 /**
@@ -142,7 +120,7 @@ uint8_t biquad_filter_ioctl(struct dsp_module_inst_t *adsp,
 	struct biquad_filter_api_band_set_params_t *p_band_set_params;
 	struct biquads_filter_t *handle;
 	struct biquad_filter_api_band_set_t *band_params;
-	biquads_filter_mode_t filter_mode;
+	enum biquads_filter_mode_e filter_mode;
 	real_t *curr_coeffs;
 
 	handle = (struct biquads_filter_t *)adsp->handle;
@@ -213,7 +191,7 @@ uint8_t biquad_filter_ioctl(struct dsp_module_inst_t *adsp,
  *
  * return:
  */
-void  biquad_filter_init(void)
+extern "C" void  biquad_filter_init(void)
 {
 	DSP_REGISTER_NEW_MODULE("biquad_filter",
 			biquad_filter_ioctl, biquad_filter_dsp, struct biquads_filter_t);

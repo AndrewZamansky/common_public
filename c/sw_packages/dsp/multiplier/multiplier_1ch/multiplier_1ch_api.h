@@ -4,15 +4,6 @@
 
 #include "multiplier_api.h"
 
-/*****************  defines  **************/
-
-
-/**********  define API  types ************/
-
-
-
-/**********  define API  functions  ************/
-
 #ifdef __cplusplus
 extern "C" {
 #endif

@@ -4,9 +4,6 @@
  *
  */
 
-
-
-/********  includes *********************/
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 
@@ -19,27 +16,9 @@
 #include "auto_init_api.h"
 #include "math.h"
 
-#include "_upsampling_by_int_prerequirements_check.h"
 
-/********  defines *********************/
-
-
-/********  types  *********************/
-
-/********  externals *********************/
-
-
-/********  exported variables *********************/
 
 char upsampling_by_int_module_name[] = "upsampling_by_int";
-
-
-/**********   external variables    **************/
-
-
-
-/***********   local variables    **************/
-
 
 
 /**
@@ -93,7 +72,7 @@ uint8_t upsampling_by_int_ioctl(struct dsp_module_inst_t *adsp,
 	size_t number_of_filter_coefficients;
 	size_t predefined_data_block_size;
 	float *p_coefficients;
-	upsampling_by_int_api_set_params_t *p_band_set_params;
+	struct upsampling_by_int_api_set_params_t *p_band_set_params;
 	struct UPSAMPLING_BY_INT_Instance_t *handle;
 
 	handle = adsp->handle;
@@ -114,7 +93,7 @@ uint8_t upsampling_by_int_ioctl(struct dsp_module_inst_t *adsp,
 
 	case IOCTL_UPSAMPLING_BY_INT_SET_FIR_COEFFICIENTS :
 		p_band_set_params =
-				((upsampling_by_int_api_set_params_t *)aIoctl_param1);
+				((struct upsampling_by_int_api_set_params_t *)aIoctl_param1);
 		number_of_filter_coefficients =
 				p_band_set_params->number_of_filter_coefficients;
 		handle->number_of_filter_coefficients = number_of_filter_coefficients;
@@ -147,7 +126,7 @@ uint8_t upsampling_by_int_ioctl(struct dsp_module_inst_t *adsp,
  *
  * return:
  */
-void  upsampling_by_int_init(void)
+extern "C" void  upsampling_by_int_init(void)
 {
 	DSP_REGISTER_NEW_MODULE("upsampling_by_int", upsampling_by_int_ioctl,
 			upsampling_by_int_dsp, struct UPSAMPLING_BY_INT_Instance_t);

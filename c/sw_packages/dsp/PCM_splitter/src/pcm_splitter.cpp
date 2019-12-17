@@ -3,10 +3,6 @@
  * file :   pcm_splitter.c
  *
  */
-
-
-
-/********  includes *********************/
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 
@@ -20,23 +16,8 @@
 #include "pcm_splitter.h"
 #include <string.h>
 
-/********  defines *********************/
-
-/********  types  *********************/
-
-/********  externals *********************/
-
-
-/********  exported variables *********************/
 
 char pcm_splitter_module_name[] = "pcm_splitter";
-
-
-/**********   external variables    **************/
-
-
-
-/***********   local variables    **************/
 
 
 /**
@@ -253,9 +234,7 @@ uint8_t pcm_splitter_ioctl(struct dsp_module_inst_t *adsp,
 }
 
 
-
-
-void  pcm_splitter_init(void)
+extern "C" void  pcm_splitter_init(void)
 {
 	DSP_REGISTER_NEW_MODULE("pcm_splitter",	pcm_splitter_ioctl,
 			pcm_splitter_dsp_default , struct pcm_splitter_instance_t);

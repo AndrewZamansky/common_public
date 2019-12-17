@@ -7,16 +7,11 @@
  *
  *
  */
-
-
-
-/********  includes *********************/
-
 #include "speex_echo_canceller_config.h"
-#include "dev_management_api.h" // for device manager defines and typedefs
-#include "dsp_management_api.h" // for device manager defines and typedefs
 
-#include "speex_echo_canceller_api.h" //place first to test that header file is self-contained
+#include "dsp_management_api.h"
+
+#include "speex_echo_canceller_api.h"
 #include "speex_echo_canceller.h"
 #include "common_dsp_api.h"
 
@@ -25,17 +20,6 @@
 #include "speex/speex_echo.h"
 #include "speex/speex_preprocess.h"
 
-#include "_speex_echo_canceller_prerequirements_check.h"
-
-/********  defines *********************/
-
-
-/********  types  *********************/
-
-/********  externals *********************/
-
-
-/********  local defs *********************/
 
 #define INSTANCE(hndl)	((SPEEX_ECHO_CANCELLER_Instance_t*)hndl)
 
@@ -43,33 +27,23 @@
 #define BUFF_LEN 7
 #define SAMPLE_RATE 44100
 
-/**********   external variables    **************/
 
-
-
-/***********   local variables    **************/
 #if SPEEX_ECHO_CANCELLER_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
 
-	static SPEEX_ECHO_CANCELLER_Instance_t SPEEX_ECHO_CANCELLER_InstanceParams[SPEEX_ECHO_CANCELLER_CONFIG_NUM_OF_DYNAMIC_INSTANCES] = { {0} };
+	static SPEEX_ECHO_CANCELLER_Instance_t
+		SPEEX_ECHO_CANCELLER_InstanceParams[SPEEX_ECHO_CANCELLER_CONFIG_NUM_OF_DYNAMIC_INSTANCES] = { {0} };
 	static uint16_t usedInstances =0 ;
 
 
 #endif // for SPEEX_ECHO_CANCELLER_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
 
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        speex_echo_canceller_dsp                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
+/*
+ * Function:        speex_echo_canceller_dsp
+ */
 void speex_echo_canceller_dsp(struct dsp_module_inst_t *adsp , size_t data_len ,
-		struct dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] , struct dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])
+		struct dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] ,
+		struct dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])
 {
 
 	struct SPEEX_ECHO_CANCELLER_Instance_t *handle;
@@ -88,18 +62,12 @@ void speex_echo_canceller_dsp(struct dsp_module_inst_t *adsp , size_t data_len ,
 
 
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        speex_echo_canceller_ioctl                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-uint8_t speex_echo_canceller_ioctl(struct dsp_module_inst_t *adsp ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
+/*
+ * Function:        speex_echo_canceller_ioctl
+ */
+uint8_t speex_echo_canceller_ioctl(
+		struct dsp_module_inst_t *adsp ,const uint8_t aIoctl_num ,
+		void * aIoctl_param1 , void * aIoctl_param2)
 {
 	struct SPEEX_ECHO_CANCELLER_Instance_t *handle;
 	SpeexEchoState *echo_state;
@@ -130,18 +98,11 @@ uint8_t speex_echo_canceller_ioctl(struct dsp_module_inst_t *adsp ,const uint8_t
 
 #if SPEEX_ECHO_CANCELLER_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        SPEEX_ECHO_CANCELLER_API_Init_Dev_Descriptor                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-uint8_t  speex_echo_canceller_api_init_dsp_descriptor(struct dsp_module_inst_t aDspDescriptor)
+/*
+ * Function:        speex_echo_canceller_api_init_dsp_descriptor
+ */
+uint8_t  speex_echo_canceller_api_init_dsp_descriptor(
+					struct dsp_module_inst_t aDspDescriptor)
 {
 	struct SPEEX_ECHO_CANCELLER_Instance_t *pInstance;
 	if(NULL == aDspDescriptor) return 1;

@@ -5,9 +5,6 @@
  *
  */
 
-
-
-/********  includes *********************/
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 extern "C" {
@@ -38,30 +35,11 @@ extern "C" {
 
 #define NUM_OF_STATES_PER_STAGE   2
 
-/********  defines *********************/
-
-
-/********  types  *********************/
-
-struct biquads_cascading_filter_t
-{
+struct biquads_cascading_filter_t {
 	void *pFilterParams;
 	float *p_filter_state;
 };
 
-
-
-/********  externals *********************/
-
-
-/********  local defs *********************/
-
-
-/**********   external variables    **************/
-
-
-
-/***********   local variables    **************/
 
 void biquads_cascading_filter(void *pFilter,
 		float *apIn, float *apOut, size_t buff_len)
@@ -74,8 +52,6 @@ void biquads_cascading_filter(void *pFilter,
 			(arm_biquad_cascade_df2T_instance_f32 *)filter->pFilterParams;
 	arm_biquad_cascade_df2T_f32(filter_params, apIn, apOut, buff_len);
 }
-
-
 
 
 /*   func : biquads_alloc()
@@ -138,7 +114,7 @@ void biquads_free(void *pFilter)
  *
  *    {b10, b11, b12, a11, a12, b20, b21, b22, a21, a22, ...}
  */
-void biquads_coefficients_calculation(biquads_filter_mode_t filter_mode,
+void biquads_coefficients_calculation(enum biquads_filter_mode_e filter_mode,
 		float FreqC,float QValue,float Gain_dB,
 		float SamplingRate, float *pCoeffs )
 {

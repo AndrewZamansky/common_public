@@ -4,10 +4,6 @@
  *
  *
  */
-
-
-
-/********  includes *********************/
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 
@@ -15,33 +11,14 @@
 #include "common_dsp_api.h"
 
 
-#include "fir_filter_api.h" //place first to test that header file is self-contained
+#include "fir_filter_api.h"
 #include "fir_filter.h"
 
 #include "auto_init_api.h"
 #include "math.h"
 
 
-/********  defines *********************/
-
-
-/********  types  *********************/
-
-/********  externals *********************/
-
-
-/********  exported variables *********************/
-
 char fir_filter_module_name[] = "fir_filter";
-
-
-/**********   external variables    **************/
-
-
-
-/***********   local variables    **************/
-
-
 
 /**
  * fir_filter_dsp()
@@ -87,7 +64,7 @@ uint8_t fir_filter_ioctl(struct dsp_module_inst_t *adsp,
 	size_t number_of_filter_coefficients;
 	size_t predefined_data_block_size;
 	float *p_coefficients;
-	fir_filter_api_set_params_t *p_band_set_params;
+	struct fir_filter_api_set_params_t *p_band_set_params;
 	struct FIR_FILTER_Instance_t *handle;
 
 	handle = adsp->handle;
@@ -101,7 +78,8 @@ uint8_t fir_filter_ioctl(struct dsp_module_inst_t *adsp,
 
 
 	case IOCTL_FIR_FILTER_SET_FIR_COEFFICIENTS :
-		p_band_set_params = ((fir_filter_api_set_params_t *)aIoctl_param1);
+		p_band_set_params =
+				((struct fir_filter_api_set_params_t *)aIoctl_param1);
 		number_of_filter_coefficients =
 				p_band_set_params->number_of_filter_coefficients;
 		handle->number_of_filter_coefficients = number_of_filter_coefficients;
@@ -133,7 +111,7 @@ uint8_t fir_filter_ioctl(struct dsp_module_inst_t *adsp,
  *
  * return:
  */
-void  fir_filter_init(void)
+extern "C" void  fir_filter_init(void)
 {
 	DSP_REGISTER_NEW_MODULE("fir_filter",
 			fir_filter_ioctl, fir_filter_dsp, struct FIR_FILTER_Instance_t);

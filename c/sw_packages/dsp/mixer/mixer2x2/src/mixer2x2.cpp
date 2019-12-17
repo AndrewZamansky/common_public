@@ -3,10 +3,6 @@
  * file :   mixer2x2.c
  *
  */
-
-
-
-/********  includes *********************/
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 
@@ -20,23 +16,7 @@
 #include "mixer2x2.h"
 
 
-/********  defines *********************/
-
-
-/********  types  *********************/
-
-/********  externals *********************/
-
-
-/********  exported variables *********************/
-
 char mixer2x2_module_name[] = "mixer2x2";
-
-/**********   external variables    **************/
-
-
-
-/***********   local variables    **************/
 
 
 /**
@@ -131,13 +111,12 @@ uint8_t mixer2x2_ioctl(struct dsp_module_inst_t *adsp,
 }
 
 
-
 /**
  * mixer2x2_init()
  *
  * return:
  */
-void  mixer2x2_init(void)
+extern "C" void  mixer2x2_init(void)
 {
 	DSP_REGISTER_NEW_MODULE("mixer2x2",
 			mixer2x2_ioctl , mixer2x2_dsp , struct MIXER2X2_Instance_t);

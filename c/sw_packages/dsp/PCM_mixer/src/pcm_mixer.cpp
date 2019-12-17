@@ -4,10 +4,6 @@
  *
  *
  */
-
-
-
-/********  includes *********************/
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 
@@ -21,27 +17,13 @@
 #include <string.h>
 
 
-/********  defines *********************/
 
 #ifndef ABS
 	real_t zero((int16_t)0);
 	#define ABS(x)  (x > zero ? x : (zero - x))
 #endif
-/********  types  *********************/
-
-/********  externals *********************/
-
-
-/********  exported variables *********************/
 
 char pcm_mixer_module_name[] = "pcm_mixer";
-
-
-/**********   external variables    **************/
-
-
-
-/***********   local variables    **************/
 
 
 /**
@@ -294,8 +276,7 @@ uint8_t pcm_mixer_ioctl(struct dsp_module_inst_t *adsp,
 }
 
 
-
-void  pcm_mixer_init(void)
+extern "C" void  pcm_mixer_init(void)
 {
 	DSP_REGISTER_NEW_MODULE("pcm_mixer",
 		pcm_mixer_ioctl , pcm_mixer_dsp_default, struct pcm_mixer_instance_t);

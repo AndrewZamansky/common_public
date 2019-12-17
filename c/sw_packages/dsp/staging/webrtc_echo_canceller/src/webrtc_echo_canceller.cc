@@ -5,9 +5,6 @@
  *
  */
 
-
-
-/********  includes *********************/
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 
@@ -18,7 +15,6 @@
 #include "webrtc_echo_canceller.h"
 #include "common_dsp_api.h"
 
-#include "_webrtc_echo_canceller_prerequirements_check.h"
 
 #include "webrtc/base/checks.h"
 #include "webrtc/base/platform_file.h"
@@ -48,15 +44,6 @@
 #include "webrtc/system_wrappers/include/logging.h"
 #include "webrtc/system_wrappers/include/metrics.h"
 
-/********  defines *********************/
-
-
-/********  types  *********************/
-
-/********  externals *********************/
-
-
-/********  local defs *********************/
 
 #define INSTANCE(hndl)	((WEBRTC_ECHO_CANCELLER_Instance_t*)hndl)
 
@@ -64,11 +51,9 @@
 #define BUFF_LEN 7
 #define SAMPLE_RATE 44100
 
-/**********   external variables    **************/
 
 #define WEBRTC_ECHO_CANCELLER_CONFIG_NUM_OF_DYNAMIC_INSTANCES 1
 
-/***********   local variables    **************/
 #if WEBRTC_ECHO_CANCELLER_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
 
 	static WEBRTC_ECHO_CANCELLER_Instance_t WEBRTC_ECHO_CANCELLER_InstanceParams[WEBRTC_ECHO_CANCELLER_CONFIG_NUM_OF_DYNAMIC_INSTANCES] = { {0} };
@@ -78,17 +63,9 @@
 #endif // for WEBRTC_ECHO_CANCELLER_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
 
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        webrtc_echo_canceller_dsp                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
+/*
+ * Function:        webrtc_echo_canceller_dsp
+ */
 void webrtc_echo_canceller_dsp(pdsp_descriptor apdsp , size_t data_len ,
 		dsp_pad_t *in_pads[MAX_NUM_OF_OUTPUT_PADS] , dsp_pad_t out_pads[MAX_NUM_OF_OUTPUT_PADS])
 {
@@ -109,17 +86,9 @@ void webrtc_echo_canceller_dsp(pdsp_descriptor apdsp , size_t data_len ,
 
 namespace webrtc
 {
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        webrtc_echo_canceller_ioctl                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
+/*
+ * Function:        webrtc_echo_canceller_ioctl
+ */
 uint8_t webrtc_echo_canceller_ioctl(pdsp_descriptor apdsp ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
 {
 	webrtc::EchoCancellationImpl * echoCancellation;
@@ -140,17 +109,9 @@ uint8_t webrtc_echo_canceller_ioctl(pdsp_descriptor apdsp ,const uint8_t aIoctl_
 
 #if WEBRTC_ECHO_CANCELLER_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        WEBRTC_ECHO_CANCELLER_API_Init_Dev_Descriptor                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
+/*
+ * Function:        webrtc_echo_canceller_api_init_dsp_descriptor
+ */
 extern "C" uint8_t  webrtc_echo_canceller_api_init_dsp_descriptor(pdsp_descriptor aDspDescriptor)
 {
 	WEBRTC_ECHO_CANCELLER_Instance_t *pInstance;

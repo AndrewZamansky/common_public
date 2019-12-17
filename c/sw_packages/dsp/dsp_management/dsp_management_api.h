@@ -6,8 +6,6 @@
 #include "_project_defines.h"
 
 
-/**********  define API  types ************/
-
 #define DSP_CHAIN_CREATION_API_VER    20190924
 
 struct dsp_module_inst_t;

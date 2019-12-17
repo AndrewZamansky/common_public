@@ -4,10 +4,6 @@
  *
  *
  */
-
-
-
-/********  includes *********************/
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 
@@ -21,24 +17,8 @@
 
 #include "auto_init_api.h"
 
-
-/********  defines *********************/
-
-
-/********  types  *********************/
-
-/********  externals *********************/
-
-
-/********  exported variables *********************/
-
 char mixer4x1_module_name[] = "mixer4x1";
 
-/**********   external variables    **************/
-
-
-
-/***********   local variables    **************/
 
 /**
  * mixer4x1_dsp()
@@ -152,13 +132,12 @@ uint8_t mixer4x1_ioctl(struct dsp_module_inst_t *adsp,
 }
 
 
-
 /**
  * mixer4x1_init()
  *
  * return:
  */
-void  mixer4x1_init(void)
+extern "C" void  mixer4x1_init(void)
 {
 	DSP_REGISTER_NEW_MODULE("mixer4x1",
 			mixer4x1_ioctl , mixer4x1_dsp , struct mixer4x1_instance_t);

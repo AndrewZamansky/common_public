@@ -10,10 +10,6 @@
 #include "band_splitter_butterworth_6db_gain_api.h"
 
 
-/***************   typedefs    *******************/
-
-
-
 struct band_splitter_butterworth_6db_gain_instance_t
 {
 	chain_handle_t filter_1_pole_dsp_chain;
@@ -23,8 +19,6 @@ struct band_splitter_butterworth_6db_gain_instance_t
 //	struct dsp_module_inst_t filter_all_pass_2_poles;
 	struct band_splitter_butterworth_6db_gain_api_set_params_t set_params;
 };
-
-
 
 
 #endif

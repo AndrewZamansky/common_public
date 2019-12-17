@@ -4,21 +4,12 @@
 
 #include "dsp_management_api.h"
 
-/*****************  defines  **************/
-
-
-/**********  define API  types ************/
-
-
-typedef enum
-{
+enum DPWM_MIXER_API_ioctl_e {
 	IOCTL_DPWM_MIXER_ENABLE_TEST_CLIPPING = IOCTL_DSP_LAST_COMMON_IOCTL+1,
 	IOCTL_DPWM_MIXER_DISABLE_TEST_CLIPPING,
 	IOCTL_DPWM_MIXER_GET_MAX_OUTPUT_VALUE
-} DPWM_MIXER_API_ioctl_t;
+};
 
-
-/**********  define API  functions  ************/
 
 #ifdef __cplusplus
 extern "C" {

@@ -4,10 +4,6 @@
  *
  *
  */
-
-
-
-/********  includes *********************/
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 
@@ -21,26 +17,11 @@
 #include "auto_init_api.h"
 
 
-/********  defines *********************/
 #ifndef ABS
 #define ABS(x)  (x > 0 ? x : (zero - x))
 #endif
 
-/********  types  *********************/
-
-/********  externals *********************/
-
-
-/********  exported variables *********************/
-
 char dpwm_mixer_module_name[] = "dpwm_mixer";
-
-
-/**********   external variables    **************/
-
-
-
-/***********   local variables    **************/
 
 
 /**
@@ -159,8 +140,7 @@ uint8_t dpwm_mixer_ioctl(struct dsp_module_inst_t *adsp,
 }
 
 
-
-void  dpwm_mixer_init(void)
+extern "C" void  dpwm_mixer_init(void)
 {
 	DSP_REGISTER_NEW_MODULE("dpwm_mixer",
 			dpwm_mixer_ioctl , dpwm_mixer_dsp , struct DPWM_MIXER_Instance_t);

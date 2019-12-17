@@ -5,9 +5,6 @@
  *
  */
 
-
-
-/********  includes *********************/
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 
@@ -22,25 +19,7 @@
 #include "auto_init_api.h"
 
 
-/********  defines *********************/
-
-
-/********  types  *********************/
-
-/********  externals *********************/
-
-
-/********  exported variables *********************/
-
 char voice_3D_module_name[] = "voice_3D";
-
-
-/**********   external variables    **************/
-
-
-
-/***********   local variables    **************/
-
 
 /**
  * voice_3D_dsp()
@@ -224,7 +203,7 @@ uint8_t voice_3D_ioctl(struct dsp_module_inst_t *adsp,
  *
  * return:
  */
-void  voice_3D_init(void)
+extern "C" void  voice_3D_init(void)
 {
 	DSP_REGISTER_NEW_MODULE("voice_3D",
 			voice_3D_ioctl, voice_3D_dsp, struct VOICE_3D_Instance_t);

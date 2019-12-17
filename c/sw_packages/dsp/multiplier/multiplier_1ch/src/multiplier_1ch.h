@@ -10,15 +10,10 @@
 #include "multiplier_1ch_api.h"
 
 
-/***************   typedefs    *******************/
-
-
 struct multiplier_1ch_instance_t
 {
 	real_t weight ;
 	struct multiplier_api_set_params_t set_params;
 };
-
-
 
 #endif

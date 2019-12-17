@@ -10,8 +10,6 @@
 
 #include "pcm_splitter_api.h"
 
-/***************   typedefs    *******************/
-
 
 struct pcm_splitter_instance_t {
 	struct pcm_splitter_api_set_params_t  set_params;
@@ -20,6 +18,4 @@ struct pcm_splitter_instance_t {
 };
 
 
-
-
-#endif /* */
+#endif

@@ -4,10 +4,6 @@
  *
  *
  */
-
-
-
-/********  includes *********************/
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 
@@ -22,26 +18,8 @@
 
 #include "auto_init_api.h"
 
-
-
-/********  defines *********************/
-
-
-/********  types  *********************/
-
-/********  externals *********************/
-
-
-/********  exported variables *********************/
-
 char delay_module_name[] = "delay";
 
-
-/**********   external variables    **************/
-
-
-
-/***********   local variables    **************/
 
 static void memcpy_real(real_t *dest1, real_t *src1, size_t len)
 {
@@ -126,14 +104,12 @@ uint8_t delay_ioctl(struct dsp_module_inst_t *adsp,
 }
 
 
-
-
 /**
  * delay_init()
  *
  * return:
  */
-void  delay_init(void)
+extern "C" void  delay_init(void)
 {
 	DSP_REGISTER_NEW_MODULE("delay",
 			delay_ioctl, delay_dsp, struct delay_instance_t);

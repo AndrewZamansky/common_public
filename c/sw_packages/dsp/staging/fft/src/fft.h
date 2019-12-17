@@ -8,11 +8,6 @@
 #define _FFT_H
 
 
-
-/***************   typedefs    *******************/
-
-
-
 struct FFT_Instance_t {
 	uint8_t dummy;
 };
