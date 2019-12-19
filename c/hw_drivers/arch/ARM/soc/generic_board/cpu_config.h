@@ -8,7 +8,7 @@
 
 #include "project_config.h"
 
-#if defined(INCLUDE_FPU_IN_GENERIC_ARM_SOC)
+#if defined(INCLUDE_CORTEX_M_FPU)
 	#define __FPU_PRESENT             1         /*!< FPU present or not                               */
 #endif
 

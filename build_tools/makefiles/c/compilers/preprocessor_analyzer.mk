@@ -18,40 +18,24 @@ get_cmd_functions = $(patsubst \
     $(call get_cmd_functions_1, $(1)))
 
 # the extracted line will have following structure :
-# extern int _UBOOT_CMD_PREFIX_YYY ; cmd_tbl_t _u_boot_list_2_cmd_2_XXX \
-# __attribute__((__aligned__(4))) \
-#__attribute__((unused, section(".u_boot_list_2_""cmd""_2_""XXX"))) = \
-# { "XXX", a, b, YYY, c, };
-clean_cmd_6 =$(patsubst _UBOOT_CMD_PREFIX_%,,$(1))
-# after clean_cmd_6 the line will have following structure :
-# extern int  ; cmd_tbl_t _u_boot_list_2_cmd_2_XXX \
-# __attribute__((__aligned__(4))) \
-#__attribute__((unused, section(".u_boot_list_2_""cmd""_2_""XXX"))) = \
-# { "XXX", a, b, YYY, c, };
-clean_cmd_5 =$(patsubst _u_boot_list_2_cmd_2_%,,$(call clean_cmd_6,$(1)))
-# after clean_cmd_5 the line will have following structure :
-# extern int  ; cmd_tbl_t __attribute__((__aligned__(4))) \
-#__attribute__((unused, section(".u_boot_list_2_""cmd""_2_""XXX"))) = \
-# { "XXX", a, b, YYY, c, };
-UNWANTED_TEXT4 :="))) = {
-clean_cmd_4 =$(subst $(UNWANTED_TEXT4), {,$(call clean_cmd_5,$(1)))
-# after clean_cmd_4 the line will have following structure :
-# extern int  ; cmd_tbl_t __attribute__((__aligned__(4))) \
-#__attribute__((unused, section(".u_boot_list_2_""cmd""_2_""XXX \
-# { "XXX", a, b, YYY, c, };
-UNWANTED_TEXT3 :=section(".u_boot_list_2_""cmd""_2_""
-clean_cmd_3 =$(patsubst $(UNWANTED_TEXT3)%,,$(call clean_cmd_4,$(1)))
+# extern int _UBOOT_CMD_PREFIX_YYY ; static cmd_tbl_t _u_boot_list_2_cmd_2_XXX \
+#__attribute__((unused)) = { "XXX", a, b, YYY, c, };
+clean_cmd_3 =$(patsubst _UBOOT_CMD_PREFIX_%,,$(1))
 # after clean_cmd_3 the line will have following structure :
-# extern int  ; cmd_tbl_t __attribute__((__aligned__(4))) \
-#__attribute__((unused, { "XXX", a, b, YYY, c, };
-UNWANTED_TEXT2 := \
-   extern int ; cmd_tbl_t __attribute__((__aligned__(4))) __attribute__((unused,
-clean_cmd_2 =$(subst $(UNWANTED_TEXT2),,$(call clean_cmd_3,$(1)))
+# extern int ; static cmd_tbl_t _u_boot_list_2_cmd_2_XXX \
+#__attribute__((unused)) = { "XXX", a, b, YYY, c, };
+clean_cmd_2 =$(patsubst _u_boot_list_2_cmd_2_%,,$(call clean_cmd_3,$(1)))
 # after clean_cmd_2 the line will have following structure :
-# { "XXX", a, b, YYY, c, };
-UNWANTED_TEXT0 :=, };
-WANTED_TEXT0 :=, },
-clean_cmd =$(subst  $(UNWANTED_TEXT0),$(WANTED_TEXT0),$(call clean_cmd_2,$(1)))
+# extern int ; static \
+# cmd_tbl_t __attribute__((unused)) = { "XXX", a, b, YYY, c, };
+CLEAN_CMD_REM_TEXT1 := extern int ; static cmd_tbl_t __attribute__((unused)) =
+clean_cmd_1 =$(subst $(CLEAN_CMD_REM_TEXT1),,$(call clean_cmd_2,$(1)))
+# after clean_cmd_1 the line will have following structure :
+#  { "XXX", a, b, YYY, c, };
+CLEAN_CMD_REM_TEXT0 :=, };
+CLEAN_CMD_NEW_TEXT0 :=, },
+clean_cmd =$(subst \
+      $(CLEAN_CMD_REM_TEXT0),$(CLEAN_CMD_NEW_TEXT0),$(call clean_cmd_1,$(1)))
 # after clean_cmd the line will have following structure :
 # { "XXX", a, b, YYY, c, },
 
@@ -82,14 +66,16 @@ get_auto_init_functions = $(patsubst  \
 clean_auto_inits_2 =$(patsubst auto_init_%,,$(1))
 # after clean_auto_inits_2 the line will have following structure :
 # struct = { YYY};
-UNWANTED_TEXT1 :=struct = #last space is important
-clean_auto_inits_1 =$(subst $(UNWANTED_TEXT1),,$(call clean_auto_inits_2,$(1)))
+CLEAN_AUTO_INITS_REM_TEXT1 :=struct = #last space is important
+clean_auto_inits_1 =\
+       $(subst $(CLEAN_AUTO_INITS_REM_TEXT1),,$(call clean_auto_inits_2,$(1)))
 # after clean_auto_inits_1 the line will have following structure :
 # { YYY};
-UNWANTED_TEXT0 :=};
-WANTED_TEXT0 :=},
-clean_auto_inits =\
-     $(subst  $(UNWANTED_TEXT0),$(WANTED_TEXT0),$(call clean_auto_inits_1,$(1)))
+CLEAN_AUTO_INITS_REM_TEXT0 :=};
+CLEAN_AUTO_INITS_NEW_TEXT0 :=},
+clean_auto_inits = $(subst  \
+    $(CLEAN_AUTO_INITS_REM_TEXT0),$(CLEAN_AUTO_INITS_NEW_TEXT0),\
+    $(call clean_auto_inits_1,$(1)))
 # after clean_auto_inits_1 the line will have following structure :
 # { YYY},
 

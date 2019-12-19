@@ -21,7 +21,7 @@ endchoice
 
 config INCLUDE_CORTEX_M_FPU
 	bool   "compile with fpu support"
-	depends on CORTEX_M4 && SOC_HAS_DSP
+	depends on CORTEX_M4 && (SOC_HAS_DSP || INCLUDE_FPU_IN_GENERIC_ARM_SOC)
 	default n
 
 config DISABLE_ARM_FPU
@@ -155,6 +155,10 @@ config OUTPUT_TYPE_DYNAMIC_LIBRARY
 	depends on HEXAGON_COMPILER || ANDROID_NDK_COMPILER || MICROSOFT_COMPILER
 	bool "dynamic library"
 endchoice
+
+config OUTPUT_IS_LIBRARY_FOR_EXPORT
+	depends on OUTPUT_TYPE_STATIC_LIBRARY || OUTPUT_TYPE_DYNAMIC_LIBRARY
+	bool "output is library for export"
 
 
 if GCC || GPP || MIN_GW_GCC || MIN_GW_GPP || PIC_C32 || PIC_XC32 || ANDROID_NDK_COMPILER || XTENSA_GCC

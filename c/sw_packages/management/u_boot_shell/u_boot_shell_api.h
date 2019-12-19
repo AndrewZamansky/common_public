@@ -5,7 +5,9 @@
 
 #define UBOOT_SHELL_API_VERSION  20191007
 
-#ifndef CONFIG_INCLUDE_ONLY_UBOOT_SHELL_API
+#if !defined(CONFIG_INCLUDE_ONLY_UBOOT_SHELL_API) && \
+		!defined(CONFIG_OUTPUT_IS_LIBRARY_FOR_EXPORT)
+
 	#include "dev_management_api.h"
 
 	enum U_BOOT_SHELL_API_IOCTL_E
@@ -19,6 +21,15 @@
 //
 //	SET_CONFIG_TYPE(u_boot_shell, struct u_boot_shell_instance_t);
 
+#endif
+
+#ifdef CONFIG_OUTPUT_IS_LIBRARY_FOR_EXPORT
+	#ifndef REPLIES_REPLACE_BY_LIB_FUNCTIONS
+		#define SHELL_REPLY_PRINTF  SHELL_REPLY_PRINTF_LIB
+		#define SHELL_REPLY_STR  SHELL_REPLY_STR_LIB
+		#define SHELL_REPLY_DATA  SHELL_REPLY_DATA_LIB
+		#define REPLIES_REPLACE_BY_LIB_FUNCTIONS
+	#endif
 #endif
 
 void SHELL_REPLY_PRINTF(const char* Format, ...);

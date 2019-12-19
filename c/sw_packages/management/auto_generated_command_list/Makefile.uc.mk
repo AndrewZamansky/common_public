@@ -1,4 +1,4 @@
-ifeq ($(sort $(CONFIG_OUTPUT_TYPE_STATIC_LIBRARY)),y)
+ifeq ($(sort $(CONFIG_OUTPUT_IS_LIBRARY_FOR_EXPORT)),y)
     ifeq ($(sort $(CONFIG_INCLUDE_UBOOT_SHELL)),y)
         INCLUDE_THIS_COMPONENT := y
     endif
@@ -28,6 +28,13 @@ ifeq ($(MAKECMDGOALS),all)
 
     $(eval $(foreach d,$(ALL_CMD_EXT_FILES),$(call cat,$d,$(ALL_CMD_EXT_FILE))))
     $(eval $(foreach d,$(ALL_CMD_FILES),$(call cat,$d,$(ALL_CMD_FILE))))
+
+    CURRENT_COMPILATION_DIR_NAME := $(notdir $(abspath .))
+    CMD_LIST_OBJ_FILE_DIR :=$(OBJ_DIR)/$(CURRENT_COMPILATION_DIR_NAME)
+    CMD_LIST_OBJ_FILE :=$(CMD_LIST_OBJ_FILE_DIR)/auto_generated_command_list.o
+    CMD_LIST_OBJ_FILE :=$(call fix_path_if_in_windows,$(CMD_LIST_OBJ_FILE))
+    SHELL_OUT :=$(shell $(RM) $(CMD_LIST_OBJ_FILE) 2>&1)
+
 endif
 
 SRC = auto_generated_command_list.c

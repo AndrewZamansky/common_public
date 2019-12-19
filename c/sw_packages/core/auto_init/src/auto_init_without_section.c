@@ -24,7 +24,7 @@ const int auto_init_table_size =
 
 static uint8_t auto_init_done = 0;
 
-#ifdef CONFIG_OUTPUT_TYPE_STATIC_LIBRARY
+#ifdef CONFIG_OUTPUT_IS_LIBRARY_FOR_EXPORT
 void auto_init_lib_api(void)
 #else
 void auto_init_api(void)

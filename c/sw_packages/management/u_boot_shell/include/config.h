@@ -8,8 +8,38 @@
 #include "stdio.h"
 #include "stdlib.h"
 
-#include "dev_management_api.h"
+#if !defined(CONFIG_OUTPUT_IS_LIBRARY_FOR_EXPORT)
+	#include "dev_management_api.h"
+#endif
+
 #include "PRINTF_api.h"
+
+#ifdef CONFIG_OUTPUT_IS_LIBRARY_FOR_EXPORT
+	#define run_command  run_command_lib
+	#define cli_simple_run_command  cli_simple_run_command_lib
+	#define cmd_process  cmd_process_lib
+	#define find_cmd  find_cmd_lib
+	#define run_command_repeatable  run_command_repeatable_lib
+	#define run_command_list  run_command_list_lib
+	#define cli_loop  cli_loop_lib
+	#define cli_init  cli_init_lib
+	#define cli_simple_parse_line  cli_simple_parse_line_lib
+	#define cli_simple_process_macros  cli_simple_process_macros_lib
+	#define cli_simple_loop  cli_simple_loop_lib
+	#define cli_simple_run_command_list  cli_simple_run_command_list_lib
+	#define find_cmd_tbl  find_cmd_tbl_lib
+	#define cmd_usage  cmd_usage_lib
+	#define _do_help  _do_help_lib
+	#define do_help  do_help_lib
+	#define cmd_process_error  cmd_process_error_lib
+	#ifndef REPLIES_REPLACE_BY_LIB_FUNCTIONS
+		#define SHELL_REPLY_PRINTF  SHELL_REPLY_PRINTF_LIB
+		#define SHELL_REPLY_STR  SHELL_REPLY_STR_LIB
+		#define SHELL_REPLY_DATA  SHELL_REPLY_DATA_LIB
+		#define REPLIES_REPLACE_BY_LIB_FUNCTIONS
+	#endif
+#endif
+
 
 extern void SHELL_REPLY_PRINTF(const char* Format, ...);
 #define printf(...)		SHELL_REPLY_PRINTF(__VA_ARGS__)

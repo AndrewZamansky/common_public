@@ -65,14 +65,14 @@
 typedef void (*auto_init_func_t)(void);
 
 struct auto_init_struct_t {
-	#if !defined(CONFIG_OUTPUT_TYPE_STATIC_LIBRARY)
+	#if !defined(CONFIG_OUTPUT_IS_LIBRARY_FOR_EXPORT)
 		int          *magic_number;/* define field of pointer size */
 	#endif
 	auto_init_func_t  auto_init_func;
 };
 
 
-#if defined(CONFIG_OUTPUT_TYPE_STATIC_LIBRARY)
+#if defined(CONFIG_OUTPUT_IS_LIBRARY_FOR_EXPORT)
 
 	#define AUTO_INIT_FUNCTION(func)    \
 		struct auto_init_struct_t  auto_init_##func = { func}

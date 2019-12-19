@@ -5,15 +5,9 @@
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 
+#if defined(CONFIG_INCLUDE_PRINTF)
 #include "dev_management_api.h"
 
-/*****************  defines  **************/
-
-
-/**********  define API  types ************/
-
-
-/**********  define API  functions  ************/
 #if (CONFIG_USE_MINIMAL_PRINTF)
 
  extern struct dev_desc_t *print_dev;
@@ -61,7 +55,9 @@
  #define PRINT_DATA_NOTE(data, len)    \
 				PRINTF_print_data(PRINTF_TYPE_NOTE, (uint8_t*)data, len)
 
-#endif
+#endif //#if (CONFIG_USE_MINIMAL_PRINTF)
+
+#endif //#if defined(CONFIG_INCLUDE_PRINTF)
 
 
 #if !defined(CONFIG_INCLUDE_PRINTF) ||  \
