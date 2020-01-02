@@ -17,10 +17,14 @@ get_cmd_functions = $(patsubst \
     _UBOOT_CMD_PREFIX_%,$(EXT_CMD_PREFIX)%$(EXT_CMD_SUFIX),\
     $(call get_cmd_functions_1, $(1)))
 
+# some compilers (like armcc) doesn't replace ";;" by ";"
+CLEAN_CMD_REM_TEXT4 :=};;
+CLEAN_CMD_NEW_TEXT4 :=};
+clean_cmd_4 =$(subst $(CLEAN_CMD_REM_TEXT4),$(CLEAN_CMD_NEW_TEXT4),$(1))
 # the extracted line will have following structure :
 # extern int _UBOOT_CMD_PREFIX_YYY ; static cmd_tbl_t _u_boot_list_2_cmd_2_XXX \
 #__attribute__((unused)) = { "XXX", a, b, YYY, c, };
-clean_cmd_3 =$(patsubst _UBOOT_CMD_PREFIX_%,,$(1))
+clean_cmd_3 =$(patsubst _UBOOT_CMD_PREFIX_%,,$(call clean_cmd_4,$(1)))
 # after clean_cmd_3 the line will have following structure :
 # extern int ; static cmd_tbl_t _u_boot_list_2_cmd_2_XXX \
 #__attribute__((unused)) = { "XXX", a, b, YYY, c, };
