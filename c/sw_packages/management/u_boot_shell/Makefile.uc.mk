@@ -48,7 +48,9 @@ endif
 
 INCLUDE_DIR = $(U_BOOT_PATH)/include#  $(U_BOOT_PATH)/arch/arm/include/asm/
 
-ifneq ($(sort $(CONFIG_OUTPUT_IS_LIBRARY_FOR_EXPORT)),y)
+ifeq ($(sort $(CONFIG_OUTPUT_IS_LIBRARY_FOR_EXPORT)),y)
+    SRC = u_boot_shell_lib.c
+else
     SRC = u_boot_shell.c
 endif
 
