@@ -32,6 +32,12 @@
 	#define _do_help  _do_help_lib
 	#define do_help  do_help_lib
 	#define cmd_process_error  cmd_process_error_lib
+	#define console_buffer  console_buffer_lib
+	#define clear_ctrlc  clear_ctrlc_lib
+	#define had_ctrlc  had_ctrlc_lib
+	#define ctrlc ctrlc_lib
+	#define get_timer  get_timer_lib
+	#define cli_readline  cli_readline_lib
 	#ifndef REPLIES_REPLACE_BY_LIB_FUNCTIONS
 		#define SHELL_REPLY_PRINTF  SHELL_REPLY_PRINTF_LIB
 		#define SHELL_REPLY_STR  SHELL_REPLY_STR_LIB
