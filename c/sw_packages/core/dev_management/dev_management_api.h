@@ -33,8 +33,12 @@ extern "C" {
 
 	#define MODULES_PLACEMENT   \
 		__attribute__((section(".data.keepsort._A5B6_modules")))
+	#define DEVICE_PLACEMENT_FIRST   \
+		__attribute__((section(".data.keepsort._A5B6_static_devs_1")))
 	#define DEVICE_PLACEMENT   \
-		__attribute__((section(".data.keepsort._A5B6_static_devs")))
+		__attribute__((section(".data.keepsort._A5B6_static_devs_2")))
+	#define DEVICE_PLACEMENT_LAST   \
+		__attribute__((section(".data.keepsort._A5B6_static_devs_3")))
 	#define DEVICE_DATA_PLACEMENT \
 		__attribute__((section(".data.keepsort._A5B6_static_devs_data")))
 

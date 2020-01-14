@@ -4,10 +4,6 @@
  *
  */
 
-
-
-/***************   includes    *******************/
-
 #include "dev_management_api.h"
 #include "dev_management.h"
 #include "arch.h"
@@ -18,8 +14,16 @@
 	#include "errors_api.h"
 #endif
 
-#ifdef CONFIG_USE_DEVICE_NAME_STRINGS
+#if defined(CONFIG_USE_SPECIFIC_MEMORY_LOCATION_FOR_DEVICES) && \
+		defined(CONFIG_USE_DEVICE_NAME_STRINGS)
 
+
+#if defined(CONFIG_XTENSA_XCC)
+
+	DEVICE_PLACEMENT_FIRST int *__start_static_devs_section = NULL;
+	DEVICE_PLACEMENT_LAST int * __stop_static_devs_section = NULL;
+
+#endif
 
 extern int *__start_static_devs_section ;
 extern int *__stop_static_devs_section ;

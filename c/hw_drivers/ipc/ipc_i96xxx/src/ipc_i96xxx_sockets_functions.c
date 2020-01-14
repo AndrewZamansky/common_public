@@ -10,8 +10,6 @@
 #include "PRINTF_api.h"
 
 #include "ipc_i96xxx.h"
-#include "ipc_i96xxx_msg.h"
-
 
 
 static int  ipc_i96xxx_closesocket(void* socketfd)
@@ -116,7 +114,7 @@ static ssize_t ipc_i96xxx_recv(void* socketfd,
 	queueMsg.msg_data.msg_get_data_received.size_received = &size_received;
 
 	size_received = 0;
-	while (size_received)
+	while (0 == size_received)
 	{
 		retVal = send_message_and_wait(ipc_i96xxx_runtime_hndl, &queueMsg);
 		if (0 != retVal)

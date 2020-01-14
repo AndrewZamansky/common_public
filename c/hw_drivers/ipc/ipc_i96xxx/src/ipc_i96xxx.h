@@ -53,8 +53,70 @@ enum socket_state_e {
 };
 
 
+enum __attribute__((packed)) replies_e {
+	REPLY_OK,
+	REPLY_PORT_NOT_LISTENING,
+	REPLY_PORT_NOT_WAITING_FOR_ACCEPT,
+	REPLY_PORT_CONNECTED
+};
+
+enum __attribute__((packed)) ipc_i96xxx_remote_message_type_e
+{
+	REMOTE_MSG_TYPE_HANDSHAKE = 1,
+	REMOTE_MSG_TYPE_REPLY,
+	REMOTE_MSG_TYPE_CONNECT,
+	REMOTE_MSG_TYPE_ACCEPT,
+	REMOTE_MSG_TYPE_SEND_DATA,
+	REMOTE_MSG_TYPE_CLOSE_CONNECTION
+};
+
+struct __attribute__((packed)) ipc_i96xxx_remote_msg_reply_t {
+	uint8_t reply;
+	uint8_t reply_to_msg_id;
+	uint32_t reply_data[1];
+};
+
+
+struct __attribute__((packed)) ipc_i96xxx_remote_msg_connect_t {
+	uint16_t to_port;
+	uint16_t from_port;
+};
+
+
+struct __attribute__((packed)) ipc_i96xxx_remote_msg_accept_t {
+	uint16_t to_port;
+	uint16_t from_port;
+};
+
+
+struct __attribute__((packed)) ipc_i96xxx_remote_msg_send_data_t {
+	const uint8_t *data;
+	uint16_t data_size;
+	uint16_t to_port;
+};
+
+
+struct __attribute__((packed)) ipc_i96xxx_remote_msg_close_connection_t {
+	uint16_t to_port;
+};
+
+
+struct __attribute__((packed)) ipc_i96xxx_remote_message_t {
+	uint8_t msg_id;
+	uint8_t type;
+	union
+	{
+		struct ipc_i96xxx_remote_msg_reply_t  reply_data;
+		struct ipc_i96xxx_remote_msg_connect_t  connect_data;
+		struct ipc_i96xxx_remote_msg_accept_t  accept_data;
+		struct ipc_i96xxx_remote_msg_send_data_t  send_data;
+		struct ipc_i96xxx_remote_msg_close_connection_t  close_data;
+	} msg_data;
+};
+
+
 struct ipc_i96xxx_msg_data_from_peer_t {
-	struct ipc_i96xxx_remote_message_t *msg_from_remote;
+	struct ipc_i96xxx_remote_message_t msg_from_remote;
 };
 
 
@@ -147,6 +209,8 @@ struct ipc_i96xxx_runtime_t {
 	uint8_t  lCurrError;
 	uint8_t  lRequest_done;
 	uint8_t  handshake_counter;
+	uint8_t  curr_sent_msg_id;
+	uint8_t  curr_received_msg_id;
 };
 SET_RUNTIME_DATA_TYPE(ipc_i96xxx, struct ipc_i96xxx_runtime_t);
 

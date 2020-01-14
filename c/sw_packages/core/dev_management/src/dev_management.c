@@ -5,8 +5,6 @@
  */
 
 
-
-/***************   includes    *******************/
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 
@@ -22,22 +20,11 @@
 #include "string.h"
 
 
-/***************   defines    *******************/
-
-/***************   typedefs    *******************/
-
-
-
-/**********   external variables    **************/
-
 struct dev_desc_t * find_static_dev_by_name(const char *device_name);
 void init_new_device(struct dev_desc_t * pdev );
 struct dev_param_t const *get_config_param(struct dev_desc_t * pdev,
 		char *param_name_str );
 
-/***********   global variables    **************/
-
-/***********   local variables    **************/
 #if CONFIG_MAX_NUM_OF_DYNAMIC_DEVICES > 0
 	struct dev_desc_t  dev_descriptors[CONFIG_MAX_NUM_OF_DYNAMIC_DEVICES];
 #endif
@@ -50,12 +37,11 @@ uint8_t	DEV_IOCTL_2_PARAMS(struct dev_desc_t *adev,
 	{
 		CRITICAL_ERROR("access NULL device");
 	}
-/*	dont check for 	adev->p_runtime_data for static devices because for very
-	small SOC malloc is not used, so runtime_data MUST be allocated
-	during compilation time.
-	if ( NULL == adev->p_runtime_data )
-	{
-	}
+/*	dont check for adev->module or adev->p_runtime_data for static devices
+ *  because for very small SOC malloc is not used, so runtime_data MUST be
+ *  allocated during compilation time, and for dynamic devices adev will
+ *  be NULL if module or p_runtime_data will not be allocated.
+ *  if ( NULL == adev->p_runtime_data )	{	}
  */
 	return (adev->module->ioctl)(adev, ioctl_num, param1, param2);
 }
@@ -68,6 +54,12 @@ uint8_t	DEV_CALLBACK_2_PARAMS(struct dev_desc_t *adev,
 	{
 		CRITICAL_ERROR("access NULL device");
 	}
+	/*	dont check for adev->module or adev->p_runtime_data for static devices
+	 *  because for very small SOC malloc is not used, so runtime_data MUST be
+	 *  allocated during compilation time, and for dynamic devices adev will
+	 *  be NULL if module or p_runtime_data will not be allocated.
+	 *  if ( NULL == adev->p_runtime_data )	{	}
+	 */
 	return (adev->module->callback)(adev, ioctl_num, param1, param2);
 }
 
@@ -78,6 +70,12 @@ size_t	DEV_PWRITE(struct dev_desc_t *adev,
 	{
 		CRITICAL_ERROR("access NULL device");
 	}
+	/*	dont check for adev->module or adev->p_runtime_data for static devices
+	 *  because for very small SOC malloc is not used, so runtime_data MUST be
+	 *  allocated during compilation time, and for dynamic devices adev will
+	 *  be NULL if module or p_runtime_data will not be allocated.
+	 *  if ( NULL == adev->p_runtime_data )	{	}
+	 */
 
 	return (adev->module->pwrite)(adev, apData, aLength, aOffset);
 }
@@ -89,8 +87,14 @@ size_t	DEV_PWRITE32(struct dev_desc_t *adev,
 	{
 		CRITICAL_ERROR("access NULL device");
 	}
+	/*	dont check for adev->module or adev->p_runtime_data for static devices
+	 *  because for very small SOC malloc is not used, so runtime_data MUST be
+	 *  allocated during compilation time, and for dynamic devices adev will
+	 *  be NULL if module or p_runtime_data will not be allocated.
+	 *  if ( NULL == adev->p_runtime_data )	{	}
+	 */
 	return ((dev_pwrite32_func_t)adev->module->pwrite)(
-											adev, apData, aLength, aOffset);
+									adev, apData, aLength, aOffset);
 }
 
 
@@ -101,6 +105,12 @@ size_t	DEV_PREAD(struct dev_desc_t *adev,
 	{
 		CRITICAL_ERROR("access NULL device");
 	}
+	/*	dont check for adev->module or adev->p_runtime_data for static devices
+	 *  because for very small SOC malloc is not used, so runtime_data MUST be
+	 *  allocated during compilation time, and for dynamic devices adev will
+	 *  be NULL if module or p_runtime_data will not be allocated.
+	 *  if ( NULL == adev->p_runtime_data )	{	}
+	 */
 	return (adev->module->pread)(adev, apData, aLength, aOffset);
 }
 
@@ -111,8 +121,14 @@ size_t	DEV_PREAD32(struct dev_desc_t *adev,
 	{
 		CRITICAL_ERROR("access NULL device");
 	}
+	/*	dont check for adev->module or adev->p_runtime_data for static devices
+	 *  because for very small SOC malloc is not used, so runtime_data MUST be
+	 *  allocated during compilation time, and for dynamic devices adev will
+	 *  be NULL if module or p_runtime_data will not be allocated.
+	 *  if ( NULL == adev->p_runtime_data )	{	}
+	 */
 	return ((dev_pread32_func_t)adev->module->pread)(
-											adev, apData, aLength, aOffset);
+									adev, apData, aLength, aOffset);
 }
 
 

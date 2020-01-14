@@ -7,6 +7,12 @@
 //#include "irq_api.h"
 
 
+/*
+ * this __os_flag variable should be defined, otherwise _sbrk_r will not
+ * check correctly the remained size of stack
+ */
+char __os_flag = 1;
+
 void os_start_arch_related_components()
 {
 }

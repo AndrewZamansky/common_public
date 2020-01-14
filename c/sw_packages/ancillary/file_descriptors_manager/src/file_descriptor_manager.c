@@ -275,10 +275,10 @@ int connect_uCprojects(
 		{
 			ret_val = curr_fd->file_desc_ops.connect_func(
 								curr_fd->internal_desc, addr, addrlen);
-			if (0 < ret_val)
+			if (0 <= ret_val)
 			{
 				curr_fd->underlying_dev = underlying_dev;
-				break; // connection succeed so we can exit
+				return 0; // connection succeed so we can exit
 			}
 			else
 			{
@@ -287,7 +287,7 @@ int connect_uCprojects(
 			}
 		}
 	}
-	return ret_val;
+	return -1;
 }
 
 
@@ -306,27 +306,21 @@ ssize_t recv_uCprojects(int sockfd, void *buf, size_t len, int flags)
 	}
 
 	socket_options = curr_fd->socket_options;
-	while (1)
+
+	retVal = curr_fd->file_desc_ops.is_data_available_func(
+								curr_fd->internal_desc, &read_ready);
+	if(0 != retVal)
 	{
-		retVal = curr_fd->file_desc_ops.is_data_available_func(
-									curr_fd->internal_desc, &read_ready);
-		if(0 != retVal)
-		{
-			//PRINTF_DBG("--%s: fd = %d connection  lost\n",
-			//									__FUNCTION__, sockfd);
-			errno = ENOTCONN;
-			return -1;
-		}
-		if (read_ready)
-		{
-			break;
-		}
-		if (socket_options & (1 << SO_NONBLOCK))
-		{
-			errno = EAGAIN;
-			return -1;
-		}
-		os_delay_ms( 1 );
+		//PRINTF_DBG("--%s: fd = %d connection  lost\n",
+		//									__FUNCTION__, sockfd);
+		errno = ENOTCONN;
+		return -1;
+	}
+
+	if ((0 == read_ready) && (socket_options & (1 << SO_NONBLOCK)))
+	{
+		errno = EAGAIN;
+		return -1;
 	}
 
 	size_received = curr_fd->file_desc_ops.recv_func(
@@ -427,7 +421,10 @@ static int set_socket_level_option(struct file_desc_t  *curr_fd,
 			struct dev_desc_t * underlying_dev;
 			struct file_descriptor_manager_ioctl_socket_open_t  sock_open;
 
-			underlying_dev = *(struct dev_desc_t **)optval;
+			underlying_dev = DEV_OPEN((char*)optval);
+
+			if (NULL == underlying_dev) return -1;
+
 			sock_open.new_socket_descriptor = curr_fd;
 			if (0 == DEV_IOCTL_1_PARAMS(underlying_dev,
 											IOCTL_OPEN_SOCKET, &sock_open))

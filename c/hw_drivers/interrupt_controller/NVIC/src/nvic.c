@@ -141,13 +141,13 @@ static volatile uint32_t R0_r, R1_r, R2_r, R3_r, R12_r, LR_r, PC_r, PSR_r;
 		/* bit 2 in EXC_RETURN value (in LR) shows what
 		 stack was used before exception happened*/
 #ifdef CONFIG_CORTEX_M0
-	"movs r0,#0x4    \n"
+	"mrs r0, MSP    \n"/* by default read MSP*/
+	"movs r2,#0x4    \n"
 	"mov r1,lr    \n"
-	"tst r1,r0    \n"
+	"tst r1,r2    \n"
 	"beq exception_triggered_during_MSP    \n"
 	"mrs r0, PSP    \n"
 "exception_triggered_during_MSP:    \n"
-	"mrs r0, MSP    \n"
 #else /*for cortex-M > cortex-M0*/
 		"tst lr, #4    \n"
 		"ite eq        \n"

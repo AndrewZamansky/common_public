@@ -85,6 +85,8 @@ static ssize_t esp8266_recv(void* socketfd,
 	struct ESP8266_ioctl_data_received_t ESP8266_ioctl_data_received;
 	uint8_t retVal;
 
+	CRITICAL_ERROR("TODO : change to be blocked (like in ipc_i96xxx)");
+
 	if (0 != flags)
 	{
 		CRITICAL_ERROR("flags != 0 not implemented yet");

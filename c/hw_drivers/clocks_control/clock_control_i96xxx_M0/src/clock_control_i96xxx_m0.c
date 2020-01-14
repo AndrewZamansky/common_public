@@ -161,6 +161,11 @@ static void clock_i96xxx_pll_set_freq(uint32_t freq, uint32_t parent_freq)
 {
 	uint32_t PLL_Src;
 
+	if (freq > 500000000)
+	{
+		CRITICAL_ERROR("bad PLL rate");
+	}
+
 	if (CLK->PLLCTL & CLK_PLLCTL_PLLSRC_Msk)
 	{
 		PLL_Src = CLK_PLLCTL_PLLSRC_HIRC;
@@ -183,23 +188,26 @@ static void clock_i96xxx_pll_get_freq(uint32_t *freq, uint32_t parent_freq)
 
 static void clock_i96xxx_pll_set_parent_clk(struct dev_desc_t *parent_clk)
 {
+	CLK->PLLCTL &= ~CLK_PLLCTL_PLLSRC_Msk;
 	if (i96xxx_xtal_clk_dev == parent_clk)
 	{
-		CLK->PLLCTL &= ~CLK_PLLCTL_PLLSRC_Msk;
+		// remain 0
 	}
 	else if (i96xxx_hirc_clk_dev == parent_clk)
 	{
-		CLK->PLLCTL |= CLK_PLLCTL_PLLSRC_Msk;
+		CLK->PLLCTL |= (1 << CLK_PLLCTL_PLLSRC_Pos);
 	}
 	else
 	{
 		CRITICAL_ERROR("bad parent clock \n");
 	}
+	CLK_WaitClockReady(CLK_STATUS_PLLSTB_Msk);
 }
 
 #define DT_DEV_NAME               i96xxx_pll_clk_dev
 #define DT_DEV_MODULE             clk_cntl
 
+#define CLK_DT_DEFAULT_PARENT       i96xxx_xtal_clk_dev
 #define CLK_DT_SET_FREQ_FUNC        clock_i96xxx_pll_set_freq
 #define CLK_DT_GET_FREQ_FUNC        clock_i96xxx_pll_get_freq
 #define CLK_DT_SET_PARENT_CLK_FUNC  clock_i96xxx_pll_set_parent_clk
@@ -212,17 +220,23 @@ static void clock_i96xxx_pll_set_parent_clk(struct dev_desc_t *parent_clk)
 /********** i96xxx_hclk_clk_dev ********/
 static void clock_i96xxx_hclk_set_parent_clk(struct dev_desc_t *parent_clk)
 {
+	uint32_t prev_div;
+
+	prev_div = ((CLK->CLKDIV0 & CLK_CLKDIV0_HCLKDIV_Msk) >>
+												CLK_CLKDIV0_HCLKDIV_Pos) + 1;
 	if (i96xxx_xtal_clk_dev == parent_clk)
 	{
-		CLK_SetHCLK(CLK_CLKSEL0_HCLKSEL_HIRC, CLK_CLKDIV0_HCLK(1));
+		CLK_SetHCLK(CLK_CLKSEL0_HCLKSEL_HXT, CLK_CLKDIV0_HCLK(prev_div));
 	}
 	else if (i96xxx_hirc_clk_dev == parent_clk)
 	{
-		CLK_SetHCLK(CLK_CLKSEL0_HCLKSEL_HIRC, CLK_CLKDIV0_HCLK(1));
+		CLK_SetHCLK(CLK_CLKSEL0_HCLKSEL_HIRC, CLK_CLKDIV0_HCLK(prev_div));
 	}
 	else if (i96xxx_pll_clk_dev == parent_clk)
 	{
-		CLK_SetHCLK(CLK_CLKSEL0_HCLKSEL_PLL, CLK_CLKDIV0_HCLK(1));
+		// to be sure that hclk is less then 150Mh set divider to 4,
+		// it will be set correctly in set_rate function later
+		CLK_SetHCLK(CLK_CLKSEL0_HCLKSEL_PLL, CLK_CLKDIV0_HCLK(4));
 	}
 	else
 	{
@@ -230,10 +244,55 @@ static void clock_i96xxx_hclk_set_parent_clk(struct dev_desc_t *parent_clk)
 	}
 }
 
+/********************************************/
+/******** clock_i96xxx_hclk_set_freq ********/
+static void clock_i96xxx_hclk_set_freq(uint32_t freq, uint32_t parent_freq)
+{
+	uint32_t div;
+	uint32_t hclk_src;
+
+	div = parent_freq / freq;
+	if ((div * freq) != parent_freq)
+	{
+		CRITICAL_ERROR("cannot create hclk");
+	}
+
+	hclk_src = CLK->CLKSEL0 & CLK_CLKSEL0_HCLKSEL_Msk;
+	if (CLK_CLKSEL0_HCLKSEL_HXT == hclk_src)
+	{
+		CLK_SetHCLK(CLK_CLKSEL0_HCLKSEL_HXT, CLK_CLKDIV0_HCLK(div));
+	}
+	else if (CLK_CLKSEL0_HCLKSEL_HIRC == hclk_src)
+	{
+		CLK_SetHCLK(CLK_CLKSEL0_HCLKSEL_HIRC, CLK_CLKDIV0_HCLK(div));
+	}
+	else if (CLK_CLKSEL0_HCLKSEL_PLL == hclk_src)
+	{
+		// to be sure that pclk is less then 75Mh set divider to 2,
+		// it will be set correctly in set_rate of PCLK0/1 function later
+		if (freq > 75000000)
+		{
+			CLK->PCLKDIV = (CLK->PCLKDIV & (~CLK_PCLKDIV_APB0DIV_Msk)) |
+												(1 << CLK_PCLKDIV_APB0DIV_Pos);
+			CLK->PCLKDIV = (CLK->PCLKDIV & (~CLK_PCLKDIV_APB1DIV_Msk)) |
+												(1 << CLK_PCLKDIV_APB1DIV_Pos);
+		}
+		CLK_SetHCLK(CLK_CLKSEL0_HCLKSEL_PLL, CLK_CLKDIV0_HCLK(div));
+	}
+	else
+	{
+		CRITICAL_ERROR("bad parent clock \n");
+	}
+
+}
+
+
 #define DT_DEV_NAME               i96xxx_hclk_clk_dev
 #define DT_DEV_MODULE             clk_cntl
 
-#define CLK_DT_SET_PARENT_CLK_FUNC      clock_i96xxx_hclk_set_parent_clk
+#define CLK_DT_DEFAULT_PARENT         i96xxx_hirc_clk_dev
+#define CLK_DT_SET_PARENT_CLK_FUNC    clock_i96xxx_hclk_set_parent_clk
+#define CLK_DT_SET_FREQ_FUNC          clock_i96xxx_hclk_set_freq
 
 #include "clk_cntl_add_device.h"
 
@@ -255,13 +314,20 @@ static void clock_i96xxx_pclk0_set_freq(uint32_t freq, uint32_t parent_freq)
 {
 	uint32_t div;
 
-	div = parent_freq / freq;
-	if (div)
+	div = 1;
+	while (freq < parent_freq)
 	{
-		div--;
+		div++;
+		if (5 < div) break;
+		freq *= 2;
 	}
+	if (freq != parent_freq)
+	{
+		CRITICAL_ERROR("cannot create requested pclk0 \n");
+	}
+
 	CLK->PCLKDIV = (CLK->PCLKDIV & (~CLK_PCLKDIV_APB0DIV_Msk)) |
-									(div << CLK_PCLKDIV_APB0DIV_Pos);
+									((div - 1) << CLK_PCLKDIV_APB0DIV_Pos);
 }
 
 static void clock_i96xxx_pclk0_get_freq(uint32_t *freq, uint32_t parent_freq)
@@ -272,6 +338,7 @@ static void clock_i96xxx_pclk0_get_freq(uint32_t *freq, uint32_t parent_freq)
 #define DT_DEV_NAME               i96xxx_pclk0_clk_dev
 #define DT_DEV_MODULE             clk_cntl
 
+#define CLK_DT_DEFAULT_PARENT     i96xxx_hclk_clk_dev
 #define CLK_DT_SET_FREQ_FUNC      clock_i96xxx_pclk0_set_freq
 #define CLK_DT_GET_FREQ_FUNC      clock_i96xxx_pclk0_get_freq
 
@@ -285,13 +352,20 @@ static void clock_i96xxx_pclk1_set_freq(uint32_t freq, uint32_t parent_freq)
 {
 	uint32_t div;
 
-	div = parent_freq / freq;
-	if (div)
+	div = 1;
+	while (freq < parent_freq)
 	{
-		div--;
+		div++;
+		if (5 < div) break;
+		freq *= 2;
 	}
+	if (freq != parent_freq)
+	{
+		CRITICAL_ERROR("cannot create requested pclk1 \n");
+	}
+
 	CLK->PCLKDIV = (CLK->PCLKDIV & (~CLK_PCLKDIV_APB1DIV_Msk)) |
-									(div << CLK_PCLKDIV_APB1DIV_Pos);
+									((div - 1) << CLK_PCLKDIV_APB1DIV_Pos);
 }
 
 static void clock_i96xxx_pclk1_get_freq(uint32_t *freq, uint32_t parent_freq)
@@ -342,6 +416,7 @@ static void clock_i9xxxx_uart0_set_parent_clk(struct dev_desc_t *parent_clk)
 #define DT_DEV_NAME               i9xxxx_uart0_clk_dev
 #define DT_DEV_MODULE             clk_cntl
 
+#define CLK_DT_DEFAULT_PARENT       i96xxx_hirc_clk_dev
 #define CLK_DT_ENABLE_CLK_FUNC      clock_i9xxxx_uart0_enable
 #define CLK_DT_SET_PARENT_CLK_FUNC  clock_i9xxxx_uart0_set_parent_clk
 
@@ -385,6 +460,7 @@ static void clock_i96xxx_i2s0_set_parent_clk(struct dev_desc_t *parent_clk)
 #define DT_DEV_NAME               i96xxx_i2s0_clk_dev
 #define DT_DEV_MODULE             clk_cntl
 
+#define CLK_DT_DEFAULT_PARENT       i96xxx_hirc_clk_dev
 #define CLK_DT_ENABLE_CLK_FUNC      clock_i96xxx_i2s0_enable
 #define CLK_DT_SET_PARENT_CLK_FUNC  clock_i96xxx_i2s0_set_parent_clk
 
@@ -393,7 +469,8 @@ static void clock_i96xxx_i2s0_set_parent_clk(struct dev_desc_t *parent_clk)
 
 /*******************************************/
 /********** i96xxx_I2S0_MCLK_clk_dev ********/
-static void clock_i96xxx_I2S0_MCLK_get_freq(uint32_t *freq, uint32_t parent_freq)
+static void clock_i96xxx_I2S0_MCLK_get_freq(
+						uint32_t *freq, uint32_t parent_freq)
 {
 	uint32_t mclkdiv;
 	mclkdiv = I2S0->CLKDIV & I2S_CLKDIV_MCLKDIV_Msk;
@@ -419,7 +496,8 @@ static void clock_i96xxx_I2S0_MCLK_get_freq(uint32_t *freq, uint32_t parent_freq
 
 /*******************************************/
 /********** i96xxx_I2S0_BCLK_clk_dev ********/
-static void clock_i96xxx_I2S0_BCLK_get_freq(uint32_t *freq, uint32_t parent_freq)
+static void clock_i96xxx_I2S0_BCLK_get_freq(
+					uint32_t *freq, uint32_t parent_freq)
 {
 	uint32_t bclkdiv;
 
@@ -464,6 +542,40 @@ static void clock_i96xxx_I2S0_FSCLK_get_freq(
 
 
 
+/***************************************/
+/********** i96xxx_dsp_clk_dev ********/
+static void clock_i96xxx_dsp_enable()
+{
+    CLK_EnableModuleClock(DSP_MODULE);
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+}
+
+static void clock_i96xxx_dsp_set_freq(uint32_t freq, uint32_t parent_freq)
+{
+	uint32_t div;
+
+	div = parent_freq / freq;
+
+	if ((freq * div) != parent_freq)
+	{
+		CRITICAL_ERROR("bad clock rate\n");
+	}
+
+	CLK_SetModuleClock(DSP_MODULE, 0, CLK_CLKDIV0_DSPCLK(div));
+}
+
+#define DT_DEV_NAME               i96xxx_dsp_clk_dev
+#define DT_DEV_MODULE             clk_cntl
+
+#define CLK_DT_DEFAULT_PARENT     i96xxx_pll_clk_dev
+#define CLK_DT_ENABLE_CLK_FUNC    clock_i96xxx_dsp_enable
+#define CLK_DT_SET_FREQ_FUNC      clock_i96xxx_dsp_set_freq
+
+#include "clk_cntl_add_device.h"
+
 
 static void init_clocks(struct clk_cntl_i96xxx_m0_cfg_t *cfg_hndl)
 {
@@ -495,8 +607,8 @@ static void init_clocks(struct clk_cntl_i96xxx_m0_cfg_t *cfg_hndl)
 	DEV_IOCTL_0_PARAMS(i96xxx_hclk_clk_dev, IOCTL_DEVICE_START);
 	DEV_IOCTL_1_PARAMS(i96xxx_hclk_clk_dev,
 			CLK_IOCTL_SET_PARENT, cfg_hndl->hclk_src_clk_dev);
-//	DEV_IOCTL_1_PARAMS(i96xxx_hclk_clk_dev,
-//			CLK_IOCTL_SET_FREQ, &cfg_hndl->hclk_rate);
+	DEV_IOCTL_1_PARAMS(i96xxx_hclk_clk_dev,
+			CLK_IOCTL_SET_FREQ, &cfg_hndl->hclk_rate);
 
 	if (0 != cfg_hndl->pclk0_rate)
 	{
@@ -510,6 +622,14 @@ static void init_clocks(struct clk_cntl_i96xxx_m0_cfg_t *cfg_hndl)
 		DEV_IOCTL_0_PARAMS(i96xxx_pclk1_clk_dev, IOCTL_DEVICE_START);
 		DEV_IOCTL_1_PARAMS(i96xxx_pclk1_clk_dev,
 				CLK_IOCTL_SET_FREQ, &cfg_hndl->pclk1_rate);
+	}
+
+	if (0 != cfg_hndl->dsp_rate)
+	{
+		DEV_IOCTL_0_PARAMS(i96xxx_dsp_clk_dev, IOCTL_DEVICE_START);
+		DEV_IOCTL_0_PARAMS(i96xxx_dsp_clk_dev, CLK_IOCTL_ENABLE);
+		DEV_IOCTL_1_PARAMS(i96xxx_dsp_clk_dev,
+				CLK_IOCTL_SET_FREQ, &cfg_hndl->dsp_rate);
 	}
 }
 

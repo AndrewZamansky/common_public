@@ -8,6 +8,7 @@ extern "C" {
 #endif
 
 #define IPC_DEBUG_PORT  1
+#define IPC_SHELL_PORT  2
 
 enum ipc_i96xxx_err_code_e {
 	IPC_I96XXX_NO_ERR = 0,
