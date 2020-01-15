@@ -1,0 +1,39 @@
+menu "ARMCC options"
+
+choice
+	prompt "Optimisation Level"
+	default ARMCC_OPTIMISE_NONE
+
+config ARMCC_OPTIMISE_NONE
+	bool "-O0 : No Optimisations"
+
+config ARMCC_OPTIMISE_SIZE_Os
+    bool "-Os : Optimise for size "
+
+config ARMCC_OPTIMISE_SIZE_Oz
+    bool "-Oz : Optimise for size more than Os"
+
+config ARMCC_OPTIMISE_SPEED_O1
+	bool "-O1 : Optimise for speed"
+
+config ARMCC_OPTIMISE_SPEED_O2
+	bool "-O2 : Optimise for speed more than -O1"
+
+config ARMCC_OPTIMISE_SPEED_O3
+	bool "-O3 : Optimise for speed more than -O2"
+
+config ARMCC_OPTIMISE_SPEED_Ofast
+	bool "-Ofast : Optimise for speed more than -O3"
+
+config ARMCC_OPTIMISE_SPEED_Omax
+	bool "-Omax : Optimise for speed more than -Ofast"
+
+
+endchoice
+
+
+config ARMCC_OPTIMISE_SPEED_Otime
+	bool "-Otime : Optimise for speed even more"
+	default n
+
+endmenu
