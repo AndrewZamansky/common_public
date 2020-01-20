@@ -177,7 +177,7 @@ static void close_socket(struct ipc_i96xxx_socket_t  *curr_socket)
 }
 
 
-static void process_reply(struct ipc_i96xxx_runtime_t *ipc_i96xxx_runtime_hndl,
+static void process_reply_from_remote(struct ipc_i96xxx_runtime_t *ipc_i96xxx_runtime_hndl,
 		struct ipc_i96xxx_remote_msg_reply_t *reply_data)
 {
 	enum ipc_i96xxx_state_e currentState;
@@ -260,7 +260,7 @@ static void process_reply(struct ipc_i96xxx_runtime_t *ipc_i96xxx_runtime_hndl,
 }
 
 
-static void process_connect(
+static void process_connect_from_remote(
 		struct ipc_i96xxx_runtime_t *ipc_i96xxx_runtime_hndl,
 		struct ipc_i96xxx_remote_msg_connect_t *connect_data)
 {
@@ -268,7 +268,7 @@ static void process_connect(
 
 	socket_handle = ports[connect_data->to_port];
 
-	if ((NULL == socket_handle) &&
+	if ((NULL == socket_handle) ||
 			(SOCKET_STATE_LISTENING != socket_handle->socket_state))
 	{
 		send_reply(ipc_i96xxx_runtime_hndl, REPLY_PORT_NOT_LISTENING);
@@ -281,7 +281,7 @@ static void process_connect(
 }
 
 
-static void process_accept(
+static void process_accept_from_remote(
 		struct ipc_i96xxx_runtime_t *ipc_i96xxx_runtime_hndl,
 		struct ipc_i96xxx_remote_msg_accept_t *accept_data)
 {
@@ -289,7 +289,7 @@ static void process_accept(
 
 	socket_handle = ports[accept_data->to_port];
 
-	if ((NULL == socket_handle) &&
+	if ((NULL == socket_handle) ||
 			(SOCKET_STATE_WAITING_FOR_ACCEPT != socket_handle->socket_state))
 	{
 		send_reply(ipc_i96xxx_runtime_hndl, REPLY_PORT_NOT_WAITING_FOR_ACCEPT);
@@ -302,7 +302,7 @@ static void process_accept(
 }
 
 
-static void process_send_data(
+static void process_send_data_from_remote(
 		struct ipc_i96xxx_runtime_t *ipc_i96xxx_runtime_hndl,
 		struct ipc_i96xxx_remote_msg_send_data_t *send_data)
 {
@@ -314,7 +314,7 @@ static void process_send_data(
 
 	socket_handle = ports[send_data->to_port];
 
-	if ((NULL == socket_handle) &&
+	if ((NULL == socket_handle) ||
 			(SOCKET_STATE_CONNECTED != socket_handle->socket_state))
 	{
 		send_reply(ipc_i96xxx_runtime_hndl, REPLY_PORT_CONNECTED);
@@ -348,7 +348,7 @@ static void process_send_data(
 }
 
 
-static void process_close_connection(
+static void process_close_connection_from_remote(
 		struct ipc_i96xxx_runtime_t *ipc_i96xxx_runtime_hndl,
 		struct ipc_i96xxx_remote_msg_close_connection_t *close_data)
 {
@@ -356,7 +356,7 @@ static void process_close_connection(
 
 	socket_handle = ports[close_data->to_port];
 
-	if ((NULL == socket_handle) &&
+	if ((NULL == socket_handle) ||
 			(SOCKET_STATE_CONNECTED != socket_handle->socket_state))
 	{
 		send_reply(ipc_i96xxx_runtime_hndl, REPLY_PORT_CONNECTED);
@@ -370,11 +370,11 @@ static void process_close_connection(
 
 
 /*
- * process_input_message()
+ * process_message_from_remote()
  *
  * return:
  */
-static void process_input_message(struct ipc_i96xxx_cfg_t *config_handle,
+static void process_message_from_remote(struct ipc_i96xxx_cfg_t *config_handle,
 		struct ipc_i96xxx_runtime_t *ipc_i96xxx_runtime_hndl,
 		struct ipc_i96xxx_msg_data_from_peer_t  *msg_data_from_peer)
 {
@@ -386,26 +386,26 @@ static void process_input_message(struct ipc_i96xxx_cfg_t *config_handle,
 	switch(msg_from_remote->type)
 	{
 	case REMOTE_MSG_TYPE_REPLY:
-		process_reply(
+		process_reply_from_remote(
 				ipc_i96xxx_runtime_hndl, &msg_from_remote->msg_data.reply_data);
 		break;
 	case REMOTE_MSG_TYPE_HANDSHAKE:
 		send_reply(ipc_i96xxx_runtime_hndl, REPLY_OK);
 		break;
 	case REMOTE_MSG_TYPE_CONNECT:
-		process_connect(ipc_i96xxx_runtime_hndl,
+		process_connect_from_remote(ipc_i96xxx_runtime_hndl,
 				&msg_from_remote->msg_data.connect_data);
 		break;
 	case REMOTE_MSG_TYPE_ACCEPT:
-		process_accept(ipc_i96xxx_runtime_hndl,
+		process_accept_from_remote(ipc_i96xxx_runtime_hndl,
 				&msg_from_remote->msg_data.accept_data);
 		break;
 	case REMOTE_MSG_TYPE_SEND_DATA:
-		process_send_data(ipc_i96xxx_runtime_hndl,
+		process_send_data_from_remote(ipc_i96xxx_runtime_hndl,
 				&msg_from_remote->msg_data.send_data);
 		break;
 	case REMOTE_MSG_TYPE_CLOSE_CONNECTION:
-		process_close_connection(ipc_i96xxx_runtime_hndl,
+		process_close_connection_from_remote(ipc_i96xxx_runtime_hndl,
 						&msg_from_remote->msg_data.close_data);
 		break;
 	default:
@@ -497,6 +497,9 @@ static struct ipc_i96xxx_socket_t *allocate_new_socket(
 			errors_api_check_if_malloc_succeed(allocated_socket->recvedData);
 
 			allocated_socket->curr_data_size = 0;
+			//cleanup message queue
+			os_queue_receive_with_timeout(
+					allocated_socket->wake_queue, &dummy_msg, 0);
 
 			return allocated_socket;
 		}
@@ -740,11 +743,11 @@ static enum ipc_i96xxx_state_e process_get_rcvd_data_message(
 
 
 /*
- * process_output_message()
+ * process_local_message()
  *
  * return:
  */
-static void process_output_message(struct ipc_i96xxx_cfg_t *config_handle,
+static void process_local_message(struct ipc_i96xxx_cfg_t *config_handle,
 		struct ipc_i96xxx_runtime_t *ipc_i96xxx_runtime_hndl)
 {
 	struct ipc_i96xxx_message_t  pendingMessage;
@@ -829,11 +832,11 @@ static void send_handshake(
 
 #define SKIP_PRINTS  20
 /*
- * no_new_message_received()
+ * no_new_message_from_remote()
  *
  * return:
  */
-static void no_new_message_received(struct ipc_i96xxx_cfg_t *config_handle,
+static void no_new_message_from_remote(struct ipc_i96xxx_cfg_t *config_handle,
 		struct ipc_i96xxx_runtime_t *ipc_i96xxx_runtime_hndl)
 {
 	enum ipc_i96xxx_state_e currentState ;
@@ -937,8 +940,9 @@ static void ipc_i96xxx_Task( void *pvParameters )
 		{
 			if(DATA_FROM_REMOTE == xRxedMessage.type)
 			{
-				process_input_message(config_handle, ipc_i96xxx_runtime_hndl,
-									&xRxedMessage.msg_data.msg_data_from_peer);
+				process_message_from_remote(
+						config_handle, ipc_i96xxx_runtime_hndl,
+						&xRxedMessage.msg_data.msg_data_from_peer);
 			}
 			else
 			{
@@ -949,14 +953,14 @@ static void ipc_i96xxx_Task( void *pvParameters )
 		}
 		else
 		{
-			no_new_message_received(config_handle, ipc_i96xxx_runtime_hndl);
+			no_new_message_from_remote(config_handle, ipc_i96xxx_runtime_hndl);
 		}
 
 		currentState = ipc_i96xxx_runtime_hndl->currentState;
 		if(isMessagePending && (IPC_I96XXX_State_Idle == currentState))
 		{
 			//PRINTF_DBG("+++ process pending message\n");
-			process_output_message(config_handle, ipc_i96xxx_runtime_hndl);
+			process_local_message(config_handle, ipc_i96xxx_runtime_hndl);
 			if (IPC_I96XXX_State_Idle != ipc_i96xxx_runtime_hndl->currentState)
 			{
 				ipc_i96xxx_runtime_hndl->lRequest_done = 2;

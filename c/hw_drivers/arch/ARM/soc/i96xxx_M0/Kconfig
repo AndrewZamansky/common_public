@@ -5,9 +5,14 @@ config I96XXX_BSP_VERSION
 	string "i96xxx bsp version in form : xx.xx[.xx]"
 	default "00.0x"
 
-config  SPIM_FLASH_SIZE
+menuconfig I96XXX_USE_SPIM_FLASH
+    bool "use SPI flash for running code"
+	default n
+
+config  I96XXX_SPIM_FLASH_SIZE
 	hex   "spim flash size"
 	default 0x100000
+    depends on I96XXX_USE_SPIM_FLASH
 
 
 endmenu

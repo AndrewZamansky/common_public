@@ -9,6 +9,7 @@ extern "C" {
 
 #define IPC_DEBUG_PORT  1
 #define IPC_SHELL_PORT  2
+#define IPC_AUDIO_PORT  3
 
 enum ipc_i96xxx_err_code_e {
 	IPC_I96XXX_NO_ERR = 0,
@@ -35,6 +36,13 @@ struct ipc_i96xxx_cfg_t {
 };
 SET_CONFIG_TYPE(ipc_i96xxx, struct ipc_i96xxx_cfg_t);
 
+
+struct __attribute__((packed)) ipc_i96xxx_audio_stream_packet_t
+{
+	uint8_t *in_buffer;
+	uint8_t *out_buffer;
+	size_t  buffer_size;
+};
 
 #ifdef  __cplusplus
 }

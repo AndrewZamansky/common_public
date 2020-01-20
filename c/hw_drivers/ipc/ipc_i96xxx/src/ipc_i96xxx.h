@@ -7,7 +7,7 @@
 
 #include "os_wrapper.h"
 
-#define IPC_I96XXX_MAX_NUM_OF_SOCKETS   4
+#define IPC_I96XXX_MAX_NUM_OF_SOCKETS   6
 
 enum ipc_i96xxx_message_type_e
 {
