@@ -4,8 +4,6 @@
  *
  */
 
-/********  includes *********************/
-
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 #include "_project_func_declarations.h"
@@ -40,7 +38,6 @@
  #error unknown cortex-m type
 #endif
 
-/********  defines *********************/
 
 #if defined(__GNUC__) && !defined(__ARMCC_VERSION)
   #define IRQ_ATTR  __attribute__((interrupt("IRQ")))
@@ -70,7 +67,7 @@
 #define NVIC_readRegU32(addr)       ( *(volatile uint32_t *)(addr) )
 
 
-/********  types  *********************/
+
 
 enum IRQn_Type_local {
 	/******  Cortex-M4 Processor Exceptions Numbers ********/
@@ -85,11 +82,8 @@ enum IRQn_Type_local {
 	SysTick_IRQn_local           = -1,  /*!< 15 System Tick Interrupt       */
 };
 
-/********  externals *********************/
 extern IRQ_ATTR void do_software_interrupt_asm(void);
 
-
-/********  local variables *********************/
 struct dev_desc_t * callback_devs[
 		NUMBER_OF_NVIC_EXTERNAL_INTERRUPTS + INTERNAL_EXCEPTION_NUM] = {NULL};
 

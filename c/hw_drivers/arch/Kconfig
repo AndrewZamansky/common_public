@@ -57,6 +57,10 @@ config CODE_LOCATION_INTERNAL_FLASH
 	bool "internal flash"
 	depends on INTERNAL_FLASH_EXISTS
 
+config CODE_LOCATION_EXTERNAL_FLASH
+	bool "external flash"
+	depends on EXTERNAL_FLASH_EXISTS
+
 config CODE_LOCATION_INTERNAL_SRAM
 	bool "internal sram"
 	depends on INTERNAL_SRAM_EXISTS
@@ -89,6 +93,10 @@ config SPEED_CRITICAL_CODE_LOCATION_INTERNAL_FLASH
 	bool "internal flash"
 	depends on INTERNAL_FLASH_EXISTS
 
+config SPEED_CRITICAL_CODE_LOCATION_EXTERNAL_FLASH
+	bool "external flash"
+	depends on EXTERNAL_FLASH_EXISTS
+
 config SPEED_CRITICAL_CODE_LOCATION_INTERNAL_SRAM
 	bool "internal sram"
 	depends on INTERNAL_SRAM_EXISTS
@@ -112,6 +120,10 @@ endif #### (if !HEXAGON && !ANDROID_NDK && !OUTPUT_TYPE_STATIC_LIBRARY)
 
 # following configuration will be selected automatically
 config INTERNAL_FLASH_EXISTS
+    bool
+    default n
+
+config EXTERNAL_FLASH_EXISTS
     bool
     default n
 

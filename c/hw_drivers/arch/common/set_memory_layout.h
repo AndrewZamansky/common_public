@@ -47,6 +47,24 @@
 #endif
 
 
+#ifdef USE_EXTERNAL_FLASH
+	#ifndef DT_EXTERNAL_FLASH_NAME
+		#error "DT_EXTERNAL_FLASH_NAME should be defined as :external_flash"
+	#endif
+	#if ( external_flash != DT_EXTERNAL_FLASH_NAME)
+		#error "DT_EXTERNAL_FLASH_NAME should be defined as :external_flash"
+	#endif
+	#ifndef DT_EXTERNAL_FLASH_BASE_ADDR
+		#error "DT_EXTERNAL_FLASH_BASE_ADDR should be defined"
+	#endif
+	#ifndef DT_EXTERNAL_FLASH_MEMORY_SIZE
+		#error "DT_EXTERNAL_FLASH_MEMORY_SIZE should be defined"
+	#endif
+	#define  external_flash_BASE_ADDR  DT_EXTERNAL_FLASH_BASE_ADDR
+	#define  external_flash_SIZE       DT_EXTERNAL_FLASH_MEMORY_SIZE
+#endif
+
+
 #ifdef USE_EXTERNAL_DDR
 	#ifndef DT_EXTERNAL_DDR_NAME
 		#error "DT_EXTERNAL_DDR_NAME should be defined as :external_ddr"
@@ -71,6 +89,7 @@
 
 #undef  internal_sram
 #undef  internal_flash
+#undef  external_flash
 #undef  external_ddr
 
 #endif /* */

@@ -33,6 +33,12 @@ SECTIONS
 	__tables_relocation_section_start_on_ROM__ =  rom_start ;
 #endif
 
+#ifdef CONFIG_CODE_LOCATION_EXTERNAL_FLASH
+	#define CODE_LOCATION external_flash
+	rom_start = ORIGIN(external_flash);
+	__tables_relocation_section_start_on_ROM__ =  rom_start ;
+#endif
+
 #ifdef CONFIG_CODE_LOCATION_INTERNAL_SRAM
 	#define CODE_LOCATION internal_sram
 	__tables_relocation_section_start_on_ROM__ = ram_start ;
@@ -161,9 +167,11 @@ SECTIONS
 	__relocation_section_start_on_ROM__ = __end_of_text__;
 	critical_text_section_start_on_ROM = __relocation_section_start_on_ROM__;
 
-#ifdef CONFIG_CODE_LOCATION_INTERNAL_FLASH
+#if defined(CONFIG_CODE_LOCATION_INTERNAL_FLASH) || \
+	defined(CONFIG_CODE_LOCATION_EXTERNAL_FLASH)
 	__relocation_section_start_on_RAM__ = __tables_relocation_section_end_on_RAM__ ;
 #else
+	/* no need in relocation, so it will actually copy 0 size*/
 	__relocation_section_start_on_RAM__ = __end_of_text__ ;
 #endif
 	. = __relocation_section_start_on_RAM__ ;
