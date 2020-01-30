@@ -3,10 +3,6 @@
  *   file  :  ADC.cpp
  *
  */
-
-
-
-/***************   includes    *******************/
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 #include "_project_func_declarations.h"
@@ -23,18 +19,6 @@
 #include "dt_pin_control_stm32f10x.h"
 #include "clock_control_stm32f10x_api.h"
 #include "os_wrapper.h"
-
-/***************   defines    *******************/
-
-
-/***************   typedefs    *******************/
-
-/**********   external variables    **************/
-
-
-
-/***********   local variables    **************/
-
 
 static void init_adc(struct dev_desc_t *adev,
 		struct adc_stm32f10x_config_t *config_handle,
@@ -69,6 +53,7 @@ static void init_adc(struct dev_desc_t *adev,
 		pin_control_api_set_pin_function(pin_control);
 	}
 
+	DEV_IOCTL_0_PARAMS(stm32f10x_adc_clk_dev, IOCTL_DEVICE_START);
 	DEV_IOCTL_1_PARAMS(stm32f10x_adc_clk_dev,
 			CLK_IOCTL_SET_FREQ, &config_handle->adc_clock_rate);
 	DEV_IOCTL_0_PARAMS(stm32f10x_adc_clk_dev, CLK_IOCTL_ENABLE);
@@ -102,8 +87,8 @@ uint8_t adc_stm32f10x_ioctl(struct dev_desc_t *adev,
 	struct adc_stm32f10x_config_t *config_handle;
 	struct adc_stm32f10x_runtime_t *runtime_handle;
 
-	config_handle = DEV_GET_CONFIG_DATA_POINTER(adev);
-	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
+	config_handle = DEV_GET_CONFIG_DATA_POINTER(adc_stm32f10x, adev);
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adc_stm32f10x, adev);
 	if ((0 == runtime_handle->init_done) && (IOCTL_DEVICE_START != aIoctl_num))
 	{
 		CRITICAL_ERROR("not initialized yet");
@@ -133,3 +118,13 @@ uint8_t adc_stm32f10x_ioctl(struct dev_desc_t *adev,
 	}
 	return 0;
 }
+
+#define MODULE_NAME              adc_stm32f10x
+#define MODULE_IOCTL_FUNCTION    adc_stm32f10x_ioctl
+
+#define MODULE_CONFIGURABLE_PARAMS_ARRAY  {     \
+		{IOCTL_ADC_STM32F10X_SET_CHANNEL_PARAM , IOCTL_VOID ,\
+				ADC_STM32F10X_API_CHANNEL_STR, NOT_FOR_SAVE} \
+	}
+
+#include "add_module.h"

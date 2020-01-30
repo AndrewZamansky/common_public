@@ -16,7 +16,7 @@
 #include "clock_control_common.h"
 
 
-#define MODULE_NAME                      clk_cntl
+#define MODULE_NAME       clk_cntl
 
 
 static void get_root_clock(struct dev_desc_t *adev,
@@ -96,6 +96,7 @@ static uint8_t clk_cntl_ioctl(struct dev_desc_t *adev,
 		get_rate(cfg_clk, runtime_data, parent_clk, aIoctl_param1);
 		break;
 	case CLK_IOCTL_SET_FREQ :
+		// if clock is not same as parent clock then it must have set_freq_func
 		if (NULL != cfg_clk->set_freq_func)
 		{
 			if (NULL != parent_clk)
