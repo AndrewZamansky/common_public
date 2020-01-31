@@ -20,7 +20,8 @@
 #if defined(CONFIG_CODE_LOCATION_EXTERNAL_FLASH)
 	#define USE_EXTERNAL_FLASH
 	#define DT_EXTERNAL_FLASH_NAME          external_flash
-	#define DT_EXTERNAL_FLASH_BASE_ADDR     0x8000000
+	// romboot use this address, not 0x8000000:
+	#define DT_EXTERNAL_FLASH_BASE_ADDR     0x8000200
 	#define DT_EXTERNAL_FLASH_MEMORY_SIZE   CONFIG_I96XXX_SPIM_FLASH_SIZE
 #endif
 
