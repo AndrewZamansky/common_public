@@ -5,9 +5,6 @@
  *
  */
 
-
-
-/********  includes *********************/
 #include "pin_control_stm32f10x.h"
 
 #include "_project_typedefs.h"
@@ -20,15 +17,9 @@
 
 #include "dt_pin_control_stm32f10x.h"
 
-/********  defines *********************/
 #define AF_BASE_ADDR    0x40010000
-/********  types  *********************/
 
 
-/********  externals *********************/
-
-
-/********  local variables *********************/
 #define MAX_NUM_OF_PORTS  3
 static uint16_t pin_usage[MAX_NUM_OF_PORTS] = {0};
 static GPIO_TypeDef  *ports[] = {GPIOA, GPIOB, GPIOC};

@@ -49,7 +49,7 @@ static void init_adc(struct dev_desc_t *adev,
 	if (16 > channel)
 	{
 		pin_control = FILL_PIN_DATA(
-			port_num, pin_num, 4, DUMMY_AF_REMAP_REG, 0, 0, 0);
+			port_num, pin_num, 0, DUMMY_AF_REMAP_REG, 0, 0, 0);
 		pin_control_api_set_pin_function(pin_control);
 	}
 

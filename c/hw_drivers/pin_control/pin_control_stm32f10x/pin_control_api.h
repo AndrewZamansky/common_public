@@ -3,13 +3,6 @@
 
 #include "dt_pin_control_stm32f10x.h"
 
-/**********  defines ************/
-
-
-/**********  define API  types ************/
-
-
-/**********  define API  functions  ************/
 
 uint8_t pin_control_api_set_pin_function(uint32_t  new_pin_info);
 

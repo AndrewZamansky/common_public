@@ -212,8 +212,8 @@ uint8_t gpio_stm32f10x_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 	struct gpio_stm32f10x_config_t *config_handle;
 	struct gpio_stm32f10x_runtime_t *runtime_handle;
 
-	config_handle = DEV_GET_CONFIG_DATA_POINTER(adev);
-	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
+	config_handle = DEV_GET_CONFIG_DATA_POINTER(gpio_stm32f10x, adev);
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(gpio_stm32f10x, adev);
 	if ((0 == runtime_handle->init_done) && (IOCTL_DEVICE_START != aIoctl_num))
 	{
 		CRITICAL_ERROR("not initialized yet");
@@ -298,3 +298,17 @@ uint8_t gpio_stm32f10x_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 	}
 	return 0;
 }
+
+#define MODULE_NAME                     gpio_stm32f10x
+#define MODULE_IOCTL_FUNCTION           gpio_stm32f10x_ioctl
+
+#define MODULE_CONFIGURABLE_PARAMS_ARRAY   {  \
+		{IOCTL_GPIO_STM32F10X_SET_PORT_PARAM , IOCTL_VOID ,\
+				GPIO_STM32F10X_API_PORT_STR, NOT_FOR_SAVE}, \
+		{IOCTL_GPIO_STM32F10X_SET_PIN_PARAM , IOCTL_VOID , \
+				GPIO_STM32F10X_API_PIN_STR, NOT_FOR_SAVE}, \
+		{IOCTL_GPIO_STM32F10X_SET_MODE_PARAM , IOCTL_VOID ,\
+				GPIO_STM32F10X_API_MODE_STR, NOT_FOR_SAVE}, \
+	}
+
+#include "add_module.h"

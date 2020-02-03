@@ -6,8 +6,6 @@
  */
 
 
-
-/********  includes *********************/
 #include "pin_control_i9xxxx.h"
 
 #include "pin_control_api.h"
@@ -21,15 +19,7 @@
 #endif
 
 
-/********  defines *********************/
 
-/********  types  *********************/
-
-
-/********  externals *********************/
-
-
-/********  local variables *********************/
 #define PIN_FUNCTIONS_BASE_ADDR       (SYS_BASE + 0x30)
 #define PIN_SCMITT_TRIGGER_BASE_ADDR  (GPIOA_BASE + 0x24)
 #define PIN_GPIO_MODE_BASE_ADDR       (GPIOA_BASE + 0x00)
