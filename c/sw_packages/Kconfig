@@ -1,5 +1,16 @@
 #
 
+menuconfig INCLUDE_CMSIS
+	bool   "cortex-M CMSIS layer"
+	depends on CORTEX_M0 || CORTEX_M3 || CORTEX_M4
+	default y
+
+config CMSIS_VERSION
+	string   "CMSIS version in form of x.xx"
+	depends on INCLUDE_CMSIS
+	default "3.01"
+
+
 source "$KCONFIG_PUBLIC_START_DIR/sw_packages/core/Kconfig"
 
 source "$KCONFIG_PUBLIC_START_DIR/sw_packages/application_framework/Kconfig"

@@ -135,7 +135,7 @@ endif
 
 
 ####### extract info from preprocessed files
-$(CURR_OBJ_DIR)/%.preproc: % $(ALL_DEPS) $(C_ARGS_FILE)
+$(CURR_OBJ_DIR)/%.c.preproc: %.c $(ALL_DEPS) $(C_ARGS_FILE)
 	$(info .    Preprocessing $<)
 	$(call mkdir_if_not_exists, $(dir $@))
 	$(C_PREPROCESSOR_CMD) $(CC_OUTPUT_FLAG_AND_FILE) $<
@@ -163,18 +163,29 @@ $(C_ARGS_FILE): $(ALL_DEPS)
 
 
 
-ALL_CFLAGS := $(GLOBAL_CFLAGS) $(CFLAGS)
-CPP_COMPILATION_CMD := $(CCPP) $(ALL_CFLAGS) $(ALL_DEFINES)
+ALL_CPPFLAGS := $(GLOBAL_CPPFLAGS) $(CFLAGS)
+CPP_COMPILATION_CMD := $(CCPP) $(ALL_CPPFLAGS) $(ALL_DEFINES)
+CPP_PREPROCESSOR_CMD := $(CCPP) -E $(ALL_PPCFLAGS) $(ALL_DEFINES)
 CPP_COMPILATION_REDUCED_CMD :=$(call \
           reduce_cmd_len, $(CPP_COMPILATION_CMD) $(ALL_INCLUDE_DIRS))
+CPP_PREPROCESSOR_REDUCED_CMD :=$(call \
+               reduce_cmd_len, $(CPP_PREPROCESSOR_CMD) $(ALL_INCLUDE_DIRS))
 LONG_CPP_CMD :=$(call check_win_cmd_len, $(CPP_COMPILATION_REDUCED_CMD))
 
 CPP_ARGS_FILE :=$(strip $(if $(LONG_CPP_CMD),$(CURR_OBJ_DIR)/cpp.args,))
 ifeq ($(LONG_CPP_CMD),TOO_LONG)
     CPP_COMPILATION_CMD += $(CC_USE_ARGS_FROM_FILE_FLAG)$(CPP_ARGS_FILE)
+    CPP_PREPROCESSOR_CMD +=  $(CC_USE_ARGS_FROM_FILE_FLAG)$(CPP_ARGS_FILE)
 else
     CPP_COMPILATION_CMD :=$(CPP_COMPILATION_REDUCED_CMD)
+    CPP_PREPROCESSOR_CMD :=$(CPP_PREPROCESSOR_REDUCED_CMD)
 endif
+
+####### extract info from preprocessed files
+$(CURR_OBJ_DIR)/%.cc.preproc: %.cc $(ALL_DEPS) $(C_ARGS_FILE)
+	$(info .    Preprocessing $<)
+	$(call mkdir_if_not_exists, $(dir $@))
+	$(CPP_PREPROCESSOR_CMD) $(CC_OUTPUT_FLAG_AND_FILE) $<
 
 
 CC_DEPS := %.cc $(CURR_OBJ_DIR)/%.cc.analyzer $(ALL_DEPS) $(CPP_ARGS_FILE)
@@ -182,6 +193,13 @@ $(CURR_OBJ_DIR)/%.oo: $(CC_DEPS)
 	$(info .    Compiling $<)
 	$(call mkdir_if_not_exists, $(dir $@))
 	$(CPP_COMPILATION_CMD) $(CC_OUTPUT_FLAG_AND_FILE) $<
+
+
+####### extract info from preprocessed files
+$(CURR_OBJ_DIR)/%.cpp.preproc: %.cpp $(ALL_DEPS) $(C_ARGS_FILE)
+	$(info .    Preprocessing $<)
+	$(call mkdir_if_not_exists, $(dir $@))
+	$(CPP_PREPROCESSOR_CMD) $(CC_OUTPUT_FLAG_AND_FILE) $<
 
 CPP_DEPS := %.cpp $(CURR_OBJ_DIR)/%.cpp.analyzer $(ALL_DEPS) $(CPP_ARGS_FILE)
 $(CURR_OBJ_DIR)/%.oop: $(CPP_DEPS)

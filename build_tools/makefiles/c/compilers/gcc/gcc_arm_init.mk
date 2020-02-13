@@ -57,6 +57,7 @@ else ifdef CONFIG_GCC_OPTIMISE_SPEED
     CONFIG_OPTIMIZE_LEVEL := O2
 else ifdef CONFIG_GCC_OPTIMISE_ULTRA_SPEED
     CONFIG_OPTIMIZE_LEVEL := O3
+    #CONFIG_OPTIMIZE_LEVEL := Ofast
 endif
 
 ifdef CONFIG_CORTEX_M0
@@ -116,8 +117,9 @@ endif
 GLOBAL_CFLAGS += -$(CONFIG_OPTIMIZE_LEVEL) -g -g3 -ggdb3 #-gstabs3
 
 
-#stop GLOBAL_CFLAGS calculation each time it used :
-GLOBAL_CFLAGS := $(GLOBAL_CFLAGS)
+#stop GLOBAL_CFLAGS and GLOBAL_CPPFLAGS calculation each time it used :
+GLOBAL_CPPFLAGS := $(GLOBAL_CFLAGS)
+GLOBAL_CFLAGS := -std=c99 $(GLOBAL_CFLAGS)
 
 ### GLOBAL_ASMFLAGS calculation
 GLOBAL_ASMFLAGS += -mcpu=$(CONFIG_CPU_TYPE) -gdwarf-2

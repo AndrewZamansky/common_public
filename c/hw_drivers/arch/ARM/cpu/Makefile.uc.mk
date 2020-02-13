@@ -7,11 +7,14 @@ IS_CORTEX_M := $(sort\
      $(CONFIG_CORTEX_M0) $(CONFIG_CORTEX_M3) $(CONFIG_CORTEX_M4))
 ifeq ($(IS_CORTEX_M),y)
 
-    ARM_CMSIS_PATH :=$(EXTERNAL_SOURCE_ROOT_DIR)/ARM-CMSIS_v3.01
+    CMSIS_VERSION :=$(patsubst "%",%,$(CONFIG_CMSIS_VERSION))
+    ARM_CMSIS_PATH :=$(EXTERNAL_SOURCE_ROOT_DIR)/ARM-CMSIS_v$(CMSIS_VERSION)
     ifeq ("$(wildcard $(ARM_CMSIS_PATH))","")
         $(info !--- ARM CMSIS path $(ARM_CMSIS_PATH) dont exists )
-        $(info !--- download ARM CMSIS version 3.01 and unpack it to $(ARM_CMSIS_PATH))
-        $(info !--- make sure that file Version 3.01 is located in $(ARM_CMSIS_PATH)/  after unpacking)
+        $(info !--- download ARM CMSIS version $(CMSIS_VERSION) and)
+        $(info !--- unpack it to $(ARM_CMSIS_PATH))
+        $(info !--- make sure that folders 'CMSIS' and 'Device' are)
+        $(info !--- located in $(ARM_CMSIS_PATH)/  after unpacking)
         $(error )
     endif
 
@@ -19,7 +22,15 @@ ifeq ($(IS_CORTEX_M),y)
         EXTERNAL_SRC_DIRS := $(EXTERNAL_SRC_DIRS) $(ARM_CMSIS_PATH)
     endif
 
+    # avoid building CMSIS startup code because we are using our:
+    DUMMY := $(call ADD_TO_GLOBAL_DEFINES, __PROGRAM_START)
+
     DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH, $(ARM_CMSIS_PATH)/CMSIS/Include)
+    #in new versions of CMSIS include path is different
+    DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH,\
+                      $(ARM_CMSIS_PATH)/CMSIS/Core/Include)
+    DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH,\
+                 $(ARM_CMSIS_PATH)/CMSIS/DSP/Include)
 endif
 
 

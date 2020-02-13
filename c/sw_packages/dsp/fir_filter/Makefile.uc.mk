@@ -28,6 +28,8 @@ ifdef CONFIG_CORTEX_M4
         ifdef CONFIG_DSP_IS_SPEED_CRITICAL
             SPEED_CRITICAL_FILES += fir_arm_cortex_m_fpu.c
             SPEED_CRITICAL_FILES += libarm_cortexM4lf_math.a
+            #in new versions of CMSIS lib path is different
+            GLOBAL_LIBS_PATH += $(ARM_CMSIS_PATH)/CMSIS/DSP/Lib/GCC
         endif
     endif
 else
