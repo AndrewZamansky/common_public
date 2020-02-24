@@ -62,8 +62,9 @@ endif
 
 GLOBAL_CFLAGS += -g
 
-#stop GLOBAL_CFLAGS calculation each time it used :
+#stop GLOBAL_CFLAGS and GLOBAL_CPPFLAGS calculation each time it used :
 GLOBAL_CFLAGS := $(GLOBAL_CFLAGS)
+GLOBAL_CPPFLAGS := $(GLOBAL_CFLAGS)
 
 #caclulating assembler flags
 
