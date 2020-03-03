@@ -1,6 +1,6 @@
 /*
  *
- * usb_i94xxx.c
+ * usb_i9xxxx.c
 
  *
  */
@@ -10,19 +10,25 @@
 
 #include "dev_management_api.h"
 
-#include "usb_i94xxx_api.h"
-#include "usb_i94xxx.h"
-#include "I94100.h"
+#include "usb_i9xxxx_api.h"
+#ifdef CONFIG_I94XXX
+	#include "I94100.h"
+	#include "clock_control_i94xxx_api.h"
+#elif CONFIG_I96XXX_M0
+	#include "I96100.h"
+	#include "clock_control_i96xxx_m0_api.h"
+#endif
+
 
 #include "irq_api.h"
 #include "usb_device_api.h"
-#include "clock_control_i94xxx_api.h"
 #include "pin_control_api.h"
 
 #include "usbd.h"
 #include "string.h"
 
 #include "os_wrapper.h"
+#include "usb_i9xxxx.h"
 
 //#include "audio_class.h"
 
@@ -433,25 +439,33 @@ static void set_endpoint_func(struct set_endpoints_t *set_endpoints)
 }
 
 
-static void device_start(struct usb_i94xxx_cfg_t *cfg_hndl)
+static void device_start(struct usb_i9xxxx_cfg_t *cfg_hndl)
 {
 	uint32_t freq;
+	struct dev_desc_t  *usb_clk_dev;
 
 	if (init_done)
 	{
 		return;
 	}
+#if defined(CONFIG_I94XXX)
 	pin_control_api_set_pin_function(PIN_CONTROL_DT_I94XXX_PIN_B13_USBD_DN);
 	pin_control_api_set_pin_function(PIN_CONTROL_DT_I94XXX_PIN_B14_USBD_DP);
 	pin_control_api_set_pin_function(PIN_CONTROL_DT_I94XXX_PIN_B15_USBD_VBUS);
+	usb_clk_dev = i94xxx_usb_clk_dev;
+#elif defined(CONFIG_I96XXX_M0)
+	pin_control_api_set_pin_function(PIN_CONTROL_DT_I94XXX_PIN_B01_USBD_DN);
+	pin_control_api_set_pin_function(PIN_CONTROL_DT_I94XXX_PIN_B02_USBD_DP);
+	pin_control_api_set_pin_function(PIN_CONTROL_DT_I94XXX_PIN_B00_USBD_VBUS);
+	usb_clk_dev = i96xxx_usb_clk_dev;
+#endif
 
-	DEV_IOCTL_0_PARAMS(i94xxx_usb_clk_dev, IOCTL_DEVICE_START);
-	DEV_IOCTL_1_PARAMS(i94xxx_usb_clk_dev,
-						CLK_IOCTL_SET_PARENT, cfg_hndl->src_clock);
-	DEV_IOCTL_0_PARAMS(i94xxx_usb_clk_dev, CLK_IOCTL_ENABLE);
+	DEV_IOCTL_0_PARAMS(usb_clk_dev, IOCTL_DEVICE_START);
+	DEV_IOCTL_1_PARAMS(usb_clk_dev, CLK_IOCTL_SET_PARENT, cfg_hndl->src_clock);
+	DEV_IOCTL_0_PARAMS(usb_clk_dev, CLK_IOCTL_ENABLE);
 	freq = 48000000;
-	DEV_IOCTL_1_PARAMS(i94xxx_usb_clk_dev, CLK_IOCTL_SET_FREQ, &freq);
-	DEV_IOCTL_0_PARAMS(i94xxx_usb_clk_dev, CLK_IOCTL_ENABLE);
+	DEV_IOCTL_1_PARAMS(usb_clk_dev, CLK_IOCTL_SET_FREQ, &freq);
+	DEV_IOCTL_0_PARAMS(usb_clk_dev, CLK_IOCTL_ENABLE);
 
 	//irq_register_device_on_interrupt(USBD_IRQn, adev);
 	irq_register_interrupt(USBD_IRQn, USBD_IRQHandler);
@@ -537,21 +551,21 @@ static void set_descriptors(struct set_device_descriptors_t *descriptors)
 
 
 /**
- * usb_i94xxx_ioctl()
+ * usb_i9xxxx_ioctl()
  *
  * return:
  */
-static uint8_t usb_i94xxx_ioctl( struct dev_desc_t *adev,
+static uint8_t usb_i9xxxx_ioctl( struct dev_desc_t *adev,
 		uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2)
 {
-	struct usb_i94xxx_cfg_t *cfg_hndl;
+	struct usb_i9xxxx_cfg_t *cfg_hndl;
 
 	if ((0 == init_done) && (IOCTL_DEVICE_START != aIoctl_num))
 	{
 		CRITICAL_ERROR("not initialized yet");
 	}
 
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(usb_i94xxx, adev);
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(usb_i9xxxx, adev);
 
 	switch(aIoctl_num)
 	{
@@ -588,7 +602,7 @@ static uint8_t usb_i94xxx_ioctl( struct dev_desc_t *adev,
 	return 0;
 }
 
-#define MODULE_NAME                  usb_i94xxx
-#define MODULE_IOCTL_FUNCTION        usb_i94xxx_ioctl
+#define MODULE_NAME                  usb_i9xxxx
+#define MODULE_IOCTL_FUNCTION        usb_i9xxxx_ioctl
 #define MODULE_HAS_NO_RUNTIME_DATA
 #include "add_module.h"

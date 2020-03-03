@@ -117,7 +117,7 @@ config INTERNAL_PWM_IS_SPEED_CRITICAL
 
 config INCLUDE_INTERNAL_USB_DEVICE
 	bool   "internal usb device"
-	depends on STM32F103XXX || STM8S103F || I94XXX
+	depends on STM32F103XXX || STM8S103F || I94XXX || I96XXX_M0
 	default n
 
 	
