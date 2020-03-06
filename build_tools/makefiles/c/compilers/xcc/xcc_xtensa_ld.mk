@@ -76,25 +76,25 @@ LIBRARIES_DIRS := $(patsubst %,-L%,$(GLOBAL_LIBS_PATH))
 
 
 #{{{{{{{{  LINKER SCRIPT FILE PREPARATIONS {{{{{{{{
-
-#ifdef CONFIG_USE_APPLICATION_SPECIFIC_SCATTER_FILE
-#    SCATTER_FILE =$(APP_ROOT_DIR)/$(PROJECT_NAME).lds
-#    ifeq ($(wildcard $(SCATTER_FILE)),) #if scatter file not found
-#        $(info err: application configured to use it's own scatter file,)
-#        $(info ---: but $(SCATTER_FILE) doesn't exist)
-#        $(call exit,1)
+ifdef CONFIG_USE_APPLICATION_SPECIFIC_SCATTER_FILE
+    SCATTER_FILE =$(APP_ROOT_DIR)/$(PROJECT_NAME).lds
+    ifeq ($(wildcard $(SCATTER_FILE)),) #if scatter file not found
+        $(info err: application configured to use it's own scatter file,)
+        $(info ---: but $(SCATTER_FILE) doesn't exist)
+        $(call exit,1)
+    endif
+    LDFLAGS += -T $(SCATTER_FILE)
+else
+#    SCATTER_FILES_DIR :=$(BUILD_TOOLS_ROOT_DIR)/scatter_files/arm
+#    LDS_PREPROCESSOR_DEFS += -DFILES_TO_FORCE_IN_RAM="$(FILES_TO_FORCE_IN_RAM)"
+#    ifdef CONFIG_CORTEX_M4
+#        SCATTER_FILE_PATTERN =$(SCATTER_FILES_DIR)/arm_gcc_cortex_m.lds
+#    else
+#        SCATTER_FILE_PATTERN =$(SCATTER_FILES_DIR)/arm_gcc_cortex_a.lds
 #    endif
-#else
-##    SCATTER_FILES_DIR :=$(BUILD_TOOLS_ROOT_DIR)/scatter_files/arm
-##    LDS_PREPROCESSOR_DEFS += -DFILES_TO_FORCE_IN_RAM="$(FILES_TO_FORCE_IN_RAM)"
-##    ifdef CONFIG_CORTEX_M4
-##        SCATTER_FILE_PATTERN =$(SCATTER_FILES_DIR)/arm_gcc_cortex_m.lds
-##    else
-##        SCATTER_FILE_PATTERN =$(SCATTER_FILES_DIR)/arm_gcc_cortex_a.lds
-##    endif
-##
-##    SCATTER_FILE =$(OUT_DIR)/$(OUTPUT_APP_NAME).lds
-#endif
+#
+#    SCATTER_FILE =$(OUT_DIR)/$(OUTPUT_APP_NAME).lds
+endif
 
 #}}}}}}}}  END OF LINKER SCRIPT FILE PREPARATIONS }}}}}}}}
 
@@ -135,7 +135,6 @@ endif
 ifeq ($(findstring y,$(CONFIG_USED_FOR_SEMIHOSTING_UPLOADING)),y)
     CONFIG_CALCULATE_CRC32=y
 endif
-
 
 ifdef CONFIG_OUTPUT_TYPE_STATIC_LIBRARY
     LINKER_CMD =$(AR) r $(LINKER_OUTPUT) @$(ALL_OBJECTS_LIST_FILE)
