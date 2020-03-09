@@ -22,7 +22,9 @@ LINKER_HISTORY_OUTPUT :=$(call fix_path_if_in_windows,\
                              $(OUT_DIR_HISTORY)/$(HISTORY_OUTPUT_NAME))
 OUTPUT_ASM :=$(call fix_path_if_in_windows,$(OUT_DIR)/$(OUTPUT_NAME).asm)
 OUTPUT_BIN :=$(call fix_path_if_in_windows,$(OUT_DIR)/$(OUTPUT_NAME).bin)
-OUTPUT_HEX :=$(call fix_path_if_in_windows,$(OUT_DIR)/$(OUTPUT_NAME).hex)
+OUTPUT_HEX :=$(call fix_path_if_in_windows,$(OUT_DIR)/$(OUTPUT_NAME).ihex.hex)
+OUTPUT_SREC_HEX :=$(call\
+         fix_path_if_in_windows,$(OUT_DIR)/$(OUTPUT_NAME).srec.hex)
 OUTPUT_CRC32 :=$(call fix_path_if_in_windows,$(OUTPUT_CRC32))
 
 #{{{{{{{{   LDFLAGS PREPARATIONS   {{{{{{{{
@@ -158,6 +160,11 @@ LINKER_TO_HEX_CMD += --xtensa-core=$(XCC_CORE)
 LINKER_TO_HEX_CMD += --xtensa-system=$(CORE_CONFIG_DIR)
 LINKER_TO_HEX_CMD += -O ihex $(LINKER_OUTPUT) $(OUTPUT_HEX)
 
+LINKER_TO_SREC_HEX_CMD = $(XCC_ROOT_DIR)/bin/xt-objcopy
+LINKER_TO_SREC_HEX_CMD += --xtensa-core=$(XCC_CORE)
+LINKER_TO_SREC_HEX_CMD += --xtensa-system=$(CORE_CONFIG_DIR)
+LINKER_TO_SREC_HEX_CMD += -O srec $(LINKER_OUTPUT) $(OUTPUT_SREC_HEX)
+
 LINKER_TO_BIN_CMD = $(XCC_ROOT_DIR)/bin/xt-objcopy
 LINKER_TO_BIN_CMD += --xtensa-core=$(XCC_CORE)
 LINKER_TO_BIN_CMD += --xtensa-system=$(CORE_CONFIG_DIR)
@@ -171,6 +178,7 @@ build_outputs :
 	$(CP)  $(LINKER_OUTPUT) $(LINKER_HISTORY_OUTPUT)
 	$(LINKER_TO_ASM_CMD)
 	$(LINKER_TO_HEX_CMD)
+	$(LINKER_TO_SREC_HEX_CMD)
 	$(LINKER_TO_BIN_CMD)
 ifeq ($(findstring y,$(CONFIG_CALCULATE_CRC32)),y)
 	$(CRC32CALC) $(OUTPUT_BIN) > $(OUTPUT_CRC32)
