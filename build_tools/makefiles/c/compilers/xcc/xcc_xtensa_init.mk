@@ -164,7 +164,8 @@ GLOBAL_CFLAGS += --xtensa-system=$(CORE_CONFIG_DIR)
 $(eval $(call ADD_TO_GLOBAL_DEFINES , PROC_$(XCC_CORE)))
 $(eval $(call ADD_TO_GLOBAL_DEFINES , CONFIG_$(XCC_CORE)))
 
-#stop GLOBAL_CFLAGS calculation each time it used:
+#stop GLOBAL_CFLAGS and GLOBAL_CPPFLAGS calculation each time it used :
+GLOBAL_CPPFLAGS := $(GLOBAL_CFLAGS)
 GLOBAL_CFLAGS := $(GLOBAL_CFLAGS)
 
 ### GLOBAL_ASMFLAGS calculation
