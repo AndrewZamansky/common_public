@@ -13,6 +13,7 @@ ifeq ($(CURR_GIT_COMMIT_HASH_VARIABLE),)
     $(call exit,1)
 endif
 
+
 # enter only one time per build:
 ifeq ("","$(filter $(CURR_GIT_REPO_DIR),$(EXTERNAL_SRC_GIT_DIRS))")
     # adding new directory to external source directories list:
@@ -33,15 +34,16 @@ ifeq ("","$(filter $(CURR_GIT_REPO_DIR),$(EXTERNAL_SRC_GIT_DIRS))")
         $(call exit,1)
     endif
 
+    # fix GIT_REQUESTED_COMMIT if it misses quotes
+    ifeq ($(filter "%,$(GIT_REQUESTED_COMMIT)),)
+        GIT_REQUESTED_COMMIT :="$(GIT_REQUESTED_COMMIT)"
+    endif
+
     ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
-    
         GIT_PARTITION := $(firstword $(subst :, ,$(CURR_GIT_REPO_DIR))):
         SHELL_GO_TO_GIT_DIR :=cd $(CURR_GIT_REPO_DIR) & $(GIT_PARTITION) & 
-    
     else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX)
-
         SHELL_GO_TO_GIT_DIR :=cd $(CURR_GIT_REPO_DIR) ;
-
     endif
 
     NEED_TO_SWITCH_BRANCH_OR_COMMIT :=n
