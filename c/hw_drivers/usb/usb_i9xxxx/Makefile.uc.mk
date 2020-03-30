@@ -1,6 +1,6 @@
 
 ifeq ($(sort $(CONFIG_I94XXX) $(CONFIG_I96XXX_M0)),y)
-    INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_INTERNAL_UART)
+    INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_INTERNAL_USB_DEVICE)
 endif
 
 
@@ -14,11 +14,11 @@ endif
 
 
 
-SRC = uart_i9xxxx.c
+SRC = usb_i9xxxx.c
 
 VPATH = src
 
-SRC += uart.c
+SRC += usbd.c
 
 ifdef CONFIG_I94XXX
     VPATH += $(I94XXX_SRC_DIR)

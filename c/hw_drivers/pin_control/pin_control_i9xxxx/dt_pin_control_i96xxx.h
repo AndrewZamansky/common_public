@@ -92,13 +92,16 @@
 /*****************************************/
 /************  PORT B ********************/
 #define PIN_B00  ((PORT_B << PORT_POS) | (PIN_0 << PIN_POS))
-#define PIN_CONTROL_DT_I96XXX_PIN_B00_GPIO     (PIN_B00 | 0)
+#define PIN_CONTROL_DT_I96XXX_PIN_B00_GPIO      (PIN_B00 | 0)
+#define PIN_CONTROL_DT_I94XXX_PIN_B00_USBD_VBUS (PIN_B00 | 1)
 
 #define PIN_B01  ((PORT_B << PORT_POS) | (PIN_1 << PIN_POS))
 #define PIN_CONTROL_DT_I96XXX_PIN_B01_GPIO     (PIN_B01 | 0)
+#define PIN_CONTROL_DT_I94XXX_PIN_B01_USBD_DN  (PIN_B01 | 1)
 
 #define PIN_B02  ((PORT_B << PORT_POS) | (PIN_2 << PIN_POS))
 #define PIN_CONTROL_DT_I96XXX_PIN_B02_GPIO     (PIN_B02 | 0)
+#define PIN_CONTROL_DT_I94XXX_PIN_B02_USBD_DP  (PIN_B02 | 1)
 
 #define PIN_B03  ((PORT_B << PORT_POS) | (PIN_3 << PIN_POS))
 #define PIN_CONTROL_DT_I96XXX_PIN_B03_GPIO     (PIN_B03 | 0)

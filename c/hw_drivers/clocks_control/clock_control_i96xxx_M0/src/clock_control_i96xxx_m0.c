@@ -577,6 +577,72 @@ static void clock_i96xxx_dsp_set_freq(uint32_t freq, uint32_t parent_freq)
 #include "clk_cntl_add_device.h"
 
 
+/***************************************/
+/********** i96xxx_usb_clk_dev ********/
+static void clock_i96xxx_usb_enable()
+{
+	CLK_EnableModuleClock(USBD_MODULE);
+}
+
+static void clock_i96xxx_usb_set_freq(uint32_t freq, uint32_t parent_freq)
+{
+	uint32_t div;
+
+	div = (parent_freq / freq);
+	if ((freq * div) != parent_freq)
+	{
+		CRITICAL_ERROR("bad clock rate\n");
+	}
+
+	if (div)
+	{
+		div--;
+	}
+
+	CLK->CLKDIV0 = (CLK->CLKDIV0 & (~CLK_CLKDIV0_USBDIV_Msk))
+						| (div << CLK_CLKDIV0_USBDIV_Pos);
+}
+
+static void clock_i96xxx_usb_get_freq(uint32_t *freq, uint32_t parent_freq)
+{
+	uint32_t div;
+
+	div =
+		((CLK->CLKDIV0 & CLK_CLKDIV0_USBDIV_Msk) >> CLK_CLKDIV0_USBDIV_Pos) + 1;
+	*freq = parent_freq / div;
+}
+
+static void clock_i96xxx_usb_set_parent_clk(struct dev_desc_t *parent_clk)
+{
+	if (i96xxx_hirc_clk_dev == parent_clk)
+	{
+		CLK->CLKSEL4 &= ~(0x1ul << 24); //CLKSEL4 not exist yet in BSP
+		//*((uint32_t *)0x40000224) &= ~(0x1ul << 24);
+	}
+	else if (i96xxx_pll_clk_dev == parent_clk)
+	{
+		CLK->CLKSEL4 |= (0x1ul << 24); //CLKSEL4 not exist yet in BSP
+		//*((uint32_t *)0x40000224) |= (0x1UL<<24);
+	}
+	else
+	{
+		CRITICAL_ERROR("bad parent clock \n");
+	}
+}
+
+#define DT_DEV_NAME               i96xxx_usb_clk_dev
+#define DT_DEV_MODULE             clk_cntl
+
+#define CLK_DT_ENABLE_CLK_FUNC      clock_i96xxx_usb_enable
+#define CLK_DT_SET_FREQ_FUNC        clock_i96xxx_usb_set_freq
+#define CLK_DT_GET_FREQ_FUNC        clock_i96xxx_usb_get_freq
+#define CLK_DT_SET_PARENT_CLK_FUNC  clock_i96xxx_usb_set_parent_clk
+
+#include "clk_cntl_add_device.h"
+
+
+
+
 static void init_clocks(struct clk_cntl_i96xxx_m0_cfg_t *cfg_hndl)
 {
 	if (0 != cfg_hndl->xtal_rate)
