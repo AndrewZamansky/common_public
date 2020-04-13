@@ -13,6 +13,22 @@ enum pcm_splitter_channel_justification_e {
 	PCM_SPLITTER_CHANNEL_BITS_ARE_RIGHT_JUSTIFIED,
 };
 
+
+/*
+ * [ ch0_0 | ch1_0 | chN_0 | ch0_1 | ch1_1 | chN_1| ... |ch0_m | ch1_m | chN_m]
+ *  {      frame 0        } {      frame 1       } ...   {      frame m      }
+ *                          ________/    \____________
+ *            _____________/                          \_________________
+ *           /                                                          \
+ *          | frame_size_bytes = num_of_channels * (channel_size_bits/8) |
+ *
+ * [ ch0_0 | ch1_0 | chN_0 | ch0_1 | ch1_1 | chN_1| ... |ch0_m | ch1_m | chN_m]
+ *                   ________/    \____________
+ *    ______________/                          \_________________
+ *  /                                                            \
+ * |channel_size_bits = padding_bits_size + 8*subframe_size_bytes |
+ *
+ */
 struct pcm_splitter_api_set_params_t {
 	uint8_t frame_size_bytes; /*frame contains N subframes*/
 	uint8_t subframe_size_bytes; /*subframes contain M bits of channel*/

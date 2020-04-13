@@ -101,8 +101,7 @@ uint8_t rms_ioctl(struct dsp_module_inst_t *adsp,
  */
 extern "C" void  rms_init(void)
 {
-	DSP_REGISTER_NEW_MODULE("rms",
-			rms_ioctl, rms_dsp, struct rms_instance_t);
+	DSP_REGISTER_NEW_MODULE("rms", rms_ioctl, rms_dsp, struct rms_instance_t);
 }
 
 AUTO_INIT_FUNCTION(rms_init);

@@ -26,21 +26,14 @@
 char pcm_mixer_module_name[] = "pcm_mixer";
 
 
-/**
- * pcm_mixer_dsp()
- *
- * return:
- */
-static void pcm_mixer_dsp_default(struct dsp_module_inst_t *adsp)
-{
-	CRITICAL_ERROR("should use another dsp function");
-}
-
 
 static void channel_copy_16bit(real_t *pRxBuf, uint8_t *outChannel,
-		size_t num_of_frames, uint8_t frame_size_bytes, real_t normalizer)
+		size_t num_of_frames, uint8_t frame_size_bytes)
 {
 	size_t i;
+	real_t normalizer;
+
+	normalizer = (float)0x7fff;
 	for (i = 0; i < num_of_frames; i++)
 	{
 		real_t in_real;
@@ -53,10 +46,38 @@ static void channel_copy_16bit(real_t *pRxBuf, uint8_t *outChannel,
 }
 
 
-static void channel_copy_32bit(real_t *pRxBuf, uint8_t *outChannel,
-		size_t num_of_frames, uint8_t frame_size_bytes, real_t normalizer)
+static void channel_copy_24bit(real_t *pRxBuf, uint8_t *outChannel,
+		size_t num_of_frames, uint8_t frame_size_bytes)
 {
 	size_t i;
+	real_t normalizer;
+
+	normalizer = (float)0x7fffffff;
+	for (i = 0; i < num_of_frames; i++)
+	{
+		real_t in_real;
+		uint32_t val;
+
+		in_real = *pRxBuf++;
+		val = (uint32_t)((int32_t)(in_real * normalizer));
+		val = val >> 8; // skip lowest LSB 8 bits
+		outChannel[0] = val & 0xFF;
+		val = val >> 8;
+		outChannel[1] = val & 0xFF;
+		val = val >> 8;
+		outChannel[2] = val & 0xFF;
+		outChannel += frame_size_bytes;
+	}
+}
+
+
+static void channel_copy_32bit(real_t *pRxBuf, uint8_t *outChannel,
+		size_t num_of_frames, uint8_t frame_size_bytes)
+{
+	size_t i;
+	real_t normalizer;
+
+	normalizer = (float)0x7fffffff;
 	for (i = 0; i < num_of_frames; i++)
 	{
 		real_t in_real;
@@ -74,7 +95,7 @@ static void channel_copy_32bit(real_t *pRxBuf, uint8_t *outChannel,
  *
  * return:
  */
-void pcm_mixer_dsp_16and32bit(struct dsp_module_inst_t *adsp)
+void pcm_mixer_dsp_func(struct dsp_module_inst_t *adsp)
 {
 	real_t *apChIn[MAX_NUM_OF_OUTPUT_PADS];
 	size_t in_data_len[MAX_NUM_OF_OUTPUT_PADS] ;
@@ -87,7 +108,6 @@ void pcm_mixer_dsp_16and32bit(struct dsp_module_inst_t *adsp)
 	struct pcm_mixer_api_set_params_t *set_params;
 	uint8_t subframe_size_bytes;
 	uint8_t frame_size_bytes;
-	real_t normalizer;
 	uint8_t channel_num;
 
 	handle = (struct pcm_mixer_instance_t *)adsp->handle;
@@ -124,7 +144,6 @@ void pcm_mixer_dsp_16and32bit(struct dsp_module_inst_t *adsp)
 	}
 
 	frame_size_bytes = set_params->frame_size_bytes;
-	normalizer = handle->normalizer;
 
 	for (channel_num = 0; channel_num < num_of_channels; channel_num++)
 	{
@@ -134,12 +153,17 @@ void pcm_mixer_dsp_16and32bit(struct dsp_module_inst_t *adsp)
 		if (2 == subframe_size_bytes)
 		{
 			channel_copy_16bit(curr_ChIn, pTxBuf,
-					num_of_frames, frame_size_bytes, normalizer);
+					num_of_frames, frame_size_bytes);
+		}
+		else if (3 == subframe_size_bytes)
+		{
+			channel_copy_24bit(curr_ChIn, pTxBuf,
+					num_of_frames, frame_size_bytes);
 		}
 		else if (4 == subframe_size_bytes)
 		{
 			channel_copy_32bit(curr_ChIn, pTxBuf,
-					num_of_frames, frame_size_bytes, normalizer);
+					num_of_frames, frame_size_bytes);
 		}
 		pTxBuf += subframe_size_bytes;
 	}
@@ -181,7 +205,6 @@ static void set_params(struct dsp_module_inst_t *adsp,
 	uint8_t subframe_size_bytes;
 	uint8_t frame_size_bytes;
 	uint8_t channel_size_bits;
-	real_t normalizer;
 
 	memcpy(&handle->set_params,
 			set_params, sizeof(struct pcm_mixer_api_set_params_t));
@@ -206,24 +229,13 @@ static void set_params(struct dsp_module_inst_t *adsp,
 	channel_size_bits = set_params->channel_size_bits;
 	if (channel_size_bits != (subframe_size_bytes * 8))
 	{
-		CRITICAL_ERROR("not supported channel size 1");
+		CRITICAL_ERROR("supported only fully occupied channel");
 	}
-	if (16 == channel_size_bits)
+	if ((16 != channel_size_bits) &&
+			(32 != channel_size_bits) && (24 != channel_size_bits))
 	{
-		normalizer = (float)0x7fff;
-		adsp->module_type->dsp_func = pcm_mixer_dsp_16and32bit;
+		CRITICAL_ERROR("not supported channel size");
 	}
-	else if (32 == channel_size_bits)
-	{
-		normalizer = (float)0x7fffffff;
-		adsp->module_type->dsp_func = pcm_mixer_dsp_16and32bit;
-	}
-	else
-	{
-		normalizer = 1;
-		CRITICAL_ERROR("not supported channel size 2");
-	}
-	handle->normalizer = normalizer;
 
 	if (PCM_MIXER_CHANNEL_BITS_ARE_LEFT_JUSTIFIED
 						!= set_params->channel_justification)
@@ -279,7 +291,7 @@ uint8_t pcm_mixer_ioctl(struct dsp_module_inst_t *adsp,
 extern "C" void  pcm_mixer_init(void)
 {
 	DSP_REGISTER_NEW_MODULE("pcm_mixer",
-		pcm_mixer_ioctl , pcm_mixer_dsp_default, struct pcm_mixer_instance_t);
+		pcm_mixer_ioctl , pcm_mixer_dsp_func, struct pcm_mixer_instance_t);
 }
 
 AUTO_INIT_FUNCTION(pcm_mixer_init);
