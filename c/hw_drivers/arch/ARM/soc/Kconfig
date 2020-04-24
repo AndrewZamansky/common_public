@@ -113,3 +113,8 @@ endif
 if GENERIC_ARM_SOC
 source "$KCONFIG_PUBLIC_START_DIR/hw_drivers/arch/ARM/soc/generic_board/Kconfig"
 endif
+
+config CORTEX_M_STACK_SIZE_BYTES
+	int   "cortex-M stack size (in bytes)"
+	depends on CORTEX_M4
+	default 1024

@@ -196,7 +196,7 @@ $(CURR_OBJ_DIR)/%.oo: $(CC_DEPS)
 
 
 ####### extract info from preprocessed files
-$(CURR_OBJ_DIR)/%.cpp.preproc: %.cpp $(ALL_DEPS) $(C_ARGS_FILE)
+$(CURR_OBJ_DIR)/%.cpp.preproc: %.cpp $(ALL_DEPS) $(CPP_ARGS_FILE)
 	$(info .    Preprocessing $<)
 	$(call mkdir_if_not_exists, $(dir $@))
 	$(CPP_PREPROCESSOR_CMD) $(CC_OUTPUT_FLAG_AND_FILE) $<
