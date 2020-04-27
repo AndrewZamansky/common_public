@@ -11,7 +11,7 @@
 
 
 struct runtime_clk_t {
-	uint32_t          rate;
+	uint32_t          rate;// if 0 then take rate from parent
 	struct dev_desc_t  *parent_clk;
 	uint8_t init_done;
 };

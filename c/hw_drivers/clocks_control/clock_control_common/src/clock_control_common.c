@@ -34,7 +34,10 @@ static void get_root_clock(struct dev_desc_t *adev,
 	*root_clk_dev = adev;
 }
 
-
+/* function: get_rate()
+ * using DEV_IOCTL because it contains additional checks (for example if
+ * parent clock was initialized)
+ */
 static void get_rate(struct cfg_clk_t *cfg_clk,
 		struct runtime_clk_t *runtime_data, struct dev_desc_t  *parent_clk,
 		uint32_t *rate)
