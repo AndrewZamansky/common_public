@@ -262,9 +262,9 @@ void  NVIC_API_Init(void)
 	}
 #if (1 == CONFIG_CORTEX_M3 ) && (__CM3_REV < 0x0201)  /* core<r2p1 */
     /*set base to start of RAM*/
+	// make sure that in cortex-m3 with revision < r2p1 bit 29 is 1
     SCB->VTOR = RAM_START_ADDR & SCB_VTOR_TBLBASE_Msk;
 #elif (1 == CONFIG_CORTEX_M4)
-	// make sure that in cortex-m3 with revision < r2p1 bit 29 is 1
 	SCB->VTOR = RAM_START_ADDR;
 #endif
 
