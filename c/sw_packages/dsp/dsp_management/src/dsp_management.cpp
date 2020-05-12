@@ -456,27 +456,23 @@ static void create_inter_module_link(
 					&src_dsp->out_pads, input_pad_desc->src_output_pad_num);
 
 			pad_type = p_curr_out_pad_of_source->pad_type;
-			if ( (!run_for_allocation_only) &&
-				(DSP_OUT_PAD_TYPE_NOT_USED != pad_type) &&
-				(DSP_OUT_PAD_TYPE_NORMAL != pad_type) )
-			{
-				CRITICAL_ERROR("source pad already used");
-				//CRITICAL_ERROR("src pad already connected to chain output");
-			}
-
 			pad_type = DSP_OUT_PAD_TYPE_NORMAL;
 		}
-		if (!run_for_allocation_only)
-		{
-			if (NULL != *p_curr_in_pad_of_sink)
-			{
-				CRITICAL_ERROR("sink pad already connected");
-			}
-			*p_curr_in_pad_of_sink = p_curr_out_pad_of_source;
-			p_curr_out_pad_of_source->total_registered_sinks++;
-			p_curr_out_pad_of_source->pad_type = pad_type;
-		}
+
 		input_pad_desc++;
+		if (run_for_allocation_only)
+		{
+			continue;
+		}
+
+		// run following code only if NOT run_for_allocation_only
+		if (NULL != *p_curr_in_pad_of_sink)
+		{
+			CRITICAL_ERROR("sink pad already connected");
+		}
+		*p_curr_in_pad_of_sink = p_curr_out_pad_of_source;
+		p_curr_out_pad_of_source->total_registered_sinks++;
+		p_curr_out_pad_of_source->pad_type = pad_type;
 	}
 }
 
@@ -521,25 +517,28 @@ static void create_module_to_chain_out_link( struct dsp_chain_t *p_chain,
 			pad_type = DSP_PAD_TYPE_CHAIN_OUTPUT_BUFFER;
 		}
 
-		if (!run_for_allocation_only)
-		{
-			if (NULL != *p_curr_in_pad_of_sink)
-			{
-				CRITICAL_ERROR("sink pad already connected");
-			}
-			*p_curr_in_pad_of_sink = p_curr_out_pad_of_source;
-			p_curr_out_pad_of_source->total_registered_sinks++;
-			if (DSP_OUT_PAD_TYPE_NOT_USED != p_curr_out_pad_of_source->pad_type)
-			{
-				// we can set only 1 link from src module pad to chain output
-				// pad because before processing the chain, output buffer is set
-				// into p_curr_out_pad_of_source->buff, so it can be set only 1
-				// time
-				CRITICAL_ERROR("source pad already used");
-			}
-			p_curr_out_pad_of_source->pad_type = pad_type;
-		}
 		input_pad_desc++;
+		if (run_for_allocation_only)
+		{
+			continue;
+		}
+
+		// run following code only if NOT run_for_allocation_only
+		if (NULL != *p_curr_in_pad_of_sink)
+		{
+			CRITICAL_ERROR("sink pad already connected");
+		}
+		*p_curr_in_pad_of_sink = p_curr_out_pad_of_source;
+		p_curr_out_pad_of_source->total_registered_sinks++;
+		if (DSP_OUT_PAD_TYPE_NOT_USED != p_curr_out_pad_of_source->pad_type)
+		{
+			// we can set only 1 link from src module pad to chain output
+			// pad because before processing the chain, output buffer is set
+			// into p_curr_out_pad_of_source->buff, so it can be set only 1
+			// time
+			CRITICAL_ERROR("source pad already used");
+		}
+		p_curr_out_pad_of_source->pad_type = pad_type;
 	}
 }
 
@@ -698,21 +697,25 @@ void release_unused_buffers(struct in_pads_t   *in_pads)
 
 		curr_source_out_pad = in_pads_arr[i];
 
-		if (DSP_OUT_PAD_TYPE_NORMAL == curr_source_out_pad->pad_type)
+		// skip unused and not normal pads
+		if ((NULL == curr_source_out_pad) ||
+				(DSP_OUT_PAD_TYPE_NORMAL != curr_source_out_pad->pad_type))
 		{
-			if ( 0 == curr_source_out_pad->sinks_processed_counter )
-			{
-				CRITICAL_ERROR("counter already reached zero");
-				CRITICAL_ERROR("possible cause: sink module processed before source module");
-			}
+			continue;
+		}
 
-			curr_source_out_pad->sinks_processed_counter--;
-			if (0 == curr_source_out_pad->sinks_processed_counter)
-			{
-				memory_pool_free(dsp_buffers_pool, curr_source_out_pad->buff);
-				curr_source_out_pad->buff = NULL;
-				curr_source_out_pad->buff_size = 0;
-			}
+		if ( 0 == curr_source_out_pad->sinks_processed_counter )
+		{
+			CRITICAL_ERROR("counter already reached zero");
+			CRITICAL_ERROR("possible cause: sink module processed before source module");
+		}
+
+		curr_source_out_pad->sinks_processed_counter--;
+		if (0 == curr_source_out_pad->sinks_processed_counter)
+		{
+			memory_pool_free(dsp_buffers_pool, curr_source_out_pad->buff);
+			curr_source_out_pad->buff = NULL;
+			curr_source_out_pad->buff_size = 0;
 		}
 	}
 }

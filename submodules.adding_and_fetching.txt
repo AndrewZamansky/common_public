@@ -1,12 +1,19 @@
 adding submodule
 ===============
-1)
-create new repo (WITH default readme.md [it will create first commit]) in https://github.com/AndrewZamansky-external-repo-managers/$(MODULE)_git.git
+1) create new repo
+ repository should be created in currently remote of the remote-tracking branch  OR
+ in 'orogin' remote if branch no such remote-tracking branch exists or the HEAD is detached
+ OR if none of above in
+ $(PATH_TO_COMMON_PUBLIC_LOCATION)/common_public../../AndrewZamansky-external-repo-managers/$(MODULE)_git
 
-2) (tested with only one remote  of common_public    pointing to github . TODO check --reference  argument to choose specific remote)
+ check-in first commit (for example with default readme.md )
+ for example if 'origin' is on AndrewZamansky github then submodule will be in
+ https://github.com/AndrewZamansky-external-repo-managers/$(MODULE)_git.git
+
+2) (tested with only one remote of common_public pointing to github. TODO check --reference  argument to choose specific remote)
 cd $(PATH_TO_COMMON_PUBLIC)/common_public
-git submodule add ../../AndrewZamansky-external-repo-managers/$(MODULE)_git c/sw_packages/net/$(MODULE)_git
-(e.g.   :   git submodule add ../../AndrewZamansky-external-repo-managers/openssl_git c/sw_packages/net/openssl_git )
+git submodule add ../../AndrewZamansky-external-repo-managers/$(MODULE)_git $(RELATIVE_PATH_TO_MODULE)/$(MODULE)_git
+(e.g.   :   git submodule add ../../AndrewZamansky-external-repo-managers/openssl_git c/sw_packages/net/openssl/openssl_git )
 
 
 3)
@@ -36,16 +43,16 @@ for each submodule(and ALL of them according to .gitmodules file !!) run:
 	b) clone repository.  (set ORIGIN environmantal variable. in windows we doing it by {for /f %i in ('git --git-dir $(PATH_TO_SUBMODULE_LOCATION)/$(MODULE)_git/.git remote get-url origin') do set "ORIGIN=%i"} ) :
 
 		windows)
-			cmd /v:on /c "set "MODULE=$(MODULE)"& for /f %i in ('git --git-dir c/sw_packages/net/$(MODULE)_git/.git remote get-url origin') do (set "ORIGIN=%i") & set "NEW_REPO=../../AndrewZamansky-external-repo-managers/!MODULE!_git" & rd /q /s "!NEW_REPO!" &  git clone !ORIGIN! !NEW_REPO!"
+			cmd /v:on /c "set "MODULE=$(MODULE)"& for /f %i in ('git --git-dir c/sw_packages/net/$(MODULE)/$(MODULE)_git/.git remote get-url origin') do (set "ORIGIN=%i") & set "NEW_REPO=../../AndrewZamansky-external-repo-managers/!MODULE!_git" & rd /q /s "!NEW_REPO!" &  git clone !ORIGIN! !NEW_REPO!"
 
 		linux)
 			MODULE=$(MODULE); ORIGIN=$(git remote get-url origin); NEW_REPO=../../AndrewZamansky-external-repo-managers/$MODULE_git; rm -rf $NEW_REPO; git clone $ORIGIN $NEW_REPO
 
 		example:
 			windows)
-			cmd /v:on /c "set "MODULE=curl"& for /f %i in ('git --git-dir c/sw_packages/net/curl_git/.git remote get-url origin') do (set "ORIGIN=%i") & set "NEW_REPO=../../AndrewZamansky-external-repo-managers/!MODULE!_git" & rd /q /s "!NEW_REPO!" &  git clone !ORIGIN! !NEW_REPO!"
+			cmd /v:on /c "set "MODULE=curl"& for /f %i in ('git --git-dir c/sw_packages/net/$(MODULE)/$(MODULE)_git/.git remote get-url origin') do (set "ORIGIN=%i") & set "NEW_REPO=../../AndrewZamansky-external-repo-managers/!MODULE!_git" & rd /q /s "!NEW_REPO!" &  git clone !ORIGIN! !NEW_REPO!"
 
-			cmd /v:on /c "set "MODULE=openssl"& for /f %i in ('git --git-dir c/sw_packages/net/openssl_git/.git remote get-url origin') do (set "ORIGIN=%i") & set "NEW_REPO=../../AndrewZamansky-external-repo-managers/!MODULE!_git" & rd /q /s "!NEW_REPO!" &  git clone !ORIGIN! !NEW_REPO!"
+			cmd /v:on /c "set "MODULE=openssl"& for /f %i in ('git --git-dir c/sw_packages/net/$(MODULE)/$(MODULE)_git/.git remote get-url origin') do (set "ORIGIN=%i") & set "NEW_REPO=../../AndrewZamansky-external-repo-managers/!MODULE!_git" & rd /q /s "!NEW_REPO!" &  git clone !ORIGIN! !NEW_REPO!"
 
 	c) create local branches according to remote branches:
 		windows)

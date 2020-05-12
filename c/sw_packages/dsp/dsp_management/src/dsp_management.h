@@ -7,11 +7,8 @@
 #ifndef _DSP_MANAGEMENT_H
 #define _DSP_MANAGEMENT_H
 
-
 #include "dsp_management_api.h"
 #include "dsp_management_internal_api.h"
-/***************   typedefs    *******************/
-
 
 enum DSP_CHAIN_STATE_e {
 	DSP_CHAIN_STATE__UNKNOWN = 0,
