@@ -45,12 +45,22 @@ $(call mkdir_if_not_exists, $(MAKE_TEMPORARY_FILES_DIR))
 PROJECT_CONFIG_H_FILE := $(AUTO_GENERATED_FILES_DIR)/project_config.h
 SCAN_DIRS_FOR_CONFIG_FILES = $(APP_ROOT_DIR) $(PUBLIC_SW_PACKAGES_DIR)
 SCAN_DIRS_FOR_CONFIG_FILES += $(PUBLIC_DRIVERS_DIR)
+
 ifeq ($(strip $(CONFIG_USE_COMMON_PRIVATE_PACKAGES)),y)
     SCAN_DIRS_FOR_CONFIG_FILES += $(COMMON_PRIVATE_DIR)/c
 endif
 
 KCONFIG_PUBLIC_START_DIR :=$(COMMON_PUBLIC_DIR)/c
-KCONFIG_PRIVATE_START_DIR :=$(COMMON_PRIVATE_DIR)/c
+
+# if common_prvate was not selected before, then selecting it in menuconfig
+# will require to restart menuconfig because correct git commit of
+# common_private will be needed to checkout anyway, and all kconfig tree
+# will need to be rebuilt
+ifeq ($(strip $(CONFIG_USE_COMMON_PRIVATE_PACKAGES)),y)
+    KCONFIG_PRIVATE_START_DIR :=$(COMMON_PRIVATE_DIR)/c
+else
+    KCONFIG_PRIVATE_START_DIR :=$(KCONFIG_DUMMY)
+endif
 
 menuconfig: $(PROJECT_KCONFIG)
 	$(eval export KCONFIG_PUBLIC_START_DIR)
