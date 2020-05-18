@@ -1,5 +1,9 @@
 menu "GCC options"
 
+config GCC_VERSION
+    string "gcc version (leave empty if don't care)"
+    default ""
+
 
 ##### ARM  #########
 if ARM

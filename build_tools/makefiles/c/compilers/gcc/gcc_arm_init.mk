@@ -40,6 +40,18 @@ endif
 include $(MAKEFILES_ROOT_DIR)/_include_functions/tool_existence_check.mk
 ####### end of tool existence test #####
 
+GCC_VERSION :=$(patsubst "%",%,$(CONFIG_GCC_VERSION))
+# if vesrion not define then ignore it
+ifneq ($(GCC_VERSION),)
+    SHELL_OUT :=$(shell \
+            $(GCC_ROOT_DIR)/bin/$(GNU_COMPILATION_PREFIX)-gcc --version)
+    ifneq ($(findstring $(GCC_VERSION),$(SHELL_OUT)),$(GCC_VERSION))
+        $(info err:  wrong version of gcc. required version: $(GCC_VERSION))
+        $(info ---: gcc folder: $(GCC_ROOT_DIR))
+        $(info ---: 'gcc --version' result : $(SHELL_OUT))
+        $(call exit,1)
+    endif
+endif
 
 ifndef CONFIG_OPTIMIZE_LEVEL
     CONFIG_OPTIMIZE_LEVEL :=O0
