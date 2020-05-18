@@ -2,16 +2,23 @@
 ifeq ($(sort $(CONFIG_FREE_RTOS)),y)
 	INCLUDE_THIS_COMPONENT := y
 
-    FREE_RTOS_VERSION :=$(patsubst "%",%,$(CONFIG_FREE_RTOS_VERSION))
-    FREE_RTOS_PATH :=$(EXTERNAL_SOURCE_ROOT_DIR)/FreeRTOSv$(FREE_RTOS_VERSION)
+    FREE_RTOS_PATH :=$(EXTERNAL_SOURCE_ROOT_DIR)/FreeRTOS
     ifeq ("$(wildcard $(FREE_RTOS_PATH))","")
         $(info  )
-        $(info !--- freeRTOS path $(FREE_RTOS_PATH) dont exists)
-        $(info !--- download freeRTOS version $(FREE_RTOS_VERSION) and unpack it to $(FREE_RTOS_PATH))
-        $(info !--- make sure that file Quick_Start_Guide is located in $(FREE_RTOS_PATH)/  after unpacking)
+        $(info !--- freeRTOS path $(FREE_RTOS_PATH) does not exists)
+        $(info !--- download freeRTOS version $(FREE_RTOS_VERSION) and)
+        $(info !--- unpack it to $(FREE_RTOS_PATH))
+        $(info !--- make sure that .git directory is)
+        $(info !--- located in $(FREE_RTOS_PATH)/  after unpacking)
         $(info  )
         $(error )
     endif
+
+    # test if current commit and branch of uboot git is the same
+    # as required by application
+    CURR_GIT_REPO_DIR :=$(FREE_RTOS_PATH)
+    CURR_GIT_COMMIT_HASH_VARIABLE :=CONFIG_FREERTOS_GIT_COMMIT_HASH
+    include $(MAKEFILES_ROOT_DIR)/_include_functions/git_prebuild_repo_check.mk
 
     ifeq ("","$(filter $(FREE_RTOS_PATH),$(EXTERNAL_SRC_DIRS))")
         EXTERNAL_SRC_DIRS := $(EXTERNAL_SRC_DIRS) $(FREE_RTOS_PATH)

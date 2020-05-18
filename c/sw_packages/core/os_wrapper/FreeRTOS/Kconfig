@@ -1,9 +1,5 @@
 menu "`---> freeRTOS configurations"
 
-config FREE_RTOS_VERSION
-    string "nuc bsp version in form : xx.xx.xx"
-    default "8.0.1"
-
 if !USE_ONLY_OS_API
 
 config HEAP_SIZE
@@ -15,5 +11,9 @@ config TEST_TASK_STACK
 	default y
 
 endif
+
+config FREERTOS_GIT_COMMIT_HASH
+	string "FreeRTOS git commit hash"
+	default ""
 
 endmenu
