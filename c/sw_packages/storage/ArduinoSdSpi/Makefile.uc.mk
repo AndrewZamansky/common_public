@@ -4,13 +4,15 @@ ifeq ($(sort $(CONFIG_INCLUDE_ARDUINO_SD_SPI)),y)
 
     INCLUDE_THIS_COMPONENT := y
 
+    ARDUINO_SD_GIT :=https://github.com/Bodmer/SdFat.git
     ARDUINO_SD_SPI_PATH :=$(EXTERNAL_SOURCE_ROOT_DIR)/SdFat
-    #CURR_ARDUINO_SD_SPI_COMPONENT_LOCATION := $(patsubst %/Makefile.uc.mk,%,$(realpath $(filter %ArduinoSdSpi/Makefile.uc.mk,$(MAKEFILE_LIST))))
     ifeq ("$(wildcard $(ARDUINO_SD_SPI_PATH))","")
         $(info   )
-        $(info !--- arduino SdSpi path $(ARDUINO_SD_SPI_PATH) doesn't exists )
-        $(info !--- get SdSpi repository from https://github.com/Bodmer/SdFat.git and put it into  $(ARDUINO_SD_SPI_PATH)  )
-        $(info !--- make sure that .git directory is located in $(ARDUINO_SD_SPI_PATH)/  after unpacking   )
+        $(info !--- arduino SdSpi path $(ARDUINO_SD_SPI_PATH) does not exists)
+        $(info !--- get SdSpi repository from $(ARDUINO_SD_GIT) and)
+        $(info !--- put it into  $(ARDUINO_SD_SPI_PATH))
+        $(info !--- make sure that .git directory is)
+        $(info !--- located in $(ARDUINO_SD_SPI_PATH)/  after unpacking)
         $(error )
     endif
 

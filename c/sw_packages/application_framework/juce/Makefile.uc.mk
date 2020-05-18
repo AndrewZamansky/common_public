@@ -1,12 +1,14 @@
 
 ifeq ($(sort $(CONFIG_INCLUDE_JUCE)),y)
 
+    JUCE_GIT :=https://github.com/julianstorer/JUCE
     JUCE_PATH :=$(EXTERNAL_SOURCE_ROOT_DIR)/JUCE
     ifeq ("$(wildcard $(JUCE_PATH))","")
         $(info   )
-        $(info --- JUCE path $(JUCE_PATH) dont exists )
-        $(info --- get repo from andew zamansky or from https://github.com/julianstorer/JUCE  )
-        $(info --- make sure that .git directory is located in $(JUCE_PATH)/  after unpacking   )
+        $(info !--- JUCE path $(JUCE_PATH) does not exist)
+        $(info !--- get repo from andew zamansky or from $(JUCE_GIT))
+        $(info !--- make sure that .git directory is)
+        $(info !--- located in $(JUCE_PATH)/  after unpacking)
         $(error )
     endif
 

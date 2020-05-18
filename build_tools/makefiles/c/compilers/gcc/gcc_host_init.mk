@@ -33,8 +33,9 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
        ifndef GCC_NOT_FOUND
           TEST_GCC_ROOT_DIR 	:= 	$(TOOLS_ROOT_DIR)/gcc/MinGW-$(GCC_VERSION)
           ifeq ("$(wildcard $(TEST_GCC_ROOT_DIR))","")
-              $(info err: $(TEST_GCC_ROOT_DIR) dont exists )
-              $(info ---: (if needed you can change gcc version using menuconfig in "Building System" menu ))
+              $(info err: $(TEST_GCC_ROOT_DIR) dont exists)
+              $(info ---: (if needed you can change gcc version using)
+              $(info ---: menuconfig in "Building System" menu))
               GCC_NOT_FOUND :=1
           endif
        endif
@@ -42,11 +43,13 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
       
        ifdef GCC_NOT_FOUND
            TEST_GCC_ROOT_DIR 	:= 	$(TOOLS_ROOT_DIR)/gcc/MinGW-$(GCC_VERSION)
-           $(info err: gcc path $(TEST_GCC_ROOT_DIR) dont exists )
-           $(info ---: download gcc (tested version is $(CONFIG_GCC_VERSION)) )
+           $(info err: gcc path $(TEST_GCC_ROOT_DIR) does not exists)
+           $(info ---: download gcc (tested version is $(CONFIG_GCC_VERSION)))
            $(info ---: unpack it to $(TEST_GCC_ROOT_DIR))
-           $(info ---: make sure that mingw32 ,bin and lib  folders is located in $(TEST_GCC_ROOT_DIR)/  after unpacking   )
-           $(info ---: you can also set customized gcc path in REDEFINE_MINGW_ROOT_DIR variable in $(PARENT_OF_COMMON_PUBLIC_DIR)/workspace_config.mk )
+           $(info ---: make sure that mingw32 ,bin and lib  folders is)
+           $(info ---: located in $(TEST_GCC_ROOT_DIR)/  after unpacking)
+           $(info ---: you can also set customized gcc path in REDEFINE_MINGW_ROOT_DIR)
+           $(info ---: variable in $(PARENT_OF_COMMON_PUBLIC_DIR)/workspace_config.mk)
            $(call exit,1)
        endif
 

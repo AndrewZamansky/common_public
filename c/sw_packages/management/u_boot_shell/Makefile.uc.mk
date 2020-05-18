@@ -11,8 +11,10 @@ ifeq ($(sort $(CONFIG_INCLUDE_UBOOT_SHELL)),y)
     ifeq ("$(wildcard $(U_BOOT_PATH))","")
         $(info   )
         $(info !--- u-boot path $(U_BOOT_PATH) dont exists )
-        $(info !--- get u-boot repository from git://git.denx.de/u-boot.git $(U_BOOT_PATH))
-        $(info !--- make sure that .git directory is located in $(U_BOOT_PATH)/  after unpacking)
+        $(info !--- get u-boot repository from git://git.denx.de/u-boot.git and)
+        $(info !--- put it in $(U_BOOT_PATH))
+        $(info !--- make sure that .git directory is )
+        $(info !--- located in $(U_BOOT_PATH)/ after unpacking)
         $(error )
     endif
 
@@ -28,7 +30,11 @@ endif
 DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH ,$(CURR_COMPONENT_DIR)/include )
 DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH ,$(EXTERNAL_SOURCE_ROOT_DIR))
 
-DEFINES =
+
+# following macro was added from some gcc version (at least from 9.2)
+# defining it will open typdefs like ulong
+DEFINES = _GNU_SOURCE
+
 CFLAGS =
 
 ifdef CONFIG_GPP

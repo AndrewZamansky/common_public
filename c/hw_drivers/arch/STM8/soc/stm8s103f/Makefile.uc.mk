@@ -3,9 +3,11 @@ ifeq ($(sort $(CONFIG_STM8)),y)
 
 	BSP_STM8S_PATH :=$(EXTERNAL_SOURCE_ROOT_DIR)/ST/stm8s-periphs
     ifeq ("$(wildcard $(BSP_STM8S_PATH))","")
-        $(info STM8 BSP path $(BSP_STM8S_PATH) dont exists )
-        $(info download STM8 BSP (stm8s-periphs) and unpack it to $(BSP_STM8S_PATH)  )
-        $(info make sure inc and src  folders is located in $(BSP_STM8S_PATH)/  after unpacking   )
+        $(info !--- STM8 BSP path $(BSP_STM8S_PATH) does not exist)
+        $(info !--- download STM8 BSP 'stm8s-periphs' and)
+        $(info !--- unpack it to $(BSP_STM8S_PATH))
+        $(info !--- make sure 'inc' and 'src' folders is)
+        $(info !--- located in $(BSP_STM8S_PATH)/  after unpacking)
         $(error )
     endif
 

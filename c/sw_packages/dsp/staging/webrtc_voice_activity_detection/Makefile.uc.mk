@@ -5,9 +5,11 @@ ifdef CONFIG_INCLUDE_WEBRTC_VAD
     WEBRTC_PATH :=$(EXTERNAL_SOURCE_ROOT_DIR)/webrtc
     ifeq ("$(wildcard $(WEBRTC_PATH))","")
         $(info   )
-        $(info --- webrtc path $(WEBRTC_PATH) dont exists )
-        $(info --- get webrtc ported to uCProjects from Andrew Zamansky and unpack it to $(WEBRTC_PATH)  )
-        $(info --- make sure that infra directory is located in $(WEBRTC_PATH)/  after unpacking   )
+        $(info !--- webrtc path $(WEBRTC_PATH) does not exist)
+        $(info !--- get webrtc ported to uCProjects from Andrew Zamansky and)
+        $(info !--- unpack it to $(WEBRTC_PATH))
+        $(info !--- make sure that infra directory is)
+        $(info !--- located in $(WEBRTC_PATH)/  after unpacking)
         $(info ---    )
         $(error )
     endif

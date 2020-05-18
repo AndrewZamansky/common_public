@@ -13,9 +13,11 @@ ifeq ($(sort $(CONFIG_ESP8266)),y)
     endif
 
     ifeq ("$(wildcard $(SDK_ESP8266_PATH))","")
-        $(info !--- ESP8266 BSP path $(SDK_ESP8266_PATH) dont exists )
-        $(info !--- download ESP8266 SDK version $(ESP8266_SDK_VERSION) and unpack it to $(SDK_ESP8266_PATH)  )
-        $(info !--- make sure include and lib  folders is located in $(SDK_ESP8266_PATH)/  after unpacking   )
+        $(info !--- ESP8266 BSP path $(SDK_ESP8266_PATH) does not exist)
+        $(info !--- download ESP8266 SDK version $(ESP8266_SDK_VERSION) and)
+        $(info !--- unpack it to $(SDK_ESP8266_PATH))
+        $(info !--- make sure include and lib  folders is)
+        $(info !--- located in $(SDK_ESP8266_PATH)/  after unpacking)
         $(error )
     endif
 

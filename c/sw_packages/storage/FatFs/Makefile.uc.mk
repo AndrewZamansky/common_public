@@ -5,9 +5,11 @@ ifeq ($(call eval_config,$(CONFIG_INCLUDE_FAT_FS)),y)
     FAT_FS_PATH :=$(EXTERNAL_SOURCE_ROOT_DIR)/Fatfs_R$(FAT_FS_VERSION)
 
     ifeq ("$(wildcard $(FAT_FS_PATH))","")
-        $(info !--- FatFs path $(FAT_FS_PATH) doesn't exist )
-        $(info !--- download FatFs BSP version $(CONFIG_FAT_FS_VERSION) and unpack it to $(FAT_FS_PATH)  )
-        $(info !--- make sure src and doc  folders is located in $(FAT_FS_PATH)/  after unpacking   )
+        $(info !--- FatFs path $(FAT_FS_PATH) does not exist)
+        $(info !--- download FatFs BSP version $(CONFIG_FAT_FS_VERSION) and)
+        $(info !--- unpack it to $(FAT_FS_PATH))
+        $(info !--- make sure 'src' and 'doc' folders is)
+        $(info !--- located in $(FAT_FS_PATH)/  after unpacking)
         $(error )
     endif
 

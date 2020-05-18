@@ -3,12 +3,14 @@ INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_CJSON)
 
 ifeq ($(strip $(CONFIG_INCLUDE_CJSON)),y)
 
+    CJSON_GIT :=https://github.com/DaveGamble/cJSON.git
     CJSON_PATH :=$(EXTERNAL_SOURCE_ROOT_DIR)/cJSON
     ifeq ("$(wildcard $(CJSON_PATH))","")
         $(info   )
-        $(info --- cJSON path $(CJSON_PATH) dont exists )
-        $(info --- get repo from andew zamansky or from https://github.com/DaveGamble/cJSON.git)
-        $(info --- make sure that .git directory is located in $(CJSON_PATH)/  after unpacking)
+        $(info !--- cJSON path $(CJSON_PATH) does not exist)
+        $(info !--- get repo from andew zamansky or from $(CJSON_GIT))
+        $(info !--- make sure that .git directory is)
+        $(info !--- located in $(CJSON_PATH)/  after unpacking)
         $(error )
     endif
 

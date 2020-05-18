@@ -26,7 +26,6 @@ struct xMessage_t {
 static uint8_t task_is_running=0;
 
 static const char erase_seq[] = "\b \b";   /* erase sequence */
-static const char eol_seq[] = "\r\n";      /* end of line sequence */
 static char EOF_MARKER_STR[] = "\r\n~2@5\r\n";
 
 

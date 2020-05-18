@@ -5,9 +5,11 @@ ifeq ($(sort $(CONFIG_ATOM_THREADS)),y)
     ATOMTHREADS_RTOS_PATH :=$(EXTERNAL_SOURCE_ROOT_DIR)/atomthreads-1.3
     ifeq ("$(wildcard $(ATOMTHREADS_RTOS_PATH))","")
         $(info  )
-        $(info !--- atomthreads path $(ATOMTHREADS_RTOS_PATH) dont exists )
-        $(info !--- download atomthreads version 1.3 and unpack it to $(ATOMTHREADS_RTOS_PATH)  )
-        $(info !--- make sure that kernel and ports folders are located in $(ATOMTHREADS_RTOS_PATH)/  after unpacking   )
+        $(info !--- atomthreads path $(ATOMTHREADS_RTOS_PATH) does not exist)
+        $(info !--- download atomthreads version 1.3 and)
+        $(info !--- unpack it to $(ATOMTHREADS_RTOS_PATH))
+        $(info !--- make sure that kernel and ports folders are)
+        $(info !--- located in $(ATOMTHREADS_RTOS_PATH)/  after unpacking)
         $(info  )
         $(error )
     endif
@@ -16,7 +18,7 @@ ifeq ($(sort $(CONFIG_ATOM_THREADS)),y)
         EXTERNAL_SRC_DIRS := $(EXTERNAL_SRC_DIRS) $(ATOMTHREADS_RTOS_PATH)
     endif
 
-    DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH ,  $(ATOMTHREADS_RTOS_PATH)/kernel )
+    DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH, $(ATOMTHREADS_RTOS_PATH)/kernel)
     
     ifdef CONFIG_STM8
         DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH ,  $(ATOMTHREADS_RTOS_PATH)/ports/stm8 )
