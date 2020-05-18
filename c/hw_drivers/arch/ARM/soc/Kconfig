@@ -116,5 +116,5 @@ endif
 
 config CORTEX_M_STACK_SIZE_BYTES
 	int   "cortex-M stack size (in bytes)"
-	depends on CORTEX_M4
+	depends on CORTEX_M4 || CORTEX_M3 || CORTEX_M0
 	default 1024
