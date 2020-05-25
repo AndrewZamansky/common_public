@@ -32,6 +32,24 @@ static void clock_stm32f10x_xtal_enable()
 #include "clk_cntl_add_device.h"
 
 
+/***************************************/
+/********** stm32f10x_xtal_div128_clk_dev ********/
+static void stm32f10x_xtal_div128_set_freq(uint32_t freq, uint32_t parent_freq)
+{
+	if ((parent_freq / 128) != freq)
+	{
+		CRITICAL_ERROR("bad clock rate \n");
+	}
+}
+
+#define DT_DEV_NAME                stm32f10x_xtal_div128_clk_dev
+#define DT_DEV_MODULE              clk_cntl
+
+#define CLK_DT_DEFAULT_PARENT     stm32f10x_xtal_clk_dev
+#define CLK_DT_SET_FREQ_FUNC      stm32f10x_xtal_div128_set_freq
+
+#include "clk_cntl_add_device.h"
+
 
 /***************************************/
 /********** stm32f10x_hsirc_clk_dev ********/
@@ -60,6 +78,33 @@ static void clock_stm32f10x_hsirc_set_freq(uint32_t freq, uint32_t parent_freq)
 
 #include "clk_cntl_add_device.h"
 
+
+/***************************************/
+/********** stm32f10x_lsirc_clk_dev ********/
+static void clock_stm32f10x_lsirc_enable()
+{
+	/* Set LSION bit */
+	RCC->CSR |= (uint32_t)0x00000001;
+
+	// wait for hsirc ready
+	while (0 == (0x00000002 & RCC->CSR));
+}
+
+static void clock_stm32f10x_lsirc_set_freq(uint32_t freq, uint32_t parent_freq)
+{
+	if (40000 != freq)
+	{
+		CRITICAL_ERROR("bad clock rate \n");
+	}
+}
+
+#define DT_DEV_NAME               stm32f10x_lsirc_clk_dev
+#define DT_DEV_MODULE             clk_cntl
+
+#define CLK_DT_ENABLE_CLK_FUNC    clock_stm32f10x_lsirc_enable
+#define CLK_DT_SET_FREQ_FUNC      clock_stm32f10x_lsirc_set_freq
+
+#include "clk_cntl_add_device.h"
 
 /***************************************/
 /********** stm32f10x_sysclk_dev ********/
@@ -147,6 +192,37 @@ static void clock_stm32f10x_hclk_set_freq(uint32_t freq, uint32_t parent_freq)
 
 
 /***************************************/
+/********** stm32f10x_apb1_clk_dev ********/
+static void clock_stm32f10x_apb1_set_freq(uint32_t freq, uint32_t parent_freq)
+{
+	uint32_t prescaler;
+	uint32_t RCC_HCLK_Div_val;
+
+	prescaler = 1;
+	RCC_HCLK_Div_val = RCC_HCLK_Div1;
+	while (( (parent_freq / prescaler) != freq) && (16 >= prescaler))
+	{
+		prescaler *= 2;
+		RCC_HCLK_Div_val += 0x100;
+	}
+	if (16 < prescaler)
+	{
+		CRITICAL_ERROR("cannot create requested APB1 clock \n");
+	}
+	RCC_PCLK1Config( RCC_HCLK_Div_val );
+}
+
+#define DT_DEV_NAME               stm32f10x_apb1_clk_dev
+#define DT_DEV_MODULE             clk_cntl
+
+#define CLK_DT_DEFAULT_PARENT     stm32f10x_sysclk_dev
+#define CLK_DT_SET_FREQ_FUNC      clock_stm32f10x_apb1_set_freq
+
+#include "clk_cntl_add_device.h"
+
+
+
+/***************************************/
 /********** stm32f10x_apb2_clk_dev ********/
 static void clock_stm32f10x_apb2_set_freq(uint32_t freq, uint32_t parent_freq)
 {
@@ -174,6 +250,7 @@ static void clock_stm32f10x_apb2_set_freq(uint32_t freq, uint32_t parent_freq)
 #define CLK_DT_SET_FREQ_FUNC      clock_stm32f10x_apb2_set_freq
 
 #include "clk_cntl_add_device.h"
+
 
 
 /*******************************************/
@@ -208,7 +285,58 @@ static void clock_stm32f10x_adc_set_freq(uint32_t freq, uint32_t parent_freq)
 #define CLK_DT_DEFAULT_PARENT     stm32f10x_apb2_clk_dev
 #define CLK_DT_SET_FREQ_FUNC      clock_stm32f10x_adc_set_freq
 #define CLK_DT_ENABLE_CLK_FUNC    clock_stm32f10x_adc_enable
-#define CLK_DT_SET_FREQ_FUNC      clock_stm32f10x_adc_set_freq
+
+#include "clk_cntl_add_device.h"
+
+
+
+/*******************************************/
+/********** stm32f10x_pwr_clk_dev ********/
+static void clock_stm32f10x_pwr_enable()
+{
+	RCC_APB1PeriphClockCmd( RCC_APB1Periph_PWR, ENABLE );
+}
+
+#define DT_DEV_NAME               stm32f10x_pwr_clk_dev
+#define DT_DEV_MODULE             clk_cntl
+
+#define CLK_DT_ENABLE_CLK_FUNC      clock_stm32f10x_pwr_enable
+
+#include "clk_cntl_add_device.h"
+
+
+/*******************************************/
+/********** stm32f10x_rtc_clk_dev ********/
+static void clock_stm32f10x_rtc_enable()
+{
+	RCC_RTCCLKCmd(ENABLE);
+	// to access RTC, backup(BKP) plane clock should be enabled too
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_BKP, ENABLE);
+}
+
+static void clock_stm32f10x_rtc_set_parent_clk(struct dev_desc_t *parent_clk)
+{
+	RCC_BackupResetCmd(ENABLE);
+	RCC_BackupResetCmd(DISABLE);
+	if (stm32f10x_lsirc_clk_dev == parent_clk)
+	{
+		RCC_RTCCLKConfig( RCC_RTCCLKSource_LSI );
+	}
+	else if (stm32f10x_xtal_div128_clk_dev == parent_clk)
+	{
+		RCC_RTCCLKConfig( RCC_RTCCLKSource_HSE_Div128 );
+	}
+	else
+	{
+		CRITICAL_ERROR("'not implemented' or bad parent clock \n");
+	}
+}
+
+#define DT_DEV_NAME               stm32f10x_rtc_clk_dev
+#define DT_DEV_MODULE             clk_cntl
+
+#define CLK_DT_ENABLE_CLK_FUNC      clock_stm32f10x_rtc_enable
+#define CLK_DT_SET_PARENT_CLK_FUNC  clock_stm32f10x_rtc_set_parent_clk
 
 #include "clk_cntl_add_device.h"
 
@@ -230,12 +358,27 @@ static void init_clocks(struct clk_cntl_stm32f10x_cfg_t *cfg_hndl)
 				CLK_IOCTL_SET_FREQ, &cfg_hndl->hsirc_rate);
 	}
 
+	if (0 != cfg_hndl->hsirc_rate)
+	{
+		DEV_IOCTL_0_PARAMS(stm32f10x_lsirc_clk_dev, IOCTL_DEVICE_START);
+		DEV_IOCTL_0_PARAMS(stm32f10x_lsirc_clk_dev, CLK_IOCTL_ENABLE);
+		DEV_IOCTL_1_PARAMS(stm32f10x_lsirc_clk_dev,
+				CLK_IOCTL_SET_FREQ, &cfg_hndl->lsirc_rate);
+	}
+
 	if (0 != cfg_hndl->xtal_rate)
 	{
+		uint32_t xtal_rate;
+
+		xtal_rate = cfg_hndl->xtal_rate;
 		DEV_IOCTL_0_PARAMS(stm32f10x_xtal_clk_dev, IOCTL_DEVICE_START);
 		DEV_IOCTL_0_PARAMS(stm32f10x_xtal_clk_dev, CLK_IOCTL_ENABLE);
-		DEV_IOCTL_1_PARAMS(stm32f10x_xtal_clk_dev,
-				CLK_IOCTL_SET_FREQ, &cfg_hndl->xtal_rate);
+		DEV_IOCTL_1_PARAMS(
+				stm32f10x_xtal_clk_dev, CLK_IOCTL_SET_FREQ, &xtal_rate);
+		DEV_IOCTL_0_PARAMS(stm32f10x_xtal_div128_clk_dev, IOCTL_DEVICE_START);
+		xtal_rate /= 128;
+		DEV_IOCTL_1_PARAMS(
+				stm32f10x_xtal_clk_dev, CLK_IOCTL_SET_FREQ, &xtal_rate);
 	}
 
 	/* 2 wait states required on the flash. */
@@ -281,6 +424,9 @@ static void init_clocks(struct clk_cntl_stm32f10x_cfg_t *cfg_hndl)
 	DEV_IOCTL_0_PARAMS(stm32f10x_hclk_clk_dev, IOCTL_DEVICE_START);
 	DEV_IOCTL_1_PARAMS(stm32f10x_hclk_clk_dev,
 					CLK_IOCTL_SET_FREQ, &cfg_hndl->hclk_rate);
+	DEV_IOCTL_0_PARAMS(stm32f10x_apb1_clk_dev, IOCTL_DEVICE_START);
+	DEV_IOCTL_1_PARAMS(stm32f10x_apb1_clk_dev,
+			CLK_IOCTL_SET_FREQ, &cfg_hndl->apb1_rate);
 	DEV_IOCTL_0_PARAMS(stm32f10x_apb2_clk_dev, IOCTL_DEVICE_START);
 	DEV_IOCTL_1_PARAMS(stm32f10x_apb2_clk_dev,
 			CLK_IOCTL_SET_FREQ, &cfg_hndl->apb2_rate);

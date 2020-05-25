@@ -50,8 +50,6 @@ extern "C" {
 	#define DEVICE_DATA_PLACEMENT
 #endif
 
-/**********  define API  types ************/
-
 
 // Macro for adding quotes
 #define STRINGIFY(X) STRINGIFY2(X)
@@ -141,12 +139,11 @@ struct dev_param_t {
 #define MAPPED_SET_DUMMY_PARAM()   NULL , 0
 
 
-typedef enum
-{
-	PARAMS_STATUS_IDLE=0,
+enum params_status_e {
+	PARAMS_STATUS_IDLE = 0,
 	PARAMS_STATUS_CHANGED_AFTER_LAST_TEST,
 	PARAMS_STATUS_NO_CHANGED_AFTER_LAST_TEST
-}params_status_t;
+};
 
 
 struct dev_desc_t;// pre-declare dev_desc_t structure to avoid warnings
@@ -168,8 +165,7 @@ typedef uint8_t (*dev_callback_func_t)(struct dev_desc_t *adev,
 							void * aCallback_param2);
 
 
-struct dev_desc_t
-{
+struct dev_desc_t {
 #if defined(CONFIG_USE_DEVICE_NAME_STRINGS)
 	char                 *dev_name;
 #endif
@@ -183,8 +179,7 @@ struct dev_desc_t
 
 
 
-struct included_module_t
-{
+struct included_module_t {
 	char                 *module_name;
 	dev_ioctl_func_t     ioctl;
 	dev_pwrite_func_t    pwrite;
@@ -199,7 +194,6 @@ struct included_module_t
 	void                 *magic_number;
 };
 
-/**********  define API  functions  ************/
 
 /*  get data functions
  * add 'module' parameter as protection. it will create module casting.

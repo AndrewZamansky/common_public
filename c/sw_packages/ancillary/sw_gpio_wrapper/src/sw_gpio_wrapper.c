@@ -182,7 +182,7 @@ uint8_t GPIO_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num , void * a
 	uint32_t retVal;
 	struct dev_desc_t *   server_dev = INSTANCE(aHandle)->server_dev ;
 	GPIO_Force_t forceState = INSTANCE(aHandle)->forceState ;
-	params_status_t paramStatus = INSTANCE(aHandle)->paramStatus;
+	enum params_status_e paramStatus = INSTANCE(aHandle)->paramStatus;
 
 	retVal = 0 ;
 	switch(aIoctl_num)
@@ -263,7 +263,7 @@ uint8_t GPIO_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num , void * a
 			break;
 
 		case IOCTL_TEST_PARAMS_STATUS :
-			*((params_status_t*)aIoctl_param1 )= paramStatus;
+			*((enum params_status_e*)aIoctl_param1 )= paramStatus;
 			if(PARAMS_STATUS_CHANGED_AFTER_LAST_TEST == paramStatus)
 			{
 				INSTANCE(aHandle)->paramStatus = PARAMS_STATUS_NO_CHANGED_AFTER_LAST_TEST;

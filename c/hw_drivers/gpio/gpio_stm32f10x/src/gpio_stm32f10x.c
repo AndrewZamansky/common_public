@@ -206,8 +206,8 @@ static void stop_gpio(struct dev_desc_t *adev,
  *
  * return:
  */
-uint8_t gpio_stm32f10x_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
-		, void * aIoctl_param1 , void * aIoctl_param2)
+uint8_t gpio_stm32f10x_ioctl( struct dev_desc_t *adev,
+		const uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2)
 {
 	struct gpio_stm32f10x_config_t *config_handle;
 	struct gpio_stm32f10x_runtime_t *runtime_handle;

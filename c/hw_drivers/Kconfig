@@ -73,6 +73,18 @@ config INCLUDE_INTERNAL_TIMER
 			XTENSA_SIM || XTENSA_FPGA_SIM || I96XXX_HIFI3
 	default n
 
+config INCLUDE_INTERNAL_RTC
+	bool   "internal rtc"
+	depends on (STM32F10X && INCLUDE_INTERNAL_POWER_MANAGEMENT)
+	default n
+
+
+config INCLUDE_INTERNAL_POWER_MANAGEMENT
+	bool   "internal power management"
+	depends on STM32F10X
+	default n
+
+
 config INCLUDE_INTERNAL_FLASH
 	bool   "internal flash"
 	depends on STM32F10X || I94XXX
@@ -180,7 +192,11 @@ config INCLUDE_HW_TIMER
 
 config INCLUDE_GPIO
 	def_bool  y
-	depends on INCLUDE_INTERNAL_GPIO 
+	depends on INCLUDE_INTERNAL_GPIO
+
+config INCLUDE_RTC
+	def_bool  y
+	depends on INCLUDE_INTERNAL_RTC
 
 config INCLUDE_FLASH_WRAPPER
 	def_bool  y

@@ -36,7 +36,7 @@ typedef struct GPIO_Instance_t_{
 	struct dev_desc_t * server_dev;
 	GPIO_Force_t forceState;
 	GPIO_OutputBehavior_t  outputBehavior;
-	params_status_t paramStatus;
+	enum params_status_e paramStatus;
 } GPIO_Instance_t;
 
 
