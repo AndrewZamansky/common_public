@@ -198,6 +198,10 @@ config INCLUDE_RTC
 	def_bool  y
 	depends on INCLUDE_INTERNAL_RTC
 
+config INCLUDE_POWER_MANAGEMENT
+	def_bool  y
+	depends on INCLUDE_INTERNAL_POWER_MANAGEMENT
+
 config INCLUDE_FLASH_WRAPPER
 	def_bool  y
 	depends on INCLUDE_INTERNAL_FLASH

@@ -3,10 +3,6 @@
  *   file  :  GPIO_STM32F10x.c
  *
  */
-
-
-
-/***************   includes    *******************/
 #include "stm32f10x_gpio.h"
 #include "gpio_api.h"
 #include "gpio_stm32f10x_api.h"
@@ -16,19 +12,8 @@
 
 
 
-
-/***************   defines    *******************/
 #define GPIO_STM32F10x_MAX_NUM_OF_GPIOS 3
 
-
-
-/***************   typedefs    *******************/
-
-/**********   external variables    **************/
-
-
-
-/***********   local variables    **************/
 
 static GPIO_TypeDef  *ports[] = {GPIOA, GPIOB, GPIOC};
 
