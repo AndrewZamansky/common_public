@@ -63,7 +63,6 @@ static void init_adc(struct dev_desc_t *adev,
 	ADC_StructInit(&lADC_InitStruct);
 	lADC_InitStruct.ADC_ExternalTrigConv = ADC_ExternalTrigConv_None;
 	ADC_Init(ADC1, &lADC_InitStruct);
-	ADC_RegularChannelConfig(ADC1, channel, 1, ADC_SampleTime_239Cycles5);
 
 	ADC_Cmd(ADC1, ENABLE); // first write to ADC1 will power-up adc
 
@@ -97,6 +96,8 @@ uint8_t adc_stm32f10x_ioctl(struct dev_desc_t *adev,
 	switch(aIoctl_num)
 	{
 	case IOCTL_ADC_GET_CURRENT_VALUE_mV :
+		ADC_RegularChannelConfig(
+				ADC1, config_handle->channel, 1, ADC_SampleTime_239Cycles5);
 		ADC_Cmd(ADC1, ENABLE);
 
 		while (RESET == ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC))
