@@ -16,3 +16,8 @@ char __os_flag = 1;
 void os_start_arch_related_components()
 {
 }
+
+
+void os_sleep_arch_related_components()
+{
+}

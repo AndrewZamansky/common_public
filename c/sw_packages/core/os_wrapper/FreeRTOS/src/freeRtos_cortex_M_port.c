@@ -31,3 +31,11 @@ void os_start_arch_related_components()
 {
 	irq_register_interrupt(PendSV_IRQn_local , xPortPendSVHandler);
 }
+
+
+void os_sleep_arch_related_components()
+{
+	__asm volatile( "dsb" ::: "memory" );
+	__asm volatile( "wfi" );
+	__asm volatile( "isb" );
+}

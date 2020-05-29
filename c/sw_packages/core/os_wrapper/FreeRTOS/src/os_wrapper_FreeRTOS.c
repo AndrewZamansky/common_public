@@ -22,6 +22,7 @@
 #include "freertos_internal.h"
 
 extern void os_start_arch_related_components(void);
+extern void os_sleep_arch_related_components(void);
 extern void xPortSysTickHandler(void);
 
 static struct dev_desc_t * l_timer_dev = NULL;
@@ -114,6 +115,7 @@ void vApplicationIdleHook()
 		DEV_IOCTL_0_PARAMS(l_heartbeat_dev, HEARTBEAT_API_CALL_FROM_IDLE_TASK);
 	}
 #endif
+	os_sleep_arch_related_components();
 }
 
 
