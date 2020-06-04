@@ -104,7 +104,7 @@ uint8_t xtensa_internal_timers_ioctl( struct dev_desc_t *adev,
 			xt_set_interrupt_handler(XCHAL_TIMER_INTERRUPT(0),
 					 (xt_handler)xtensa_internal_timer_tick_handler, adev);
 			_xtensa_internal_timer_timer_asm_init();
-			xt_ints_on( 1 << XCHAL_TIMER_INTERRUPT(0) );
+			irq_enable_interrupt(XCHAL_TIMER_INTERRUPT(0));
 			break;
 		default:
 			CRITICAL_ERROR("not implemented yet");

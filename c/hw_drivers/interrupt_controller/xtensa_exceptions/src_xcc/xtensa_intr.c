@@ -137,24 +137,32 @@ xt_handler xt_set_interrupt_handler(int n, xt_handler f, void * arg)
 #endif
 
 
-#define UNINITIALIZED_INT_ENABLE_VALUES	0xffffffff
-static uint32_t last_intenable_val = UNINITIALIZED_INT_ENABLE_VALUES;
+static uint32_t last_intenable_val = 0;
+static uint8_t all_interrupts_blocked = 1;
+extern uint32_t _xt_intenable;
 
 void	irq_block_all(void)
 {
-	uint32_t intenable_val;
-
-	intenable_val = 0;
-	XSR(intenable_val, INTENABLE);
-	last_intenable_val = intenable_val;
+	all_interrupts_blocked = 1;
+	last_intenable_val = _xt_intenable;
+	xt_ints_off(0xffffffff);
 }
 
 void	irq_unblock_all(void)
 {
-	uint32_t intenable_val;
+	all_interrupts_blocked = 0;
+	xt_ints_on(last_intenable_val);
+}
 
-	if (UNINITIALIZED_INT_ENABLE_VALUES == last_intenable_val) return;
 
-	intenable_val = last_intenable_val;
-	XSR(intenable_val, INTENABLE);
+void irq_enable_interrupt(uint16_t int_num)
+{
+	if (all_interrupts_blocked)
+	{
+		last_intenable_val |= 1 << int_num;
+	}
+	else
+	{
+		xt_ints_on( 1 << int_num );
+	}
 }

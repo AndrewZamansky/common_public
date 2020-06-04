@@ -63,7 +63,6 @@ extern xt_handler xt_set_interrupt_handler(int n, xt_handler f, void * arg);
 	#define xt_ints_on _xtos_ints_on
 #endif
 
-#define irq_enable_interrupt(int_num)  xt_ints_on( 1 << int_num )
 
 /*
 -------------------------------------------------------------------------------
@@ -109,5 +108,6 @@ void	irq_unblock_all(void);
 /***************** block interrupts reception **************/
 void	irq_block_all(void);
 
+void irq_enable_interrupt(uint16_t int_num);
 
 #endif
