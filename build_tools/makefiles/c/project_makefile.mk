@@ -62,6 +62,10 @@ else
     KCONFIG_PRIVATE_START_DIR :=$(KCONFIG_DUMMY)
 endif
 
+GENERATE_INLUDE_COMPONENTS_MK_FILE :=\
+         $(GENERATE_PRJ_FILES_DIR)/generate_include_components_mk_file.mk
+
+
 menuconfig: $(PROJECT_KCONFIG)
 	$(eval export KCONFIG_PUBLIC_START_DIR)
 	$(eval export KCONFIG_PRIVATE_START_DIR)
@@ -77,7 +81,7 @@ $(PROJECT_KCONFIG) : $(APP_ROOT_DIR)/.config
 	$(MAKE) -r -f $(GENERATE_PRJ_FILES_DIR)/generate_project_kconfig.mk
 
 $(COMPONENTS_MK) : $(APP_ROOT_DIR)/.config
-	$(MAKE) -r -f $(GENERATE_PRJ_FILES_DIR)/generate_include_components_mk_file.mk
+	$(MAKE) -r -f $(GENERATE_INLUDE_COMPONENTS_MK_FILE)
 
 $(PROJECT_CONFIG_H_FILE) : $(APP_ROOT_DIR)/.config
 	$(MAKE) -r -f $(GENERATE_PRJ_FILES_DIR)/generate_project_config_h_file.mk
@@ -97,7 +101,13 @@ list_var:
 	$(MAKE) -f $(MAKEFILES_ROOT_DIR)/list_usful_variables.mk
 
 
-export_project : $(COMPONENTS_MK)
+clean_for_export: clean
+	$(call mkdir_if_not_exists, $(AUTO_GENERATED_FILES_DIR))
+
+generate_components_mk_for_export: clean_for_export
+	$(MAKE) -r -f $(GENERATE_INLUDE_COMPONENTS_MK_FILE)
+
+export_project: generate_components_mk_for_export
 	$(eval  ADDITIONAL_INIT_FILE :=$(MAKEFILES_ROOT_DIR)/c/init_for_c.mk)
 	$(eval export ADDITIONAL_INIT_FILE)
 	$(MAKE) -f $(MAKEFILES_ROOT_DIR)/export_project.mk export_project

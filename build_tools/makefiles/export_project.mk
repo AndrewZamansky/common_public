@@ -1,7 +1,8 @@
 
 include $(MAKEFILES_ROOT_DIR)/common.mk
 
-include $(COMPONENTS_MK)
+include $(ALL_FOUND_COMPONENTS)
+
 include $(ADDITIONAL_INIT_FILE)#should be after include of $(COMPONENTS_MK)
 
 TOOLS_DIR :=$(PARENT_OF_COMMON_PUBLIC_DIR)/../tools
@@ -88,9 +89,11 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
         $(info ---- 7zip version 16.04 found)
     else ifneq ($(findstring 17.01,$(SHELL_OUT)),)
         $(info ---- 7zip version 17.01 found)
+    else ifneq ($(findstring 18.01,$(SHELL_OUT)),)
+        $(info ---- 7zip version 18.01 found)
     else
         $(info err: unsupported version of 7zip)
-        $(info ---: install one of following versions : 16.04 17.01)
+        $(info ---: install one of following versions : 16.04 17.01 18.01)
         $(info ---: and update/remove REDEFINE_7ZIP_DIR)
         $(call exit,1)
     endif
