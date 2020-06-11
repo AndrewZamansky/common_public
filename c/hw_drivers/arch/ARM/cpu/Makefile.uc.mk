@@ -31,6 +31,10 @@ ifeq ($(IS_CORTEX_M),y)
                       $(ARM_CMSIS_PATH)/CMSIS/Core/Include)
     DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH,\
                  $(ARM_CMSIS_PATH)/CMSIS/DSP/Include)
+
+    GLOBAL_LIBS_PATH += $(ARM_CMSIS_PATH)/CMSIS/Lib/GCC
+    #in new versions of CMSIS lib path is different
+    GLOBAL_LIBS_PATH += $(ARM_CMSIS_PATH)/CMSIS/DSP/Lib/GCC
 endif
 
 

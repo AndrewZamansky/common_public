@@ -33,7 +33,7 @@ DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH ,$(EXTERNAL_SOURCE_ROOT_DIR))
 
 # following macro was added from some gcc version (at least from 9.2)
 # defining it will open typdefs like ulong
-DEFINES = _GNU_SOURCE
+DEFINES += _GNU_SOURCE
 
 CFLAGS =
 

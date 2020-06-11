@@ -24,9 +24,6 @@ VPATH = src
 ifneq ($(strip $(INCLUDE_THIS_COMPONENT)),)
     ifneq ($(and $(CONFIG_CORTEX_M4),$(CONFIG_INCLUDE_CORTEX_M_FPU)),)
         GLOBAL_LIBS += libarm_cortexM4lf_math.a
-        GLOBAL_LIBS_PATH += $(ARM_CMSIS_PATH)/CMSIS/Lib/GCC
-        #in new versions of CMSIS lib path is different
-        GLOBAL_LIBS_PATH += $(ARM_CMSIS_PATH)/CMSIS/DSP/Lib/GCC
     endif
 endif
 
