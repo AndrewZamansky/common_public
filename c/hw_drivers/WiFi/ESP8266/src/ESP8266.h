@@ -19,15 +19,8 @@
 #define ESP8266_MAX_SSID_PSWRD_LEN  32
 
 
-struct esp8266_cfg_t {
-	struct dev_desc_t *   timer_dev;
-	struct dev_desc_t *   uart_rx_dev;
-	struct dev_desc_t *  uart_tx_dev;
-	struct dev_desc_t *  uart_dev;
-};
 
-typedef enum
-{
+enum ESP8266_State_e {
 	ESP8266_State_InitialHandShake,
 	ESP8266_State_StartResetting,
 	ESP8266_State_Resetting,
@@ -57,11 +50,11 @@ typedef enum
 	ESP8266_State_Wait_For_Socket_Status,
 	ESP8266_State_Wait_For_Socket_Status_Complete,
 	ESP8266_State_Idle,
-} ESP8266_State_t;
+};
 
 
 struct esp8266_socket_t {
-	struct dev_desc_t* client_device;
+	os_queue_t  wake_queue;
 	uint8_t   socket_number;
 	uint8_t   socket_in_use;
 	uint8_t*  recvedData;
@@ -72,12 +65,13 @@ struct esp8266_socket_t {
 };
 
 
-typedef enum { DATA_FROM_UART,
+enum esp8266_message_type_e {
+	DATA_FROM_UART,
 	CLOSE_SOCKET, SEND_DATA,
 	OPEN_SOCKET , CONNECT_SOCKET, GET_IP ,
 	GET_OPEN_CONNECTION_STATUS , CHECK_IF_RECEIVED_DATA ,
 	GET_RECEIVED_DATA
-} esp8266_message_type_t;
+};
 
 
 struct esp8266_msg_data_from_uart_t {
@@ -86,7 +80,7 @@ struct esp8266_msg_data_from_uart_t {
 
 
 struct esp8266_msg_close_socket_t {
-	struct dev_desc_t * socket_pdev;
+	struct esp8266_socket_t *socket_handle;
 };
 
 
@@ -98,26 +92,26 @@ struct esp8266_msg_getIP_t {
 
 struct esp8266_msg_send_data_to_socket_t
 {
-	struct dev_desc_t * socket_pdev;
+	struct esp8266_socket_t *socket_handle;
 	const uint8_t *data;
 	uint16_t data_length;
 };
 
 
 struct esp8266_msg_connect_socket_t {
-	struct dev_desc_t * socket_pdev;
+	struct esp8266_socket_t *socket_handle;
 	const char *strHostName;
 	char *port;
 };
 
 
 struct esp8266_msg_open_socket_t {
-	struct dev_desc_t * *new_socket_pdev;
+	struct esp8266_socket_t ** new_socket_handle;
 };
 
 
 struct esp8266_msg_get_open_connection_t {
-	struct dev_desc_t *  socket_pdev;
+	struct esp8266_socket_t *socket_handle;
 	char *strIP;
 	uint8_t strIPLen;
 	uint16_t *pPort;
@@ -125,13 +119,13 @@ struct esp8266_msg_get_open_connection_t {
 
 
 struct esp8266_msg_check_if_new_data_rcvd_t {
-	struct dev_desc_t *  socket_pdev;
+	struct esp8266_socket_t *socket_handle;
 	uint8_t *newDataExists;
 };
 
 
 struct esp8266_msg_get_data_received_t {
-	struct dev_desc_t *  socket_pdev;
+	struct esp8266_socket_t *socket_handle;
 	uint8_t *buffer;
 	size_t max_size;
 	size_t *size_received;
@@ -139,7 +133,7 @@ struct esp8266_msg_get_data_received_t {
 
 
 struct esp8266_message_t {
-	esp8266_message_type_t type;
+	enum esp8266_message_type_e type;
 	union
 	{
 		struct esp8266_msg_data_from_uart_t  msg_data_from_uart;
@@ -155,14 +149,13 @@ struct esp8266_message_t {
 };
 
 
-struct esp8266_runtime_t{
+struct esp8266_runtime_t {
 	os_queue_t  main_queue;
 	os_queue_t  end_of_msg_queue;
 	os_mutex_t  sendDataMutex;
-	struct dev_desc_t  sockets_descriptors[ESP8266_MAX_NUM_OF_SOCKETS];
 	struct esp8266_socket_t  sockets[ESP8266_MAX_NUM_OF_SOCKETS];
-	ESP8266_State_t  returnFromDataReceiveState;
-	ESP8266_State_t  currentState ;
+	enum ESP8266_State_e  returnFromDataReceiveState;
+	enum ESP8266_State_e  currentState ;
 	size_t  leftDataToReceive;
 	struct esp8266_message_t  pendingMessage;
 	size_t  last_tested_length;
@@ -181,5 +174,6 @@ struct esp8266_runtime_t{
 	uint8_t  need_to_reset;
 	uint32_t  interface_device_speed;
 };
+SET_RUNTIME_DATA_TYPE(ESP8266, struct esp8266_runtime_t);
 
-#endif /* */
+#endif

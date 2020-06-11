@@ -14,11 +14,18 @@
 
 static int  esp8266_closesocket(void* socketfd)
 {
-	struct dev_desc_t * socket_dev;
+	struct esp8266_socket_t  *socket_handle;
+	struct esp8266_message_t  queueMsg;
+	struct esp8266_runtime_t *esp8266_runtime_hndl;
 	uint8_t retVal;
 
-	socket_dev = (struct dev_desc_t *)socketfd;
-	retVal = DEV_IOCTL_0_PARAMS(socket_dev , IOCTL_ESP8266_SOCKET_CLOSE);
+	socket_handle = (struct esp8266_socket_t  *)socketfd;
+	esp8266_runtime_hndl =
+			DEV_GET_RUNTIME_DATA_POINTER(ESP8266, socket_handle->esp8266_dev);
+
+	queueMsg.type = CLOSE_SOCKET;
+	queueMsg.msg_data.msg_close_socket.socket_handle = socket_handle;
+	retVal = send_message_and_wait(esp8266_runtime_hndl, &queueMsg);
 
 	if ( (0 != retVal) && (ESP8266_ERR_SOCKET_NOT_AVAILABLE != retVal))
 	{
@@ -31,15 +38,19 @@ static int  esp8266_closesocket(void* socketfd)
 static int esp8266_connect(void* socketfd,
 						const struct sockaddr *addr, unsigned int addrlen)
 {
-	struct dev_desc_t * socket_dev;
-	struct ESP8266_ioctl_socket_connect_t  ioctl_socket_connect;
+	struct esp8266_socket_t  *socket_handle;
+	struct esp8266_message_t  queueMsg;
+	struct esp8266_runtime_t *esp8266_runtime_hndl;
 	struct sockaddr_in   *lp_sockaddr;
 	struct  in_addr *sin_addr;
 	char addr_str[32] = {0};
 	char port_str[8] = {0};
 	uint8_t retVal;
 
-	socket_dev = (struct dev_desc_t *)socketfd;
+	socket_handle = (struct esp8266_socket_t  *)socketfd;
+	esp8266_runtime_hndl =
+			DEV_GET_RUNTIME_DATA_POINTER(ESP8266, socket_handle->esp8266_dev);
+
 	lp_sockaddr = (struct sockaddr_in   *)addr;
 	sin_addr = &(lp_sockaddr->sin_addr);
 
@@ -50,10 +61,11 @@ static int esp8266_connect(void* socketfd,
 			sin_addr->S_un.S_un_b.s_b4 );
 	snprintf((char*)port_str, 8 ,"%d",htons(lp_sockaddr->sin_port));
 
-	ioctl_socket_connect.strHostName = addr_str;
-	ioctl_socket_connect.strPort = port_str;
-	retVal = DEV_IOCTL_1_PARAMS(socket_dev,
-			IOCTL_ESP8266_SOCKET_CONNECT, &ioctl_socket_connect);
+	queueMsg.type = CONNECT_SOCKET;
+	queueMsg.msg_data.msg_connect_socket.socket_handle = socket_handle;
+	queueMsg.msg_data.msg_connect_socket.strHostName = addr_str;
+	queueMsg.msg_data.msg_connect_socket.port = port_str;
+	retVal = send_message_and_wait(esp8266_runtime_hndl, &queueMsg);
 
 	if(0 != retVal)
 	{
@@ -67,12 +79,21 @@ static int esp8266_connect(void* socketfd,
 static uint8_t esp8266_is_data_available(void* socketfd,
 											uint8_t *is_data_available)
 {
-	struct dev_desc_t * socket_dev;
+	struct esp8266_socket_t  *socket_handle;
+	struct esp8266_message_t  queueMsg;
+	struct esp8266_runtime_t *esp8266_runtime_hndl;
 
-	socket_dev = (struct dev_desc_t *)socketfd;
+	socket_handle = (struct esp8266_socket_t  *)socketfd;
+	esp8266_runtime_hndl =
+			DEV_GET_RUNTIME_DATA_POINTER(ESP8266, socket_handle->esp8266_dev);
+
 	*is_data_available = 0;
-	return DEV_IOCTL_1_PARAMS(socket_dev,
-			IOCTL_ESP8266_SOCKET_IS_DATA_RECEIVED, is_data_available);
+	queueMsg.type = CHECK_IF_RECEIVED_DATA;
+	queueMsg.msg_data.msg_check_if_new_data_received.socket_handle =
+															socket_handle;
+	queueMsg.msg_data.msg_check_if_new_data_received.newDataExists =
+														is_data_available;
+	return send_message_and_wait(esp8266_runtime_hndl, &queueMsg);
 
 }
 
@@ -80,36 +101,49 @@ static uint8_t esp8266_is_data_available(void* socketfd,
 static ssize_t esp8266_recv(void* socketfd,
 								void *buf, size_t len, int flags)
 {
-	struct dev_desc_t * socket_dev;
-	size_t size_received;
-	struct ESP8266_ioctl_data_received_t ESP8266_ioctl_data_received;
+	struct esp8266_socket_t  *socket_handle;
+	struct esp8266_message_t  queueMsg;
+	struct esp8266_runtime_t *esp8266_runtime_hndl;
 	uint8_t retVal;
-
-	CRITICAL_ERROR("TODO : change to be blocked (like in ipc_i96xxx)");
+	size_t size_received;
+	uint32_t dummy_msg;
 
 	if (0 != flags)
 	{
 		CRITICAL_ERROR("flags != 0 not implemented yet");
 	}
 
-	socket_dev = (struct dev_desc_t *)socketfd;
-	ESP8266_ioctl_data_received.buffer = buf;
-	ESP8266_ioctl_data_received.max_size = len;
-	ESP8266_ioctl_data_received.size_received = &size_received;
-	retVal = DEV_IOCTL_1_PARAMS(socket_dev,
-			IOCTL_ESP8266_SOCKET_GET_RECEIVED_DATA ,
-			&ESP8266_ioctl_data_received);
+	socket_handle = (struct esp8266_socket_t  *)socketfd;
+	esp8266_runtime_hndl =
+			DEV_GET_RUNTIME_DATA_POINTER(ESP8266, socket_handle->esp8266_dev);
 
-	if (0 != retVal)
+
+	queueMsg.type = GET_RECEIVED_DATA;
+	queueMsg.msg_data.msg_get_data_received.socket_handle = socket_handle;
+	queueMsg.msg_data.msg_get_data_received.buffer = buf;
+	queueMsg.msg_data.msg_get_data_received.max_size = len;
+	queueMsg.msg_data.msg_get_data_received.size_received = &size_received;
+
+	size_received = 0;
+	while (0 == size_received)
 	{
-		return -1;
-	}
+		retVal = send_message_and_wait(esp8266_runtime_hndl, &queueMsg);
+		if (0 != retVal)
+		{
+			return -1;
+		}
+		if (0 == size_received) // blocking
+		{
 
+			os_queue_receive_infinite_wait(
+						socket_handle->wake_queue, &dummy_msg);
+		}
+	}
 	return size_received;
 }
 
 
-static void set_tcp_level_option(struct dev_desc_t * socket_dev,
+static void set_tcp_level_option(struct esp8266_socket_t * socket_handle,
 		int optname, const void *optval, socklen_t optlen)
 {
 	switch(optname)
@@ -122,23 +156,19 @@ static void set_tcp_level_option(struct dev_desc_t * socket_dev,
 }
 
 
-static void set_socket_level_option(struct dev_desc_t * socket_dev,
+static void set_socket_level_option(
+		struct esp8266_socket_t  *socket_handle,
 		int optname, const void *optval, socklen_t optlen)
 {
 	uint32_t socket_options;
 	uint32_t val;
 
-	DEV_IOCTL_1_PARAMS(socket_dev ,
-			IOCTL_ESP8266_SOCKET_GET_OPTIONS, &socket_options);
+	socket_options = socket_handle->socket_options;
 
 	switch(optname)
 	{
 		case SO_ERROR:
 			break;
-		case SO_KEEPALIVE:
-			// TODO : ESP32 has keep alive parameter for port, ESP8266 doesn't
-			break;
-
 		default:
 			CRITICAL_ERROR("this socket option is not implemented yet");
 	}
@@ -154,23 +184,23 @@ static void set_socket_level_option(struct dev_desc_t * socket_dev,
 
 	socket_options &= ~(1 << optname);
 	socket_options |= (val << optname);
-	DEV_IOCTL_1_PARAMS(socket_dev,
-			IOCTL_ESP8266_SOCKET_SET_OPTIONS, &socket_options);
+	socket_handle->socket_options = socket_options;
 }
+
 
 static int esp8266_setsockopt(void* socketfd,
 		int level, int optname, const void *optval, socklen_t optlen)
 {
-	struct dev_desc_t * socket_dev;
+	struct esp8266_socket_t  *socket_handle;
 
-	socket_dev = (struct dev_desc_t *)socketfd;
+	socket_handle = (struct esp8266_socket_t  *)socketfd;
 	switch(level)
 	{
 	case SOL_SOCKET:
-		set_socket_level_option(socket_dev, optname, optval, optlen);
+		set_socket_level_option(socket_handle, optname, optval, optlen);
 		break;
 	case IPPROTO_TCP:
-		set_tcp_level_option(socket_dev, optname, optval, optlen);
+		set_tcp_level_option(socket_handle, optname, optval, optlen);
 		break;
 
 	default:
@@ -194,26 +224,31 @@ static int esp8266_bind(void* socketfd,
 static int esp8266_getpeername(void* socketfd,
 				struct sockaddr *addr, socklen_t *addrlen)
 {
-	struct dev_desc_t * socket_dev;
+	struct esp8266_socket_t  *socket_handle;
+	struct esp8266_message_t  queueMsg;
+	struct esp8266_runtime_t *esp8266_runtime_hndl;
 	struct sockaddr_in   *lp_sockaddr;
 	struct  in_addr *sin_addr;
 	char *ipAddrStr;
 	char ipAddr[20] = {0};
 	uint8_t retVal;
-	struct ESP8266_ioctl_get_conn_status_t	ioctl_socket_get_open_connection;
 	uint16_t port;
 
-	socket_dev = (struct dev_desc_t *)socketfd;
-	lp_sockaddr = (struct sockaddr_in   *)addr;
-	sin_addr = &(lp_sockaddr->sin_addr);
+	socket_handle = (struct esp8266_socket_t  *)socketfd;
+	esp8266_runtime_hndl =
+			DEV_GET_RUNTIME_DATA_POINTER(ESP8266, socket_handle->esp8266_dev);
 
-	ioctl_socket_get_open_connection.strIP = ipAddr;
-	ioctl_socket_get_open_connection.strIPLen = sizeof(ipAddr) - 1 ;
-	ioctl_socket_get_open_connection.pPort = &port;
-	retVal = DEV_IOCTL_1_PARAMS(socket_dev ,
-			IOCTL_ESP8266_SOCKET_GET_OPEN_CONNECTION_STATUS ,
-			&ioctl_socket_get_open_connection);
+	queueMsg.type = GET_OPEN_CONNECTION_STATUS;
+	queueMsg.msg_data.msg_get_open_connection.socket_handle = socket_handle;
+	queueMsg.msg_data.msg_get_open_connection.strIP = ipAddr;
+	queueMsg.msg_data.msg_get_open_connection.strIPLen = sizeof(ipAddr) - 1;
+	queueMsg.msg_data.msg_get_open_connection.pPort = &port;
+	retVal = send_message_and_wait(esp8266_runtime_hndl, &queueMsg);
+
 	if (0 != retVal) return 1 ;
+
+	lp_sockaddr = (struct sockaddr_in *)addr;
+	sin_addr = &(lp_sockaddr->sin_addr);
 
 	ipAddrStr = ipAddr;
 	sin_addr->S_un.S_un_b.s_b1 = atoi(ipAddrStr);
@@ -240,8 +275,10 @@ static int esp8266_getpeername(void* socketfd,
 static ssize_t esp8266_send(void* socketfd,
 						const void *buffer, size_t length, int flags)
 {
-	struct dev_desc_t * socket_dev;
-	size_t ret_length;
+	struct esp8266_socket_t  *socket_handle;
+	struct esp8266_message_t  queueMsg;
+	struct esp8266_runtime_t *esp8266_runtime_hndl;
+	uint8_t retVal;
 
 	if (0 == length)
 	{
@@ -252,24 +289,33 @@ static ssize_t esp8266_send(void* socketfd,
 		CRITICAL_ERROR("flags != 0 not implemented yet");
 	}
 
-	socket_dev = (struct dev_desc_t *)socketfd;
-	ret_length = DEV_WRITE(socket_dev , buffer , length) ;
-	if(0 == ret_length)
+	socket_handle = (struct esp8266_socket_t  *)socketfd;
+	esp8266_runtime_hndl =
+			DEV_GET_RUNTIME_DATA_POINTER(ESP8266, socket_handle->esp8266_dev);
+
+	queueMsg.type = SEND_DATA;
+	queueMsg.msg_data.msg_send_data_to_socket.socket_handle = socket_handle;
+	queueMsg.msg_data.msg_send_data_to_socket.data = buffer;
+	queueMsg.msg_data.msg_send_data_to_socket.data_length = length;
+	retVal = send_message_and_wait(esp8266_runtime_hndl, &queueMsg);
+	if(0 == retVal)
 	{
+		// temporary trap
 		CRITICAL_ERROR(" return length on send is 0");
 	}
-	return ret_length;
+	return length;
 }
 
 
-static int esp8266_listen(int sockfd, int backlog)
+static int esp8266_listen(void * sockfd, int backlog)
 {
 	CRITICAL_ERROR("esp8266_listen not implemented yet");
 	return 0;
 }
 
 
-static int esp8266_accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen)
+static int esp8266_accept(
+		void * sockfd, struct sockaddr *addr, socklen_t *addrlen)
 {
 	CRITICAL_ERROR("esp8266_accept not implemented yet");
 	return 0;
@@ -279,25 +325,28 @@ static int esp8266_accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen)
 #define MAX_ADDR_LEN  20
 
 static int esp8266_getsockname(
-		int socketfd, struct sockaddr *local_addr, socklen_t *addrlen)
+		void * socketfd, struct sockaddr *local_addr, socklen_t *addrlen)
 {
-	struct dev_desc_t * socket_dev;
+	struct esp8266_socket_t  *socket_handle;
+	struct esp8266_message_t  queueMsg;
+	struct esp8266_runtime_t *esp8266_runtime_hndl;
 	struct sockaddr_in   *lp_sockaddr;
 	struct  in_addr *sin_addr;
 	char *ipAddrStr;
 	char ipAddr[MAX_ADDR_LEN] = {0};
 	uint8_t retVal;
-	struct ioctl_net_device_get_local_addr_t ioctl_net_device_get_local_addr;
 
-	socket_dev = (struct dev_desc_t *)socketfd;
+	socket_handle = (struct esp8266_socket_t  *)socketfd;
+	esp8266_runtime_hndl =
+			DEV_GET_RUNTIME_DATA_POINTER(ESP8266, socket_handle->esp8266_dev);
+
 	lp_sockaddr = (struct sockaddr_in *)local_addr;
 	sin_addr = &(lp_sockaddr->sin_addr);
 
-
-	ioctl_net_device_get_local_addr.addr_str = ipAddr;
-	ioctl_net_device_get_local_addr.addr_str_len = MAX_ADDR_LEN - 1 ;
-	retVal = DEV_IOCTL_1_PARAMS(socket_dev,
-			IOCTL_NET_DEVICE_GET_LOCAL_ADDR , &ioctl_net_device_get_local_addr);
+	queueMsg.type = GET_IP;
+	queueMsg.msg_data.msg_getIP.IPstr = ipAddr;
+	queueMsg.msg_data.msg_getIP.strIPLen = MAX_ADDR_LEN - 1;
+	retVal = send_message_and_wait(esp8266_runtime_hndl, &queueMsg);
 	if (0 != retVal) return 1 ;
 
 	ipAddrStr = ipAddr;
@@ -315,10 +364,11 @@ static int esp8266_getsockname(
 	ipAddrStr++;
 	sin_addr->S_un.S_un_b.s_b4 = atoi(ipAddrStr);
 
-	lp_sockaddr->sin_port = htons(ioctl_net_device_get_local_addr.port);
+	lp_sockaddr->sin_port = htons(0xffff);// TODO : implement read of port
+	return 0;
 }
 
-static uint8_t __fill_socket_functions(struct file_desc_ops_t* p_file_desc_ops)
+static void __fill_socket_functions(struct file_desc_ops_t* p_file_desc_ops)
 {
 	p_file_desc_ops->closesocket_func = esp8266_closesocket;
 	p_file_desc_ops->connect_func = esp8266_connect;
@@ -347,7 +397,8 @@ static uint8_t open_socket(struct dev_desc_t *adev,
 		case AF_INET:
 			break;
 		default:
-			PRINTF_DBG("socket_family = %d\n", socket_open_s->socket_family);
+			PRINTF_DBG("socket_family = %d\n",
+					new_socket_descriptor->socket_family);
 			CRITICAL_ERROR("this socket family not implemented yet");
 	}
 
@@ -369,7 +420,7 @@ static uint8_t open_socket(struct dev_desc_t *adev,
 	}
 
 	ioctl_socket_open.new_socket_descriptor =
-					(struct dev_desc_t **)&new_socket_descriptor->internal_desc;
+								&new_socket_descriptor->internal_desc;
 	retVal = DEV_IOCTL_1_PARAMS(
 			adev, IOCTL_ESP8266_SOCKET_OPEN , &ioctl_socket_open);
 	if (0 != retVal)

@@ -189,8 +189,8 @@ struct included_module_t {
 	struct dev_param_t   const *config_params_arr;
 	uint8_t              size_of_config_params_arr;
 #endif
-	uint8_t              module_config_struct_size;
-	uint8_t              module_runtime_struct_size;
+	size_t              module_config_struct_size;
+	size_t              module_runtime_struct_size;
 	void                 *magic_number;
 };
 

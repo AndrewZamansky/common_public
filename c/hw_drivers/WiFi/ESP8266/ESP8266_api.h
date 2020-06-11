@@ -27,47 +27,29 @@ enum ESP8266_err_code_e {
 };
 
 enum ESP8266_API_ioctl_e {
-	IOCTL_ESP8266_SET_CHIP_TYPE = IOCTL_LAST_COMMON_IOCTL+1,
+	IOCTL_ESP8266_SET_CHIP_TYPE = IOCTL_LAST_COMMON_IOCTL + 1,
 	IOCTL_ESP8266_SET_SSID_NAME,
 	IOCTL_ESP8266_SET_SSID_PSWRD,
 	IOCTL_ESP8266_SET_SSID_NAME_REDANDENCY,
 	IOCTL_ESP8266_SET_SSID_PSWRD_REDANDENCY,
 	IOCTL_ESP8266_SET_SERVER_DEVICE,
-	IOCTL_ESP8266_SOCKET_CLOSE,
-	IOCTL_ESP8266_SOCKET_OPEN,
-	IOCTL_ESP8266_SOCKET_CONNECT,
-	IOCTL_ESP8266_SOCKET_IS_DATA_RECEIVED,
-	IOCTL_ESP8266_SOCKET_GET_RECEIVED_DATA,
-	IOCTL_ESP8266_SOCKET_GET_OPEN_CONNECTION_STATUS,
-	IOCTL_ESP8266_SOCKET_SET_OPTIONS,
-	IOCTL_ESP8266_SOCKET_GET_OPTIONS
+	IOCTL_ESP8266_SOCKET_OPEN
 };
 
 
 struct ESP8266_ioctl_socket_open_t {
-	struct dev_desc_t **  new_socket_descriptor;
+	void ** new_socket_descriptor;
 };
 
 
-struct ESP8266_ioctl_socket_connect_t {
-	const char *strHostName;
-	char *strPort;
+
+struct esp8266_cfg_t {
+	struct dev_desc_t *  timer_dev;
+	struct dev_desc_t *  uart_rx_dev;
+	struct dev_desc_t *  uart_tx_dev;
+	struct dev_desc_t *  uart_dev;
 };
-
-
-struct ESP8266_ioctl_get_conn_status_t {
-	char *strIP;
-	uint8_t strIPLen;
-	uint16_t* pPort;
-};
-
-
-struct ESP8266_ioctl_data_received_t {
-	uint8_t *buffer;
-	size_t max_size;
-	size_t *size_received;
-};
-
+SET_CONFIG_TYPE(ESP8266, struct esp8266_cfg_t);
 
 
 #ifdef  __cplusplus

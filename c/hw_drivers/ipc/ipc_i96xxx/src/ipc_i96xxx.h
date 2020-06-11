@@ -9,8 +9,7 @@
 
 #define IPC_I96XXX_MAX_NUM_OF_SOCKETS   6
 
-enum ipc_i96xxx_message_type_e
-{
+enum ipc_i96xxx_message_type_e {
 	DATA_FROM_REMOTE,
 	BIND_SOCKET,
 	LISTEN_SOCKET,

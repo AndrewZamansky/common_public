@@ -20,11 +20,5 @@ SET_STATIC_DEV_CONFIG(ipc_i96xxx) =
 /* device specific defines should be undefined
  * after calling #include "add_static_dev.h"
  */
-#undef POINTER_TO_UART_RX_PDEV
-#undef POINTER_TO_UART_TX_PDEV
 #undef POINTER_TO_TIMER_PDEV
 #undef IPC_I96XXX_DT_TIMER_PDEV
-#undef IPC_I96XXX_DT_UART_TX_DEV
-#undef IPC_I96XXX_DT_UART_RX_DEV
-#undef IPC_I96XXX_DT_UART_DEV
-#undef POINTER_TO_UART_PDEV
