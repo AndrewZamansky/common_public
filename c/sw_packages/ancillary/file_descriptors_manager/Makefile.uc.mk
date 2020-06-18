@@ -4,7 +4,9 @@ INCLUDE_THIS_COMPONENT :=y
 
 #INCLUDE_DIR =  
 
-#DEFINES = 
+# following macro was added from some gcc version (at least from 9.2)
+# defining it will open typdefs like ulong
+DUMMY := $(call ADD_TO_GLOBAL_DEFINES , _GNU_SOURCE )
 
 #CFLAGS = 
 

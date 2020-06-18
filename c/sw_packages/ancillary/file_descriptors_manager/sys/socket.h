@@ -10,6 +10,7 @@ extern "C" {
 #include <sys/types.h>
 #include "sys/time.h"
 #include "errno.h"
+#include "sys/types.h"
 
 #if defined(CONFIG_HOST)
 	#include <sys/select.h>
@@ -230,6 +231,21 @@ enum {
   IPPROTO_RAW = 255,            /* Raw IP packets                       */
 #define IPPROTO_RAW             IPPROTO_RAW
   IPPROTO_MAX
+};
+
+typedef int sa_family_t;
+
+struct in6_addr {
+   unsigned char   s6_addr[16];   /* IPv6 address */
+};
+
+
+struct sockaddr_in6 {
+	sa_family_t     sin6_family;   /* AF_INET6 */
+	in_port_t       sin6_port;     /* port number */
+	uint32_t        sin6_flowinfo; /* IPv6 flow information */
+	struct in6_addr sin6_addr;     /* IPv6 address */
+	uint32_t        sin6_scope_id; /* Scope ID (new in 2.4) */
 };
 
 
