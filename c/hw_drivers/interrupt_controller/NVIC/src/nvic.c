@@ -122,10 +122,11 @@ static volatile uint32_t R0_r, R1_r, R2_r, R3_r, R12_r, LR_r, PC_r, PSR_r;
  * return:
  */
 #if defined(__GNUC__) && !defined(__ARMCC_VERSION)
-	void IRQ_ATTR __attribute__((naked)) isr_hard_fault()
+	void IRQ_ATTR __attribute__((naked)) __attribute__((optimize("O0")))
 #elif defined(__ARMCC_VERSION)
-	IRQ_ATTR void isr_hard_fault()
+	IRQ_ATTR void
 #endif
+isr_hard_fault()
 {
 	uint32_t *stack;
 
