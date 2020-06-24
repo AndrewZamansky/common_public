@@ -1,13 +1,13 @@
 /*
  *
- *   file  :  ADC.cpp
+ *   file  :  adc_stm32f10x.cpp
  *
  */
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 #include "_project_func_declarations.h"
 
-#include "dev_management_api.h" // for device manager defines and typedefs
+#include "dev_management_api.h"
 
 #include "adc_api.h"
 #include "adc_stm32f10x_api.h"
@@ -26,32 +26,37 @@ static void init_adc(struct dev_desc_t *adev,
 {
 	ADC_InitTypeDef lADC_InitStruct;
 	uint8_t channel;
-	uint32_t  pin_control;
+	uint32_t  input_pin;
 	uint8_t  port_num;
 	uint8_t  pin_num;
 
-	channel = config_handle->channel;
-	port_num = PORT_A;
-	pin_num = channel;
-	if (9 < channel)
+	input_pin = config_handle->input_pin;
+	port_num = (input_pin & PORT_MASK) >> PORT_POS;
+	pin_num = (input_pin & PIN_MASK) >> PIN_POS;
+	switch (port_num)
 	{
-		port_num = PORT_C;
-		pin_num = channel - 10;
+	case PORT_A:
+		channel = pin_num;
+		break;
+	case PORT_B:
+		channel = pin_num + 8;
+		break;
+	case PORT_C:
+		channel = pin_num + 10;
+		break;
+	default:
+		CRITICAL_ERROR("wrong port");
+		break;
 	}
-	else if (7 < channel)
-	{
-		port_num = PORT_B;
-		pin_num = channel - 8;
-	}
+
 
 	// channel 16 it's internal ADC for temperature, so no pin
 	// channel 17 is for Vref
 	if (16 > channel)
 	{
-		pin_control = FILL_PIN_DATA(
-			port_num, pin_num, 0, DUMMY_AF_REMAP_REG, 0, 0, 0);
-		pin_control_api_set_pin_function(pin_control);
+		pin_control_api_set_pin_function(input_pin);
 	}
+	runtime_handle->channel = channel;
 
 	DEV_IOCTL_0_PARAMS(stm32f10x_adc_clk_dev, IOCTL_DEVICE_START);
 	DEV_IOCTL_1_PARAMS(stm32f10x_adc_clk_dev,
@@ -97,7 +102,7 @@ uint8_t adc_stm32f10x_ioctl(struct dev_desc_t *adev,
 	{
 	case IOCTL_ADC_GET_CURRENT_VALUE_mV :
 		ADC_RegularChannelConfig(
-				ADC1, config_handle->channel, 1, ADC_SampleTime_239Cycles5);
+				ADC1, runtime_handle->channel, 1, ADC_SampleTime_239Cycles5);
 		ADC_Cmd(ADC1, ENABLE);
 
 		while (RESET == ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC))

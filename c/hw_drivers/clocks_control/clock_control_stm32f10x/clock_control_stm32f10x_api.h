@@ -17,6 +17,7 @@ extern struct dev_desc_t  *stm32f10x_apb2_clk_dev;
 extern struct dev_desc_t  *stm32f10x_adc_clk_dev;
 extern struct dev_desc_t  *stm32f10x_rtc_clk_dev;
 extern struct dev_desc_t  *stm32f10x_pwr_clk_dev;
+extern struct dev_desc_t  *stm32f10x_tim1_clk_dev;
 
 struct clk_cntl_stm32f10x_cfg_t {
 	uint32_t           hsirc_rate;

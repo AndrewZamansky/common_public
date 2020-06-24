@@ -118,7 +118,7 @@ endif
 
 menuconfig INCLUDE_INTERNAL_PWM
 	bool   "internal pwm"
-	depends on I94XXX
+	depends on I94XXX || STM32F10X
 	default n
 
 config INTERNAL_PWM_IS_SPEED_CRITICAL
@@ -189,6 +189,10 @@ config INCLUDE_ADC
 config INCLUDE_HW_TIMER
 	def_bool  y
 	depends on INCLUDE_CORTEXM_SYSTICK || INCLUDE_INTERNAL_TIMER || XTENSA
+
+config INCLUDE_PWM
+	def_bool  y
+	depends on INCLUDE_INTERNAL_PWM
 
 config INCLUDE_GPIO
 	def_bool  y

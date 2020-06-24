@@ -11,6 +11,7 @@
 #include "clock_control_stm32f10x_api.h"
 #include "clock_control_stm32f10x.h"
 #include "stm32f10x_rcc.h"
+#include "stm32f10x_tim.h"
 
 
 /***************************************/
@@ -342,6 +343,39 @@ static void clock_stm32f10x_rtc_set_parent_clk(struct dev_desc_t *parent_clk)
 
 
 
+/*******************************************/
+/********** stm32f10x_tim1_clk_dev ********/
+static void clock_stm32f10x_tim1_enable()
+{
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_TIM1, ENABLE );
+}
+
+static void clock_stm32f10x_tim1_get_freq(uint32_t *freq, uint32_t parent_freq)
+{
+	uint32_t tmpreg = 0;
+
+	#define CFGR_PPRE2_Mask     ((uint32_t)0x3800)
+	tmpreg = RCC->CFGR & CFGR_PPRE2_Mask;
+	if (0 != tmpreg) // if prescaler != 1
+	{
+		parent_freq *= 2;
+	}
+	*freq = parent_freq;
+}
+
+
+#define DT_DEV_NAME               stm32f10x_tim1_clk_dev
+#define DT_DEV_MODULE             clk_cntl
+
+#define CLK_DT_DEFAULT_PARENT       stm32f10x_apb2_clk_dev
+#define CLK_DT_ENABLE_CLK_FUNC      clock_stm32f10x_tim1_enable
+#define CLK_DT_GET_FREQ_FUNC        clock_stm32f10x_tim1_get_freq
+
+#include "clk_cntl_add_device.h"
+
+
+
+
 static void init_clocks(struct clk_cntl_stm32f10x_cfg_t *cfg_hndl)
 {
 	//uint32_t rate;
@@ -387,35 +421,6 @@ static void init_clocks(struct clk_cntl_stm32f10x_cfg_t *cfg_hndl)
 	if (0 != cfg_hndl->pll_rate)
 	{
 		CRITICAL_ERROR("TODO");
-#if 0
-	/* PCLK2 = HCLK */
-	RCC_PCLK2Config( RCC_HCLK_Div1 );
-
-	/* PCLK1 = HCLK/2 */
-	RCC_PCLK1Config( RCC_HCLK_Div2 );
-
-	/* PLLCLK = 8MHz * 9 = 72 MHz. */
-	RCC_PLLConfig( RCC_PLLSource_HSE_Div1, RCC_PLLMul_9 );
-
-	/* Enable PLL. */
-	RCC_PLLCmd( ENABLE );
-
-	/* Wait till PLL is ready. */
-	while(RCC_GetFlagStatus(RCC_FLAG_PLLRDY) == RESET)
-	{
-	}
-
-	/* Enable GPIOA, GPIOB, GPIOC, GPIOD, GPIOE and AFIO clocks */
-	RCC_APB2PeriphClockCmd(	RCC_APB2Periph_GPIOA | RCC_APB2Periph_GPIOB |
-			RCC_APB2Periph_GPIOC | RCC_APB2Periph_GPIOD |
-			RCC_APB2Periph_GPIOE | RCC_APB2Periph_AFIO, ENABLE );
-
-	/* SPI2 Periph clock enable */
-	RCC_APB1PeriphClockCmd( RCC_APB1Periph_SPI2, ENABLE );
-
-//	RCC_GetClocksFreq(&lRCC_Clocks);
-
-#endif
 	}
 
 	DEV_IOCTL_0_PARAMS(stm32f10x_sysclk_dev, IOCTL_DEVICE_START);

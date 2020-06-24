@@ -1,7 +1,6 @@
 #ifndef DT__PIN_CONTROL_I94XXX_H_
 #define _DT_PIN_CONTROL_I94XXX_H_
 
-/**********  defines ************/
 #define PORT_A  0
 #define PORT_B  1
 #define PORT_C  2
@@ -297,14 +296,5 @@
 #define PIN_CONTROL_DT_I94XXX_PIN_D15_GPIO     (PIN_D15 | 0)
 #define PIN_CONTROL_DT_I94XXX_PIN_D15_UART_RX  (PIN_D15 | 4)
 #define PIN_CONTROL_DT_I94XXX_PIN_D15_I2C1_SDA (PIN_D15 | 5)
-
-
-
-
-/**********  define API  types ************/
-
-
-/**********  define API  functions  ************/
-
 
 #endif
