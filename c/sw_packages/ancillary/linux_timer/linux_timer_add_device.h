@@ -1,14 +1,8 @@
 /* !! DONT PUT HEADER FILE PROTECTIONS IN THIS FILE !! */
 
 
-#define	MODULE_NAME            linux_timer
-#define	MODULE_IOCTL_FUNCTION  linux_timer_ioctl
-
-#ifdef DT_DEV_MODULE
-
-
-#endif
-
+#define MODULE_HAS_NO_CONFIG_DATA
+#define MODULE_HAS_NO_RUNTIME_DATA
 
 /**
  *  device specific defines should be undefined

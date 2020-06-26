@@ -3,10 +3,6 @@
  *   file  :  linux_timer.c
  *
  */
-
-
-
-/***************   includes    *******************/
 #include "linux_timer.h"
 
 
@@ -17,24 +13,8 @@
 #include "dev_management_api.h"
 
 
-
-/***************   defines    *******************/
-
-
-
-/***************   typedefs    *******************/
-
-/**********   external variables    **************/
-
-
-
-/***********   local variables    **************/
-
-
-
 //static volatile uint64_t currentTick=0;
 volatile uint64_t currentTick=0;
-
 
 
 /*
@@ -52,6 +32,7 @@ uint8_t linux_timer_ioctl( struct dev_desc_t *adev,
 	case IOCTL_TIMER_RATE_HZ_SET :
 		break;
 	case IOCTL_TIMER_GET_RATE_HZ :
+		*(uint32_t *)aIoctl_param1 = 1000;
 		break;
 
 	case IOCTL_TIMER_CALLBACK_SET :
@@ -78,3 +59,9 @@ uint8_t linux_timer_ioctl( struct dev_desc_t *adev,
 	}
 	return 0;
 }
+
+#define MODULE_NAME                  linux_timer
+#define MODULE_IOCTL_FUNCTION        linux_timer_ioctl
+#define MODULE_HAS_NO_CONFIG_DATA
+#define MODULE_HAS_NO_RUNTIME_DATA
+#include "add_module.h"

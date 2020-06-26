@@ -4,10 +4,6 @@
  *
  *
  */
-
-
-
-/********  includes *********************/
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 
@@ -66,6 +62,11 @@ static void set_countdown(struct timer_wrapper_runtime_t *runtime_handle,
 	uint32_t  rate_hz;
 
 	DEV_IOCTL(hw_timer_wrapper,	IOCTL_TIMER_GET_RATE_HZ, &rate_hz);
+	if (0 == rate_hz)
+	{
+		CRITICAL_ERROR("underlying timer has 0hz rate");
+	}
+
 	was_set = 0;
 	while (0 == was_set)
 	{

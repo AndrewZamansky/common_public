@@ -2,6 +2,7 @@
 #ifndef _file_descriptor_manager_api_h_
 #define _file_descriptor_manager_api_h_
 
+#include "project_config.h"
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 

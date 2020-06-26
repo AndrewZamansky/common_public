@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 
-
+#include "project_config.h"
 #include <stdint.h>
 #include <sys/types.h>
 #include "sys/time.h"
@@ -239,6 +239,9 @@ struct in6_addr {
    unsigned char   s6_addr[16];   /* IPv6 address */
 };
 
+#if defined(CONFIG_LINUX_OS_WRAPPER)
+	typedef uint32_t in_port_t;
+#endif
 
 struct sockaddr_in6 {
 	sa_family_t     sin6_family;   /* AF_INET6 */

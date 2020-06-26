@@ -97,6 +97,7 @@ struct hostent*  gethostbyname_uCprojects(const char *name)
 	ioctl_net_device_get_host_addr.name = name;
 	ioctl_net_device_get_host_addr.addr_str = ipAddr;
 	ioctl_net_device_get_host_addr.addr_str_len = MAX_ADDR_LEN - 1;
+
 	for (i = 0; i < MAX_NUM_OF_NET_DEVS; i++)
 	{
 		struct dev_desc_t * net_dev;

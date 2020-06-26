@@ -4,7 +4,7 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
                           | findstr /C:"cmd_tbl_t\ _u_boot_list_2_cmd_2_"),)
 else
     get_cmd = $(if $(1),$(shell \
-             cat $(1) | grep "cmd_tbl_t\ _u_boot_list_2_cmd_2_"),)
+             cat $(1) | grep "cmd_tbl_t _u_boot_list_2_cmd_2_"),)
 endif
 
 
@@ -54,8 +54,8 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
     get_auto_init = $(if $(1),$(shell type $(call fix_path_if_in_windows,$(1)) \
                       | findstr /B /C:"struct auto_init_struct_t\ auto_init_"),)
 else
-    get_auto_init = $(eval $(error TODO in linux)) $(if $(1),$(shell \
-             cat $(1) | grep "auto_init_struct_t\ auto_init_"),)
+    get_auto_init = $(if $(1),$(shell \
+             cat $(1) | grep "^auto_init_struct_t auto_init_"),)
 endif
 
 # following function will extract YYY}; from '{ YYY};' and replace it

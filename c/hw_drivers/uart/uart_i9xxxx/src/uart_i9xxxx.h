@@ -16,7 +16,6 @@ struct i9xxx_uart_runtime_t {
 	uint8_t init_done;
 	uint32_t rx_fifo_overflow_cnt;// for debug
 };
-
 SET_RUNTIME_DATA_TYPE(uart_i9xxxx, struct i9xxx_uart_runtime_t);
 
 #endif

@@ -18,7 +18,7 @@
 #include <mqueue.h>
 #include <unistd.h>
 
-
+#define OS_MUTEX_TAKE_SUCCESS      0
 #define OS_QUEUE_SEND_SUCCESS      0
 #define OS_QUEUE_SEND_FAILED       1
 #define OS_QUEUE_RECEIVE_SUCCESS   0

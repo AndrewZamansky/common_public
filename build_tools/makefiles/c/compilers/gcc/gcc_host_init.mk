@@ -98,10 +98,12 @@ endif #end of 'ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)'
 
 ifdef COMPILE_WITH_GCC
     CC   :=	$(FULL_GCC_PREFIX)gcc -c
+    CCPP := $(FULL_GCC_PREFIX)gcc -c
     ASM  :=	$(FULL_GCC_PREFIX)gcc -c
     LD   :=	$(FULL_GCC_PREFIX)gcc
 else ifdef COMPILE_WITH_GPP
 	CC   :=	$(FULL_GCC_PREFIX)g++ -c
+    CCPP := $(FULL_GCC_PREFIX)gcc -c
     ASM  :=	$(FULL_GCC_PREFIX)g++ -c
     LD   :=	$(FULL_GCC_PREFIX)g++
 endif

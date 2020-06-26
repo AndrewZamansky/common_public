@@ -140,18 +140,16 @@ static uint8_t  send_message_and_wait(
 		const struct esp8266_message_t  *queueMsg)
 {
 	uint8_t error;
-	os_queue_t main_queue;
 	os_mutex_t sendDataMutex;
 
-	main_queue = esp8266_runtime_hndl->main_queue;
-	if(NULL == main_queue) return 1;
+	if (0 == esp8266_runtime_hndl->init_done) return 1;
 
 	sendDataMutex = esp8266_runtime_hndl->sendDataMutex;
 
 	os_mutex_take_infinite_wait(sendDataMutex);
 	esp8266_runtime_hndl->lCurrError = 0;
 
-	os_queue_send_infinite_wait(main_queue, queueMsg);
+	os_queue_send_infinite_wait(esp8266_runtime_hndl->main_queue, queueMsg);
 
 	os_queue_receive_infinite_wait(
 				esp8266_runtime_hndl->end_of_msg_queue, &dummy_msg);
@@ -515,7 +513,7 @@ static enum ESP8266_State_e parse_wait_for_send_complete(
 
 	if (send_complete)
 	{
-		_do_uart_dbg_print = 0;
+		//_do_uart_dbg_print = 0;
 		esp8266_runtime_hndl->lRequest_done = 1;
 		return ESP8266_State_Idle;
 	}
@@ -903,11 +901,11 @@ static size_t process_data_from_esp8266_on_wait_for_response(
 
 
 /*
- * process_input_message()
+ * process_message_from_hw()
  *
  * return:
  */
-static void process_input_message(struct esp8266_cfg_t *config_handle,
+static void process_message_from_hw(struct esp8266_cfg_t *config_handle,
 		struct esp8266_runtime_t *esp8266_runtime_hndl)
 {
 	struct dev_desc_t *   uart_rx_dev;
@@ -1191,11 +1189,11 @@ static enum ESP8266_State_e process_check_get_rcvd_data_message(
 
 
 /*
- * process_output_message()
+ * process_software_message()
  *
  * return:
  */
-static void process_output_message(struct esp8266_cfg_t *config_handle,
+static void process_software_message(struct esp8266_cfg_t *config_handle,
 		struct esp8266_runtime_t *esp8266_runtime_hndl)
 {
 	struct esp8266_message_t  pendingMessage;
@@ -1205,8 +1203,8 @@ static void process_output_message(struct esp8266_cfg_t *config_handle,
 	enum ESP8266_State_e currentState ;
 
 
-//	PRINTF_DBG("---ESP process_message=%d \r\n" ,pendingMessage.type);
 	pendingMessage = esp8266_runtime_hndl->pendingMessage;
+	//PRINTF_DBG("---ESP process_message=%d \r\n" ,pendingMessage.type);
 	sendBuffer = esp8266_runtime_hndl->sendBuffer;
 
 	timeout=ESP8266_TIMEOUT;
@@ -1383,7 +1381,7 @@ static void no_new_message_received(struct esp8266_cfg_t *config_handle,
 	case ESP8266_State_Wait_For_Socket_Status_Complete :
 		{
 			os_delay_ms(10000);//wait, maybe more data will arrive to uart
-			_do_uart_dbg_print = 0;
+			//_do_uart_dbg_print = 0;
 		}
 		esp8266_runtime_hndl->lCurrError = ESP8266_ERR_REQUEST_TIMED_OUT;
 		esp8266_runtime_hndl->lRequest_done=1;
@@ -1397,6 +1395,53 @@ static void no_new_message_received(struct esp8266_cfg_t *config_handle,
 			&timeout);
 	esp8266_runtime_hndl->currentState = currentState;
 }
+
+
+static void init_esp8266(struct dev_desc_t *adev,
+		struct esp8266_cfg_t *config_handle,
+		struct esp8266_runtime_t *esp8266_runtime_hndl)
+{
+	struct esp8266_socket_t  *sockets;
+	size_t i;
+
+	esp8266_runtime_hndl->end_of_msg_queue =
+						os_create_queue( 1, sizeof(dummy_msg));
+	if (NULL == esp8266_runtime_hndl->end_of_msg_queue)
+	{
+		CRITICAL_ERROR("cannot create queue");
+	}
+	esp8266_runtime_hndl->sendDataMutex = os_create_mutex();
+	if (NULL == esp8266_runtime_hndl->sendDataMutex)
+	{
+		CRITICAL_ERROR("cannot create mutex");
+	}
+
+	sockets = esp8266_runtime_hndl->sockets;
+	DEV_IOCTL_0_PARAMS(config_handle->uart_tx_dev, IOCTL_DEVICE_START );
+	DEV_IOCTL_0_PARAMS(config_handle->uart_rx_dev, IOCTL_DEVICE_START );
+	DEV_IOCTL_0_PARAMS(config_handle->timer_dev, IOCTL_DEVICE_START );
+
+	for(i = 0; i < ESP8266_MAX_NUM_OF_SOCKETS; i++)
+	{
+		sockets[i].socket_in_use = 0;
+		sockets[i].socket_number = i;
+		sockets[i].recvedData = NULL ;
+		sockets[i].curr_data_size = 0 ;
+		sockets[i].esp8266_dev = adev;
+		sockets[i].socket_options = 0;
+		sockets[i].wake_queue = os_create_queue( 1, sizeof(uint32_t));
+	}
+
+	esp8266_runtime_hndl->main_queue = os_create_queue(
+			ESP8266_MAX_QUEUE_LEN, sizeof(struct esp8266_message_t ));
+	if (NULL == esp8266_runtime_hndl->main_queue)
+	{
+		CRITICAL_ERROR("cannot create main queue");
+	}
+	// should be the last as it is used for checking if module was initialized
+	esp8266_runtime_hndl->init_done = 1;
+}
+
 
 /*
  * ESP8266_Task()
@@ -1419,6 +1464,7 @@ static void ESP8266_Task( void *pvParameters )
 	config_handle = DEV_GET_CONFIG_DATA_POINTER(ESP8266, adev);
 	esp8266_runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(ESP8266, adev);
 
+	init_esp8266(adev, config_handle, esp8266_runtime_hndl);
 	main_queue = esp8266_runtime_hndl->main_queue;
 	pendingMessage = &esp8266_runtime_hndl->pendingMessage;
 
@@ -1429,6 +1475,7 @@ static void ESP8266_Task( void *pvParameters )
 			IOCTL_UART_SET_BAUD_RATE, &interface_device_speed);
 
 	start_from_begining(config_handle, esp8266_runtime_hndl);
+
 	timeout = 10;
 	DEV_IOCTL(config_handle->timer_dev ,
 			IOCTL_TIMER_WRAPPER_API_SET_COUNTDOWN_mSEC_AND_RESET, &timeout);
@@ -1440,14 +1487,13 @@ static void ESP8266_Task( void *pvParameters )
 
 		isMessageRecieved = os_queue_receive_with_timeout( main_queue,
 				&(xRxedMessage), 50/* portMAX_DELAY*/ ) ;
-
 		isMessagePending = esp8266_runtime_hndl->isMessagePending;
 
 		if( OS_QUEUE_RECEIVE_SUCCESS == isMessageRecieved )
 		{
 			if(DATA_FROM_UART == xRxedMessage.type)
 			{
-				process_input_message(config_handle, esp8266_runtime_hndl);
+				process_message_from_hw(config_handle, esp8266_runtime_hndl);
 			}
 			else
 			{
@@ -1465,7 +1511,7 @@ static void ESP8266_Task( void *pvParameters )
 		if(isMessagePending && (ESP8266_State_Idle == currentState))
 		{
 			//PRINTF_DBG("+++ process pending message\n");
-			process_output_message(config_handle, esp8266_runtime_hndl);
+			process_software_message(config_handle, esp8266_runtime_hndl);
 			if (ESP8266_State_Idle != esp8266_runtime_hndl->currentState)
 			{
 				esp8266_runtime_hndl->lRequest_done = 2;
@@ -1488,51 +1534,12 @@ static void ESP8266_Task( void *pvParameters )
 
 static uint8_t ESP8266_device_start(struct dev_desc_t *adev)
 {
-	struct esp8266_cfg_t *config_handle;
 	struct esp8266_runtime_t *esp8266_runtime_hndl;
-	struct esp8266_socket_t  *sockets;
-	size_t i;
 
 	esp8266_runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(ESP8266, adev);
-	esp8266_runtime_hndl->end_of_msg_queue =
-						os_create_queue( 1, sizeof(dummy_msg));
-	if (NULL == esp8266_runtime_hndl->end_of_msg_queue)
-	{
-		CRITICAL_ERROR("cannot create queue");
-	}
-	esp8266_runtime_hndl->sendDataMutex = os_create_mutex();
-	if (NULL == esp8266_runtime_hndl->sendDataMutex)
-	{
-		CRITICAL_ERROR("cannot create mutex");
-	}
-
-	sockets = esp8266_runtime_hndl->sockets;
-	config_handle = DEV_GET_CONFIG_DATA_POINTER(ESP8266, adev);
-	DEV_IOCTL_0_PARAMS(config_handle->uart_tx_dev, IOCTL_DEVICE_START );
-	DEV_IOCTL_0_PARAMS(config_handle->uart_rx_dev, IOCTL_DEVICE_START );
-
-	for(i = 0; i < ESP8266_MAX_NUM_OF_SOCKETS; i++)
-	{
-		sockets[i].socket_in_use = 0;
-		sockets[i].socket_number = i;
-		sockets[i].recvedData = NULL ;
-		sockets[i].curr_data_size = 0 ;
-		sockets[i].esp8266_dev = adev;
-		sockets[i].socket_options = 0;
-		sockets[i].wake_queue = os_create_queue( 1, sizeof(uint32_t));
-	}
 
 	os_create_task("ESP8266_Task", ESP8266_Task, adev,
 			ESP8266_TASK_STACK_SIZE, ESP8266_TASK_PRIORITY);
-
-	// should be the last as it is used for checking if module was initialized
-	esp8266_runtime_hndl->main_queue = os_create_queue(
-			ESP8266_MAX_QUEUE_LEN, sizeof(struct esp8266_message_t ));
-	if (NULL == esp8266_runtime_hndl->main_queue)
-	{
-		CRITICAL_ERROR("cannot create main queue");
-	}
-
 	return 0;
 }
 
@@ -1582,16 +1589,14 @@ static uint8_t set_string(char *dest, const char *src, uint16_t max_length)
 
 
 
-static uint8_t get_host_addr(struct dev_desc_t *adev,
+static uint8_t get_host_addr(struct esp8266_runtime_t *esp8266_runtime_hndl,
 		struct ioctl_net_device_get_host_addr_t* ioctl_net_device_get_host_addr)
 {
 	struct esp8266_socket_t  *socket_handle;
 	struct esp8266_message_t  queueMsg;
-	struct esp8266_runtime_t *esp8266_runtime_hndl;
 	uint16_t port;
 	uint8_t retVal;
 
-	esp8266_runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(ESP8266, adev);
 
 	queueMsg.type = OPEN_SOCKET;
 	queueMsg.msg_data.msg_open_socket.new_socket_handle = &socket_handle;
@@ -1670,6 +1675,13 @@ static uint8_t ESP8266_ioctl(struct dev_desc_t *adev, const uint8_t aIoctl_num,
 	struct esp8266_runtime_t *esp8266_runtime_hndl;
 
 	esp8266_runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(ESP8266, adev);
+	if ((0 == esp8266_runtime_hndl->init_done) &&
+			(   (IOCTL_DEVICE_START != aIoctl_num) &&
+				(IOCTL_ESP8266_IS_INITIALIZED != aIoctl_num) ))
+	{
+		CRITICAL_ERROR("esp8266 not initialized yet");
+	}
+
 	switch(aIoctl_num)
 	{
 	case IOCTL_ESP8266_SET_SSID_NAME :
@@ -1698,13 +1710,16 @@ static uint8_t ESP8266_ioctl(struct dev_desc_t *adev, const uint8_t aIoctl_num,
 		retVal = ESP8266_device_start(adev);
 		break;
 	case IOCTL_NET_DEVICE_GET_HOST_ADDR:
-		retVal = get_host_addr(adev, aIoctl_param1);
+		retVal = get_host_addr(esp8266_runtime_hndl, aIoctl_param1);
 		break;
 #ifdef CONFIG_USE_INTERNAL_SOCKETS_IMPLEMENTATION
 	case IOCTL_OPEN_SOCKET:
 		retVal = open_socket(adev, aIoctl_param1);
 		break;
 #endif
+	case IOCTL_ESP8266_IS_INITIALIZED :
+		*(uint8_t*) aIoctl_param1 = esp8266_runtime_hndl->init_done;
+		break;
 	default :
 		return 1;
 	}

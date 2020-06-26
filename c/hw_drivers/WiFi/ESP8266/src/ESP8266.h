@@ -173,6 +173,7 @@ struct esp8266_runtime_t {
 	uint8_t  handshake_counter;
 	uint8_t  need_to_reset;
 	uint32_t  interface_device_speed;
+	uint8_t init_done;
 };
 SET_RUNTIME_DATA_TYPE(ESP8266, struct esp8266_runtime_t);
 

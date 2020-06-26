@@ -420,9 +420,11 @@ static int set_socket_level_option(struct file_desc_t  *curr_fd,
 		{
 			struct dev_desc_t * underlying_dev;
 			struct file_descriptor_manager_ioctl_socket_open_t  sock_open;
-
+#if !defined(CONFIG_LINUX_HOST_GCC)
 			underlying_dev = DEV_OPEN((char*)optval);
-
+#else
+	#warning "change device management to be independent of compiler"
+#endif
 			if (NULL == underlying_dev) return -1;
 
 			sock_open.new_socket_descriptor = curr_fd;
@@ -783,7 +785,7 @@ int select_uCprojects(int nfds, fd_set *readfds, fd_set *writefds,
 }
 
 
-#ifndef CONFIG_XTENSA_XCC
+#if !defined(CONFIG_XTENSA_XCC) && !defined(CONFIG_LINUX_OS_WRAPPER)
 struct stat {
 	uint8_t dummy;
 };

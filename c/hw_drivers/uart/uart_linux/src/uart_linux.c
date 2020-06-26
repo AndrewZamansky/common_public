@@ -4,9 +4,6 @@
 
  *
  */
-
-/********  includes *********************/
-
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 
@@ -23,13 +20,11 @@
 #include <unistd.h>
 
 #include "uart_api.h"
+#include "uart_linux_api.h"
 
 #include <pthread.h>
 
-/*following line add module to available module list for dynamic device tree*/
-#include "uart_linux_add_component.h"
 
-/********  defines *********************/
 #define READ_BUFF_LEN  255
 
 #define MAX_ERR_STR_LEN   255
@@ -37,15 +32,6 @@
 
 //#define DEBUG_UART
 //#define PRINT_BIN_DATA
-
-/********  types  *********************/
-
-
-/* ------------ External variables ---------------------------------*/
-
-/* ------------------------ External functions ------------*/
-
-/* ------------------------ Exported variables --------*/
 
 char error_str[MAX_ERR_STR_LEN + 1];
 
@@ -86,8 +72,12 @@ size_t uart_linux_pwrite(struct dev_desc_t *adev,
 	struct dev_desc_t * callback_tx_dev ;
 	size_t written_size;
 
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
-	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(uart_linux, adev);
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(uart_linux, adev);
+	if (0 == runtime_handle->init_done)
+	{
+		CRITICAL_ERROR("not initialized yet");
+	}
 
 	tty_fd = runtime_handle->tty_fd;
 	callback_tx_dev = cfg_hndl->callback_tx_dev;
@@ -128,8 +118,8 @@ static void *receive_thread(void *adev)
 	int tty_fd;
 	struct dev_desc_t * callback_rx_dev ;
 
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
-	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(uart_linux, adev);
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(uart_linux, adev);
 
 	callback_rx_dev = cfg_hndl->callback_rx_dev;
 	tty_fd = runtime_handle->tty_fd;
@@ -294,7 +284,7 @@ static void uart_start(struct dev_desc_t *adev,
 			&runtime_handle->thread_id, NULL, &receive_thread, adev);
 	if (err != 0)
 		printf("\ncan't create thread :[%s]\n", strerror(err));
-
+	runtime_handle->init_done = 1;
 }
 
 
@@ -310,8 +300,14 @@ uint8_t uart_linux_ioctl(struct dev_desc_t *adev, uint8_t aIoctl_num,
 	struct uart_linux_runtime_t *runtime_handle;
 	struct termios tty;
 
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
-	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(adev);
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(uart_linux, adev);
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(uart_linux, adev);
+
+	if ((0 == runtime_handle->init_done) &&
+					(IOCTL_DEVICE_START != aIoctl_num))
+	{
+		CRITICAL_ERROR("not initialized yet");
+	}
 
 	switch(aIoctl_num)
 	{
@@ -342,3 +338,9 @@ uint8_t uart_linux_ioctl(struct dev_desc_t *adev, uint8_t aIoctl_num,
 	}
 	return 0;
 }
+
+
+#define MODULE_NAME                  uart_linux
+#define MODULE_IOCTL_FUNCTION        uart_linux_ioctl
+#define MODULE_PWRITE_FUNCTION       uart_linux_pwrite
+#include "add_module.h"

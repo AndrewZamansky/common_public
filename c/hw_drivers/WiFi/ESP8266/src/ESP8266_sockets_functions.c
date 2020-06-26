@@ -278,7 +278,7 @@ static ssize_t esp8266_send(void* socketfd,
 	struct esp8266_socket_t  *socket_handle;
 	struct esp8266_message_t  queueMsg;
 	struct esp8266_runtime_t *esp8266_runtime_hndl;
-	uint8_t retVal;
+	uint8_t ret_val;
 
 	if (0 == length)
 	{
@@ -297,12 +297,13 @@ static ssize_t esp8266_send(void* socketfd,
 	queueMsg.msg_data.msg_send_data_to_socket.socket_handle = socket_handle;
 	queueMsg.msg_data.msg_send_data_to_socket.data = buffer;
 	queueMsg.msg_data.msg_send_data_to_socket.data_length = length;
-	retVal = send_message_and_wait(esp8266_runtime_hndl, &queueMsg);
-	if(0 == retVal)
+	ret_val = send_message_and_wait(esp8266_runtime_hndl, &queueMsg);
+
+	if(0 != ret_val)
 	{
-		// temporary trap
-		CRITICAL_ERROR(" return length on send is 0");
+		return -1;
 	}
+
 	return length;
 }
 
