@@ -1,4 +1,6 @@
 /*dummy ws2tcpip.h*/
+#ifndef _WS2TCPIP_H_
+#define _WS2TCPIP_H_
 
 #define MSG_PEEK   0
 #define SOCKET_ERROR 1
@@ -23,3 +25,5 @@ typedef struct WSAData {
 
 int WSAStartup(WORD wVersionRequired, LPWSADATA lpWSAData);
 void Sleep(int a);
+
+#endif //_WS2TCPIP_H_

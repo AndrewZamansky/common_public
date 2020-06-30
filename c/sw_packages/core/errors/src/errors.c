@@ -5,9 +5,6 @@
  *
  */
 
-
-
-/********  includes *********************/
 #include "errors_api.h"
 #include "_project_typedefs.h"
 #include "_project_defines.h"

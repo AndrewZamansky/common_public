@@ -85,7 +85,7 @@ char *h_addr_list[2] = {(char*)&curr_addr , NULL};
 char curr_host_name[MAX_HOST_NAME] = {0};
 #define MAX_ADDR_LEN  20
 
-struct hostent*  gethostbyname_uCprojects(const char *name)
+struct hostent*  gethostbyname(const char *name)
 {
 	struct ioctl_net_device_get_host_addr_t ioctl_net_device_get_host_addr;
 	uint8_t  i;
@@ -153,7 +153,7 @@ struct hostent*  gethostbyname_uCprojects(const char *name)
 
 struct servent  servent_obj = { 0 };
 char  port_no;
-struct servent *getservbyname_uCprojects(const char *name, const char *proto)
+struct servent *getservbyname(const char *name, const char *proto)
 {
 	//servent_obj.s_proto = &port_no;
 	return NULL;

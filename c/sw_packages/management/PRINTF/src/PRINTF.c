@@ -285,6 +285,7 @@ void PRINTF_print_data(
 		case PRINTF_TYPE_DBG :
 			if (0 == mutex_init_done)
 			{
+				CRITICAL_ERROR("PRINTF module not initialized\n");
 				return;
 			}
 			if (OS_MUTEX_TAKE_SUCCESS !=

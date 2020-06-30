@@ -138,11 +138,12 @@ static int get_free_file_desc(struct file_desc_t  **file_desc)
 }
 
 
-int socket_uCprojects(int socket_family, int socket_type, int protocol)
+int socket(int socket_family, int socket_type, int protocol)
 {
 	int ret_val;
 	struct file_desc_t  *file_desc;
 
+printf("%s\n", __FUNCTION__);
 	if (NULL == fd_mutex)
 	{
 		CRITICAL_ERROR("file descriptor manager not initialized");
@@ -199,7 +200,7 @@ exit :
 }
 
 
-int closesocket_uCprojects(int sockfd)
+int closesocket(int sockfd)
 {
 	int ret_val;
 	struct file_desc_t  *curr_fd;
@@ -229,7 +230,7 @@ exit:
 }
 
 
-int connect_uCprojects(
+int connect(
 		int sockfd, const struct sockaddr *addr, unsigned int addrlen)
 {
 	struct file_descriptor_manager_ioctl_socket_open_t  sock_open;
@@ -291,7 +292,7 @@ int connect_uCprojects(
 }
 
 
-ssize_t recv_uCprojects(int sockfd, void *buf, size_t len, int flags)
+ssize_t recv(int sockfd, void *buf, size_t len, int flags)
 {
 	struct file_desc_t  *curr_fd;
 	uint32_t socket_options;
@@ -337,7 +338,7 @@ ssize_t recv_uCprojects(int sockfd, void *buf, size_t len, int flags)
 }
 
 
-int getsockopt_uCprojects(int sockfd, int level, int optname,
+int getsockopt(int sockfd, int level, int optname,
 									void *optval, socklen_t *optlen)
 {
 	struct file_desc_t  *curr_fd;
@@ -466,7 +467,7 @@ static int set_socket_level_option(struct file_desc_t  *curr_fd,
 }
 
 
-int setsockopt_uCprojects(int sockfd, int level,
+int setsockopt(int sockfd, int level,
 		int optname, const void *optval, socklen_t optlen)
 {
 	struct file_desc_t  *curr_fd;
@@ -510,7 +511,7 @@ int setsockopt_uCprojects(int sockfd, int level,
 }
 
 
-int bind_uCprojects(int sockfd, const struct sockaddr *addr, socklen_t addrlen)
+int bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen)
 {
 	struct file_desc_t  *curr_fd;
 
@@ -525,7 +526,7 @@ int bind_uCprojects(int sockfd, const struct sockaddr *addr, socklen_t addrlen)
 }
 
 
-int getsockname_uCprojects(
+int getsockname(
 		int sockfd, struct sockaddr *local_addr, socklen_t *addrlen)
 {
 	struct file_desc_t  *curr_fd;
@@ -541,7 +542,7 @@ int getsockname_uCprojects(
 }
 
 
-int getpeername_uCprojects(
+int getpeername(
 		int sockfd, struct sockaddr *addr, socklen_t *addrlen)
 {
 	struct file_desc_t  *curr_fd;
@@ -557,7 +558,7 @@ int getpeername_uCprojects(
 }
 
 
-ssize_t send_uCprojects(
+ssize_t send(
 		int sockfd, const void *buffer, size_t length, int flags)
 {
 	struct file_desc_t  *curr_fd;
@@ -578,7 +579,7 @@ ssize_t send_uCprojects(
 }
 
 
-int listen_uCprojects(int sockfd, int backlog)
+int listen(int sockfd, int backlog)
 {
 	struct file_desc_t  *curr_fd;
 
@@ -592,7 +593,7 @@ int listen_uCprojects(int sockfd, int backlog)
 }
 
 
-int accept_uCprojects(int sockfd, struct sockaddr *addr, socklen_t *addrlen)
+int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen)
 {
 	struct file_desc_t  *main_fd;
 	struct file_desc_t  *new_fd;
@@ -631,7 +632,7 @@ int accept_uCprojects(int sockfd, struct sockaddr *addr, socklen_t *addrlen)
 }
 
 
-int shutdown_uCprojects(int socket, int how)
+int shutdown(int socket, int how)
 {
 	CRITICAL_ERROR("accept_uCprojects not implemented yet");
 	return 0;
@@ -657,7 +658,7 @@ int ioctlsocket(int socket, long   cmd, unsigned long *argp)
 
 #endif
 
-int select_uCprojects(int nfds, fd_set *readfds, fd_set *writefds,
+int select(int nfds, fd_set *readfds, fd_set *writefds,
 								fd_set *exceptfds, struct timeval *timeout)
 {
 	uint8_t i;

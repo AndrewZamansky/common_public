@@ -18,6 +18,13 @@ extern "C" {
 	#define R_OK  0
 #endif
 
+// some files compiled with win32/64 switch so if it's
+// compiled with gcc that doesn't _SSIZE_T_DEFINED but
+// ssize_t type defined in type.h (example: linux )
+// then _SSIZE_T_DEFINED should be defined
+#if defined(__ssize_t_defined) && !defined(_SSIZE_T_DEFINED)
+	#define _SSIZE_T_DEFINED
+#endif
 
 # if !defined (FD_SETSIZE)
 #  define _SYS_TYPES_FD_SET
@@ -262,47 +269,30 @@ uint32_t htonl(uint32_t n);
 uint32_t ntohl(uint32_t n);
 
 
-ssize_t send_uCprojects(
+ssize_t send(
 		int socket, const void *buffer, size_t length, int flags);
-ssize_t recv_uCprojects(int sockfd, void *buf, size_t len, int flags);
-int select_uCprojects(int nfds, fd_set *readfds, fd_set *writefds,
+ssize_t recv(int sockfd, void *buf, size_t len, int flags);
+int select(int nfds, fd_set *readfds, fd_set *writefds,
                   fd_set *exceptfds, struct timeval *timeout);
-struct hostent*  gethostbyname_uCprojects( const char *name);
-int getpeername_uCprojects(
+struct hostent*  gethostbyname( const char *name);
+int getpeername(
 		int sockfd, struct sockaddr *addr, socklen_t *addrlen);
-int getsockname_uCprojects(
+int getsockname(
 		int sockfd, struct sockaddr *local_addr, socklen_t *addrlen);
-int getsockopt_uCprojects(int sockfd, int level, int optname,
+int getsockopt(int sockfd, int level, int optname,
 			void *optval, socklen_t *optlen);
-int setsockopt_uCprojects(int sockfd, int level,
+int setsockopt(int sockfd, int level,
 		int optname, const void *optval, socklen_t optlen);
-int connect_uCprojects(
+int connect(
 		int sockfd, const struct sockaddr *addr, unsigned int addrlen);
-int socket_uCprojects(int socket_family, int socket_type, int protocol);
+int socket(int socket_family, int socket_type, int protocol);
 uint16_t ntohs(uint16_t n);
 struct servent *getservbyname(const char *name, const char *proto);
-int bind_uCprojects(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
-int listen_uCprojects(int sockfd, int backlog);
-int accept_uCprojects(int sockfd, struct sockaddr *addr, socklen_t *addrlen);
-int shutdown_uCprojects(int socket, int how);
-int closesocket_uCprojects(int sockfd);
-
-#define socket  socket_uCprojects
-#define send  send_uCprojects
-#define recv  recv_uCprojects
-#define getpeername  getpeername_uCprojects
-#define getsockname  getsockname_uCprojects
-#define getsockopt  getsockopt_uCprojects
-#define setsockopt  setsockopt_uCprojects
-#define connect  connect_uCprojects
-#define select  select_uCprojects
-#define gethostbyname  gethostbyname_uCprojects
-#define bind  bind_uCprojects
-#define accept  accept_uCprojects
-#define listen  listen_uCprojects
-#define shutdown  shutdown_uCprojects
-#define closesocket  closesocket_uCprojects
-
+int bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
+int listen(int sockfd, int backlog);
+int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen);
+int shutdown(int socket, int how);
+int closesocket(int sockfd);
 
 #endif /* CONFIG_USE_INTERNAL_SOCKETS_IMPLEMENTATION */
 
