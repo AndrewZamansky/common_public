@@ -1677,7 +1677,9 @@ static uint8_t ESP8266_ioctl(struct dev_desc_t *adev, const uint8_t aIoctl_num,
 	esp8266_runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(ESP8266, adev);
 	if ((0 == esp8266_runtime_hndl->init_done) &&
 			(   (IOCTL_DEVICE_START != aIoctl_num) &&
-				(IOCTL_ESP8266_IS_INITIALIZED != aIoctl_num) ))
+				(IOCTL_ESP8266_IS_INITIALIZED != aIoctl_num) &&
+				(IOCTL_ESP8266_SET_SSID_NAME != aIoctl_num) &&
+				(IOCTL_ESP8266_SET_SSID_PSWRD != aIoctl_num) ))
 	{
 		CRITICAL_ERROR("esp8266 not initialized yet");
 	}
