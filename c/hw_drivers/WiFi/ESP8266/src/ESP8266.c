@@ -1615,7 +1615,7 @@ static uint8_t get_host_addr(struct esp8266_runtime_t *esp8266_runtime_hndl,
 		queueMsg.type = CLOSE_SOCKET;
 		queueMsg.msg_data.msg_close_socket.socket_handle = socket_handle;
 		retVal = send_message_and_wait(esp8266_runtime_hndl, &queueMsg);
-		if (0 != retVal) return 1;
+		// don't return on error because socket may not be opened at all
 
 		queueMsg.type = OPEN_SOCKET;
 		queueMsg.msg_data.msg_open_socket.new_socket_handle = &socket_handle;

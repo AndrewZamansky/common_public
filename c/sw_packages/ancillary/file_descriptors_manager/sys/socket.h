@@ -268,6 +268,24 @@ extern uint16_t htons(uint16_t n);
 uint32_t htonl(uint32_t n);
 uint32_t ntohl(uint32_t n);
 
+#if defined(CONFIG_USE_INTERNAL_SOCKETS_TOGETHER_WITH_SYSTEM) && \
+	!defined(TEMPORARY_STOP_SOCKET_RENAIMING)
+	#define socket  socket_uCprojects
+	#define send  send_uCprojects
+	#define recv  recv_uCprojects
+	#define getpeername  getpeername_uCprojects
+	#define getsockname  getsockname_uCprojects
+	#define getsockopt  getsockopt_uCprojects
+	#define setsockopt  setsockopt_uCprojects
+	#define connect  connect_uCprojects
+	#define select  select_uCprojects
+	#define gethostbyname  gethostbyname_uCprojects
+	#define bind  bind_uCprojects
+	#define accept  accept_uCprojects
+	#define listen  listen_uCprojects
+	#define shutdown  shutdown_uCprojects
+	#define closesocket  closesocket_uCprojects
+#endif
 
 ssize_t send(
 		int socket, const void *buffer, size_t length, int flags);

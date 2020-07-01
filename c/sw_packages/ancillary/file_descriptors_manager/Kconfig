@@ -7,3 +7,8 @@ config MAX_NUMBER_OF_OPENED_FILE_DESCRIPTORS
 config USE_INTERNAL_SOCKETS_IMPLEMENTATION
 	bool "use internal sockets implementation"
 	default n
+
+config USE_INTERNAL_SOCKETS_TOGETHER_WITH_SYSTEM
+	bool "use internal sockets together with system sockets"
+	default n
+	depends on USE_INTERNAL_SOCKETS_IMPLEMENTATION
