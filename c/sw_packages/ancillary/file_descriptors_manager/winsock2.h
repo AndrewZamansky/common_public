@@ -2,6 +2,8 @@
 #ifndef _WS2TCPIP_H_
 #define _WS2TCPIP_H_
 
+#include "sys/socket.h"
+
 #define MSG_PEEK   0
 #define SOCKET_ERROR 1
 #define WSAEMSGSIZE  2
@@ -12,6 +14,13 @@ typedef int32_t WORD;
 
 #define WSADESCRIPTION_LEN 2
 #define WSASYS_STATUS_LEN  2
+
+#define WSAEWOULDBLOCK  EAGAIN
+#define WSAEAGAIN  EAGAIN
+#define WSAECONNRESET ECONNRESET
+#define WSAEINTR  EINTR
+#define WSAECONNABORTED  ECONNABORTED
+#define WSAETIMEDOUT  ETIMEDOUT
 
 typedef struct WSAData {
         WORD                    wVersion;

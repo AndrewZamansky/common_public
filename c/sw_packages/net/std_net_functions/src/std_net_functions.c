@@ -160,4 +160,22 @@ struct servent *getservbyname(const char *name, const char *proto)
 }
 
 
+int getaddrinfo(const char *node, const char *service,
+					   const struct addrinfo *hints,
+					   struct addrinfo **res)
+{
+	CRITICAL_ERROR("getaddrinfo not implemented yet");
+	return 0;
+}
 
+void freeaddrinfo(struct addrinfo *res)
+{
+	CRITICAL_ERROR("freeaddrinfo not implemented yet");
+}
+
+
+#include "winsock2.h"
+int WSAStartup(WORD wVersionRequired, LPWSADATA lpWSAData)
+{
+
+}

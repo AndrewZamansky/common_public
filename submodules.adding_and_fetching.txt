@@ -1,8 +1,8 @@
 adding submodule
 ===============
 1) create new repo
- repository should be created in currently remote of the remote-tracking branch  OR
- in 'orogin' remote if branch no such remote-tracking branch exists or the HEAD is detached
+ repository should be created in currently remote of the remote-tracking branch
+ OR in 'origin' remote if  no such remote-tracking branch exists or the HEAD is detached
  OR if none of above in
  $(PATH_TO_COMMON_PUBLIC_LOCATION)/common_public../../AndrewZamansky-external-repo-managers/$(MODULE)_git
 

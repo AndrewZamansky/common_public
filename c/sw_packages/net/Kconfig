@@ -23,6 +23,13 @@ if INCLUDE_WOLFSSL
 source "$WOLFSSL_GIT_DIR/Kconfig"
 endif
 
+menuconfig INCLUDE_MBEDTLS
+	bool   "mbedTLS"
+	default n
+if INCLUDE_MBEDTLS
+source "$MBEDTLS_GIT_DIR/Kconfig"
+endif
+
 menuconfig INCLUDE_NGHTTP2
 	bool   "nghttp2"
 	default n

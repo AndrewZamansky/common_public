@@ -656,6 +656,11 @@ int ioctlsocket(int socket, long   cmd, unsigned long *argp)
 	CRITICAL_ERROR("ioctlsocket not implemented yet");
 }
 
+ssize_t recvfrom(int sockfd, void *buf, size_t len, int flags,
+                 struct sockaddr *src_addr, socklen_t *addrlen)
+{
+	CRITICAL_ERROR("recvfrom not implemented yet");
+}
 #endif
 
 int select(int nfds, fd_set *readfds, fd_set *writefds,

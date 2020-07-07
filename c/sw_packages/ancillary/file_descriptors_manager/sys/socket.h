@@ -111,6 +111,20 @@ struct servent {
 
 #ifdef CONFIG_USE_INTERNAL_SOCKETS_IMPLEMENTATION
 
+#define AI_PASSIVE  0
+
+struct addrinfo {
+   int              ai_flags;
+   int              ai_family;
+   int              ai_socktype;
+   int              ai_protocol;
+   socklen_t        ai_addrlen;
+   struct sockaddr *ai_addr;
+   char            *ai_canonname;
+   struct addrinfo *ai_next;
+};
+
+
 /*
 * Types
 */
@@ -242,6 +256,34 @@ enum {
 
 typedef int sa_family_t;
 
+
+// Desired design of maximum size and alignment.
+#define _SS_MAXSIZE 128 // Implementation-defined maximum size
+
+//Implementation-defined desired alignment
+#define _SS_ALIGNSIZE (sizeof(int64_t))
+
+// Definitions used for sockaddr_storage structure paddings design.
+#define _SS_PAD1SIZE (_SS_ALIGNSIZE - sizeof(sa_family_t))
+#define _SS_PAD2SIZE (_SS_MAXSIZE - (sizeof(sa_family_t)+ \
+					  _SS_PAD1SIZE + _SS_ALIGNSIZE))
+
+struct sockaddr_storage {
+	sa_family_t  ss_family;  /* Address family. */
+	/*
+	 *  Following fields are implementation-defined.
+	 */
+	char _ss_pad1[_SS_PAD1SIZE];
+	/* 6-byte pad; this is to make implementation-defined
+	   pad up to alignment field that follows explicit in
+	   the data structure. */
+	int64_t _ss_align;  /* Field to force desired structure
+						   storage alignment. */
+	char _ss_pad2[_SS_PAD2SIZE];
+	/* 112-byte pad to achieve desired size,
+	   _SS_MAXSIZE value minus size of ss_family
+	   __ss_pad1, __ss_align fields is 112. */
+};
 struct in6_addr {
    unsigned char   s6_addr[16];   /* IPv6 address */
 };
@@ -311,6 +353,12 @@ int listen(int sockfd, int backlog);
 int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen);
 int shutdown(int socket, int how);
 int closesocket(int sockfd);
+int getaddrinfo(const char *node, const char *service,
+					   const struct addrinfo *hints,
+					   struct addrinfo **res);
+void freeaddrinfo(struct addrinfo *res);
+ssize_t recvfrom(int sockfd, void *buf, size_t len, int flags,
+                 struct sockaddr *src_addr, socklen_t *addrlen);
 
 #endif /* CONFIG_USE_INTERNAL_SOCKETS_IMPLEMENTATION */
 

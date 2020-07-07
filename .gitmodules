@@ -14,3 +14,7 @@
 	path = c/sw_packages/net/wolfssl/wolfssl_git
 	url = ../../AndrewZamansky-external-repo-managers/wolfssl_git
 	ignore = all
+[submodule "c/sw_packages/net/mbedTLS/mbedTLS_git"]
+	path = c/sw_packages/net/mbedTLS/mbedTLS_git
+	url = ../../AndrewZamansky-external-repo-managers/mbedTLS_git
+	ignore = all
