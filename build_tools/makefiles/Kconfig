@@ -161,7 +161,8 @@ config OUTPUT_IS_LIBRARY_FOR_EXPORT
 	bool "output is library for export"
 
 
-if GCC || GPP || MIN_GW_GCC || MIN_GW_GPP || PIC_C32 || PIC_XC32 || ANDROID_NDK_COMPILER || XTENSA_GCC
+if GCC || GPP || MIN_GW_GCC || MIN_GW_GPP || PIC_C32 || PIC_XC32 || \
+    ANDROID_NDK_COMPILER || XTENSA_GCC || LINUX_HOST_GCC
 source "$KCONFIG_PUBLIC_START_DIR/../build_tools/makefiles/c/compilers/gcc/Kconfig"
 endif
 

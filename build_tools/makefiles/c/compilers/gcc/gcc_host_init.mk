@@ -82,7 +82,20 @@ else # for 'ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)'
 endif #end of 'ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)'
 
 ### GLOBAL_CFLAGS calculation
+ifdef CONFIG_GCC_OPTIMISE_NONE
+    CONFIG_OPTIMIZE_LEVEL := O0
+else ifdef CONFIG_GCC_OPTIMISE_WITH_DEBUG
+    CONFIG_OPTIMIZE_LEVEL := Og
+else ifdef CONFIG_GCC_OPTIMISE_SIZE
+    CONFIG_OPTIMIZE_LEVEL := Os
+else ifdef CONFIG_GCC_OPTIMISE_SPEED
+    CONFIG_OPTIMIZE_LEVEL := O2
+else ifdef CONFIG_GCC_OPTIMISE_ULTRA_SPEED
+    CONFIG_OPTIMIZE_LEVEL := O3
+    #CONFIG_OPTIMIZE_LEVEL := Ofast
+endif
 
+GLOBAL_CFLAGS += -$(CONFIG_OPTIMIZE_LEVEL) -g -g3 -ggdb3 #-gstabs3
 
 
 # define flags for asm compiler :
