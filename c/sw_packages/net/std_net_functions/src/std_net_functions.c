@@ -177,5 +177,5 @@ void freeaddrinfo(struct addrinfo *res)
 #include "winsock2.h"
 int WSAStartup(WORD wVersionRequired, LPWSADATA lpWSAData)
 {
-
+	return 0;
 }

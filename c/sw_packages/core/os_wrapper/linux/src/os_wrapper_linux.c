@@ -16,21 +16,97 @@
 
 #include "os_wrapper.h"
 
+#include <errno.h>
+
 #ifdef CONFIG_INCLUDE_HEARTBEAT
 #include "heartbeat_api.h"
 #endif
 
+/**< @brief Nanoseconds per second. */
+#define NANOSECONDS_PER_SECOND         ( 1000000000 )
 
-static struct dev_desc_t * l_timer_dev = NULL;
+/**< @brief Nanoseconds per millisecond. */
+#define NANOSECONDS_PER_MILLISECOND    ( 1000000 )
 
-static struct dev_desc_t * l_heartbeat_dev = NULL;
-
+/**< @brief Milliseconds per second. */
+#define MILLISECONDS_PER_SECOND        ( 1000 )
 
 typedef void *(*thread_func_t)(void*);
 
-void *os_create_task(char *taskName,
-		void (*taskFunction)(void *apParam),
-		void *taskFunctionParam, uint16_t stack_size_bytes , uint8_t priority)
+static struct dev_desc_t * l_timer_dev = NULL;
+static struct dev_desc_t * l_heartbeat_dev = NULL;
+
+
+
+static uint8_t timeout_to_timespec(uint32_t timeoutMs,
+                                 struct timespec * output )
+{
+    struct timespec systemTime = { 0 };
+
+    if( 0 != clock_gettime( CLOCK_REALTIME, &systemTime ) ) return 1;
+\
+	/* Add the nanoseconds value to the time. */
+	systemTime.tv_nsec +=
+			( long ) ( ( timeoutMs % MILLISECONDS_PER_SECOND ) *
+					NANOSECONDS_PER_MILLISECOND );
+
+	/* Check for overflow of nanoseconds value. */
+	if( systemTime.tv_nsec >= NANOSECONDS_PER_SECOND )
+	{
+		systemTime.tv_nsec -= NANOSECONDS_PER_SECOND;
+		systemTime.tv_sec++;
+	}
+
+	/* Add the seconds value to the timeout. */
+	systemTime.tv_sec += ( time_t ) ( timeoutMs / MILLISECONDS_PER_SECOND );
+
+	/* Set the output parameter. */
+	*output = systemTime;
+
+    return 0;
+}
+
+void *os_create_detached_task(
+		char *taskName, void (*taskFunction)(void *apParam),
+		void *taskFunctionParam, uint16_t stack_size_bytes, uint8_t priority)
+{
+	int err;
+	pthread_t  thread_id;
+    pthread_attr_t threadAttributes;
+
+    err = 0;
+    /* Set up thread attributes object. */
+    err = pthread_attr_init( &threadAttributes );
+
+    if( err != 0 )
+    {
+        printf("err=%d\n", err);
+        CRITICAL_ERROR("cannot init thread attributes\n");
+    }
+
+    /* Set the new thread to detached. */
+    err = pthread_attr_setdetachstate( &threadAttributes,
+                                              PTHREAD_CREATE_DETACHED );
+    if( err != 0 )
+    {
+        printf("err=%d\n", err);
+        CRITICAL_ERROR("cannot set detach thread attribute\n");
+    }
+
+    thread_id = 0;
+	err = pthread_create(&thread_id, &threadAttributes,
+			(thread_func_t)taskFunction, taskFunctionParam);
+	if (err != 0)
+	{
+		printf("\ncan't create thread :[%s]\n", strerror(err));
+	}
+
+	return (void*)thread_id;
+}
+
+
+void *os_create_task(char *taskName, void (*taskFunction)(void *apParam),
+		void *taskFunctionParam, uint16_t stack_size_bytes, uint8_t priority)
 {
 	int err;
 	pthread_t  thread_id = 0;
@@ -206,15 +282,8 @@ os_mutex_t os_create_mutex(void)
 {
 	pthread_mutex_t *new_mutex;
 
-	new_mutex =
-			(pthread_mutex_t *)malloc(sizeof(pthread_mutex_t));
+	new_mutex = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t));
 	errors_api_check_if_malloc_succeed(new_mutex);
-
-	if (NULL == new_mutex)
-	{
-		printf("cannot allocate memory for mutex\n");
-		return NULL;
-	}
 
 	if (pthread_mutex_init(new_mutex, NULL) != 0)
 	{
@@ -222,6 +291,159 @@ os_mutex_t os_create_mutex(void)
 		return NULL;
 	}
 	return new_mutex;
+}
+
+
+os_mutex_t os_create_recursive_mutex(void)
+{
+	pthread_mutex_t *new_mutex;
+    pthread_mutexattr_t mutexAttributes, * pMutexAttributes = NULL;
+    int err = 0;
+
+	new_mutex = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t));
+	errors_api_check_if_malloc_succeed(new_mutex);
+
+	err = pthread_mutexattr_init( &mutexAttributes );
+
+    if( err != 0 )
+    {
+        printf("err=%d\n", err);
+        CRITICAL_ERROR("cannot init thread attributes\n");
+    }
+
+    pMutexAttributes = &mutexAttributes;
+
+    /* Set recursive mutex type. */
+    err = pthread_mutexattr_settype( &mutexAttributes,
+                                            PTHREAD_MUTEX_RECURSIVE );
+
+    if( err != 0 )
+    {
+        printf("err=%d\n", err);
+        CRITICAL_ERROR("cannot set thread attributes\n");
+    }
+
+
+	if (pthread_mutex_init(new_mutex, pMutexAttributes) != 0)
+	{
+		printf("\n mutex init has failed\n");
+		return NULL;
+	}
+	return new_mutex;
+}
+
+
+os_semaphore_t os_create_semaphore(uint32_t initial_value)
+{
+	sem_t *sem;
+
+	sem =(sem_t *)malloc(sizeof(sem_t));
+	errors_api_check_if_malloc_succeed(sem);
+
+    if( sem_init( sem, 0, ( unsigned int ) initial_value ) != 0 )
+    {
+        printf( "errno=%d. \n", errno );
+        CRITICAL_ERROR("cannot init semaphore\n");
+    }
+    return sem;
+}
+
+
+uint32_t os_semaphore_get_count(os_semaphore_t sem)
+{
+    int count = 0;
+
+    if ( sem_getvalue( sem, &count ) != 0 )
+    {
+        printf( "errno=%d. \n", errno );
+        CRITICAL_ERROR("cannot get semaphore count\n");
+    }
+
+    return ( uint32_t ) count;
+
+}
+
+
+uint8_t os_semaphore_take_with_timeout(os_semaphore_t sem, uint32_t timeout_ms)
+{
+    struct timespec timeout = { 0 };
+
+    if( 0 != timeout_to_timespec( timeout_ms, &timeout ) )
+    {
+    	CRITICAL_ERROR( "Invalid timeout." );
+    	return 1;
+    }
+
+	if( sem_timedwait(sem, &timeout) != 0 )
+	{
+        printf( "errno=%d. \n", errno );
+        CRITICAL_ERROR("cannot take timed semaphore\n");
+        return 1;
+	}
+
+    return 0;
+}
+
+
+uint8_t os_semaphore_take_infinite_wait(os_semaphore_t sem)
+{
+	if( sem_wait(sem) != 0 )
+	{
+        printf( "errno=%d. \n", errno );
+        CRITICAL_ERROR("cannot take semaphore\n");
+        return 1;
+	}
+
+    return 0;
+}
+
+
+uint8_t os_semaphore_try_wait(os_semaphore_t sem)
+{
+	if( sem_trywait(sem) != 0 )
+	{
+        printf( "errno=%d. \n", errno );
+        CRITICAL_ERROR("cannot take semaphore\n");
+        return 1;
+	}
+
+    return 0;
+}
+
+
+uint8_t os_semaphore_give(os_semaphore_t sem)
+{
+    if( sem_post(sem) != 0 )
+    {
+        printf( "errno=%d. \n", errno );
+        CRITICAL_ERROR("cannot give semaphore\n");
+        return 1;
+    }
+    return 0;
+}
+
+
+void os_delete_mutex(os_mutex_t mutex)
+{
+
+    int err = pthread_mutex_destroy( mutex );
+
+    if( err != 0 )
+    {
+        printf("errno=%d\n", errno);
+        CRITICAL_ERROR("cannot delete mutex\n");
+    }
+    free(mutex);
+}
+
+
+void os_delete_semaphore(os_semaphore_t sem)
+{
+    if( sem_destroy(sem) != 0 )
+    {
+        printf("errno=%d\n", errno);
+        CRITICAL_ERROR("cannot delete semaphore\n");
+    }
 }
 
 

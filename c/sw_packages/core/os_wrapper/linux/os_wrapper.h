@@ -17,6 +17,7 @@
 #include <pthread.h>
 #include <mqueue.h>
 #include <unistd.h>
+#include <semaphore.h>
 
 #define OS_MUTEX_TAKE_SUCCESS      0
 #define OS_QUEUE_SEND_SUCCESS      0
@@ -37,7 +38,7 @@
 /** os_create_mutex should return os_mutex_t  **/
 /** type : [os_mutex_t]  **/
 typedef pthread_mutex_t  *os_mutex_t;
-
+typedef sem_t *os_semaphore_t;
 
 struct os_wrapper_queue {
 	mqd_t  mq;
@@ -79,6 +80,13 @@ void  os_start(void);
 /** function : [os_create_queue()]  **/
 os_mutex_t os_create_mutex(void);
 
+/** function : [os_create_queue()]  **/
+os_mutex_t os_create_recursive_mutex(void);
+
+/** function : [os_create_semaphore()]  **/
+os_semaphore_t os_create_semaphore(uint32_t initial_value);
+
+
 #if 0
 /***********  mutex take **********/
 /** on success will return OS_QUEUE_SEND_SUCCESS  **/
@@ -93,13 +101,36 @@ os_mutex_t os_create_mutex(void);
 /** function : [os_mutex_take_infinite_wait()]  **/
 #define os_mutex_take_infinite_wait(mutex)   pthread_mutex_lock(mutex)
 
+/** function : [os_semaphore_take_with_timeout()]  **/
+uint8_t os_semaphore_take_with_timeout(os_semaphore_t sem, uint32_t timeout_ms);
+
+/** function : [os_semaphore_take_infinite_wait()]  **/
+uint8_t os_semaphore_take_infinite_wait(os_semaphore_t sem);
 
 
-/***********  mutex give **********/
+/** function : [os_semaphore_try_wait()]  **/
+uint8_t os_semaphore_try_wait(os_semaphore_t sem);
+
+
+/***********  mutex/semaphore give **********/
 /** on success will return OS_QUEUE_RECEIVE_SUCCESS  **/
 
 /** function : [os_mutex_give()]  **/
 #define os_mutex_give(mutex)  pthread_mutex_unlock(mutex)
+
+/** function : [os_semaphore_give()]  **/
+uint8_t os_semaphore_give(os_semaphore_t sem);
+
+
+/***********  semaphore get count **********/
+uint32_t os_semaphore_get_count(os_semaphore_t sem);
+
+
+/***********  mutex delete **********/
+void os_delete_mutex(os_mutex_t mutex);
+
+/***********  semaphore delete **********/
+void os_delete_semaphore(os_semaphore_t sem);
 
 
 
@@ -170,6 +201,11 @@ uint8_t os_queue_send_infinite_wait(os_queue_t queue ,  void const * pData  );
 void *os_create_task(char *taskName , void (*taskFunction)(void *apParam),
 		void *taskFunctionParam, uint16_t stack_size_bytes, uint8_t priority);
 
+/** function : [os_create_detached_task()]  **/
+void *os_create_detached_task(
+		char *taskName, void (*taskFunction)(void *apParam),
+		void *taskFunctionParam, uint16_t stack_size_bytes, uint8_t priority);
+
 
 /***********  delay **********/
 /** function : [os_delay_ms()]  **/
@@ -204,4 +240,4 @@ void *os_create_task(char *taskName , void (*taskFunction)(void *apParam),
 
 #define OS_WRAPPER_INCLUDED
 
-#endif /* */
+#endif
