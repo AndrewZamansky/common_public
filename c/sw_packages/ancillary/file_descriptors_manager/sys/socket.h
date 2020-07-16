@@ -68,12 +68,6 @@ typedef struct _types_fd_set {
 
 typedef uint32_t socklen_t ;
 
-typedef struct sockaddr
-{
-  unsigned short  sa_family;
-  char    sa_data[14];
-}  SOCKADDR_T;
-
 typedef struct in_addr {
 union {
   struct {
@@ -94,36 +88,20 @@ struct sockaddr_in {
 	  char    sin_zero[8];
 };
 
-typedef struct hostent {
-char       *h_name;
-char    **h_aliases;
-short         h_addrtype;
-short         h_length;
-char    **h_addr_list;
-}HOSTENT_T;
+typedef struct sockaddr
+{
+  union {
+	  struct {
+		  unsigned short  sa_family;
+		  char    sa_data[14];
+	  };
+	  struct sockaddr_in S_ub_sockaddr_in;
+  };
+}  SOCKADDR_T;
 
-struct servent {
-//    char  *s_name;       /* official service name */
-//    char **s_aliases;    /* alias list */
-    int    s_port;       /* port number */
-    char  *s_proto;      /* protocol to use */
-};
+
 
 #ifdef CONFIG_USE_INTERNAL_SOCKETS_IMPLEMENTATION
-
-#define AI_PASSIVE  0
-
-struct addrinfo {
-   int              ai_flags;
-   int              ai_family;
-   int              ai_socktype;
-   int              ai_protocol;
-   socklen_t        ai_addrlen;
-   struct sockaddr *ai_addr;
-   char            *ai_canonname;
-   struct addrinfo *ai_next;
-};
-
 
 /*
 * Types
@@ -334,7 +312,6 @@ ssize_t send(
 ssize_t recv(int sockfd, void *buf, size_t len, int flags);
 int select(int nfds, fd_set *readfds, fd_set *writefds,
                   fd_set *exceptfds, struct timeval *timeout);
-struct hostent*  gethostbyname( const char *name);
 int getpeername(
 		int sockfd, struct sockaddr *addr, socklen_t *addrlen);
 int getsockname(
@@ -353,10 +330,6 @@ int listen(int sockfd, int backlog);
 int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen);
 int shutdown(int socket, int how);
 int closesocket(int sockfd);
-int getaddrinfo(const char *node, const char *service,
-					   const struct addrinfo *hints,
-					   struct addrinfo **res);
-void freeaddrinfo(struct addrinfo *res);
 ssize_t recvfrom(int sockfd, void *buf, size_t len, int flags,
                  struct sockaddr *src_addr, socklen_t *addrlen);
 

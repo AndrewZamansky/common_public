@@ -22,6 +22,7 @@
 #endif
 
 #include "os_wrapper.h"
+#include "winsock2.h"
 
 //#define DEBUG
 #include "PRINTF_api.h"
@@ -143,7 +144,6 @@ int socket(int socket_family, int socket_type, int protocol)
 	int ret_val;
 	struct file_desc_t  *file_desc;
 
-printf("%s\n", __FUNCTION__);
 	if (NULL == fd_mutex)
 	{
 		CRITICAL_ERROR("file descriptor manager not initialized");
@@ -634,7 +634,7 @@ int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen)
 
 int shutdown(int socket, int how)
 {
-	CRITICAL_ERROR("accept_uCprojects not implemented yet");
+	CRITICAL_ERROR("shutdown not implemented yet");
 	return 0;
 }
 
@@ -653,7 +653,18 @@ void WSASetLastError(int iError)
 
 int ioctlsocket(int socket, long   cmd, unsigned long *argp)
 {
-	CRITICAL_ERROR("ioctlsocket not implemented yet");
+	switch (cmd)
+	{
+	case FIONBIO:
+		if (0 != *argp)
+		{
+			CRITICAL_ERROR("non blocking socket not implemented yet");
+		}
+		break;
+	default:
+		CRITICAL_ERROR("not implemented yet");
+		break;
+	}
 }
 
 ssize_t recvfrom(int sockfd, void *buf, size_t len, int flags,
