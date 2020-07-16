@@ -93,6 +93,9 @@ else ifdef CONFIG_GCC_OPTIMISE_SPEED
 else ifdef CONFIG_GCC_OPTIMISE_ULTRA_SPEED
     CONFIG_OPTIMIZE_LEVEL := O3
     #CONFIG_OPTIMIZE_LEVEL := Ofast
+else
+    $(info err: gcc - undefined optimization)
+    $(call exit,1)
 endif
 
 GLOBAL_CFLAGS += -$(CONFIG_OPTIMIZE_LEVEL) -g -g3 -ggdb3 #-gstabs3
