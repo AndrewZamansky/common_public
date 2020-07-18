@@ -1,6 +1,19 @@
 
-INCLUDE_THIS_COMPONENT :=y
+ifeq ($(sort $(CONFIG_INTERNAL_FILE_DESCRIPTORS_MANAGER)),y)
+    INCLUDE_THIS_COMPONENT :=y
+endif
 
+ifeq ($(sort $(CONFIG_INTERNAL_FILE_DESCRIPTORS_MANAGER)),y)
+    ifeq ($(sort $(CONFIG_INTERNAL_FILE_DESCRIPTORS_MANAGER)),y)
+        EXPANDED_MAKEFILE_LIST := $(realpath $(MAKEFILE_LIST))
+        CURR_FILE_SUFFIX :=mbedTLS/Makefile.uc.mk
+        CURR_MAKEFILE :=$(filter \
+                            %$(CURR_FILE_SUFFIX), $(EXPANDED_MAKEFILE_LIST))
+        CURR_MAKEFILE :=$(sort $(CURR_MAKEFILE)) # remove dublicates
+        CURR_COMPONENT_DIR := $(patsubst %/Makefile.uc.mk,%,$(CURR_MAKEFILE))
+        DUMMY := $(call ADD_TO_GLOBAL_INCLUDES, $(CURR_COMPONENT_DIR)/include)
+    endif
+endif
 
 #INCLUDE_DIR =  
 
