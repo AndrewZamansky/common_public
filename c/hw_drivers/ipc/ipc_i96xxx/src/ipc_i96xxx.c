@@ -1042,7 +1042,6 @@ static uint8_t ipc_i96xxx_device_start(struct dev_desc_t *adev)
 
 #ifdef CONFIG_USE_INTERNAL_SOCKETS_IMPLEMENTATION
 
-#define  USE_CUSTOM_SOCKET_IN_COMPILED_MODULE // used in sys/socket.h
 #include "ipc_i96xxx_sockets_functions.c"
 
 #endif

@@ -1656,7 +1656,6 @@ static uint8_t get_host_addr(struct esp8266_runtime_t *esp8266_runtime_hndl,
 
 #ifdef CONFIG_USE_INTERNAL_SOCKETS_IMPLEMENTATION
 
-#define  USE_CUSTOM_SOCKET_IN_COMPILED_MODULE // used in sys/socket.h
 #include "ESP8266_sockets_functions.c"
 
 #endif

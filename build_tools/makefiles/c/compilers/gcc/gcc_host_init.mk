@@ -99,6 +99,7 @@ else
 endif
 
 GLOBAL_CFLAGS += -$(CONFIG_OPTIMIZE_LEVEL) -g -g3 -ggdb3 #-gstabs3
+GLOBAL_CPPFLAGS := $(GLOBAL_CFLAGS)
 
 
 # define flags for asm compiler :
