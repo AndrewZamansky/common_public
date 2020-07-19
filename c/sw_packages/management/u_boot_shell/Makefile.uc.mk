@@ -1,11 +1,8 @@
 ifeq ($(sort $(CONFIG_INCLUDE_UBOOT_SHELL)),y)
     INCLUDE_THIS_COMPONENT := y
 
-    EXPANDED_MAKEFILE_LIST := $(realpath $(MAKEFILE_LIST))
-    CURR_FILE_SUFFIX :=u_boot_shell/Makefile.uc.mk
-    CURR_MAKEFILE :=$(filter %$(CURR_FILE_SUFFIX), $(EXPANDED_MAKEFILE_LIST))
-    CURR_MAKEFILE :=$(sort $(CURR_MAKEFILE)) # remove dublicates
-    CURR_COMPONENT_DIR := $(patsubst %/Makefile.uc.mk,%,$(CURR_MAKEFILE))
+    CURR_COMPONENT_DIR :=\
+       $(patsubst %/,%,$(dir $(realpath $(lastword $(MAKEFILE_LIST)))))
 
     U_BOOT_PATH :=$(EXTERNAL_SOURCE_ROOT_DIR)/u-boot
     ifeq ("$(wildcard $(U_BOOT_PATH))","")

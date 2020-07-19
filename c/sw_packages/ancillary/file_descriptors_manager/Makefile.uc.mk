@@ -4,14 +4,10 @@ ifeq ($(sort $(CONFIG_INTERNAL_FILE_DESCRIPTORS_MANAGER)),y)
 endif
 
 ifeq ($(sort $(CONFIG_INTERNAL_FILE_DESCRIPTORS_MANAGER)),y)
-    ifeq ($(sort $(CONFIG_INTERNAL_FILE_DESCRIPTORS_MANAGER)),y)
-        EXPANDED_MAKEFILE_LIST := $(realpath $(MAKEFILE_LIST))
-        CURR_FILE_SUFFIX :=mbedTLS/Makefile.uc.mk
-        CURR_MAKEFILE :=$(filter \
-                            %$(CURR_FILE_SUFFIX), $(EXPANDED_MAKEFILE_LIST))
-        CURR_MAKEFILE :=$(sort $(CURR_MAKEFILE)) # remove dublicates
-        CURR_COMPONENT_DIR := $(patsubst %/Makefile.uc.mk,%,$(CURR_MAKEFILE))
-        DUMMY := $(call ADD_TO_GLOBAL_INCLUDES, $(CURR_COMPONENT_DIR)/include)
+    ifeq ($(sort $(CONFIG_USE_INTERNAL_SOCKETS_IMPLEMENTATION)),y)
+        CURR_COMPONENT_DIR :=\
+            $(patsubst %/,%,$(dir $(realpath $(lastword $(MAKEFILE_LIST)))))
+        DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH, $(CURR_COMPONENT_DIR)/include)
     endif
 endif
 

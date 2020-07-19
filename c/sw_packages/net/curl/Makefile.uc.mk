@@ -3,11 +3,8 @@ INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_CURL)
 
 ifeq ($(strip $(CONFIG_INCLUDE_CURL)),y)
 
-    EXPANDED_MAKEFILE_LIST := $(realpath $(MAKEFILE_LIST))
-    CURR_FILE_SUFFIX :=curl/Makefile.uc.mk
-    CURR_MAKEFILE :=$(filter %$(CURR_FILE_SUFFIX), $(EXPANDED_MAKEFILE_LIST))
-    CURR_MAKEFILE :=$(sort $(CURR_MAKEFILE)) # remove dublicates
-    CURR_COMPONENT_DIR := $(patsubst %/Makefile.uc.mk,%,$(CURR_MAKEFILE))
+    CURR_COMPONENT_DIR :=\
+       $(patsubst %/,%,$(dir $(realpath $(lastword $(MAKEFILE_LIST)))))
 
     # test if current commit and branch of nghttp2 git is
     # the same as required by application
