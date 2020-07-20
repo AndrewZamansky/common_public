@@ -174,6 +174,7 @@ struct esp8266_runtime_t {
 	uint8_t  need_to_reset;
 	uint32_t  interface_device_speed;
 	uint8_t init_done;
+	uint8_t wifi_connected;
 };
 SET_RUNTIME_DATA_TYPE(ESP8266, struct esp8266_runtime_t);
 

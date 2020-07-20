@@ -654,6 +654,7 @@ static enum ESP8266_State_e parse_wait_for_wifi_connect_response(
 	{
 		send_str_to_chip(config_handle, "AT+CIPMUX=1\r\n");
 		currentState = ESP8266_State_Setting_Connection_Type;
+		esp8266_runtime_hndl->wifi_connected = 1;
 		PRINTF_DBG("wifi connected  \r\n");
 	}
 	else if (0 == cmpBuff2Str(pBufferStart, line_length,"FAIL"))
@@ -1404,6 +1405,7 @@ static void init_esp8266(struct dev_desc_t *adev,
 	struct esp8266_socket_t  *sockets;
 	size_t i;
 
+	esp8266_runtime_hndl->wifi_connected = 0;
 	esp8266_runtime_hndl->end_of_msg_queue =
 						os_create_queue( 1, sizeof(dummy_msg));
 	if (NULL == esp8266_runtime_hndl->end_of_msg_queue)
@@ -1675,10 +1677,11 @@ static uint8_t ESP8266_ioctl(struct dev_desc_t *adev, const uint8_t aIoctl_num,
 
 	esp8266_runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(ESP8266, adev);
 	if ((0 == esp8266_runtime_hndl->init_done) &&
-			(   (IOCTL_DEVICE_START != aIoctl_num) &&
-				(IOCTL_ESP8266_IS_INITIALIZED != aIoctl_num) &&
-				(IOCTL_ESP8266_SET_SSID_NAME != aIoctl_num) &&
-				(IOCTL_ESP8266_SET_SSID_PSWRD != aIoctl_num) ))
+		(   (IOCTL_DEVICE_START != aIoctl_num) &&
+			(IOCTL_ESP8266_IS_INITIALIZED != aIoctl_num) &&
+			(IOCTL_ESP8266_IS_WIFI_CONNECTED != aIoctl_num) &&
+			(IOCTL_ESP8266_SET_SSID_NAME != aIoctl_num) &&
+			(IOCTL_ESP8266_SET_SSID_PSWRD != aIoctl_num) ))
 	{
 		CRITICAL_ERROR("esp8266 not initialized yet");
 	}
@@ -1720,6 +1723,9 @@ static uint8_t ESP8266_ioctl(struct dev_desc_t *adev, const uint8_t aIoctl_num,
 #endif
 	case IOCTL_ESP8266_IS_INITIALIZED :
 		*(uint8_t*) aIoctl_param1 = esp8266_runtime_hndl->init_done;
+		break;
+	case IOCTL_ESP8266_IS_WIFI_CONNECTED:
+		*(uint8_t*) aIoctl_param1 = esp8266_runtime_hndl->wifi_connected;
 		break;
 	default :
 		return 1;
