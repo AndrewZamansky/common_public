@@ -128,6 +128,7 @@ os_queue_t os_create_queue(uint32_t num_of_elements, uint32_t size_of_elements)
 {
 	os_queue_t os_queue;
 	struct mq_attr attr;
+	mode_t mode;
 	mqd_t mq;
 	uint32_t i;
 	char name[16] = {0};
@@ -162,7 +163,8 @@ os_queue_t os_create_queue(uint32_t num_of_elements, uint32_t size_of_elements)
 	attr.mq_curmsgs = 0;
 
 	mq_unlink(name);
-	mq = mq_open(name, O_CREAT | O_RDWR | O_EXCL, 0644, &attr);
+	mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP;// | S_IROTH |S_IWOTH;
+	mq = mq_open(name, O_CREAT | O_RDWR , mode, &attr);
 	if (-1 == mq)
 	{
 		printf("cannot open queue\n");
