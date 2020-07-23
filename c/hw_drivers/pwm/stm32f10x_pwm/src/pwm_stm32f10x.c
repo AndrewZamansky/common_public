@@ -136,12 +136,36 @@ static uint8_t pwm_set_params(struct pwm_stm32f10x_instance_t *config_handle,
     	TIM_BDTRStructInit(&TIM_BDTRInitStruct);
     	TIM_BDTRConfig(TIMx, &TIM_BDTRInitStruct);
     	TIM_CCPreloadControl(TIMx, ENABLE);
-    	TIM_CtrlPWMOutputs(TIMx, ENABLE);
     }
 
 	pin_control_api_set_pin_function(output_pin);
 	return 0;
 }
+
+
+static void enable_output(struct pwm_stm32f10x_runtime_t *runtime_handle)
+{
+	TIM_TypeDef* TIMx;
+
+	TIMx = runtime_handle->TIMx;
+    if ((TIM1 == TIMx) || (TIM8 == TIMx))
+    {
+    	TIM_CtrlPWMOutputs(TIMx, ENABLE);
+    }
+}
+
+
+static void disable_output(struct pwm_stm32f10x_runtime_t *runtime_handle)
+{
+	TIM_TypeDef* TIMx;
+
+	TIMx = runtime_handle->TIMx;
+    if ((TIM1 == TIMx) || (TIM8 == TIMx))
+    {
+    	TIM_CtrlPWMOutputs(TIMx, DISABLE);
+    }
+}
+
 
 /*
  * pwm_stm32f10x_ioctl()
@@ -160,6 +184,8 @@ static uint8_t pwm_stm32f10x_ioctl( struct dev_desc_t *adev,
 	{
 		CRITICAL_ERROR("not initialized yet");
 	}
+
+
 	switch(aIoctl_num)
 	{
 	case IOCTL_DEVICE_START :
@@ -168,6 +194,14 @@ static uint8_t pwm_stm32f10x_ioctl( struct dev_desc_t *adev,
 
 	case IOCTL_PWM_SET_PARAMS :
 		pwm_set_params(config_handle, runtime_handle, aIoctl_param1);
+		break;
+
+	case IOCTL_PWM_ENABLE_OUTPUT:
+		enable_output(runtime_handle);
+		break;
+
+	case IOCTL_PWM_DISABLE_OUTPUT:
+		disable_output(runtime_handle);
 		break;
 
 	default :
