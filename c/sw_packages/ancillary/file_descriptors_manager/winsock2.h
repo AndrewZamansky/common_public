@@ -34,5 +34,8 @@ typedef struct WSAData {
 
 int WSAStartup(WORD wVersionRequired, LPWSADATA lpWSAData);
 void Sleep(int a);
+int WSAGetLastError(void);
+void WSASetLastError(int iError);
+int ioctlsocket(int socket, long   cmd, unsigned long *argp);
 
 #endif //_WS2TCPIP_H_
