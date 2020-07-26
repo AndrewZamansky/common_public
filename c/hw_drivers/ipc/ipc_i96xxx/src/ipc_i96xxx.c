@@ -980,9 +980,9 @@ static void ipc_i96xxx_Task( void *pvParameters )
 }
 
 
-static uint8_t ipc_i96xxx_device_start(struct dev_desc_t *adev)
+static uint8_t ipc_i96xxx_device_start(struct dev_desc_t *adev,
+					struct ipc_i96xxx_runtime_t *ipc_i96xxx_runtime_hndl)
 {
-	struct ipc_i96xxx_runtime_t *ipc_i96xxx_runtime_hndl;
 	struct ipc_i96xxx_socket_t  *sockets;
 	size_t i;
 
@@ -1056,12 +1056,19 @@ static uint8_t ipc_i96xxx_device_start(struct dev_desc_t *adev)
 uint8_t ipc_i96xxx_ioctl(struct dev_desc_t *adev, const uint8_t aIoctl_num,
 		void * aIoctl_param1, void * aIoctl_param2)
 {
+	struct ipc_i96xxx_runtime_t *ipc_i96xxx_runtime_hndl;
 	uint8_t retVal = 0;
+
+	ipc_i96xxx_runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(ipc_i96xxx, adev);
 
 	switch(aIoctl_num)
 	{
 	case IOCTL_DEVICE_START :
-		retVal = ipc_i96xxx_device_start(adev);
+		retVal = ipc_i96xxx_device_start(adev, ipc_i96xxx_runtime_hndl);
+		break;
+	case I2S_I96XXX_IS_READY_IOCTL :
+		*(uint8_t*)aIoctl_param1 = (IPC_I96XXX_State_InitialHandShake ==
+				ipc_i96xxx_runtime_hndl->currentState) ? 0 : 1;
 		break;
 #ifdef CONFIG_USE_INTERNAL_SOCKETS_IMPLEMENTATION
 	case IOCTL_OPEN_SOCKET:

@@ -31,6 +31,11 @@ enum ipc_i96xxx_err_code_e {
 };
 
 
+enum IPC_I96XXX_API_ioctl_e {
+	I2S_I96XXX_IS_READY_IOCTL = IOCTL_LAST_COMMON_IOCTL + 1,
+};
+
+
 struct ipc_i96xxx_cfg_t {
 	struct dev_desc_t *   timer_dev;
 };
