@@ -1536,10 +1536,6 @@ static void ESP8266_Task( void *pvParameters )
 
 static uint8_t ESP8266_device_start(struct dev_desc_t *adev)
 {
-	struct esp8266_runtime_t *esp8266_runtime_hndl;
-
-	esp8266_runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(ESP8266, adev);
-
 	os_create_task("ESP8266_Task", ESP8266_Task, adev,
 			ESP8266_TASK_STACK_SIZE, ESP8266_TASK_PRIORITY);
 	return 0;

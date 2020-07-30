@@ -12,6 +12,43 @@
 #include "ipc_i96xxx.h"
 
 
+/*
+ * send_message_and_wait()
+ *
+ * return:
+ */
+static uint8_t  send_message_and_wait(
+		struct ipc_i96xxx_runtime_t *ipc_i96xxx_runtime_hndl,
+		const struct ipc_i96xxx_message_t  *queueMsg)
+{
+	uint8_t error;
+	os_queue_t main_queue;
+	os_mutex_t send_data_mutex;
+
+	main_queue = ipc_i96xxx_runtime_hndl->main_queue;
+	if(NULL == main_queue) return 1;
+
+	send_data_mutex = ipc_i96xxx_runtime_hndl->send_data_mutex;
+
+	os_mutex_take_infinite_wait(send_data_mutex);
+	ipc_i96xxx_runtime_hndl->last_error = 0;
+
+	os_queue_send_infinite_wait(main_queue, queueMsg);
+
+	os_queue_receive_infinite_wait(
+				ipc_i96xxx_runtime_hndl->end_of_msg_queue, &dummy_msg);
+
+	error = ipc_i96xxx_runtime_hndl->last_error;
+	if (error)
+	{
+		PRINTF_DBG("esp err=%d, msg_type=%d\n", error, queueMsg->type);
+	}
+
+	os_mutex_give(send_data_mutex);
+	return error;
+}
+
+
 static int  ipc_i96xxx_closesocket(void* socketfd)
 {
 	struct ipc_i96xxx_socket_t  *socket_handle;

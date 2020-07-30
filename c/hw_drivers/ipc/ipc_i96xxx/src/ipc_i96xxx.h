@@ -14,9 +14,12 @@ enum ipc_i96xxx_message_type_e {
 	BIND_SOCKET,
 	LISTEN_SOCKET,
 	ACCEPT_SOCKET,
-	CLOSE_SOCKET, SEND_DATA,
-	OPEN_SOCKET , CONNECT_SOCKET ,
-	GET_OPEN_CONNECTION_STATUS , CHECK_IF_RECEIVED_DATA ,
+	CLOSE_SOCKET,
+	SEND_DATA,
+	OPEN_SOCKET,
+	CONNECT_SOCKET,
+	GET_OPEN_CONNECTION_STATUS,
+	CHECK_IF_RECEIVED_DATA,
 	GET_RECEIVED_DATA
 };
 
@@ -199,17 +202,21 @@ struct ipc_i96xxx_message_t {
 struct ipc_i96xxx_runtime_t {
 	os_queue_t  main_queue;
 	os_queue_t  end_of_msg_queue;
-	os_mutex_t  sendDataMutex;
+	os_mutex_t  send_data_mutex;
 	struct ipc_i96xxx_socket_t  sockets[IPC_I96XXX_MAX_NUM_OF_SOCKETS];
 	struct ipc_i96xxx_socket_t  *curr_socket;
-	enum ipc_i96xxx_state_e  currentState ;
-	struct ipc_i96xxx_message_t  pendingMessage;
-	uint8_t  isMessagePending;
-	uint8_t  lCurrError;
-	uint8_t  lRequest_done;
+	struct ipc_i96xxx_cfg_t *config_handle;
+	enum ipc_i96xxx_state_e  current_state ;
+	struct ipc_i96xxx_message_t  pending_local_msg;
+	struct ipc_i96xxx_message_t auxiliary_msg;
+	uint8_t  is_local_msg_pending;
+	uint8_t  last_error;
+	uint8_t  request_done;
 	uint8_t  handshake_counter;
 	uint8_t  curr_sent_msg_id;
 	uint8_t  curr_received_msg_id;
+	uint8_t  auxiliary_msg_valid;
+
 };
 SET_RUNTIME_DATA_TYPE(ipc_i96xxx, struct ipc_i96xxx_runtime_t);
 

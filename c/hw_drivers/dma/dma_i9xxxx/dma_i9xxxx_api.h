@@ -44,8 +44,8 @@ struct dma_i9xxxx_cfg_t {
 	uint8_t    peripheral_type;
 	uint8_t    num_of_buffers;
 	uint8_t    num_of_prefilled_buffer_before_tx_start;
-	uint32_t   transfer_word_size;
-	uint32_t   buff_size;
+	uint16_t   transfer_word_size;
+	size_t     buff_size;
 
 };
 SET_CONFIG_TYPE(dma_i9xxxx, struct dma_i9xxxx_cfg_t);
