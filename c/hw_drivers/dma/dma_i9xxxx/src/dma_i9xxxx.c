@@ -4,8 +4,6 @@
  *
  */
 
-/********  includes *********************/
-
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 #include "errors_api.h"
@@ -56,18 +54,17 @@
 	((PDMA->DSCT[(u32Ch)].CTL & PDMA_DSCT_CTL_TXCNT_Msk) >>     \
 												PDMA_DSCT_CTL_TXCNT_Pos)
 
-typedef enum
-{
+enum DMA_I9XXXX_buff_state_e {
 	DMA_I9XXXX_BUFF_IDLE,
 	DMA_I9XXXX_BUFF_DMA_IN_PROCCESS,
 	DMA_I9XXXX_BUFF_TX_DATA_IS_FILLING,
 	DMA_I9XXXX_BUFF_TX_DATA_IS_READY,
 	DMA_I9XXXX_BUFF_RX_RADA_READY,
 	DMA_I9XXXX_BUFF_RX_RADA_PROCESSING
-} DMA_I9XXXX_buff_state_t;
+};
 
 #define MAX_NUMBER_OF_CHANNELS	16
-struct dev_desc_t * channel_pdev[MAX_NUMBER_OF_CHANNELS] = {0};
+static struct dev_desc_t * channel_pdev[MAX_NUMBER_OF_CHANNELS] = {0};
 
 //#define DMA_I9XXXX_DEBUG
 
@@ -192,8 +189,8 @@ static void update_rx_buffer(struct dev_desc_t * ch_pdev,
 	struct dev_desc_t *callback_dev;
 	struct dma_i9xxxx_cfg_t *cfg_hndl;
 	uint8_t *buff_status;
-	uint8_t channel_num;
 	uint8_t **buffers;
+	uint8_t channel_num;
 	uint8_t num_of_buffers;
 
 	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(dma_i9xxxx, ch_pdev);
@@ -215,8 +212,14 @@ static void update_rx_buffer(struct dev_desc_t * ch_pdev,
 	buff_status[curr_dma_buff_indx] =	DMA_I9XXXX_BUFF_RX_RADA_READY;
 	if (DMA_I9XXXX_BUFF_IDLE != buff_status[next_dma_buff_indx])
 	{
-		// TODO : fix underflow
-		CRITICAL_ERROR("next rx buffer not ready\n");
+		//CRITICAL_ERROR("next rx buffer not ready\n");
+		next_dma_buff_indx = curr_dma_buff_indx;
+		if (NULL != callback_dev)
+		{
+			DEV_CALLBACK_1_PARAMS(
+					callback_dev, CALLBACK_BUFFER_OVERFLOW, ch_pdev);
+		}
+
 	}
 
 	channel_num = cfg_hndl->channel_num;
@@ -317,8 +320,10 @@ static void init_buffers(struct dma_i9xxxx_cfg_t *cfg_hndl,
 	uint8_t i;
 	uint8_t *buff;
 	uint8_t num_of_buffers;
+	size_t  buff_size;
 
 	num_of_buffers = cfg_hndl->num_of_buffers;
+	buff_size = cfg_hndl->buff_size;
 
 	if(NULL == runtime_hndl->buff)
 	{
@@ -330,7 +335,7 @@ static void init_buffers(struct dma_i9xxxx_cfg_t *cfg_hndl,
 
 		for (i = 0; i < num_of_buffers; i++)
 		{
-			buff = (uint8_t*)malloc(cfg_hndl->buff_size);
+			buff = (uint8_t*)malloc(buff_size);
 			errors_api_check_if_malloc_succeed(buff);
 			runtime_hndl->buff[i] = buff;
 		}
@@ -339,7 +344,6 @@ static void init_buffers(struct dma_i9xxxx_cfg_t *cfg_hndl,
 	{
 		runtime_hndl->buff_status[i] = DMA_I9XXXX_BUFF_IDLE ;
 	}
-
 	runtime_hndl->next_supplied_tx_buffer = 0;
 }
 
@@ -462,7 +466,7 @@ static uint8_t set_peripheral_dma(struct dma_i9xxxx_cfg_t *cfg_hndl,
  *
  */
 static void set_transfer_size(struct dma_i9xxxx_runtime_t *runtime_hndl,
-		uint8_t channel_num, uint32_t transfer_word_size, uint32_t buff_size)
+		uint8_t channel_num, uint16_t transfer_word_size, size_t buff_size)
 {
 	uint32_t   buff_size_in_transfer_words;
 
@@ -500,7 +504,7 @@ static uint8_t start_dma_i9xxxx_device(struct dev_desc_t *adev,
 	uint8_t channel_num;
 	uint8_t peripheral_type;
 	uint8_t ret;
-	uint32_t transfer_word_size;
+	uint16_t transfer_word_size;
 	uint32_t buff_size;
 
 	ret = 0;
