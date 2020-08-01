@@ -34,12 +34,9 @@
 	#define CONFIRM_REG  (SYS->P2PSTS0)
 #endif
 
-#define AP_CONNECT_TIMEOUT  15000
-#define IPC_I96XXX_TIMEOUT     200//30000//10000//3000
+#define IPC_I96XXX_TIMEOUT     100//30000//10000//3000
 #define IPC_I96XXX_MAX_QUEUE_LEN   ( 3 )
 #define MAX_RCVD_BUFFER_SIZE   256
-
-#define HANDSHAKE_TRIES  3
 
 
 #define MAX_NUMBER_OF_PORTS  32
@@ -70,6 +67,11 @@ char* ipc_i96xxx_get_state_name(uint16_t state)
 	}
 }
 
+#define DBG_SIZE  1000
+uint16_t dbg_step = 0;
+uint32_t dbg_arr[DBG_SIZE + 1] = {0};
+
+uint32_t isr_cnt = 0;
 
 static void ipc_isr_callback()
 {
@@ -85,9 +87,20 @@ static void ipc_isr_callback()
 		return ;
 	}
 
+	isr_cnt++;
+
+	if (315 == isr_cnt)
+	{
+		isr_cnt++;
+	}
 	queueMsg.type = DATA_FROM_REMOTE;
 	memcpy(&queueMsg.msg_data.msg_data_from_peer.msg_from_remote,
 				(void*)reg_val, sizeof(struct ipc_i96xxx_remote_message_t));
+
+	dbg_arr[(dbg_step < DBG_SIZE)? (dbg_step++) : DBG_SIZE] =
+			(0xe1 << 16) +
+			(queueMsg.msg_data.msg_data_from_peer.msg_from_remote.msg_id << 8) +
+			queueMsg.msg_data.msg_data_from_peer.msg_from_remote.type;
 
 	if (OS_QUEUE_SEND_SUCCESS !=
 			os_queue_send_without_wait(main_queue, (void*)&queueMsg))
@@ -97,33 +110,45 @@ static void ipc_isr_callback()
 			memcpy(&l_ipc_i96xxx_runtime_hndl->auxiliary_msg,
 					&queueMsg, sizeof(struct ipc_i96xxx_message_t));
 			l_ipc_i96xxx_runtime_hndl->auxiliary_msg_valid = 1;
+			dbg_arr[(dbg_step < DBG_SIZE)? (dbg_step++) : DBG_SIZE] =
+					(0xe2 << 16) +
+					(queueMsg.msg_data.msg_data_from_peer.msg_from_remote.msg_id << 8) +
+					queueMsg.msg_data.msg_data_from_peer.msg_from_remote.type;
 		}
 		//PRINTF_DBG("ipc not queue sent\n");
 	}
+	else
+	{
+		CONFIRM_REG = reg_val;
+	}
 
-	CONFIRM_REG = reg_val;
 	return;
 }
 
 
+#define BUSY_LOOP_TRIES  100
 static void send_to_peer(struct ipc_i96xxx_runtime_t *ipc_i96xxx_runtime_hndl,
 							uint8_t msg_idx,
 							struct ipc_i96xxx_remote_message_t *remote_msg)
 {
-	uint8_t is_timer_elapsed;
+	uint16_t tries = BUSY_LOOP_TRIES;
 
 	while (0 != NOTIFY_REG)
 	{
-		DEV_IOCTL(ipc_i96xxx_runtime_hndl->config_handle->timer_dev,
-				IOCTL_TIMER_WRAPPER_API_CHECK_IF_COUNTDOWN_ELAPSED,
-				&is_timer_elapsed );
-		if (1 == is_timer_elapsed)
-		{
-			os_delay_ms(1000);
-		}
+		if (0 == (tries--)) break;
+	}
+
+	while (0 != NOTIFY_REG)
+	{
+		dbg_arr[(dbg_step < DBG_SIZE)? (dbg_step++) : DBG_SIZE] =
+				(0xe8 << 16) + (msg_idx << 8) + remote_msg->type;
+		os_delay_ms(10);
 	}
 	memcpy(&l_remote_msg, remote_msg, sizeof(l_remote_msg));
 	l_remote_msg.msg_id = msg_idx;
+	dbg_arr[(dbg_step < DBG_SIZE)? (dbg_step++) : DBG_SIZE] =
+			(0xe3 << 16) + (msg_idx << 8) + remote_msg->type;
+
 	NOTIFY_REG = (uint32_t)&l_remote_msg;
 }
 
@@ -356,6 +381,7 @@ static void process_close_connection_from_remote(
 }
 
 
+static uint32_t dbg_cnt = 0;
 /*
  * process_message_from_remote()
  *
@@ -380,6 +406,7 @@ static void process_message_from_remote(struct ipc_i96xxx_cfg_t *config_handle,
 		send_reply_to_peer(ipc_i96xxx_runtime_hndl, REPLY_OK);
 		break;
 	case REMOTE_MSG_TYPE_CONNECT:
+		dbg_cnt++;
 		process_connect_from_remote(ipc_i96xxx_runtime_hndl,
 				&msg_from_remote->msg_data.connect_data);
 		break;
@@ -811,7 +838,6 @@ static void send_handshake(
 	struct ipc_i96xxx_remote_message_t remote_msg;
 
 	ipc_i96xxx_runtime_hndl->current_state = IPC_I96XXX_State_InitialHandShake;
-	ipc_i96xxx_runtime_hndl->handshake_counter = HANDSHAKE_TRIES;
 	remote_msg.type = REMOTE_MSG_TYPE_HANDSHAKE;
 	send_msg_to_peer(ipc_i96xxx_runtime_hndl, &remote_msg);
 }
@@ -839,6 +865,9 @@ static void check_timeouts(struct ipc_i96xxx_cfg_t *config_handle,
 			&is_timer_elapsed );
 	if (0 == is_timer_elapsed) return;
 
+	dbg_arr[(dbg_step < DBG_SIZE)? (dbg_step++) : DBG_SIZE] =
+			(6 << 16);
+
 	do_print = 1;
 	if (IPC_I96XXX_State_InitialHandShake == current_state)
 	{
@@ -861,12 +890,7 @@ static void check_timeouts(struct ipc_i96xxx_cfg_t *config_handle,
 	switch(current_state)
 	{
 	case IPC_I96XXX_State_InitialHandShake :
-		ipc_i96xxx_runtime_hndl->handshake_counter--;
-		if (0 == ipc_i96xxx_runtime_hndl->handshake_counter)
-		{
-			send_handshake(ipc_i96xxx_runtime_hndl);
-		}
-		timeout = 200;
+		send_handshake(ipc_i96xxx_runtime_hndl);
 		break;
 	default:
 		ipc_i96xxx_runtime_hndl->last_error = IPC_I96XXX_ERR_REQUEST_TIMED_OUT;
@@ -878,56 +902,6 @@ static void check_timeouts(struct ipc_i96xxx_cfg_t *config_handle,
 	DEV_IOCTL(timer_dev,IOCTL_TIMER_WRAPPER_API_SET_COUNTDOWN_mSEC_AND_RESET,
 			&timeout);
 	ipc_i96xxx_runtime_hndl->current_state = current_state;
-}
-
-
-static void process_rx_message(struct ipc_i96xxx_cfg_t *config_handle,
-		struct ipc_i96xxx_runtime_t *ipc_i96xxx_runtime_hndl,
-		struct ipc_i96xxx_message_t *rx_message,
-		size_t is_message_received)
-{
-	uint8_t is_local_msg_pending;
-
-	is_local_msg_pending = ipc_i96xxx_runtime_hndl->is_local_msg_pending;
-
-	if( OS_QUEUE_RECEIVE_SUCCESS == is_message_received )
-	{
-		if(DATA_FROM_REMOTE == rx_message->type)
-		{
-			process_message_from_remote(
-					config_handle, ipc_i96xxx_runtime_hndl,
-					&rx_message->msg_data.msg_data_from_peer);
-		}
-		else if (ipc_i96xxx_runtime_hndl->auxiliary_msg_valid)
-		{
-			process_message_from_remote(
-					config_handle, ipc_i96xxx_runtime_hndl,
-					&ipc_i96xxx_runtime_hndl->
-						auxiliary_msg.msg_data.msg_data_from_peer);
-			ipc_i96xxx_runtime_hndl->auxiliary_msg_valid = 0;
-		}
-		else
-		{
-			memcpy(&ipc_i96xxx_runtime_hndl->pending_local_msg,
-						rx_message, sizeof(struct ipc_i96xxx_message_t));
-			is_local_msg_pending = 1;
-		}
-	}
-
-	if (IPC_I96XXX_State_Idle == ipc_i96xxx_runtime_hndl->current_state)
-	{
-		if (is_local_msg_pending)
-		{
-			//PRINTF_DBG("+++ process pending message\n");
-			process_local_message(config_handle, ipc_i96xxx_runtime_hndl);
-			is_local_msg_pending = 0;
-		}
-	}
-	else
-	{
-		check_timeouts(config_handle, ipc_i96xxx_runtime_hndl);
-	}
-	ipc_i96xxx_runtime_hndl->is_local_msg_pending = is_local_msg_pending;
 }
 
 
@@ -987,6 +961,61 @@ static void init_icp(struct dev_desc_t *adev,
 }
 
 
+static void process_rx_message(struct ipc_i96xxx_cfg_t *config_handle,
+		struct ipc_i96xxx_runtime_t *ipc_i96xxx_runtime_hndl,
+		struct ipc_i96xxx_message_t *rx_message,
+		size_t is_message_received)
+{
+	uint8_t is_local_msg_pending;
+
+	is_local_msg_pending = ipc_i96xxx_runtime_hndl->is_local_msg_pending;
+
+	if( OS_QUEUE_RECEIVE_SUCCESS == is_message_received )
+	{
+		if(DATA_FROM_REMOTE == rx_message->type)
+		{
+			dbg_arr[(dbg_step < DBG_SIZE)? (dbg_step++) : DBG_SIZE] =
+					(4 << 16);
+			process_message_from_remote(
+					config_handle, ipc_i96xxx_runtime_hndl,
+					&rx_message->msg_data.msg_data_from_peer);
+		}
+		else if (ipc_i96xxx_runtime_hndl->auxiliary_msg_valid)
+		{
+			dbg_arr[(dbg_step < DBG_SIZE)? (dbg_step++) : DBG_SIZE] =
+					(5 << 16);
+			process_message_from_remote(
+					config_handle, ipc_i96xxx_runtime_hndl,
+					&ipc_i96xxx_runtime_hndl->
+						auxiliary_msg.msg_data.msg_data_from_peer);
+			ipc_i96xxx_runtime_hndl->auxiliary_msg_valid = 0;
+			CONFIRM_REG = CONFIRM_REG; // clean notification register of peer
+		}
+		else
+		{
+			memcpy(&ipc_i96xxx_runtime_hndl->pending_local_msg,
+						rx_message, sizeof(struct ipc_i96xxx_message_t));
+			is_local_msg_pending = 1;
+		}
+	}
+
+	if (IPC_I96XXX_State_Idle == ipc_i96xxx_runtime_hndl->current_state)
+	{
+		if (is_local_msg_pending)
+		{
+			//PRINTF_DBG("+++ process pending message\n");
+			process_local_message(config_handle, ipc_i96xxx_runtime_hndl);
+			is_local_msg_pending = 0;
+		}
+	}
+	else
+	{
+		check_timeouts(config_handle, ipc_i96xxx_runtime_hndl);
+	}
+	ipc_i96xxx_runtime_hndl->is_local_msg_pending = is_local_msg_pending;
+}
+
+
 /*
  * ipc_i96xxx_Task()
  *
@@ -1010,7 +1039,6 @@ static void ipc_i96xxx_Task( void *task_param )
 	main_queue = ipc_i96xxx_runtime_hndl->main_queue;
 
 	ipc_i96xxx_runtime_hndl->request_done = 0;
-	CONFIRM_REG = CONFIRM_REG; // clean notification register of peer
 	timeout = 50;
 	DEV_IOCTL(config_handle->timer_dev,
 			IOCTL_TIMER_WRAPPER_API_SET_COUNTDOWN_mSEC_AND_RESET, &timeout);

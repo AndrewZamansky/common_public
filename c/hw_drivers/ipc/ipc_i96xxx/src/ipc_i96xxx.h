@@ -212,7 +212,6 @@ struct ipc_i96xxx_runtime_t {
 	uint8_t  is_local_msg_pending;
 	uint8_t  last_error;
 	uint8_t  request_done;
-	uint8_t  handshake_counter;
 	uint8_t  curr_sent_msg_id;
 	uint8_t  curr_received_msg_id;
 	uint8_t  auxiliary_msg_valid;
