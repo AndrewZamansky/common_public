@@ -67,11 +67,6 @@ char* ipc_i96xxx_get_state_name(uint16_t state)
 	}
 }
 
-#define DBG_SIZE  1000
-uint16_t dbg_step = 0;
-uint32_t dbg_arr[DBG_SIZE + 1] = {0};
-
-uint32_t isr_cnt = 0;
 
 static void ipc_isr_callback()
 {
@@ -87,41 +82,17 @@ static void ipc_isr_callback()
 		return ;
 	}
 
-	isr_cnt++;
-
-	if (315 == isr_cnt)
-	{
-		isr_cnt++;
-	}
 	queueMsg.type = DATA_FROM_REMOTE;
-	memcpy(&queueMsg.msg_data.msg_data_from_peer.msg_from_remote,
+	memcpy(&queueMsg.msg_data_from_peer.msg_from_remote,
 				(void*)reg_val, sizeof(struct ipc_i96xxx_remote_message_t));
-
-	dbg_arr[(dbg_step < DBG_SIZE)? (dbg_step++) : DBG_SIZE] =
-			(0xe1 << 16) +
-			(queueMsg.msg_data.msg_data_from_peer.msg_from_remote.msg_id << 8) +
-			queueMsg.msg_data.msg_data_from_peer.msg_from_remote.type;
 
 	if (OS_QUEUE_SEND_SUCCESS !=
 			os_queue_send_without_wait(main_queue, (void*)&queueMsg))
 	{
-		if (0 == l_ipc_i96xxx_runtime_hndl->auxiliary_msg_valid)
-		{
-			memcpy(&l_ipc_i96xxx_runtime_hndl->auxiliary_msg,
-					&queueMsg, sizeof(struct ipc_i96xxx_message_t));
-			l_ipc_i96xxx_runtime_hndl->auxiliary_msg_valid = 1;
-			dbg_arr[(dbg_step < DBG_SIZE)? (dbg_step++) : DBG_SIZE] =
-					(0xe2 << 16) +
-					(queueMsg.msg_data.msg_data_from_peer.msg_from_remote.msg_id << 8) +
-					queueMsg.msg_data.msg_data_from_peer.msg_from_remote.type;
-		}
 		//PRINTF_DBG("ipc not queue sent\n");
 	}
-	else
-	{
-		CONFIRM_REG = reg_val;
-	}
 
+	CONFIRM_REG = reg_val;
 	return;
 }
 
@@ -140,14 +111,10 @@ static void send_to_peer(struct ipc_i96xxx_runtime_t *ipc_i96xxx_runtime_hndl,
 
 	while (0 != NOTIFY_REG)
 	{
-		dbg_arr[(dbg_step < DBG_SIZE)? (dbg_step++) : DBG_SIZE] =
-				(0xe8 << 16) + (msg_idx << 8) + remote_msg->type;
 		os_delay_ms(10);
 	}
 	memcpy(&l_remote_msg, remote_msg, sizeof(l_remote_msg));
 	l_remote_msg.msg_id = msg_idx;
-	dbg_arr[(dbg_step < DBG_SIZE)? (dbg_step++) : DBG_SIZE] =
-			(0xe3 << 16) + (msg_idx << 8) + remote_msg->type;
 
 	NOTIFY_REG = (uint32_t)&l_remote_msg;
 }
@@ -172,8 +139,8 @@ static void send_reply_to_peer(
 	struct ipc_i96xxx_remote_message_t remote_msg;
 
 	remote_msg.type = REMOTE_MSG_TYPE_REPLY;
-	remote_msg.msg_data.reply_data.reply = reply;
-	remote_msg.msg_data.reply_data.reply_to_msg_id =
+	remote_msg.reply_data.reply = reply;
+	remote_msg.reply_data.reply_to_msg_id =
 			ipc_i96xxx_runtime_hndl->curr_received_msg_id;
 	send_to_peer(ipc_i96xxx_runtime_hndl, 0xff, &remote_msg);
 }
@@ -201,14 +168,15 @@ static void process_reply_from_remote(struct ipc_i96xxx_runtime_t *ipc_i96xxx_ru
 	struct ipc_i96xxx_socket_t  *curr_socket;
 	uint32_t reply;
 
-	if (ipc_i96xxx_runtime_hndl->curr_sent_msg_id !=
-									reply_data->reply_to_msg_id)
+	current_state = ipc_i96xxx_runtime_hndl->current_state;
+	if ((IPC_I96XXX_State_Idle == current_state) ||
+			(ipc_i96xxx_runtime_hndl->curr_sent_msg_id !=
+									reply_data->reply_to_msg_id))
 	{// discard reply for obsolete messages
 		return;
 	}
 
 	reply = reply_data->reply;
-	current_state = ipc_i96xxx_runtime_hndl->current_state;
 	curr_socket = ipc_i96xxx_runtime_hndl->curr_socket;
 	newState = IPC_I96XXX_State_Idle;// by default go to Idle
 	switch (current_state)
@@ -216,7 +184,7 @@ static void process_reply_from_remote(struct ipc_i96xxx_runtime_t *ipc_i96xxx_ru
 	case IPC_I96XXX_State_InitialHandShake:
 		if (REPLY_OK != reply)
 		{
-			CRITICAL_ERROR("TODO");
+			PRINTF_DBG("IPC: unexpected NOT OK reply on handshake\n");
 		}
 		break;
 	case IPC_I96XXX_State_Connecting_Socket:
@@ -256,7 +224,7 @@ static void process_reply_from_remote(struct ipc_i96xxx_runtime_t *ipc_i96xxx_ru
 			struct ipc_i96xxx_msg_send_data_to_socket_t *send_msg;
 
 			send_msg = &ipc_i96xxx_runtime_hndl->pending_local_msg.
-										msg_data.msg_send_data_to_socket;
+										msg_send_data_to_socket;
 			*send_msg->data_length_sent = (uint16_t)reply_data->reply_data[0];
 		}
 		ipc_i96xxx_runtime_hndl->request_done = 1;
@@ -266,7 +234,7 @@ static void process_reply_from_remote(struct ipc_i96xxx_runtime_t *ipc_i96xxx_ru
 		ipc_i96xxx_runtime_hndl->request_done = 1;
 		break;
 	default :
-		CRITICAL_ERROR("unknown state");
+		PRINTF_DBG("IPC: reply during unexpected state(%d)\n", current_state);
 	}
 	ipc_i96xxx_runtime_hndl->current_state = newState;
 }
@@ -352,10 +320,10 @@ static void process_send_data_from_remote(
 				socket_handle->wake_queue, ( void *)&dummy_msg);
 	}
 	remote_msg.type = REMOTE_MSG_TYPE_REPLY;
-	remote_msg.msg_data.reply_data.reply = REPLY_OK;
-	remote_msg.msg_data.reply_data.reply_to_msg_id =
+	remote_msg.reply_data.reply = REPLY_OK;
+	remote_msg.reply_data.reply_to_msg_id =
 				ipc_i96xxx_runtime_hndl->curr_received_msg_id;
-	remote_msg.msg_data.reply_data.reply_data[0] = size_to_copy;
+	remote_msg.reply_data.reply_data[0] = size_to_copy;
 	send_msg_to_peer(ipc_i96xxx_runtime_hndl, &remote_msg);
 }
 
@@ -400,7 +368,7 @@ static void process_message_from_remote(struct ipc_i96xxx_cfg_t *config_handle,
 	{
 	case REMOTE_MSG_TYPE_REPLY:
 		process_reply_from_remote(
-				ipc_i96xxx_runtime_hndl, &msg_from_remote->msg_data.reply_data);
+				ipc_i96xxx_runtime_hndl, &msg_from_remote->reply_data);
 		break;
 	case REMOTE_MSG_TYPE_HANDSHAKE:
 		send_reply_to_peer(ipc_i96xxx_runtime_hndl, REPLY_OK);
@@ -408,19 +376,19 @@ static void process_message_from_remote(struct ipc_i96xxx_cfg_t *config_handle,
 	case REMOTE_MSG_TYPE_CONNECT:
 		dbg_cnt++;
 		process_connect_from_remote(ipc_i96xxx_runtime_hndl,
-				&msg_from_remote->msg_data.connect_data);
+				&msg_from_remote->connect_data);
 		break;
 	case REMOTE_MSG_TYPE_ACCEPT:
 		process_accept_from_remote(ipc_i96xxx_runtime_hndl,
-				&msg_from_remote->msg_data.accept_data);
+				&msg_from_remote->accept_data);
 		break;
 	case REMOTE_MSG_TYPE_SEND_DATA:
 		process_send_data_from_remote(ipc_i96xxx_runtime_hndl,
-				&msg_from_remote->msg_data.send_data);
+				&msg_from_remote->send_data);
 		break;
 	case REMOTE_MSG_TYPE_CLOSE_CONNECTION:
 		process_close_connection_from_remote(ipc_i96xxx_runtime_hndl,
-						&msg_from_remote->msg_data.close_data);
+						&msg_from_remote->close_data);
 		break;
 	default:
 		CRITICAL_ERROR("unknown message");
@@ -456,7 +424,7 @@ static enum ipc_i96xxx_state_e process_close_socket_message(
 	}
 
 	remote_msg.type = REMOTE_MSG_TYPE_CLOSE_CONNECTION;
-	remote_msg.msg_data.close_data.to_port = socket_handle->remote_port;
+	remote_msg.close_data.to_port = socket_handle->remote_port;
 	send_msg_to_peer(ipc_i96xxx_runtime_hndl, &remote_msg);
 	ipc_i96xxx_runtime_hndl->curr_socket = socket_handle;
 	return IPC_I96XXX_State_Closing_Socket;
@@ -481,9 +449,9 @@ static enum ipc_i96xxx_state_e process_send_data_message(
 	}
 
 	remote_msg.type = REMOTE_MSG_TYPE_SEND_DATA;
-	remote_msg.msg_data.send_data.to_port = socket_handle->remote_port;
-	remote_msg.msg_data.send_data.data = pmsg_send_data_to_socket->data;
-	remote_msg.msg_data.send_data.data_size =
+	remote_msg.send_data.to_port = socket_handle->remote_port;
+	remote_msg.send_data.data = pmsg_send_data_to_socket->data;
+	remote_msg.send_data.data_size =
 			pmsg_send_data_to_socket->data_length;
 	send_msg_to_peer(ipc_i96xxx_runtime_hndl, &remote_msg);
 	ipc_i96xxx_runtime_hndl->curr_socket = socket_handle;
@@ -635,7 +603,7 @@ static enum ipc_i96xxx_state_e process_accept_socket_message(
 	}
 
 	remote_msg.type = REMOTE_MSG_TYPE_ACCEPT;
-	remote_msg.msg_data.connect_data.to_port = socket_handle->remote_port;
+	remote_msg.connect_data.to_port = socket_handle->remote_port;
 	for (i = (MAX_NUMBER_OF_PORTS - 1); 0 <= i; i--)
 	{
 		if (NULL == ports[i])
@@ -643,7 +611,7 @@ static enum ipc_i96xxx_state_e process_accept_socket_message(
 			ports[i] = allocated_socket;
 			allocated_socket->local_port = i;
 			allocated_socket->remote_port = socket_handle->remote_port;
-			remote_msg.msg_data.connect_data.from_port = i;
+			remote_msg.connect_data.from_port = i;
 			send_msg_to_peer(ipc_i96xxx_runtime_hndl, &remote_msg);
 			ipc_i96xxx_runtime_hndl->curr_socket = allocated_socket;
 			return IPC_I96XXX_State_Accept_Sent;
@@ -675,7 +643,7 @@ static enum ipc_i96xxx_state_e process_connect_socket_message(
 	}
 
 	remote_msg.type = REMOTE_MSG_TYPE_CONNECT;
-	remote_msg.msg_data.connect_data.to_port = pmsg_connect_socket->port;
+	remote_msg.connect_data.to_port = pmsg_connect_socket->port;
 	for (i = (MAX_NUMBER_OF_PORTS - 1); 0 <= i; i--)
 	{
 		if (NULL == ports[i])
@@ -683,7 +651,7 @@ static enum ipc_i96xxx_state_e process_connect_socket_message(
 			ports[i] = socket_handle;
 			socket_handle->local_port = i;
 			socket_handle->remote_port = pmsg_connect_socket->port;
-			remote_msg.msg_data.connect_data.from_port = i;
+			remote_msg.connect_data.from_port = i;
 			send_msg_to_peer(ipc_i96xxx_runtime_hndl, &remote_msg);
 			ipc_i96xxx_runtime_hndl->curr_socket = socket_handle;
 			return IPC_I96XXX_State_Connecting_Socket;
@@ -764,61 +732,61 @@ static enum ipc_i96xxx_state_e process_get_rcvd_data_message(
 static void process_local_message(struct ipc_i96xxx_cfg_t *config_handle,
 		struct ipc_i96xxx_runtime_t *ipc_i96xxx_runtime_hndl)
 {
-	struct ipc_i96xxx_message_t  pending_local_msg;
+	struct ipc_i96xxx_message_t  *pending_local_msg;
 	struct dev_desc_t *   timer_dev;
 	uint64_t timeout;
 	enum ipc_i96xxx_state_e current_state ;
 
 
-//	PRINTF_DBG("---ESP process_message=%d \r\n" ,pending_local_msg.type);
-	pending_local_msg = ipc_i96xxx_runtime_hndl->pending_local_msg;
+//	PRINTF_DBG("---ESP process_message=%d \r\n" ,pending_local_msg->type);
+	pending_local_msg = &ipc_i96xxx_runtime_hndl->pending_local_msg;
 
 	timeout = IPC_I96XXX_TIMEOUT;
-	switch(pending_local_msg.type)
+	switch(pending_local_msg->type)
 	{
 	case CLOSE_SOCKET :
 		current_state = process_close_socket_message(
-				&pending_local_msg.msg_data.msg_close_socket,
+				&pending_local_msg->msg_close_socket,
 				ipc_i96xxx_runtime_hndl);
 		break;
 	case SEND_DATA :
 		current_state = process_send_data_message(
-				&pending_local_msg.msg_data.msg_send_data_to_socket,
+				&pending_local_msg->msg_send_data_to_socket,
 				ipc_i96xxx_runtime_hndl);
 		break;
 	case OPEN_SOCKET :
 		current_state = process_open_socket_message(
-				&pending_local_msg.msg_data.msg_open_socket,
+				&pending_local_msg->msg_open_socket,
 				ipc_i96xxx_runtime_hndl);
 		break;
 	case CONNECT_SOCKET :
 		current_state = process_connect_socket_message(
-				&pending_local_msg.msg_data.msg_connect_socket,
+				&pending_local_msg->msg_connect_socket,
 				ipc_i96xxx_runtime_hndl);
 		break;
 	case BIND_SOCKET :
 		current_state = process_bind_socket_message(
-				&pending_local_msg.msg_data.msg_bind_socket,
+				&pending_local_msg->msg_bind_socket,
 				ipc_i96xxx_runtime_hndl);
 		break;
 	case LISTEN_SOCKET:
 		current_state = process_listen_socket_message(
-				&pending_local_msg.msg_data.msg_listen_socket,
+				&pending_local_msg->msg_listen_socket,
 				ipc_i96xxx_runtime_hndl);
 		break;
 	case ACCEPT_SOCKET:
 		current_state = process_accept_socket_message(
-				&pending_local_msg.msg_data.msg_accept_socket,
+				&pending_local_msg->msg_accept_socket,
 				ipc_i96xxx_runtime_hndl);
 		break;
 	case CHECK_IF_RECEIVED_DATA:
 		current_state = process_check_if_data_rcvd_message(
-				&pending_local_msg.msg_data.msg_check_if_new_data_received,
+				&pending_local_msg->msg_check_if_new_data_received,
 				ipc_i96xxx_runtime_hndl);
 		break;
 	case GET_RECEIVED_DATA:
 		current_state = process_get_rcvd_data_message(
-				&pending_local_msg.msg_data.msg_get_data_received,
+				&pending_local_msg->msg_get_data_received,
 				ipc_i96xxx_runtime_hndl);
 		break;
 	default:
@@ -865,9 +833,6 @@ static void check_timeouts(struct ipc_i96xxx_cfg_t *config_handle,
 			&is_timer_elapsed );
 	if (0 == is_timer_elapsed) return;
 
-	dbg_arr[(dbg_step < DBG_SIZE)? (dbg_step++) : DBG_SIZE] =
-			(6 << 16);
-
 	do_print = 1;
 	if (IPC_I96XXX_State_InitialHandShake == current_state)
 	{
@@ -892,10 +857,16 @@ static void check_timeouts(struct ipc_i96xxx_cfg_t *config_handle,
 	case IPC_I96XXX_State_InitialHandShake :
 		send_handshake(ipc_i96xxx_runtime_hndl);
 		break;
-	default:
+	case IPC_I96XXX_State_Connecting_Socket:
+	case IPC_I96XXX_State_Sending_Data:
+	case IPC_I96XXX_State_Accept_Sent:
+	case IPC_I96XXX_State_Closing_Socket:
 		ipc_i96xxx_runtime_hndl->last_error = IPC_I96XXX_ERR_REQUEST_TIMED_OUT;
 		ipc_i96xxx_runtime_hndl->request_done=1;
 		current_state = IPC_I96XXX_State_Idle;
+		break ;
+	default:
+		PRINTF_DBG("IPC err: timeout during state =%d", current_state);
 		break ;
 	}
 
@@ -961,61 +932,6 @@ static void init_icp(struct dev_desc_t *adev,
 }
 
 
-static void process_rx_message(struct ipc_i96xxx_cfg_t *config_handle,
-		struct ipc_i96xxx_runtime_t *ipc_i96xxx_runtime_hndl,
-		struct ipc_i96xxx_message_t *rx_message,
-		size_t is_message_received)
-{
-	uint8_t is_local_msg_pending;
-
-	is_local_msg_pending = ipc_i96xxx_runtime_hndl->is_local_msg_pending;
-
-	if( OS_QUEUE_RECEIVE_SUCCESS == is_message_received )
-	{
-		if(DATA_FROM_REMOTE == rx_message->type)
-		{
-			dbg_arr[(dbg_step < DBG_SIZE)? (dbg_step++) : DBG_SIZE] =
-					(4 << 16);
-			process_message_from_remote(
-					config_handle, ipc_i96xxx_runtime_hndl,
-					&rx_message->msg_data.msg_data_from_peer);
-		}
-		else if (ipc_i96xxx_runtime_hndl->auxiliary_msg_valid)
-		{
-			dbg_arr[(dbg_step < DBG_SIZE)? (dbg_step++) : DBG_SIZE] =
-					(5 << 16);
-			process_message_from_remote(
-					config_handle, ipc_i96xxx_runtime_hndl,
-					&ipc_i96xxx_runtime_hndl->
-						auxiliary_msg.msg_data.msg_data_from_peer);
-			ipc_i96xxx_runtime_hndl->auxiliary_msg_valid = 0;
-			CONFIRM_REG = CONFIRM_REG; // clean notification register of peer
-		}
-		else
-		{
-			memcpy(&ipc_i96xxx_runtime_hndl->pending_local_msg,
-						rx_message, sizeof(struct ipc_i96xxx_message_t));
-			is_local_msg_pending = 1;
-		}
-	}
-
-	if (IPC_I96XXX_State_Idle == ipc_i96xxx_runtime_hndl->current_state)
-	{
-		if (is_local_msg_pending)
-		{
-			//PRINTF_DBG("+++ process pending message\n");
-			process_local_message(config_handle, ipc_i96xxx_runtime_hndl);
-			is_local_msg_pending = 0;
-		}
-	}
-	else
-	{
-		check_timeouts(config_handle, ipc_i96xxx_runtime_hndl);
-	}
-	ipc_i96xxx_runtime_hndl->is_local_msg_pending = is_local_msg_pending;
-}
-
-
 /*
  * ipc_i96xxx_Task()
  *
@@ -1027,6 +943,7 @@ static void ipc_i96xxx_Task( void *task_param )
 	struct ipc_i96xxx_message_t xRxedMessage;
 	struct ipc_i96xxx_cfg_t *config_handle;
 	struct ipc_i96xxx_runtime_t *ipc_i96xxx_runtime_hndl;
+	uint8_t is_local_msg_pending;
 	size_t is_message_received;
 	os_queue_t main_queue;
 	uint64_t timeout;
@@ -1050,8 +967,37 @@ static void ipc_i96xxx_Task( void *task_param )
 		is_message_received = os_queue_receive_with_timeout( main_queue,
 				&(xRxedMessage), 50/* portMAX_DELAY*/ ) ;
 
-		process_rx_message(config_handle, ipc_i96xxx_runtime_hndl,
-									&xRxedMessage, is_message_received);
+		is_local_msg_pending = ipc_i96xxx_runtime_hndl->is_local_msg_pending;
+		if( OS_QUEUE_RECEIVE_SUCCESS == is_message_received )
+		{
+			if(DATA_FROM_REMOTE == xRxedMessage.type)
+			{
+				process_message_from_remote(
+						config_handle, ipc_i96xxx_runtime_hndl,
+						&xRxedMessage.msg_data_from_peer);
+			}
+			else
+			{
+				memcpy(&ipc_i96xxx_runtime_hndl->pending_local_msg,
+						&xRxedMessage, sizeof(struct ipc_i96xxx_message_t));
+				is_local_msg_pending = 1;
+			}
+		}
+
+		if (IPC_I96XXX_State_Idle == ipc_i96xxx_runtime_hndl->current_state)
+		{
+			if (is_local_msg_pending)
+			{
+				//PRINTF_DBG("+++ process pending message\n");
+				process_local_message(config_handle, ipc_i96xxx_runtime_hndl);
+				is_local_msg_pending = 0;
+			}
+		}
+		else
+		{
+			check_timeouts(config_handle, ipc_i96xxx_runtime_hndl);
+		}
+		ipc_i96xxx_runtime_hndl->is_local_msg_pending = is_local_msg_pending;
 
 		if (1 == ipc_i96xxx_runtime_hndl->request_done)
 		{

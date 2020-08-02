@@ -61,7 +61,7 @@ static int  ipc_i96xxx_closesocket(void* socketfd)
 						ipc_i96xxx, socket_handle->ipc_i96xxx_dev);
 
 	queueMsg.type = CLOSE_SOCKET;
-	queueMsg.msg_data.msg_close_socket.socket_handle = socket_handle;
+	queueMsg.msg_close_socket.socket_handle = socket_handle;
 	retVal = send_message_and_wait(ipc_i96xxx_runtime_hndl, &queueMsg);
 
 	if ( (0 != retVal) && (IPC_I96XXX_ERR_SOCKET_NOT_AVAILABLE != retVal))
@@ -86,8 +86,8 @@ static int ipc_i96xxx_connect(void* socketfd,
 						ipc_i96xxx, socket_handle->ipc_i96xxx_dev);
 
 	queueMsg.type = CONNECT_SOCKET;
-	queueMsg.msg_data.msg_connect_socket.socket_handle = socket_handle;
-	queueMsg.msg_data.msg_connect_socket.port = addr->sa_data[0];
+	queueMsg.msg_connect_socket.socket_handle = socket_handle;
+	queueMsg.msg_connect_socket.port = addr->sa_data[0];
 	retVal = send_message_and_wait(ipc_i96xxx_runtime_hndl, &queueMsg);
 
 	if(0 != retVal)
@@ -116,9 +116,9 @@ static uint8_t ipc_i96xxx_is_data_available(void* socketfd,
 	*is_data_available = 0;
 
 	queueMsg.type = CHECK_IF_RECEIVED_DATA;
-	queueMsg.msg_data.msg_check_if_new_data_received.socket_handle =
+	queueMsg.msg_check_if_new_data_received.socket_handle =
 															socket_handle;
-	queueMsg.msg_data.msg_check_if_new_data_received.newDataExists =
+	queueMsg.msg_check_if_new_data_received.newDataExists =
 															is_data_available;
 	return send_message_and_wait(ipc_i96xxx_runtime_hndl, &queueMsg);
 
@@ -145,10 +145,10 @@ static ssize_t ipc_i96xxx_recv(void* socketfd,
 
 
 	queueMsg.type = GET_RECEIVED_DATA;
-	queueMsg.msg_data.msg_get_data_received.socket_handle = socket_handle;
-	queueMsg.msg_data.msg_get_data_received.buffer = buf;
-	queueMsg.msg_data.msg_get_data_received.max_size = len;
-	queueMsg.msg_data.msg_get_data_received.size_received = &size_received;
+	queueMsg.msg_get_data_received.socket_handle = socket_handle;
+	queueMsg.msg_get_data_received.buffer = buf;
+	queueMsg.msg_get_data_received.max_size = len;
+	queueMsg.msg_get_data_received.size_received = &size_received;
 
 	size_received = 0;
 	while (0 == size_received)
@@ -232,8 +232,8 @@ static int ipc_i96xxx_bind(void* socketfd,
 						ipc_i96xxx, socket_handle->ipc_i96xxx_dev);
 
 	queueMsg.type = BIND_SOCKET;
-	queueMsg.msg_data.msg_bind_socket.socket_handle = socket_handle;
-	queueMsg.msg_data.msg_connect_socket.port = addr->sa_data[0];
+	queueMsg.msg_bind_socket.socket_handle = socket_handle;
+	queueMsg.msg_connect_socket.port = addr->sa_data[0];
 	retVal = send_message_and_wait(ipc_i96xxx_runtime_hndl, &queueMsg);
 
 	if (0 != retVal)
@@ -286,10 +286,10 @@ static ssize_t ipc_i96xxx_send(void* socketfd,
 						ipc_i96xxx, socket_handle->ipc_i96xxx_dev);
 
 	queueMsg.type = SEND_DATA;
-	queueMsg.msg_data.msg_send_data_to_socket.socket_handle = socket_handle;
-	queueMsg.msg_data.msg_send_data_to_socket.data = buffer;
-	queueMsg.msg_data.msg_send_data_to_socket.data_length = length;
-	queueMsg.msg_data.msg_send_data_to_socket.data_length_sent = &length_sent;
+	queueMsg.msg_send_data_to_socket.socket_handle = socket_handle;
+	queueMsg.msg_send_data_to_socket.data = buffer;
+	queueMsg.msg_send_data_to_socket.data_length = length;
+	queueMsg.msg_send_data_to_socket.data_length_sent = &length_sent;
 
 	ret_val = send_message_and_wait(ipc_i96xxx_runtime_hndl, &queueMsg);
 
@@ -319,7 +319,7 @@ static int ipc_i96xxx_listen(void* socketfd, int backlog)
 						ipc_i96xxx, socket_handle->ipc_i96xxx_dev);
 
 	queueMsg.type = LISTEN_SOCKET;
-	queueMsg.msg_data.msg_bind_socket.socket_handle = socket_handle;
+	queueMsg.msg_bind_socket.socket_handle = socket_handle;
 	retVal = send_message_and_wait(ipc_i96xxx_runtime_hndl, &queueMsg);
 
 	if (0 != retVal)
@@ -347,8 +347,8 @@ static int ipc_i96xxx_accept(
 						ipc_i96xxx, socket_handle->ipc_i96xxx_dev);
 
 	queueMsg.type = ACCEPT_SOCKET;
-	queueMsg.msg_data.msg_accept_socket.socket_handle = socket_handle;
-	queueMsg.msg_data.msg_accept_socket.new_socket_handle =
+	queueMsg.msg_accept_socket.socket_handle = socket_handle;
+	queueMsg.msg_accept_socket.new_socket_handle =
 												&new_socket_cfg_handle;
 	retVal = send_message_and_wait(ipc_i96xxx_runtime_hndl, &queueMsg);
 
@@ -422,7 +422,7 @@ static uint8_t open_socket(struct dev_desc_t *adev,
 
 
 	queueMsg.type = OPEN_SOCKET;
-	queueMsg.msg_data.msg_open_socket.new_socket_handle =
+	queueMsg.msg_open_socket.new_socket_handle =
 									&new_internal_socket_handle;
 	retVal = send_message_and_wait(ipc_i96xxx_runtime_hndl, &queueMsg);
 
