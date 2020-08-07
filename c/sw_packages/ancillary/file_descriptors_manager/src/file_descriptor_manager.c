@@ -310,15 +310,15 @@ ssize_t recv(int sockfd, void *buf, size_t len, int flags)
 
 	retVal = curr_fd->file_desc_ops.is_data_available_func(
 								curr_fd->internal_desc, &read_ready);
-	if(0 != retVal)
+	if (0 != retVal)
 	{
-		//PRINTF_DBG("--%s: fd = %d connection  lost\n",
-		//									__FUNCTION__, sockfd);
 		errno = ENOTCONN;
 		return -1;
 	}
 
-	if ((0 == read_ready) && (socket_options & (1 << SO_NONBLOCK)))
+	if ((0 == read_ready) &&
+			( (flags & MSG_DONTWAIT) ||
+			(socket_options & (1 << SO_NONBLOCK)) )   )
 	{
 		errno = EAGAIN;
 		return -1;
@@ -329,8 +329,6 @@ ssize_t recv(int sockfd, void *buf, size_t len, int flags)
 
 	if (0 > size_received)
 	{
-		//PRINTF_DBG("--%s : fd = %d connection was lost\n",
-		//												__FUNCTION__, sockfd);
 		errno = ENOTCONN;
 		return -1;
 	}

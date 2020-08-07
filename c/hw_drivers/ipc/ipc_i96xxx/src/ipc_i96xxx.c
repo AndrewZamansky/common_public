@@ -38,6 +38,8 @@
 #define IPC_I96XXX_MAX_QUEUE_LEN   ( 3 )
 #define MAX_RCVD_BUFFER_SIZE   256
 
+#define MAX_ALLOWED_MSG_ID 0xfe
+#define RSRVD_REPLY_ID     0xff
 
 #define MAX_NUMBER_OF_PORTS  32
 static struct ipc_i96xxx_socket_t *ports[MAX_NUMBER_OF_PORTS];
@@ -127,22 +129,22 @@ static void send_msg_to_peer(
 	uint8_t curr_sent_msg_id;
 	curr_sent_msg_id = ipc_i96xxx_runtime_hndl->curr_sent_msg_id;
 	curr_sent_msg_id++;
-	if (0xff == curr_sent_msg_id) curr_sent_msg_id = 0;
+	if (MAX_ALLOWED_MSG_ID < curr_sent_msg_id) curr_sent_msg_id = 0;
 	ipc_i96xxx_runtime_hndl->curr_sent_msg_id = curr_sent_msg_id;
 	send_to_peer(ipc_i96xxx_runtime_hndl, curr_sent_msg_id, remote_msg);
 }
 
 
-static void send_reply_to_peer(
+static void send_simple_reply_to_peer(
 		struct ipc_i96xxx_runtime_t *ipc_i96xxx_runtime_hndl, uint32_t reply)
 {
 	struct ipc_i96xxx_remote_message_t remote_msg;
 
 	remote_msg.type = REMOTE_MSG_TYPE_REPLY;
-	remote_msg.reply_data.reply = reply;
-	remote_msg.reply_data.reply_to_msg_id =
+	remote_msg.reply_msg.reply = reply;
+	remote_msg.reply_msg.reply_to_msg_id =
 			ipc_i96xxx_runtime_hndl->curr_received_msg_id;
-	send_to_peer(ipc_i96xxx_runtime_hndl, 0xff, &remote_msg);
+	send_to_peer(ipc_i96xxx_runtime_hndl, RSRVD_REPLY_ID, &remote_msg);
 }
 
 
@@ -160,74 +162,107 @@ static void close_socket(struct ipc_i96xxx_socket_t  *curr_socket)
 }
 
 
-static void process_reply_from_remote(struct ipc_i96xxx_runtime_t *ipc_i96xxx_runtime_hndl,
-		struct ipc_i96xxx_remote_msg_reply_t *reply_data)
+static void process_reply_for_connect(
+		struct ipc_i96xxx_runtime_t *ipc_i96xxx_runtime_hndl,
+		struct ipc_i96xxx_socket_t  *curr_socket,
+		struct ipc_i96xxx_remote_msg_reply_t *reply_msg)
+{
+	if (REPLY_OK != reply_msg->reply)
+	{
+		ports[curr_socket->local_port] = NULL;
+		curr_socket->local_port = 0xffff;
+		ipc_i96xxx_runtime_hndl->last_error = IPC_I96XXX_ERR_CANNOT_CONNECT;
+	}
+	else
+	{
+		curr_socket->socket_state = SOCKET_STATE_WAITING_FOR_ACCEPT;
+	}
+	ipc_i96xxx_runtime_hndl->request_done = 1;
+}
+
+
+static void process_reply_for_accept(
+		struct ipc_i96xxx_runtime_t *ipc_i96xxx_runtime_hndl,
+		struct ipc_i96xxx_socket_t  *curr_socket,
+		struct ipc_i96xxx_remote_msg_reply_t *reply_msg)
+{
+	if (REPLY_OK != reply_msg->reply)
+	{
+		ports[curr_socket->local_port] = NULL;
+		close_socket(curr_socket);
+		curr_socket->local_port = 0xffff;
+		ipc_i96xxx_runtime_hndl->last_error = IPC_I96XXX_ERR_CANNOT_CONNECT;
+	}
+	else
+	{
+		curr_socket->socket_state = SOCKET_STATE_CONNECTED;
+	}
+	ipc_i96xxx_runtime_hndl->request_done = 1;
+}
+
+
+static void process_reply_for_send(
+		struct ipc_i96xxx_runtime_t *ipc_runtime_hndl,
+		struct ipc_i96xxx_remote_msg_reply_t *reply_msg)
+{
+	struct ipc_i96xxx_msg_send_data_to_socket_t *send_msg;
+	send_msg = &ipc_runtime_hndl->pending_local_msg.msg_send_data_to_socket;
+	if (REPLY_OK != reply_msg->reply)
+	{
+		ipc_runtime_hndl->last_error = IPC_I96XXX_ERR_CANNOT_SEND;
+		*send_msg->data_length_sent = 0;
+	}
+	else
+	{
+		*send_msg->data_length_sent = reply_msg->send_reply.accepted_data_size;
+	}
+	ipc_runtime_hndl->request_done = 1;
+}
+
+
+static void process_reply_from_remote(
+		struct ipc_i96xxx_runtime_t *ipc_i96xxx_runtime_hndl,
+		struct ipc_i96xxx_remote_msg_reply_t *reply_msg)
 {
 	enum ipc_i96xxx_state_e current_state;
 	enum ipc_i96xxx_state_e newState;
 	struct ipc_i96xxx_socket_t  *curr_socket;
-	uint32_t reply;
 
 	current_state = ipc_i96xxx_runtime_hndl->current_state;
-	if ((IPC_I96XXX_State_Idle == current_state) ||
-			(ipc_i96xxx_runtime_hndl->curr_sent_msg_id !=
-									reply_data->reply_to_msg_id))
-	{// discard reply for obsolete messages
+	if (IPC_I96XXX_State_Idle == current_state)
+	{
+		PRINTF_DBG("IPC err: reply for timed-out message\n");
+		return;
+	}
+	if (ipc_i96xxx_runtime_hndl->curr_sent_msg_id != reply_msg->reply_to_msg_id)
+	{
+		PRINTF_DBG(
+			"IPC err: reply with wrong message ID. sent_id=%d, rcvd_id=%d\n",
+			ipc_i96xxx_runtime_hndl->curr_sent_msg_id,
+			reply_msg->reply_to_msg_id);
 		return;
 	}
 
-	reply = reply_data->reply;
 	curr_socket = ipc_i96xxx_runtime_hndl->curr_socket;
 	newState = IPC_I96XXX_State_Idle;// by default go to Idle
 	switch (current_state)
 	{
 	case IPC_I96XXX_State_InitialHandShake:
-		if (REPLY_OK != reply)
+		if (REPLY_OK != reply_msg->reply)
 		{
 			PRINTF_DBG("IPC: unexpected NOT OK reply on handshake\n");
 		}
 		break;
 	case IPC_I96XXX_State_Connecting_Socket:
-		if (REPLY_OK != reply)
-		{
-			ports[curr_socket->local_port] = NULL;
-			curr_socket->local_port = 0xffff;
-			ipc_i96xxx_runtime_hndl->last_error = IPC_I96XXX_ERR_CANNOT_CONNECT;
-		}
-		else
-		{
-			curr_socket->socket_state = SOCKET_STATE_WAITING_FOR_ACCEPT;
-		}
-		ipc_i96xxx_runtime_hndl->request_done = 1;
+		process_reply_for_connect(
+				ipc_i96xxx_runtime_hndl, curr_socket, reply_msg);
 		break;
 	case IPC_I96XXX_State_Accept_Sent:
-		if (REPLY_OK != reply)
-		{
-			ports[curr_socket->local_port] = NULL;
-			close_socket(curr_socket);
-			curr_socket->local_port = 0xffff;
-			ipc_i96xxx_runtime_hndl->last_error = IPC_I96XXX_ERR_CANNOT_CONNECT;
-		}
-		else
-		{
-			curr_socket->socket_state = SOCKET_STATE_CONNECTED;
-		}
-		ipc_i96xxx_runtime_hndl->request_done = 1;
+		process_reply_for_accept(
+				ipc_i96xxx_runtime_hndl, curr_socket, reply_msg);
 		break;
 	case IPC_I96XXX_State_Sending_Data:
-		if (REPLY_OK != reply)
-		{
-			ipc_i96xxx_runtime_hndl->last_error = IPC_I96XXX_ERR_CANNOT_SEND;
-		}
-		else
-		{
-			struct ipc_i96xxx_msg_send_data_to_socket_t *send_msg;
-
-			send_msg = &ipc_i96xxx_runtime_hndl->pending_local_msg.
-										msg_send_data_to_socket;
-			*send_msg->data_length_sent = (uint16_t)reply_data->reply_data[0];
-		}
-		ipc_i96xxx_runtime_hndl->request_done = 1;
+		process_reply_for_send(ipc_i96xxx_runtime_hndl, reply_msg);
 		break;
 	case IPC_I96XXX_State_Closing_Socket:
 		close_socket(curr_socket);
@@ -242,49 +277,51 @@ static void process_reply_from_remote(struct ipc_i96xxx_runtime_t *ipc_i96xxx_ru
 
 static void process_connect_from_remote(
 		struct ipc_i96xxx_runtime_t *ipc_i96xxx_runtime_hndl,
-		struct ipc_i96xxx_remote_msg_connect_t *connect_data)
+		struct ipc_i96xxx_remote_msg_connect_t *connect_msg)
 {
 	struct ipc_i96xxx_socket_t *socket_handle;
 
-	socket_handle = ports[connect_data->to_port];
+	socket_handle = ports[connect_msg->to_port];
 
 	if ((NULL == socket_handle) ||
 			(SOCKET_STATE_LISTENING != socket_handle->socket_state))
 	{
-		send_reply_to_peer(ipc_i96xxx_runtime_hndl, REPLY_PORT_NOT_LISTENING);
+		send_simple_reply_to_peer(
+				ipc_i96xxx_runtime_hndl, REPLY_PORT_NOT_LISTENING);
 		return;
 	}
 	socket_handle->socket_state = SOCKET_STATE_CONNECTION_PENDING;
-	socket_handle->remote_port = connect_data->from_port;
+	socket_handle->remote_port = connect_msg->from_port;
 	os_queue_send_without_wait(socket_handle->wake_queue, ( void *)&dummy_msg);
-	send_reply_to_peer(ipc_i96xxx_runtime_hndl, REPLY_OK);
+	send_simple_reply_to_peer(ipc_i96xxx_runtime_hndl, REPLY_OK);
 }
 
 
 static void process_accept_from_remote(
 		struct ipc_i96xxx_runtime_t *ipc_i96xxx_runtime_hndl,
-		struct ipc_i96xxx_remote_msg_accept_t *accept_data)
+		struct ipc_i96xxx_remote_msg_accept_t *accept_msg)
 {
 	struct ipc_i96xxx_socket_t *socket_handle;
 
-	socket_handle = ports[accept_data->to_port];
+	socket_handle = ports[accept_msg->to_port];
 
 	if ((NULL == socket_handle) ||
 			(SOCKET_STATE_WAITING_FOR_ACCEPT != socket_handle->socket_state))
 	{
-		send_reply_to_peer(ipc_i96xxx_runtime_hndl, REPLY_PORT_NOT_WAITING_FOR_ACCEPT);
+		send_simple_reply_to_peer(
+				ipc_i96xxx_runtime_hndl, REPLY_PORT_NOT_WAITING_FOR_ACCEPT);
 		return;
 	}
 	socket_handle->socket_state = SOCKET_STATE_CONNECTED;
-	socket_handle->remote_port = accept_data->from_port;
+	socket_handle->remote_port = accept_msg->from_port;
 	os_queue_send_without_wait(socket_handle->wake_queue, ( void *)&dummy_msg);
-	send_reply_to_peer(ipc_i96xxx_runtime_hndl, REPLY_OK);
+	send_simple_reply_to_peer(ipc_i96xxx_runtime_hndl, REPLY_OK);
 }
 
 
 static void process_send_data_from_remote(
 		struct ipc_i96xxx_runtime_t *ipc_i96xxx_runtime_hndl,
-		struct ipc_i96xxx_remote_msg_send_data_t *send_data)
+		struct ipc_i96xxx_remote_msg_send_data_t *send_msg)
 {
 	struct ipc_i96xxx_socket_t *socket_handle;
 	size_t size_to_copy;
@@ -292,16 +329,17 @@ static void process_send_data_from_remote(
 	size_t size_left_in_buffer;
 	struct ipc_i96xxx_remote_message_t remote_msg;
 
-	socket_handle = ports[send_data->to_port];
+	socket_handle = ports[send_msg->to_port];
 
 	if ((NULL == socket_handle) ||
 			(SOCKET_STATE_CONNECTED != socket_handle->socket_state))
 	{
-		send_reply_to_peer(ipc_i96xxx_runtime_hndl, REPLY_PORT_CONNECTED);
+		send_simple_reply_to_peer(
+				ipc_i96xxx_runtime_hndl, REPLY_PORT_NOT_CONNECTED);
 		return;
 	}
 
-	size_to_copy = send_data->data_size;
+	size_to_copy = send_msg->data_size;
 	curr_data_size = socket_handle->curr_data_size;
 	size_left_in_buffer = MAX_RCVD_BUFFER_SIZE - curr_data_size;
 	if (size_left_in_buffer < size_to_copy)
@@ -310,7 +348,7 @@ static void process_send_data_from_remote(
 	}
 
 	memcpy(&socket_handle->recvedData[curr_data_size],
-							send_data->data , size_to_copy);
+							send_msg->data , size_to_copy);
 	curr_data_size += size_to_copy;
 	socket_handle->curr_data_size = curr_data_size;
 
@@ -320,36 +358,36 @@ static void process_send_data_from_remote(
 				socket_handle->wake_queue, ( void *)&dummy_msg);
 	}
 	remote_msg.type = REMOTE_MSG_TYPE_REPLY;
-	remote_msg.reply_data.reply = REPLY_OK;
-	remote_msg.reply_data.reply_to_msg_id =
+	remote_msg.reply_msg.reply = REPLY_OK;
+	remote_msg.reply_msg.reply_to_msg_id =
 				ipc_i96xxx_runtime_hndl->curr_received_msg_id;
-	remote_msg.reply_data.reply_data[0] = size_to_copy;
-	send_msg_to_peer(ipc_i96xxx_runtime_hndl, &remote_msg);
+	remote_msg.reply_msg.send_reply.accepted_data_size = size_to_copy;
+	send_to_peer(ipc_i96xxx_runtime_hndl, RSRVD_REPLY_ID, &remote_msg);
 }
 
 
 static void process_close_connection_from_remote(
 		struct ipc_i96xxx_runtime_t *ipc_i96xxx_runtime_hndl,
-		struct ipc_i96xxx_remote_msg_close_connection_t *close_data)
+		struct ipc_i96xxx_remote_msg_close_connection_t *close_msg)
 {
 	struct ipc_i96xxx_socket_t *socket_handle;
 
-	socket_handle = ports[close_data->to_port];
+	socket_handle = ports[close_msg->to_port];
 
 	if ((NULL == socket_handle) ||
 			(SOCKET_STATE_CONNECTED != socket_handle->socket_state))
 	{
-		send_reply_to_peer(ipc_i96xxx_runtime_hndl, REPLY_PORT_CONNECTED);
+		send_simple_reply_to_peer(
+				ipc_i96xxx_runtime_hndl, REPLY_PORT_NOT_CONNECTED);
 		return;
 	}
 
 	close_socket(socket_handle);
-	send_reply_to_peer(ipc_i96xxx_runtime_hndl, REPLY_OK);
+	send_simple_reply_to_peer(ipc_i96xxx_runtime_hndl, REPLY_OK);
 	return;
 }
 
 
-static uint32_t dbg_cnt = 0;
 /*
  * process_message_from_remote()
  *
@@ -360,35 +398,49 @@ static void process_message_from_remote(struct ipc_i96xxx_cfg_t *config_handle,
 		struct ipc_i96xxx_msg_data_from_peer_t  *msg_data_from_peer)
 {
 	struct ipc_i96xxx_remote_message_t *msg_from_remote;
+	uint8_t msg_id;
+	uint8_t expected_msg_id;
 
 	msg_from_remote = &msg_data_from_peer->msg_from_remote;
-	ipc_i96xxx_runtime_hndl->curr_received_msg_id = msg_from_remote->msg_id;
+	expected_msg_id = ipc_i96xxx_runtime_hndl->curr_received_msg_id + 1;
+	if (MAX_ALLOWED_MSG_ID < expected_msg_id) expected_msg_id = 0;
+	msg_id =  msg_from_remote->msg_id;
+	if (RSRVD_REPLY_ID != msg_id)
+	{
+		if (expected_msg_id != msg_id)
+		{
+			PRINTF_DBG(
+					"IPC wrn: possible loss of msg."
+					" rcv_id = %d, expected_id = %d",
+					msg_id, expected_msg_id);
+		}
+		ipc_i96xxx_runtime_hndl->curr_received_msg_id = msg_id;
+	}
 
 	switch(msg_from_remote->type)
 	{
 	case REMOTE_MSG_TYPE_REPLY:
 		process_reply_from_remote(
-				ipc_i96xxx_runtime_hndl, &msg_from_remote->reply_data);
+				ipc_i96xxx_runtime_hndl, &msg_from_remote->reply_msg);
 		break;
 	case REMOTE_MSG_TYPE_HANDSHAKE:
-		send_reply_to_peer(ipc_i96xxx_runtime_hndl, REPLY_OK);
+		send_simple_reply_to_peer(ipc_i96xxx_runtime_hndl, REPLY_OK);
 		break;
 	case REMOTE_MSG_TYPE_CONNECT:
-		dbg_cnt++;
 		process_connect_from_remote(ipc_i96xxx_runtime_hndl,
-				&msg_from_remote->connect_data);
+				&msg_from_remote->connect_msg);
 		break;
 	case REMOTE_MSG_TYPE_ACCEPT:
 		process_accept_from_remote(ipc_i96xxx_runtime_hndl,
-				&msg_from_remote->accept_data);
+				&msg_from_remote->accept_msg);
 		break;
 	case REMOTE_MSG_TYPE_SEND_DATA:
 		process_send_data_from_remote(ipc_i96xxx_runtime_hndl,
-				&msg_from_remote->send_data);
+				&msg_from_remote->send_msg);
 		break;
 	case REMOTE_MSG_TYPE_CLOSE_CONNECTION:
 		process_close_connection_from_remote(ipc_i96xxx_runtime_hndl,
-						&msg_from_remote->close_data);
+						&msg_from_remote->close_msg);
 		break;
 	default:
 		CRITICAL_ERROR("unknown message");
@@ -424,7 +476,7 @@ static enum ipc_i96xxx_state_e process_close_socket_message(
 	}
 
 	remote_msg.type = REMOTE_MSG_TYPE_CLOSE_CONNECTION;
-	remote_msg.close_data.to_port = socket_handle->remote_port;
+	remote_msg.close_msg.to_port = socket_handle->remote_port;
 	send_msg_to_peer(ipc_i96xxx_runtime_hndl, &remote_msg);
 	ipc_i96xxx_runtime_hndl->curr_socket = socket_handle;
 	return IPC_I96XXX_State_Closing_Socket;
@@ -449,9 +501,9 @@ static enum ipc_i96xxx_state_e process_send_data_message(
 	}
 
 	remote_msg.type = REMOTE_MSG_TYPE_SEND_DATA;
-	remote_msg.send_data.to_port = socket_handle->remote_port;
-	remote_msg.send_data.data = pmsg_send_data_to_socket->data;
-	remote_msg.send_data.data_size =
+	remote_msg.send_msg.to_port = socket_handle->remote_port;
+	remote_msg.send_msg.data = pmsg_send_data_to_socket->data;
+	remote_msg.send_msg.data_size =
 			pmsg_send_data_to_socket->data_length;
 	send_msg_to_peer(ipc_i96xxx_runtime_hndl, &remote_msg);
 	ipc_i96xxx_runtime_hndl->curr_socket = socket_handle;
@@ -603,7 +655,7 @@ static enum ipc_i96xxx_state_e process_accept_socket_message(
 	}
 
 	remote_msg.type = REMOTE_MSG_TYPE_ACCEPT;
-	remote_msg.connect_data.to_port = socket_handle->remote_port;
+	remote_msg.connect_msg.to_port = socket_handle->remote_port;
 	for (i = (MAX_NUMBER_OF_PORTS - 1); 0 <= i; i--)
 	{
 		if (NULL == ports[i])
@@ -611,7 +663,7 @@ static enum ipc_i96xxx_state_e process_accept_socket_message(
 			ports[i] = allocated_socket;
 			allocated_socket->local_port = i;
 			allocated_socket->remote_port = socket_handle->remote_port;
-			remote_msg.connect_data.from_port = i;
+			remote_msg.connect_msg.from_port = i;
 			send_msg_to_peer(ipc_i96xxx_runtime_hndl, &remote_msg);
 			ipc_i96xxx_runtime_hndl->curr_socket = allocated_socket;
 			return IPC_I96XXX_State_Accept_Sent;
@@ -643,7 +695,7 @@ static enum ipc_i96xxx_state_e process_connect_socket_message(
 	}
 
 	remote_msg.type = REMOTE_MSG_TYPE_CONNECT;
-	remote_msg.connect_data.to_port = pmsg_connect_socket->port;
+	remote_msg.connect_msg.to_port = pmsg_connect_socket->port;
 	for (i = (MAX_NUMBER_OF_PORTS - 1); 0 <= i; i--)
 	{
 		if (NULL == ports[i])
@@ -651,7 +703,7 @@ static enum ipc_i96xxx_state_e process_connect_socket_message(
 			ports[i] = socket_handle;
 			socket_handle->local_port = i;
 			socket_handle->remote_port = pmsg_connect_socket->port;
-			remote_msg.connect_data.from_port = i;
+			remote_msg.connect_msg.from_port = i;
 			send_msg_to_peer(ipc_i96xxx_runtime_hndl, &remote_msg);
 			ipc_i96xxx_runtime_hndl->curr_socket = socket_handle;
 			return IPC_I96XXX_State_Connecting_Socket;
@@ -709,6 +761,7 @@ static enum ipc_i96xxx_state_e process_get_rcvd_data_message(
 		bytes_to_copy = curr_data_size;
 	}
 	*pmsg_get_data_received->size_received = bytes_to_copy ;
+
 	memcpy(pmsg_get_data_received->buffer,
 				socket_handle->recvedData, bytes_to_copy);
 	curr_data_size -= bytes_to_copy;

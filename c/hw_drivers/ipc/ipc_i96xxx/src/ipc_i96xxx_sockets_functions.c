@@ -114,16 +114,13 @@ static uint8_t ipc_i96xxx_is_data_available(void* socketfd,
 						ipc_i96xxx, socket_handle->ipc_i96xxx_dev);
 
 	*is_data_available = 0;
-
 	queueMsg.type = CHECK_IF_RECEIVED_DATA;
-	queueMsg.msg_check_if_new_data_received.socket_handle =
-															socket_handle;
-	queueMsg.msg_check_if_new_data_received.newDataExists =
-															is_data_available;
+	queueMsg.msg_check_if_new_data_received.socket_handle = socket_handle;
+	queueMsg.msg_check_if_new_data_received.newDataExists = is_data_available;
 	return send_message_and_wait(ipc_i96xxx_runtime_hndl, &queueMsg);
-
 }
 
+extern uint32_t dbg_bytes_left;
 
 static ssize_t ipc_i96xxx_recv(void* socketfd,
 								void *buf, size_t len, int flags)
@@ -135,7 +132,7 @@ static ssize_t ipc_i96xxx_recv(void* socketfd,
 	uint32_t dummy_msg;
 	uint8_t retVal;
 
-	if (0 != flags)
+	if (0 != (flags & (~(MSG_DONTWAIT))))
 	{
 		CRITICAL_ERROR("flags != 0 not implemented yet");
 	}

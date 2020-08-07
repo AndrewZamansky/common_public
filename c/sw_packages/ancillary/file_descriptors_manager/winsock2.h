@@ -4,7 +4,6 @@
 
 #include "sys/socket.h"
 
-#define MSG_PEEK   0
 #define SOCKET_ERROR 1
 #define WSAEMSGSIZE  2
 #define FIONBIO  0

@@ -59,7 +59,7 @@ enum __attribute__((packed)) replies_e {
 	REPLY_OK,
 	REPLY_PORT_NOT_LISTENING,
 	REPLY_PORT_NOT_WAITING_FOR_ACCEPT,
-	REPLY_PORT_CONNECTED
+	REPLY_PORT_NOT_CONNECTED
 };
 
 enum __attribute__((packed)) ipc_i96xxx_remote_message_type_e
@@ -72,10 +72,19 @@ enum __attribute__((packed)) ipc_i96xxx_remote_message_type_e
 	REMOTE_MSG_TYPE_CLOSE_CONNECTION
 };
 
+
+struct __attribute__((packed)) ipc_i96xxx_remote_msg_send_reply_t {
+	uint16_t accepted_data_size;
+};
+
+
 struct __attribute__((packed)) ipc_i96xxx_remote_msg_reply_t {
 	uint8_t reply;
 	uint8_t reply_to_msg_id;
-	uint32_t reply_data[1];
+	union
+	{
+		struct ipc_i96xxx_remote_msg_send_reply_t send_reply;
+	};
 };
 
 
@@ -108,11 +117,11 @@ struct __attribute__((packed)) ipc_i96xxx_remote_message_t {
 	uint8_t type;
 	union
 	{
-		struct ipc_i96xxx_remote_msg_reply_t  reply_data;
-		struct ipc_i96xxx_remote_msg_connect_t  connect_data;
-		struct ipc_i96xxx_remote_msg_accept_t  accept_data;
-		struct ipc_i96xxx_remote_msg_send_data_t  send_data;
-		struct ipc_i96xxx_remote_msg_close_connection_t  close_data;
+		struct ipc_i96xxx_remote_msg_reply_t  reply_msg;
+		struct ipc_i96xxx_remote_msg_connect_t  connect_msg;
+		struct ipc_i96xxx_remote_msg_accept_t  accept_msg;
+		struct ipc_i96xxx_remote_msg_send_data_t  send_msg;
+		struct ipc_i96xxx_remote_msg_close_connection_t  close_msg;
 	};
 };
 
