@@ -54,7 +54,7 @@ struct usb_descriptors_add_string_t {
 
 // pass  str_desc_s as argument as it will return string index in one of fields
 #define USB_DEVICE_DESCRIPTORS_ADD_STRING(                    \
-	__usb_device_descriptors_dev, __str_desc_s, string_desc, string_type)   \
+	__usb_device_descriptors_dev, string_desc, string_type)   \
 	{                                                         \
 		struct usb_descriptors_add_string_t  __str_desc_s;     \
 		__str_desc_s.type_of_string = string_type;              \

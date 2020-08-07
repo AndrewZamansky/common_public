@@ -663,6 +663,7 @@ int ioctlsocket(int socket, long   cmd, unsigned long *argp)
 		CRITICAL_ERROR("not implemented yet");
 		break;
 	}
+	return 0;
 }
 
 ssize_t recvfrom(int sockfd, void *buf, size_t len, int flags,
