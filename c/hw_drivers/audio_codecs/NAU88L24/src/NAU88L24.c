@@ -5,7 +5,6 @@
  *
  */
 
-/********  includes *********************/
 #include "_project.h"
 
 #include "NAU88L24_api.h"
@@ -17,27 +16,10 @@
 
 #include "os_wrapper.h"
 
-/*following line add module to available module list for dynamic device tree*/
-
-
-
-/********  defines *********************/
-
-/********  types  *********************/
 struct  NAU88L24_cmd_t {
 	uint16_t  reg_addr;
 	uint16_t  reg_val;
 };
-
-/********  external devices *********************/
-
-
-
-/********  external variables *********************/
-
-
-/********  local defs *********************/
-
 
 
 static struct  NAU88L24_cmd_t const init_88L24_arr[] = {

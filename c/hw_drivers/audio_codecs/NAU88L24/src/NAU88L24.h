@@ -10,9 +10,6 @@
 #include "_project.h"
 #include "dev_management_api.h"
 
-
-/***************   typedefs    *******************/
-
 struct NAU88L24_config_t
 {
 	struct dev_desc_t *   i2s_mclk_clock;
@@ -25,6 +22,4 @@ struct NAU88L24_config_t
 	uint8_t    num_of_digital_mics;
 };
 
-
-
-#endif /* */
+#endif

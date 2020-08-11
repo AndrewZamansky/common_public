@@ -1,27 +1,32 @@
 /*
  *
- * i2c_i94xxx.c
+ * i2c_i9xxxx.c
 
  *
  */
 
+#include "i2c_i9xxxx_api.h"
 #include "_project_typedefs.h"
 #include "_project_defines.h"
-
-#include "i2c_i94xxx_api.h"
-#include "i2c_i94xxx.h"
 
 #include "i2c_api.h"
 
 #include "dev_management_api.h"
 
-#include "I94100.h"
+#ifdef CONFIG_I96XXX_M0
+	#define i9xxxx_i2c0_clk_dev   i96xxx_i2c0_clk_dev
+	#define i9xxxx_i2c1_clk_dev   NULL//i96xxx_i2c1_clk_dev
+#elif defined(CONFIG_I94XXX)
+	#define i9xxxx_i2c0_clk_dev   i94xxx_i2c0_clk_dev
+	#define i9xxxx_i2c1_clk_dev   i94xxx_i2c1_clk_dev
+#endif
+
 
 #include "irq_api.h"
-#include "clock_control_i94xxx_api.h"
 #include "pin_control_api.h"
 
 #include "i2c.h"
+#include "i2c_i9xxxx.h"
 
 
 
@@ -36,12 +41,20 @@
 
 #define  NUM_OF_TRIES_TO_ACCESS_I2C_DEVICE  8
 
+#ifdef CONFIG_I96XXX_M0
+	#include "I96100.h"
+	#include "clock_control_i96xxx_m0_api.h"
+#elif defined(CONFIG_I94XXX)
+	#include "I94100.h"
+	#include "clock_control_i94xxx_api.h"
+#endif
+
 
 static uint8_t dummy_msg;
 static size_t status_debug;
 
-static void transmit_byte(I2C_T *i2c, struct i2c_i94xxx_cfg_t *cfg_hndl,
-		struct i2c_i94xxx_runtime_t *runtime_handle)
+static void transmit_byte(I2C_T *i2c, struct i2c_i9xxxx_cfg_t *cfg_hndl,
+		struct i2c_i9xxxx_runtime_t *runtime_handle)
 {
 	size_t tx_data_size;
 	uint8_t  const *tx_data;
@@ -58,12 +71,12 @@ static void transmit_byte(I2C_T *i2c, struct i2c_i94xxx_cfg_t *cfg_hndl,
 	}
 	else
 	{
-		if (I2C_I94XXX_API_SLAVE_MODE == cfg_hndl->master_slave_mode)
+		if (I2C_I9XXXX_API_SLAVE_MODE == cfg_hndl->master_slave_mode)
 		{
 			I2C_SET_DATA(i2c, 0x00);
 		}
 	}
-	if (I2C_I94XXX_API_SLAVE_MODE == cfg_hndl->master_slave_mode)
+	if (I2C_I9XXXX_API_SLAVE_MODE == cfg_hndl->master_slave_mode)
 	{
 		I2C_SET_CONTROL_REG(i2c, I2C_CTL_SI_AA);
 	}
@@ -71,8 +84,8 @@ static void transmit_byte(I2C_T *i2c, struct i2c_i94xxx_cfg_t *cfg_hndl,
 
 
 static void transmit_reg_addr_byte(I2C_T *i2c,
-		struct i2c_i94xxx_cfg_t *cfg_hndl,
-		struct i2c_i94xxx_runtime_t *runtime_handle)
+		struct i2c_i9xxxx_cfg_t *cfg_hndl,
+		struct i2c_i9xxxx_runtime_t *runtime_handle)
 {
 	uint8_t  const *reg_addr_arr;
 
@@ -83,8 +96,8 @@ static void transmit_reg_addr_byte(I2C_T *i2c,
 }
 
 
-static void slave_end_of_transmition(struct i2c_i94xxx_cfg_t *cfg_hndl,
-		struct i2c_i94xxx_runtime_t *runtime_handle)
+static void slave_end_of_transmition(struct i2c_i9xxxx_cfg_t *cfg_hndl,
+		struct i2c_i9xxxx_runtime_t *runtime_handle)
 {
 	size_t   transmitted_data_size;
 
@@ -113,12 +126,12 @@ static void I2C_SlaveTRx(
 		uint32_t u32Status, I2C_T *i2c, struct dev_desc_t *adev)
 {
 	uint8_t *in_buff;
-	struct i2c_i94xxx_runtime_t *runtime_handle;
-	struct i2c_i94xxx_cfg_t *cfg_hndl;
+	struct i2c_i9xxxx_runtime_t *runtime_handle;
+	struct i2c_i9xxxx_cfg_t *cfg_hndl;
 	uint16_t curr_data_pos;
 
-	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(i2c_i94xxx, adev);
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(i2c_i94xxx, adev);
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(i2c_i9xxxx, adev);
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(i2c_i9xxxx, adev);
 
 	in_buff = runtime_handle->rcv_data;
 	curr_data_pos = runtime_handle->curr_data_pos;
@@ -132,7 +145,7 @@ static void I2C_SlaveTRx(
 	{
 		/* Previously address with own SLA address
 		Data has been received; ACK has been returned*/
-		if (I2C_I94XXX_RCV_DATA_SIZE_BUFFER > curr_data_pos)
+		if (I2C_I9XXXX_RCV_DATA_SIZE_BUFFER > curr_data_pos)
 		{
 			uint8_t data;
 
@@ -197,8 +210,8 @@ static void I2C_SlaveTRx(
  * function : I2C_MasterTX
  *
  */
-static void I2C_MasterTX(struct i2c_i94xxx_cfg_t *cfg_hndl,
-		struct i2c_i94xxx_runtime_t *runtime_handle,
+static void I2C_MasterTX(struct i2c_i9xxxx_cfg_t *cfg_hndl,
+		struct i2c_i9xxxx_runtime_t *runtime_handle,
 		uint32_t u32Status, I2C_T *i2c)
 {
 	uint8_t  end_of_transmition;
@@ -309,8 +322,8 @@ static void I2C_MasterTX(struct i2c_i94xxx_cfg_t *cfg_hndl,
  * function : I2C_MasterRX
  *
  */
-static void I2C_MasterRX(struct i2c_i94xxx_cfg_t *cfg_hndl,
-		struct i2c_i94xxx_runtime_t *runtime_handle,
+static void I2C_MasterRX(struct i2c_i9xxxx_cfg_t *cfg_hndl,
+		struct i2c_i9xxxx_runtime_t *runtime_handle,
 		uint32_t u32Status, I2C_T *i2c)
 {
 	uint8_t data;
@@ -466,17 +479,17 @@ static void I2C_MasterRX(struct i2c_i94xxx_cfg_t *cfg_hndl,
 }
 
 
-static uint8_t i2c_i94xxx_callback(struct dev_desc_t *adev ,
+static uint8_t i2c_i9xxxx_callback(struct dev_desc_t *adev ,
 		uint8_t aCallback_num , void * aCallback_param1,
 		void * aCallback_param2)
 {
-	struct i2c_i94xxx_runtime_t *runtime_handle;
-	struct i2c_i94xxx_cfg_t *cfg_hndl;
+	struct i2c_i9xxxx_runtime_t *runtime_handle;
+	struct i2c_i9xxxx_cfg_t *cfg_hndl;
 	uint32_t u32Status;
 	I2C_T *i2c_regs;
 
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(i2c_i94xxx, adev);
-	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(i2c_i94xxx, adev);
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(i2c_i9xxxx, adev);
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(i2c_i9xxxx, adev);
 	i2c_regs =(I2C_T *)cfg_hndl->base_address;
 
 
@@ -490,7 +503,7 @@ static uint8_t i2c_i94xxx_callback(struct dev_desc_t *adev ,
 	}
 	else
 	{
-		if (I2C_I94XXX_API_SLAVE_MODE == cfg_hndl->master_slave_mode)
+		if (I2C_I9XXXX_API_SLAVE_MODE == cfg_hndl->master_slave_mode)
 		{
 			I2C_SlaveTRx(u32Status, i2c_regs, adev);
 		}
@@ -512,15 +525,15 @@ static uint8_t i2c_i94xxx_callback(struct dev_desc_t *adev ,
 
 
 /**
- * i2c_i94xxx_pwrite()
+ * i2c_i9xxxx_pwrite()
  *
  * return:
  */
-static size_t i2c_i94xxx_pwrite(struct dev_desc_t *adev,
+static size_t i2c_i9xxxx_pwrite(struct dev_desc_t *adev,
 			const uint8_t *apData, size_t aLength, size_t aOffset)
 {
-	struct i2c_i94xxx_cfg_t *cfg_hndl;
-	struct i2c_i94xxx_runtime_t *runtime_handle;
+	struct i2c_i9xxxx_cfg_t *cfg_hndl;
+	struct i2c_i9xxxx_runtime_t *runtime_handle;
 	size_t   tx_data_size;
 	size_t   transmitted_data_size;
 	uint8_t  const *tx_data;
@@ -531,8 +544,8 @@ static size_t i2c_i94xxx_pwrite(struct dev_desc_t *adev,
 		return 0;
 	}
 
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(i2c_i94xxx, adev);
-	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(i2c_i94xxx, adev);
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(i2c_i9xxxx, adev);
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(i2c_i9xxxx, adev);
 
 	i2c_regs =(I2C_T *)cfg_hndl->base_address;
 
@@ -543,7 +556,7 @@ static size_t i2c_i94xxx_pwrite(struct dev_desc_t *adev,
 
 	while (0xf8 != I2C_GET_STATUS(i2c_regs)); //wait till bus is not released
 
-	if (I2C_I94XXX_API_MASTER_MODE == cfg_hndl->master_slave_mode)
+	if (I2C_I9XXXX_API_MASTER_MODE == cfg_hndl->master_slave_mode)
 	{
 		// first byte is address of slave
 		tx_data_size = aLength - 1;
@@ -575,8 +588,8 @@ static size_t i2c_i94xxx_pwrite(struct dev_desc_t *adev,
 static void master_write(struct dev_desc_t *adev,
 				struct i2c_api_master_write_t *wr_struct)
 {
-	struct i2c_i94xxx_cfg_t *cfg_hndl;
-	struct i2c_i94xxx_runtime_t *runtime_handle;
+	struct i2c_i9xxxx_cfg_t *cfg_hndl;
+	struct i2c_i9xxxx_runtime_t *runtime_handle;
 	I2C_T *i2c_regs;
 	os_queue_t WaitQueue;
 	os_mutex_t  mutex;
@@ -592,8 +605,8 @@ static void master_write(struct dev_desc_t *adev,
 		return ;
 	}
 
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(i2c_i94xxx, adev);
-	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(i2c_i94xxx, adev);
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(i2c_i9xxxx, adev);
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(i2c_i9xxxx, adev);
 
 	WaitQueue = runtime_handle->WaitQueue;
 	mutex = runtime_handle->mutex;
@@ -645,8 +658,8 @@ static void master_write(struct dev_desc_t *adev,
 static void master_read(struct dev_desc_t *adev,
 				struct i2c_api_master_read_t *rd_struct)
 {
-	struct i2c_i94xxx_cfg_t *cfg_hndl;
-	struct i2c_i94xxx_runtime_t *runtime_handle;
+	struct i2c_i9xxxx_cfg_t *cfg_hndl;
+	struct i2c_i9xxxx_runtime_t *runtime_handle;
 	os_queue_t WaitQueue;
 	os_mutex_t  mutex;
 	I2C_T *i2c_regs;
@@ -664,10 +677,10 @@ static void master_read(struct dev_desc_t *adev,
 		return;
 	}
 
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(i2c_i94xxx, adev);
-	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(i2c_i94xxx, adev);
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(i2c_i9xxxx, adev);
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(i2c_i9xxxx, adev);
 
-	if (I2C_I94XXX_API_MASTER_MODE != cfg_hndl->master_slave_mode)
+	if (I2C_I9XXXX_API_MASTER_MODE != cfg_hndl->master_slave_mode)
 	{
 		rd_struct->num_of_bytes_to_read = 0;
 		return;
@@ -724,15 +737,15 @@ static void master_read(struct dev_desc_t *adev,
 
 static uint8_t  device_start(struct dev_desc_t *adev)
 {
-	struct i2c_i94xxx_cfg_t *cfg_hndl;
+	struct i2c_i9xxxx_cfg_t *cfg_hndl;
 	I2C_T *i2c_regs;
 	int i2c_irq;
 	uint32_t i2c_module_rst;
 	struct dev_desc_t	*i2c_clk_dev;
-	struct i2c_i94xxx_runtime_t *runtime_handle;
+	struct i2c_i9xxxx_runtime_t *runtime_handle;
 
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(i2c_i94xxx, adev);
-	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(i2c_i94xxx, adev);
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(i2c_i9xxxx, adev);
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(i2c_i9xxxx, adev);
 	i2c_regs = (I2C_T *)cfg_hndl->base_address;
 
 	runtime_handle->WaitQueue = os_create_queue(1, sizeof(uint8_t ));
@@ -749,15 +762,18 @@ static uint8_t  device_start(struct dev_desc_t *adev)
 
 	if(I2C1 == i2c_regs)
 	{
+#ifdef CONFIG_I96XXX_M0
+		CRITICAL_ERROR("not implemented yet");
+#endif
 		i2c_irq = I2C1_IRQn;
 		i2c_module_rst = I2C1_MODULE;
-		i2c_clk_dev = i94xxx_i2c1_clk_dev;
+		i2c_clk_dev = i9xxxx_i2c1_clk_dev;
 	}
 	else if(I2C0 == i2c_regs)
 	{
 		i2c_irq = I2C0_IRQn;
 		i2c_module_rst = I2C0_MODULE;
-		i2c_clk_dev = i94xxx_i2c0_clk_dev;
+		i2c_clk_dev = i9xxxx_i2c0_clk_dev;
 	}
 	else
 	{
@@ -774,7 +790,7 @@ static uint8_t  device_start(struct dev_desc_t *adev)
 	/* Configure I2C and set I2C baud rate */
 	I2C_Open(i2c_regs, cfg_hndl->baud_rate);
 
-	if (I2C_I94XXX_API_SLAVE_MODE == cfg_hndl->master_slave_mode)
+	if (I2C_I9XXXX_API_SLAVE_MODE == cfg_hndl->master_slave_mode)
 	{
 		I2C_SetSlaveAddr(i2c_regs, 0, (cfg_hndl->slave_address) >> 1 , 0);
 		I2C_SetSlaveAddrMask(i2c_regs, 0, 0x01);
@@ -793,17 +809,17 @@ static uint8_t  device_start(struct dev_desc_t *adev)
 
 
 /**
- * i2c_i94xxx_ioctl()
+ * i2c_i9xxxx_ioctl()
  *
  * return:
  */
-static uint8_t i2c_i94xxx_ioctl( struct dev_desc_t *adev,
+static uint8_t i2c_i9xxxx_ioctl( struct dev_desc_t *adev,
 		uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2)
 {
-	struct i2c_i94xxx_cfg_t *cfg_hndl;
+	struct i2c_i9xxxx_cfg_t *cfg_hndl;
 	I2C_T *i2c_regs;
 
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(i2c_i94xxx, adev);
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(i2c_i9xxxx, adev);
 	i2c_regs = (I2C_T *)cfg_hndl->base_address;
 	switch(aIoctl_num)
 	{
@@ -834,8 +850,8 @@ static uint8_t i2c_i94xxx_ioctl( struct dev_desc_t *adev,
 	return 0;
 }
 
-#define MODULE_NAME                     i2c_i94xxx
-#define MODULE_IOCTL_FUNCTION           i2c_i94xxx_ioctl
-#define MODULE_CALLBACK_FUNCTION        i2c_i94xxx_callback
-#define MODULE_PWRITE_FUNCTION          i2c_i94xxx_pwrite
+#define MODULE_NAME                     i2c_i9xxxx
+#define MODULE_IOCTL_FUNCTION           i2c_i9xxxx_ioctl
+#define MODULE_CALLBACK_FUNCTION        i2c_i9xxxx_callback
+#define MODULE_PWRITE_FUNCTION          i2c_i9xxxx_pwrite
 #include "add_module.h"

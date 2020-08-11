@@ -54,7 +54,7 @@ config INCLUDE_LINUX_UART
 
 config INCLUDE_INTERNAL_I2C
 	bool   "internal i2c"
-	depends on I94XXX
+	depends on I94XXX || I96XXX_M0
 	default n
 
 config INCLUDE_INTERNAL_SPI

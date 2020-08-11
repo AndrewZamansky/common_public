@@ -642,6 +642,21 @@ static void clock_i96xxx_usb_set_parent_clk(struct dev_desc_t *parent_clk)
 
 
 
+/***************************************/
+/********** i96xxx_i2c0_clk_dev ********/
+static void clock_i96xxx_i2c0_enable()
+{
+	CLK_EnableModuleClock(I2C0_MODULE);
+}
+
+#define DT_DEV_NAME                i96xxx_i2c0_clk_dev
+#define DT_DEV_MODULE              clk_cntl
+
+#define CLK_DT_ENABLE_CLK_FUNC      clock_i96xxx_i2c0_enable
+#define CLK_DT_DEFAULT_PARENT       i96xxx_pclk0_clk_dev
+
+#include "clk_cntl_add_device.h"
+
 
 static void init_clocks(struct clk_cntl_i96xxx_m0_cfg_t *cfg_hndl)
 {

@@ -1,22 +1,22 @@
 /*
  *
- * i2c_i94xxx.h
+ * i2c_i9xxxx.h
 
  *
  */
 
-#ifndef _I2C_I94XXX_H_
-#define _I2C_I94XXX_H_
+#ifndef _I2C_I9XXXX_H_
+#define _I2C_I9XXXX_H_
 
 #include "dev_management_api.h"
 #include "os_wrapper.h"
 
 
-#define		I2C_I94XXX_RCV_DATA_SIZE_BUFFER	64
+#define		I2C_I9XXXX_RCV_DATA_SIZE_BUFFER	64
 
-struct i2c_i94xxx_runtime_t {
+struct i2c_i9xxxx_runtime_t {
 	uint16_t curr_data_pos;
-	uint8_t  rcv_data[I2C_I94XXX_RCV_DATA_SIZE_BUFFER];
+	uint8_t  rcv_data[I2C_I9XXXX_RCV_DATA_SIZE_BUFFER];
 	uint8_t  const  *tx_data;
 	uint8_t  *rx_data;
 	uint8_t  const *reg_addr_arr;
@@ -30,6 +30,6 @@ struct i2c_i94xxx_runtime_t {
 	os_mutex_t mutex;
 	uint8_t   i2c_error;
 };
-SET_RUNTIME_DATA_TYPE(i2c_i94xxx, struct i2c_i94xxx_runtime_t);
+SET_RUNTIME_DATA_TYPE(i2c_i9xxxx, struct i2c_i9xxxx_runtime_t);
 
 #endif

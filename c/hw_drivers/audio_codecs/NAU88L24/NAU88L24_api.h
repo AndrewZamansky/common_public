@@ -1,17 +1,6 @@
-
 #ifndef _NAU88L24_API_H
 #define _NAU88L24_API_H
 
-
-
-/*****************  defines  **************/
-
-
-/**********  define API  types ************/
-
-
-
-/**********  define API  functions  ************/
 
 #define  NAU88L24_Input_type_none   1
 #define  NAU88L24_Input_type_stereo_aux  2
