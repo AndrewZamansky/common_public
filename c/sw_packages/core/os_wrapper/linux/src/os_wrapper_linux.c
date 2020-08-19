@@ -378,8 +378,8 @@ uint8_t os_semaphore_take_with_timeout(os_semaphore_t sem, uint32_t timeout_ms)
 
 	if( sem_timedwait(sem, &timeout) != 0 )
 	{
-        printf( "errno=%d. \n", errno );
-        CRITICAL_ERROR("cannot take timed semaphore\n");
+//        printf( "errno=%d. \n", errno );
+//        CRITICAL_ERROR("cannot take timed semaphore\n");
         return 1;
 	}
 
