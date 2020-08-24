@@ -46,9 +46,20 @@ GLOBAL_HEADER_FILES_DEPS := $(wildcard $(GLOBAL_HEADER_FILES_DEPS))
 #remove duplicate entries :
 GLOBAL_INCLUDE_DIR := $(sort $(GLOBAL_INCLUDE_DIR))
 GLOBAL_DEFINES := $(sort $(GLOBAL_DEFINES))
-GLOBAL_LIBS := $(sort $(GLOBAL_LIBS))
 GLOBAL_LIBS_PATH := $(sort $(GLOBAL_LIBS_PATH))
 GLOBAL_ARCHIVES := $(sort $(GLOBAL_ARCHIVES))
+
+# don't sort GLOBAL_LIBS because order is importent.
+# just keep the most recent mention of library
+filtered_result :=
+remove_first_duplicates = $(if $1,\
+     $(eval filtered_result = $(lastword $1) $(filtered_result)) \
+     $(eval remainigs =$(filter-out $(lastword $1),$1)) \
+     $(eval $(call remove_first_duplicates,$(remainigs))) \
+     ,)# if $1 empty then do nothing
+
+$(eval $(call remove_first_duplicates,$(GLOBAL_LIBS)))
+GLOBAL_LIBS :=$(filtered_result)
 
 # it looks like TMP variable is special variable for makefile
 # it should contain folder that make will put temporary files in it
