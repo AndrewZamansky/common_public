@@ -80,6 +80,16 @@ void  os_start(void);
 /** function : [os_create_queue()]  **/
 #define os_create_mutex()  xSemaphoreCreateMutex()
 
+/** function : [os_create_queue()]  **/
+//#define os_create_recursive_mutex()  xSemaphoreCreateRecursiveMutex()
+static SemaphoreHandle_t error_tmp() {CRITICAL_ERROR("not implemented yet");}
+#define os_create_recursive_mutex()  error_tmp()
+
+/** function : [os_create_semaphore()]  **/
+#define os_create_semaphore(initial_value) \
+			xSemaphoreCreateCounting(0xffffffff, initial_value)
+
+
 /***********  mutex take **********/
 /** on success will return OS_QUEUE_SEND_SUCCESS  **/
 
@@ -93,6 +103,16 @@ void  os_start(void);
 #define os_mutex_take_infinite_wait(mutex  )   \
 			xSemaphoreTake(mutex, ( TickType_t ) portMAX_DELAY)
 
+/** function : [os_semaphore_take_with_timeout()]  **/
+#define os_semaphore_take_with_timeout(sem , timeout)  \
+								xSemaphoreTake(sem, timeout)
+
+/** function : [os_semaphore_take_infinite_wait()]  **/
+#define os_semaphore_take_infinite_wait(sem  )   \
+			xSemaphoreTake(sem, ( TickType_t ) portMAX_DELAY)
+
+/** function : [os_semaphore_try_wait()]  **/
+#define os_semaphore_try_wait(sem)   xSemaphoreTake(sem, ( TickType_t ) 0)
 
 
 /***********  mutex give **********/
@@ -100,6 +120,20 @@ void  os_start(void);
 
 /** function : [os_mutex_give()]  **/
 #define os_mutex_give(mutex )  xSemaphoreGive(mutex)
+
+/** function : [os_semaphore_give()]  **/
+#define os_semaphore_give(sem)  xSemaphoreGive(sem)
+
+
+/***********  semaphore get count **********/
+#define os_semaphore_get_count(sem) uxSemaphoreGetCount(sem)
+
+
+/***********  mutex delete **********/
+#define os_delete_mutex(mutex) vSemaphoreDelete(mutex)
+
+/***********  semaphore delete **********/
+#define os_delete_semaphore(sem) vSemaphoreDelete(sem)
 
 
 

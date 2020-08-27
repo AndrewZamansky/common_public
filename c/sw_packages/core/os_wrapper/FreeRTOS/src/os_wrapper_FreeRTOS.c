@@ -66,6 +66,15 @@ void *os_create_task_FreeRTOS(
 	return (void*)xHandle;
 }
 
+
+void *os_create_detached_task(
+		char *taskName, void (*taskFunction)(void *apParam),
+		void *taskFunctionParam, uint16_t stack_size_bytes, uint8_t priority)
+{
+	CRITICAL_ERROR("not implemented yet");
+}
+
+
 #ifndef portEND_SWITCHING_ISR
 	#define portEND_SWITCHING_ISR(...)   portYIELD_FROM_ISR()
 #endif

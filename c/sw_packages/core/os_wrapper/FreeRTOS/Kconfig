@@ -10,6 +10,10 @@ config TEST_TASK_STACK
 	bool   "add stack logs for tasks"
 	default y
 
+config FREERTOS_USE_COUNTING_SEMAPHORES
+	bool   "use counting semaphores"
+	default y
+
 endif
 
 config FREERTOS_GIT_COMMIT_HASH

@@ -109,6 +109,7 @@
 #define configUSE_16_BIT_TICKS     0
 #define configIDLE_SHOULD_YIELD    1
 #define configUSE_MUTEXES          1
+#define configUSE_COUNTING_SEMAPHORES  CONFIG_FREERTOS_USE_COUNTING_SEMAPHORES
 
 /* Co-routine definitions. */
 #define configUSE_CO_ROUTINES      0
