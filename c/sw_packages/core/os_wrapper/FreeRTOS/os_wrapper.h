@@ -82,8 +82,10 @@ void  os_start(void);
 
 /** function : [os_create_queue()]  **/
 //#define os_create_recursive_mutex()  xSemaphoreCreateRecursiveMutex()
-static SemaphoreHandle_t error_tmp() {CRITICAL_ERROR("not implemented yet");}
-#define os_create_recursive_mutex()  error_tmp()
+#if defined(CONFIG_FREERTOS_USE_COUNTING_SEMAPHORES)
+	static SemaphoreHandle_t error_tmp() {CRITICAL_ERROR("not implemented yet");}
+	#define os_create_recursive_mutex()  error_tmp()
+#endif
 
 /** function : [os_create_semaphore()]  **/
 #define os_create_semaphore(initial_value) \

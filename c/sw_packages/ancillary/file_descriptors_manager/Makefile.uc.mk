@@ -1,7 +1,7 @@
 
-ifeq ($(sort $(CONFIG_INTERNAL_FILE_DESCRIPTORS_MANAGER)),y)
-    INCLUDE_THIS_COMPONENT :=y
-endif
+# always include this module because if CONFIG_INTERNAL_FILE_DESCRIPTORS_MANAGER
+# not defined then required file function will be implemented as dummy
+INCLUDE_THIS_COMPONENT :=y
 
 ifeq ($(sort $(CONFIG_INTERNAL_FILE_DESCRIPTORS_MANAGER)),y)
     ifeq ($(sort $(CONFIG_USE_INTERNAL_SOCKETS_IMPLEMENTATION)),y)
