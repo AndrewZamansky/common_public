@@ -3,6 +3,7 @@ INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_NGHTTP2)
 
 
 ifdef CONFIG_INCLUDE_NGHTTP2
+    # calculation of CURR_COMPONENT_DIR must be before all 'include' directives
     CURR_COMPONENT_DIR :=\
        $(patsubst %/,%,$(dir $(realpath $(lastword $(MAKEFILE_LIST)))))
 

@@ -3,6 +3,7 @@ INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_WOLFSSL)
 
 ifeq ($(strip $(CONFIG_INCLUDE_WOLFSSL)),y)
 
+    # calculation of CURR_COMPONENT_DIR must be before all 'include' directives
     CURR_COMPONENT_DIR :=\
        $(patsubst %/,%,$(dir $(realpath $(lastword $(MAKEFILE_LIST)))))
 

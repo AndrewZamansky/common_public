@@ -1,6 +1,7 @@
 ifeq ($(sort $(CONFIG_INCLUDE_UBOOT_SHELL)),y)
     INCLUDE_THIS_COMPONENT := y
 
+    # calculation of CURR_COMPONENT_DIR must be before all 'include' directives
     CURR_COMPONENT_DIR :=\
        $(patsubst %/,%,$(dir $(realpath $(lastword $(MAKEFILE_LIST)))))
 
