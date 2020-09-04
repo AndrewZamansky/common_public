@@ -1,50 +1,45 @@
 include $(MAKEFILES_ROOT_DIR)/common.mk
 
-
-ifdef CONFIG_ARM
-    ifdef CONFIG_GCC
-        include $(COMPILERS_DIR)/gcc/gcc_cc.mk
-    else ifdef CONFIG_GPP
-        include $(COMPILERS_DIR)/gcc/gcc_cc.mk
-    else ifdef CONFIG_ARMCC
-        include $(COMPILERS_DIR)/armcc/armcc_cc.mk
-    endif
-else ifdef CONFIG_AVR
+USE_GCC_COMPILE := $(or $(CONFIG_GCC),$(CONFIG_GPP),$(CONFIG_AVR),\
+      $(CONFIG_XTENSA_GCC),$(CONFIG_PIC32),$(CONFIG_ANDROID_NDK),\
+      $(CONFIG_MIN_GW_GCC))
+USE_GCC_COMPILE :=$(strip $(USE_GCC_COMPILE))# to remove all spaces
+ifeq ($(USE_GCC_COMPILE),y)
     include $(COMPILERS_DIR)/gcc/gcc_cc.mk
-else ifdef CONFIG_XTENSA_GCC
-    include $(COMPILERS_DIR)/gcc/gcc_cc.mk
-else ifdef CONFIG_XTENSA_XCC
-    include $(COMPILERS_DIR)/xcc/xcc_cc.mk
-else ifdef CONFIG_PIC32
-    include $(COMPILERS_DIR)/gcc/gcc_cc.mk
-else ifdef CONFIG_STM8
-    include $(COMPILERS_DIR)/cxstm8/cxstm8_cc.mk
-else ifdef CONFIG_HEXAGON
-    include $(COMPILERS_DIR)/clang/clang_hexagon_cc.mk
-else ifdef CONFIG_ANDROID_NDK
-    include $(COMPILERS_DIR)/gcc/gcc_cc.mk
-else ifdef CONFIG_HOST
-    ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
-        ifdef CONFIG_MIN_GW_GCC
-            include $(COMPILERS_DIR)/gcc/gcc_cc.mk
-        else ifdef CONFIG_MICROSOFT_COMPILER
-            include $(COMPILERS_DIR)/microsoft_compiler/msvc_cc.mk
+else
+    ifdef CONFIG_ARM
+        ifdef CONFIG_ARMCC
+            include $(COMPILERS_DIR)/armcc/armcc_cc.mk
+        else
+            $(info err: unknown compiler)
+            $(call exit,1)
+        endif
+    else ifdef CONFIG_XTENSA_XCC
+        include $(COMPILERS_DIR)/xcc/xcc_cc.mk
+    else ifdef CONFIG_STM8
+        include $(COMPILERS_DIR)/cxstm8/cxstm8_cc.mk
+    else ifdef CONFIG_HEXAGON
+        include $(COMPILERS_DIR)/clang/clang_hexagon_cc.mk
+    else ifdef CONFIG_HOST
+        ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
+            ifdef CONFIG_MICROSOFT_COMPILER
+                include $(COMPILERS_DIR)/microsoft_compiler/msvc_cc.mk
+            endif
+        else
+            $(info err: unknown compiler)
+            $(call exit,1)
         endif
     else
-        include $(COMPILERS_DIR)/gcc/gcc_cc.mk
+        $(info err: unknown compiler)
+        $(call exit,1)
     endif
-else
-    $(info err: unknown compiler)
-    $(call exit,1)
 endif
 
-$(eval $(CALCULATE_ALL_INCLUDE_DIRS))
-$(eval $(CALCULATE_ALL_ASM_INCLUDE_DIRS))
-$(eval $(CALCULATE_ALL_DEFINES))
-$(eval $(CALCULATE_ALL_ASM_DEFINES))
-$(eval $(CALCULATE_CC_OUTPUT_FLAG_AND_FILE))
-$(eval $(CALCULATE_ASM_OUTPUT_FLAG_AND_FILE))
 
+ALL_INCLUDE_DIRS := $(call format_all_include_dir)
+ALL_ASM_INCLUDE_DIRS := $(call format_all_asm_include_dir)
+ALL_DEFINES := $(call format_all_defines)
+ALL_ASM_DEFINES := $(call format_all_asm_defines)
 
 CURRENT_COMPILATION_DIR_NAME := $(notdir $(abspath .))
 
@@ -80,65 +75,47 @@ ALL_DEPS :=$(HEADER_FILES_DEPS) $(APP_ROOT_DIR)/.config
 
 all: $(SRC_OBJ) $(SRC_CC_OBJ) $(SRC_CPP_OBJ) $(ASM_OBJ) $(ASM_OBJ_O)
 
-ifdef CONFIG_GCC
-    ASM_ARGS_CONTENT :=$(subst \,/,$(ALL_ASM_INCLUDE_DIRS))
-else
-    ASM_ARGS_CONTENT :=$(ALL_ASM_INCLUDE_DIRS)
-endif
 
-
-ASM_COMPILATION_CMD := $(ASM) $(GLOBAL_ASMFLAGS) $(ASMFLAGS) $(ALL_ASM_DEFINES)
-ASM_COMPILATION_REDUCED_CMD :=$(call \
-     reduce_cmd_len, $(ASM_COMPILATION_CMD) $(ASM_ARGS_CONTENT))
-LONG_ASM_CMD :=$(call check_win_cmd_len, $(ASM_COMPILATION_REDUCED_CMD))
-
+########### start  ASM files #################
+ALL_ASM_FLAGS := $(GLOBAL_ASMFLAGS) $(ASMFLAGS)
+ALL_ASM_DEFS_AND_INCLUDES := $(ALL_ASM_DEFINES) $(ALL_ASM_INCLUDE_DIRS)
+TEST_COMPACT_STR :=$(call reduce_cmd_len, $(ALL_ASM_DEFS_AND_INCLUDES))
+LONG_ASM_CMD :=$(call check_win_cmd_len, $(TEST_COMPACT_STR))
 ASM_ARGS_FILE :=$(strip $(if $(LONG_ASM_CMD),$(CURR_OBJ_DIR)/asm.args,))
-ifeq ($(LONG_ASM_CMD),TOO_LONG)
-    ASM_COMPILATION_CMD += $(CC_USE_ARGS_FROM_FILE_FLAG)$(ASM_ARGS_FILE)
-else
-    ASM_COMPILATION_CMD :=$(ASM_COMPILATION_REDUCED_CMD)
-endif
-
+ASM_ARGS_CONTENT := $(ALL_ASM_DEFS_AND_INCLUDES)
 
 $(CURR_OBJ_DIR)/%.o.asm: %.s $(ALL_DEPS) $(ASM_ARGS_FILE)
 	$(info .    Compiling $<)
 	$(call mkdir_if_not_exists, $(dir $@))
-	$(ASM_COMPILATION_CMD) $(ASM_OUTPUT_FLAG_AND_FILE) $<
+	$(call run_cpp_preprocessor,$(ASM_ARGS_FILE),$<,$@)
 
 $(CURR_OBJ_DIR)/%.O.asm: %.S $(ALL_DEPS) $(ASM_ARGS_FILE)
 	$(info .    Compiling $<)
 	$(call mkdir_if_not_exists, $(dir $@))
-	$(ASM_COMPILATION_CMD) $(ASM_OUTPUT_FLAG_AND_FILE) $<
+	$(call run_cpp_preprocessor,$(ASM_ARGS_FILE),$<,$@)
 
 $(ASM_ARGS_FILE): $(ALL_DEPS)
 	$(eval D:=$(call fwrite,$(ASM_ARGS_FILE),$(ASM_ARGS_CONTENT),TRUNCATE))
 
+###########  end of ASM files #############
+#############################################
 
 
+ALL_DEFS_AND_INCLUDES := $(ALL_DEFINES) $(ALL_INCLUDE_DIRS)
+TEST_COMPACT_STR :=$(call reduce_cmd_len, $(ALL_DEFS_AND_INCLUDES))
+LONG_CMD :=$(call check_win_cmd_len, $(TEST_COMPACT_STR))
+C_ARGS_FILE :=$(strip $(if $(LONG_CMD),$(CURR_OBJ_DIR)/c.args,))
+ARGS_CONTENT := $(ALL_DEFS_AND_INCLUDES)
+
+
+###########  start of C files #################
 ALL_CFLAGS := $(GLOBAL_CFLAGS) $(CFLAGS)
-C_PREPROCESSOR_CMD := $(CC) -E $(ALL_CFLAGS) $(ALL_DEFINES)
-C_COMPILATION_CMD := $(CC) $(ALL_CFLAGS) $(ALL_DEFINES)
-C_PREPROCESSOR_REDUCED_CMD :=$(call \
-               reduce_cmd_len, $(C_PREPROCESSOR_CMD) $(ALL_INCLUDE_DIRS))
-C_COMPILATION_REDUCED_CMD :=$(call \
-               reduce_cmd_len, $(C_COMPILATION_CMD) $(ALL_INCLUDE_DIRS))
-LONG_C_CMD :=$(call check_win_cmd_len, $(C_COMPILATION_REDUCED_CMD))
 
-C_ARGS_FILE :=$(strip $(if $(LONG_C_CMD),$(CURR_OBJ_DIR)/c.args,))
-ifeq ($(LONG_C_CMD),TOO_LONG)
-    C_COMPILATION_CMD += $(CC_USE_ARGS_FROM_FILE_FLAG)$(C_ARGS_FILE)
-    C_PREPROCESSOR_CMD +=  $(CC_USE_ARGS_FROM_FILE_FLAG)$(C_ARGS_FILE)
-else
-    C_COMPILATION_CMD :=$(C_COMPILATION_REDUCED_CMD)
-    C_PREPROCESSOR_CMD :=$(C_PREPROCESSOR_REDUCED_CMD)
-endif
-
-
-####### extract info from preprocessed files
+  ####### extract info from preprocessed files
 $(CURR_OBJ_DIR)/%.c.preproc: %.c $(ALL_DEPS) $(C_ARGS_FILE)
 	$(info .    Preprocessing $<)
 	$(call mkdir_if_not_exists, $(dir $@))
-	$(C_PREPROCESSOR_CMD) $(CC_OUTPUT_FLAG_AND_FILE) $<
+	$(call run_c_preprocessor,$(CPP_ARGS_FILE),$<,$@)
 
 include $(MAKEFILES_ROOT_DIR)/c/compilers/preprocessor_analyzer.mk
 
@@ -148,7 +125,7 @@ $(CURR_OBJ_DIR)/%.o: $(C_DEPS)
 	$(info .    Compiling $<)
 	$(eval SRC_FILE := $(realpath $<))
 	$(info .    Compiling $(SRC_FILE))
-	$(C_COMPILATION_CMD) $(CC_OUTPUT_FLAG_AND_FILE) $<
+	$(call run_c_compiler,$(CPP_ARGS_FILE),$<,$@)
 
 
 ifdef CONFIG_GCC
@@ -157,57 +134,43 @@ else
     ARGS_CONTENT :=$(ALL_INCLUDE_DIRS)
 endif
 
-$(C_ARGS_FILE): $(ALL_DEPS)
-	$(eval DUMMY := $(call fwrite,$(C_ARGS_FILE),$(ARGS_CONTENT),TRUNCATE))
+###########  end of C files #################
+#################################################
 
+###########  start of CPP files #################
 
+ALL_CPPFLAGS := $(GLOBAL_CPPFLAGS) $(CPPFLAGS)
 
-
-ALL_CPPFLAGS := $(GLOBAL_CPPFLAGS) $(CFLAGS)
-CPP_COMPILATION_CMD := $(CCPP) $(ALL_CPPFLAGS) $(ALL_DEFINES)
-CPP_PREPROCESSOR_CMD := $(CCPP) -E $(ALL_CPPFLAGS) $(ALL_DEFINES)
-CPP_COMPILATION_REDUCED_CMD :=$(call \
-          reduce_cmd_len, $(CPP_COMPILATION_CMD) $(ALL_INCLUDE_DIRS))
-CPP_PREPROCESSOR_REDUCED_CMD :=$(call \
-               reduce_cmd_len, $(CPP_PREPROCESSOR_CMD) $(ALL_INCLUDE_DIRS))
-LONG_CPP_CMD :=$(call check_win_cmd_len, $(CPP_COMPILATION_REDUCED_CMD))
-
-CPP_ARGS_FILE :=$(strip $(if $(LONG_CPP_CMD),$(CURR_OBJ_DIR)/cpp.args,))
-ifeq ($(LONG_CPP_CMD),TOO_LONG)
-    CPP_COMPILATION_CMD += $(CC_USE_ARGS_FROM_FILE_FLAG)$(CPP_ARGS_FILE)
-    CPP_PREPROCESSOR_CMD +=  $(CC_USE_ARGS_FROM_FILE_FLAG)$(CPP_ARGS_FILE)
-else
-    CPP_COMPILATION_CMD :=$(CPP_COMPILATION_REDUCED_CMD)
-    CPP_PREPROCESSOR_CMD :=$(CPP_PREPROCESSOR_REDUCED_CMD)
-endif
-
-####### extract info from preprocessed files
+  ####### extract info from preprocessed files
 $(CURR_OBJ_DIR)/%.cc.preproc: %.cc $(ALL_DEPS) $(C_ARGS_FILE)
 	$(info .    Preprocessing $<)
 	$(call mkdir_if_not_exists, $(dir $@))
-	$(CPP_PREPROCESSOR_CMD) $(CC_OUTPUT_FLAG_AND_FILE) $<
+	$(call run_cpp_preprocessor,$(CPP_ARGS_FILE),$<,$@)
 
 
-CC_DEPS := %.cc $(CURR_OBJ_DIR)/%.cc.analyzer $(ALL_DEPS) $(CPP_ARGS_FILE)
+CC_DEPS := %.cc $(CURR_OBJ_DIR)/%.cc.analyzer $(ALL_DEPS) $(C_ARGS_FILE)
 $(CURR_OBJ_DIR)/%.oo: $(CC_DEPS)
 	$(info .    Compiling $<)
 	$(call mkdir_if_not_exists, $(dir $@))
-	$(CPP_COMPILATION_CMD) $(CC_OUTPUT_FLAG_AND_FILE) $<
+	$(call run_cpp_compiler,$(CPP_ARGS_FILE),$<,$@)
 
 
-####### extract info from preprocessed files
-$(CURR_OBJ_DIR)/%.cpp.preproc: %.cpp $(ALL_DEPS) $(CPP_ARGS_FILE)
+  ####### extract info from preprocessed files
+$(CURR_OBJ_DIR)/%.cpp.preproc: %.cpp $(ALL_DEPS) $(C_ARGS_FILE)
 	$(info .    Preprocessing $<)
 	$(call mkdir_if_not_exists, $(dir $@))
-	$(CPP_PREPROCESSOR_CMD) $(CC_OUTPUT_FLAG_AND_FILE) $<
+	$(call run_cpp_preprocessor,$(CPP_ARGS_FILE),$<,$@)
 
-CPP_DEPS := %.cpp $(CURR_OBJ_DIR)/%.cpp.analyzer $(ALL_DEPS) $(CPP_ARGS_FILE)
+
+CPP_DEPS := %.cpp $(CURR_OBJ_DIR)/%.cpp.analyzer $(ALL_DEPS) $(C_ARGS_FILE)
 $(CURR_OBJ_DIR)/%.oop: $(CPP_DEPS)
 	$(info .    Compiling $<)
 	$(call mkdir_if_not_exists, $(dir $@))
-	$(CPP_COMPILATION_CMD) $(CC_OUTPUT_FLAG_AND_FILE) $<
+	$(call run_cpp_compiler,$(CPP_ARGS_FILE),$<,$@)
 
-$(CPP_ARGS_FILE): $(ALL_DEPS)
-	$(eval DUMMY :=$(call fwrite,$(CPP_ARGS_FILE),$(ARGS_CONTENT),TRUNCATE))
+###########  end of CPP files #############
+#############################################
+$(C_ARGS_FILE): $(ALL_DEPS)
+	$(eval DUMMY :=$(call fwrite,$(C_ARGS_FILE),$(ARGS_CONTENT),TRUNCATE))
 
 .SECONDARY: $(ASM_ARGS_FILE) $(C_ARGS_FILE) $(CPP_ARGS_FILE)

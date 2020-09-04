@@ -153,6 +153,15 @@ GLOBAL_ASMFLAGS := $(GLOBAL_ASMFLAGS)
 
 #end of flags definitions
 
+# replace windows '\' in pathes by '/'
+format_all_include_dir = $(subst \,/,\
+           $(patsubst %,-I%,$(INCLUDE_DIR) $(GLOBAL_INCLUDE_DIR)))
+format_all_asm_include_dir = $(call format_all_include_dir)
+
+# substitute " to \" for string defines
+format_all_defines = \
+              $(subst ",\",$(patsubst %,-D%,$(DEFINES) $(GLOBAL_DEFINES)))
+format_all_asm_defines = $(call format_all_defines)
 
 
 FULL_GCC_PREFIX      := $(GCC_ROOT_DIR)/bin/$(GNU_COMPILATION_PREFIX)-

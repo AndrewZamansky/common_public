@@ -1,32 +1,39 @@
-##################################################################
-#### the following section we need to run just one time per build
-#ifndef SKIP_SECTION_THAT_SHOULD_RUN_ONCE_AFTER_AUTO_FILE_GENERATIONS
-#
+format_all_include_dir = $(patsubst %,/I%,$(INCLUDE_DIR) $(GLOBAL_INCLUDE_DIR))
+format_all_asm_include_dir = $(call format_all_include_dir)
+
+# substitute " to \" for string defines
+format_all_defines = \
+              $(subst ",\",$(patsubst %,/D%,$(DEFINES) $(GLOBAL_DEFINES)))
+format_all_asm_defines = $(call format_all_defines)
 
 
-FMT_GLOBAL_INCLUDE_DIR	:= 	$(patsubst %,/I%,$(GLOBAL_INCLUDE_DIR))
-FMT_GLOBAL_DEFINES	:= 	$(patsubst %,/D%,$(GLOBAL_DEFINES))
-
-#endif
-#### end of section that run just one time per build
-######################################################
-
-define CALCULATE_ALL_INCLUDE_DIRS
-    ALL_INCLUDE_DIRS = $(FMT_COMPILER_INCLUDE_DIR) $(FMT_GLOBAL_INCLUDE_DIR) $(patsubst %,/I%,$(INCLUDE_DIR))
+# $(1) - if command is too long it contain the name of command file
+# $(2) - command to run (as or gcc or g++ or cl or ..) with all flags
+# $(3) - all defines and includes
+# $(4) - input file
+# $(5) - output file with flag (/Fi or /Fo)
+# if command is too long, use command file(true of 'if')
+define run_compiler
+   $(if $(1),\
+     $(2) @$(1) $(5) $(4),\
+     $(call reduce_cmd_len, $(2) $(3) $(5) $(4)))
 endef
 
-define CALCULATE_ALL_DEFINES
-	ALL_DEFINES	=  $(subst ",\", $(FMT_GLOBAL_DEFINES) $(patsubst %,/D%,$(DEFINES)) )#substitute " to \" for string defines
-endef
+# for next 5 functions:
+# $(1) - if command is too long it contain the name of command file
+# $(2) - input file
+# $(3) - output file
+run_asm_compiler =  $(call run_compiler,$(1),\
+        $(ASM) $(ALL_ASM_FLAGS),$(ALL_ASM_DEFS_AND_INCLUDES),$(2),/Fo$(3))
 
-define CALCULATE_ALL_ASM_DEFINES
-    ALL_ASM_DEFINES	=$(subst ",\", $(FMT_GLOBAL_DEFINES) $(patsubst %,/D%,$(DEFINES)) )#substitute " to \" for string defines
-endef
+run_c_preprocessor = $(call run_compiler,$(1),\
+        $(CC) /P $(ALL_CFLAGS),$(ALL_DEFS_AND_INCLUDES),$(2),/Fi$(3))
 
-define CALCULATE_CC_OUTPUT_FLAG_AND_FILE
-    CC_OUTPUT_FLAG_AND_FILE = /Fo$$@#this will transform to $@ in make rule
-endef
+run_c_compiler =  $(call run_compiler,$(1),\
+        $(CC) $(ALL_CFLAGS),$(ALL_DEFS_AND_INCLUDES),$(2),/Fo$(3))
 
-define CALCULATE_ASM_OUTPUT_FLAG_AND_FILE
-    ASM_OUTPUT_FLAG_AND_FILE = /Fo$$@#this will transform to $@ in make rule
-endef
+run_cpp_preprocessor = $(call run_compiler,$(1),\
+        $(CCPP) /P $(ALL_CPPFLAGS),$(ALL_DEFS_AND_INCLUDES),$(2),/Fi$(3))
+
+run_cpp_compiler = $(call run_compiler,$(1),\
+        $(CCPP) $(ALL_CPPFLAGS),$(ALL_DEFS_AND_INCLUDES),$(2),/Fo$(3))

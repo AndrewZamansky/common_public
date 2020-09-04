@@ -179,6 +179,7 @@ endif
 
 GLOBAL_CFLAGS += /wd4100 #disable unused parameter warning
 
+GLOBAL_CPPFLAGS := $(GLOBAL_CFLAGS)
 
 #}}}}}}}}  END OF GLOBAL_CFLAGS PREPARATIONS }}}}}}}}
 
@@ -209,6 +210,7 @@ else ifdef CONFIG_MSC_TARGET_ARCH_X64
         CL_BIN_DIR := $(MSVC_BIN_DIR)\x86_amd64
     endif
 endif
+
 
 CC   := $(MSVC_SET_ADDITIONAL_PATHS) "$(CL_BIN_DIR)\cl.exe" /c
 CCPP := $(MSVC_SET_ADDITIONAL_PATHS) "$(CL_BIN_DIR)\cl.exe" /c

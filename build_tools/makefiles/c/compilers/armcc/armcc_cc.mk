@@ -1,40 +1,41 @@
+format_all_include_dir = $(patsubst %,-I%,$(INCLUDE_DIR) $(GLOBAL_INCLUDE_DIR))
+#format_all_asm_include_dir = $(call format_all_include_dir)
+format_all_asm_include_dir =
 
-##################################################################
-#### the following section we need to run just one time per build
-#ifndef SKIP_SECTION_THAT_SHOULD_RUN_ONCE_AFTER_AUTO_FILE_GENERATIONS
-#
-
-FMT_GLOBAL_INCLUDE_DIR	:= 	$(patsubst %,-I%,$(GLOBAL_INCLUDE_DIR))
-FMT_GLOBAL_DEFINES	:= 	$(patsubst %,-D%,$(GLOBAL_DEFINES))
-FMT_GLOBAL_ASM_DEFINES := $(patsubst %,--predefine "% SETL {TRUE}",$(GLOBAL_DEFINES))
+# substitute " to \" for string defines
+format_all_defines = \
+              $(subst ",\",$(patsubst %,-D%,$(DEFINES) $(GLOBAL_DEFINES)))
+format_all_asm_defines = \
+        $(patsubst %,--predefine "% SETL {TRUE}",$(DEFINES) $(GLOBAL_DEFINES))
 
 
-LDFLAGS = $(GLOBAL_LDFLAGS)
-
-#endif###
-### end of section that run just one time per build
-#####################################################
-
-define CALCULATE_ALL_INCLUDE_DIRS
-	ALL_INCLUDE_DIRS = $(FMT_GLOBAL_INCLUDE_DIR) $(patsubst %,-I%,$(INCLUDE_DIR) $(COMPILER_INCLUDE_DIR))
+# $(1) - if command is too long it contain the name of command file
+# $(2) - command to run (as or gcc or g++ or ...) with all flags
+# $(3) - all defines and includes
+# $(4) - input file
+# $(5) - output file
+# if command is too long, use command file(true of 'if')
+define run_compiler
+   $(if $(1),\
+     $(2) @$(1) -o $(5) $(4),\
+     $(call reduce_cmd_len, $(2) $(3) -o $(5) $(4)))
 endef
 
-#substitute " to \" for string defines
-define CALCULATE_ALL_DEFINES
-	ALL_DEFINES	=  $(subst ",\", $(FMT_GLOBAL_DEFINES) $(patsubst %,-D%,$(DEFINES)) )
-endef
+# for next 5 functions:
+# $(1) - if command is too long it contain the name of command file
+# $(2) - input file
+# $(3) - output file
+run_asm_compiler =  $(call run_compiler,$(1),\
+        $(ASM) $(ALL_ASM_FLAGS),$(ALL_ASM_DEFS_AND_INCLUDES),$(2),$(3))
 
-define CALCULATE_ALL_ASM_DEFINES
-	ALL_ASM_DEFINES	=
-	#ALL_ASM_DEFINES	=$(FMT_GLOBAL_ASM_DEFINES)   $(patsubst %,--predefine "% SETL {TRUE}",$(DEFINES))
-endef
+run_c_preprocessor = $(call run_compiler,$(1),\
+        $(CC) -E $(ALL_CFLAGS),$(ALL_DEFS_AND_INCLUDES),$(2),$(3))
 
+run_c_compiler =  $(call run_compiler,$(1),\
+        $(CC) $(ALL_CFLAGS),$(ALL_DEFS_AND_INCLUDES),$(2),$(3))
 
+run_cpp_preprocessor = $(call run_compiler,$(1),\
+        $(CCPP) -E $(ALL_CPPFLAGS),$(ALL_DEFS_AND_INCLUDES),$(2),$(3))
 
-define CALCULATE_CC_OUTPUT_FLAG_AND_FILE
-	CC_OUTPUT_FLAG_AND_FILE = -o $$@#this will transform to $@ in make rule 
-endef
-
-define CALCULATE_ASM_OUTPUT_FLAG_AND_FILE
-	ASM_OUTPUT_FLAG_AND_FILE = -o $$@#this will transform to $@ in make rule 
-endef
+run_cpp_compiler = $(call run_compiler,$(1),\
+        $(CCPP) $(ALL_CPPFLAGS),$(ALL_DEFS_AND_INCLUDES),$(2),$(3))

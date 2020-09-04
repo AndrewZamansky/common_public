@@ -111,8 +111,6 @@ GLOBAL_CPPFLAGS := $(GLOBAL_CFLAGS)
 #end of flags definitions
 
 
-
-
 ifdef COMPILE_WITH_GCC
     CC   :=	$(FULL_GCC_PREFIX)gcc -c
     CCPP := $(FULL_GCC_PREFIX)gcc -c
