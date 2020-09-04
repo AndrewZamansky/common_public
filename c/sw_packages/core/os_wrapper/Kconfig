@@ -1,6 +1,6 @@
 choice
 	prompt "RT OS select"
-	default NONE_RT_OS
+	default NO_OS
 
 config FREE_RTOS
 	bool "freeRtos"
@@ -14,14 +14,14 @@ config OSA
 config LINUX_OS_WRAPPER
 	bool "linux os wrapper"
 
-config NONE_RT_OS
+config NO_OS
 	bool "none"
 
 endchoice
 
 config USE_ONLY_OS_API
 	bool   "use only OS API, dont include implementation"
-	depends on !NONE_RT_OS && OUTPUT_TYPE_STATIC_LIBRARY
+	depends on OUTPUT_TYPE_STATIC_LIBRARY
 	default n
 
 

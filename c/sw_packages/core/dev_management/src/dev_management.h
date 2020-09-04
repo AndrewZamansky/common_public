@@ -8,8 +8,5 @@
 #define _dev_management_H
 
 
-/***************   typedefs    *******************/
 
-
-
-#endif /* */
+#endif

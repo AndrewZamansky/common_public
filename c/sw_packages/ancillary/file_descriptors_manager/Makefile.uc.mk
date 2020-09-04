@@ -4,9 +4,10 @@
 INCLUDE_THIS_COMPONENT :=y
 
 ifeq ($(sort $(CONFIG_INTERNAL_FILE_DESCRIPTORS_MANAGER)),y)
+    # calculation of CURR_COMPONENT_DIR must be before all 'include' directives
+    CURR_COMPONENT_DIR :=\
+        $(patsubst %/,%,$(dir $(realpath $(lastword $(MAKEFILE_LIST)))))
     ifeq ($(sort $(CONFIG_USE_INTERNAL_SOCKETS_IMPLEMENTATION)),y)
-        CURR_COMPONENT_DIR :=\
-            $(patsubst %/,%,$(dir $(realpath $(lastword $(MAKEFILE_LIST)))))
         DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH, $(CURR_COMPONENT_DIR)/include)
     endif
 endif

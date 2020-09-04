@@ -1,6 +1,10 @@
 
 ifeq ($(sort $(CONFIG_INCLUDE_JUCE)),y)
 
+    # calculation of CURR_COMPONENT_DIR must be before all 'include' directives
+    CURR_COMPONENT_DIR :=\
+       $(patsubst %/,%,$(dir $(realpath $(lastword $(MAKEFILE_LIST)))))
+
     JUCE_GIT :=https://github.com/julianstorer/JUCE
     JUCE_PATH :=$(EXTERNAL_SOURCE_ROOT_DIR)/JUCE
     ifeq ("$(wildcard $(JUCE_PATH))","")
@@ -12,20 +16,23 @@ ifeq ($(sort $(CONFIG_INCLUDE_JUCE)),y)
         $(error )
     endif
 
-    #test if current commit and branch of uboot git is the same as required by application
+    # test if current commit and branch of JUCE git is
+    # the same as required by application
     CURR_GIT_REPO_DIR :=$(JUCE_PATH)
     CURR_GIT_COMMIT_HASH_VARIABLE :=CONFIG_JUCE_GIT_COMMIT_HASH
     include $(MAKEFILES_ROOT_DIR)/_include_functions/git_prebuild_repo_check.mk
 
-    CURR_JUCE_COMPONENT_LOCATION := $(patsubst %/Makefile.uc.mk,%,$(realpath $(filter %juce/Makefile.uc.mk,$(MAKEFILE_LIST))))
-    DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(JUCE_PATH))
-    DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(CURR_JUCE_COMPONENT_LOCATION)/JuceLibraryCode)
+    DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH, $(JUCE_PATH)/modules)
+    DUMMY := $(call \
+         ADD_TO_GLOBAL_INCLUDE_PATH, $(CURR_COMPONENT_DIR)/JuceLibraryCode)
     INCLUDE_THIS_COMPONENT := y
 
 endif
 
 
-#DEFINES =
+DUMMY := $(call ADD_TO_GLOBAL_DEFINES,JUCE_APP_CONFIG_HEADER="AppConfig.h")
+
+#DEFINES +=
 
 
 #ASMFLAGS =
@@ -33,7 +40,8 @@ endif
 #INCLUDE_DIR =
 
 ifeq ($(sort $(CONFIG_JUCE_VST_PLUGIN)),y)
-    DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(EXTERNAL_SOURCE_ROOT_DIR)/VST3_SDK)
+    DUMMY := $(call \
+           ADD_TO_GLOBAL_INCLUDE_PATH, $(EXTERNAL_SOURCE_ROOT_DIR)/VST3_SDK)
 endif
 
 SRC = juce_audio_basics.cpp
@@ -69,10 +77,15 @@ ifeq ($(sort $(CONFIG_JUCE_VST_PLUGIN)),y)
     
     ifeq ($(sort $(CONFIG_USE_SAVI_HOST_VST_PLUGIN_TESTER)),y)
        ifeq ($(wildcard $(REDEFINE_SAVIHOST_VST_TESTER_DIR)),)
-           $(info !--- $(PARENT_OF_COMMON_PUBLIC_DIR)/workspace_config.mk/REDEFINE_SAVIHOST_VST_TESTER_DIR = $(REDEFINE_SAVIHOST_VST_TESTER_DIR))
-           $(info !--- $(REDEFINE_SAVIHOST_VST_TESTER_DIR) not found)
-           $(info !--- redefine $(PARENT_OF_COMMON_PUBLIC_DIR)/workspace_config.mk/REDEFINE_SAVIHOST_VST_TESTER_DIR to valid saviHost VST tester directory)
-           $(error ---) 
+           WORKSPACE_CFG_MK :=$(PARENT_OF_COMMON_PUBLIC_DIR)/workspace_config.mk
+           SAVIHOST_DIR_VAR :=\
+                  $(WORKSPACE_CFG_MK)/REDEFINE_SAVIHOST_VST_TESTER_DIR
+           $(info\
+               err: $(SAVIHOST_DIR_VAR) = $(REDEFINE_SAVIHOST_VST_TESTER_DIR))
+           $(info ---: $(REDEFINE_SAVIHOST_VST_TESTER_DIR) not found)
+           $(info ---: redefine $(SAVIHOST_DIR_VAR) to)
+           $(info ---: valid saviHost VST tester directory)
+           $(call exit,1)
        endif
     endif
     

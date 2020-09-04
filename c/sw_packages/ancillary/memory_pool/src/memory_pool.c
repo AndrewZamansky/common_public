@@ -4,9 +4,6 @@
  *
  */
 
-
-
-/***************   includes    *******************/
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 #include "_project_func_declarations.h"
@@ -15,16 +12,6 @@
 #include "memory_pool_api.h"
 
 #include "memory_pool.h"
-
-
-/***************   defines    *******************/
-
-/***************   typedefs    *******************/
-
-
-/**********   external variables    **************/
-
-/***********   local variables    **************/
 
 
 /**
