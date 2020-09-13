@@ -5,7 +5,6 @@
  *
  */
 
-/********  includes *********************/
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 
@@ -25,23 +24,10 @@ extern "C" {
 }
 
 
-/********  defines *********************/
-
-/********  types  *********************/
-
-/********  externals *********************/
-
-
-
-/**********   external variables    **************/
-
-
-/**********   variables for export    **************/
 char chain_outputs_module_name[] = "chain_outputs_module_name";
 char chain_inputs_module_name[] = "chain_inputs_module_name";
 
 
-/***********   local variables    **************/
 
 static uint8_t size_of_dsp_module_type_array = 0;
 static struct dsp_module_type_t *dsp_module_type_array = NULL;
@@ -51,13 +37,12 @@ static struct dsp_pad_t dummy_output_buff =
 							{NULL, DSP_OUT_PAD_TYPE_NOT_USED, 0, 0};
 static	void *dsp_buffers_pool = NULL;
 
-/********************************************/
 
 
 /**
  * my_memcpy()
  *
- * on gcc cortex-m3 MEMCPY() is slower then direct copy !!!
+ * on gcc cortex-m3 memcpy() is slower then direct copy !!!
  * return:
  */
 static void my_memcpy(real_t *dest ,real_t *src , size_t len)
@@ -68,29 +53,13 @@ static void my_memcpy(real_t *dest ,real_t *src , size_t len)
 	}
 }
 
-#if 0
-/**
- * my_memcpy_2_buffers()
- *
- * on gcc cortex-m3 MEMCPY() is slower then direct copy !!!
- * return:
- */
-static void my_memcpy_2_buffers(real_t *dest1, real_t *src1,
-								real_t *dest2, real_t *src2, size_t len)
-{
-	while (len--)
-	{
-		*dest1++ = *src1++;
-		*dest2++ = *src2++;
-	}
-}
-#endif
+
 
 
 /**
  * my_memset()
  *
- * on gcc cortex-m3 MEMSET() is slower then direct copy !!!
+ * on gcc cortex-m3 memset() is slower then direct copy !!!
  * return:
  */
 static void my_memset(real_t *dest ,real_t val, size_t len)
@@ -230,6 +199,14 @@ void dsp_management_api_init(size_t size_of_items_in_buffer)
 	dummy_output_buff.buff_size =
 			memory_pool_get_chunk_size(dsp_buffers_pool) / sizeof(real_t);
 	dummy_output_buff.pad_type = DSP_PAD_TYPE_DUMMY_OUTPUT_BUFFER;
+}
+
+
+void dsp_management_api_delete(void)
+{
+	memory_pool_free(dsp_buffers_pool, dummy_output_buff.buff);
+	memory_pool_free(dsp_buffers_pool, default_zero_buff.buff);
+	memory_pool_delete(dsp_buffers_pool);
 }
 
 

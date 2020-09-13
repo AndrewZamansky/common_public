@@ -102,6 +102,7 @@ void dsp_management_api_set_chain_output_buffer(chain_handle_t chain_handle,
 			uint16_t chain_output_pad_num, uint8_t *buffer, size_t buff_size);
 
 void dsp_management_api_init(size_t size_of_items_in_buffer);
+void dsp_management_api_delete(void);
 
 
 extern chain_handle_t _dsp_management_create_static_chain(

@@ -5,14 +5,6 @@
 
 #include "stdint.h"
 
-/**********  define API  types ************/
-
-
-/**********  define API  functions  ************/
-
-
-
-/**********  define API  functions  ************/
 
 void *memory_pool_init(size_t size_of_chunk);
 void memory_pool_delete(void *memory_pool_handle);
