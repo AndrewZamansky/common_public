@@ -227,4 +227,6 @@ int cli_readline(const char *const prompt);
 
 int run_command_repeatable(const char *cmd, int flag);
 
+#include "common.h"
+
 #endif
