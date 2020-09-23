@@ -3,10 +3,14 @@
 
 
 #include "project_config.h"
+
 #include "_project.h"
 #include "string.h"
 #include "stdio.h"
 #include "stdlib.h"
+
+// put following define be after include of stdio.h
+#define puts(str)   SHELL_REPLY_STR(str)
 
 #if !defined(CONFIG_OUTPUT_IS_LIBRARY_FOR_EXPORT)
 	#include "dev_management_api.h"
@@ -164,6 +168,11 @@ typedef __u64 __bitwise __be64;
 typedef unsigned long phys_addr_t;
 typedef unsigned long phys_size_t;
 
+// declare folowing structure to avoid warnings
+struct udevice {
+	uint8_t dummy;
+};
+
 #define false 0
 
 #define CONFIG_IS_ENABLED(option) CONFIG##option
@@ -174,7 +183,7 @@ typedef unsigned long phys_size_t;
 
 
 #define DEBUG_PARSER 0
-#define CONFIG_SYS_CBSIZE 128
+#define CONFIG_SYS_CBSIZE   CONFIG_UBOOT_SYS_CBSIZE
 #define CONFIG_SYS_PROMPT ">"
 
 #if defined(_WIN32) || defined(_WIN64)

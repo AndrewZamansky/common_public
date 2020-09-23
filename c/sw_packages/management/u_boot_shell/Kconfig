@@ -14,6 +14,13 @@ config SYS_MAXARGS
 	depends on !INCLUDE_ONLY_UBOOT_SHELL_API
 	default 8
 
+
+config UBOOT_SYS_CBSIZE
+	int   "uboot buffer size"
+	depends on !INCLUDE_ONLY_UBOOT_SHELL_API
+	default 128
+
+
 menu "common uboot shell commands"
 
 config UBOOT_CMD_GET_VERSION
