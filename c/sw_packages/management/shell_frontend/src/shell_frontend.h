@@ -10,8 +10,8 @@
 #include "dev_management_api.h"
 
 struct shell_frontend_runtime_instance_t {
-	uint32_t lastTestedBytePos;
-	uint8_t lastEOLchar;
+	uint32_t last_tested_pos;
+	uint8_t last_EOL_char;
 };
 
 SET_RUNTIME_DATA_TYPE(shell_frontend, struct shell_frontend_runtime_instance_t);

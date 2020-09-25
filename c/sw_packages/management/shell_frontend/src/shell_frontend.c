@@ -76,31 +76,60 @@ static void reply_data(const char *data, size_t len)
 }
 
 
+static uint8_t proccess_backspace(uint8_t *buff,
+		size_t curr_buff_pos, size_t *last_printed_out_pos)
+{
+	size_t num_of_removed_chars;
+
+	num_of_removed_chars = 0;
+	if(curr_buff_pos)
+	{
+		if (HEADER_CHAR_ON != buff[HEADER_SUPPRESS_ECHO_POS])
+		{
+			reply_data((char*)&buff[*last_printed_out_pos],
+								curr_buff_pos - *last_printed_out_pos);
+			reply_data(erase_seq, sizeof(erase_seq) - 1);
+		}
+		//shift buffer right before DEL
+		memmove(&buff[2], buff, curr_buff_pos - 1);
+		*last_printed_out_pos = curr_buff_pos - 1;
+		num_of_removed_chars++;
+	}
+
+	/* if 'del' char is first , just remove it, also remove
+	 *  1 additional char from buffer as second step from
+	 *  step 1 of buffer that 'del' char is not first
+	 */
+	num_of_removed_chars++;
+	return num_of_removed_chars;
+}
+
+
 #define SUMS_OF_EOLS	('\r'+'\n')
 
-static uint8_t get_valid_line(
+static size_t get_valid_line(
 		struct shell_frontend_runtime_instance_t *runtime_handle,
-		uint8_t **pBuffer, size_t *p_total_length, size_t *p_bytesConsumed)
+		uint8_t **pBuffer, size_t *p_total_length, size_t *p_bytes_consumed)
 {
 	uint8_t validCommadFound;
 	uint8_t *pBufferStart;
 	size_t total_length;
-	size_t bytesConsumed;
+	size_t bytes_consumed;
 	size_t curr_buff_pos;
-	size_t lastTestedBytePos;
-	size_t endOfLastPrintfPos;
+	size_t last_tested_pos;
+	size_t last_printed_out_pos;
 	uint8_t curr_char;
 	uint8_t eol_char;
 
 	total_length = *p_total_length;
 	pBufferStart = *pBuffer;
-	bytesConsumed = *p_bytesConsumed;
+	bytes_consumed = *p_bytes_consumed;
 
-	lastTestedBytePos = runtime_handle->lastTestedBytePos;
-	endOfLastPrintfPos = lastTestedBytePos;
-	curr_buff_pos = lastTestedBytePos;
+	last_tested_pos = runtime_handle->last_tested_pos;
+	last_printed_out_pos = last_tested_pos;
+	curr_buff_pos = last_tested_pos;
 
-	eol_char = runtime_handle->lastEOLchar;
+	eol_char = runtime_handle->last_EOL_char;
 
 	validCommadFound = 0;
 	while ((curr_buff_pos < total_length) && (0 == validCommadFound))
@@ -114,7 +143,7 @@ static uint8_t get_valid_line(
 			{
 				pBufferStart++;
 				total_length--;
-				bytesConsumed++;
+				bytes_consumed++;
 			}
 			else
 			{
@@ -123,65 +152,47 @@ static uint8_t get_valid_line(
 			break;
 		case 0x08:
 		case 0x7f:
-			if(curr_buff_pos)
 			{
-				if (HEADER_CHAR_ON != pBufferStart[HEADER_SUPPRESS_ECHO_POS])
-				{
-					reply_data((char*)&pBufferStart[endOfLastPrintfPos],
-										curr_buff_pos - endOfLastPrintfPos);
-					reply_data(erase_seq, sizeof(erase_seq)-1);
-				}
-				//shift buffer right before DEL
-				memmove(&pBufferStart[2], pBufferStart, curr_buff_pos-1);
-
-				curr_buff_pos -= 1;
-				endOfLastPrintfPos = curr_buff_pos;
-
-				//step 1 :
-				pBufferStart++;
-				bytesConsumed++;
-				total_length--;
+				uint8_t num_of_removed_chars;
+				num_of_removed_chars = proccess_backspace(
+						pBufferStart, curr_buff_pos, &last_printed_out_pos);
+				curr_buff_pos -= (num_of_removed_chars - 1);
+				pBufferStart += num_of_removed_chars;
+				bytes_consumed += num_of_removed_chars;
+				total_length -= num_of_removed_chars;
 			}
-
-			/* if 'del' char is first , just remove it, also remove
-			 *  1 additional char from buffer as second step from
-			 *  step 1 of buffer that 'del' char is not first
-			 */
-			pBufferStart++;
-			bytesConsumed++;
-			total_length--;
 			break;
 		default:
 			curr_buff_pos++;
 			break;
 		}
 
-		//lastEOLchar only valid for first loop
+		//last_EOL_char only valid for first loop
 		eol_char = 0;
 	}
 
 
 	if (HEADER_CHAR_ON != pBufferStart[HEADER_SUPPRESS_ECHO_POS])
 	{
-		reply_data((char*)&pBufferStart[endOfLastPrintfPos],
-								curr_buff_pos - endOfLastPrintfPos);
+		reply_data((char*)&pBufferStart[last_printed_out_pos],
+								curr_buff_pos - last_printed_out_pos);
 	}
 
 	if (validCommadFound)
 	{
 		eol_char = curr_char;
-		lastTestedBytePos = 0;
+		last_tested_pos = 0;
 	}
 	else
 	{
-		lastTestedBytePos = curr_buff_pos;
+		last_tested_pos = curr_buff_pos;
 	}
-	runtime_handle->lastEOLchar = eol_char;
-	runtime_handle->lastTestedBytePos = lastTestedBytePos;
+	runtime_handle->last_EOL_char = eol_char;
+	runtime_handle->last_tested_pos = last_tested_pos;
 
 	*p_total_length = total_length ;
 	*pBuffer = pBufferStart;
-	*p_bytesConsumed = bytesConsumed;
+	*p_bytes_consumed = bytes_consumed;
 
 	return curr_buff_pos;
 }
@@ -275,7 +286,7 @@ static void shell_frontend_Task( void *pvParameters )
 {
 	struct xMessage_t pxRxedMessage;
 	size_t total_length;
-	size_t bytesConsumed;
+	size_t bytes_consumed;
 	size_t EOL_pos;
 	uint8_t *pBufferStart;
 	struct ioctl_get_data_buffer_t data_buffer_info;
@@ -311,30 +322,30 @@ static void shell_frontend_Task( void *pvParameters )
 
 		if(0 != data_buffer_info.bufferWasOverflowed)
 		{
-			runtime_handle->lastTestedBytePos = 0;
-			runtime_handle->lastEOLchar = 0;
+			runtime_handle->last_tested_pos = 0;
+			runtime_handle->last_EOL_char = 0;
 		}
 
 		while (total_length)
 		{
-			bytesConsumed = 0;
+			bytes_consumed = 0;
 
 			// will return total_length if EOL not found
 			EOL_pos = get_valid_line(runtime_handle,
-					&pBufferStart, &total_length, &bytesConsumed);
+					&pBufferStart, &total_length, &bytes_consumed);
 
 			if (EOL_pos < total_length)
 			{
 				consume_line(config_handle, pBufferStart, EOL_pos);
 
 				EOL_pos++;// add first EOL char
-				bytesConsumed += EOL_pos;
+				bytes_consumed += EOL_pos;
 			}
 			pBufferStart = &pBufferStart[EOL_pos];
 			total_length -= EOL_pos;
 
 			DEV_IOCTL(curr_rx_dev, IOCTL_SET_BYTES_CONSUMED_IN_DATA_BUFFER,
-					(void *)((uint32_t)bytesConsumed));
+					(void *)((uint32_t)bytes_consumed));
 		}
 		DEV_IOCTL(curr_rx_dev, IOCTL_SET_UNLOCK_DATA_BUFFER ,(void *) 0);
 
