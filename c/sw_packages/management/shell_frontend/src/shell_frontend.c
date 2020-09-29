@@ -76,24 +76,39 @@ static void reply_data(const char *data, size_t len)
 }
 
 
-static uint8_t proccess_backspace(uint8_t *buff,
-		size_t curr_buff_pos, size_t *last_printed_out_pos)
+static void send_echo(
+		uint8_t *buff, size_t curr_buff_pos, size_t last_printed_out_pos)
+{
+	if (0 == curr_buff_pos) return;
+
+	if (HEADER_CHAR_ON != buff[HEADER_SUPPRESS_ECHO_POS])
+	{
+		reply_data((char*)&buff[last_printed_out_pos],
+							curr_buff_pos - last_printed_out_pos);
+	}
+}
+
+
+static uint8_t process_backspace(
+		struct shell_frontend_runtime_instance_t *runtime_handle,
+		uint8_t *buff, size_t curr_buff_pos)
 {
 	size_t num_of_removed_chars;
-
 	num_of_removed_chars = 0;
-	if(curr_buff_pos)
+	if (curr_buff_pos)
 	{
 		if (HEADER_CHAR_ON != buff[HEADER_SUPPRESS_ECHO_POS])
 		{
-			reply_data((char*)&buff[*last_printed_out_pos],
-								curr_buff_pos - *last_printed_out_pos);
 			reply_data(erase_seq, sizeof(erase_seq) - 1);
 		}
 		//shift buffer right before DEL
 		memmove(&buff[2], buff, curr_buff_pos - 1);
-		*last_printed_out_pos = curr_buff_pos - 1;
+		runtime_handle->last_tested_pos = curr_buff_pos - 1;
 		num_of_removed_chars++;
+	}
+	else
+	{
+		runtime_handle->last_tested_pos = 0;
 	}
 
 	/* if 'del' char is first , just remove it, also remove
@@ -105,145 +120,70 @@ static uint8_t proccess_backspace(uint8_t *buff,
 }
 
 
-#define SUMS_OF_EOLS	('\r'+'\n')
-
-static size_t get_valid_line(
-		struct shell_frontend_runtime_instance_t *runtime_handle,
-		uint8_t **pBuffer, size_t *p_total_length, size_t *p_bytes_consumed)
+static uint8_t test_validity_of_header(uint8_t *buff, size_t EOL_pos)
 {
-	uint8_t validCommadFound;
-	uint8_t *pBufferStart;
-	size_t total_length;
-	size_t bytes_consumed;
-	size_t curr_buff_pos;
-	size_t last_tested_pos;
-	size_t last_printed_out_pos;
-	uint8_t curr_char;
-	uint8_t eol_char;
+	if (START_OF_CMD_POS > EOL_pos) return 0;
 
-	total_length = *p_total_length;
-	pBufferStart = *pBuffer;
-	bytes_consumed = *p_bytes_consumed;
-
-	last_tested_pos = runtime_handle->last_tested_pos;
-	last_printed_out_pos = last_tested_pos;
-	curr_buff_pos = last_tested_pos;
-
-	eol_char = runtime_handle->last_EOL_char;
-
-	validCommadFound = 0;
-	while ((curr_buff_pos < total_length) && (0 == validCommadFound))
+	if ((HEADER_CHAR_ON != buff[START_OF_CMD_POS - 1]) &&
+			(HEADER_CHAR_OFF != buff[START_OF_CMD_POS - 1]) )
 	{
-		curr_char = pBufferStart[curr_buff_pos];
-		switch(curr_char)
-		{
-		case '\r':
-		case '\n':
-			if ( SUMS_OF_EOLS  == (curr_char + eol_char))
-			{
-				pBufferStart++;
-				total_length--;
-				bytes_consumed++;
-			}
-			else
-			{
-				validCommadFound = 1;
-			}
-			break;
-		case 0x08:
-		case 0x7f:
-			{
-				uint8_t num_of_removed_chars;
-				num_of_removed_chars = proccess_backspace(
-						pBufferStart, curr_buff_pos, &last_printed_out_pos);
-				curr_buff_pos -= (num_of_removed_chars - 1);
-				pBufferStart += num_of_removed_chars;
-				bytes_consumed += num_of_removed_chars;
-				total_length -= num_of_removed_chars;
-			}
-			break;
-		default:
-			curr_buff_pos++;
-			break;
-		}
-
-		//last_EOL_char only valid for first loop
-		eol_char = 0;
+		return 0;
 	}
-
-
-	if (HEADER_CHAR_ON != pBufferStart[HEADER_SUPPRESS_ECHO_POS])
-	{
-		reply_data((char*)&pBufferStart[last_printed_out_pos],
-								curr_buff_pos - last_printed_out_pos);
-	}
-
-	if (validCommadFound)
-	{
-		eol_char = curr_char;
-		last_tested_pos = 0;
-	}
-	else
-	{
-		last_tested_pos = curr_buff_pos;
-	}
-	runtime_handle->last_EOL_char = eol_char;
-	runtime_handle->last_tested_pos = last_tested_pos;
-
-	*p_total_length = total_length ;
-	*pBuffer = pBufferStart;
-	*p_bytes_consumed = bytes_consumed;
-
-	return curr_buff_pos;
+	return 1;
 }
 
 
 static uint8_t *extract_command_from_line(
-		uint8_t *pBufferStart, size_t *p_EOL_pos)
+		uint8_t *buff, size_t *p_EOL_pos, uint8_t *cmd_header_found)
 {
-	if ((HEADER_CHAR_ON == pBufferStart[HEADER_SUPPRESS_ECHO_POS]) ||
-			(HEADER_CHAR_OFF == pBufferStart[HEADER_SUPPRESS_ECHO_POS]) )
-	{
-		if (START_OF_CMD_POS > *p_EOL_pos)
-		{
-			return NULL;
-		}
+	*cmd_header_found = 0;
+	if (1 > *p_EOL_pos) return NULL;
 
-		if ((HEADER_CHAR_ON == pBufferStart[START_OF_CMD_POS - 1]) ||
-				(HEADER_CHAR_OFF == pBufferStart[START_OF_CMD_POS - 1]) )
-		{
-			*p_EOL_pos = (*p_EOL_pos) - START_OF_CMD_POS;
-			return &pBufferStart[START_OF_CMD_POS];
-		}
-		else
-		{
-			reply_data("invalid header\r\n",
-							sizeof("invalid header\r\n")-1);
-			return NULL;
-		}
-	}
-	else
+	if ((HEADER_CHAR_ON != buff[HEADER_SUPPRESS_ECHO_POS]) &&
+			(HEADER_CHAR_OFF != buff[HEADER_SUPPRESS_ECHO_POS]) )
 	{
-		return pBufferStart;
+		return buff; // if no header
 	}
-	return NULL;
+
+	*cmd_header_found = 1;
+	if (0 == test_validity_of_header(buff, *p_EOL_pos))
+	{
+		reply_data("invalid header\r\n", sizeof("invalid header\r\n")-1);
+		return NULL;
+	}
+
+	*p_EOL_pos = (*p_EOL_pos) - START_OF_CMD_POS;
+	return &buff[START_OF_CMD_POS];
 }
 
 
+#define SUMS_OF_EOLS	('\r' + '\n')
+
 static void consume_line(struct shell_frontend_cfg_t *config_handle,
-							uint8_t *pBufferStart, size_t EOL_pos)
+					struct shell_frontend_runtime_instance_t *runtime_handle,
+					uint8_t *buff, size_t EOL_pos)
 {
-	struct dev_desc_t *   shell_backend_dev;
-	struct dev_desc_t *   cmd_save_dev;
+	struct dev_desc_t *shell_backend_dev;
+	struct dev_desc_t *cmd_save_dev;
 	struct rcvd_cmd_t  rcvd_cmd;
+	uint8_t  cmd_header_found;
 	uint8_t *pCmd;
 
-	pCmd = extract_command_from_line(pBufferStart, &EOL_pos);
+	runtime_handle->last_tested_pos = 0;
+	if ((0 == EOL_pos) &&
+			( SUMS_OF_EOLS  == (buff[0] + runtime_handle->last_EOL_char)))
+	{
+		runtime_handle->last_EOL_char = 0;
+		return;
+	}
+
+	runtime_handle->last_EOL_char = buff[EOL_pos];
+	pCmd = extract_command_from_line(buff, &EOL_pos, &cmd_header_found);
 
 	if (NULL != pCmd)
 	{
-		if ((pBufferStart == pCmd )/*no header*/ ||
-				(HEADER_CHAR_OFF == pBufferStart[HEADER_SUPPRESS_ECHO_POS]))
+		if ((0 == cmd_header_found) ||
+				(HEADER_CHAR_OFF == buff[HEADER_SUPPRESS_ECHO_POS]))
 		{
 			reply_data("\r\n", 2);
 		}
@@ -263,10 +203,9 @@ static void consume_line(struct shell_frontend_cfg_t *config_handle,
 		}
 	}
 
-
-	if (pBufferStart != pCmd )
+	if (cmd_header_found)
 	{
-		if (HEADER_CHAR_ON == pBufferStart[HEADER_ADD_EOF_MARK_POS])
+		if (HEADER_CHAR_ON == buff[HEADER_ADD_EOF_MARK_POS])
 		{
 			reply_data( EOF_MARKER_STR, sizeof(EOF_MARKER_STR) - 1);
 		}
@@ -276,6 +215,43 @@ static void consume_line(struct shell_frontend_cfg_t *config_handle,
 		reply_data("\r\n>", 3);
 	}
 }
+
+
+static size_t process_data(struct shell_frontend_cfg_t *config_handle,
+		struct shell_frontend_runtime_instance_t *runtime_handle,
+		uint8_t *buff, size_t total_length)
+{
+	size_t curr_buff_pos;
+	uint8_t curr_char;
+
+	curr_buff_pos = runtime_handle->last_tested_pos;
+	while (curr_buff_pos < total_length)
+	{
+		curr_char = buff[curr_buff_pos];
+		switch(curr_char)
+		{
+		case '\r':
+		case '\n':
+			send_echo(buff, curr_buff_pos, runtime_handle->last_tested_pos);
+			consume_line(config_handle, runtime_handle, buff, curr_buff_pos);
+			return curr_buff_pos + 1; // add first EOL char
+		case 0x08:
+		case 0x7f:
+			send_echo(buff, curr_buff_pos, runtime_handle->last_tested_pos);
+			runtime_handle->last_EOL_char = 0;
+			return process_backspace(runtime_handle, buff, curr_buff_pos);
+		default:
+			curr_buff_pos++;
+			break;
+		}
+	}
+
+	send_echo(buff, curr_buff_pos, runtime_handle->last_tested_pos);
+	runtime_handle->last_EOL_char = 0; // we are here if no EOL found
+	runtime_handle->last_tested_pos = curr_buff_pos;
+	return 0;
+}
+
 
 /**
  * shell_frontend_Task()
@@ -287,7 +263,6 @@ static void shell_frontend_Task( void *pvParameters )
 	struct xMessage_t pxRxedMessage;
 	size_t total_length;
 	size_t bytes_consumed;
-	size_t EOL_pos;
 	uint8_t *pBufferStart;
 	struct ioctl_get_data_buffer_t data_buffer_info;
 	struct shell_frontend_runtime_instance_t  *runtime_handle;
@@ -300,7 +275,7 @@ static void shell_frontend_Task( void *pvParameters )
 
 	if ( 0 == xQueue  ) return ;
 
-	for ( ;; )
+	while (1)
 	{
 		if ( OS_QUEUE_RECEIVE_SUCCESS !=
 				os_queue_receive_infinite_wait( xQueue, &( pxRxedMessage )) )
@@ -328,21 +303,14 @@ static void shell_frontend_Task( void *pvParameters )
 
 		while (total_length)
 		{
-			bytes_consumed = 0;
+			bytes_consumed = process_data(config_handle,
+					runtime_handle, pBufferStart, total_length);
 
-			// will return total_length if EOL not found
-			EOL_pos = get_valid_line(runtime_handle,
-					&pBufferStart, &total_length, &bytes_consumed);
+			// if no data consume then no full frame/EOL exists
+			if (0 == bytes_consumed) break;
 
-			if (EOL_pos < total_length)
-			{
-				consume_line(config_handle, pBufferStart, EOL_pos);
-
-				EOL_pos++;// add first EOL char
-				bytes_consumed += EOL_pos;
-			}
-			pBufferStart = &pBufferStart[EOL_pos];
-			total_length -= EOL_pos;
+			pBufferStart += bytes_consumed;
+			total_length -= bytes_consumed;
 
 			DEV_IOCTL(curr_rx_dev, IOCTL_SET_BYTES_CONSUMED_IN_DATA_BUFFER,
 					(void *)((uint32_t)bytes_consumed));
