@@ -175,37 +175,40 @@ void dsp_management_api_delete_modules()
 }
 
 
+size_t num_of_items_in_buffer;
+
 /**
  * dsp_management_api_init()
  *
  * return:
  */
-void dsp_management_api_init(size_t size_of_items_in_buffer)
+void dsp_management_api_init(size_t a_num_of_items_in_buffer)
 {
+	size_t buff_u8_size;
 	if (NULL != dsp_buffers_pool)
 	{
 		CRITICAL_ERROR("DSP already initialized");
 	}
+	num_of_items_in_buffer = a_num_of_items_in_buffer;
+	buff_u8_size = num_of_items_in_buffer * sizeof(real_t);
+	dsp_buffers_pool = memory_pool_init();
 
-	dsp_buffers_pool =
-			memory_pool_init( size_of_items_in_buffer * sizeof(real_t));
-
-	default_zero_buff.buff = (real_t*)memory_pool_zmalloc(dsp_buffers_pool);
-	default_zero_buff.buff_size =
-			memory_pool_get_chunk_size(dsp_buffers_pool) / sizeof(real_t);
+	default_zero_buff.buff =
+			(real_t*)memory_pool_zmalloc(dsp_buffers_pool, buff_u8_size);
+	default_zero_buff.buff_size = num_of_items_in_buffer;
 	default_zero_buff.pad_type = DSP_PAD_TYPE_DUMMY_ZERO_BUFFER;
 
-	dummy_output_buff.buff = (real_t*)memory_pool_malloc(dsp_buffers_pool);
-	dummy_output_buff.buff_size =
-			memory_pool_get_chunk_size(dsp_buffers_pool) / sizeof(real_t);
+	dummy_output_buff.buff =
+			(real_t*)memory_pool_malloc(dsp_buffers_pool, buff_u8_size);
+	dummy_output_buff.buff_size = num_of_items_in_buffer;
 	dummy_output_buff.pad_type = DSP_PAD_TYPE_DUMMY_OUTPUT_BUFFER;
 }
 
 
 void dsp_management_api_delete(void)
 {
-	memory_pool_free(dsp_buffers_pool, dummy_output_buff.buff);
-	memory_pool_free(dsp_buffers_pool, default_zero_buff.buff);
+	memory_pool_free(dummy_output_buff.buff);
+	memory_pool_free(default_zero_buff.buff);
 	memory_pool_delete(dsp_buffers_pool);
 }
 
@@ -690,7 +693,7 @@ void release_unused_buffers(struct in_pads_t   *in_pads)
 		curr_source_out_pad->sinks_processed_counter--;
 		if (0 == curr_source_out_pad->sinks_processed_counter)
 		{
-			memory_pool_free(dsp_buffers_pool, curr_source_out_pad->buff);
+			memory_pool_free(curr_source_out_pad->buff);
 			curr_source_out_pad->buff = NULL;
 			curr_source_out_pad->buff_size = 0;
 		}
@@ -724,9 +727,9 @@ void dsp_process(struct dsp_chain_t *p_chain, struct dsp_module_inst_t *dsp )
 		pad_type = curr_out_pad->pad_type;
 		if (DSP_OUT_PAD_TYPE_NORMAL == pad_type)
 		{
-			curr_out_pad->buff = (real_t*)memory_pool_malloc(dsp_buffers_pool);
-			curr_out_pad->buff_size =
-				memory_pool_get_chunk_size(dsp_buffers_pool) / sizeof(real_t);
+			curr_out_pad->buff = (real_t*)memory_pool_malloc(
+					dsp_buffers_pool, num_of_items_in_buffer * sizeof(real_t));
+			curr_out_pad->buff_size = num_of_items_in_buffer;
 			curr_out_pad->sinks_processed_counter =
 				curr_out_pad->total_registered_sinks;
 		}
