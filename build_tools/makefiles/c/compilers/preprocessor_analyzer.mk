@@ -1,6 +1,11 @@
 ### extracting u-boot commands routines
 ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
+    # assuming there is no string YrkHZOpQckoSO32i0tOM in processed file,
+    # findstr /v YrkHZOpQckoSO32i0tOM will pipe file as is.
+    # but it will solve "FINDSTR: Line NNNNNNN is too long." issue by
+    # redirecting error to stdout
     get_cmd = $(if $(1),$(shell type $(call fix_path_if_in_windows,$(1)) \
+                          | findstr /v YrkHZOpQckoSO32i0tOM 2>&1\
                           | findstr /C:"cmd_tbl_t\ _u_boot_list_2_cmd_2_"),)
 else
     get_cmd = $(if $(1),$(shell \
@@ -51,8 +56,13 @@ create_cmd_file = $(if $(strip $(2)), \
 
 ### extracting auto_init structures
 ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
-    get_auto_init = $(if $(1),$(shell type $(call fix_path_if_in_windows,$(1)) \
-                      | findstr /B /C:"struct auto_init_struct_t\ auto_init_"),)
+    # assuming there is no string YrkHZOpQckoSO32i0tOM in processed file,
+    # findstr /v YrkHZOpQckoSO32i0tOM will pipe file as is.
+    # but it will solve "FINDSTR: Line NNNNNNN is too long." issue by
+    # redirecting error to stdout
+    get_auto_init = $(if $(1),$(shell type $(call fix_path_if_in_windows,$(1))\
+              | findstr /v YrkHZOpQckoSO32i0tOM 2>&1\
+              | findstr /B /C:"struct auto_init_struct_t\ auto_init_"),)
 else
     get_auto_init = $(if $(1),$(shell \
              cat $(1) | grep "^auto_init_struct_t auto_init_"),)
