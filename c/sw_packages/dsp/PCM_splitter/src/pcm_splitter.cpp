@@ -48,15 +48,13 @@ static void channel_copy_16bit(uint8_t *pRxBuf, real_t *outChannel,
 static void channel_copy_32bit(uint8_t *pRxBuf, real_t *outChannel,
 		size_t num_of_frames, uint8_t frame_size_bytes)
 {
-	size_t i;
 	real_t normalizer;
+	real_t in_real;
 
-	normalizer = 0x7fffffff;
-	for (i = 0; i < num_of_frames; i++)
+	normalizer = (real_t)0x7fffffff;
+	for (size_t i = 0; i < num_of_frames; i++)
 	{
-		real_t in_real;
-
-		in_real = *(int32_t*)pRxBuf;
+		in_real = (real_t)(*(int32_t*)pRxBuf);
 		*outChannel++ = in_real / normalizer;
 		pRxBuf += frame_size_bytes;
 	}
@@ -84,10 +82,17 @@ static void pcm_splitter_dsp_16and32bit(struct dsp_module_inst_t *adsp)
 	uint8_t frame_size_bytes;
 	real_t normalizer;
 	uint8_t channel_num;
+	uint8_t buff_is_zero_buffer;
+
+	buff_is_zero_buffer = 1;
+	dsp_get_input_buffer_from_pad(
+			adsp, 0, &pRxBuf, &num_of_frames, &buff_is_zero_buffer);
 
 	handle = (struct pcm_splitter_instance_t *)adsp->handle;
 	set_params = &handle->set_params;
 	num_of_channels = handle->num_of_channels;
+	subframe_size_bytes = set_params->subframe_size_bytes;
+	num_of_frames /= ( num_of_channels * subframe_size_bytes);
 
 	if ((0 == num_of_channels) || (num_of_channels > MAX_NUM_OF_OUTPUT_PADS ))
 	{
@@ -96,24 +101,8 @@ static void pcm_splitter_dsp_16and32bit(struct dsp_module_inst_t *adsp)
 
 	for (i = 0; i < num_of_channels; i++)
 	{
-		dsp_get_output_buffer_from_pad(adsp, i, &apChOut[i], &out_data_len[i]);
-		if (out_data_len[0] != out_data_len[i] )
-		{
-			CRITICAL_ERROR("bad output buffer size");
-		}
-	}
-
-	subframe_size_bytes = set_params->subframe_size_bytes;
-	/*
-	 * casting here is just to avoid warning as we are aware that
-	 * pRxBuf has some INT type
-	 */
-	dsp_get_input_buffer_from_pad(adsp, 0, (real_t**)&pRxBuf, &num_of_frames);
-
-	num_of_frames /= ( num_of_channels * subframe_size_bytes);
-	if (num_of_frames != out_data_len[0] )
-	{
-		CRITICAL_ERROR("bad input buffer size");
+		dsp_get_output_buffer_from_pad(
+				adsp, i, &(uint8_t*)apChOut[i], num_of_frames * sizeof(real_t));
 	}
 
 	frame_size_bytes = set_params->frame_size_bytes;
@@ -136,8 +125,6 @@ static void pcm_splitter_dsp_16and32bit(struct dsp_module_inst_t *adsp)
 		pRxBuf += subframe_size_bytes;
 	}
 }
-
-
 
 
 static void set_params(struct dsp_module_inst_t *adsp,
@@ -210,7 +197,7 @@ static void set_params(struct dsp_module_inst_t *adsp,
  *
  * return:
  */
-uint8_t pcm_splitter_ioctl(struct dsp_module_inst_t *adsp,
+static uint8_t pcm_splitter_ioctl(struct dsp_module_inst_t *adsp,
 		uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
 {
 	struct pcm_splitter_instance_t *handle;
@@ -237,7 +224,10 @@ uint8_t pcm_splitter_ioctl(struct dsp_module_inst_t *adsp,
 extern "C" void  pcm_splitter_init(void)
 {
 	DSP_REGISTER_NEW_MODULE("pcm_splitter",	pcm_splitter_ioctl,
-			pcm_splitter_dsp_default , struct pcm_splitter_instance_t);
+			pcm_splitter_dsp_default,
+			NULL, dsp_management_default_mute,
+			DSP_MANAGEMENT_FLAG_BYPASS_NOT_AVAILABLE,
+			struct pcm_splitter_instance_t);
 }
 
 AUTO_INIT_FUNCTION(pcm_splitter_init);

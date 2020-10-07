@@ -95,20 +95,20 @@ static void channel_copy_32bit(real_t *pRxBuf, uint8_t *outChannel,
  *
  * return:
  */
-void pcm_mixer_dsp_func(struct dsp_module_inst_t *adsp)
+static void pcm_mixer_dsp_func(struct dsp_module_inst_t *adsp)
 {
 	real_t *apChIn[MAX_NUM_OF_OUTPUT_PADS];
-	size_t in_data_len[MAX_NUM_OF_OUTPUT_PADS] ;
+	size_t data_len;
 	struct pcm_mixer_instance_t *handle;
 	uint8_t enable_test_clipping;
 	size_t num_of_frames ;
 	uint8_t *pTxBuf;
-	size_t i;
 	uint8_t num_of_channels ;
 	struct pcm_mixer_api_set_params_t *set_params;
 	uint8_t subframe_size_bytes;
 	uint8_t frame_size_bytes;
 	uint8_t channel_num;
+	uint8_t buff_is_zero_buffer;
 
 	handle = (struct pcm_mixer_instance_t *)adsp->handle;
 	set_params = &handle->set_params;
@@ -119,32 +119,21 @@ void pcm_mixer_dsp_func(struct dsp_module_inst_t *adsp)
 		CRITICAL_ERROR("unsupported number of channels");
 	}
 
-	for (i = 0; i < num_of_channels; i++)
+	buff_is_zero_buffer = 1;
+	data_len = 0;
+	for (uint8_t j = 0; j < num_of_channels; j++)
 	{
-		dsp_get_input_buffer_from_pad(adsp, i, &apChIn[i], &in_data_len[i]);
-		if (in_data_len[0] != in_data_len[i])
-		{
-			CRITICAL_ERROR("bad input buffer size");
-		}
+		dsp_get_input_buffer_from_pad(
+				adsp, j, &(uint8_t*)apChIn[j], &data_len, &buff_is_zero_buffer);
 	}
 
-
-	/*
-	 * casting here is just to avoid warning as we are aware that
-	 * pTxBuf has some INT type
-	 */
-	dsp_get_output_buffer_from_pad(adsp, 0, (real_t**)&pTxBuf, &num_of_frames);
 
 	subframe_size_bytes = set_params->subframe_size_bytes;
-	num_of_frames /= ( num_of_channels * subframe_size_bytes);
-
-	if (num_of_frames != in_data_len[0] )
-	{
-		CRITICAL_ERROR("bad output buffer size");
-	}
+	num_of_frames = data_len / sizeof(real_t);
+	dsp_get_output_buffer_from_pad(adsp, 0, &pTxBuf,
+			num_of_frames * subframe_size_bytes * num_of_channels);
 
 	frame_size_bytes = set_params->frame_size_bytes;
-
 	for (channel_num = 0; channel_num < num_of_channels; channel_num++)
 	{
 		real_t *curr_ChIn;
@@ -177,7 +166,7 @@ void pcm_mixer_dsp_func(struct dsp_module_inst_t *adsp)
 		apCh1In = apChIn[0];
 		apCh2In = apChIn[1];
 		max_out_val = handle->max_out_val;
-		for (i = 0; i < num_of_frames; i++)
+		for (size_t i = 0; i < num_of_frames; i++)
 		{
 			real_t tmp1, tmp2;
 
@@ -250,8 +239,8 @@ static void set_params(struct dsp_module_inst_t *adsp,
  *
  * return:
  */
-uint8_t pcm_mixer_ioctl(struct dsp_module_inst_t *adsp,
-		uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
+static uint8_t pcm_mixer_ioctl(struct dsp_module_inst_t *adsp,
+		uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2)
 {
 	struct pcm_mixer_instance_t *handle;
 
@@ -290,8 +279,9 @@ uint8_t pcm_mixer_ioctl(struct dsp_module_inst_t *adsp,
 
 extern "C" void  pcm_mixer_init(void)
 {
-	DSP_REGISTER_NEW_MODULE("pcm_mixer",
-		pcm_mixer_ioctl , pcm_mixer_dsp_func, struct pcm_mixer_instance_t);
+	DSP_REGISTER_NEW_MODULE("pcm_mixer", pcm_mixer_ioctl, pcm_mixer_dsp_func,
+		NULL, dsp_management_default_mute,
+		DSP_MANAGEMENT_FLAG_BYPASS_NOT_AVAILABLE, struct pcm_mixer_instance_t);
 }
 
 AUTO_INIT_FUNCTION(pcm_mixer_init);

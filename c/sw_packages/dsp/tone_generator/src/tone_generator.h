@@ -14,6 +14,7 @@ struct TONE_GENERATOR_Instance_t {
 	real_t curr_time;
 	real_t curr_time_delta;
 	real_t prev_val;
+	size_t output_buff_size;
 };
 
 

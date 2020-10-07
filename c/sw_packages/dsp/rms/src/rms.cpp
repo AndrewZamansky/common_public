@@ -30,33 +30,28 @@ char rms_module_name[] = "rms";
  *
  * return:
  */
-void rms_dsp(struct dsp_module_inst_t *adsp)
+static void rms_dsp(struct dsp_module_inst_t *adsp)
 {
 	struct rms_instance_t *handle;
 	real_t *apCh1In;
 	real_t *apCh1Out;
-	size_t in_data_len1 ;
-	size_t out_data_len1 ;
+	size_t data_len;
 	real_t prev_rms_sq;
 	real_t curr_x1;
+	uint8_t buff_is_zero_buffer;
+
+	buff_is_zero_buffer = 1;
+	dsp_get_input_buffer_from_pad(
+			adsp, 0, &(uint8_t*)apCh1In, &data_len, &buff_is_zero_buffer);
+	dsp_get_output_buffer_from_pad(adsp, 0, &(uint8_t*)apCh1Out, data_len);
 
 	handle = (struct rms_instance_t *)adsp->handle;
-
-	dsp_get_input_buffer_from_pad(adsp, 0, &apCh1In, &in_data_len1);
-	dsp_get_output_buffer_from_pad(adsp, 0, &apCh1Out, &out_data_len1);
-
-	if (in_data_len1 != out_data_len1 )
-	{
-		CRITICAL_ERROR("bad buffers sizes");
-	}
-
 	prev_rms_sq = handle->prev_rms_sq;
 
-	while( in_data_len1-- )
+	data_len = data_len / sizeof(real_t);
+	while (data_len--)
 	{
-
 		curr_x1 = *apCh1In++;
-
 		curr_x1 *= curr_x1;
 		curr_x1 *=  ALPHA;
 		prev_rms_sq *= ONE_MINUS_ALPHA;
@@ -65,7 +60,6 @@ void rms_dsp(struct dsp_module_inst_t *adsp)
 		*apCh1Out++ = prev_rms_sq;
 	}
 	handle->prev_rms_sq = prev_rms_sq;
-
 }
 
 
@@ -75,7 +69,7 @@ void rms_dsp(struct dsp_module_inst_t *adsp)
  *
  * return:
  */
-uint8_t rms_ioctl(struct dsp_module_inst_t *adsp,
+static uint8_t rms_ioctl(struct dsp_module_inst_t *adsp,
 		const uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2)
 {
 	struct rms_instance_t *handle;
@@ -101,7 +95,9 @@ uint8_t rms_ioctl(struct dsp_module_inst_t *adsp,
  */
 extern "C" void  rms_init(void)
 {
-	DSP_REGISTER_NEW_MODULE("rms", rms_ioctl, rms_dsp, struct rms_instance_t);
+	DSP_REGISTER_NEW_MODULE("rms", rms_ioctl, rms_dsp,
+			dsp_management_default_bypass, dsp_management_default_mute,
+			0, struct rms_instance_t);
 }
 
 AUTO_INIT_FUNCTION(rms_init);

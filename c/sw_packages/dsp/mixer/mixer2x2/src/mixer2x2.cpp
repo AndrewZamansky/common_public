@@ -24,7 +24,7 @@ char mixer2x2_module_name[] = "mixer2x2";
  *
  * return:
  */
-void mixer2x2_dsp(struct dsp_module_inst_t *adsp)
+static void mixer2x2_dsp(struct dsp_module_inst_t *adsp)
 {
 	struct MIXER2X2_Instance_t *handle;
 	real_t *apCh1In;
@@ -35,33 +35,25 @@ void mixer2x2_dsp(struct dsp_module_inst_t *adsp)
 	real_t channels_weights_2;
 	real_t *channels_weights;
 	real_t curr_val;
-	size_t in_data_len1 ;
-	size_t in_data_len2 ;
-	size_t out_data_len ;
+	size_t data_len;
+	uint8_t buff_is_zero_buffer;
+
+	buff_is_zero_buffer = 1;
+	dsp_get_input_buffer_from_pad(
+			adsp, 0, &(uint8_t*)apCh1In, &data_len, &buff_is_zero_buffer);
+	dsp_get_input_buffer_from_pad(
+			adsp, 1, &(uint8_t*)apCh2In, &data_len, &buff_is_zero_buffer);
+
+	dsp_get_output_buffer_from_pad(adsp, 0, &(uint8_t*)apCh1Out, data_len);
+	dsp_get_output_buffer_from_pad(adsp, 1, &(uint8_t*)apCh2Out, data_len);
 
 	handle = (struct MIXER2X2_Instance_t *)adsp->handle;
-
-	dsp_get_input_buffer_from_pad(adsp, 0, &apCh1In, &in_data_len1);
-	dsp_get_input_buffer_from_pad(adsp, 1, &apCh2In, &in_data_len2);
-	dsp_get_output_buffer_from_pad(adsp, 0, &apCh1Out, &out_data_len);
-	dsp_get_output_buffer_from_pad(adsp, 1, &apCh2Out, &out_data_len);
-
-	if (in_data_len1 != in_data_len2 )
-	{
-		CRITICAL_ERROR("bad input buffer size");
-	}
-
-	if (in_data_len1 > out_data_len )
-	{
-		CRITICAL_ERROR("bad buffers sizes");
-	}
-
 	channels_weights = handle->channels_weights;
-
 	channels_weights_1 =  channels_weights[0];
 	channels_weights_2 =  channels_weights[1];
 
-	while( in_data_len1--)
+	data_len = data_len / sizeof(real_t);
+	while (data_len--)
 	{
 		curr_val = (*apCh1In++) * channels_weights_1;
 		curr_val += (*apCh2In++) * channels_weights_2;
@@ -79,7 +71,7 @@ void mixer2x2_dsp(struct dsp_module_inst_t *adsp)
  *
  * return:
  */
-uint8_t mixer2x2_ioctl(struct dsp_module_inst_t *adsp,
+static uint8_t mixer2x2_ioctl(struct dsp_module_inst_t *adsp,
 		const uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2)
 {
 	struct MIXER2X2_Instance_t *handle;
@@ -118,8 +110,9 @@ uint8_t mixer2x2_ioctl(struct dsp_module_inst_t *adsp,
  */
 extern "C" void  mixer2x2_init(void)
 {
-	DSP_REGISTER_NEW_MODULE("mixer2x2",
-			mixer2x2_ioctl , mixer2x2_dsp , struct MIXER2X2_Instance_t);
+	DSP_REGISTER_NEW_MODULE("mixer2x2", mixer2x2_ioctl, mixer2x2_dsp,
+			dsp_management_default_bypass, dsp_management_default_mute,
+			0, struct MIXER2X2_Instance_t);
 }
 
 AUTO_INIT_FUNCTION(mixer2x2_init);

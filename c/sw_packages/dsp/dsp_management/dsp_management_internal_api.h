@@ -22,22 +22,30 @@
 enum DSP_PAD_TYPE_e {
 	DSP_OUT_PAD_TYPE_NOT_USED = 0,
 	DSP_OUT_PAD_TYPE_NORMAL,
-	DSP_PAD_TYPE_DUMMY_ZERO_BUFFER,
+	DSP_PAD_TYPE_ZERO_BUFFER,
 	DSP_PAD_TYPE_DUMMY_OUTPUT_BUFFER,
 	DSP_PAD_TYPE_CHAIN_INPUT_BUFFER,
 	DSP_PAD_TYPE_CHAIN_OUTPUT_BUFFER,
 };
 
 
+#define DSP_MANAGEMENT_FLAG_BYPASS_NOT_AVAILABLE    (1 << 0)
+#define DSP_MANAGEMENT_FLAG_MUTE_NOT_AVAILABLE      (1 << 1)
+
 typedef uint8_t (*dsp_ioctl_func_t)(struct dsp_module_inst_t *dsp,
 		 uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2)  ;
 typedef void (*dsp_func_t)(struct dsp_module_inst_t *adsp);
+typedef void (*bypass_func_t)(struct dsp_module_inst_t *adsp);
+typedef void (*mute_func_t)(struct dsp_module_inst_t *adsp);
 
 struct dsp_module_type_t {
 	const char        *name;
 	dsp_ioctl_func_t  ioctl;
 	dsp_func_t        dsp_func;
+	bypass_func_t     bypass_func;
+	mute_func_t       mute_func;
 	uint16_t          module_data_size;
+	uint32_t          flags;
 };
 
 
@@ -64,11 +72,7 @@ struct dsp_module_inst_t {
 
 
 struct dsp_pad_t {
-#ifdef __cplusplus
-	real_t *buff;
-#else
 	void *buff;
-#endif
 	size_t buff_size;
 	uint8_t pad_type;
 	uint8_t total_registered_sinks;
@@ -77,19 +81,27 @@ struct dsp_pad_t {
 
 
 
-void _dsp_register_new_module_type(const char *a_module_name,
-		dsp_ioctl_func_t a_ioctle_func, dsp_func_t a_dsp_func,
-		uint16_t a_module_data_size);
+void _dsp_register_new_module_type(const char *module_name,
+		dsp_ioctl_func_t ioctle_func, dsp_func_t dsp_func,
+		bypass_func_t bypass_func, mute_func_t mute_func,
+		uint32_t flags, uint16_t module_data_size);
 
-#define DSP_REGISTER_NEW_MODULE(name, ioctl_f, dsp_f, module_data_t)    \
-	_dsp_register_new_module_type(name, ioctl_f, dsp_f, sizeof(module_data_t))
+#define DSP_REGISTER_NEW_MODULE(\
+			name, ioctl_f, dsp_f, bypas_f, mute_f, flags, module_data_t)  \
+	_dsp_register_new_module_type(\
+			name, ioctl_f, dsp_f, bypas_f, mute_f, flags, sizeof(module_data_t))
 
 
 
 
 void dsp_get_output_buffer_from_pad( struct dsp_module_inst_t * adsp,
-							uint8_t pad_num, real_t **buff, size_t *buff_len);
+							uint8_t pad_num, uint8_t **buff, size_t buff_len);
 void dsp_get_input_buffer_from_pad( struct dsp_module_inst_t * adsp,
-						uint8_t pad_num, real_t **buff, size_t *buff_len);
+						uint8_t pad_num, uint8_t **buff, size_t *buff_len,
+						uint8_t *buff_is_zero_buffer);
+
+void dsp_management_default_bypass(struct dsp_module_inst_t * adsp);
+void dsp_management_default_mute(struct dsp_module_inst_t * adsp);
+
 
 #endif

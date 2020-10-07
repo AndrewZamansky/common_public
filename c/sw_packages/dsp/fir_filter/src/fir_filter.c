@@ -29,27 +29,20 @@ static void fir_filter_dsp(struct dsp_module_inst_t *adsp)
 {
 	float *apCh1In  ;
 	float *apCh1Out ;
-	size_t in_data_len ;
-	size_t out_data_len ;
+	size_t data_len ;
 	struct FIR_FILTER_Instance_t *handle;
+	uint8_t buff_is_zero_buffer;
+
+	buff_is_zero_buffer = 1;
+	dsp_get_input_buffer_from_pad(
+			adsp, 0, &(uint8_t*)apCh1In, &data_len, &buff_is_zero_buffer);
+	dsp_get_output_buffer_from_pad(adsp, 0, &(uint8_t*)apCh1Out, data_len);
 
 	handle = adsp->handle;
+	if(0 == handle->number_of_filter_coefficients) return;
 
-	if(0 == handle->number_of_filter_coefficients)
-	{
-		return;
-	}
-
-	dsp_get_input_buffer_from_pad(adsp, 0, &apCh1In, &in_data_len);
-	dsp_get_output_buffer_from_pad(adsp, 0, &apCh1Out, &out_data_len);
-
-	if (in_data_len > out_data_len )
-	{
-		CRITICAL_ERROR("bad buffers sizes");
-	}
-
-	fir_filter_function(handle->p_fir_filter, apCh1In, apCh1Out, out_data_len);
-
+	fir_filter_function(handle->p_fir_filter,
+			apCh1In, apCh1Out, in_data_len / sizeof(float));
 }
 
 
@@ -113,8 +106,9 @@ uint8_t fir_filter_ioctl(struct dsp_module_inst_t *adsp,
  */
 extern "C" void  fir_filter_init(void)
 {
-	DSP_REGISTER_NEW_MODULE("fir_filter",
-			fir_filter_ioctl, fir_filter_dsp, struct FIR_FILTER_Instance_t);
+	DSP_REGISTER_NEW_MODULE("fir_filter", fir_filter_ioctl, fir_filter_dsp,
+			dsp_management_default_bypass, dsp_management_default_mute,
+			0, struct FIR_FILTER_Instance_t);
 }
 
 AUTO_INIT_FUNCTION(fir_filter_init);

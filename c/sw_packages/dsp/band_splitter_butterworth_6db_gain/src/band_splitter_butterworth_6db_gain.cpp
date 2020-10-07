@@ -26,12 +26,28 @@ char band_splitter_butterworth_6db_gain_module_name[] =
 										"band_splitter_butterworth_6db_gain";
 
 
+static void band_splitter_butterworth_6db_gain_bypass(
+									struct dsp_module_inst_t * adsp)
+{
+	size_t buff_size;
+	uint8_t *in_buff;
+	uint8_t *out_buff;
+
+	dsp_get_input_buffer_from_pad(adsp, 0, &in_buff, &buff_size);
+	dsp_get_output_buffer_from_pad(adsp, 0, &out_buff, buff_size);
+	memcpy(out_buff, in_buff, buff_size);
+	dsp_get_output_buffer_from_pad(adsp, 1, &out_buff, buff_size);
+	memcpy(out_buff, in_buff, buff_size);
+}
+
+
 /**
  * band_splitter_butterworth_6db_gain_dsp()
  *
  * return:
  */
-void band_splitter_butterworth_6db_gain_dsp(struct dsp_module_inst_t * adsp)
+static void band_splitter_butterworth_6db_gain_dsp(
+						struct dsp_module_inst_t * adsp)
 {
 	struct band_splitter_butterworth_6db_gain_instance_t *handle;
 	chain_handle_t filter_1_pole_dsp_chain;
@@ -40,40 +56,34 @@ void band_splitter_butterworth_6db_gain_dsp(struct dsp_module_inst_t * adsp)
 	real_t *apCh1Out  ;
 	real_t *apCh2Out  ;
 	uint16_t i;
-	size_t in_data_len ;
-	size_t out1_data_len ;
-	size_t out2_data_len ;
+	size_t data_len ;
+	uint8_t buff_is_zero_buffer;
+
+	buff_is_zero_buffer = 1;
+	dsp_get_input_buffer_from_pad(
+			adsp, 0, &(uint8_t*)apCh1In, &data_len, &buff_is_zero_buffer);
+	dsp_get_output_buffer_from_pad(adsp, 0, &(uint8_t*)apCh1Out, data_len);
+	dsp_get_output_buffer_from_pad(adsp, 1, &(uint8_t*)apCh2Out, data_len);
 
 	handle =
 		(struct band_splitter_butterworth_6db_gain_instance_t *)adsp->handle;
 
 	filter_1_pole_dsp_chain = handle->filter_1_pole_dsp_chain;
 	filter_2_poles_dsp_chain = handle->filter_2_poles_dsp_chain;
-	dsp_get_input_buffer_from_pad(adsp, 0, &apCh1In, &in_data_len);
-	dsp_get_output_buffer_from_pad(adsp, 0, &apCh1Out, &out1_data_len);
-	dsp_get_output_buffer_from_pad(adsp, 1, &apCh2Out, &out2_data_len);
-
 	dsp_management_api_set_chain_input_buffer(filter_1_pole_dsp_chain,
-			IN_PAD(0), (uint8_t *)apCh1In, in_data_len);
-
+			IN_PAD(0), (uint8_t *)apCh1In, data_len);
 	dsp_management_api_set_chain_output_buffer(filter_1_pole_dsp_chain,
-			OUT_PAD(0), (uint8_t *)apCh1Out, out1_data_len);
-
+			OUT_PAD(0), (uint8_t *)apCh1Out, data_len);
 	dsp_management_api_process_chain(filter_1_pole_dsp_chain );
 
-
-
 	dsp_management_api_set_chain_input_buffer(filter_2_poles_dsp_chain,
-			IN_PAD(0), (uint8_t *)apCh1In, in_data_len);
-
+			IN_PAD(0), (uint8_t *)apCh1In, data_len);
 	dsp_management_api_set_chain_output_buffer(filter_2_poles_dsp_chain,
-			OUT_PAD(0), (uint8_t *)apCh2Out, out2_data_len);
-
+			OUT_PAD(0), (uint8_t *)apCh2Out, data_len);
 	dsp_management_api_process_chain(filter_2_poles_dsp_chain );
-#if 1
 
-
-	for ( i = 0; i<out1_data_len; i++)
+	data_len /= sizeof(real_t);
+	for ( i = 0; i < data_len; i++)
 	{
 		real_t tmp;
 
@@ -82,15 +92,6 @@ void band_splitter_butterworth_6db_gain_dsp(struct dsp_module_inst_t * adsp)
 		apCh1Out++;
 		*apCh2Out++ = tmp;
 	}
-#else
-	for ( i = 0; i<out1_data_len; i++)
-	{
-		real_t tmp;
-		tmp = *apCh1Out ;
-		*apCh1Out++ = tmp;
-		*apCh2Out++ = tmp;
-	}
-#endif
 }
 
 
@@ -142,7 +143,7 @@ static struct static_dsp_component chain_2_poles[] =
 };
 #endif
 
-static 	void init_filters_dsp_chains(
+static void init_filters_dsp_chains(
 		struct band_splitter_butterworth_6db_gain_instance_t *handle)
 {
 	chain_handle_t filter_1_pole_dsp_chain;
@@ -155,7 +156,6 @@ static 	void init_filters_dsp_chains(
 	dsp_management_api_ioctl_1_params(
 			filter_1_pole_dsp_chain, p_filter_all_pass_1_pole,
 			IOCTL_BIQUAD_FILTER_SET_NUM_OF_BANDS , (void*) 1 );
-
 
 	filter_2_poles_dsp_chain =
 			DSP_MANAGEMENT_API_CREATE_STATIC_CHAIN(chain_2_poles);
@@ -204,8 +204,9 @@ static 	void set_freq(
  *
  * return:
  */
-uint8_t band_splitter_butterworth_6db_gain_ioctl(struct dsp_module_inst_t * adsp,
-		const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
+static uint8_t band_splitter_butterworth_6db_gain_ioctl(
+		struct dsp_module_inst_t * adsp,
+		const uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2)
 {
 	struct band_splitter_butterworth_6db_gain_instance_t *handle;
 	struct band_splitter_butterworth_6db_gain_api_set_params_t *set_params;
@@ -214,8 +215,6 @@ uint8_t band_splitter_butterworth_6db_gain_ioctl(struct dsp_module_inst_t * adsp
 	handle =
 		(struct band_splitter_butterworth_6db_gain_instance_t *)adsp->handle;
 	set_params = &handle->set_params;
-
-
 
 	switch(aIoctl_num)
 	{
@@ -242,7 +241,6 @@ uint8_t band_splitter_butterworth_6db_gain_ioctl(struct dsp_module_inst_t * adsp
 }
 
 
-
 /**
  * band_splitter_butterworth_6db_gain_init()
  *
@@ -251,9 +249,11 @@ uint8_t band_splitter_butterworth_6db_gain_ioctl(struct dsp_module_inst_t * adsp
 extern "C" void  band_splitter_butterworth_6db_gain_init(void)
 {
 	DSP_REGISTER_NEW_MODULE("band_splitter_butterworth_6db_gain",
-			band_splitter_butterworth_6db_gain_ioctl ,
-			band_splitter_butterworth_6db_gain_dsp ,
-			struct band_splitter_butterworth_6db_gain_instance_t);
+			band_splitter_butterworth_6db_gain_ioctl,
+			band_splitter_butterworth_6db_gain_dsp,
+			band_splitter_butterworth_6db_gain_bypass,
+			dsp_management_default_mute,
+			0,	struct band_splitter_butterworth_6db_gain_instance_t);
 }
 
 AUTO_INIT_FUNCTION(band_splitter_butterworth_6db_gain_init);

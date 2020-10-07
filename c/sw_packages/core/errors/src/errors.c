@@ -10,7 +10,7 @@
 #include "_project_defines.h"
 #include "errors.h"
 
-const uint8_t ERRORS_API_VER_VARIABLE(ERRORS_API_VERSION);
+const uint8_t ERRORS_API_VER_VARIABLE(ERRORS_API_VERSION) = 0;
 
 void errors_api_check_if_malloc_succeed(void *pointer)
 {

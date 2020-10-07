@@ -6,7 +6,7 @@
 #include "_project_defines.h"
 
 
-#define DSP_CHAIN_CREATION_API_VER    20190924
+#define DSP_CHAIN_CREATION_API_VER    20201001
 
 struct dsp_module_inst_t;
 
@@ -30,7 +30,7 @@ typedef enum dsp_management_api_module_control_e {
 
 
 #define MAX_DSP_INPUT_PAD   0xff
-#define LAST_INPUT_PAD_DESC {NULL, 0, MAX_DSP_INPUT_PAD}
+#define LAST_INPUT_PAD_DESC  {NULL, 0, MAX_DSP_INPUT_PAD}
 #define IN0(source_module, out_pad_num)  {source_module, out_pad_num, 0}
 #define IN1(source_module, out_pad_num)  {source_module, out_pad_num, 1}
 #define IN2(source_module, out_pad_num)  {source_module, out_pad_num, 2}
@@ -88,7 +88,7 @@ uint8_t	dsp_management_api_ioctl_2_params(chain_handle_t chain_handle,
 		char const *module_name, uint8_t ioctl_num, void *param1, void *param2);
 
 
-void dsp_management_api_set_module_control( chain_handle_t chain_handle,
+uint8_t dsp_management_api_set_module_control( chain_handle_t chain_handle,
 			char const*module_name, dsp_management_api_module_control_t ctl);
 
 
@@ -101,7 +101,8 @@ void dsp_management_api_set_chain_input_buffer(chain_handle_t chain_handle,
 void dsp_management_api_set_chain_output_buffer(chain_handle_t chain_handle,
 			uint16_t chain_output_pad_num, uint8_t *buffer, size_t buff_size);
 
-void dsp_management_api_init(size_t size_of_items_in_buffer);
+void dsp_management_api_init(uint8_t *zero_buff, size_t size_of_zero_buffer,
+		uint8_t *dummy_buff, size_t size_of_dummy_buffer);
 void dsp_management_api_delete(void);
 
 

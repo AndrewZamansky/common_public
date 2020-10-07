@@ -26,50 +26,32 @@ char voice_3D_module_name[] = "voice_3D";
  *
  * return:
  */
-void voice_3D_dsp(struct dsp_module_inst_t *adsp)
+static void voice_3D_dsp(struct dsp_module_inst_t *adsp)
 {
 	struct VOICE_3D_Instance_t *handle;
 	real_t *apCh1In;
 	real_t *apCh2In;
 	real_t *apCh1Out;
 	real_t *apCh2Out;
-	size_t in_data_len1 ;
-	size_t in_data_len2 ;
-	size_t out_data_len1 ;
-	size_t out_data_len2 ;
-
-
+	size_t data_len;
+	uint8_t buff_is_zero_buffer;
 	real_t C;
 	real_t D;
 
+	buff_is_zero_buffer = 1;
+	dsp_get_input_buffer_from_pad(
+			adsp, 0, &(uint8_t*)apCh1In, &data_len, &buff_is_zero_buffer);
+	dsp_get_input_buffer_from_pad(
+			adsp, 1, &(uint8_t*)apCh2In, &data_len, &buff_is_zero_buffer);
+	dsp_get_output_buffer_from_pad(adsp, 0, &(uint8_t*)apCh1Out, data_len);
+	dsp_get_output_buffer_from_pad(adsp, 1, &(uint8_t*)apCh2Out, data_len);
+
 	handle = (struct VOICE_3D_Instance_t *)adsp->handle;
+	C = handle->C;
+	D = handle->D;
 
-	dsp_get_input_buffer_from_pad(adsp, 0, &apCh1In, &in_data_len1);
-	dsp_get_input_buffer_from_pad(adsp, 1, &apCh2In, &in_data_len2);
-	dsp_get_output_buffer_from_pad(adsp, 0, &apCh1Out, &out_data_len1);
-	dsp_get_output_buffer_from_pad(adsp, 1, &apCh2Out, &out_data_len2);
-
-	if (in_data_len1 != in_data_len2 )
-	{
-		CRITICAL_ERROR("bad input buffer size");
-	}
-
-	if (out_data_len1 != out_data_len2 )
-	{
-		CRITICAL_ERROR("bad output buffer size");
-	}
-
-	if (in_data_len1 > out_data_len1 )
-	{
-		CRITICAL_ERROR("bad buffers sizes");
-	}
-
-
-	C = handle->C ;
-	D = handle->D ;
-
-
-	while(in_data_len1--)
+	data_len = data_len / sizeof(real_t);
+	while (data_len--)
 	{
 		real_t curr_ch_1;
 		real_t curr_ch_2;
@@ -89,7 +71,6 @@ void voice_3D_dsp(struct dsp_module_inst_t *adsp)
 		tmp +=tmp1;
 		*apCh2Out++ = tmp;
 	}
-
 }
 
 static void update_coefficients(struct VOICE_3D_Instance_t * handle)
@@ -141,7 +122,7 @@ static void update_coefficients(struct VOICE_3D_Instance_t * handle)
  *
  * return:
  */
-uint8_t voice_3D_ioctl(struct dsp_module_inst_t *adsp,
+static uint8_t voice_3D_ioctl(struct dsp_module_inst_t *adsp,
 		const uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2)
 {
 	struct VOICE_3D_Instance_t *handle;
@@ -196,8 +177,6 @@ uint8_t voice_3D_ioctl(struct dsp_module_inst_t *adsp,
 }
 
 
-
-
 /**
  * voice_3D_init()
  *
@@ -205,8 +184,9 @@ uint8_t voice_3D_ioctl(struct dsp_module_inst_t *adsp,
  */
 extern "C" void  voice_3D_init(void)
 {
-	DSP_REGISTER_NEW_MODULE("voice_3D",
-			voice_3D_ioctl, voice_3D_dsp, struct VOICE_3D_Instance_t);
+	DSP_REGISTER_NEW_MODULE("voice_3D", voice_3D_ioctl, voice_3D_dsp,
+			dsp_management_default_bypass, dsp_management_default_mute,
+			0, struct VOICE_3D_Instance_t);
 }
 
 AUTO_INIT_FUNCTION(voice_3D_init);

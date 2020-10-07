@@ -11,14 +11,14 @@
 #include "dsp_management_internal_api.h"
 
 #include "multiplier_api.h"
-
 #include "multiplier_1ch_api.h"
 #include "multiplier_1ch.h"
-
 #include "auto_init_api.h"
-
 #include "string.h"
 #include "math.h"
+
+#define ln_of_10   2.302585092994f
+#define _20_div_ln_of_10   8.685889638065f
 
 char multiplier_1ch_module_name[] = "multiplier_1ch";
 
@@ -27,40 +27,30 @@ char multiplier_1ch_module_name[] = "multiplier_1ch";
  *
  * return:
  */
-void multiplier_1ch_dsp(struct dsp_module_inst_t *adsp)
+static void multiplier_1ch_dsp(struct dsp_module_inst_t *adsp)
 {
-	real_t *apCh1In ;
-	real_t *apCh1Out  ;
+	real_t *apCh1In;
+	real_t *apCh1Out;
 	struct multiplier_1ch_instance_t *handle;
-	real_t weight ;
+	real_t weight;
 	real_t curr_val;
-	size_t in_data_len ;
-	size_t out_data_len ;
+	size_t data_len;
+	uint8_t buff_is_zero_buffer;
+
+	buff_is_zero_buffer = 1;
+	dsp_get_input_buffer_from_pad(
+			adsp, 0, &(uint8_t*)apCh1In, &data_len, &buff_is_zero_buffer);
+	dsp_get_output_buffer_from_pad(adsp, 0, &(uint8_t*)apCh1Out, data_len);
 
 	handle = (struct multiplier_1ch_instance_t *)adsp->handle;
-
 	weight = handle->weight;
-
-	dsp_get_input_buffer_from_pad(adsp, 0, &apCh1In, &in_data_len);
-	dsp_get_output_buffer_from_pad(adsp, 0, &apCh1Out, &out_data_len);
-
-	if (in_data_len > out_data_len )
-	{
-		CRITICAL_ERROR("bad buffers sizes");
-	}
-
-	while (in_data_len--)
+	data_len = data_len / sizeof(real_t);
+	while (data_len--)
 	{
 		curr_val = (*apCh1In++) * weight;
 		*apCh1Out++ = curr_val;
 	}
-
 }
-
-
-
-#define ln_of_10   2.302585092994f
-#define _20_div_ln_of_10   8.685889638065f
 
 
 /**
@@ -68,7 +58,7 @@ void multiplier_1ch_dsp(struct dsp_module_inst_t *adsp)
  *
  * return:
  */
-uint8_t multiplier_1ch_ioctl(struct dsp_module_inst_t *adsp,
+static uint8_t multiplier_1ch_ioctl(struct dsp_module_inst_t *adsp,
 		const uint8_t aIoctl_num, void * aIoctl_param1 , void * aIoctl_param2)
 {
 	real_t weight_db;
@@ -130,7 +120,9 @@ uint8_t multiplier_1ch_ioctl(struct dsp_module_inst_t *adsp,
 extern "C" void  multiplier_1ch_init(void)
 {
 	DSP_REGISTER_NEW_MODULE("multiplier_1ch", multiplier_1ch_ioctl,
-			multiplier_1ch_dsp , struct multiplier_1ch_instance_t);
+			multiplier_1ch_dsp,
+			dsp_management_default_bypass, dsp_management_default_mute,
+			0, struct multiplier_1ch_instance_t);
 }
 
 AUTO_INIT_FUNCTION(multiplier_1ch_init);

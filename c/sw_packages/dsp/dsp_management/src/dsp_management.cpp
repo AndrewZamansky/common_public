@@ -143,9 +143,10 @@ uint8_t	dsp_management_api_ioctl_0_params(chain_handle_t chain_handle,
  *
  * return:
  */
-void _dsp_register_new_module_type(const char *a_module_name,
-		dsp_ioctl_func_t a_ioctle_func, dsp_func_t a_dsp_func,
-		uint16_t a_module_data_size)
+void _dsp_register_new_module_type(const char *module_name,
+		dsp_ioctl_func_t ioctle_func, dsp_func_t dsp_func,
+		bypass_func_t bypass_func, mute_func_t mute_func,
+		uint32_t flags, uint16_t module_data_size)
 {
 	struct dsp_module_type_t* p_new_dsp_module;
 	size_of_dsp_module_type_array++;
@@ -154,12 +155,29 @@ void _dsp_register_new_module_type(const char *a_module_name,
 			sizeof(struct dsp_module_type_t) * size_of_dsp_module_type_array);
 	errors_api_check_if_malloc_succeed(dsp_module_type_array);
 
+	if (NULL == dsp_func)
+	{
+		CRITICAL_ERROR("dsp_func should be defined");
+	}
+	if ((NULL == bypass_func) &&
+			(0 == (flags & DSP_MANAGEMENT_FLAG_BYPASS_NOT_AVAILABLE)))
+	{
+		CRITICAL_ERROR("bypass_func should be defined");
+	}
+	if ((NULL == mute_func) &&
+			(0 == (flags & DSP_MANAGEMENT_FLAG_MUTE_NOT_AVAILABLE)))
+	{
+		CRITICAL_ERROR("mute_func should be defined");
+	}
 	p_new_dsp_module =
 			&dsp_module_type_array[size_of_dsp_module_type_array - 1];
-	p_new_dsp_module->name = a_module_name;
-	p_new_dsp_module->ioctl = a_ioctle_func;
-	p_new_dsp_module->dsp_func = a_dsp_func;
-	p_new_dsp_module->module_data_size = a_module_data_size;
+	p_new_dsp_module->name = module_name;
+	p_new_dsp_module->ioctl = ioctle_func;
+	p_new_dsp_module->dsp_func = dsp_func;
+	p_new_dsp_module->bypass_func = bypass_func;
+	p_new_dsp_module->mute_func = mute_func;
+	p_new_dsp_module->flags = flags;
+	p_new_dsp_module->module_data_size = module_data_size;
 }
 
 
@@ -175,40 +193,38 @@ void dsp_management_api_delete_modules()
 }
 
 
-size_t num_of_items_in_buffer;
+static size_t size_of_zero_buffer;
+static size_t size_of_dummy_buffer;
 
 /**
  * dsp_management_api_init()
  *
  * return:
  */
-void dsp_management_api_init(size_t a_num_of_items_in_buffer)
+void dsp_management_api_init(uint8_t *zero_buff, size_t a_size_of_zero_buffer,
+		uint8_t *dummy_buff, size_t a_size_of_dummy_buffer)
 {
-	size_t buff_u8_size;
 	if (NULL != dsp_buffers_pool)
 	{
 		CRITICAL_ERROR("DSP already initialized");
 	}
-	num_of_items_in_buffer = a_num_of_items_in_buffer;
-	buff_u8_size = num_of_items_in_buffer * sizeof(real_t);
+
+	size_of_zero_buffer = a_size_of_zero_buffer;
+	size_of_dummy_buffer = a_size_of_dummy_buffer;
 	dsp_buffers_pool = memory_pool_init();
 
-	default_zero_buff.buff =
-			(real_t*)memory_pool_zmalloc(dsp_buffers_pool, buff_u8_size);
-	default_zero_buff.buff_size = num_of_items_in_buffer;
-	default_zero_buff.pad_type = DSP_PAD_TYPE_DUMMY_ZERO_BUFFER;
+	default_zero_buff.buff = zero_buff;
+	default_zero_buff.buff_size = size_of_zero_buffer;
+	default_zero_buff.pad_type = DSP_PAD_TYPE_ZERO_BUFFER;
 
-	dummy_output_buff.buff =
-			(real_t*)memory_pool_malloc(dsp_buffers_pool, buff_u8_size);
-	dummy_output_buff.buff_size = num_of_items_in_buffer;
+	dummy_output_buff.buff = dummy_buff;
+	dummy_output_buff.buff_size = size_of_dummy_buffer;
 	dummy_output_buff.pad_type = DSP_PAD_TYPE_DUMMY_OUTPUT_BUFFER;
 }
 
 
 void dsp_management_api_delete(void)
 {
-	memory_pool_free(dummy_output_buff.buff);
-	memory_pool_free(default_zero_buff.buff);
 	memory_pool_delete(dsp_buffers_pool);
 }
 
@@ -465,7 +481,6 @@ static void create_module_to_chain_out_link( struct dsp_chain_t *p_chain,
 	struct dsp_pad_t *p_curr_out_pad_of_source;
 	char const *src_module_inst_name;
 	struct dsp_module_inst_t *src_dsp;
-	uint8_t pad_type;
 
 	while (MAX_DSP_INPUT_PAD != input_pad_desc->input_pad_num)
 	{
@@ -494,7 +509,6 @@ static void create_module_to_chain_out_link( struct dsp_chain_t *p_chain,
 			}
 			p_curr_out_pad_of_source = get_output_pad_to_connect(
 					&src_dsp->out_pads, input_pad_desc->src_output_pad_num);
-			pad_type = DSP_PAD_TYPE_CHAIN_OUTPUT_BUFFER;
 		}
 
 		input_pad_desc++;
@@ -518,7 +532,7 @@ static void create_module_to_chain_out_link( struct dsp_chain_t *p_chain,
 			// time
 			CRITICAL_ERROR("source pad already used");
 		}
-		p_curr_out_pad_of_source->pad_type = pad_type;
+		p_curr_out_pad_of_source->pad_type = DSP_PAD_TYPE_CHAIN_OUTPUT_BUFFER;
 	}
 }
 
@@ -619,7 +633,7 @@ chain_handle_t _dsp_management_create_static_chain(
 	// run second time to create real connections
 	link_modules_in_chain(pdsp_chain, arr, items_in_arr, 0);
 
-	dsp_management_api_process_chain(pdsp_chain);
+	//dsp_management_api_process_chain(pdsp_chain);
 	pdsp_chain->chain_state = DSP_CHAIN_STATE__READY;
 
 	return pdsp_chain;
@@ -660,6 +674,88 @@ void dsp_management_api_delete_chain(chain_handle_t chain_handle)
 
 	// delete memory pool only for deleting all DSP management
 	//memory_pool_delete(dsp_buffers_pool);
+}
+
+
+void dsp_management_default_bypass(struct dsp_module_inst_t * adsp)
+{
+	uint8_t pad_type;
+	size_t buff_size;
+	uint8_t *in_buff;
+	uint8_t *out_buff;
+	struct dsp_pad_t *curr_out_pad ;
+	struct dsp_pad_t *out_pads_arr ;
+	struct out_pads_t   *out_pads;
+	struct in_pads_t   *in_pads;
+	uint8_t max_used_output_num;
+	uint8_t buff_is_zero_buffer;
+
+	// first scan of input pads
+	in_pads = &adsp->in_pads;
+	buff_is_zero_buffer = 1;
+	for (uint8_t i = 0; i < in_pads->max_used_input_num; i++)
+	{
+		dsp_get_input_buffer_from_pad(
+				adsp, i, &in_buff, &buff_size, &buff_is_zero_buffer);
+	}
+
+	out_pads = &adsp->out_pads;
+	out_pads_arr = out_pads->out_pads_arr;
+	max_used_output_num = out_pads->max_used_output_num;
+	for (uint8_t i = 0; i < max_used_output_num; i++)
+	{
+		curr_out_pad = &out_pads_arr[i];
+		pad_type = curr_out_pad->pad_type;
+		if ((DSP_OUT_PAD_TYPE_NORMAL == pad_type) ||
+				(DSP_PAD_TYPE_CHAIN_OUTPUT_BUFFER == pad_type))
+		{
+			dsp_get_input_buffer_from_pad(
+					adsp, i, &in_buff, &buff_size, &buff_is_zero_buffer);
+			dsp_get_output_buffer_from_pad(adsp, i, &out_buff, buff_size);
+			memcpy(out_buff, in_buff, buff_size);
+		}
+	}
+}
+
+
+void dsp_management_default_mute(struct dsp_module_inst_t * adsp)
+{
+	uint8_t pad_type;
+	size_t buff_size;
+	uint8_t *in_buff;
+	uint8_t *out_buff;
+	struct dsp_pad_t *curr_out_pad ;
+	struct dsp_pad_t *out_pads_arr ;
+	struct out_pads_t   *out_pads;
+	uint8_t max_used_output_num;
+	struct in_pads_t  *in_pads;
+	uint8_t buff_is_zero_buffer;
+
+	// first scan of input pads
+	in_pads = &adsp->in_pads;
+	buff_is_zero_buffer = 1;
+	for (uint8_t i = 0; i < in_pads->max_used_input_num; i++)
+	{
+		dsp_get_input_buffer_from_pad(
+				adsp, i, &in_buff, &buff_size, &buff_is_zero_buffer);
+	}
+
+	out_pads = &adsp->out_pads;
+	out_pads_arr = out_pads->out_pads_arr;
+	max_used_output_num = out_pads->max_used_output_num;
+	for (uint8_t i = 0; i < max_used_output_num; i++)
+	{
+		curr_out_pad = &out_pads_arr[i];
+		pad_type = curr_out_pad->pad_type;
+		if ((DSP_OUT_PAD_TYPE_NORMAL == pad_type) ||
+				(DSP_PAD_TYPE_CHAIN_OUTPUT_BUFFER == pad_type))
+		{
+			dsp_get_input_buffer_from_pad(
+					adsp, i, &in_buff, &buff_size, &buff_is_zero_buffer);
+			dsp_get_output_buffer_from_pad(adsp, i, &out_buff, buff_size);
+			memset(out_buff, 0, buff_size);
+		}
+	}
 }
 
 
@@ -708,82 +804,18 @@ void release_unused_buffers(struct in_pads_t   *in_pads)
  */
 void dsp_process(struct dsp_chain_t *p_chain, struct dsp_module_inst_t *dsp )
 {
-	struct out_pads_t   *out_pads;
-	dsp_management_api_module_control_t ctl;
-	struct dsp_pad_t *curr_out_pad ;
-	struct dsp_pad_t *out_pads_arr ;
-	uint8_t i;
-	uint8_t max_used_output_num;
-
-	ctl = dsp->ctl;
-	out_pads = &dsp->out_pads;
-	out_pads_arr = out_pads->out_pads_arr;
-	max_used_output_num = out_pads->max_used_output_num;
-	for (i = 0; i < max_used_output_num; i++)
+	switch(dsp->ctl)
 	{
-		uint8_t pad_type;
-
-		curr_out_pad = &out_pads_arr[i];
-		pad_type = curr_out_pad->pad_type;
-		if (DSP_OUT_PAD_TYPE_NORMAL == pad_type)
-		{
-			curr_out_pad->buff = (real_t*)memory_pool_malloc(
-					dsp_buffers_pool, num_of_items_in_buffer * sizeof(real_t));
-			curr_out_pad->buff_size = num_of_items_in_buffer;
-			curr_out_pad->sinks_processed_counter =
-				curr_out_pad->total_registered_sinks;
-		}
-	}
-
-	if (DSP_CHAIN_STATE__INITIALIZING == p_chain->chain_state)
-	{
-		// here we are flushing the chain first time to reallocate memory pools
-		// to required sizes. so no need to process modules
-		release_unused_buffers(&dsp->in_pads);
-		return;
-	}
-
-	if (DSP_MANAGEMENT_API_MODULE_CONTROL_ON == ctl)
-	{
+	case DSP_MANAGEMENT_API_MODULE_CONTROL_ON:
 		dsp->module_type->dsp_func(dsp);
-	}
-	else if (DSP_MANAGEMENT_API_MODULE_CONTROL_BYPASS == ctl)
-	{
-		for (i = 0; i < max_used_output_num; i++)
-		{
-			uint8_t pad_type;
-			size_t buff_size;
-			real_t *in_buff;
-
-			curr_out_pad = &out_pads_arr[i];
-			pad_type = curr_out_pad->pad_type;
-			if ((DSP_OUT_PAD_TYPE_NORMAL == pad_type) ||
-					(DSP_PAD_TYPE_CHAIN_OUTPUT_BUFFER == pad_type))
-			{
-				dsp_get_input_buffer_from_pad(dsp, i, &in_buff, &buff_size);
-				if (buff_size > curr_out_pad->buff_size)
-				{
-					buff_size = curr_out_pad->buff_size;
-				}
-				my_memcpy(curr_out_pad->buff, in_buff, buff_size);
-			}
-		}
-	}
-	else // if (DSP_MANAGEMENT_API_MODULE_CONTROL_MUTE == ctl)
-	{
-		for (i = 0; i < max_used_output_num; i++)
-		{
-			uint8_t pad_type;
-
-			curr_out_pad = &out_pads_arr[i];
-			pad_type = curr_out_pad->pad_type;
-			if ((DSP_OUT_PAD_TYPE_NORMAL == pad_type) ||
-					(DSP_PAD_TYPE_CHAIN_OUTPUT_BUFFER == pad_type))
-			{
-				my_memset(
-					curr_out_pad->buff, (float)0, curr_out_pad-> buff_size);
-			}
-		}
+		break;
+	case DSP_MANAGEMENT_API_MODULE_CONTROL_BYPASS:
+		dsp->module_type->bypass_func(dsp);
+		break;
+	case DSP_MANAGEMENT_API_MODULE_CONTROL_MUTE:
+	default:
+		dsp->module_type->mute_func(dsp);
+		break;
 	}
 
 	release_unused_buffers(&dsp->in_pads);
@@ -908,7 +940,7 @@ void dsp_management_api_set_chain_output_buffer(chain_handle_t chain_handle,
  *
  * return:
  */
-void dsp_management_api_set_module_control(chain_handle_t chain_handle,
+uint8_t dsp_management_api_set_module_control(chain_handle_t chain_handle,
 			char const*module_name, dsp_management_api_module_control_t ctl)
 {
 	struct dsp_module_inst_t *module_inst;
@@ -926,7 +958,27 @@ void dsp_management_api_set_module_control(chain_handle_t chain_handle,
 		CRITICAL_ERROR("module not found");
 	}
 
-	module_inst->ctl = ctl ;
+	switch (ctl)
+	{
+	case DSP_MANAGEMENT_API_MODULE_CONTROL_BYPASS:
+		if (module_inst->module_type->flags &
+				DSP_MANAGEMENT_FLAG_BYPASS_NOT_AVAILABLE)
+		{
+			return 1; //don't continue
+		}
+		break;
+	case DSP_MANAGEMENT_API_MODULE_CONTROL_MUTE:
+		if (module_inst->module_type->flags &
+				DSP_MANAGEMENT_FLAG_MUTE_NOT_AVAILABLE)
+		{
+			return 1; //don't continue
+		}
+		break;
+	default:
+		break;
+	}
+	module_inst->ctl = ctl;
+	return 0;
 }
 
 
@@ -936,25 +988,47 @@ void dsp_management_api_set_module_control(chain_handle_t chain_handle,
  * return:
  */
 void dsp_get_input_buffer_from_pad( struct dsp_module_inst_t * adsp,
-						uint8_t pad_num, real_t **buff, size_t *buff_len)
+						uint8_t pad_num, uint8_t **buff, size_t *buff_len,
+						uint8_t *buff_is_zero_buffer)
 {
 	struct in_pads_t   *in_pads;
 	struct dsp_pad_t *pad;
+	size_t requsted_buff_len;
+	uint8_t prev_buff_was_zero_buffer;
+	uint8_t tmp_buff_is_zero_buffer;
 
 	in_pads = &adsp->in_pads;
 	if (pad_num < in_pads->max_used_input_num)
 	{
+		tmp_buff_is_zero_buffer = 0;
 		pad = in_pads->in_pads_arr[pad_num];
 		if (NULL == pad)
 		{
 			pad = &default_zero_buff;
+			tmp_buff_is_zero_buffer = 1;
 		}
 	}
 	else
 	{
 		pad = &default_zero_buff;
+		tmp_buff_is_zero_buffer = 1;
 	}
-	*buff = pad->buff;
+
+	prev_buff_was_zero_buffer = *buff_is_zero_buffer;
+	if (0 == prev_buff_was_zero_buffer)
+	{
+		requsted_buff_len = *buff_len;
+		if (pad->buff_size < requsted_buff_len)
+		{
+			CRITICAL_ERROR("unable to provide big enough buffer");
+		}
+	}
+	else
+	{
+		// change this flag only if previous pads were zero buffers
+		*buff_is_zero_buffer = tmp_buff_is_zero_buffer;
+	}
+	*buff = (uint8_t*)pad->buff;
 	*buff_len = pad->buff_size;
 }
 
@@ -965,7 +1039,7 @@ void dsp_get_input_buffer_from_pad( struct dsp_module_inst_t * adsp,
  * return:
  */
 void dsp_get_output_buffer_from_pad( struct dsp_module_inst_t * adsp,
-						uint8_t pad_num, real_t **buff, size_t *buff_len)
+						uint8_t pad_num, uint8_t **buff, size_t buff_len)
 {
 	struct out_pads_t   *out_pads;
 	struct dsp_pad_t *pad;
@@ -974,15 +1048,44 @@ void dsp_get_output_buffer_from_pad( struct dsp_module_inst_t * adsp,
 	if (pad_num < out_pads->max_used_output_num)
 	{
 		pad = &out_pads->out_pads_arr[pad_num];
-		if (NULL == pad->buff)
+		switch(pad->pad_type)
 		{
+		case DSP_OUT_PAD_TYPE_NORMAL:
+			if (NULL != pad->buff)
+			{
+				CRITICAL_ERROR("output pad buffer already allocated");
+			}
+			pad->buff = (real_t*)memory_pool_malloc(
+									dsp_buffers_pool, buff_len);
+			pad->buff_size = buff_len;
+			pad->sinks_processed_counter = pad->total_registered_sinks;
+			break;
+		case DSP_PAD_TYPE_CHAIN_OUTPUT_BUFFER:
+			if (buff_len != pad->buff_size)
+			{
+				CRITICAL_ERROR("output buffer size not match requested size");
+			}
+			break;
+		default:
+			if (NULL != pad->buff)
+			{
+				CRITICAL_ERROR("pad buffer should not be allocated in this case");
+			}
 			pad = &dummy_output_buff;
+			if (buff_len > pad->buff_size)
+			{
+				CRITICAL_ERROR("size of dummy buffer to small");
+			}
+			break;
 		}
 	}
 	else
 	{
 		pad = &dummy_output_buff;
+		if (buff_len > pad->buff_size)
+		{
+			CRITICAL_ERROR("size of dummy buffer to small");
+		}
 	}
-	*buff = pad->buff;
-	*buff_len = pad->buff_size;
+	*buff = (uint8_t*)pad->buff;
 }

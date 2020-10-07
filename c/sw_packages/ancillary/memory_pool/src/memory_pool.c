@@ -125,7 +125,7 @@ void memory_pool_free(void *mem)
  *
  * return:
  */
-void *memory_pool_init(size_t size_of_chunk)
+void *memory_pool_init(void)
 {
 	struct mem_pool_t *pInstance;
 

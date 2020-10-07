@@ -34,32 +34,29 @@ static void memcpy_real(real_t *dest1, real_t *src1, size_t len)
  *
  * return:
  */
-void delay_dsp(struct dsp_module_inst_t *adsp)
+static void delay_dsp(struct dsp_module_inst_t *adsp)
 {
 	struct delay_instance_t *handle;
 	real_t *apCh1In;
 	real_t *apCh1Out;
 	real_t *delay_buff;
-	size_t in_data_len1 ;
-	size_t out_data_len1 ;
+	size_t data_len;
 	uint16_t delay_samples;
+	uint8_t buff_is_zero_buffer;
+
+	buff_is_zero_buffer = 1;
+	dsp_get_input_buffer_from_pad(
+			adsp, 0, &(uint8_t*)apCh1In, &data_len, &buff_is_zero_buffer);
+	dsp_get_output_buffer_from_pad(adsp, 0, &(uint8_t*)apCh1Out, data_len);
 
 	handle = (struct delay_instance_t *)adsp->handle;
-
-	dsp_get_input_buffer_from_pad(adsp, 0, &apCh1In, &in_data_len1);
-	dsp_get_output_buffer_from_pad(adsp, 0, &apCh1Out, &out_data_len1);
-
-	if (in_data_len1 != out_data_len1 )
-	{
-		CRITICAL_ERROR("bad buffers sizes");
-	}
-
 	delay_samples = handle->delay_samples;
 	delay_buff = handle->buff;
 
+	data_len = data_len / sizeof(real_t);
 	memcpy_real(apCh1Out, delay_buff, delay_samples);
 	memcpy_real(
-			&apCh1Out[delay_samples], apCh1In, in_data_len1 - delay_samples);
+			&apCh1Out[delay_samples], apCh1In, data_len - delay_samples);
 	memcpy_real(delay_buff, apCh1In, delay_samples);
 }
 
@@ -70,7 +67,7 @@ void delay_dsp(struct dsp_module_inst_t *adsp)
  *
  * return:
  */
-uint8_t delay_ioctl(struct dsp_module_inst_t *adsp,
+static uint8_t delay_ioctl(struct dsp_module_inst_t *adsp,
 		const uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2)
 {
 	struct delay_instance_t *handle;
@@ -111,8 +108,9 @@ uint8_t delay_ioctl(struct dsp_module_inst_t *adsp,
  */
 extern "C" void  delay_init(void)
 {
-	DSP_REGISTER_NEW_MODULE("delay",
-			delay_ioctl, delay_dsp, struct delay_instance_t);
+	DSP_REGISTER_NEW_MODULE("delay", delay_ioctl, delay_dsp,
+			dsp_management_default_bypass, dsp_management_default_mute,
+			0, struct delay_instance_t);
 }
 
 AUTO_INIT_FUNCTION(delay_init);

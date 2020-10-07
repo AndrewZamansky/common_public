@@ -28,8 +28,10 @@
 	#pragma GCC diagnostic ignored "-Wsign-compare"
 	#include "arm_math.h"
 	#pragma GCC diagnostic pop
+	#define SIN arm_sin_f32
 #else
 	#include "math.h"
+	#define SIN sin
 #endif
 
 #include "auto_init_api.h"
@@ -53,40 +55,34 @@ static void tone_generator_dsp(struct dsp_module_inst_t *adsp)
 	real_t *apCh1Out;
 	real_t *apCh2Out;
 	size_t i ;
-	size_t out_data_len1 ;
-	size_t out_data_len2 ;
+	size_t output_buff_size ;
 	real_t volume_lin;
 	real_t curr_time;
 	real_t curr_time_delta;
 	real_t prev_val;
-
+	uint8_t buff_is_zero_buffer;
 
 	handle = (struct TONE_GENERATOR_Instance_t *)adsp->handle;
-
-	dsp_get_output_buffer_from_pad(adsp, 0, &apCh1Out, &out_data_len1);
-	dsp_get_output_buffer_from_pad(adsp, 1, &apCh2Out, &out_data_len2);
-
-
-	if (out_data_len1 != out_data_len2 )
+	output_buff_size = handle->output_buff_size;
+	if (0 == output_buff_size )
 	{
-		CRITICAL_ERROR("bad output buffer size");
+		CRITICAL_ERROR("tone generator: bad output buffer size");
 	}
+
+	dsp_get_output_buffer_from_pad(adsp, 0, &apCh1Out, output_buff_size);
+	dsp_get_output_buffer_from_pad(adsp, 1, &apCh2Out, output_buff_size);
 
 	volume_lin = handle->volume_lin;
 	curr_time = handle->curr_time;
 	curr_time_delta = handle->curr_time_delta;
 
 	prev_val = handle->prev_val;
-	for(i = 0; i < out_data_len1; i++)
+	output_buff_size = output_buff_size / sizeof(real_t);
+	for(i = 0; i < output_buff_size; i++)
 	{
 		real_t cur_val;
 
-#if (defined(CONFIG_ARM) && \
-		defined(CONFIG_CORTEX_M4) && defined(CONFIG_INCLUDE_CORTEX_M_FPU))
-		cur_val = arm_sin_f32(curr_time);
-#else
-		cur_val = sin(curr_time);
-#endif
+		cur_val = SIN(curr_time);
 		cur_val *= volume_lin;
 		*apCh1Out++ = cur_val ;
 		*apCh2Out++ = cur_val ;
@@ -120,7 +116,7 @@ static void update_params(struct TONE_GENERATOR_Instance_t *handle)
  *
  * return:
  */
-uint8_t tone_generator_ioctl(struct dsp_module_inst_t *adsp,
+static uint8_t tone_generator_ioctl(struct dsp_module_inst_t *adsp,
 		const uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2)
 {
 	struct TONE_GENERATOR_Instance_t *handle;
@@ -135,6 +131,7 @@ uint8_t tone_generator_ioctl(struct dsp_module_inst_t *adsp,
 			handle->curr_time = 0;
 			handle->curr_time_delta = 0;
 			handle->prev_val = 0;
+			handle->output_buff_size = 0;
 			break;
 		case IOCTL_TONE_GENERATOR_SET_FREQUENCY :
 			handle->freq_hz = (*((uint32_t*)aIoctl_param1));
@@ -146,6 +143,9 @@ uint8_t tone_generator_ioctl(struct dsp_module_inst_t *adsp,
 			break;
 		case IOCTL_TONE_GENERATOR_SET_VOLUME_LIN :
 			handle->volume_lin = (*((float*)aIoctl_param1));
+			break;
+		case IOCTL_TONE_GENERATOR_SET_OUTPUT_BUFFER_SIZE:
+			handle->output_buff_size = (*((size_t*)aIoctl_param1));
 			break;
 		default :
 			return 1;
@@ -162,7 +162,10 @@ uint8_t tone_generator_ioctl(struct dsp_module_inst_t *adsp,
 extern "C" void  tone_generator_init(void)
 {
 	DSP_REGISTER_NEW_MODULE("tone_generator", tone_generator_ioctl,
-					tone_generator_dsp, struct TONE_GENERATOR_Instance_t);
+				tone_generator_dsp,
+				NULL, dsp_management_default_mute,
+				DSP_MANAGEMENT_FLAG_BYPASS_NOT_AVAILABLE,
+				struct TONE_GENERATOR_Instance_t);
 }
 
 AUTO_INIT_FUNCTION(tone_generator_init);

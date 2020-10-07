@@ -25,7 +25,7 @@ char mixer4x1_module_name[] = "mixer4x1";
  *
  * return:
  */
-void mixer4x1_dsp(struct dsp_module_inst_t *adsp)
+static void mixer4x1_dsp(struct dsp_module_inst_t *adsp)
 {
 	struct mixer4x1_instance_t *handle;
 	real_t *apCh1In;
@@ -38,49 +38,30 @@ void mixer4x1_dsp(struct dsp_module_inst_t *adsp)
 	real_t channels_weights_3;
 	real_t channels_weights_4;
 	real_t *channels_weights;
-	size_t in_data_len1 ;
-	size_t in_data_len2 ;
-	size_t in_data_len3 ;
-	size_t in_data_len4 ;
-	size_t out_data_len ;
+	size_t data_len;
 	real_t curr_val;
+	uint8_t buff_is_zero_buffer;
+
+	buff_is_zero_buffer = 1;
+	dsp_get_input_buffer_from_pad(
+			adsp, 0, &(uint8_t*)apCh1In, &data_len, &buff_is_zero_buffer);
+	dsp_get_input_buffer_from_pad(
+			adsp, 1, &(uint8_t*)apCh2In, &data_len, &buff_is_zero_buffer);
+	dsp_get_input_buffer_from_pad(
+			adsp, 2, &(uint8_t*)apCh3In, &data_len, &buff_is_zero_buffer);
+	dsp_get_input_buffer_from_pad(
+			adsp, 3, &(uint8_t*)apCh4In, &data_len, &buff_is_zero_buffer);
+	dsp_get_output_buffer_from_pad(adsp, 0, &(uint8_t*)apCh1Out, data_len);
 
 	handle = (struct mixer4x1_instance_t *)adsp->handle;
-
-	dsp_get_input_buffer_from_pad(adsp, 0, &apCh1In, &in_data_len1);
-	dsp_get_input_buffer_from_pad(adsp, 1, &apCh2In, &in_data_len2);
-	dsp_get_input_buffer_from_pad(adsp, 2, &apCh3In, &in_data_len3);
-	dsp_get_input_buffer_from_pad(adsp, 3, &apCh4In, &in_data_len4);
-	dsp_get_output_buffer_from_pad(adsp, 0, &apCh1Out, &out_data_len);
-
-	if (in_data_len1 != in_data_len2 )
-	{
-		CRITICAL_ERROR("bad input buffer size");
-	}
-
-	if (in_data_len2 != in_data_len3 )
-	{
-		CRITICAL_ERROR("bad input buffer size");
-	}
-
-	if (in_data_len3 != in_data_len4 )
-	{
-		CRITICAL_ERROR("bad input buffer size");
-	}
-
-	if (in_data_len1 > out_data_len )
-	{
-		CRITICAL_ERROR("bad buffers sizes");
-	}
-
 	channels_weights = handle->channels_weights;
-
 	channels_weights_1 =  channels_weights[0];
 	channels_weights_2 =  channels_weights[1];
 	channels_weights_3 =  channels_weights[2];
 	channels_weights_4 =  channels_weights[3];
 
-	while( in_data_len1--)
+	data_len = data_len / sizeof(real_t);
+	while( data_len--)
 	{
 		curr_val = (*apCh1In++) * channels_weights_1;
 		curr_val += (*apCh2In++) * channels_weights_2;
@@ -99,7 +80,7 @@ void mixer4x1_dsp(struct dsp_module_inst_t *adsp)
  *
  * return:
  */
-uint8_t mixer4x1_ioctl(struct dsp_module_inst_t *adsp,
+static uint8_t mixer4x1_ioctl(struct dsp_module_inst_t *adsp,
 		const uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2)
 {
 	struct mixer4x1_instance_t *handle;
@@ -139,8 +120,9 @@ uint8_t mixer4x1_ioctl(struct dsp_module_inst_t *adsp,
  */
 extern "C" void  mixer4x1_init(void)
 {
-	DSP_REGISTER_NEW_MODULE("mixer4x1",
-			mixer4x1_ioctl , mixer4x1_dsp , struct mixer4x1_instance_t);
+	DSP_REGISTER_NEW_MODULE("mixer4x1", mixer4x1_ioctl, mixer4x1_dsp,
+		NULL, dsp_management_default_mute,
+		DSP_MANAGEMENT_FLAG_BYPASS_NOT_AVAILABLE, struct mixer4x1_instance_t);
 }
 
 AUTO_INIT_FUNCTION(mixer4x1_init);

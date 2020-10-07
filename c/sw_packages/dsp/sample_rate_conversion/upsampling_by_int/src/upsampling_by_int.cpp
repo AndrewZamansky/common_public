@@ -28,13 +28,13 @@ char upsampling_by_int_module_name[] = "upsampling_by_int";
  */
 static void upsampling_by_int_dsp(struct dsp_module_inst_t *adsp)
 {
-	float *apCh1In  ;
-	float *apCh1Out ;
-	size_t in_data_len ;
-	size_t out_data_len ;
+	float *apCh1In;
+	float *apCh1Out;
+	size_t data_len;
 	struct UPSAMPLING_BY_INT_Instance_t *handle;
-	void *p_upsampling_by_int_filter   ;
-	size_t factor ;
+	void *p_upsampling_by_int_filter;
+	size_t factor;
+	uint8_t buff_is_zero_buffer;
 
 	handle = adsp->handle;
 	factor = handle->factor;
@@ -46,18 +46,14 @@ static void upsampling_by_int_dsp(struct dsp_module_inst_t *adsp)
 		return;
 	}
 
-	dsp_get_input_buffer_from_pad(adsp, 0, &apCh1In, &in_data_len);
-	dsp_get_output_buffer_from_pad(adsp, 0, &apCh1Out, &out_data_len);
+	buff_is_zero_buffer = 1;
+	dsp_get_input_buffer_from_pad(
+			adsp, 0, &(uint8_t*)apCh1In, &data_len, &buff_is_zero_buffer);
+	dsp_get_output_buffer_from_pad(
+			adsp, 0, &(uint8_t*)apCh1Out, data_len * factor);
 
-	if (in_data_len > (out_data_len * factor) )
-	{
-		CRITICAL_ERROR("bad buffers sizes");
-	}
-
-	data_len = data_len / factor; // should be removed later ???
 	upsampling_by_int_function(
-			p_upsampling_by_int_filter, apCh1In , apCh1Out , in_data_len);
-
+			p_upsampling_by_int_filter, apCh1In , apCh1Out , data_len);
 }
 
 
@@ -66,7 +62,7 @@ static void upsampling_by_int_dsp(struct dsp_module_inst_t *adsp)
  *
  * return:
  */
-uint8_t upsampling_by_int_ioctl(struct dsp_module_inst_t *adsp,
+static uint8_t upsampling_by_int_ioctl(struct dsp_module_inst_t *adsp,
 		const uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2)
 {
 	size_t number_of_filter_coefficients;
@@ -129,7 +125,10 @@ uint8_t upsampling_by_int_ioctl(struct dsp_module_inst_t *adsp,
 extern "C" void  upsampling_by_int_init(void)
 {
 	DSP_REGISTER_NEW_MODULE("upsampling_by_int", upsampling_by_int_ioctl,
-			upsampling_by_int_dsp, struct UPSAMPLING_BY_INT_Instance_t);
+			upsampling_by_int_dsp,
+			NULL, dsp_management_default_mute,
+			DSP_MANAGEMENT_FLAG_BYPASS_NOT_AVAILABLE,
+			struct UPSAMPLING_BY_INT_Instance_t);
 }
 
 AUTO_INIT_FUNCTION(upsampling_by_int_init);

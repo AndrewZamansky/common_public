@@ -3,12 +3,6 @@
  *   file  :  errors_api_check.c
  *
  */
-
-
-
-/***************   includes    *******************/
-
-
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 

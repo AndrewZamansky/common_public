@@ -35,10 +35,10 @@ static void downsampling_by_int_dsp(struct dsp_module_inst_t *adsp)
 	float *apCh1In  ;
 	float *apCh1Out ;
 	struct DOWNSAMPLING_BY_INT_Instance_t *handle;
-	size_t in_data_len ;
-	size_t out_data_len ;
+	size_t data_len ;
 	void *p_downsampling_by_int_filter ;
 	size_t factor ;
+	uint8_t buff_is_zero_buffer;
 
 	handle = adsp->handle;
 	p_downsampling_by_int_filter = handle->p_downsampling_by_int_filter;
@@ -49,17 +49,14 @@ static void downsampling_by_int_dsp(struct dsp_module_inst_t *adsp)
 		return;
 	}
 
-	dsp_get_input_buffer_from_pad(adsp, 0, &apCh1In, &in_data_len);
-	dsp_get_output_buffer_from_pad(adsp, 0, &apCh1Out, &out_data_len);
-
-	if (in_data_len > (out_data_len / factor) )
-	{
-		CRITICAL_ERROR("bad buffers sizes");
-	}
+	buff_is_zero_buffer = 1;
+	dsp_get_input_buffer_from_pad(
+			adsp, 0, &(uint8_t*)apCh1In, &data_len, &buff_is_zero_buffer);
+	dsp_get_output_buffer_from_pad(
+			adsp, 0, &(uint8_t*)apCh1Out, data_len / factor);
 
 	downsampling_by_int_function(
-			p_downsampling_by_int_filter, apCh1In, apCh1Out, in_data_len);
-
+			p_downsampling_by_int_filter, apCh1In, apCh1Out, data_len);
 }
 
 
@@ -68,7 +65,7 @@ static void downsampling_by_int_dsp(struct dsp_module_inst_t *adsp)
  *
  * return:
  */
-uint8_t downsampling_by_int_ioctl(struct dsp_module_inst_t *adsp,
+static uint8_t downsampling_by_int_ioctl(struct dsp_module_inst_t *adsp,
 		const uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2)
 {
 	size_t number_of_filter_coefficients;
@@ -132,7 +129,10 @@ uint8_t downsampling_by_int_ioctl(struct dsp_module_inst_t *adsp,
 extern "C" void  downsampling_by_int_init(void)
 {
 	DSP_REGISTER_NEW_MODULE("downsampling_by_int", downsampling_by_int_ioctl,
-			downsampling_by_int_dsp, struct DOWNSAMPLING_BY_INT_Instance_t);
+			downsampling_by_int_dsp,
+			NULL, dsp_management_default_mute,
+			DSP_MANAGEMENT_FLAG_BYPASS_NOT_AVAILABLE,
+			struct DOWNSAMPLING_BY_INT_Instance_t);
 }
 
 AUTO_INIT_FUNCTION(downsampling_by_int_init);

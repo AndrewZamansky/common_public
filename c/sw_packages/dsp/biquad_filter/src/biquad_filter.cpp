@@ -30,32 +30,27 @@ char biquad_filter_module_name[] = "biquad_filter";
  *
  * return:
  */
-void biquad_filter_dsp(struct dsp_module_inst_t *adsp)
+static void biquad_filter_dsp(struct dsp_module_inst_t *adsp)
 {
 	real_t *apCh1In  ;
 	real_t *apCh1Out ;
 	struct biquads_filter_t *handle;
-	size_t in_data_len ;
-	size_t out_data_len ;
+	size_t data_len ;
+	uint8_t buff_is_zero_buffer;
+
+	buff_is_zero_buffer = 1;
+	dsp_get_input_buffer_from_pad(
+			adsp, 0, &(uint8_t*)apCh1In, &data_len, &buff_is_zero_buffer);
+	dsp_get_output_buffer_from_pad(adsp, 0, &(uint8_t*)apCh1Out, data_len);
 
 	handle = (struct biquads_filter_t *)adsp->handle;
-
 	if(0 == handle->num_of_bands)
 	{
 		CRITICAL_ERROR("at least 1 band should be set");
 	}
 
-	dsp_get_input_buffer_from_pad(adsp, 0, &apCh1In, &in_data_len);
-	dsp_get_output_buffer_from_pad(adsp, 0, &apCh1Out, &out_data_len);
-
-	if (in_data_len > out_data_len )
-	{
-		CRITICAL_ERROR("bad buffers sizes");
-	}
-
-
 	biquads_cascading_filter(handle->pBiquadFilter,
-			apCh1In, apCh1Out, in_data_len);
+			apCh1In, apCh1Out, data_len / sizeof(real_t));
 
 }
 
@@ -112,7 +107,7 @@ static void set_number_of_bands(
  *
  * return:
  */
-uint8_t biquad_filter_ioctl(struct dsp_module_inst_t *adsp,
+static uint8_t biquad_filter_ioctl(struct dsp_module_inst_t *adsp,
 		const uint8_t aIoctl_num, void * aIoctl_param1 , void * aIoctl_param2)
 {
 	size_t num_of_bands;
@@ -194,7 +189,9 @@ uint8_t biquad_filter_ioctl(struct dsp_module_inst_t *adsp,
 extern "C" void  biquad_filter_init(void)
 {
 	DSP_REGISTER_NEW_MODULE("biquad_filter",
-			biquad_filter_ioctl, biquad_filter_dsp, struct biquads_filter_t);
+			biquad_filter_ioctl, biquad_filter_dsp,
+			dsp_management_default_bypass, dsp_management_default_mute,
+			0, struct biquads_filter_t);
 }
 
 AUTO_INIT_FUNCTION(biquad_filter_init);
