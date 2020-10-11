@@ -168,6 +168,10 @@ void os_stack_test_free_rtos(uint32_t *p_lowest_stack, const char *task_name)
 
 	stackLeft = uxTaskGetStackHighWaterMark( NULL );
 	stackLeft *= sizeof(StackType_t);
+	if (stackLeft < 100)
+	{
+		CRITICAL_ERROR("stack too low");
+	}
 	if(*p_lowest_stack > stackLeft)
 	{
 		*p_lowest_stack = stackLeft;
