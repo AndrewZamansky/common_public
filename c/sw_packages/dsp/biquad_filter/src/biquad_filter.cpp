@@ -157,8 +157,7 @@ static uint8_t biquad_filter_ioctl(struct dsp_module_inst_t *adsp,
 		}
 		biquads_coefficients_calculation(filter_mode, p_band_set_params->Fc,
 				p_band_set_params->QValue,	p_band_set_params->Gain_db,
-				(float)48000, 	curr_coeffs);
-
+				(float)48000, curr_coeffs);
 		break;
 
 	case IOCTL_BIQUAD_FILTER_GET_BAND :
