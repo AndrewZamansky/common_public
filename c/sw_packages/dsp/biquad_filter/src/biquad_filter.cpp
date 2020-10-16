@@ -9,9 +9,8 @@
 extern "C" {
 #include "errors_api.h"
 #include "os_wrapper.h"
-#include "string.h"
-
 }
+
 #include <string.h>
 #include "dsp_management_api.h"
 #include "dsp_management_internal_api.h"
@@ -73,8 +72,8 @@ static void set_number_of_bands(
 	handle->biquad_bands_coeffs = biquad_bands_coeffs;
 
 	p_band_set_params =
-		(struct  biquad_filter_api_band_set_params_t *)malloc(num_of_bands *
-						sizeof(struct  biquad_filter_api_band_set_params_t));
+		(struct  biquad_filter_api_band_set_params_t *)os_safe_malloc(
+			num_of_bands * sizeof(struct  biquad_filter_api_band_set_params_t));
 	errors_api_check_if_malloc_succeed(p_band_set_params);
 	handle->band_set_params = p_band_set_params;
 

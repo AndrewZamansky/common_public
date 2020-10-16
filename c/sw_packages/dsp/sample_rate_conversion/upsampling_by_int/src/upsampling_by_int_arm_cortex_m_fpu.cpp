@@ -84,7 +84,7 @@ void *upsampling_by_int_alloc(size_t factor,
  */
 void upsampling_by_int_free(void *pFilter)
 {
-	free(((struct upsampling_by_int_t *)pFilter)->p_filter_state);
-	free(((struct upsampling_by_int_t *)pFilter)->p_filter_instance);
-	free(pFilter);
+	os_safe_free(((struct upsampling_by_int_t *)pFilter)->p_filter_state);
+	os_safe_free(((struct upsampling_by_int_t *)pFilter)->p_filter_instance);
+	os_safe_free(pFilter);
 }

@@ -290,7 +290,7 @@ uint8_t  SPI_FLASH_PARTITION_MANAGER_Format(const void *apHandle)
 	uint8_t *block_data;
 	size_t i,j;
 
-	block_data = (uint8_t *)malloc(0x200);// = 512
+	block_data = (uint8_t *)os_safe_malloc(0x200);// = 512
 	errors_api_check_if_malloc_succeed(block_data);
 
 	// writing MBR
@@ -339,7 +339,7 @@ uint8_t  SPI_FLASH_PARTITION_MANAGER_Format(const void *apHandle)
 						RESERVED_SECTORS + (2*SECTORS_PER_FAT) + i)  );
 	}
 
-	free(block_data);
+	os_safe_free(block_data);
 
 	return 0;
 }

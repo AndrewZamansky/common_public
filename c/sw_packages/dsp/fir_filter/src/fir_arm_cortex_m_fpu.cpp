@@ -17,22 +17,19 @@ extern "C" {
 #include "fir_filter.h"
 #include "fir_filter_api.h"
 
-#include "_fir_filter_prerequirements_check.h"
-
-
-struct fir_filter_t {
+struct fir_filter_arm_t {
 	void *p_filter_instance;
 	float *p_fir_filter_state;
 };
 
 
 void fir_filter_function(
-		void *pFilter, float *apIn, float *apOut, size_t buff_len)
+		void *pFilter, real_t *apIn, real_t *apOut, size_t buff_len)
 {
 	arm_fir_instance_f32 *filter_params;
-	struct fir_filter_t * fir_filter;
+	struct fir_filter_arm_t * fir_filter;
 
-	fir_filter = (struct fir_filter_t *)pFilter;
+	fir_filter = (struct fir_filter_arm_t *)pFilter;
 	filter_params = (arm_fir_instance_f32*)(fir_filter->p_filter_instance);
 	arm_fir_f32(filter_params, apIn, apOut, buff_len);
 }
@@ -50,18 +47,19 @@ void fir_filter_function(
 void *fir_alloc(size_t number_of_filter_coefficients,
 		float *p_coefficients ,size_t predefined_data_block_size)
 {
-	struct fir_filter_t *p_fir_filter;
+	struct fir_filter_arm_t *p_fir_filter;
 	arm_fir_instance_f32* p_filter_instance;
 	float *p_fir_filter_state;
 
-	p_fir_filter=(struct fir_filter_t *)malloc(sizeof(struct fir_filter_t));
+	p_fir_filter = (struct fir_filter_arm_t *)os_safe_malloc(
+									sizeof(struct fir_filter_arm_t));
 	errors_api_check_if_malloc_succeed(p_fir_filter);
 
-	p_filter_instance = malloc(sizeof(arm_fir_instance_f32));
+	p_filter_instance = os_safe_malloc(sizeof(arm_fir_instance_f32));
 	errors_api_check_if_malloc_succeed(p_filter_instance);
 	p_fir_filter->p_filter_instance = p_filter_instance;
 
-	p_fir_filter_state = (float*)malloc(sizeof(float) *
+	p_fir_filter_state = (float*)os_safe_malloc(sizeof(float) *
 			(number_of_filter_coefficients + predefined_data_block_size - 1));
 	errors_api_check_if_malloc_succeed(p_fir_filter_state);
 	p_fir_filter->p_fir_filter_state = p_fir_filter_state;
@@ -73,11 +71,12 @@ void *fir_alloc(size_t number_of_filter_coefficients,
 }
 
 
-/*  func : firs_free()
+/*  func : fir_free()
  */
-void firs_free(void *pFilter )
+void fir_free(void *pFilter )
 {
-	free(((struct fir_filter_t *)pFilter)->p_fir_filter_state);
-	free(((struct fir_filter_t *)pFilter)->p_filter_instance);
-	free(pFilter);
+	if (NULL == pFilter) return;
+	os_safe_free(((struct fir_filter_arm_t *)pFilter)->p_fir_filter_state);
+	os_safe_free(((struct fir_filter_arm_t *)pFilter)->p_filter_instance);
+	os_safe_free(pFilter);
 }

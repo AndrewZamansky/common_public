@@ -57,9 +57,10 @@ void biquads_cascading_filter(void *pFilter,
 /*   func : biquads_alloc()
  *    The coefficients are stored in the array pCoeffs in the following order:
  *
- *     y[n] = b0 * x[n] + b1 * x[n-1] + b2 * x[n-2] + a1 * y[n-1] + a2 * y[n-2]
+ *     y[n] = b0 * x[n] + b1 * x[n-1] + b2 * x[n-2] - a1 * y[n-1] - a2 * y[n-2]
  *
  *    {b10, b11, b12, a11, a12, b20, b21, b22, a21, a22, ...}
+ *    pay attention: an1 and an2 are negative
  */
 void *biquads_alloc(uint8_t num_of_stages, float *pCoeffs )
 {
@@ -110,9 +111,10 @@ void biquads_free(void *pFilter)
 /*   func : biquads_calculation()
  *    The coefficients are stored in the array pCoeffs in the following order:
  *
- *     y[n] = b0 * x[n] + b1 * x[n-1] + b2 * x[n-2] + a1 * y[n-1] + a2 * y[n-2]
+ *     y[n] = b0 * x[n] + b1 * x[n-1] + b2 * x[n-2] - a1 * y[n-1] - a2 * y[n-2]
  *
  *    {b10, b11, b12, a11, a12, b20, b21, b22, a21, a22, ...}
+ *    pay attention: an1 and an2 are negative
  */
 void biquads_coefficients_calculation(enum biquads_filter_mode_e filter_mode,
 		float FreqC,float QValue,float Gain_dB,

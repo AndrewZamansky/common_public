@@ -435,7 +435,7 @@ void os_delete_mutex(os_mutex_t mutex)
         printf("errno=%d\n", errno);
         CRITICAL_ERROR("cannot delete mutex\n");
     }
-    free(mutex);
+    os_safe_free(mutex);
 }
 
 

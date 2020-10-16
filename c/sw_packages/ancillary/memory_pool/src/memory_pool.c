@@ -10,6 +10,7 @@
 #include "errors_api.h"
 #include "memory_pool_api.h"
 #include "memory_pool.h"
+#include "os_wrapper.h"
 
 
 
@@ -28,7 +29,7 @@ struct mem_pool_chuncks_of_one_size_t * get_chunks_of_one_size(
 		chuncks_of_one_size = chuncks_of_one_size->next_chuncks_of_one_size;
 	}
 	chuncks_of_one_size =
-			(struct mem_pool_chuncks_of_one_size_t *) malloc(
+			(struct mem_pool_chuncks_of_one_size_t *) os_safe_malloc(
 							sizeof(struct mem_pool_chuncks_of_one_size_t));
 	errors_api_check_if_malloc_succeed(chuncks_of_one_size);
 
@@ -69,7 +70,7 @@ void *memory_pool_malloc(void *memory_pool_handle, size_t size_of_chunk)
 	//no free blocks if we got here
 
 	// for fast 'free' put chunk info before memory block
-	mem = malloc(
+	mem = os_safe_malloc(
 		chuncks_of_one_size->size_of_chunk + sizeof(struct mem_pool_chunck_t));
 	errors_api_check_if_malloc_succeed(mem);
 	pool_chunk = (struct mem_pool_chunck_t *)mem;
@@ -129,7 +130,7 @@ void *memory_pool_init(void)
 {
 	struct mem_pool_t *pInstance;
 
-	pInstance = (struct mem_pool_t *)malloc(sizeof(struct mem_pool_t));
+	pInstance = (struct mem_pool_t *)os_safe_malloc(sizeof(struct mem_pool_t));
 	errors_api_check_if_malloc_succeed(pInstance);
 
 	pInstance->chuncks_of_one_size = NULL;
@@ -167,12 +168,12 @@ void memory_pool_delete(void *memory_pool_handle)
 			struct mem_pool_chunck_t *tmp_pool_chunk;
 			tmp_pool_chunk = pool_chunk;
 			pool_chunk = pool_chunk->next_pool_chunks;
-			free(tmp_pool_chunk);
+			os_safe_free(tmp_pool_chunk);
 		}
 		next_chuncks_of_one_size =
 				chuncks_of_one_size->next_chuncks_of_one_size;
-		free(chuncks_of_one_size);
+		os_safe_free(chuncks_of_one_size);
 		chuncks_of_one_size = next_chuncks_of_one_size;
 	}
-	free(mem_pool);
+	os_safe_free(mem_pool);
 }

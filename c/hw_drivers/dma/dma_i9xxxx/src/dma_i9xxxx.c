@@ -328,14 +328,14 @@ static void init_buffers(struct dma_i9xxxx_cfg_t *cfg_hndl,
 	if(NULL == runtime_hndl->buff)
 	{
 		runtime_hndl->buff =
-				(uint8_t**)malloc(sizeof(uint8_t*) * num_of_buffers);
+				(uint8_t**)os_safe_malloc(sizeof(uint8_t*) * num_of_buffers);
 		errors_api_check_if_malloc_succeed(runtime_hndl->buff);
-		runtime_hndl->buff_status = (uint8_t*)malloc(num_of_buffers);
+		runtime_hndl->buff_status = (uint8_t*)os_safe_malloc(num_of_buffers);
 		errors_api_check_if_malloc_succeed(runtime_hndl->buff_status);
 
 		for (i = 0; i < num_of_buffers; i++)
 		{
-			buff = (uint8_t*)malloc(buff_size);
+			buff = (uint8_t*)os_safe_malloc(buff_size);
 			errors_api_check_if_malloc_succeed(buff);
 			runtime_hndl->buff[i] = buff;
 		}

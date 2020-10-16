@@ -390,9 +390,9 @@ uint8_t Config_API_Init(void)
 	FIL fp;
 	uint32_t braces_stack;
 
-	tokens=(jsmntok_t*)malloc(sizeof(jsmntok_t)*MAX_JSMN_TOKEN_ALLOWED);
+	tokens=(jsmntok_t*)os_safe_malloc(sizeof(jsmntok_t)*MAX_JSMN_TOKEN_ALLOWED);
 	errors_api_check_if_malloc_succeed(tokens);
-	cfg_buff=(uint8_t*)malloc(MAX_JSMN_BUFFER_SIZE);
+	cfg_buff=(uint8_t*)os_safe_malloc(MAX_JSMN_BUFFER_SIZE);
 	errors_api_check_if_malloc_succeed(cfg_buff);
 
 	if(FR_OK!=f_open(&fp,CONFIG_FILE_NAME, FA_READ))
@@ -445,8 +445,8 @@ uint8_t Config_API_Init(void)
 error :
 	retVal=1;
 exit:
-	free(tokens);
-	free(cfg_buff);
+	os_safe_free(tokens);
+	os_safe_free(cfg_buff);
 	return retVal;
 }
 

@@ -24,7 +24,9 @@ struct biquads_cascading_filter_t
 {
 	uint8_t numOfStages;
 	real_t *  pCoeffs;
-	real_t *  pStates; // should be allocated numOfStages*4
+
+	// should be allocated numOfStages * NUM_OF_STATES_PER_STAGE
+	real_t *  pStates;
 };
 
 
@@ -85,10 +87,7 @@ void biquads_cascading_filter(void *pFilter,
 		}
 		*apOut++ = pOutTmp;
 	}
-
 }
-
-
 
 
 /*   func : biquads_alloc()
@@ -104,8 +103,9 @@ void *biquads_alloc(uint8_t num_of_stages, real_t *pCoeffs )
 	real_t *pStates;
 	size_t size_of_states;
 
-	p_biquads_cascading_filter =(struct biquads_cascading_filter_t *)malloc(
-			sizeof(struct biquads_cascading_filter_t));
+	p_biquads_cascading_filter =
+		(struct biquads_cascading_filter_t *)os_safe_malloc(
+							sizeof(struct biquads_cascading_filter_t));
 	errors_api_check_if_malloc_succeed(p_biquads_cascading_filter);
 
 	size_of_states = NUM_OF_STATES_PER_STAGE * num_of_stages * sizeof(real_t);
@@ -130,10 +130,9 @@ void biquads_free(void *pFilter)
 	if (NULL == pFilter) return;
 
 	p_biquads_cascading_filter = (struct biquads_cascading_filter_t  *)pFilter;
-	free( p_biquads_cascading_filter->pStates  );
-	free(p_biquads_cascading_filter);
+	os_safe_free( p_biquads_cascading_filter->pStates);
+	os_safe_free(p_biquads_cascading_filter);
 }
-
 
 
 /*   func : biquads_calculation()

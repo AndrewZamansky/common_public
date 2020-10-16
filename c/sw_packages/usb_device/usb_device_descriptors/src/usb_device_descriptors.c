@@ -114,7 +114,8 @@ static void increase_configuration_desc(uint16_t additional_size)
 {
 	uint16_t new_desc_size;
 	new_desc_size = configuration_desc_size + additional_size;
-	configuration_desc = (uint8_t*)realloc(configuration_desc, new_desc_size);
+	configuration_desc =
+			(uint8_t*)os_safe_realloc(configuration_desc, new_desc_size);
 	errors_api_check_if_malloc_succeed(configuration_desc);
 
 	configuration_desc_size = new_desc_size;
@@ -134,7 +135,7 @@ static void device_start(struct usb_device_descriptors_cfg_t *cfg_hndl)
 	}
 
 	configuration_desc_size = sizeof(gu8ConfigDescriptor);
-	configuration_desc = (uint8_t*)malloc(configuration_desc_size);
+	configuration_desc = (uint8_t*)os_safe_malloc(configuration_desc_size);
 	errors_api_check_if_malloc_succeed(configuration_desc);
 	VID = cfg_hndl->VID;
 	gu8DeviceDescriptor[VID_POS] = VID & 0xff;
@@ -146,7 +147,7 @@ static void device_start(struct usb_device_descriptors_cfg_t *cfg_hndl)
 		configuration_desc, gu8ConfigDescriptor, configuration_desc_size);
 
 	string_index_count = 1;
-	gpu8UsbString = (uint8_t const **)malloc(sizeof(uint8_t const *));
+	gpu8UsbString = (uint8_t const **)os_safe_malloc(sizeof(uint8_t const *));
 	errors_api_check_if_malloc_succeed(gpu8UsbString);
 	gpu8UsbString[0] = gu8StringLang;
 
@@ -282,8 +283,8 @@ static void add_string_descriptor(struct usb_device_descriptors_cfg_t *cfg_hndl,
 
 	curr_string_index_count = string_index_count;
 	string_index_count++;
-	gpu8UsbString = (uint8_t const **)realloc(gpu8UsbString,
-						string_index_count * sizeof(uint8_t const *));
+	gpu8UsbString = (uint8_t const **)os_safe_realloc(gpu8UsbString,
+								string_index_count * sizeof(uint8_t const *));
 	errors_api_check_if_malloc_succeed(gpu8UsbString);
 
 	gpu8UsbString[curr_string_index_count] = string_descriptor;

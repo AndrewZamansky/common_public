@@ -168,7 +168,7 @@ uint8_t http_callback(struct dev_desc_t *adev ,const uint8_t aCallback_num
 
 
 		str_len -= cmdStartPos;
-		pSendData = (uint8_t*)malloc(str_len * sizeof(uint8_t));
+		pSendData = (uint8_t*)os_safe_malloc(str_len * sizeof(uint8_t));
 		errors_api_check_if_malloc_succeed(pSendData);
 
 		memcpy(pSendData, (uint8_t*)&requestStr[cmdStartPos], str_len);

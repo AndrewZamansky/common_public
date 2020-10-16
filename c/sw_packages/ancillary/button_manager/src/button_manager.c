@@ -582,7 +582,7 @@ static button_manager_reported_event_handle_t
 		CRITICAL_ERROR("too many events");
 	}
 	num_of_events++;
-	btn_events_arr = (struct btn_event_t *)realloc(btn_events_arr,
+	btn_events_arr = (struct btn_event_t *)os_safe_realloc(btn_events_arr,
 			 num_of_events * sizeof(struct btn_event_t));
 	errors_api_check_if_malloc_succeed(btn_events_arr);
 

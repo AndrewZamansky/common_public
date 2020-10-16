@@ -82,7 +82,7 @@ uint8_t  fft_api_init_dsp_descriptor(struct dsp_module_inst_t aDspDescriptor)
 
 	if(NULL == aDspDescriptor) return 1;
 
-	pInstance = (struct FFT_Instance_t *)malloc(sizeof(FFT_Instance_t));
+	pInstance = (struct FFT_Instance_t *)os_safe_malloc(sizeof(FFT_Instance_t));
 	errors_api_check_if_malloc_succeed(pInstance);
 
 	aDspDescriptor->handle = pInstance;

@@ -105,10 +105,10 @@ void init_new_device(struct dev_desc_t * pdev )
 
 	if (NULL == pdev->p_config_data)
 	{
-		pdev->p_config_data = malloc(module->module_config_struct_size);
+		pdev->p_config_data = os_safe_malloc(module->module_config_struct_size);
 		errors_api_check_if_malloc_succeed(pdev->p_config_data);
 	}
-	pdev->p_runtime_data = malloc(module->module_runtime_struct_size);
+	pdev->p_runtime_data = os_safe_malloc(module->module_runtime_struct_size);
 	errors_api_check_if_malloc_succeed(pdev->p_runtime_data);
 }
 #endif
@@ -128,7 +128,7 @@ void init_device_tree()
 	uint8_t * end_of_dev_tree ;
 
 	src = (uint32_t *)CONFIG_DEVICE_TREE_LOCATION_ADDR;
-	dst = (uint32_t *) malloc(CONFIG_DEVICE_TREE_MAXIMAL_SIZE);
+	dst = (uint32_t *) os_safe_malloc(CONFIG_DEVICE_TREE_MAXIMAL_SIZE);
 	errors_api_check_if_malloc_succeed(dst);
 	start_of_dev_tree = (struct dev_desc_t *)dst;
 	end_of_dev_tree = (uint8_t *)dst + CONFIG_DEVICE_TREE_MAXIMAL_SIZE;

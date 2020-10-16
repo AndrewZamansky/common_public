@@ -441,7 +441,7 @@ static void fill_association_descriptor(struct usb_audio_class_cfg_t *cfg_hndl,
 	uint8_t *iad;
 	uint8_t num_of_interfaces;
 
-	iad = (uint8_t*)malloc(sizeof(interface_association_descriptor)) ;
+	iad = (uint8_t*)os_safe_malloc(sizeof(interface_association_descriptor)) ;
 	errors_api_check_if_malloc_succeed(iad);
 	memcpy(iad, interface_association_descriptor,
 						sizeof(interface_association_descriptor));
@@ -458,7 +458,7 @@ static void fill_association_descriptor(struct usb_audio_class_cfg_t *cfg_hndl,
 	iad[3] = num_of_interfaces;
 	DEV_IOCTL_1_PARAMS(cfg_hndl->usb_descriptors_dev,
 			USB_DEVICE_DESCRIPTORS_ADD_INTERFACE_ASSOCIATION_DESCRIPTOR, iad);
-	free(iad);
+	os_safe_free(iad);
 }
 
 
@@ -494,7 +494,7 @@ static void fill_control_descriptor(struct usb_audio_class_cfg_t *cfg_hndl,
 	control_interface_start_size = 9 + control_interface_CS_size;
 	control_interface_size =
 			control_interface_start_size + termianl_descriptors_size;
-	i_ctl = (uint8_t*)malloc(control_interface_size);
+	i_ctl = (uint8_t*)os_safe_malloc(control_interface_size);
 	errors_api_check_if_malloc_succeed(i_ctl);
 
 	memcpy(i_ctl, audio_control_interface_start, control_interface_start_size);
@@ -534,7 +534,7 @@ static void fill_control_descriptor(struct usb_audio_class_cfg_t *cfg_hndl,
 	usb_desc_add_interface.alt_interface_desc = NULL;
 	DEV_IOCTL_1_PARAMS(cfg_hndl->usb_descriptors_dev,
 			USB_DEVICE_DESCRIPTORS_ADD_INTERFACE, &usb_desc_add_interface);
-	free(i_ctl);
+	os_safe_free(i_ctl);
 }
 
 
@@ -570,10 +570,10 @@ static void update_interfaces_desc(struct dev_desc_t *adev,
 	i_in_alt1 = NULL;
 	if (0 != enable_recording)
 	{
-		i_in_alt0 = (uint8_t*)malloc(sizeof(in_interface)) ;
+		i_in_alt0 = (uint8_t*)os_safe_malloc(sizeof(in_interface)) ;
 		errors_api_check_if_malloc_succeed(i_in_alt0);
 		memcpy(i_in_alt0, in_interface, sizeof(in_interface));
-		i_in_alt1 = (uint8_t*)malloc(sizeof(in_alt_interface)) ;
+		i_in_alt1 = (uint8_t*)os_safe_malloc(sizeof(in_alt_interface)) ;
 		errors_api_check_if_malloc_succeed(i_in_alt1);
 		memcpy(i_in_alt1, in_alt_interface, sizeof(in_alt_interface));
 		i_in_alt0[2] = usb_descriptors_alloc_interfaces->interfaces_num[
@@ -587,10 +587,10 @@ static void update_interfaces_desc(struct dev_desc_t *adev,
 	i_out_alt1 = NULL;
 	if (USB_AUDIO_CLASS_NO_PLAYBACK != playback_type)
 	{
-		i_out_alt0 = (uint8_t*)malloc(sizeof(out_interface)) ;
+		i_out_alt0 = (uint8_t*)os_safe_malloc(sizeof(out_interface)) ;
 		errors_api_check_if_malloc_succeed(i_out_alt0);
 		memcpy(i_out_alt0, out_interface, sizeof(out_interface));
-		i_out_alt1 = (uint8_t*)malloc(sizeof(out_alt_interface)) ;
+		i_out_alt1 = (uint8_t*)os_safe_malloc(sizeof(out_alt_interface)) ;
 		errors_api_check_if_malloc_succeed(i_out_alt1);
 		memcpy(i_out_alt1, out_alt_interface, sizeof(out_alt_interface));
 		i_out_alt0[2] = usb_descriptors_alloc_interfaces->interfaces_num[
@@ -619,8 +619,8 @@ static void update_interfaces_desc(struct dev_desc_t *adev,
 		usb_desc_add_interface.is_hid_interface = 0;
 		DEV_IOCTL_1_PARAMS(usb_descriptors_dev,
 				USB_DEVICE_DESCRIPTORS_ADD_INTERFACE, &usb_desc_add_interface);
-		free(i_in_alt0);
-		free(i_in_alt1);
+		os_safe_free(i_in_alt0);
+		os_safe_free(i_in_alt1);
 	}
 
 	if (USB_AUDIO_CLASS_NO_PLAYBACK != playback_type)
@@ -646,8 +646,8 @@ static void update_interfaces_desc(struct dev_desc_t *adev,
 		usb_desc_add_interface.is_hid_interface = 0;
 		DEV_IOCTL_1_PARAMS(usb_descriptors_dev,
 				USB_DEVICE_DESCRIPTORS_ADD_INTERFACE, &usb_desc_add_interface);
-		free(i_out_alt0);
-		free(i_out_alt1);
+		os_safe_free(i_out_alt0);
+		os_safe_free(i_out_alt1);
 	}
 }
 

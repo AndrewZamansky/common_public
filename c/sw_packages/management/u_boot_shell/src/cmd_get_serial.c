@@ -27,7 +27,7 @@ int do_get_serial (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 	uint8_t *ret_buff;
 
-	ret_buff = (uint8_t*)malloc(2*SERIAL_NUMBER_LEN * sizeof(uint8_t));
+	ret_buff = (uint8_t*)os_safe_malloc(2*SERIAL_NUMBER_LEN * sizeof(uint8_t));
 	errors_api_check_if_malloc_succeed(ret_buff);
 
 	if(NULL != ret_buff)
@@ -40,7 +40,7 @@ int do_get_serial (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		}
 
 		SHELL_REPLY_DATA(ret_buff, 2*SERIAL_NUMBER_LEN);
-		free(ret_buff);
+		os_safe_free(ret_buff);
 	}
 	return 0;
 }

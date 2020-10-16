@@ -8,9 +8,9 @@
 #define _FIR_FILTER_H
 
 
-struct FIR_FILTER_Instance_t {
+struct fir_filter_t {
 	void *p_fir_filter;
-	void *p_coefficients;
+	real_t *p_coefficients;
 	size_t number_of_filter_coefficients;
 	size_t predefined_data_block_size;
 };

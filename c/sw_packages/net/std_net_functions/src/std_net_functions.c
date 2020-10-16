@@ -191,9 +191,9 @@ int getaddrinfo(const char *node, const char *service,
 		return -1;
 	}
 
-	new_addrinfo = (struct addrinfo *)malloc(sizeof(struct addrinfo));
+	new_addrinfo = (struct addrinfo *)os_safe_malloc(sizeof(struct addrinfo));
 	errors_api_check_if_malloc_succeed(new_addrinfo);
-	ai_addr = (struct sockaddr *)malloc(sizeof(struct sockaddr));
+	ai_addr = (struct sockaddr *)os_safe_malloc(sizeof(struct sockaddr));
 	errors_api_check_if_malloc_succeed(ai_addr);
 
 	new_addrinfo->ai_next = NULL;
@@ -220,8 +220,8 @@ void freeaddrinfo(struct addrinfo *res)
 	while (NULL != res)
 	{
 		next_addrinfo = res->ai_next;
-		free(res->ai_addr);
-		free(res);
+		os_safe_free(res->ai_addr);
+		os_safe_free(res);
 		res = next_addrinfo;
 	}
 }

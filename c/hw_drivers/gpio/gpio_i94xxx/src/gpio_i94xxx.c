@@ -174,7 +174,7 @@ uint8_t gpio_i94xxx_register_interrupt(struct dev_desc_t *adev,
 		CRITICAL_ERROR("cannot register more than 255 devices");
 	}
 	num_of_callback_devices++;
-	new_callback_devices_list = (struct dev_desc_t **) realloc(
+	new_callback_devices_list = (struct dev_desc_t **)os_safe_realloc(
 			*callback_devices_list,
 			num_of_callback_devices * sizeof(struct dev_desc_t *));
 	errors_api_check_if_malloc_succeed(new_callback_devices_list);

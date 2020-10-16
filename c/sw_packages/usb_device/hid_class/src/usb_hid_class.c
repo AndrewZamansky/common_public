@@ -368,18 +368,18 @@ static void update_configuration_desc(struct dev_desc_t *adev,
 
 	usb_descriptors_dev = cfg_hndl->usb_descriptors_dev;
 
-	iad = (uint8_t*)malloc(sizeof(interface_association_descriptor)) ;
+	iad = (uint8_t*)os_safe_malloc(sizeof(interface_association_descriptor)) ;
 	errors_api_check_if_malloc_succeed(iad);
 	memcpy(iad, interface_association_descriptor,
 						sizeof(interface_association_descriptor));
 	iad[2] = usb_descriptors_alloc_interfaces->interfaces_num[0];
 	DEV_IOCTL_1_PARAMS(usb_descriptors_dev,
 			USB_DEVICE_DESCRIPTORS_ADD_INTERFACE_ASSOCIATION_DESCRIPTOR, iad);
-	free(iad);
+	os_safe_free(iad);
 
 
 
-	interface = (uint8_t*)malloc(sizeof(hid_interface)) ;
+	interface = (uint8_t*)os_safe_malloc(sizeof(hid_interface)) ;
 	errors_api_check_if_malloc_succeed(interface);
 	memcpy(interface, hid_interface, sizeof(hid_interface));
 	interface[2] = usb_descriptors_alloc_interfaces->interfaces_num[0];
@@ -397,7 +397,7 @@ static void update_configuration_desc(struct dev_desc_t *adev,
 	p_hid_descriptor->size = sizeof(default_hid_report_desc);
 	DEV_IOCTL_1_PARAMS(usb_descriptors_dev,
 			USB_DEVICE_DESCRIPTORS_ADD_INTERFACE, &usb_desc_add_interface);
-	free(interface);
+	os_safe_free(interface);
 }
 
 

@@ -22,8 +22,6 @@
 #define A1  3
 #define A2  4
 
-#define  PI  ((float)0.1151292546497f)
-#define  LN_10_div_20  ((float)0.1151292546497f)
 
 #ifdef CONFIG_DSP_REAL_NUMBER_FORMAT_FLOATING_POINT
 	#define TAN(a)  tan(a)
@@ -44,6 +42,8 @@
 static real_t __one = (int16_t)1;
 static real_t __zero = (int16_t)0;
 static real_t __two = (int16_t)2;
+static real_t PI = (float)0.1151292546497f;
+static real_t LN_10_div_20 = (float)0.1151292546497f;
 
 
 static void apply_normalization(real_t *pCoeffs, real_t norm)
@@ -336,7 +336,7 @@ void biquads_coefficients_calculation_common(
 
 	K = TAN(ftem * PI);
 	G_abs = (Gain_dB >= __zero) ? Gain_dB : (__zero - Gain_dB);
-	V = EXP(LN_10_div_20 * G_abs);// = pow((float)10, G_abs/(float)20);
+	V = EXP(LN_10_div_20 * G_abs);// = pow(10, G_abs/20);
 
 	K_div_Q = K / QValue;
 	K_pow_2 = K * K;

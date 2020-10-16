@@ -46,7 +46,7 @@ void webrtc_voice_activity_detection_dsp(struct dsp_module_inst_t *adsp,
 
 	apCh1In = in_pads[0]->buff;
 
-	buff= (int16_t*)malloc(data_len * sizeof(int16_t));
+	buff= (int16_t*)os_safe_malloc(data_len * sizeof(int16_t));
 	errors_api_check_if_malloc_succeed(buff);
 	tmp_buff = buff;
 	for (i=0 ; i<data_len ; i++ )
@@ -55,7 +55,7 @@ void webrtc_voice_activity_detection_dsp(struct dsp_module_inst_t *adsp,
 	}
 	handle->voice_was_detected |=
 			(uint8_t) WebRtcVad_Process(vad_handle, 48000 , buff , data_len);
-	free(buff);
+	os_safe_free(buff);
 }
 
 
