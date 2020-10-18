@@ -15,6 +15,7 @@
 #include "stdlib.h"
 #include "usb_device_descriptors_api.h"
 #include "errors_api.h"
+#include "os_wrapper.h"
 
 #define WBVAL(x) (x & 0xFF), ((x >>8) & 0xFF)
 

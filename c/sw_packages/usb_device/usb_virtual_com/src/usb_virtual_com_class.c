@@ -9,6 +9,7 @@
 #include "_project_func_declarations.h"
 #include "errors_api.h"
 
+#include "os_wrapper.h"
 #include "dev_management_api.h"
 
 #include "usb_virtual_com_class_api.h"

@@ -10,6 +10,7 @@
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 #include "errors_api.h"
+#include "os_wrapper.h"
 
 #include <stdio.h>
 #include <string.h>
