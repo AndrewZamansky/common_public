@@ -20,7 +20,7 @@ enum fir_filter_set_type_e {
 };
 
 enum FIR_FILTER_API_ioctl_e {
-	IOCTL_FIR_FILTER_SET_FIR_COEFFICIENTS = IOCTL_DSP_LAST_COMMON_IOCTL+1
+	IOCTL_FIR_FILTER_SET_FIR_COEFFICIENTS = IOCTL_DSP_LAST_COMMON_IOCTL + 1
 };
 
 
@@ -43,8 +43,12 @@ struct fir_filter_api_set_params_t {
 		struct fir_filter_api_set_raw_coefficients_t  raw_coefficients;
 		struct fir_filter_api_set_coefficients_by_params_t  coeff_by_params;
 	};
+
+	// should be odd for linear delay
 	size_t number_of_filter_coefficients;
-	size_t predefined_data_block_size ;
+
+	// bigger block size -> smaller overhead
+	size_t predefined_data_block_size;
 };
 
 

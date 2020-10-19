@@ -47,7 +47,7 @@ static real_t const_0_07886 = (float)0.07886f;
 
 static void calc_transparent_mode(real_t *p_coeffs, int16_t coeff_num)
 {
-	p_coeffs[0] = __one;
+	p_coeffs[coeff_num - 1] = __one;
 	for (int16_t i = 0; i < coeff_num; i++) p_coeffs[0] = __zero;
 }
 
@@ -82,8 +82,7 @@ static void calc_hilbert_transform_mode(
 
 	izb = Izero(Beta);
 	nc =  2 * (coeff_num / 2);
-	// clear coefficients
-	for (i = 0; i < 2 * (nc - 1); i++) p_coeffs[i] = __zero;
+
 	// set real delay
 	p_coeffs[nc] = __one;
 
@@ -114,6 +113,29 @@ static real_t m_sinc(int16_t m, real_t fc)
 }
 
 
+static void calc_highpass_transform_mode(
+		real_t *p_coeffs, int16_t coeff_num, real_t f_norm, real_t Beta)
+{
+	int16_t i, j;
+	int16_t nc;
+	real_t izb;
+	real_t w;
+
+	f_norm *= 2;
+	nc = (int16_t)( 2 * (coeff_num / 2));
+	izb = Izero (Beta);
+	for (i = - nc, j = 0; i <= nc; i += 2, j++)
+	{
+		real_t x = i;
+		x /= nc;
+		w = Izero(Beta * SQRT(__one - x * x)) / izb; // Kaiser window
+
+		// populate in reverse order
+		p_coeffs[nc - j] = (m_sinc(i, __one) - f_norm * m_sinc(i, f_norm)) * w;
+	}
+}
+
+
 /* func: fir_coefficients_calculation
 * fc - requency where it happens
 * Astop - stopband attenuation in dB,
@@ -126,6 +148,9 @@ static real_t m_sinc(int16_t m, real_t fc)
 * numCoeffs = (Astop - 8.0) / (2.285 * TPI * normFtrans);
 * electing high-pass, numCoeffs is forced to an even number for
 * better frequency response
+*
+* return : coefficients in reversed order:
+* {b[numTaps-1], b[numTaps-2], b[N-2], ..., b[1], b[0]}
 */
 void fir_coefficients_calculation( enum fir_filter_mode_e filter_mode,
 		real_t fc, real_t Astop, real_t dfc,
@@ -141,6 +166,15 @@ void fir_coefficients_calculation( enum fir_filter_mode_e filter_mode,
 	{
 		CRITICAL_ERROR("don't support very long filters");
 	}
+
+	if ( 0 == (coeff_num % 2))
+	{
+		CRITICAL_ERROR("support only odd num of taps");
+	}
+
+	// clear all coefficients
+	for (i = 0; i < coeff_num; i++) p_coeffs[i] = __zero;
+
 	nc = (int16_t)coeff_num;
 	fc = fc / sample_rate;
 	dfc = dfc / sample_rate;
@@ -168,14 +202,14 @@ void fir_coefficients_calculation( enum fir_filter_mode_e filter_mode,
 		return;
 	case FIR_LOWPASS_MODE:
 		fcf = fc * __two;
-		nc =  (int16_t)coeff_num;
+		nc =  (int16_t)(2 * (coeff_num / 2));
 		break;
 	case FIR_HIGHPASS_MODE:
-		fcf = -fc;
-		nc = (int16_t)( 2 * (coeff_num / 2));
-		break;
+		calc_highpass_transform_mode(p_coeffs, coeff_num, fc, Beta);
+		return;
 	case FIR_BANDPASS_MODE:
 	case FIR_NOTCH_MODE:
+		fc = fc * __two;
 		fcf = dfc;
 		nc =  (int16_t)(2 * (coeff_num / 2));
 		break;
@@ -186,31 +220,29 @@ void fir_coefficients_calculation( enum fir_filter_mode_e filter_mode,
 
 
 	izb = Izero (Beta);
-	for (i = - nc, j = 0; i < nc; i += 2, j++)
+	for (i = - nc, j = 0; i <= nc; i += 2, j++)
 	{
 		real_t x = i;
 		x /= nc;
 		real_t w = Izero(Beta * SQRT(__one - x * x)) / izb; // Kaiser window
-		p_coeffs[j] = fcf * m_sinc(i, fcf) * w;
+
+		// populate in reverse order
+		p_coeffs[nc - j] = fcf * m_sinc(i, fcf) * w;
 	}
 
 	switch (filter_mode)
 	{
-	case FIR_HIGHPASS_MODE:
-		p_coeffs[nc / 2] += __one;
-		break;
 	case FIR_BANDPASS_MODE:
-		for (j = 0; j < nc + 1; j++)
+		for (j = 0; j < (nc + 1); j++)
 		{
-			p_coeffs[j] *=
-					__two * COS(PIH * ((__two * j) - nc) * fc);
+			p_coeffs[nc - j] *= __two * COS(PIH * ((__two * j) - nc) * fc);
 		}
 		break;
 	case FIR_NOTCH_MODE:
-		for (j = 0; j < nc + 1; j++)
+		for (j = 0; j < (nc + 1); j++)
 		{
-			p_coeffs[j] *= __zero -
-					__two * COS(PIH * ((__two * j) - nc) * fc);
+			p_coeffs[nc - j] *=
+					__zero - __two * COS(PIH * ((__two * j) - nc) * fc);
 		}
 		p_coeffs[nc / 2] += __one;
 		break;

@@ -36,6 +36,7 @@ void fir_filter_function(
 	size_t predefined_data_block_size;
 	real_t *p_coefficients;
 	real_t *state;
+	real_t out_val;
 	real_t *state_new_input;
 	size_t curr_len;
 	real_t *start_of_samples;
@@ -63,10 +64,12 @@ void fir_filter_function(
 		start_of_samples = state;
 		for (size_t j = 0; j < curr_len; j++)
 		{
+			out_val = 0;
 			for (size_t i = 0; i < number_of_filter_coefficients; i++)
 			{
-				*apOut++ = start_of_samples[i] * p_coefficients[i];
+				out_val += start_of_samples[i] * p_coefficients[i];
 			}
+			*apOut++ = out_val;
 			start_of_samples++;
 		}
 
