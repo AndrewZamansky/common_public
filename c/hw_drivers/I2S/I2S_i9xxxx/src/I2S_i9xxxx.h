@@ -17,6 +17,7 @@ struct I2S_i9xxxx_runtime_t {
 	struct dev_desc_t  *i9xxxx_I2S_MCLK_clk_dev;
 	struct dev_desc_t  *i9xxxx_I2S_BCLK_clk_dev;
 	struct dev_desc_t  *i9xxxx_I2S_FSCLK_clk_dev;
+	i2s_interrupt_handler_t  int_handler;
 };
 
 SET_RUNTIME_DATA_TYPE(I2S_i9xxxx, struct I2S_i9xxxx_runtime_t);

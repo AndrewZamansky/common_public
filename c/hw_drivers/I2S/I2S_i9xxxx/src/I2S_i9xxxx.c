@@ -49,15 +49,31 @@
 #define TEST_COUNT   100
 static uint32_t i2s_data[TEST_COUNT + 1] = {0};
 static int pos = 0;
-void I2S_IRQHandler()
+#endif
+
+static uint8_t I2S_i9xxxx_callback(struct dev_desc_t *adev,
+		uint8_t aCallback_num , void * aCallback_param1,
+		void * aCallback_param2)
 {
+	struct I2S_i9xxxx_cfg_t *cfg_hndl;
 	uint32_t status;
-    /* Write 2 TX values to TX FIFO */
-  //  I2S_WRITE_TX_FIFO(SPI1, g_u32TxValue);
- //   I2S_WRITE_TX_FIFO(SPI1, g_u32TxValue);
-	status = I2S0->STATUS0;
+	struct I2S_i9xxxx_runtime_t *runtime_handle;
+	I2S_T*  base_address;
+	i2s_interrupt_handler_t  int_handler;
+
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(I2S_i9xxxx, adev);
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(I2S_i9xxxx, adev);
+	base_address = (I2S_T*)cfg_hndl->base_address;
+	status = base_address->STATUS0;
     if ((status & I2S_STATUS0_RXEMPTY_Msk) == 0)
     {
+    	int_handler = runtime_handle->int_handler;
+    	if (NULL != int_handler)
+    	{
+    		// TODO:
+    		//int_handler();
+    	}
+#ifdef  DEBUG_USE_INTERRUPT
 		if (pos < TEST_COUNT)
 		{
 			pos++;
@@ -68,9 +84,10 @@ void I2S_IRQHandler()
 		}
 		i2s_data[pos] = I2S0->RXFIFO;
 		I2S0->TXFIFO = 0x22224444;//i2s_data[pos];
-    }
-}
 #endif
+    }
+    return 0;
+}
 
 
 static void disable_pinout(struct I2S_i9xxxx_cfg_t *cfg_hndl)
@@ -122,12 +139,15 @@ static void set_clocks(struct I2S_i9xxxx_cfg_t *cfg_hndl,
 }
 
 
-static void i9xxxx_I2S_init(struct I2S_i9xxxx_cfg_t *cfg_hndl,
-		struct I2S_i9xxxx_runtime_t *runtime_handle, I2S_T*  base_address)
+static void i9xxxx_I2S_init(struct dev_desc_t *adev,
+		struct I2S_i9xxxx_cfg_t *cfg_hndl,
+		struct I2S_i9xxxx_runtime_t *runtime_handle,
+		I2S_T*  base_address)
 {
 	uint8_t   num_of_bytes_in_word;
 	uint32_t  i2s_format;
 	struct dev_desc_t  *src_clock;
+	int i2s_irq;
 
 	if (runtime_handle->init_done)
 	{
@@ -138,6 +158,7 @@ static void i9xxxx_I2S_init(struct I2S_i9xxxx_cfg_t *cfg_hndl,
 	num_of_bytes_in_word = cfg_hndl->num_of_bytes_in_word;
 	src_clock = cfg_hndl->src_clock;
 #ifdef CONFIG_I94XXX
+	i2s_irq = I2S0_IRQn;
 	runtime_handle->i9xxxx_i2s_clk_dev = i94xxx_i2s_clk_dev;
 	runtime_handle->i9xxxx_I2S_MCLK_clk_dev = i94xxx_I2S_MCLK_clk_dev;
 	runtime_handle->i9xxxx_I2S_BCLK_clk_dev = i94xxx_I2S_BCLK_clk_dev;
@@ -145,6 +166,7 @@ static void i9xxxx_I2S_init(struct I2S_i9xxxx_cfg_t *cfg_hndl,
 #elif CONFIG_I96XXX_M0
 	if (base_address == I2S0)
 	{
+		i2s_irq = I2S0_IRQn;
 		runtime_handle->i9xxxx_i2s_clk_dev = i96xxx_i2s0_clk_dev;
 		runtime_handle->i9xxxx_I2S_MCLK_clk_dev = i96xxx_I2S0_MCLK_clk_dev;
 		runtime_handle->i9xxxx_I2S_BCLK_clk_dev = i96xxx_I2S0_BCLK_clk_dev;
@@ -152,6 +174,7 @@ static void i9xxxx_I2S_init(struct I2S_i9xxxx_cfg_t *cfg_hndl,
 	}
 	else
 	{
+		i2s_irq = I2S1_IRQn;
 		CRITICAL_ERROR("TODO");
 	}
 #endif
@@ -218,15 +241,18 @@ static void i9xxxx_I2S_init(struct I2S_i9xxxx_cfg_t *cfg_hndl,
 	I2S_ENABLE_RX(base_address);
 	I2S_ENABLE(base_address);
 
-#ifdef DEBUG_USE_INTERRUPT
-	irq_register_interrupt(I2S0_IRQn , I2S_IRQHandler);
-	irq_set_priority(I2S0_IRQn , INTERRUPT_PRIORITY_FOR_I2S );
-	irq_enable_interrupt(I2S0_IRQn);
-	I2S_ENABLE_INT(base_address, I2S_IEN_RXTHIEN_Msk);
+	if (I2S_I9XXXX_API_DATA_TRANSFER_TYPE_DMA == cfg_hndl->data_transfer_type)
+	{
+		base_address->CTL0 |= I2S_CTL0_RXPDMAEN_Msk;
+	}
+	else
+	{
+		irq_register_device_on_interrupt(i2s_irq, adev);
+		irq_set_priority(i2s_irq , INTERRUPT_PRIORITY_FOR_I2S );
+		irq_enable_interrupt(i2s_irq);
+		I2S_ENABLE_INT(base_address, I2S_IEN_RXTHIEN_Msk);
+	}
 
-#else
-	base_address->CTL0 |= I2S_CTL0_RXPDMAEN_Msk;
-#endif
 	runtime_handle->init_done = 1;
 }
 
@@ -265,6 +291,19 @@ static void i9xxxx_sync_to_dpwm_fs_rate(struct I2S_i9xxxx_cfg_t *cfg_hndl,
 }
 
 
+static void enable_tx(struct I2S_i9xxxx_cfg_t *cfg_hndl)
+{
+	I2S_T*  base_address;
+	base_address = (I2S_T*)cfg_hndl->base_address;
+
+	I2S_ENABLE_TX(base_address);
+	if (I2S_I9XXXX_API_DATA_TRANSFER_TYPE_DMA == cfg_hndl->data_transfer_type)
+	{
+		base_address->CTL0 |= I2S_CTL0_TXPDMAEN_Msk;
+	}
+
+}
+
 /**
  * I2S_i9xxxx_ioctl()
  *
@@ -289,12 +328,10 @@ static uint8_t I2S_i9xxxx_ioctl( struct dev_desc_t *adev,
 	switch(aIoctl_num)
 	{
 	case IOCTL_DEVICE_START :
-		i9xxxx_I2S_init(cfg_hndl, runtime_handle, base_address);
+		i9xxxx_I2S_init(adev, cfg_hndl, runtime_handle, base_address);
 		break;
-
 	case I2S_I9XXXX_ENABLE_OUTPUT_IOCTL:
-		I2S_ENABLE_TX(base_address);
-		base_address->CTL0 |= I2S_CTL0_TXPDMAEN_Msk;
+		enable_tx(cfg_hndl);
 		break;
 
 	case I2S_I9XXXX_STOP_IOCTL:
@@ -314,6 +351,9 @@ static uint8_t I2S_i9xxxx_ioctl( struct dev_desc_t *adev,
 		i9xxxx_sync_to_dpwm_fs_rate(cfg_hndl, runtime_handle, aIoctl_param1);
 		break;
 
+	case I2S_I9XXXX_SET_INTERRUPT_HANDLER:
+		runtime_handle->int_handler = aIoctl_param1;
+		break;
 	default :
 		return 1;
 	}
@@ -322,4 +362,5 @@ static uint8_t I2S_i9xxxx_ioctl( struct dev_desc_t *adev,
 
 #define	MODULE_NAME                       I2S_i9xxxx
 #define	MODULE_IOCTL_FUNCTION             I2S_i9xxxx_ioctl
+#define MODULE_CALLBACK_FUNCTION          I2S_i9xxxx_callback
 #include "add_module.h"
