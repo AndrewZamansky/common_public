@@ -150,7 +150,7 @@ static void update_tx_buffer(struct dev_desc_t * ch_pdev,
 		if (NULL != callback_dev)
 		{
 			DEV_CALLBACK_1_PARAMS( callback_dev,
-					CALLBACK_BUFFER_UNDERFLOW_THRESHOLD_REACHED, ch_pdev);
+					CALLBACK_TX_BUFFER_UNDERFLOW_THRESHOLD_REACHED, ch_pdev);
 		}
 		#ifdef DMA_I9XXXX_DEBUG
 		dma_i9xxxx_dbg_cnt7++;
@@ -172,7 +172,8 @@ static void update_tx_buffer(struct dev_desc_t * ch_pdev,
 
 	if (NULL != callback_dev)
 	{
-		DEV_CALLBACK_1_PARAMS(callback_dev, CALLBACK_BUFFER_UNDERFLOW, ch_pdev);
+		DEV_CALLBACK_1_PARAMS(
+				callback_dev, CALLBACK_TX_BUFFER_UNDERFLOW, ch_pdev);
 	}
 	runtime_hndl->needed_full_dma_start = 1;
 }
@@ -217,7 +218,7 @@ static void update_rx_buffer(struct dev_desc_t * ch_pdev,
 		if (NULL != callback_dev)
 		{
 			DEV_CALLBACK_1_PARAMS(
-					callback_dev, CALLBACK_BUFFER_OVERFLOW, ch_pdev);
+					callback_dev, CALLBACK_RX_BUFFER_OVERFLOW, ch_pdev);
 		}
 
 	}
@@ -560,6 +561,7 @@ static uint8_t get_full_rx_buffer(struct dma_i9xxxx_cfg_t *cfg_hndl,
 {
 	uint8_t next_supplied_rx_buffer;
 	uint8_t *buffer_state;
+	struct dev_desc_t *callback_dev;
 
 	if (DMA_FROM_PERIPHERAL != runtime_hndl->dma_peripheral_direction)
 	{
@@ -581,6 +583,11 @@ static uint8_t get_full_rx_buffer(struct dma_i9xxxx_cfg_t *cfg_hndl,
 	}
 	else
 	{
+		callback_dev = cfg_hndl->callback_dev;
+		if (NULL != callback_dev)
+		{
+			DEV_CALLBACK_0_PARAMS(callback_dev, CALLBACK_RX_BUFFER_UNDERFLOW);
+		}
 		*buff = NULL;
 		*buff_size = 0;
 	}
@@ -635,7 +642,6 @@ static uint8_t get_empty_tx_buffer(struct dev_desc_t *ch_pdev,
 	dma_i9xxxx_dbg_cnt4++;
 	#endif
 	callback_dev = cfg_hndl->callback_dev;
-
 	num_of_buffers = cfg_hndl->num_of_buffers;
 
 	next_supplied_tx_buffer = runtime_hndl->next_supplied_tx_buffer ;
@@ -651,7 +657,7 @@ static uint8_t get_empty_tx_buffer(struct dev_desc_t *ch_pdev,
 		if (NULL != callback_dev)
 		{
 			DEV_CALLBACK_1_PARAMS( callback_dev,
-					CALLBACK_BUFFER_OVERFLOW_THRESHOLD_REACHED, ch_pdev);
+					CALLBACK_TX_BUFFER_OVERFLOW_THRESHOLD_REACHED, ch_pdev);
 		}
 	}
 
@@ -672,13 +678,13 @@ static uint8_t get_empty_tx_buffer(struct dev_desc_t *ch_pdev,
 		#endif
 		if (NULL != callback_dev)
 		{
-			DEV_CALLBACK_0_PARAMS(callback_dev, CALLBACK_BUFFER_OVERFLOW);
+			DEV_CALLBACK_0_PARAMS(callback_dev, CALLBACK_TX_BUFFER_OVERFLOW);
 		}
 		//TODO : add overflow sequence
 		// maybe 4th buffer will be needed . with second buffer as initial one.
 		// in NuAudio project , maybe it will happen when audio
 		// process time will drop , suddenly, significantly  .
-		CRITICAL_ERROR("next tx buffer is still busy \n");
+		//CRITICAL_ERROR("next tx buffer is still busy \n");
 		*buff = NULL;
 		*buff_size = 0;
 		return 1;
