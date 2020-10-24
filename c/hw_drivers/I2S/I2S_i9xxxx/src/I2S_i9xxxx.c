@@ -119,6 +119,43 @@ static void configure_pinout(struct I2S_i9xxxx_cfg_t *cfg_hndl)
 static void set_clocks(struct I2S_i9xxxx_cfg_t *cfg_hndl,
 			struct I2S_i9xxxx_runtime_t *runtime_handle, I2S_T*  base_address)
 {
+	struct dev_desc_t *src_clock;
+
+	src_clock = cfg_hndl->src_clock;
+#ifdef CONFIG_I94XXX
+	runtime_handle->i9xxxx_i2s_clk_dev = i94xxx_i2s_clk_dev;
+	runtime_handle->i9xxxx_I2S_MCLK_clk_dev = i94xxx_I2S_MCLK_clk_dev;
+	runtime_handle->i9xxxx_I2S_BCLK_clk_dev = i94xxx_I2S_BCLK_clk_dev;
+	runtime_handle->i9xxxx_I2S_FSCLK_clk_dev = i94xxx_I2S_FSCLK_clk_dev;
+#elif CONFIG_I96XXX_M0
+	if (base_address == I2S0)
+	{
+		runtime_handle->i9xxxx_i2s_clk_dev = i96xxx_i2s0_clk_dev;
+		runtime_handle->i9xxxx_I2S_MCLK_clk_dev = i96xxx_I2S0_MCLK_clk_dev;
+		runtime_handle->i9xxxx_I2S_BCLK_clk_dev = i96xxx_I2S0_BCLK_clk_dev;
+		runtime_handle->i9xxxx_I2S_FSCLK_clk_dev = i96xxx_I2S0_FSCLK_clk_dev;
+	}
+	else
+	{
+		CRITICAL_ERROR("TODO");
+	}
+#endif
+	DEV_IOCTL_0_PARAMS(runtime_handle->i9xxxx_i2s_clk_dev, IOCTL_DEVICE_START);
+	DEV_IOCTL_1_PARAMS(
+		runtime_handle->i9xxxx_i2s_clk_dev, CLK_IOCTL_SET_PARENT, src_clock);
+	DEV_IOCTL_0_PARAMS(runtime_handle->i9xxxx_i2s_clk_dev, CLK_IOCTL_ENABLE);
+	DEV_IOCTL_0_PARAMS(
+			runtime_handle->i9xxxx_I2S_FSCLK_clk_dev, IOCTL_DEVICE_START);
+	DEV_IOCTL_0_PARAMS(
+			runtime_handle->i9xxxx_I2S_BCLK_clk_dev, IOCTL_DEVICE_START);
+	DEV_IOCTL_0_PARAMS(
+			runtime_handle->i9xxxx_I2S_MCLK_clk_dev, IOCTL_DEVICE_START);
+}
+
+
+static void set_Mclk(struct I2S_i9xxxx_cfg_t *cfg_hndl,
+			struct I2S_i9xxxx_runtime_t *runtime_handle, I2S_T*  base_address)
+{
 	uint32_t  src_clk_freq;
 	uint32_t  mclk_freq;
 	uint32_t  res;
@@ -139,69 +176,9 @@ static void set_clocks(struct I2S_i9xxxx_cfg_t *cfg_hndl,
 }
 
 
-static void i9xxxx_I2S_init(struct dev_desc_t *adev,
-		struct I2S_i9xxxx_cfg_t *cfg_hndl,
-		struct I2S_i9xxxx_runtime_t *runtime_handle,
-		I2S_T*  base_address)
+static void set_i2s_fifo_params(I2S_T*  base_address,
+		uint32_t  i2s_format, uint8_t num_of_bytes_in_word)
 {
-	uint8_t   num_of_bytes_in_word;
-	uint32_t  i2s_format;
-	struct dev_desc_t  *src_clock;
-	int i2s_irq;
-
-	if (runtime_handle->init_done)
-	{
-		return;
-	}
-
-	i2s_format = cfg_hndl->i2s_format;
-	num_of_bytes_in_word = cfg_hndl->num_of_bytes_in_word;
-	src_clock = cfg_hndl->src_clock;
-#ifdef CONFIG_I94XXX
-	i2s_irq = I2S0_IRQn;
-	runtime_handle->i9xxxx_i2s_clk_dev = i94xxx_i2s_clk_dev;
-	runtime_handle->i9xxxx_I2S_MCLK_clk_dev = i94xxx_I2S_MCLK_clk_dev;
-	runtime_handle->i9xxxx_I2S_BCLK_clk_dev = i94xxx_I2S_BCLK_clk_dev;
-	runtime_handle->i9xxxx_I2S_FSCLK_clk_dev = i94xxx_I2S_FSCLK_clk_dev;
-#elif CONFIG_I96XXX_M0
-	if (base_address == I2S0)
-	{
-		i2s_irq = I2S0_IRQn;
-		runtime_handle->i9xxxx_i2s_clk_dev = i96xxx_i2s0_clk_dev;
-		runtime_handle->i9xxxx_I2S_MCLK_clk_dev = i96xxx_I2S0_MCLK_clk_dev;
-		runtime_handle->i9xxxx_I2S_BCLK_clk_dev = i96xxx_I2S0_BCLK_clk_dev;
-		runtime_handle->i9xxxx_I2S_FSCLK_clk_dev = i96xxx_I2S0_FSCLK_clk_dev;
-	}
-	else
-	{
-		i2s_irq = I2S1_IRQn;
-		CRITICAL_ERROR("TODO");
-	}
-#endif
-	DEV_IOCTL_0_PARAMS(runtime_handle->i9xxxx_i2s_clk_dev, IOCTL_DEVICE_START);
-	DEV_IOCTL_1_PARAMS(
-		runtime_handle->i9xxxx_i2s_clk_dev, CLK_IOCTL_SET_PARENT, src_clock);
-	DEV_IOCTL_0_PARAMS(runtime_handle->i9xxxx_i2s_clk_dev, CLK_IOCTL_ENABLE);
-	DEV_IOCTL_0_PARAMS(
-			runtime_handle->i9xxxx_I2S_FSCLK_clk_dev, IOCTL_DEVICE_START);
-	DEV_IOCTL_0_PARAMS(
-			runtime_handle->i9xxxx_I2S_BCLK_clk_dev, IOCTL_DEVICE_START);
-	DEV_IOCTL_0_PARAMS(
-			runtime_handle->i9xxxx_I2S_MCLK_clk_dev, IOCTL_DEVICE_START);
-
-	configure_pinout(cfg_hndl);
-
-	runtime_handle->actual_sample_rate = I2S_Open(
-					base_address,
-					cfg_hndl->clock_mode,
-					cfg_hndl->sample_rate,
-					(num_of_bytes_in_word - 1) << I2S_CTL0_DATWIDTH_Pos,
-					((cfg_hndl->tdm_ch_num / 2) - 1) << I2S_CTL0_TDMCHNUM_Pos,
-					cfg_hndl->mono_or_stereo,
-					i2s_format);
-
-	set_clocks(cfg_hndl, runtime_handle, base_address);
-
 	I2S_SET_TXTH(base_address, I2S_FIFO_TX_LEVEL_WORD_4);
 	I2S_SET_RXTH(base_address, I2S_FIFO_RX_LEVEL_WORD_4);
 	I2S_CLR_TX_FIFO(base_address);
@@ -228,6 +205,36 @@ static void i9xxxx_I2S_init(struct dev_desc_t *adev,
 			I2S_SET_CHWIDTH(base_address, I2S_CHWIDTH_32);
 		}
 	}
+}
+
+
+static void i9xxxx_I2S_init(struct dev_desc_t *adev,
+		struct I2S_i9xxxx_cfg_t *cfg_hndl,
+		struct I2S_i9xxxx_runtime_t *runtime_handle,
+		I2S_T*  base_address)
+{
+	uint8_t   num_of_bytes_in_word;
+	uint32_t  i2s_format;
+
+	if (runtime_handle->init_done) return;
+
+	i2s_format = cfg_hndl->i2s_format;
+	num_of_bytes_in_word = cfg_hndl->num_of_bytes_in_word;
+
+	set_clocks(cfg_hndl, runtime_handle, base_address);
+	configure_pinout(cfg_hndl);
+
+	runtime_handle->actual_sample_rate = I2S_Open(
+					base_address,
+					cfg_hndl->clock_mode,
+					cfg_hndl->sample_rate,
+					(num_of_bytes_in_word - 1) << I2S_CTL0_DATWIDTH_Pos,
+					((cfg_hndl->tdm_ch_num / 2) - 1) << I2S_CTL0_TDMCHNUM_Pos,
+					cfg_hndl->mono_or_stereo,
+					i2s_format);
+
+	set_Mclk(cfg_hndl, runtime_handle, base_address);
+	set_i2s_fifo_params(base_address, i2s_format, num_of_bytes_in_word);
 
 	if (cfg_hndl->do_reordering_for_16or8bit_channels)
 	{
@@ -238,21 +245,32 @@ static void i9xxxx_I2S_init(struct dev_desc_t *adev,
 		I2S_SET_STEREOORDER(base_address, I2S_ORDER_EVENHIGH);
 	}
 
-	I2S_ENABLE_RX(base_address);
+	//I2S_ENABLE_RX(base_address);
 	I2S_ENABLE(base_address);
 
 	if (I2S_I9XXXX_API_DATA_TRANSFER_TYPE_DMA == cfg_hndl->data_transfer_type)
 	{
-		base_address->CTL0 |= I2S_CTL0_RXPDMAEN_Msk;
+		//base_address->CTL0 |= I2S_CTL0_RXPDMAEN_Msk;
 	}
 	else
 	{
+		int i2s_irq;
+		#ifdef CONFIG_I94XXX
+			i2s_irq = I2S0_IRQn;
+		#elif CONFIG_I96XXX_M0
+			if (base_address == I2S0)
+			{
+				i2s_irq = I2S0_IRQn;
+			}
+			else
+			{
+				i2s_irq = I2S1_IRQn;
+			}
+		#endif
 		irq_register_device_on_interrupt(i2s_irq, adev);
 		irq_set_priority(i2s_irq , INTERRUPT_PRIORITY_FOR_I2S );
 		irq_enable_interrupt(i2s_irq);
-		I2S_ENABLE_INT(base_address, I2S_IEN_RXTHIEN_Msk);
 	}
-
 	runtime_handle->init_done = 1;
 }
 
@@ -304,6 +322,24 @@ static void enable_tx(struct I2S_i9xxxx_cfg_t *cfg_hndl)
 
 }
 
+
+static void enable_rx(struct I2S_i9xxxx_cfg_t *cfg_hndl)
+{
+	I2S_T*  base_address;
+	base_address = (I2S_T*)cfg_hndl->base_address;
+
+	I2S_ENABLE_RX(base_address);
+	if (I2S_I9XXXX_API_DATA_TRANSFER_TYPE_DMA == cfg_hndl->data_transfer_type)
+	{
+		base_address->CTL0 |= I2S_CTL0_RXPDMAEN_Msk;
+	}
+	else
+	{
+		I2S_ENABLE_INT(base_address, I2S_IEN_RXTHIEN_Msk);
+	}
+}
+
+
 /**
  * I2S_i9xxxx_ioctl()
  *
@@ -333,7 +369,9 @@ static uint8_t I2S_i9xxxx_ioctl( struct dev_desc_t *adev,
 	case I2S_I9XXXX_ENABLE_OUTPUT_IOCTL:
 		enable_tx(cfg_hndl);
 		break;
-
+	case I2S_I9XXXX_ENABLE_INPUT_IOCTL:
+		enable_rx(cfg_hndl);
+		break;
 	case I2S_I9XXXX_STOP_IOCTL:
 		I2S_DISABLE_TX(base_address);
 		I2S_DISABLE_RX(base_address);

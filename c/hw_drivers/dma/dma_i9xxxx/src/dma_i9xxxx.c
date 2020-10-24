@@ -46,6 +46,7 @@
 
 #define DMA_TO_PERIPHERAL   0
 #define DMA_FROM_PERIPHERAL 1
+#define UNKNOWN_DMA_TYPE    0xff
 
 #define writeRegU32(addr,val)   ( (*(volatile uint32_t *)(addr)) = (val) )
 #define readRegU32(addr)        (*(volatile uint32_t *)(addr))
@@ -314,6 +315,63 @@ static void PDMA_IRQHandler(void)
 }
 
 
+static uint8_t populate_dma_addresses_and_ctl(uint8_t peripheral_type,
+		uint32_t *src_addr, uint32_t *dest_addr,
+		uint32_t *src_ctrl, uint32_t *dest_ctrl)
+{
+	switch (peripheral_type)
+	{
+#ifdef CONFIG_I94XXX
+	case PDMA_SPI1_RX :
+		*src_addr =(void*) &SPI1->RX;
+		*src_ctrl = PDMA_SAR_FIX;
+		*dest_ctrl = PDMA_DAR_INC;
+		return DMA_FROM_PERIPHERAL;
+	case PDMA_SPI1_TX :
+		*dest_addr = (void*)&SPI1->TX;
+		*src_ctrl = PDMA_SAR_INC;
+		*dest_ctrl = PDMA_DAR_FIX;
+		return DMA_TO_PERIPHERAL;
+#endif
+	case PDMA_SPI2_RX :
+		*src_addr =(void*) &SPI2->RX;
+		*src_ctrl = PDMA_SAR_FIX;
+		*dest_ctrl = PDMA_DAR_INC;
+		return DMA_FROM_PERIPHERAL;
+	case PDMA_SPI2_TX :
+		*src_ctrl = PDMA_SAR_INC;
+		*dest_addr = (void*)&SPI2->TX;
+		*dest_ctrl = PDMA_DAR_FIX;
+		return DMA_TO_PERIPHERAL;
+	case PDMA_I2S0_RX :
+		*src_addr =(void*) &I2S0->RXFIFO;
+		*src_ctrl = PDMA_SAR_FIX;
+		*dest_ctrl = PDMA_DAR_INC;
+		return DMA_FROM_PERIPHERAL;
+	case PDMA_I2S0_TX :
+		*src_ctrl = PDMA_SAR_INC;
+		*dest_addr = (void*)&I2S0->TXFIFO;
+		*dest_ctrl = PDMA_DAR_FIX;
+		return DMA_TO_PERIPHERAL;
+	case PDMA_DPWM :
+		*src_ctrl = PDMA_SAR_INC;
+		*dest_addr = (void*)&DPWM->FIFO;
+		*dest_ctrl = PDMA_DAR_FIX;
+		return DMA_TO_PERIPHERAL;
+	case PDMA_DMIC_RX :
+		*src_ctrl = PDMA_SAR_FIX;
+		*src_addr = (void*)&DMIC->FIFO;
+		*dest_ctrl = PDMA_DAR_INC;
+		return DMA_FROM_PERIPHERAL;
+	default :
+		*src_addr = NULL;
+		*dest_addr = NULL;
+		*dest_ctrl = 0;
+		*src_ctrl = 0;
+		return UNKNOWN_DMA_TYPE;
+	}
+}
+
 
 static void init_buffers(struct dma_i9xxxx_cfg_t *cfg_hndl,
 		struct dma_i9xxxx_runtime_t *runtime_hndl)
@@ -355,10 +413,10 @@ static void init_buffers(struct dma_i9xxxx_cfg_t *cfg_hndl,
 static uint8_t set_peripheral_dma(struct dma_i9xxxx_cfg_t *cfg_hndl,
 		struct dma_i9xxxx_runtime_t *runtime_hndl)
 {
-	uint32_t src_ctrl;
-	uint32_t dest_ctrl;
-	void *src_addr;
-	void *dest_addr;
+	uint32_t  src_ctrl;
+	uint32_t  dest_ctrl;
+	uint32_t  src_addr;
+	uint32_t  dest_addr;
 	uint8_t channel_num;
 	uint8_t peripheral_type;
 	uint8_t dma_peripheral_direction;
@@ -367,68 +425,13 @@ static uint8_t set_peripheral_dma(struct dma_i9xxxx_cfg_t *cfg_hndl,
 	peripheral_type = cfg_hndl->peripheral_type;
 	runtime_hndl->curr_dma_buff_indx = 0;
 
-	src_addr = NULL;
-	dest_addr = NULL;
-	switch (peripheral_type)
+	dma_peripheral_direction = populate_dma_addresses_and_ctl(
+			peripheral_type, &src_addr, &dest_addr, &src_ctrl, &dest_ctrl);
+	runtime_hndl->dma_peripheral_direction = dma_peripheral_direction;
+
+	if (UNKNOWN_DMA_TYPE == dma_peripheral_direction)
 	{
-#ifdef CONFIG_I94XXX
-	case PDMA_SPI1_RX :
-		src_addr =(void*) &SPI1->RX;
-		src_ctrl = PDMA_SAR_FIX;
-		dest_ctrl = PDMA_DAR_INC;
-		dma_peripheral_direction = DMA_FROM_PERIPHERAL;
-		break;
-
-	case PDMA_SPI1_TX :
-		dest_addr = (void*)&SPI1->TX;
-		src_ctrl = PDMA_SAR_INC;
-		dest_ctrl = PDMA_DAR_FIX;
-		dma_peripheral_direction = DMA_TO_PERIPHERAL;
-		break;
-#endif
-	case PDMA_SPI2_RX :
-		src_addr =(void*) &SPI2->RX;
-		src_ctrl = PDMA_SAR_FIX;
-		dest_ctrl = PDMA_DAR_INC;
-		dma_peripheral_direction = DMA_FROM_PERIPHERAL;
-		break;
-
-	case PDMA_SPI2_TX :
-		src_ctrl = PDMA_SAR_INC;
-		dest_addr = (void*)&SPI2->TX;
-		dest_ctrl = PDMA_DAR_FIX;
-		dma_peripheral_direction = DMA_TO_PERIPHERAL;
-		break;
-
-	case PDMA_I2S0_RX :
-		src_addr =(void*) &I2S0->RXFIFO;
-		src_ctrl = PDMA_SAR_FIX;
-		dest_ctrl = PDMA_DAR_INC;
-		dma_peripheral_direction = DMA_FROM_PERIPHERAL;
-		break;
-
-	case PDMA_I2S0_TX :
-		src_ctrl = PDMA_SAR_INC;
-		dest_addr = (void*)&I2S0->TXFIFO;
-		dest_ctrl = PDMA_DAR_FIX;
-		dma_peripheral_direction = DMA_TO_PERIPHERAL;
-		break;
-
-	case PDMA_DPWM :
-		src_ctrl = PDMA_SAR_INC;
-		dest_addr = (void*)&DPWM->FIFO;
-		dest_ctrl = PDMA_DAR_FIX;
-		dma_peripheral_direction = DMA_TO_PERIPHERAL;
-		break;
-
-	case PDMA_DMIC_RX :
-		src_ctrl = PDMA_SAR_FIX;
-		src_addr = (void*)&DMIC->FIFO;
-		dest_ctrl = PDMA_DAR_INC;
-		dma_peripheral_direction = DMA_FROM_PERIPHERAL;
-		break;
-
-	default :
+		CRITICAL_ERROR("unknown DMA type");
 		return 1;
 	}
 
@@ -447,7 +450,7 @@ static uint8_t set_peripheral_dma(struct dma_i9xxxx_cfg_t *cfg_hndl,
 
 	/* Set source/destination address and attributes */
 	PDMA_SetTransferAddr(channel_num,
-			(uint32_t)src_addr, src_ctrl, (uint32_t)dest_addr, dest_ctrl);
+			src_addr, src_ctrl, dest_addr, dest_ctrl);
 	/* Set request source; set basic mode. */
 	/* Single request type */
 	PDMA_SetBurstType(channel_num, PDMA_REQ_SINGLE, PDMA_BURST_128);
@@ -456,9 +459,6 @@ static uint8_t set_peripheral_dma(struct dma_i9xxxx_cfg_t *cfg_hndl,
 	{/*setting mode will enable pdma channel*/
 		PDMA_SetTransferMode(channel_num, peripheral_type, FALSE, 0);
 	}
-
-
-	runtime_hndl->dma_peripheral_direction = dma_peripheral_direction;
 	return 0;
 }
 
@@ -549,6 +549,7 @@ static uint8_t start_dma_i9xxxx_device(struct dev_desc_t *adev,
 		irq_set_priority(PDMA_IRQn, INTERRUPT_PRIORITY_FOR_DMA);
 		irq_enable_interrupt(PDMA_IRQn);
 		PDMA_EnableInt(channel_num, PDMA_INT_TRANS_DONE);
+		runtime_hndl->init_done = 1;
 	}
 
 	return ret;
@@ -562,6 +563,13 @@ static uint8_t get_full_rx_buffer(struct dma_i9xxxx_cfg_t *cfg_hndl,
 	uint8_t next_supplied_rx_buffer;
 	uint8_t *buffer_state;
 	struct dev_desc_t *callback_dev;
+
+	if (0 == runtime_hndl->init_done)
+	{
+		*buff = NULL;
+		*buff_size = 0;
+		return 1;
+	}
 
 	if (DMA_FROM_PERIPHERAL != runtime_hndl->dma_peripheral_direction)
 	{
@@ -627,6 +635,13 @@ static uint8_t get_empty_tx_buffer(struct dev_desc_t *ch_pdev,
 	uint8_t *buffer_state;
 	struct dev_desc_t *callback_dev;
 	uint8_t num_of_buffers;
+
+	if (0 == runtime_hndl->init_done)
+	{
+		*buff = NULL;
+		*buff_size = 0;
+		return 1;
+	}
 
 	if (DMA_TO_PERIPHERAL != runtime_hndl->dma_peripheral_direction)
 	{
@@ -850,27 +865,20 @@ uint8_t dma_i9xxxx_ioctl( struct dev_desc_t *adev, const uint8_t aIoctl_num,
 	case IOCTL_DEVICE_START :
 		ret = start_dma_i9xxxx_device(adev, cfg_hndl, runtime_hndl);
 		break;
-
 	case DMA_I9XXXX_IOCTL_GET_RX_BUFF :
 		ret = get_full_rx_buffer(cfg_hndl,
 				runtime_hndl, aIoctl_param1, aIoctl_param2);
 		break;
-
 	case DMA_I9XXXX_IOCTL_RELEASE_RX_BUFF :
 		ret = release_rx_buffer(cfg_hndl, runtime_hndl);
 		break;
-
 	case DMA_I9XXXX_IOCTL_GET_EMPTY_TX_BUFF :
 		ret = get_empty_tx_buffer(adev, cfg_hndl,
 				runtime_hndl, aIoctl_param1, aIoctl_param2);
 		break;
-
 	case DMA_I9XXXX_IOCTL_RELEASE_TX_BUFF :
 		ret = release_tx_buffer(cfg_hndl, runtime_hndl);
 		break;
-
-
-
 	default :
 		return 1;
 	}

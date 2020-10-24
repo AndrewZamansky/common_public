@@ -10,6 +10,7 @@
 #include "dev_management_api.h"
 
 struct dma_i9xxxx_runtime_t {
+	uint8_t   init_done;
 	uint8_t   curr_dma_buff_indx;
 	uint8_t   next_supplied_tx_buffer;
 	uint8_t   next_supplied_rx_buffer;
