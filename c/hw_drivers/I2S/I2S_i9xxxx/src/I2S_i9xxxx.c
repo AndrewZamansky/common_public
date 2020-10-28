@@ -137,7 +137,10 @@ static void set_clocks(struct I2S_i9xxxx_cfg_t *cfg_hndl,
 	}
 	else
 	{
-		CRITICAL_ERROR("TODO");
+		runtime_handle->i9xxxx_i2s_clk_dev = i96xxx_i2s1_clk_dev;
+		runtime_handle->i9xxxx_I2S_MCLK_clk_dev = i96xxx_I2S1_MCLK_clk_dev;
+		runtime_handle->i9xxxx_I2S_BCLK_clk_dev = i96xxx_I2S1_BCLK_clk_dev;
+		runtime_handle->i9xxxx_I2S_FSCLK_clk_dev = i96xxx_I2S1_FSCLK_clk_dev;
 	}
 #endif
 	DEV_IOCTL_0_PARAMS(runtime_handle->i9xxxx_i2s_clk_dev, IOCTL_DEVICE_START);

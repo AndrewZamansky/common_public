@@ -541,6 +541,126 @@ static void clock_i96xxx_I2S0_FSCLK_get_freq(
 #include "clk_cntl_add_device.h"
 
 
+/***************************************/
+/********** i96xxx_i2s1_clk_dev ********/
+static void clock_i96xxx_i2s1_enable()
+{
+	CLK->APBCLK0 |= CLK_APBCLK0_I2S1CKEN_Msk;
+}
+
+static void clock_i96xxx_i2s1_set_parent_clk(struct dev_desc_t *parent_clk)
+{
+	uint32_t curr_val;
+
+	curr_val = (CLK->CLKSEL3 & ~ CLK_CLKSEL3_I2S1SEL_Msk);
+	if (i96xxx_xtal_clk_dev == parent_clk)
+	{
+		CLK->CLKSEL3 = curr_val | CLK_CLKSEL3_I2S1SEL_HXT;
+	}
+	else if (i96xxx_hirc_clk_dev == parent_clk)
+	{
+		CLK->CLKSEL3 = curr_val | CLK_CLKSEL3_I2S1SEL_HIRC;
+	}
+	else if (i96xxx_pll_clk_dev == parent_clk)
+	{
+		CLK->CLKSEL3 = curr_val | CLK_CLKSEL3_I2S1SEL_PLL;
+	}
+	else if (i96xxx_pclk0_clk_dev == parent_clk)
+	{
+		CLK->CLKSEL3 = curr_val | CLK_CLKSEL3_I2S1SEL_PCLK1;
+	}
+	else
+	{
+		CRITICAL_ERROR("bad parent clock \n");
+	}
+}
+
+#define DT_DEV_NAME               i96xxx_i2s1_clk_dev
+#define DT_DEV_MODULE             clk_cntl
+
+#define CLK_DT_DEFAULT_PARENT       i96xxx_hirc_clk_dev
+#define CLK_DT_ENABLE_CLK_FUNC      clock_i96xxx_i2s1_enable
+#define CLK_DT_SET_PARENT_CLK_FUNC  clock_i96xxx_i2s1_set_parent_clk
+
+#include "clk_cntl_add_device.h"
+
+
+/*******************************************/
+/********** i96xxx_I2S1_MCLK_clk_dev ********/
+static void clock_i96xxx_I2S1_MCLK_get_freq(
+						uint32_t *freq, uint32_t parent_freq)
+{
+	uint32_t mclkdiv;
+	mclkdiv = I2S1->CLKDIV & I2S_CLKDIV_MCLKDIV_Msk;
+	if (0 == mclkdiv)
+	{
+		*freq = parent_freq;
+	}
+	else
+	{
+		*freq = parent_freq / 2;
+	}
+}
+
+#define DT_DEV_NAME                i96xxx_I2S1_MCLK_clk_dev
+#define DT_DEV_MODULE              clk_cntl
+
+#define CLK_DT_GET_FREQ_FUNC       clock_i96xxx_I2S1_MCLK_get_freq
+#define CLK_DT_DEFAULT_PARENT      i96xxx_i2s1_clk_dev
+
+#include "clk_cntl_add_device.h"
+
+
+
+/*******************************************/
+/********** i96xxx_I2S1_BCLK_clk_dev ********/
+static void clock_i96xxx_I2S1_BCLK_get_freq(
+					uint32_t *freq, uint32_t parent_freq)
+{
+	uint32_t bclkdiv;
+
+	bclkdiv = (I2S1->CLKDIV & I2S_CLKDIV_BCLKDIV_Msk) >>
+											I2S_CLKDIV_BCLKDIV_Pos;
+	*freq = parent_freq / (2 * (bclkdiv + 1));
+}
+
+#define DT_DEV_NAME                i96xxx_I2S1_BCLK_clk_dev
+#define DT_DEV_MODULE              clk_cntl
+
+#define CLK_DT_GET_FREQ_FUNC       clock_i96xxx_I2S1_BCLK_get_freq
+#define CLK_DT_DEFAULT_PARENT      i96xxx_i2s1_clk_dev
+
+#include "clk_cntl_add_device.h"
+
+
+/********************************************/
+/********** i96xxx_I2S1_FSCLK_clk_dev ********/
+static void clock_i96xxx_I2S1_FSCLK_get_freq(
+						uint32_t *freq, uint32_t parent_freq)
+{
+	uint16_t num_of_channels;
+	uint16_t channel_width;
+
+	num_of_channels =
+			(I2S1->CTL0 & I2S_CTL0_TDMCHNUM_Msk) >> I2S_CTL0_TDMCHNUM_Pos;
+	num_of_channels = 2 * (1 + num_of_channels);
+	channel_width =
+			(I2S1->CTL0 & I2S_CTL0_CHWIDTH_Msk) >> I2S_CTL0_CHWIDTH_Pos;
+	channel_width = 8 * (1 + channel_width);
+	*freq = parent_freq / (num_of_channels * channel_width);
+}
+
+#define DT_DEV_NAME                i96xxx_I2S1_FSCLK_clk_dev
+#define DT_DEV_MODULE              clk_cntl
+
+#define CLK_DT_GET_FREQ_FUNC       clock_i96xxx_I2S1_FSCLK_get_freq
+#define CLK_DT_DEFAULT_PARENT      i96xxx_I2S1_BCLK_clk_dev
+
+#include "clk_cntl_add_device.h"
+
+
+
+
 
 /***************************************/
 /********** i96xxx_dsp_clk_dev ********/
