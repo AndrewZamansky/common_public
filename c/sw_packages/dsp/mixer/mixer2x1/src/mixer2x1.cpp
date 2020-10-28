@@ -38,11 +38,11 @@ static void mixer2x1_dsp(struct dsp_module_inst_t *adsp)
 
 	buff_is_zero_buffer = 1;
 	dsp_get_input_buffer_from_pad(
-			adsp, 0, &(uint8_t*)apCh1In, &data_len, &buff_is_zero_buffer);
+			adsp, 0, (uint8_t**)&apCh1In, &data_len, &buff_is_zero_buffer);
 	dsp_get_input_buffer_from_pad(
-			adsp, 1, &(uint8_t*)apCh2In, &data_len, &buff_is_zero_buffer);
+			adsp, 1, (uint8_t**)&apCh2In, &data_len, &buff_is_zero_buffer);
 
-	dsp_get_output_buffer_from_pad(adsp, 0, &(uint8_t*)apCh1Out, data_len);
+	dsp_get_output_buffer_from_pad(adsp, 0, (uint8_t**)&apCh1Out, data_len);
 
 	handle = (struct MIXER2X1_Instance_t *)adsp->handle;
 	channels_weights = handle->channels_weights;

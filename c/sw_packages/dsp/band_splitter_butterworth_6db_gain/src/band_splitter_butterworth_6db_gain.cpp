@@ -32,8 +32,11 @@ static void band_splitter_butterworth_6db_gain_bypass(
 	size_t buff_size;
 	uint8_t *in_buff;
 	uint8_t *out_buff;
+	uint8_t buff_is_zero_buffer;
 
-	dsp_get_input_buffer_from_pad(adsp, 0, &in_buff, &buff_size);
+	buff_is_zero_buffer = 1;
+	dsp_get_input_buffer_from_pad(
+			adsp, 0, &in_buff, &buff_size, &buff_is_zero_buffer);
 	dsp_get_output_buffer_from_pad(adsp, 0, &out_buff, buff_size);
 	memcpy(out_buff, in_buff, buff_size);
 	dsp_get_output_buffer_from_pad(adsp, 1, &out_buff, buff_size);
@@ -61,9 +64,9 @@ static void band_splitter_butterworth_6db_gain_dsp(
 
 	buff_is_zero_buffer = 1;
 	dsp_get_input_buffer_from_pad(
-			adsp, 0, &(uint8_t*)apCh1In, &data_len, &buff_is_zero_buffer);
-	dsp_get_output_buffer_from_pad(adsp, 0, &(uint8_t*)apCh1Out, data_len);
-	dsp_get_output_buffer_from_pad(adsp, 1, &(uint8_t*)apCh2Out, data_len);
+			adsp, 0, (uint8_t**)&apCh1In, &data_len, &buff_is_zero_buffer);
+	dsp_get_output_buffer_from_pad(adsp, 0, (uint8_t**)&apCh1Out, data_len);
+	dsp_get_output_buffer_from_pad(adsp, 1, (uint8_t**)&apCh2Out, data_len);
 
 	handle =
 		(struct band_splitter_butterworth_6db_gain_instance_t *)adsp->handle;

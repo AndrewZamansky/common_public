@@ -101,8 +101,10 @@ static void pcm_splitter_dsp_16and32bit(struct dsp_module_inst_t *adsp)
 
 	for (i = 0; i < num_of_channels; i++)
 	{
+		real_t **p_ch_out;
+		p_ch_out = &apChOut[i];
 		dsp_get_output_buffer_from_pad(
-				adsp, i, &(uint8_t*)apChOut[i], num_of_frames * sizeof(real_t));
+				adsp, i, (uint8_t**)p_ch_out, num_of_frames * sizeof(real_t));
 	}
 
 	frame_size_bytes = set_params->frame_size_bytes;

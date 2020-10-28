@@ -40,11 +40,11 @@ static void voice_3D_dsp(struct dsp_module_inst_t *adsp)
 
 	buff_is_zero_buffer = 1;
 	dsp_get_input_buffer_from_pad(
-			adsp, 0, &(uint8_t*)apCh1In, &data_len, &buff_is_zero_buffer);
+			adsp, 0, (uint8_t**)&apCh1In, &data_len, &buff_is_zero_buffer);
 	dsp_get_input_buffer_from_pad(
-			adsp, 1, &(uint8_t*)apCh2In, &data_len, &buff_is_zero_buffer);
-	dsp_get_output_buffer_from_pad(adsp, 0, &(uint8_t*)apCh1Out, data_len);
-	dsp_get_output_buffer_from_pad(adsp, 1, &(uint8_t*)apCh2Out, data_len);
+			adsp, 1, (uint8_t**)&apCh2In, &data_len, &buff_is_zero_buffer);
+	dsp_get_output_buffer_from_pad(adsp, 0, (uint8_t**)&apCh1Out, data_len);
+	dsp_get_output_buffer_from_pad(adsp, 1, (uint8_t**)&apCh2Out, data_len);
 
 	handle = (struct VOICE_3D_Instance_t *)adsp->handle;
 	C = handle->C;

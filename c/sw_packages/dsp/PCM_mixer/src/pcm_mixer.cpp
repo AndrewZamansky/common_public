@@ -123,8 +123,10 @@ static void pcm_mixer_dsp_func(struct dsp_module_inst_t *adsp)
 	data_len = 0;
 	for (uint8_t j = 0; j < num_of_channels; j++)
 	{
+		real_t **p_curr_ch_in;
+		p_curr_ch_in = &apChIn[j];
 		dsp_get_input_buffer_from_pad(
-				adsp, j, &(uint8_t*)apChIn[j], &data_len, &buff_is_zero_buffer);
+			adsp, j, (uint8_t **)p_curr_ch_in, &data_len, &buff_is_zero_buffer);
 	}
 
 

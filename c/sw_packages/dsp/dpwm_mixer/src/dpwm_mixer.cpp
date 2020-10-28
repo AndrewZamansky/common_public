@@ -9,7 +9,7 @@
 
 #include "dsp_management_api.h"
 #include "dsp_management_internal_api.h"
-
+#include <string.h>
 
 #include "dpwm_mixer_api.h"
 #include "dpwm_mixer.h"
@@ -35,12 +35,12 @@ static void dpwm_mixer_mute(struct dsp_module_inst_t * adsp)
 
 	buff_is_zero_buffer = 1;
 	dsp_get_input_buffer_from_pad(
-			adsp, 0, &(uint8_t*)apCh1In, &data_len, &buff_is_zero_buffer);
+			adsp, 0, (uint8_t**)&apCh1In, &data_len, &buff_is_zero_buffer);
 	dsp_get_input_buffer_from_pad(
-			adsp, 1, &(uint8_t*)apCh2In, &data_len, &buff_is_zero_buffer);
+			adsp, 1, (uint8_t**)&apCh2In, &data_len, &buff_is_zero_buffer);
 
 	out_data_len = 2 * (sizeof(float) * (data_len / sizeof(real_t)));
-	dsp_get_output_buffer_from_pad(adsp, 0, &pTxBuf, out_data_len);
+	dsp_get_output_buffer_from_pad(adsp, 0, (uint8_t**)&pTxBuf, out_data_len);
 
 	memset(pTxBuf, 0, out_data_len);
 }
@@ -69,12 +69,12 @@ static void dpwm_mixer_dsp(struct dsp_module_inst_t *adsp)
 
 	buff_is_zero_buffer = 1;
 	dsp_get_input_buffer_from_pad(
-			adsp, 0, &(uint8_t*)apCh1In, &data_len, &buff_is_zero_buffer);
+			adsp, 0, (uint8_t**)&apCh1In, &data_len, &buff_is_zero_buffer);
 	dsp_get_input_buffer_from_pad(
-			adsp, 1, &(uint8_t*)apCh2In, &data_len, &buff_is_zero_buffer);
+			adsp, 1, (uint8_t**)&apCh2In, &data_len, &buff_is_zero_buffer);
 
 	out_data_len = 2 * (sizeof(float) * (data_len / sizeof(real_t)));
-	dsp_get_output_buffer_from_pad(adsp, 0, &pTxBuf, out_data_len);
+	dsp_get_output_buffer_from_pad(adsp, 0, (uint8_t**)&pTxBuf, out_data_len);
 
 	handle = (struct DPWM_MIXER_Instance_t *)adsp->handle;
 	max_out_val = handle->max_out_val;
@@ -84,8 +84,8 @@ static void dpwm_mixer_dsp(struct dsp_module_inst_t *adsp)
 	inVal1 = 0;
 	inVal2 = 0;
 
-	in_data_len1 = in_data_len1 / sizeof(real_t);
-	for ( i = 0; i < in_data_len1; i++)
+	data_len = data_len / sizeof(real_t);
+	for ( i = 0; i < data_len; i++)
 	{
 		if(enable_test_clipping)
 		{
