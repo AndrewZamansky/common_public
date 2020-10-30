@@ -19,6 +19,7 @@
 #include "irq_api.h"
 #include "pin_control_api.h"
 #include "errors_api.h"
+#include "os_wrapper.h"
 
 #include <stdlib.h>
 

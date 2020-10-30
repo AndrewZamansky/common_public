@@ -10,21 +10,27 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
     $(shell echo #define  project_config_h>> $(PROJECT_CONFIG_H_FILE))
     $(shell echo /*$(COMMENT)*/ >> $(PROJECT_CONFIG_H_FILE))
     CONFIG_CONTENT := $(shell findstr /b /c:"CONFIG" .config)
-    NEW_PATTERN := echo \#define % >> $(PROJECT_CONFIG_H_FILE) &
+    NEW_PATTERN := \#define=%
 else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX) 
     $(shell echo "#ifndef  project_config_h"> $(PROJECT_CONFIG_H_FILE))
     $(shell echo "#define  project_config_h">> $(PROJECT_CONFIG_H_FILE))
     $(shell echo /*$(COMMENT)\*/  >> $(PROJECT_CONFIG_H_FILE))
     CONFIG_CONTENT := $(shell cat .config | grep '^CONFIG')
     CONFIG_CONTENT := $(subst ",\",$(CONFIG_CONTENT))
-    NEW_PATTERN := echo "\#define %" >> $(PROJECT_CONFIG_H_FILE) ;
+    NEW_PATTERN := "\#define=%"
 endif
-CONFIG_CONTENT := $(patsubst %,$(NEW_PATTERN) ,$(CONFIG_CONTENT))
+CONFIG_CONTENT := $(patsubst %,$(NEW_PATTERN),$(CONFIG_CONTENT))
 
+# cannot write long string in windows, so write CONFIGs one by one
 EQUAL_SIGN := =
-CONFIG_CONTENT := $(subst $(EQUAL_SIGN)y,$(SPACE)  $(SPACE)1,$(CONFIG_CONTENT))
-CONFIG_CONTENT := $(subst $(EQUAL_SIGN),$(SPACE)  $(SPACE),$(CONFIG_CONTENT))
-DUMMY:=$(shell $(CONFIG_CONTENT))
+remove_equal =$(subst $(EQUAL_SIGN),$(SPACE)  $(SPACE),$(1))
+replace_equal_y =$(subst $(EQUAL_SIGN)y,$(SPACE)  $(SPACE)1,$(1))
+
+echo_to_file1 = $(if $1,$(shell echo $1 >> $(PROJECT_CONFIG_H_FILE)),do nothing)
+echo_to_file2 = $(call echo_to_file1,$(call remove_equal,$(1)))
+echo_to_file3 = $(call echo_to_file2,$(call replace_equal_y,$(1)))
+$(foreach CONFIG,$(CONFIG_CONTENT),$(call echo_to_file3,$(CONFIG)))
+
 
 ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS) 
     $(shell echo #endif>> $(PROJECT_CONFIG_H_FILE))
