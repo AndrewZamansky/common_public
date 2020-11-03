@@ -177,9 +177,11 @@ build_outputs :
 	$(LINKER_CMD)
 	$(CP)  $(LINKER_OUTPUT) $(LINKER_HISTORY_OUTPUT)
 	$(LINKER_TO_ASM_CMD)
+ifneq ($(findstring y,$(CONFIG_OUTPUT_TYPE_STATIC_LIBRARY)),y)
 	$(LINKER_TO_HEX_CMD)
 	$(LINKER_TO_SREC_HEX_CMD)
 	$(LINKER_TO_BIN_CMD)
+endif
 ifeq ($(findstring y,$(CONFIG_CALCULATE_CRC32)),y)
 	$(CRC32CALC) $(OUTPUT_BIN) > $(OUTPUT_CRC32)
 endif
