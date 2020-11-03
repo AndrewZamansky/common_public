@@ -66,6 +66,8 @@ GLOBAL_LIBS :=$(sort $(GLOBAL_LIBS)) #remove duplicates
 LIBS := $(patsubst lib%,-l%,$(GLOBAL_LIBS))
 LIBS := $(patsubst %.a,%,$(LIBS))
 
+WHOLE_LIBS := $(patsubst lib%,-l%,$(GLOBAL_WHOLE_LIBS))
+WHOLE_LIBS := $(patsubst %.a,%,$(WHOLE_LIBS))
 
 LIBRARIES_DIRS := $(patsubst %,-L%,$(GLOBAL_LIBS_PATH))
 
@@ -144,6 +146,9 @@ else ifdef CONFIG_OUTPUT_TYPE_APPLICATION
     LINKER_CMD_ARG :=$(LDFLAGS) $(LIBRARIES_DIRS) 
     LINKER_CMD_ARG += -Wl,--gc-sections
     LINKER_CMD_ARG += -Wl,@$(ALL_OBJECTS_LIST_FILE)  $(LIBS)
+    ifneq ($(strip $(WHOLE_LIBS)),)
+        LINKER_CMD_ARG += -Wl,--whole-archive $(WHOLE_LIBS) -Wl,--no-whole-archive
+    endif
     LINKER_CMD_ARG += -o $(LINKER_OUTPUT)
     LINKER_CMD_ARG :=$(subst \,/,$(LINKER_CMD_ARG))# ipa receives only '/'
     LINKER_CMD :=cd /D $(OUT_DIR)/ & $(LD) $(LINKER_CMD_ARG)
