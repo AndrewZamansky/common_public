@@ -17,6 +17,7 @@ SRC = clock_control_i94xxx.c
 VPATH = src
 
 SRC += clk.c
+SRC += fmc.c
 
 VPATH +=  | $(I94XXX_SRC_DIR)
 

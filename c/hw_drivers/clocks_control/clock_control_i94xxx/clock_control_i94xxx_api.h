@@ -6,8 +6,12 @@
 #include "clock_control_api.h"
 
 
-extern struct dev_desc_t  *i94xxx_xtal_clk_dev;
-extern struct dev_desc_t  *i94xxx_lxtal_clk_dev;
+#define CLOCK_I9XXXX_API_EXT_TYPE_DUMMY    0
+#define CLOCK_I9XXXX_API_EXT_TYPE_XTAL     1
+#define CLOCK_I9XXXX_API_EXT_TYPE_GPIO     2
+
+extern struct dev_desc_t  *i94xxx_ext_clk_dev;
+extern struct dev_desc_t  *i94xxx_lext_clk_dev;
 extern struct dev_desc_t  *i94xxx_hirc_clk_dev;
 extern struct dev_desc_t  *i94xxx_pll_clk_dev;
 extern struct dev_desc_t  *i94xxx_hclk_clk_dev;
@@ -35,11 +39,12 @@ extern struct dev_desc_t  *i94xxx_I2S_onSPI2_FSCLK_clk_dev;
 extern struct dev_desc_t  *i94xxx_dmic_clk_dev;
 
 struct clk_cntl_i94xxx_cfg_t {
-	uint32_t           xtal_rate;
+	uint32_t           ext_rate;
 	uint32_t           hirc_rate;
 	uint32_t           pll_rate;
 	uint32_t           hclk_rate;
 	struct dev_desc_t  *pll_src_clk_dev;
+	uint8_t            ext_clock_type;
 };
 SET_CONFIG_TYPE(clock_control_i94xxx, struct clk_cntl_i94xxx_cfg_t);
 

@@ -19,6 +19,8 @@
 
 #include "clk.h"
 #include "i2s.h"
+#include "fmc.h"
+#include "sys.h"
 
 
 /*-----
@@ -31,6 +33,7 @@ uint32_t __HXT __attribute__((weak));
 uint32_t __LXT __attribute__((weak));
 uint32_t __HIRC __attribute__((weak));
 static uint32_t gau32ClkSrcTbl[] = {0, 0, 0, __LIRC, 0, 0, 0, 0};
+static struct clk_cntl_i94xxx_cfg_t *clk_cntl_cfg;
 
 /*-----
   SystemCoreClockUpdate() BSP required  function.
@@ -72,49 +75,87 @@ __attribute__((weak)) void SystemCoreClockUpdate(void)
  //   CyclesPerUs = (SystemCoreClock + 500000) / 1000000;
 }
 
+
+#define  XTAL_CONFIG_BIT  27
 /***************************************/
-/********** i94xxx_xtal_clk_dev ********/
-static void clock_i94xxx_xtal_enable()
+/********** i94xxx_ext_clk_dev ********/
+static void clock_i94xxx_ext_enable()
 {
+	uint32_t user_config;
+	uint32_t required_val;
+
+	switch (clk_cntl_cfg->ext_clock_type)
+	{
+	case CLOCK_I9XXXX_API_EXT_TYPE_XTAL:
+		required_val = (0x1 << XTAL_CONFIG_BIT);
+		break;
+	case CLOCK_I9XXXX_API_EXT_TYPE_GPIO:
+		required_val = 0;
+		break;
+	default:
+		return;
+	}
+	/*
+	 * FMC used to detect XTAL clock circuit bypass.
+	 * Weacom specific to bypass XTAL clock circuit and use MCLK from I2S
+	 * signal as XTAL for synchronization.
+	 */
+	FMC_Open();
+	FMC_ReadConfig(&user_config, 1);
+
+	//XTAL clock circuit bypass can be selected through SELXT control signal
+	// CONFIG0[27]
+	if (required_val != (user_config & (0x1 << XTAL_CONFIG_BIT)))
+	{
+		user_config &= ~(0x1 << XTAL_CONFIG_BIT);
+		user_config |= required_val;
+		FMC_ENABLE_CFG_UPDATE();
+		FMC_WriteConfig(user_config, 1);
+
+		//perform chip reset for effects
+		SYS->IPRST0 = SYS_IPRST0_CHIPRST_Msk;
+	}
+
+	FMC_Close();
 	CLK_EnableXtalRC(CLK_PWRCTL_HXTEN_Msk);
 	CLK_WaitClockReady(CLK_STATUS_HXTSTB_Msk);
 }
 
-static void clock_i94xxx_xtal_set_freq(uint32_t freq, uint32_t parent_freq)
+static void clock_i94xxx_ext_set_freq(uint32_t freq, uint32_t parent_freq)
 {
 	__HXT = freq;
 	gau32ClkSrcTbl[0] = freq;
 }
 
-#define DT_DEV_NAME                i94xxx_xtal_clk_dev
+#define DT_DEV_NAME                i94xxx_ext_clk_dev
 #define DT_DEV_MODULE              clk_cntl
 
-#define CLK_DT_ENABLE_CLK_FUNC    clock_i94xxx_xtal_enable
-#define CLK_DT_SET_FREQ_FUNC      clock_i94xxx_xtal_set_freq
+#define CLK_DT_ENABLE_CLK_FUNC    clock_i94xxx_ext_enable
+#define CLK_DT_SET_FREQ_FUNC      clock_i94xxx_ext_set_freq
 
 #include "clk_cntl_add_device.h"
 
 
 
 /****************************************/
-/********** i94xxx_lxtal_clk_dev ********/
-static void clock_i94xxx_lxtal_enable()
+/********** i94xxx_lext_clk_dev ********/
+static void clock_i94xxx_lext_enable()
 {
 	CLK_EnableXtalRC(CLK_PWRCTL_LXTEN_Msk);
 	CLK_WaitClockReady(CLK_STATUS_LXTSTB_Msk);
 }
 
-static void clock_i94xxx_lxtal_set_freq(uint32_t freq, uint32_t parent_freq)
+static void clock_i94xxx_lext_set_freq(uint32_t freq, uint32_t parent_freq)
 {
 	__LXT = freq;
 	gau32ClkSrcTbl[1] = freq;
 }
 
-#define DT_DEV_NAME                i94xxx_lxtal_clk_dev
+#define DT_DEV_NAME                i94xxx_lext_clk_dev
 #define DT_DEV_MODULE              clk_cntl
 
-#define CLK_DT_ENABLE_CLK_FUNC    clock_i94xxx_lxtal_enable
-#define CLK_DT_SET_FREQ_FUNC      clock_i94xxx_lxtal_set_freq
+#define CLK_DT_ENABLE_CLK_FUNC    clock_i94xxx_lext_enable
+#define CLK_DT_SET_FREQ_FUNC      clock_i94xxx_lext_set_freq
 
 #include "clk_cntl_add_device.h"
 
@@ -176,7 +217,7 @@ static void clock_i94xxx_pll_get_freq(uint32_t *freq, uint32_t parent_freq)
 
 static void clock_i94xxx_pll_set_parent_clk(struct dev_desc_t *parent_clk)
 {
-	if (i94xxx_xtal_clk_dev == parent_clk)
+	if (i94xxx_ext_clk_dev == parent_clk)
 	{
 		CLK->PLLCTL &= ~CLK_PLLCTL_PLLSRC_Msk;
 	}
@@ -205,7 +246,7 @@ static void clock_i94xxx_pll_set_parent_clk(struct dev_desc_t *parent_clk)
 /********** i94xxx_hclk_clk_dev ********/
 static void clock_i94xxx_hclk_set_parent_clk(struct dev_desc_t *parent_clk)
 {
-	if (i94xxx_xtal_clk_dev == parent_clk)
+	if (i94xxx_ext_clk_dev == parent_clk)
 	{
 		CLK_SetHCLK(CLK_CLKSEL0_HCLKSEL_HIRC, CLK_CLKDIV0_HCLK(1));
 	}
@@ -374,7 +415,7 @@ static void clock_i94xxx_spi2_enable()
 
 static void clock_i94xxx_spi2_set_parent_clk(struct dev_desc_t *parent_clk)
 {
-	if (i94xxx_xtal_clk_dev == parent_clk)
+	if (i94xxx_ext_clk_dev == parent_clk)
 	{
 		CLK_SetModuleClock(SPI2_MODULE,
 				CLK_CLKSEL2_SPI2SEL_HXT, MODULE_NoMsk);
@@ -419,7 +460,7 @@ static void clock_i94xxx_spi1_enable()
 
 static void clock_i94xxx_spi1_set_parent_clk(struct dev_desc_t *parent_clk)
 {
-	if (i94xxx_xtal_clk_dev == parent_clk)
+	if (i94xxx_ext_clk_dev == parent_clk)
 	{
 		CLK_SetModuleClock(SPI1_MODULE,
 				CLK_CLKSEL2_SPI1SEL_HXT, MODULE_NoMsk);
@@ -467,7 +508,7 @@ static void clock_i94xxx_i2s_set_parent_clk(struct dev_desc_t *parent_clk)
 	uint32_t curr_val;
 
 	curr_val = (CLK->CLKSEL3 & ~ CLK_CLKSEL3_I2S0SEL_Msk);
-	if (i94xxx_xtal_clk_dev == parent_clk)
+	if (i94xxx_ext_clk_dev == parent_clk)
 	{
 		CLK->CLKSEL3 = curr_val | CLK_CLKSEL3_I2S0SEL_HXT;
 	}
@@ -511,7 +552,7 @@ static void clock_i94xxx_dmic_set_parent_clk(struct dev_desc_t *parent_clk)
 	uint32_t curr_val;
 
 	curr_val = (CLK->CLKSEL2 & (~CLK_CLKSEL2_DMICSEL_Msk));
-	if (i94xxx_xtal_clk_dev == parent_clk)
+	if (i94xxx_ext_clk_dev == parent_clk)
 	{
 		CLK->CLKSEL2 = curr_val | CLK_CLKSEL2_DMICSEL_HXT;
 	}
@@ -774,7 +815,7 @@ static void clock_i94xxx_dpwm_set_parent_clk(struct dev_desc_t *parent_clk)
 {
 	uint32_t curr_val;
 	curr_val = (CLK->CLKSEL2 & ~ CLK_CLKSEL2_DPWMSEL_Msk);
-	if (i94xxx_xtal_clk_dev == parent_clk)
+	if (i94xxx_ext_clk_dev == parent_clk)
 	{
 		CLK->CLKSEL2 = curr_val | CLK_CLKSEL2_DPWMSEL_HXT;
 	}
@@ -816,7 +857,7 @@ static void clock_i9xxxx_uart0_enable()
 
 static void clock_i9xxxx_uart0_set_parent_clk(struct dev_desc_t *parent_clk)
 {
-	if (i94xxx_xtal_clk_dev == parent_clk)
+	if (i94xxx_ext_clk_dev == parent_clk)
 	{
 		CLK_SetModuleClock(UART0_MODULE,
 				CLK_CLKSEL1_UART0SEL_HXT, CLK_CLKDIV0_UART0(1));
@@ -888,7 +929,7 @@ static void clock_i94xxx_spi0_enable()
 
 static void clock_i94xxx_spi0_set_parent_clk(struct dev_desc_t *parent_clk)
 {
-	if (i94xxx_xtal_clk_dev == parent_clk)
+	if (i94xxx_ext_clk_dev == parent_clk)
 	{
 		CLK_SetModuleClock(SPI0_MODULE, CLK_CLKSEL2_SPI0SEL_HXT, MODULE_NoMsk);
 	}
@@ -925,12 +966,13 @@ static void init_clocks(struct clk_cntl_i94xxx_cfg_t *cfg_hndl)
 {
 	uint32_t rate;
 
-	if (0 != cfg_hndl->xtal_rate)
+	clk_cntl_cfg = cfg_hndl;
+	if (0 != cfg_hndl->ext_rate)
 	{
-		DEV_IOCTL_0_PARAMS(i94xxx_xtal_clk_dev, IOCTL_DEVICE_START);
-		DEV_IOCTL_0_PARAMS(i94xxx_xtal_clk_dev, CLK_IOCTL_ENABLE);
-		DEV_IOCTL_1_PARAMS(i94xxx_xtal_clk_dev,
-				CLK_IOCTL_SET_FREQ, &cfg_hndl->xtal_rate);
+		DEV_IOCTL_0_PARAMS(i94xxx_ext_clk_dev, IOCTL_DEVICE_START);
+		DEV_IOCTL_0_PARAMS(i94xxx_ext_clk_dev, CLK_IOCTL_ENABLE);
+		DEV_IOCTL_1_PARAMS(i94xxx_ext_clk_dev,
+				CLK_IOCTL_SET_FREQ, &cfg_hndl->ext_rate);
 	}
 
 	if (0 != cfg_hndl->hirc_rate)
