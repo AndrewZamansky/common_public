@@ -164,6 +164,8 @@ static void set_Mclk(struct I2S_i9xxxx_cfg_t *cfg_hndl,
 	uint32_t  res;
 	uint16_t  Mclock_factor_based_on_FSclock;
 
+	if (I2S_I9XXXX_API_MASTER_MODE != cfg_hndl->clock_mode) return;
+
 	DEV_IOCTL_1_PARAMS(
 		runtime_handle->i9xxxx_i2s_clk_dev, CLK_IOCTL_GET_FREQ, &src_clk_freq);
 	Mclock_factor_based_on_FSclock = cfg_hndl->Mclock_factor_based_on_FSclock;
@@ -225,7 +227,6 @@ static void i9xxxx_I2S_init(struct dev_desc_t *adev,
 	num_of_bytes_in_word = cfg_hndl->num_of_bytes_in_word;
 
 	set_clocks(cfg_hndl, runtime_handle, base_address);
-	configure_pinout(cfg_hndl);
 
 	runtime_handle->actual_sample_rate = I2S_Open(
 					base_address,
@@ -248,7 +249,6 @@ static void i9xxxx_I2S_init(struct dev_desc_t *adev,
 		I2S_SET_STEREOORDER(base_address, I2S_ORDER_EVENHIGH);
 	}
 
-	//I2S_ENABLE_RX(base_address);
 	I2S_ENABLE(base_address);
 
 	if (I2S_I9XXXX_API_DATA_TRANSFER_TYPE_DMA == cfg_hndl->data_transfer_type)
@@ -274,6 +274,9 @@ static void i9xxxx_I2S_init(struct dev_desc_t *adev,
 		irq_set_priority(i2s_irq , INTERRUPT_PRIORITY_FOR_I2S );
 		irq_enable_interrupt(i2s_irq);
 	}
+
+	configure_pinout(cfg_hndl);
+
 	runtime_handle->init_done = 1;
 }
 
