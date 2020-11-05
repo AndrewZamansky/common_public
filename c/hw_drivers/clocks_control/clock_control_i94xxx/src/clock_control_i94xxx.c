@@ -110,7 +110,7 @@ static void clock_i94xxx_ext_enable()
 		user_config &= ~(0x1 << XTAL_CONFIG_BIT);
 		user_config |= required_val;
 		FMC_ENABLE_CFG_UPDATE();
-		FMC_WriteConfig(user_config, 1);
+		FMC_WriteConfig(&user_config, 1);
 
 		//perform chip reset for effects
 		SYS->IPRST0 = SYS_IPRST0_CHIPRST_Msk;

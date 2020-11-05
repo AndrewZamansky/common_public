@@ -323,49 +323,49 @@ static uint8_t populate_dma_addresses_and_ctl(uint8_t peripheral_type,
 	{
 #ifdef CONFIG_I94XXX
 	case PDMA_SPI1_RX :
-		*src_addr =(void*) &SPI1->RX;
+		*src_addr =(uint32_t) &SPI1->RX;
 		*src_ctrl = PDMA_SAR_FIX;
 		*dest_ctrl = PDMA_DAR_INC;
 		return DMA_FROM_PERIPHERAL;
 	case PDMA_SPI1_TX :
-		*dest_addr = (void*)&SPI1->TX;
+		*dest_addr = (uint32_t)&SPI1->TX;
 		*src_ctrl = PDMA_SAR_INC;
 		*dest_ctrl = PDMA_DAR_FIX;
 		return DMA_TO_PERIPHERAL;
 #endif
 	case PDMA_SPI2_RX :
-		*src_addr =(void*) &SPI2->RX;
+		*src_addr = (uint32_t) &SPI2->RX;
 		*src_ctrl = PDMA_SAR_FIX;
 		*dest_ctrl = PDMA_DAR_INC;
 		return DMA_FROM_PERIPHERAL;
 	case PDMA_SPI2_TX :
 		*src_ctrl = PDMA_SAR_INC;
-		*dest_addr = (void*)&SPI2->TX;
+		*dest_addr = (uint32_t) &SPI2->TX;
 		*dest_ctrl = PDMA_DAR_FIX;
 		return DMA_TO_PERIPHERAL;
 	case PDMA_I2S0_RX :
-		*src_addr =(void*) &I2S0->RXFIFO;
+		*src_addr = (uint32_t) &I2S0->RXFIFO;
 		*src_ctrl = PDMA_SAR_FIX;
 		*dest_ctrl = PDMA_DAR_INC;
 		return DMA_FROM_PERIPHERAL;
 	case PDMA_I2S0_TX :
 		*src_ctrl = PDMA_SAR_INC;
-		*dest_addr = (void*)&I2S0->TXFIFO;
+		*dest_addr = (uint32_t)&I2S0->TXFIFO;
 		*dest_ctrl = PDMA_DAR_FIX;
 		return DMA_TO_PERIPHERAL;
 	case PDMA_DPWM :
 		*src_ctrl = PDMA_SAR_INC;
-		*dest_addr = (void*)&DPWM->FIFO;
+		*dest_addr = (uint32_t)&DPWM->FIFO;
 		*dest_ctrl = PDMA_DAR_FIX;
 		return DMA_TO_PERIPHERAL;
 	case PDMA_DMIC_RX :
 		*src_ctrl = PDMA_SAR_FIX;
-		*src_addr = (void*)&DMIC->FIFO;
+		*src_addr = (uint32_t) &DMIC->FIFO;
 		*dest_ctrl = PDMA_DAR_INC;
 		return DMA_FROM_PERIPHERAL;
 	default :
-		*src_addr = NULL;
-		*dest_addr = NULL;
+		*src_addr = (uint32_t)NULL;
+		*dest_addr = (uint32_t)NULL;
 		*dest_ctrl = 0;
 		*src_ctrl = 0;
 		return UNKNOWN_DMA_TYPE;
@@ -439,7 +439,7 @@ static uint8_t set_peripheral_dma(struct dma_i9xxxx_cfg_t *cfg_hndl,
 
 	if (DMA_FROM_PERIPHERAL == dma_peripheral_direction)
 	{
-		dest_addr = runtime_hndl->buff[0];// TODO : redesign RX
+		dest_addr = (uint32_t)runtime_hndl->buff[0];// TODO : redesign RX
 		runtime_hndl->curr_dma_buff_indx = 0;
 	}
 	else
