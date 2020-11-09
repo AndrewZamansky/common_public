@@ -160,6 +160,9 @@ config OUTPUT_IS_LIBRARY_FOR_EXPORT
 	depends on OUTPUT_TYPE_STATIC_LIBRARY || OUTPUT_TYPE_DYNAMIC_LIBRARY
 	bool "output is library for export"
 
+config PRODUCE_OUTPUT_WITHOUT_DEBUG_INFO
+	bool "produce output without debug info"
+
 
 if GCC || GPP || MIN_GW_GCC || MIN_GW_GPP || PIC_C32 || PIC_XC32 || \
     ANDROID_NDK_COMPILER || XTENSA_GCC || LINUX_HOST_GCC
