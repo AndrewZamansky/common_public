@@ -250,33 +250,7 @@ static void i9xxxx_I2S_init(struct dev_desc_t *adev,
 	}
 
 	I2S_ENABLE(base_address);
-
-	if (I2S_I9XXXX_API_DATA_TRANSFER_TYPE_DMA == cfg_hndl->data_transfer_type)
-	{
-		//base_address->CTL0 |= I2S_CTL0_RXPDMAEN_Msk;
-	}
-	else
-	{
-		int i2s_irq;
-		#ifdef CONFIG_I94XXX
-			i2s_irq = I2S0_IRQn;
-		#elif CONFIG_I96XXX_M0
-			if (base_address == I2S0)
-			{
-				i2s_irq = I2S0_IRQn;
-			}
-			else
-			{
-				i2s_irq = I2S1_IRQn;
-			}
-		#endif
-		irq_register_device_on_interrupt(i2s_irq, adev);
-		irq_set_priority(i2s_irq , INTERRUPT_PRIORITY_FOR_I2S );
-		irq_enable_interrupt(i2s_irq);
-	}
-
 	configure_pinout(cfg_hndl);
-
 	runtime_handle->init_done = 1;
 }
 
@@ -315,7 +289,29 @@ static void i9xxxx_sync_to_dpwm_fs_rate(struct I2S_i9xxxx_cfg_t *cfg_hndl,
 }
 
 
-static void enable_tx(struct I2S_i9xxxx_cfg_t *cfg_hndl)
+static void enable_I2S_irq(struct dev_desc_t *adev, I2S_T*  base_address)
+{
+	int i2s_irq;
+	#ifdef CONFIG_I94XXX
+		i2s_irq = I2S0_IRQn;
+	#elif CONFIG_I96XXX_M0
+		if (base_address == I2S0)
+		{
+			i2s_irq = I2S0_IRQn;
+		}
+		else
+		{
+			i2s_irq = I2S1_IRQn;
+		}
+	#endif
+	irq_register_device_on_interrupt(i2s_irq, adev);
+	irq_set_priority(i2s_irq , INTERRUPT_PRIORITY_FOR_I2S );
+	irq_enable_interrupt(i2s_irq);
+}
+
+
+static void enable_tx(
+		struct dev_desc_t *adev, struct I2S_i9xxxx_cfg_t *cfg_hndl)
 {
 	I2S_T*  base_address;
 	base_address = (I2S_T*)cfg_hndl->base_address;
@@ -325,11 +321,15 @@ static void enable_tx(struct I2S_i9xxxx_cfg_t *cfg_hndl)
 	{
 		base_address->CTL0 |= I2S_CTL0_TXPDMAEN_Msk;
 	}
-
+	else
+	{
+		enable_I2S_irq(adev, base_address);
+	}
 }
 
 
-static void enable_rx(struct I2S_i9xxxx_cfg_t *cfg_hndl)
+static void enable_rx(
+		struct dev_desc_t *adev, struct I2S_i9xxxx_cfg_t *cfg_hndl)
 {
 	I2S_T*  base_address;
 	base_address = (I2S_T*)cfg_hndl->base_address;
@@ -341,6 +341,7 @@ static void enable_rx(struct I2S_i9xxxx_cfg_t *cfg_hndl)
 	}
 	else
 	{
+		enable_I2S_irq(adev, base_address);
 		I2S_ENABLE_INT(base_address, I2S_IEN_RXTHIEN_Msk);
 	}
 }
@@ -365,7 +366,6 @@ static uint8_t I2S_i9xxxx_ioctl( struct dev_desc_t *adev,
 		CRITICAL_ERROR("not initialized yet");
 	}
 
-
 	base_address = (I2S_T*)cfg_hndl->base_address;
 	switch(aIoctl_num)
 	{
@@ -373,10 +373,10 @@ static uint8_t I2S_i9xxxx_ioctl( struct dev_desc_t *adev,
 		i9xxxx_I2S_init(adev, cfg_hndl, runtime_handle, base_address);
 		break;
 	case I2S_I9XXXX_ENABLE_OUTPUT_IOCTL:
-		enable_tx(cfg_hndl);
+		enable_tx(adev, cfg_hndl);
 		break;
 	case I2S_I9XXXX_ENABLE_INPUT_IOCTL:
-		enable_rx(cfg_hndl);
+		enable_rx(adev, cfg_hndl);
 		break;
 	case I2S_I9XXXX_STOP_IOCTL:
 		I2S_DISABLE_TX(base_address);
