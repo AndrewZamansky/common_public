@@ -14,9 +14,8 @@
 #include "clock_control_common_api.h"
 #include "clock_control_i96xxx_m0_api.h"
 #include "clock_control_i96xxx_m0.h"
-
+#include "pin_control_api.h"
 #include "I96100.h"
-
 #include "clk.h"
 
 
@@ -30,6 +29,7 @@ uint32_t __HXT __attribute__((weak));
 uint32_t __LXT __attribute__((weak));
 uint32_t __HIRC __attribute__((weak));
 static uint32_t gau32ClkSrcTbl[] = {0, 0, 0, __LIRC, 0, 0, 0, 0};
+static struct clk_cntl_i96xxx_m0_cfg_t *clk_cntl_cfg;
 
 /*-----
   SystemCoreClockUpdate() BSP required  function.
@@ -90,6 +90,28 @@ static void clock_i96xxx_xtal_set_freq(uint32_t freq, uint32_t parent_freq)
 
 #define CLK_DT_ENABLE_CLK_FUNC    clock_i96xxx_xtal_enable
 #define CLK_DT_SET_FREQ_FUNC      clock_i96xxx_xtal_set_freq
+
+#include "clk_cntl_add_device.h"
+
+
+
+/***************************************/
+/********** i96xxx_ext_mclk_clk_dev ********/
+static void clock_i96xxx_ext_mclk_enable()
+{
+	pin_control_api_set_pin_function(clk_cntl_cfg->ext_MCLK_pin);
+}
+
+static void clock_i96xxx_ext_mclk_set_freq(uint32_t freq, uint32_t parent_freq)
+{
+//	gau32ClkSrcTbl[0] = freq;// TODO : find out what index refer to MCLKI
+}
+
+#define DT_DEV_NAME                i96xxx_ext_mclk_clk_dev
+#define DT_DEV_MODULE              clk_cntl
+
+#define CLK_DT_ENABLE_CLK_FUNC    clock_i96xxx_ext_mclk_enable
+#define CLK_DT_SET_FREQ_FUNC      clock_i96xxx_ext_mclk_set_freq
 
 #include "clk_cntl_add_device.h"
 
@@ -430,6 +452,12 @@ static void clock_i96xxx_i2s0_enable()
 	CLK->APBCLK0 |= CLK_APBCLK0_I2S0CKEN_Msk;
 }
 
+// bug in I96 BSP ver 0.0
+#undef CLK_CLKSEL3_I2S0SEL_MCLKI
+#undef CLK_CLKSEL3_I2S0SEL_XCLK
+#define CLK_CLKSEL3_I2S0SEL_MCLKI          (0x5UL<<CLK_CLKSEL3_I2S0SEL_Pos)
+#define CLK_CLKSEL3_I2S0SEL_XCLK           (0x4UL<<CLK_CLKSEL3_I2S0SEL_Pos)
+
 static void clock_i96xxx_i2s0_set_parent_clk(struct dev_desc_t *parent_clk)
 {
 	uint32_t curr_val;
@@ -450,6 +478,10 @@ static void clock_i96xxx_i2s0_set_parent_clk(struct dev_desc_t *parent_clk)
 	else if (i96xxx_pclk0_clk_dev == parent_clk)
 	{
 		CLK->CLKSEL3 = curr_val | CLK_CLKSEL3_I2S0SEL_PCLK0;
+	}
+	else if (i96xxx_ext_mclk_clk_dev == parent_clk)
+	{
+		CLK->CLKSEL3 = curr_val | CLK_CLKSEL3_I2S0SEL_MCLKI;
 	}
 	else
 	{
@@ -548,6 +580,12 @@ static void clock_i96xxx_i2s1_enable()
 	CLK->APBCLK0 |= CLK_APBCLK0_I2S1CKEN_Msk;
 }
 
+// bug in I96 BSP ver 0.0
+#undef CLK_CLKSEL3_I2S1SEL_MCLKI
+#undef CLK_CLKSEL3_I2S1SEL_XCLK
+#define CLK_CLKSEL3_I2S1SEL_MCLKI          (0x5UL<<CLK_CLKSEL3_I2S1SEL_Pos)
+#define CLK_CLKSEL3_I2S1SEL_XCLK           (0x4UL<<CLK_CLKSEL3_I2S1SEL_Pos)
+
 static void clock_i96xxx_i2s1_set_parent_clk(struct dev_desc_t *parent_clk)
 {
 	uint32_t curr_val;
@@ -568,6 +606,10 @@ static void clock_i96xxx_i2s1_set_parent_clk(struct dev_desc_t *parent_clk)
 	else if (i96xxx_pclk0_clk_dev == parent_clk)
 	{
 		CLK->CLKSEL3 = curr_val | CLK_CLKSEL3_I2S1SEL_PCLK1;
+	}
+	else if (i96xxx_ext_mclk_clk_dev == parent_clk)
+	{
+		CLK->CLKSEL3 = curr_val | CLK_CLKSEL3_I2S1SEL_MCLKI;
 	}
 	else
 	{
@@ -780,6 +822,8 @@ static void clock_i96xxx_i2c0_enable()
 
 static void init_clocks(struct clk_cntl_i96xxx_m0_cfg_t *cfg_hndl)
 {
+	clk_cntl_cfg = cfg_hndl;
+
 	if (0 != cfg_hndl->xtal_rate)
 	{
 		DEV_IOCTL_0_PARAMS(i96xxx_xtal_clk_dev, IOCTL_DEVICE_START);
@@ -794,6 +838,14 @@ static void init_clocks(struct clk_cntl_i96xxx_m0_cfg_t *cfg_hndl)
 		DEV_IOCTL_0_PARAMS(i96xxx_hirc_clk_dev, CLK_IOCTL_ENABLE);
 		DEV_IOCTL_1_PARAMS(i96xxx_hirc_clk_dev,
 				CLK_IOCTL_SET_FREQ, &cfg_hndl->hirc_rate);
+	}
+
+	if (0 != cfg_hndl->ext_Mclk_rate)
+	{
+		DEV_IOCTL_0_PARAMS(i96xxx_ext_mclk_clk_dev, IOCTL_DEVICE_START);
+		DEV_IOCTL_0_PARAMS(i96xxx_ext_mclk_clk_dev, CLK_IOCTL_ENABLE);
+		DEV_IOCTL_1_PARAMS(i96xxx_ext_mclk_clk_dev,
+				CLK_IOCTL_SET_FREQ, &cfg_hndl->ext_Mclk_rate);
 	}
 
 	if (0 != cfg_hndl->pll_rate)
