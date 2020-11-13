@@ -82,7 +82,11 @@ ALL_ASM_DEFS_AND_INCLUDES := $(ALL_ASM_DEFINES) $(ALL_ASM_INCLUDE_DIRS)
 TEST_COMPACT_STR :=$(call reduce_cmd_len, $(ALL_ASM_DEFS_AND_INCLUDES))
 LONG_ASM_CMD :=$(call check_win_cmd_len, $(TEST_COMPACT_STR))
 ASM_ARGS_FILE :=$(strip $(if $(LONG_ASM_CMD),$(CURR_OBJ_DIR)/asm.args,))
-ASM_ARGS_CONTENT := $(ALL_ASM_DEFS_AND_INCLUDES)
+ifdef CONFIG_GCC
+    ASM_ARGS_CONTENT :=$(ALL_ASM_DEFINES) $(subst \,/,$(ALL_ASM_INCLUDE_DIRS))
+else
+    ASM_ARGS_CONTENT :=$(ALL_ASM_DEFINES) $(ALL_ASM_INCLUDE_DIRS)
+endif
 
 $(CURR_OBJ_DIR)/%.o.asm: %.s $(ALL_DEPS) $(ASM_ARGS_FILE)
 	$(info .    Compiling $<)
@@ -105,7 +109,11 @@ ALL_DEFS_AND_INCLUDES := $(ALL_DEFINES) $(ALL_INCLUDE_DIRS)
 TEST_COMPACT_STR :=$(call reduce_cmd_len, $(ALL_DEFS_AND_INCLUDES))
 LONG_CMD :=$(call check_win_cmd_len, $(TEST_COMPACT_STR))
 C_ARGS_FILE :=$(strip $(if $(LONG_CMD),$(CURR_OBJ_DIR)/c.args,))
-ARGS_CONTENT := $(ALL_DEFS_AND_INCLUDES)
+ifdef CONFIG_GCC
+    C_ARGS_CONTENT :=$(ALL_DEFINES) $(subst \,/,$(ALL_INCLUDE_DIRS))
+else
+    C_ARGS_CONTENT :=$(ALL_DEFINES) $(ALL_INCLUDE_DIRS)
+endif
 
 
 ###########  start of C files #################
@@ -115,7 +123,7 @@ ALL_CFLAGS := $(GLOBAL_CFLAGS) $(CFLAGS)
 $(CURR_OBJ_DIR)/%.c.preproc: %.c $(ALL_DEPS) $(C_ARGS_FILE)
 	$(info .    Preprocessing $<)
 	$(call mkdir_if_not_exists, $(dir $@))
-	$(call run_c_preprocessor,$(CPP_ARGS_FILE),$<,$@)
+	$(call run_c_preprocessor,$(C_ARGS_FILE),$<,$@)
 
 include $(MAKEFILES_ROOT_DIR)/c/compilers/preprocessor_analyzer.mk
 
@@ -125,17 +133,11 @@ $(CURR_OBJ_DIR)/%.o: $(C_DEPS)
 	$(info .    Compiling $<)
 	$(eval SRC_FILE := $(realpath $<))
 	$(info .    Compiling $(SRC_FILE))
-	$(call run_c_compiler,$(CPP_ARGS_FILE),$<,$@)
-
-
-ifdef CONFIG_GCC
-    ARGS_CONTENT :=$(subst \,/,$(ALL_INCLUDE_DIRS))
-else
-    ARGS_CONTENT :=$(ALL_INCLUDE_DIRS)
-endif
+	$(call run_c_compiler,$(C_ARGS_FILE),$<,$@)
 
 ###########  end of C files #################
 #################################################
+
 
 ###########  start of CPP files #################
 
@@ -145,32 +147,32 @@ ALL_CPPFLAGS := $(GLOBAL_CPPFLAGS) $(CPPFLAGS)
 $(CURR_OBJ_DIR)/%.cc.preproc: %.cc $(ALL_DEPS) $(C_ARGS_FILE)
 	$(info .    Preprocessing $<)
 	$(call mkdir_if_not_exists, $(dir $@))
-	$(call run_cpp_preprocessor,$(CPP_ARGS_FILE),$<,$@)
+	$(call run_cpp_preprocessor,$(C_ARGS_FILE),$<,$@)
 
 
 CC_DEPS := %.cc $(CURR_OBJ_DIR)/%.cc.analyzer $(ALL_DEPS) $(C_ARGS_FILE)
 $(CURR_OBJ_DIR)/%.oo: $(CC_DEPS)
 	$(info .    Compiling $<)
 	$(call mkdir_if_not_exists, $(dir $@))
-	$(call run_cpp_compiler,$(CPP_ARGS_FILE),$<,$@)
+	$(call run_cpp_compiler,$(C_ARGS_FILE),$<,$@)
 
 
   ####### extract info from preprocessed files
 $(CURR_OBJ_DIR)/%.cpp.preproc: %.cpp $(ALL_DEPS) $(C_ARGS_FILE)
 	$(info .    Preprocessing $<)
 	$(call mkdir_if_not_exists, $(dir $@))
-	$(call run_cpp_preprocessor,$(CPP_ARGS_FILE),$<,$@)
+	$(call run_cpp_preprocessor,$(C_ARGS_FILE),$<,$@)
 
 
 CPP_DEPS := %.cpp $(CURR_OBJ_DIR)/%.cpp.analyzer $(ALL_DEPS) $(C_ARGS_FILE)
 $(CURR_OBJ_DIR)/%.oop: $(CPP_DEPS)
 	$(info .    Compiling $<)
 	$(call mkdir_if_not_exists, $(dir $@))
-	$(call run_cpp_compiler,$(CPP_ARGS_FILE),$<,$@)
+	$(call run_cpp_compiler,$(C_ARGS_FILE),$<,$@)
 
 ###########  end of CPP files #############
 #############################################
 $(C_ARGS_FILE): $(ALL_DEPS)
-	$(eval DUMMY :=$(call fwrite,$(C_ARGS_FILE),$(ARGS_CONTENT),TRUNCATE))
+	$(eval DUMMY :=$(call fwrite,$(C_ARGS_FILE),$(C_ARGS_CONTENT),TRUNCATE))
 
-.SECONDARY: $(ASM_ARGS_FILE) $(C_ARGS_FILE) $(CPP_ARGS_FILE)
+.SECONDARY: $(ASM_ARGS_FILE) $(C_ARGS_FILE)
