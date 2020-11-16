@@ -57,7 +57,7 @@ WORKSPACE_CFG_MK :=$(PARENT_OF_COMMON_PUBLIC_DIR)/workspace_config.mk
 NUM_OF_WORDS_VAR :=\
           $(WORKSPACE_CFG_MK)/REDEFINE_NUM_OF_WORDS_IN_SHELL_COMMAND
 
-add_item_to_file_stop=\
+add_item_to_file_stop=$(if $1,\
         $(eval $(info err: shell command is too long on Windows systems)\
                $(info ---: most common reason: pathes are too long)\
                $(info ---: possible solutions:)\
@@ -65,11 +65,12 @@ add_item_to_file_stop=\
                $(info ---: 2. set $(NUM_OF_WORDS_VAR) to some low number.\
                               (default is 16).)\
                $(info ---:    too low value will cause slower execution.)\
-               $(call exit,1))
+               $(call exit,1)),\
+        do nothing)
 
 # step2: test cmd length and if it's short enough then run shell
-add_item_to_file_step2=$(eval _is_long=$(call check_win_cmd_len,$1))\
-          $(eval $(if $(_is_long), $(call add_item_to_file_stop),\
+add_item_to_file_step2 =$(eval _is_long=$(call check_win_cmd_len,$1))\
+          $(eval $(if $(_is_long), $(call add_item_to_file_stop,1),\
           $(shell $1)))
 
 # step1: create shell command string
