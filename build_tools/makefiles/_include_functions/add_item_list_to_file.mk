@@ -63,7 +63,7 @@ add_item_to_file_stop=\
                $(info ---: possible solutions:)\
                $(info ---: 1. move workspace to shorter path.)\
                $(info ---: 2. set $(NUM_OF_WORDS_VAR) to some low number.\
-                              (default is 20).)\
+                              (default is 16).)\
                $(info ---:    too low value will cause slower execution.)\
                $(call exit,1))
 
@@ -85,7 +85,7 @@ add_one =$(if $1,$(eval _tmp =$(word $1,$(_nums)))$(if $(_tmp),$(_tmp),\
 # too large _M may cause string of _M items be to long for HOST
 # shell(8192 for win). too small _M can increase build time
 _M := $(if $(REDEFINE_NUM_OF_WORDS_IN_SHELL_COMMAND),\
-           $(REDEFINE_NUM_OF_WORDS_IN_SHELL_COMMAND), 19)
+           $(REDEFINE_NUM_OF_WORDS_IN_SHELL_COMMAND), 16)
 _MPP:=$(call add_one,$(_M))#must be _M+1
 _MAX_N:=1000000
 # argument $1 contains list of items to put in shell
