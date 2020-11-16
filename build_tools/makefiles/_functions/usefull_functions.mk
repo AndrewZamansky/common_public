@@ -61,9 +61,9 @@ fix_path_if_in_windows =$(if \
 #
 # $1-$(CMD_VAR): cmd string
 # if we are building in Windows7 and length of tested
-# string is more then 8100 then build proccess will stop because
+# string is more then 8196 then build proccess will stop because
 # of windows shell limitiation on command length.
-# on Windows10 limitiation is 4900. so we take lower limit: 3400.
+# so we take lower limit: 8100.
 
 # functions for string length :
 ASCII := A B C D E F G H I J K L M N O P Q R S T U V W X Y Z
@@ -77,17 +77,40 @@ SPACE:=$(SPACE) $(SPACE)
 
 # eval will output empty string (only all_chars will be updated), so
 # the final string will be $(all_chars)
-separate_chars =$(strip $(eval all_chars := $(subst $(SPACE),_,$1))\
+separate_chars_step2 =$(strip $(eval all_chars :=$1)\
     $(foreach a,$(ASCII),$(eval all_chars := $$(subst $$a,$$a ,$(all_chars))))\
     $(all_chars))
 
+# step1: replace spaces by '_' so spaces will also be counted
+separate_chars_step1 =$(call separate_chars_step2,$(subst $(SPACE),_,$1))
+
+separate_chars =$(call separate_chars_step1,$1)
+
 strlen =$(words $(call separate_chars,$1))
 
+
+
+# function : count_extra_chars
 # count_extra_chars will return 0 if length of string less then $2,
 # in other case (strlen - ($2 - 1)) is returned
+
+# step4: count chars left after step3. if nothing left return empty string
+count_extra_chars_step4 =$(words $1)
+
+
+# step3: remove all chars on position $2 and higher
 # $(if ) is used to avoid error during makefile parsing when $2 is empty
-count_extra_chars =$(if $2,$(words\
-                      $(wordlist $2,100000000,$(call separate_chars,$1))),12345)
+count_extra_chars_step3 =$(if $2,$(call \
+                  count_extra_chars_step4,$(wordlist $2,100000000,$1)),)
+
+# step2: replace $1 by string with chars separated by spaces
+count_extra_chars_step2 =$(call \
+                  count_extra_chars_step3,$(call separate_chars,$1),$2)
+
+# step1: replace '$' by '_'. otherwise expression is expended when not needed
+count_extra_chars_step1 =$(call count_extra_chars_step2,$(subst $$,_,$1),$2)
+
+count_extra_chars =$(call count_extra_chars_step1,$1,$2)
 
 # function: test_if_string_len_less_or_eq
 # $1: string
@@ -99,7 +122,7 @@ test_if_string_len_less =$(if \
 
 
 __check_cmd_len =$(if \
-    $(findstring no,$(call test_if_string_len_less,$1,3400)),TOO_LONG,)
+    $(findstring no,$(call test_if_string_len_less,$1,8100)),TOO_LONG,)
 
 check_win_cmd_len =$(if \
       $(findstring WINDOWS,$(COMPILER_HOST_OS)),$(call __check_cmd_len,$1),)
@@ -189,10 +212,17 @@ _fwrite_create_file =\
                     don't create new file))\
           do nothing)
 
+# add_one function will take _nums[$(1)] value, that is actually ($(1) + 1)
+_nums = 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26\
+          27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48
+add_one =$(if $1,$(eval _tmp =$(word $1,$(_nums)))$(if $(_tmp),$(_tmp),\
+                   $(info err: _M value should be less then 48)$(call exit,1)),)
+
 # too large _M may cause string of _M items be to long for HOST
 # shell(8192 for win). too small _M can increase build time
-_M :=20
-_MPP:=21#must be _M+1
+_M := $(if $(REDEFINE_NUM_OF_WORDS_IN_SHELL_COMMAND),\
+           $(REDEFINE_NUM_OF_WORDS_IN_SHELL_COMMAND), 19)
+_MPP:=$(call add_one,$(_M))#must be _M+1
 _MAX_N:=1000000
 # argument $1 contains list of items to put in shell
 # each iteration call to 'add_item_to_file' contain first _M items

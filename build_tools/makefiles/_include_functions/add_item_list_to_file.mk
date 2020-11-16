@@ -45,21 +45,48 @@ endif
 
 _ECHO_PREFIX :=echo $(PREFIX_FOR_EACH_ITEM)
 
+_ECHO_SUFFIX :=
 ifneq ($(SUFFIX_LINE_FOR_EACH_ITEM),)
-    # use ':=' at the end, to calculate variable right her and not each item
-    _ECHO_SUFFIX =>>$(LIST_FILE_NAME) $(SHELL_CMD_DELIMITER)
-    _ECHO_SUFFIX += echo $(SUFFIX_LINE_FOR_EACH_ITEM)>>$(LIST_FILE_NAME) 
-    _ECHO_SUFFIX := $(_ECHO_SUFFIX) $(SHELL_CMD_DELIMITER)
-else    
-    _ECHO_SUFFIX :=>>$(LIST_FILE_NAME) $(SHELL_CMD_DELIMITER)
+    # use ':=' at the end, to calculate variable right here and not each item
+    _ECHO_SUFFIX =>>$(LIST_FILE_NAME)$(SHELL_CMD_DELIMITER)
+    _ECHO_SUFFIX += echo $(SUFFIX_LINE_FOR_EACH_ITEM)
 endif
+_ECHO_SUFFIX :=$(_ECHO_SUFFIX)>>$(LIST_FILE_NAME)$(SHELL_CMD_DELIMITER)
 
-add_item_to_file=$(shell $(patsubst %, $(_ECHO_PREFIX)%$(_ECHO_SUFFIX),$1))
+WORKSPACE_CFG_MK :=$(PARENT_OF_COMMON_PUBLIC_DIR)/workspace_config.mk
+NUM_OF_WORDS_VAR :=\
+          $(WORKSPACE_CFG_MK)/REDEFINE_NUM_OF_WORDS_IN_SHELL_COMMAND
 
-# too large _M may cause string of _M items be to long for HOST 
+add_item_to_file_stop=\
+        $(eval $(info err: shell command is too long on Windows systems)\
+               $(info ---: most common reason: pathes are too long)\
+               $(info ---: possible solutions:)\
+               $(info ---: 1. move workspace to shorter path.)\
+               $(info ---: 2. set $(NUM_OF_WORDS_VAR) to some low number.\
+                              (default is 20).)\
+               $(info ---:    too low value will cause slower execution.)\
+               $(call exit,1))
+
+# step2: test cmd length and if it's short enough then run shell
+add_item_to_file_step2=$(eval _is_long=$(call check_win_cmd_len,$1))\
+          $(eval $(if $(_is_long), $(call add_item_to_file_stop),\
+          $(shell $1)))
+
+# step1: create shell command string
+add_item_to_file_step1 =$(call\
+    add_item_to_file_step2, $(patsubst %, $(_ECHO_PREFIX)%$(_ECHO_SUFFIX),$1))
+
+# add_one function will take _nums[$(1)] value, that is actually ($(1) + 1)
+_nums = 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26\
+          27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48
+add_one =$(if $1,$(eval _tmp =$(word $1,$(_nums)))$(if $(_tmp),$(_tmp),\
+                   $(info err: _M value should be less then 48)$(call exit,1)),)
+
+# too large _M may cause string of _M items be to long for HOST
 # shell(8192 for win). too small _M can increase build time
-_M :=20 
-_MPP:=21#must be _M+1
+_M := $(if $(REDEFINE_NUM_OF_WORDS_IN_SHELL_COMMAND),\
+           $(REDEFINE_NUM_OF_WORDS_IN_SHELL_COMMAND), 19)
+_MPP:=$(call add_one,$(_M))#must be _M+1
 _MAX_N:=1000000
 # argument $1 contains list of items to put in shell
 # each iteration call to 'add_item_to_file' contain first _M items
@@ -68,7 +95,7 @@ _MAX_N:=1000000
 # contains the remaining list of N-$(_M) items.
 # 'if' statement will continue to call 'put_items_to_file' till $1 is empty
 put_items_to_file= $(if $1,\
-      $(call add_item_to_file,$(wordlist 1,$(_M),$1)) \
+      $(call add_item_to_file_step1,$(wordlist 1,$(_M),$1)) \
       $(call put_items_to_file,$(strip $(wordlist $(_MPP),$(_MAX_N),$1))),\
       DUMMY_DO_NOTHING_ON_IF_FALSE_CONDITION)
 
