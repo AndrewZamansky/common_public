@@ -192,25 +192,56 @@ reduce_cmd_len =$(SET_CC_ENV_VARS) $(call reduce_cmd_len_7,$1)
 ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
     _fwrite_create_file_os = $(if $1,\
           $(shell copy /y /b NUL $(call fix_path_if_in_windows,$2)),do nothing)
+
+    _fwrite_add_item_to_file_stop=$(if $1,\
+        $(eval $(info err: shell command is too long on Windows systems)\
+               $(info ---: most common reason: pathes are too long)\
+               $(info ---: possible solutions:)\
+               $(info ---: 1. move workspace to shorter path.)\
+               $(info ---: 2. set $(NUM_OF_WORDS_VAR) to some low number.\
+                              (default is 20).)\
+               $(info ---:    too low value will cause slower execution.)\
+               $(call exit,1)),\
+          do nothing)
+
+    _fwrite_add_item_to_file_step2=$(if $1,\
+          $(eval _is_long=$(call check_win_cmd_len,$1))\
+          $(eval $(if $(_is_long), $(call 1,_fwrite_add_item_to_file_stop),\
+          $(shell $1))),\
+          do nothing)
+    _fwrite_add_item_to_file_step1 = $(if $1,\
+          $(call _fwrite_add_item_to_file_step2,echo|set /p dummy="$3 ">>$2),\
+          do nothing)
     _fwrite_add_item_to_file = $(if $1,\
-          $(shell $(patsubst %,echo|set /p dummy="% ">>$2 &,$(3))),\
+          $(call _fwrite_add_item_to_file_step1,1,$2,$3),\
           do nothing)
 else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX)
     #_ECHO_PREFIX :=/bin/echo -n #last space is important
     _fwrite_create_file_os = $(if $1,\
           $(shell /bin/echo -n >$(2)),do nothing)
     _fwrite_add_item_to_file = $(if $1,\
-          $(shell $(patsubst %, /bin/echo -n %\ >>$2;,$3)),do nothing)
+          $(shell /bin/echo -n $3\ >>$2),do nothing)
 endif
+
+_wrong_frite_option =$(if $1,\
+                       $(info err: only TRUNCATE or APPEND options are valid)\
+                       $(info ---: options for fwrite)\
+                       $(call exit,1),\
+                       do nothing)
+
+_check_options =$(if $2,\
+                  $(if $(filter-out TRUNCATE APPEND,$2),\
+                    $(call _wrong_frite_option,1),\
+                    valid options),\
+                  do nothing)
 
 _fwrite_create_file =\
      $(if $(1),\
-          $(if $(filter-out TRUNCATE APPEND,$(3)),\
-               wrong options, \
-               $(if $(filter TRUNCATE,$(3)),\
-                    $(call _fwrite_create_file_os,1,$(2)),\
-                    don't create new file))\
-          do nothing)
+       $(eval DUMMY=$(call _check_options,$2,$3))\
+       $(if $(filter TRUNCATE,$(3)),\
+         $(call _fwrite_create_file_os,1,$(2)),\
+         don't create new file)\
+       do nothing)
 
 # add_one function will take _nums[$(1)] value, that is actually ($(1) + 1)
 _nums = 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26\
