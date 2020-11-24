@@ -1089,3 +1089,13 @@ void dsp_get_output_buffer_from_pad( struct dsp_module_inst_t * adsp,
 	}
 	*buff = (uint8_t*)pad->buff;
 }
+
+
+void dsp_get_dummy_buffer(uint8_t **buff, size_t buff_len)
+{
+	if (buff_len > dummy_output_buff.buff_size)
+	{
+		CRITICAL_ERROR("size of dummy buffer to small");
+	}
+	*buff = (uint8_t*)dummy_output_buff.buff;
+}

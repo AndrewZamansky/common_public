@@ -93,6 +93,7 @@ void _dsp_register_new_module_type(const char *module_name,
 
 
 
+void dsp_get_dummy_buffer(uint8_t **buff, size_t buff_len);
 
 void dsp_get_output_buffer_from_pad( struct dsp_module_inst_t * adsp,
 							uint8_t pad_num, uint8_t **buff, size_t buff_len);

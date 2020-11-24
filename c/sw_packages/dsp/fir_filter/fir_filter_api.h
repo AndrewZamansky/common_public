@@ -33,7 +33,7 @@ struct fir_filter_api_set_coefficients_by_params_t {
 	float  fc; // requency where it happens
 	float  A_stop; // stopband attenuation in dB
 	float  dfc; // half-filter bandwidth (only for bandpass and notch)
-	float  sample_rate;
+	uint32_t  sample_rate_Hz;
 };
 
 

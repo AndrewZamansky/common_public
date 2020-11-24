@@ -22,6 +22,13 @@
 #define DEBUG
 #include "biquad_filter_api.h"
 
+extern "C" {
+	extern void band_splitter_butterworth_6db_gain_init_subchains(
+			struct band_splitter_butterworth_6db_gain_instance_t *handle);
+	extern char band_splitter_butterworth_6db_filter_all_pass_1_pole[];
+	extern char band_splitter_butterworth_6db_filter_all_pass_2_poles[];
+}
+
 char band_splitter_butterworth_6db_gain_module_name[] =
 										"band_splitter_butterworth_6db_gain";
 
@@ -98,79 +105,6 @@ static void band_splitter_butterworth_6db_gain_dsp(
 }
 
 
-char p_filter_all_pass_1_pole[] = "p_filter_all_pass_1_pole";
-
-#if 1
-static struct static_dsp_component_t chain_1_pole[] = {
-{ "chain_inputs", CHAIN_INPUTS_DSPT ,
-	SET_INPUTS(NO_INPUTS) },
-{ p_filter_all_pass_1_pole, BIQUAD_FILTER_DSPT ,
-	SET_INPUTS( IN0("chain_inputs", 0)) },
-{"chain_outputs", CHAIN_OUTPUTS_DSPT,
-	SET_INPUTS( IN0(p_filter_all_pass_1_pole, 0)) },
-};
-#else
-static struct static_dsp_component chain_1_pole[] =
-{
-	{"chain_inputs", CHAIN_INPUTS_DSPT, { } },
-
-	{p_filter_all_pass_1_pole,
-			BIQUAD_FILTER_DSPT, {{"chain_inputs", 0}}},
-
-	{"chain_outputs", CHAIN_OUTPUTS_DSPT,
-			{ {p_filter_all_pass_1_pole, 0} } },
-};
-#endif
-
-char p_filter_all_pass_2_poles[] = "p_filter_all_pass_2_poles";
-
-#if 1
-static struct static_dsp_component_t chain_2_poles[] = {
-{ "chain_inputs", CHAIN_INPUTS_DSPT ,
-	SET_INPUTS(NO_INPUTS) },
-{ p_filter_all_pass_2_poles, BIQUAD_FILTER_DSPT ,
-	SET_INPUTS( IN0("chain_inputs", 0)) },
-{"chain_outputs", CHAIN_OUTPUTS_DSPT,
-	SET_INPUTS( IN0(p_filter_all_pass_2_poles, 0)) },
-};
-#else
-static struct static_dsp_component chain_2_poles[] =
-{
-	{"chain_inputs", CHAIN_INPUTS_DSPT, { } },
-
-	{p_filter_all_pass_2_poles,
-			BIQUAD_FILTER_DSPT, {{"chain_inputs", 0}}},
-
-	{"chain_outputs", CHAIN_OUTPUTS_DSPT,
-			{ {p_filter_all_pass_2_poles, 0} } },
-};
-#endif
-
-static void init_filters_dsp_chains(
-		struct band_splitter_butterworth_6db_gain_instance_t *handle)
-{
-	chain_handle_t filter_1_pole_dsp_chain;
-	chain_handle_t filter_2_poles_dsp_chain;
-
-	filter_1_pole_dsp_chain =
-			DSP_MANAGEMENT_API_CREATE_STATIC_CHAIN(chain_1_pole);
-	handle->filter_1_pole_dsp_chain =  filter_1_pole_dsp_chain;
-
-	dsp_management_api_ioctl_1_params(
-			filter_1_pole_dsp_chain, p_filter_all_pass_1_pole,
-			IOCTL_BIQUAD_FILTER_SET_NUM_OF_BANDS , (void*) 1 );
-
-	filter_2_poles_dsp_chain =
-			DSP_MANAGEMENT_API_CREATE_STATIC_CHAIN(chain_2_poles);
-	handle->filter_2_poles_dsp_chain =  filter_2_poles_dsp_chain;
-
-	dsp_management_api_ioctl_1_params(
-			filter_2_poles_dsp_chain, p_filter_all_pass_2_poles,
-			IOCTL_BIQUAD_FILTER_SET_NUM_OF_BANDS , (void*) 1 );
-
-}
-
-
 static 	void set_freq(
 		struct band_splitter_butterworth_6db_gain_instance_t *handle,
 		real_t freq)
@@ -190,12 +124,14 @@ static 	void set_freq(
 	p_band_set_params->filter_mode = BIQUADS_ALL_PASS_BUTTERWORTH_1_POLE;
 	band_set.band_num = 0;
 	dsp_management_api_ioctl_1_params(
-			filter_1_pole_dsp_chain, p_filter_all_pass_1_pole,
+			filter_1_pole_dsp_chain,
+			band_splitter_butterworth_6db_filter_all_pass_1_pole,
 			IOCTL_BIQUAD_FILTER_SET_BAND, &band_set );
 	p_band_set_params->filter_mode = BIQUADS_ALL_PASS_BUTTERWORTH_2_POLES;
 	band_set.band_num = 0;
 	dsp_management_api_ioctl_1_params(
-			filter_2_poles_dsp_chain, p_filter_all_pass_2_poles,
+			filter_2_poles_dsp_chain,
+			band_splitter_butterworth_6db_filter_all_pass_2_poles,
 			IOCTL_BIQUAD_FILTER_SET_BAND, &band_set );
 
 }
@@ -224,7 +160,7 @@ static uint8_t band_splitter_butterworth_6db_gain_ioctl(
 
 	case IOCTL_DSP_INIT :
 		set_params->fc = 20000.0f;
-		init_filters_dsp_chains(handle);
+		band_splitter_butterworth_6db_gain_init_subchains(handle);
 		break;
 
 	case IOCTL_BAND_SPLITTER_BUTTERWORTH_6DB_GAIN_SET_FC :

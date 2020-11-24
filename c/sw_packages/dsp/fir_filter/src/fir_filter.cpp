@@ -61,6 +61,7 @@ static uint8_t create_filter(struct fir_filter_t *handle,
 	real_t *p_coefficients;
 	float *p_new_coefficients;
 	size_t i;
+	real_t sample_rate;
 
 	if (NULL != handle->p_fir_filter)
 	{
@@ -89,8 +90,9 @@ static uint8_t create_filter(struct fir_filter_t *handle,
 		break;
 	case FIR_CALCULATE_COEFFICIENTS_BY_PARAMS:
 		fir_params = &p_set_params->coeff_by_params;
+		sample_rate = (real_t)fir_params->sample_rate_Hz;
 		fir_coefficients_calculation(fir_params->filter_mode, fir_params->fc,
-				fir_params->A_stop, fir_params->dfc, fir_params->sample_rate,
+				fir_params->A_stop, fir_params->dfc, sample_rate,
 				p_coefficients, number_of_filter_coefficients);
 		break;
 	default:
