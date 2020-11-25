@@ -2,29 +2,28 @@
  * file : UPSAMPLING_BY_INT_FILTER.h
  *
  *
+ *
  */
 
 #ifndef _UPSAMPLING_BY_INT_FILTER_H
 #define _UPSAMPLING_BY_INT_FILTER_H
 
+#include "dsp_management_api.h"
+#include "common_dsp_api.h"
+#include "dsp_management_internal_api.h"
+
+struct upsampling_by_int_instance_t {
+	void *p_upsampling_by_int_filter;
+	uint32_t factor;
+};
 
 
-struct UPSAMPLING_BY_INT_Instance_t {
-	void *p_upsampling_by_int_filter   ;
-	void *p_coefficients   ;
-	size_t factor ;
-	size_t number_of_filter_coefficients ;
-	size_t predefined_data_block_size ;
-} ;
+void upsampling_by_int_create(
+		struct upsampling_by_int_instance_t *handle,
+		struct fir_filter_api_set_params_t *fir_set_params);
 
+void upsampling_by_int_function(void *p_filter,
+	real_t *in_buf, real_t *tmp_buf, size_t in_buff_len, real_t *out_buf);
 
-void *upsampling_by_int_alloc(size_t factor,
-		size_t number_of_filter_coefficients,
-		float *p_coefficients, size_t predefined_data_block_size);
-
-void upsampling_by_int_free(void *pFilter);
-
-void upsampling_by_int_function(void *pFilter,
-		float *pin, float *pOut, size_t buff_len);
 
 #endif

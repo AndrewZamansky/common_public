@@ -1,10 +1,5 @@
 /*
- *
  * file :   downsampling_by_int_arm_cortex_m.c
- *
- *
- *
- *
  *
  */
 
@@ -67,8 +62,8 @@ void downsampling_by_int_create(
 		struct fir_filter_api_set_params_t *fir_set_params)
 {
 	arm_status	status;
-	size_t predefined_data_block_size ;
-	size_t number_of_filter_coefficients ;
+	size_t predefined_data_block_size;
+	size_t number_of_filter_coefficients;
 	struct downsampling_by_int_t *p_downsampling_by_int;
 	arm_fir_decimate_instance_f32* p_filter_instance;
 	float *p_filter_state;

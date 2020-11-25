@@ -1,8 +1,8 @@
 /*
- *
  * file :   upsampling_by_int_filter.c
  *
  */
+
 
 #include "_project_typedefs.h"
 #include "_project_defines.h"
@@ -12,10 +12,8 @@
 
 #include "upsampling_by_int_api.h"
 #include "upsampling_by_int.h"
-
 #include "auto_init_api.h"
-#include "math.h"
-
+#include "fir_filter_api.h"
 
 
 char upsampling_by_int_module_name[] = "upsampling_by_int";
@@ -28,32 +26,64 @@ char upsampling_by_int_module_name[] = "upsampling_by_int";
  */
 static void upsampling_by_int_dsp(struct dsp_module_inst_t *adsp)
 {
-	float *apCh1In;
-	float *apCh1Out;
-	size_t data_len;
-	struct UPSAMPLING_BY_INT_Instance_t *handle;
-	void *p_upsampling_by_int_filter;
-	size_t factor;
+	float *apCh1In  ;
+	float *apCh1Out ;
+	float *apCh_tmp ;// for intermediate results
+	struct upsampling_by_int_instance_t *handle;
+	size_t in_data_len ;
+	size_t out_data_len ;
+	void *p_upsampling_by_int_filter ;
+	size_t factor ;
 	uint8_t buff_is_zero_buffer;
 
-	handle = adsp->handle;
-	factor = handle->factor;
+	handle = (struct upsampling_by_int_instance_t *)adsp->handle;
 	p_upsampling_by_int_filter = handle->p_upsampling_by_int_filter;
-
-	if((0 == handle->number_of_filter_coefficients)
-		|| (0 == factor) || (NULL == p_upsampling_by_int_filter))
+	factor = handle->factor;
+	if((0 == factor) || (NULL == p_upsampling_by_int_filter))
 	{
 		return;
 	}
 
 	buff_is_zero_buffer = 1;
 	dsp_get_input_buffer_from_pad(
-			adsp, 0, &(uint8_t*)apCh1In, &data_len, &buff_is_zero_buffer);
-	dsp_get_output_buffer_from_pad(
-			adsp, 0, &(uint8_t*)apCh1Out, data_len * factor);
+			adsp, 0, (uint8_t**)&apCh1In, &in_data_len, &buff_is_zero_buffer);
+	out_data_len = in_data_len * factor;
+	dsp_get_dummy_buffer((uint8_t**)&apCh_tmp, out_data_len);
+	dsp_get_output_buffer_from_pad(adsp, 0, (uint8_t**)&apCh1Out, out_data_len);
 
-	upsampling_by_int_function(
-			p_upsampling_by_int_filter, apCh1In , apCh1Out , data_len);
+	upsampling_by_int_function(p_upsampling_by_int_filter,
+			apCh1In, apCh_tmp, in_data_len, apCh1Out);
+}
+
+
+static void set_upsampling_params(
+		struct upsampling_by_int_instance_t *handle,
+		struct upsampling_by_int_api_set_params_t  *params)
+{
+	struct fir_filter_api_set_params_t fir_set_params;
+	uint32_t  input_sample_rate_Hz;
+	uint32_t  output_sample_rate_Hz;
+
+	input_sample_rate_Hz = params->input_sample_rate_Hz;
+	output_sample_rate_Hz = params->output_sample_rate_Hz;
+
+	if (0 != (output_sample_rate_Hz % input_sample_rate_Hz))
+	{
+		CRITICAL_ERROR("upsampling factor should be integer");
+	}
+	handle->factor = output_sample_rate_Hz / input_sample_rate_Hz;
+
+	fir_set_params.set_coefficients_type = FIR_CALCULATE_COEFFICIENTS_BY_PARAMS;
+	fir_set_params.coeff_by_params.filter_mode = FIR_LOWPASS_MODE;
+	fir_set_params.coeff_by_params.fc = input_sample_rate_Hz / 2;
+	//fir_set_params.coeff_by_params.dfc = 1000;// not relevant for lowpass
+	fir_set_params.coeff_by_params.A_stop = 90;
+	fir_set_params.coeff_by_params.sample_rate_Hz = output_sample_rate_Hz;
+	fir_set_params.number_of_filter_coefficients =
+					params->number_of_coefficients_in_lowpass_filter;
+	fir_set_params.predefined_data_block_size =
+						params->predefined_data_block_size;
+	upsampling_by_int_create(handle, &fir_set_params);
 }
 
 
@@ -69,45 +99,19 @@ static uint8_t upsampling_by_int_ioctl(struct dsp_module_inst_t *adsp,
 	size_t predefined_data_block_size;
 	float *p_coefficients;
 	struct upsampling_by_int_api_set_params_t *p_band_set_params;
-	struct UPSAMPLING_BY_INT_Instance_t *handle;
+	struct upsampling_by_int_instance_t *handle;
 
-	handle = adsp->handle;
+	handle = (struct upsampling_by_int_instance_t *)adsp->handle;
 	switch(aIoctl_num)
 	{
 	case IOCTL_DSP_INIT :
 		handle->factor =0;
-		handle->number_of_filter_coefficients =0;
-		handle->p_coefficients = NULL ;
 		handle->p_upsampling_by_int_filter = NULL;
-
 		break;
 
-	case IOCTL_UPSAMPLING_BY_INT_SET_FACTOR :
-		handle->factor = *(size_t*)aIoctl_param1;
-
-		break;
-
-	case IOCTL_UPSAMPLING_BY_INT_SET_FIR_COEFFICIENTS :
-		p_band_set_params =
-				((struct upsampling_by_int_api_set_params_t *)aIoctl_param1);
-		number_of_filter_coefficients =
-				p_band_set_params->number_of_filter_coefficients;
-		handle->number_of_filter_coefficients = number_of_filter_coefficients;
-		predefined_data_block_size =
-				p_band_set_params->predefined_data_block_size;
-		handle->predefined_data_block_size = predefined_data_block_size;
-
-		p_coefficients=(float *)os_safe_realloc(handle->p_coefficients,
-						sizeof(float) * number_of_filter_coefficients);
-		errors_api_check_if_malloc_succeed(p_coefficients);
-		memcpy(p_coefficients,p_band_set_params->p_coefficients,
-							sizeof(float) * number_of_filter_coefficients);
-		handle->p_coefficients = p_coefficients;
-
-		handle->p_upsampling_by_int_filter =
-				upsampling_by_int_alloc(handle->factor ,
-				number_of_filter_coefficients, p_coefficients,
-				predefined_data_block_size );
+	case IOCTL_UPSAMPLING_BY_INT_SET_PARAMS :
+		set_upsampling_params(handle,
+				(struct upsampling_by_int_api_set_params_t *)aIoctl_param1);
 		break;
 
 	default :
@@ -124,11 +128,13 @@ static uint8_t upsampling_by_int_ioctl(struct dsp_module_inst_t *adsp,
  */
 extern "C" void  upsampling_by_int_init(void)
 {
-	DSP_REGISTER_NEW_MODULE("upsampling_by_int", upsampling_by_int_ioctl,
+	DSP_REGISTER_NEW_MODULE("upsampling_by_int",
+			upsampling_by_int_ioctl,
 			upsampling_by_int_dsp,
-			NULL, dsp_management_default_mute,
+			NULL,
+			dsp_management_default_mute,
 			DSP_MANAGEMENT_FLAG_BYPASS_NOT_AVAILABLE,
-			struct UPSAMPLING_BY_INT_Instance_t);
+			struct upsampling_by_int_instance_t);
 }
 
 AUTO_INIT_FUNCTION(upsampling_by_int_init);

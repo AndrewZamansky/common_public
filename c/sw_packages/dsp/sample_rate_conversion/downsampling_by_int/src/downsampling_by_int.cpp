@@ -1,10 +1,5 @@
 /*
- *
  * file :   downsampling_by_int_filter.c
- *
- *
- *
- *
  *
  */
 

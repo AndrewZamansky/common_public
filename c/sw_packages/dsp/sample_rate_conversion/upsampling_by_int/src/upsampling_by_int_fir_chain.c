@@ -1,5 +1,5 @@
 /*
- * file :   downsampling_by_int_arm_cortex_m.c
+ * file :   upsampling_by_int_arm_cortex_m.c
  *
  */
 
@@ -27,7 +27,7 @@ static struct static_dsp_component_t fir_chain[] =
 };
 
 
-chain_handle_t downsampling_by_int_init_fir_chain(
+chain_handle_t upsampling_by_int_init_fir_chain(
 		struct fir_filter_api_set_params_t *fir_set_params)
 {
 	chain_handle_t fir_dsp_chain;
