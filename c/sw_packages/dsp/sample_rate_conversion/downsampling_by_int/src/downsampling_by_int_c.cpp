@@ -54,10 +54,9 @@ void downsampling_by_int_function(void *p_filter,
 	samples_in_buffer = in_buff_len / sizeof(real_t);
 
 	j = 0;
-	for (i = 0; i < samples_in_buffer; i++)
+	for (i = 0; i < samples_in_buffer; i += factor)
 	{
-		out_buf[i] = tmp_buf[j];
-		j += factor;
+		out_buf[j++] = tmp_buf[i];
 	}
 }
 
