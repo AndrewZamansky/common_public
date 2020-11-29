@@ -59,10 +59,19 @@ menuconfig INCLUDE_MEMORY_POOL
 	bool   "memory pool"
 	default n
 
-config MEMORY_POOL_IS_SPEED_CRITICAL 
+config MEMORY_POOL_IS_SPEED_CRITICAL
 	bool   "memory pool is speed critical"
 	depends on INCLUDE_MEMORY_POOL
 	default n
+
 	
-	
+menuconfig INCLUDE_CYCLIC_BUFFER
+	bool   "cyclic_buffer"
+	default n
+
+config CYCLIC_BUFFER_IS_SPEED_CRITICAL
+	bool   "cyclic_buffer is speed critical"
+	depends on INCLUDE_CYCLIC_BUFFER
+	default n
+
 endmenu

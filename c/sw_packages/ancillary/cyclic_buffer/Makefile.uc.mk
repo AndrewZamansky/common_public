@@ -1,0 +1,23 @@
+
+INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_CYCLIC_BUFFER)
+
+
+#INCLUDE_DIR = 
+
+#DEFINES = 
+
+#CFLAGS = 
+
+#ASMFLAGS =  
+
+
+
+SRC = cyclic_buffer.c
+
+ifdef CONFIG_CYCLIC_BUFFER_IS_SPEED_CRITICAL 
+    SPEED_CRITICAL_FILES += cyclic_buffer.c
+endif
+
+VPATH = src
+
+include $(COMMON_CC)

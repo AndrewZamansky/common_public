@@ -15,8 +15,11 @@
 
 #include "string.h"
 #include "stdlib.h"
-
 #include "auto_init_api.h"
+extern "C" {
+	#include "errors_api.h"
+	#include "os_wrapper.h"
+}
 
 char delay_module_name[] = "delay";
 
@@ -87,10 +90,7 @@ static uint8_t delay_ioctl(struct dsp_module_inst_t *adsp,
 			buff = handle->buff;
 			buff =
 				(real_t *)os_safe_realloc(buff, delay_samples * sizeof(real_t));
-			if (NULL == buff)
-			{
-				CRITICAL_ERROR("not enough memory in heap");
-			}
+			errors_api_check_if_malloc_succeed(buff);
 			handle->buff = buff;
 			memset(buff, 0, delay_samples * sizeof(real_t));
 			break;
