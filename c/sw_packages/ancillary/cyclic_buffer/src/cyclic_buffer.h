@@ -15,6 +15,7 @@ struct cyclic_buffer_runtime_t
 	size_t  read_pointer; // points to last elements that was read
 	size_t  valid_items_in_buffer;
 	size_t item_size;
+	uint16_t  init_done;
 };
 
 #endif

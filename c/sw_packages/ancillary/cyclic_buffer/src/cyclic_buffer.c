@@ -12,6 +12,7 @@
 #include "cyclic_buffer.h"
 #include "os_wrapper.h"
 
+#define INIT_DONE_STAMP  0x1a2b
 
 size_t cyclic_buffer_add_items(cyclic_buffer_t cyclic_buffer_handle,
 					const void *new_items_buff, size_t num_of_new_items)
@@ -29,6 +30,8 @@ size_t cyclic_buffer_add_items(cyclic_buffer_t cyclic_buffer_handle,
 	size_t items_actually_copied;
 
 	buffer_handle = (struct cyclic_buffer_runtime_t  *)cyclic_buffer_handle;
+	if (INIT_DONE_STAMP != buffer_handle->init_done) return 0;
+
 	write_pointer = buffer_handle->write_pointer;
 	read_pointer = buffer_handle->read_pointer;
 	item_size = buffer_handle->item_size;
@@ -94,6 +97,8 @@ size_t cyclic_buffer_get_items(cyclic_buffer_t cyclic_buffer_handle,
 	size_t items_actually_copied;
 
 	buffer_handle = (struct cyclic_buffer_runtime_t  *)cyclic_buffer_handle;
+	if (INIT_DONE_STAMP != buffer_handle->init_done) return 0;
+
 	write_pointer = buffer_handle->write_pointer;
 	read_pointer = buffer_handle->read_pointer;
 	item_size = buffer_handle->item_size;
@@ -148,6 +153,8 @@ size_t cyclic_buffer_get_num_of_items(cyclic_buffer_t cyclic_buffer_handle)
 	size_t  read_pointer;
 
 	buffer_handle = (struct cyclic_buffer_runtime_t  *)cyclic_buffer_handle;
+	if (INIT_DONE_STAMP != buffer_handle->init_done) return 0;
+
 	write_pointer = buffer_handle->write_pointer;
 	read_pointer = buffer_handle->read_pointer;
 
@@ -194,6 +201,7 @@ uint8_t cyclic_buffer_init(size_t item_size,
 	cyclic_buffer_handle->write_pointer = 0;
 	cyclic_buffer_handle->read_pointer = max_num_of_items_in_buffer - 1;
 	cyclic_buffer_handle->wrap_mask = wrap_mask;
+	cyclic_buffer_handle->init_done = INIT_DONE_STAMP;
 	//cyclic_buffer_handle->empty = 1;
 
 	*new_cyclic_buffer = cyclic_buffer_handle;
