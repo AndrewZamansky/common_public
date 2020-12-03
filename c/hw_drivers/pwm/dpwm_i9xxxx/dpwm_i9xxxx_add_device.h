@@ -1,0 +1,80 @@
+/* !! DONT PUT HEADER FILE PROTECTIONS IN THIS FILE !! */
+
+#include "dpwm_i9xxxx_api.h"
+#include "src/dpwm_i9xxxx.h"
+
+#ifndef DPWM_I9XXXX_DT_SAMPLE_RATE
+	#error "DPWM_I9XXXX_DT_SAMPLE_RATE should be defined"
+#endif
+
+#ifndef DPWM_I9XXXX_DT_LEFT_CH_P_PIN
+	#error "DPWM_I9XXXX_DT_LEFT_CH_P_PIN should be defined"
+#endif
+#ifndef DPWM_I9XXXX_DT_LEFT_CH_N_PIN
+	#error "DPWM_I9XXXX_DT_LEFT_CH_P_PIN should be defined"
+#endif
+
+#ifndef DPWM_I9XXXX_DT_RIGHT_CH_P_PIN
+	#error "DPWM_I9XXXX_DT_LEFT_CH_P_PIN should be defined"
+#endif
+#ifndef DPWM_I9XXXX_DT_RIGHT_CH_N_PIN
+	#error "DPWM_I9XXXX_DT_LEFT_CH_P_PIN should be defined"
+#endif
+
+#ifndef DPWM_I9XXXX_DT_SUB_CH_P_PIN
+	//#warning "DPWM_I9XXXX_DT_SUB_CH_P_PIN not defined"
+	#define DPWM_I9XXXX_DT_SUB_CH_P_PIN  0xffffffff
+#endif
+
+#ifndef DPWM_I9XXXX_DT_SUB_CH_N_PIN
+	//#warning "DPWM_I9XXXX_DT_SUB_CH_N_PIN not defined"
+	#define DPWM_I9XXXX_DT_SUB_CH_N_PIN  0xffffffff
+#endif
+
+#ifndef DPWM_I9XXXX_DT_SRC_CLOCK_PDEV
+	#error "DPWM_I9XXXX_DT_SRC_CLOCK_PDEV should be defined"
+#endif
+
+EXTERN_DECLARATION_TO_STATIC_DEVICE_INST(DPWM_I9XXXX_DT_SRC_CLOCK_PDEV) ;
+
+#define POINTER_TO_SRC_CLOCK_PDEV  \
+		P_TO_STATIC_DEVICE_INST(DPWM_I9XXXX_DT_SRC_CLOCK_PDEV)
+
+
+#ifndef DPWM_I9XXXX_DT_DATA_MODE
+	#error "DPWM_I9XXXX_DT_DATA_MODE should be defined"
+#endif
+#if (DPWM_I9XXXX_DT_DATA_MODE == )
+	#if defined(CONFIG_I96XXX_M0)
+		#error "unsupported data mode"
+	#endif
+#endif
+
+
+SET_STATIC_DEV_CONFIG(dpwm_i9xxxx) =
+{
+	POINTER_TO_SRC_CLOCK_PDEV,
+	DPWM_I9XXXX_DT_SAMPLE_RATE,
+	DPWM_I9XXXX_DT_LEFT_CH_P_PIN,
+	DPWM_I9XXXX_DT_LEFT_CH_N_PIN,
+	DPWM_I9XXXX_DT_RIGHT_CH_P_PIN,
+	DPWM_I9XXXX_DT_RIGHT_CH_N_PIN,
+	DPWM_I9XXXX_DT_SUB_CH_P_PIN,
+	DPWM_I9XXXX_DT_SUB_CH_N_PIN,
+	DPWM_I9XXXX_DT_DATA_MODE
+};
+
+#define MODULE_HAS_NO_RUNTIME_DATA
+
+#include "add_static_dev.h"
+
+#undef DPWM_I9XXXX_DT_SAMPLE_RATE
+#undef DPWM_I9XXXX_DT_LEFT_CH_P_PIN
+#undef DPWM_I9XXXX_DT_LEFT_CH_N_PIN
+#undef DPWM_I9XXXX_DT_RIGHT_CH_P_PIN
+#undef DPWM_I9XXXX_DT_RIGHT_CH_N_PIN
+#undef DPWM_I9XXXX_DT_SUB_CH_P_PIN
+#undef DPWM_I9XXXX_DT_SUB_CH_N_PIN
+#undef DPWM_I9XXXX_DT_SRC_CLOCK_PDEV
+#undef POINTER_TO_SRC_CLOCK_PDEV
+#undef DPWM_I9XXXX_DT_DATA_MODE

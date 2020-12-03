@@ -26,6 +26,7 @@ extern struct dev_desc_t  *i96xxx_pclk1_clk_dev;
 extern struct dev_desc_t  *i96xxx_dsp_clk_dev;
 extern struct dev_desc_t  *i96xxx_usb_clk_dev;
 extern struct dev_desc_t  *i96xxx_i2c0_clk_dev;
+extern struct dev_desc_t  *i96xxx_dpwm_clk_dev;
 
 struct clk_cntl_i96xxx_m0_cfg_t {
 	uint32_t           xtal_rate;

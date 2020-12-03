@@ -702,6 +702,57 @@ static void clock_i96xxx_I2S1_FSCLK_get_freq(
 
 
 
+// bug in I96 BSP ver 0.0
+#undef CLK_CLKSEL2_DPWMSEL_MCLKI
+#undef CLK_CLKSEL2_DPWMSEL_XCLK
+#define CLK_CLKSEL2_DPWMSEL_MCLKI          (0x5UL<<CLK_CLKSEL2_DPWMSEL_Pos)
+#define CLK_CLKSEL2_DPWMSEL_XCLK           (0x4UL<<CLK_CLKSEL2_DPWMSEL_Pos)
+
+/***************************************/
+/********** i96xxx_dpwm_clk_dev ********/
+static void clock_i96xxx_dpwm_enable()
+{
+	CLK->APBCLK1 |= CLK_APBCLK1_DPWMCKEN_Msk;
+}
+
+static void clock_i96xxx_dpwm_set_parent_clk(struct dev_desc_t *parent_clk)
+{
+	uint32_t curr_val;
+	curr_val = (CLK->CLKSEL2 & ~ CLK_CLKSEL2_DPWMSEL_Msk);
+	if (i96xxx_xtal_clk_dev == parent_clk)
+	{
+		CLK->CLKSEL2 = curr_val | CLK_CLKSEL2_DPWMSEL_HXT;
+	}
+	else if (i96xxx_hirc_clk_dev == parent_clk)
+	{
+		CLK->CLKSEL2 = curr_val | CLK_CLKSEL2_DPWMSEL_HIRC;
+	}
+	else if (i96xxx_pll_clk_dev == parent_clk)
+	{
+		CLK->CLKSEL2 = curr_val | CLK_CLKSEL2_DPWMSEL_PLL;
+	}
+	else if (i96xxx_pclk0_clk_dev == parent_clk)
+	{
+		CLK->CLKSEL2 = curr_val | CLK_CLKSEL2_DPWMSEL_PCLK0;
+	}
+	else if (i96xxx_ext_mclk_clk_dev == parent_clk)
+	{
+		CLK->CLKSEL2 = curr_val | CLK_CLKSEL2_DPWMSEL_MCLKI;
+	}
+	else
+	{
+		CRITICAL_ERROR("bad parent clock \n");
+	}
+}
+
+#define DT_DEV_NAME                i96xxx_dpwm_clk_dev
+#define DT_DEV_MODULE              clk_cntl
+
+#define CLK_DT_ENABLE_CLK_FUNC      clock_i96xxx_dpwm_enable
+#define CLK_DT_SET_PARENT_CLK_FUNC  clock_i96xxx_dpwm_set_parent_clk
+
+#include "clk_cntl_add_device.h"
+
 
 
 /***************************************/

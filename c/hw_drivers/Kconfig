@@ -118,7 +118,7 @@ endif
 
 menuconfig INCLUDE_INTERNAL_PWM
 	bool   "internal pwm"
-	depends on I94XXX || STM32F10X
+	depends on I94XXX || I96XXX_M0 || STM32F10X
 	default n
 
 config INTERNAL_PWM_IS_SPEED_CRITICAL

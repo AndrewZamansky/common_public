@@ -26,7 +26,7 @@
 #include "dpwm.h"
 
 #ifdef CONFIG_INCLUDE_INTERNAL_PWM
-	#include "dpwm_i94xxx_api.h"
+	#include "dpwm_i9xxxx_api.h"
 #endif
 
 #include "pin_control_api.h"
@@ -265,7 +265,7 @@ static void i9xxxx_sync_to_dpwm_fs_rate(struct I2S_i9xxxx_cfg_t *cfg_hndl,
 	uint32_t i2s_sample_rate_hz;
 
 	DEV_IOCTL_1_PARAMS(dpwm_dev,
-			DPWM_I94XXX_GET_ROOT_CLK_DEV, &dpwm_root_clk_dev);
+			DPWM_I9XXXX_GET_ROOT_CLK_DEV, &dpwm_root_clk_dev);
 	DEV_IOCTL_1_PARAMS(runtime_handle->i9xxxx_i2s_clk_dev,
 			CLK_IOCTL_GET_ROOT_CLK, &i2s_root_clk_dev);
 
@@ -277,7 +277,7 @@ static void i9xxxx_sync_to_dpwm_fs_rate(struct I2S_i9xxxx_cfg_t *cfg_hndl,
 	DEV_IOCTL_1_PARAMS(runtime_handle->i9xxxx_I2S_FSCLK_clk_dev,
 						CLK_IOCTL_GET_FREQ, &i2s_sample_rate_hz);
 	DEV_IOCTL_1_PARAMS(dpwm_dev,
-			DPWM_I94XXX_GET_SAMPLE_RATE_HZ, &dpwm_sample_rate_hz);
+			DPWM_I9XXXX_GET_SAMPLE_RATE_HZ, &dpwm_sample_rate_hz);
 
 	if ( dpwm_sample_rate_hz != i2s_sample_rate_hz)
 	{
