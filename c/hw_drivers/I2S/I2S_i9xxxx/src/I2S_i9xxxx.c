@@ -193,22 +193,22 @@ static void set_i2s_fifo_params(I2S_T*  base_address,
 			(I2S_FORMAT_PCMLSB == i2s_format) || (I2S_FORMAT_PCM == i2s_format))
 	{
 		I2S_SET_PCMSYNC(base_address, I2S_PCMSYNC_BCLK);
-		if (1 == num_of_bytes_in_word)
-		{
-			I2S_SET_CHWIDTH(base_address, I2S_CHWIDTH_8);
-		}
-		else if (2 == num_of_bytes_in_word)
-		{
-			I2S_SET_CHWIDTH(base_address, I2S_CHWIDTH_16);
-		}
-		else if (3 == num_of_bytes_in_word)
-		{
-			I2S_SET_CHWIDTH(base_address, I2S_CHWIDTH_24);
-		}
-		else if (4 == num_of_bytes_in_word)
-		{
-			I2S_SET_CHWIDTH(base_address, I2S_CHWIDTH_32);
-		}
+	}
+	if (1 == num_of_bytes_in_word)
+	{
+		I2S_SET_CHWIDTH(base_address, I2S_CHWIDTH_8);
+	}
+	else if (2 == num_of_bytes_in_word)
+	{
+		I2S_SET_CHWIDTH(base_address, I2S_CHWIDTH_16);
+	}
+	else if (3 == num_of_bytes_in_word)
+	{
+		I2S_SET_CHWIDTH(base_address, I2S_CHWIDTH_24);
+	}
+	else if (4 == num_of_bytes_in_word)
+	{
+		I2S_SET_CHWIDTH(base_address, I2S_CHWIDTH_32);
 	}
 }
 

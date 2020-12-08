@@ -118,7 +118,7 @@ static uint32_t try_to_calclulate_clk_div(uint32_t needed_sample_rate,
 
 static void set_data_mode(struct dpwm_i9xxxx_cfg_t *cfg_hndl)
 {
-	if (I2S_I9XXXX_API_DATA_MODE_FLOATING_POINT == cfg_hndl->data_mode)
+	if (DPWM_I9XXXX_API_DATA_MODE_FLOATING_POINT == cfg_hndl->data_mode)
 	{
 #ifdef CONFIG_I94XXX
 		DPWM_ENABLE_FLOAT(DPWM);
