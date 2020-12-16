@@ -11,7 +11,8 @@ INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_SHELL)
 
 
 
-SRC = shell_frontend.c
+SRC += shell_frontend.c
+SRC += cmd_bin_0x00.c
 
 
 VPATH = src

@@ -92,6 +92,7 @@ SRC += command.c
 SRC += cli.c
 SRC += cli_simple.c
 SRC += cmd_help.c
+SRC += cmd_bin.c
 
 
 VPATH += | $(U_BOOT_PATH)/common

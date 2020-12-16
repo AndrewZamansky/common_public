@@ -1,0 +1,44 @@
+binary command structure:  [header, user_data, tail]
+
+
+header = 
+[     byte 1     |    byte 2      |      byte 3      |       byte 4      ]
+[  msg size LSB  |  msg size  MSB |   flags 8bit     |    cmdID 8bit     ]
+
+data size does include header.
+cmdID=0x00 is special echo command and should not be used.
+
+
+flags: 
+[     bit 8    |        bit 7    |        bit 6           |       bit 5      ]
+[    reserved  |      reserved   |      reserved          |      reserved    ]
+
+[     bit 4    |       bit 3     |        bit 2           |      bit 1       ]
+[   reserved   | INTEGRITY_STAMP |  SUPPRESS_REPLY_HEADER |  EXTANDED_HEADER ]
+
+EXTANDED_HEADER :  should be 0 for now.
+
+SUPPRESS_REPLY_HEADER:
+if 0:
+  reply will include header: [header, data]
+if 1:
+  no header inserted in reply.   reply structure: [data]
+
+INTEGRITY_STAMP:
+if 0:
+  tail will not iclude integrity stamp.
+if 1:
+  tail wil include 4 bytes to check message integrity: 0x1a 0x2a 0x3a 0x4a
+
+
+
+reply syntax:  [header, data]
+
+header = 
+[     byte 1     |    byte 2      |      byte 3      |       byte 4      ]
+[  msg size LSB  |  msg size  MSB |       0x00       |    replyStatus    ]
+
+replyStatus :
+  0x00  - NO ERROR
+  0x01  - command not found
+  0x02  - test of integrity stamp failed

@@ -97,6 +97,73 @@ create_auto_init_file = $(if $(strip $(2)), \
           $(call mkdir_if_not_exists, $(dir $1)) \
           $(shell echo $2>$1) $(shell echo $3>$1.ext) ,)
 
+
+
+# input :
+# $1 - filename that under process.
+# $2 - 1 word in format shell_frontend_bin_cmd_0x00_0xXX
+# output:
+#  will write "extern struct shell_bin_cmd_struct_t \
+#  shell_frontend_bin_cmd_0x00_0xXX;"  into $1.bin_cmd.ext
+EXTERN_CMD_PREFIX :=extern struct shell_bin_cmd_struct_t
+bin_cmd_step5 = $(if $(strip $(2)),\
+       $(shell echo $(EXTERN_CMD_PREFIX) $(2);>>$1.bin_cmd.ext),\
+       do nothing)
+
+# input :
+# $1 - filename that under process.
+# $2 - 1 word in format shell_frontend_bin_cmd_0x00_0xXX
+# output:
+#  will write "&shell_frontend_bin_cmd_0x00_0xXX,"  $1.bin_cmd
+ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
+    bin_cmd_step4 = $(if $(strip $(2)), $(shell echo ^&$2,>>$1.bin_cmd),)
+else
+    bin_cmd_step4 = $(if $(strip $(2)), $(shell echo &$2,>>$1.bin_cmd),)
+endif
+
+# input :
+# $1 - filename that under process.
+# $2 - words in format shell_frontend_bin_cmd_0x00_0xXX
+# output:
+# 1) will create folder if needed
+# 2) truncate bin_cmd/bin_cmd.ext files and will call step4 and step5
+bin_cmd_step3 = $(if $(strip $(2)), \
+      $(call mkdir_if_not_exists, $(dir $1)) \
+      $(shell echo /*from $1*/>$1.bin_cmd)\
+      $(shell echo /*from $1*/>$1.bin_cmd.ext)\
+      $(foreach var,\
+         $2,$(call bin_cmd_step4,$1,$(var)) $(call bin_cmd_step5,$1,$(var)))\
+      ,do nothing)
+
+# input :
+# $1 - filename that under process.
+# $2 - string have following structure:
+# struct shell_bin_cmd_struct_t shell_frontend_bin_cmd_0x00_0xXX = \
+# { 0xXX, func};
+# output:
+# will extract shell_frontend_bin_cmd_0x00_0xXX and will call step3
+bin_cmd_step2 = $(if $(strip $(2)),$(eval \
+    __x = $(call bin_cmd_step3,$1,$(filter shell_frontend_bin_cmd_%,$2))),)
+
+### extracting shell_bin_cmd_struct_t structures
+ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
+    # assuming there is no string YrkHZOpQckoSO32i0tOM in processed file,
+    # findstr /v YrkHZOpQckoSO32i0tOM will pipe file as is.
+    # but it will solve "FINDSTR: Line NNNNNNN is too long." issue by
+    # redirecting error to stdout
+    bin_cmd_step1 = $(if $(1),$(shell type $(call fix_path_if_in_windows,$(1))\
+              | findstr /v YrkHZOpQckoSO32i0tOM 2>&1\
+              | findstr /B /C:"struct shell_bin_cmd_struct_t shell_frontend"),)
+else
+    bin_cmd_step1 = $(if $(1),$(shell \
+             cat $(1) | grep "^struct shell_bin_cmd_struct_t shell_frontend"),)
+endif
+
+create_shell_binary_commands_file =$(if $1,\
+        $(eval BIN_CMDS=$(call bin_cmd_step1,$1))\
+        $(eval $(call bin_cmd_step2,$1,$(BIN_CMDS))),\
+        do nothing)
+
 $(CURR_OBJ_DIR)/%.analyzer: $(CURR_OBJ_DIR)/%.preproc %
 	$(info .    ------- analyzing $<)
 	$(eval CMDS:=$(call get_cmd,$<))
@@ -106,4 +173,5 @@ $(CURR_OBJ_DIR)/%.analyzer: $(CURR_OBJ_DIR)/%.preproc %
 	$(eval AUTO_INITS:=$(call get_auto_init,$<))
 	$(eval EXT_AUTO_INITS:=$(call get_auto_init_functions,$(AUTO_INITS)))
 	$(eval AUTO_INITS:=$(call clean_auto_inits,$(AUTO_INITS)))
-	$(call create_auto_init_file,$<.auto_init,$(AUTO_INITS),$(EXT_AUTO_INITS))	
+	$(call create_auto_init_file,$<.auto_init,$(AUTO_INITS),$(EXT_AUTO_INITS))
+	$(call create_shell_binary_commands_file,$<)

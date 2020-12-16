@@ -11,6 +11,7 @@
 
 struct shell_frontend_runtime_instance_t {
 	uint32_t last_tested_pos;
+	uint8_t mode;
 	uint8_t last_EOL_char;
 };
 
