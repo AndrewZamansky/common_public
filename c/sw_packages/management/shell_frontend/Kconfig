@@ -3,3 +3,7 @@
 config  SHELL_FRONTEND_MAX_QUEUE_LEN
 	int   "internal queue length"
 	default 3
+
+config  SHELL_FRONTEND_MAX_BINARY_MESSAGE_LEN
+	int   "max_binary message length"
+	default 128

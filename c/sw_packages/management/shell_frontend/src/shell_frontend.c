@@ -44,6 +44,7 @@ static char EOF_MARKER_STR[] = "\r\n~2@5\r\n";
 #define BIN_CMD_REPLY_STATUS_NO_ERROR        0
 #define BIN_CMD_REPLY_STATUS_CMD_NOT_FOUND   1
 #define BIN_CMD_REPLY_BAD_INTEGRITY_STAMP    2
+#define BIN_CMD_REPLY_MSG_TOO_LONG           3
 
 enum Header_positions_t {
 	HEADER_SUPPRESS_ECHO_POS, // must be on first position
@@ -362,6 +363,13 @@ static size_t process_data_binary(struct shell_frontend_cfg_t *config_handle,
 	if (total_length < BIN_NON_EXTENDED_HEADER_SIZE) return 0;
 
 	msg_length = buff[0] + (buff[1] << 8);
+
+	if (CONFIG_SHELL_FRONTEND_MAX_BINARY_MESSAGE_LEN < msg_length)
+	{
+		send_bin_reply_head(0, BIN_CMD_REPLY_MSG_TOO_LONG);
+		curr_runtime_hndl->mode = SHELL_FRONTEND_MODE_ASCII;
+		return 1; // dismiss just 1 char
+	}
 
 	if (total_length < msg_length) return 0;// still not enough data
 
