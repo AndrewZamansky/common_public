@@ -1,14 +1,13 @@
 menu "`--->  I96XXX M0 configurations"
 
 
-config I96XXX_BSP_VERSION
-	string "i96xxx bsp version in form : xx.xx[.xx]"
-	default "00.0x"
-
 config  I96XXX_SPIM_FLASH_SIZE
 	hex   "spim flash size"
 	default 0x100000
 
+config BSP_I96XXX_GIT_COMMIT_HASH
+	string "BSP i96xxx git commit hash"
+	default ""
 
 endmenu
 

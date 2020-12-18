@@ -1,8 +1,8 @@
 menu "`---> I96XXX HIFI3 configurations"
 
-config I96XXX_BSP_VERSION_HIFI3
-	string "i96xxx bsp version in form : xx.xx[.xx]"
-	default "00.0x"
+config BSP_I96XXX_GIT_COMMIT_HASH
+	string "BSP i96xxx git commit hash"
+	default ""
 
 endmenu
 
