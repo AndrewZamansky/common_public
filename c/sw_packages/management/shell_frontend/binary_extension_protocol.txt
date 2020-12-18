@@ -42,3 +42,4 @@ replyStatus :
   0x00  - NO ERROR
   0x01  - command not found
   0x02  - test of integrity stamp failed
+  0x03  - msg length too long
