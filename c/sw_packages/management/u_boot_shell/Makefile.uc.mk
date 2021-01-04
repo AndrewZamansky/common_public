@@ -92,8 +92,10 @@ SRC += command.c
 SRC += cli.c
 SRC += cli_simple.c
 SRC += cmd_help.c
-SRC += cmd_bin.c
 
+ifdef CONFIG_INCLUDE_SHELL
+    SRC += cmd_bin.c
+endif
 
 VPATH += | $(U_BOOT_PATH)/common
 
