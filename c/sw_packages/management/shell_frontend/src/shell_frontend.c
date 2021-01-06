@@ -79,9 +79,15 @@ static uint8_t shell_frontend_callback(struct dev_desc_t *adev,
 
 static void shell_frontend_reply_data(const uint8_t *data, size_t len)
 {
-	if (0 == len) return;
+	size_t written_len;
+
 	if (NULL == curr_tx_dev) return ;
-	DEV_WRITE(curr_tx_dev, (uint8_t*)data, len);
+	while (len)
+	{
+		written_len = DEV_WRITE(curr_tx_dev, data, len);
+		len -= written_len;
+		data += written_len;
+	}
 }
 
 

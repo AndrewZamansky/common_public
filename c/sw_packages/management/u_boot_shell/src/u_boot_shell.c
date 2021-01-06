@@ -69,14 +69,13 @@ int cli_readline(const char *const prompt)
 void SHELL_REPLY_DATA(uint8_t *data, size_t len)
 {
 	size_t written_len;
-	if (NULL != gCurrReplyDev)
+
+	if (NULL == gCurrReplyDev) return;
+	while (len)
 	{
-		while (len)
-		{
-			written_len = DEV_WRITE(gCurrReplyDev, data, len);
-			len -= written_len;
-			data += written_len;
-		}
+		written_len = DEV_WRITE(gCurrReplyDev, data, len);
+		len -= written_len;
+		data += written_len;
 	}
 }
 
