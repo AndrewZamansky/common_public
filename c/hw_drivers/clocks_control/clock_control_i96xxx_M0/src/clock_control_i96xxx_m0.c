@@ -25,9 +25,11 @@
   declared outside of library
  *------------------*/
 uint32_t SystemCoreClock __attribute__((weak));
-uint32_t __HXT __attribute__((weak));
-uint32_t __LXT __attribute__((weak));
-uint32_t __HIRC __attribute__((weak));
+uint32_t __attribute__((weak)) __HXT = 0;
+uint32_t __attribute__((weak)) __LXT = 0;
+uint32_t __attribute__((weak)) __HIRC = 0;
+uint32_t __attribute__((weak)) __MCLKI = 0;
+uint32_t __attribute__((weak)) __XCLK = 0;
 static uint32_t gau32ClkSrcTbl[] = {0, 0, 0, __LIRC, 0, 0, 0, 0};
 static struct clk_cntl_i96xxx_m0_cfg_t *clk_cntl_cfg;
 
@@ -104,6 +106,7 @@ static void clock_i96xxx_ext_mclk_enable()
 
 static void clock_i96xxx_ext_mclk_set_freq(uint32_t freq, uint32_t parent_freq)
 {
+	__MCLKI = freq;
 //	gau32ClkSrcTbl[0] = freq;// TODO : find out what index refer to MCLKI
 }
 
@@ -452,12 +455,6 @@ static void clock_i96xxx_i2s0_enable()
 	CLK->APBCLK0 |= CLK_APBCLK0_I2S0CKEN_Msk;
 }
 
-// bug in I96 BSP ver 0.0
-#undef CLK_CLKSEL3_I2S0SEL_MCLKI
-#undef CLK_CLKSEL3_I2S0SEL_XCLK
-#define CLK_CLKSEL3_I2S0SEL_MCLKI          (0x5UL<<CLK_CLKSEL3_I2S0SEL_Pos)
-#define CLK_CLKSEL3_I2S0SEL_XCLK           (0x4UL<<CLK_CLKSEL3_I2S0SEL_Pos)
-
 static void clock_i96xxx_i2s0_set_parent_clk(struct dev_desc_t *parent_clk)
 {
 	uint32_t curr_val;
@@ -579,12 +576,6 @@ static void clock_i96xxx_i2s1_enable()
 {
 	CLK->APBCLK0 |= CLK_APBCLK0_I2S1CKEN_Msk;
 }
-
-// bug in I96 BSP ver 0.0
-#undef CLK_CLKSEL3_I2S1SEL_MCLKI
-#undef CLK_CLKSEL3_I2S1SEL_XCLK
-#define CLK_CLKSEL3_I2S1SEL_MCLKI          (0x5UL<<CLK_CLKSEL3_I2S1SEL_Pos)
-#define CLK_CLKSEL3_I2S1SEL_XCLK           (0x4UL<<CLK_CLKSEL3_I2S1SEL_Pos)
 
 static void clock_i96xxx_i2s1_set_parent_clk(struct dev_desc_t *parent_clk)
 {

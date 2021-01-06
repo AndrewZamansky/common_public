@@ -46,6 +46,8 @@ extern uint32_t __HIRC;
 /*!< High Speed External Crystal Clock Frequency 12.288MHz */
 //#define __HXT        	(12000000UL)
 extern uint32_t __HXT;
+extern uint32_t __MCLKI;
+extern uint32_t __XCLK;
 
 #define __HSI         (__HIRC)      /* Factory Default is internal __HIRC */
 
