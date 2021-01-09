@@ -766,13 +766,13 @@ static uint8_t  device_start(struct dev_desc_t *adev)
 		CRITICAL_ERROR("not implemented yet");
 #endif
 		i2c_irq = I2C1_IRQn;
-		i2c_module_rst = I2C1_MODULE;
+		i2c_module_rst = I2C1_RST;
 		i2c_clk_dev = i9xxxx_i2c1_clk_dev;
 	}
 	else if(I2C0 == i2c_regs)
 	{
 		i2c_irq = I2C0_IRQn;
-		i2c_module_rst = I2C0_MODULE;
+		i2c_module_rst = I2C0_RST;
 		i2c_clk_dev = i9xxxx_i2c0_clk_dev;
 	}
 	else
