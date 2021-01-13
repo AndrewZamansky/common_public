@@ -1,10 +1,6 @@
 
-
-ifdef CONFIG_MSC_TARGET_ARCH_X86
-    LD := $(MSVC_SET_ADDITIONAL_PATHS) "$(MSVC_BIN_DIR)\link"
-else ifdef CONFIG_MSC_TARGET_ARCH_X64
-    LD := $(MSVC_SET_ADDITIONAL_PATHS) "$(MSVC_BIN_DIR)\link"
-endif
+LD := $(MSVC_SET_ADDITIONAL_PATHS) "$(MSVC_BIN_DIR)\link"
+AR := $(MSVC_SET_ADDITIONAL_PATHS) "$(MSVC_BIN_DIR)\lib"
 
 LIBS := $(sort $(GLOBAL_LIBS))
 
@@ -34,14 +30,14 @@ HISTORY_OUT_PREFIX :=$(HISTORY_OUT_PREFIX)$(REVISION_FOR_FILE_STR)
 
 ifdef CONFIG_OUTPUT_TYPE_DYNAMIC_LIBRARY
     EXTENSION :=dll
+else ifdef CONFIG_OUTPUT_TYPE_STATIC_LIBRARY
+    EXTENSION :=lib
 else
     EXTENSION :=exe
 endif
 
 LINKER_OUTPUT :=$(call\
             fix_path_if_in_windows,$(OUT_DIR)/$(OUTPUT_APP_NAME).$(EXTENSION))
-LINKER_LIB_OUTPUT :=$(call\
-                   fix_path_if_in_windows,$(OUT_DIR)/$(OUTPUT_APP_NAME).lib)
 LINKER_OUTPUT_NAMED :=$(call\
             fix_path_if_in_windows,$(OUT_DIR)/$(NAMED_OUT_PREFIX).$(EXTENSION))
 LINKER_HISTORY_OUTPUT :=$(call\
@@ -199,8 +195,12 @@ ITEMS := $(ALL_OBJ_FILES)
 include $(MAKEFILES_INC_FUNC_DIR)/add_item_list_to_file.mk
 #end of file creation
 
-LINKER_CMD =$(LD) /OUT:"$(LINKER_OUTPUT)" $(LDFLAGS) 
-LINKER_CMD +=$(LIBRARIES_DIRS) @$(ALL_OBJECTS_LIST_FILE) $(LIBS) 
+ifdef CONFIG_OUTPUT_TYPE_STATIC_LIBRARY
+    LINKER_CMD =$(AR) /OUT:"$(LINKER_OUTPUT)" /NOLOGO @$(ALL_OBJECTS_LIST_FILE)
+else
+    LINKER_CMD =$(LD) /OUT:"$(LINKER_OUTPUT)" $(LDFLAGS) 
+    LINKER_CMD +=$(LIBRARIES_DIRS) @$(ALL_OBJECTS_LIST_FILE) $(LIBS) 
+endif
 
 build_outputs :
 	$(LINKER_CMD)
