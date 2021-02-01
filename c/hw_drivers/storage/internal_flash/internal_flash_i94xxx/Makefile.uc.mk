@@ -16,11 +16,6 @@ endif
 
 SRC = flash_i94xxx.c
 
-
-
 VPATH = src
-
-SRC += fmc.c
-VPATH += | $(I94XXX_SRC_DIR)
 
 include $(COMMON_CC)

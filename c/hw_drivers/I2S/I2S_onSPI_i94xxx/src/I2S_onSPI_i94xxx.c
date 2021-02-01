@@ -18,7 +18,7 @@
 #include "clock_control_i94xxx_api.h"
 #include "pin_control_api.h"
 #ifdef CONFIG_INCLUDE_INTERNAL_PWM
-	#include "dpwm_i94xxx_api.h"
+	#include "dpwm_i9xxxx_api.h"
 #endif
 
 
@@ -332,7 +332,7 @@ static void i94xxx_sync_to_dpwm_fs_rate(struct I2S_onSPI_i94xxx_cfg_t *cfg_hndl,
 
 	I2S_SPI_module = (SPI_T*)cfg_hndl->base_address;
 	DEV_IOCTL_1_PARAMS(dpwm_dev,
-			DPWM_I94XXX_GET_ROOT_CLK_DEV, &dpwm_root_clk_dev);
+			DPWM_I9XXXX_GET_ROOT_CLK_DEV, &dpwm_root_clk_dev);
 	if ((SPI_T*)SPI1_BASE == I2S_SPI_module)
 	{
 		DEV_IOCTL_1_PARAMS(i94xxx_spi1_clk_dev,
@@ -354,7 +354,7 @@ static void i94xxx_sync_to_dpwm_fs_rate(struct I2S_onSPI_i94xxx_cfg_t *cfg_hndl,
 	}
 
 	DEV_IOCTL_1_PARAMS(dpwm_dev,
-			DPWM_I94XXX_GET_SAMPLE_RATE_HZ, &dpwm_sample_rate_hz);
+			DPWM_I9XXXX_GET_SAMPLE_RATE_HZ, &dpwm_sample_rate_hz);
 
 	if ( dpwm_sample_rate_hz != i2s_sample_rate_hz)
 	{
