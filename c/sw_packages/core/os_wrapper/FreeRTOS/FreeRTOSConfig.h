@@ -101,7 +101,7 @@
 #else
 	#define configMINIMAL_STACK_SIZE  \
 						(XT_STACK_MIN_SIZE > 4096 ? XT_STACK_MIN_SIZE : 4096)
-	#define configISR_STACK_SIZE    2048
+	#define configISR_STACK_SIZE    CONFIG_XTENSA_MAIN_STACK_SIZE_BYTES
 #endif
 
 #define configMAX_TASK_NAME_LEN   ( 32 )

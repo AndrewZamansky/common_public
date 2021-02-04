@@ -65,6 +65,13 @@ if XTENSA_FPGA_SIM
 source "$KCONFIG_PUBLIC_START_DIR/hw_drivers/arch/XTENSA/soc/fpga_sim/Kconfig"
 endif
 
+
+config XTENSA_MAIN_STACK_SIZE_BYTES
+	int   "initial and interrupt stack size (in bytes)"
+	depends on XTENSA
+	default 1024
+
+
 config XTENSA_LX6
 	bool
 	
