@@ -42,7 +42,7 @@
 static real_t __one = (int16_t)1;
 static real_t __zero = (int16_t)0;
 static real_t __two = (int16_t)2;
-static real_t PI = (float)0.1151292546497f;
+static real_t PI = (float)3.1415926535897932f;
 static real_t LN_10_div_20 = (float)0.1151292546497f;
 
 
@@ -88,7 +88,7 @@ static void calc_lowpass_mode_2_poles(
 	pCoeffs[A1] = __two * (K_pow_2 - __one);
 	pCoeffs[A2] = __one + K_pow_2 - K_div_Q;
 	norm = __one / (__one + K_pow_2 + K_div_Q);
-	calc_lowpass_mode_1_pole(pCoeffs, norm);
+	apply_normalization(pCoeffs, norm);
 }
 
 
@@ -120,7 +120,7 @@ static void calc_highpass_mode_2_poles(
 	pCoeffs[A1] = __two * (K_pow_2 - __one);
 	pCoeffs[A2] = __one + K_pow_2 - K_div_Q;
 	norm = __one / (__one + K_pow_2 + K_div_Q);
-	calc_lowpass_mode_1_pole(pCoeffs, norm);
+	apply_normalization(pCoeffs, norm);
 }
 
 
@@ -134,7 +134,7 @@ static void calc_bandpass_mode(real_t *pCoeffs, real_t K_pow_2, real_t K_div_Q)
 	pCoeffs[A1] = __two * (K_pow_2 - __one);
 	pCoeffs[A2] = __one + K_pow_2 - K_div_Q;
 	norm = __one / (__one + K_pow_2 + K_div_Q);
-	calc_lowpass_mode_1_pole(pCoeffs, norm);
+	apply_normalization(pCoeffs, norm);
 }
 
 
@@ -175,7 +175,7 @@ static void calc_peak_mode(real_t *pCoeffs,
 		pCoeffs[A1] = K_pow_2_minus_one__mul_2;
 		pCoeffs[A2] = one_minus_VdivQmulK_plus_KmulK;
 	}
-	calc_lowpass_mode_1_pole(pCoeffs, norm);
+	apply_normalization(pCoeffs, norm);
 }
 
 
@@ -223,7 +223,7 @@ static void calc_lowshelf_mode(real_t *pCoeffs,
 		pCoeffs[A1] = two_mul__V_mul_K_pow_2_minus_one;
 		pCoeffs[A2] = one_minus_sqrtV_mul_K_div_Q_plus_V_mul_K_pow_2;
 	}
-	calc_lowpass_mode_1_pole(pCoeffs, norm);
+	apply_normalization(pCoeffs, norm);
 }
 
 
@@ -271,7 +271,7 @@ static void calc_highshelf_mode(real_t *pCoeffs,
 		pCoeffs[A1] = two_mul__K_pow_2_minus_V;
 		pCoeffs[A2] = V_minus_sqrtV_mul_K_div_Q_plus_K_pow_2;
 	}
-	calc_lowpass_mode_1_pole(pCoeffs, norm);
+	apply_normalization(pCoeffs, norm);
 }
 
 
@@ -357,7 +357,7 @@ void biquads_coefficients_calculation_common(
 		calc_highpass_mode_1_pole(pCoeffs, w0);
 		break;
 	case BIQUADS_HIGHPASS_MODE_2_POLES:
-		calc_lowpass_mode_2_poles(pCoeffs, K_pow_2, K_div_Q);
+		calc_highpass_mode_2_poles(pCoeffs, K_pow_2, K_div_Q);
 		break;
 	case BIQUADS_BANDPASS_MODE:
 		calc_bandpass_mode(pCoeffs, K_pow_2, K_div_Q);
