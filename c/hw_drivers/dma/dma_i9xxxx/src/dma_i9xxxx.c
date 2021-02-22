@@ -168,6 +168,11 @@ static void update_tx_buffer(struct dev_desc_t * ch_pdev,
 		PDMA_SET_SRC_ADDR(channel_num, (size_t)buffers[next_dma_buff_indx]);
 		put_new_buffer_in_pdma(cfg_hndl->channel_num,
 				buff_status, runtime_hndl, next_dma_buff_indx);
+		if (NULL != callback_dev)
+		{
+			DEV_CALLBACK_1_PARAMS(
+					callback_dev, CALLBACK_TX_DONE, ch_pdev);
+		}
 		return;
 	}
 
