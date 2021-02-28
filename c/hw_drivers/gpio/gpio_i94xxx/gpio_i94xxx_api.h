@@ -29,7 +29,9 @@ enum  GPIO_I94XXX_API_IOCTLE_E
 
 
 #define GPIO_I94XXX_API_MODE_OUT_PP  GPIO_MODE_OUTPUT
-#define GPIO_I94XXX_API_MODE_IN      GPIO_MODE_INPUT
+#define GPIO_I94XXX_API_MODE_IN             GPIO_MODE_INPUT
+#define GPIO_I94XXX_API_MODE_IN_PULL_UP     (GPIO_MODE_INPUT | 0x0100)
+#define GPIO_I94XXX_API_MODE_IN_PULL_DOWN   (GPIO_MODE_INPUT | 0x0200)
 
 
 struct gpio_i94xxx_config_t {
@@ -38,7 +40,7 @@ struct gpio_i94xxx_config_t {
 	uint8_t     pin_arr_size;
 	uint8_t     *pin_arr;
 	uint8_t     *pin_arr_idle_state;
-	uint8_t     mode;
+	uint16_t    mode;
 };
 SET_CONFIG_TYPE(gpio_i94xxx, struct gpio_i94xxx_config_t);
 

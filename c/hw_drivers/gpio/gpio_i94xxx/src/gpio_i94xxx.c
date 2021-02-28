@@ -198,6 +198,18 @@ uint8_t gpio_i94xxx_register_interrupt(struct dev_desc_t *adev,
 }
 
 
+static void set_pull_up_pull_down(GPIO_T* GPIOx, uint8_t curr_pin, uint32_t val)
+{
+	uint32_t reg_val;
+	uint32_t field_pos;
+
+	reg_val = GPIOx->PUSEL;
+	field_pos = curr_pin * 2;
+	reg_val &= ~(0x3 << field_pos);
+	GPIOx->PUSEL = reg_val | (val << field_pos);
+}
+
+
 static void init_gpio(struct dev_desc_t *adev,
 		struct gpio_i94xxx_config_t *config_handle,
 		struct gpio_i94xxx_runtime_t *runtime_handle)
@@ -252,8 +264,10 @@ static void init_gpio(struct dev_desc_t *adev,
 		}
 
 		GPIO_DisableInt(GPIOx, curr_pin);
+		set_pull_up_pull_down(
+				GPIOx, curr_pin, (config_handle->mode >> 8) & 0x3);
 	}
-	GPIO_SetMode(GPIOx, pin_mask, config_handle->mode);
+	GPIO_SetMode(GPIOx, pin_mask, (config_handle->mode & 0x3));
 	GPIOx->SMTEN |= pin_mask;
 	runtime_handle->pin_mask = pin_mask;
 	runtime_handle->pin_bitwise_idle_values[0] = pin_bitwise_idle_values0;
