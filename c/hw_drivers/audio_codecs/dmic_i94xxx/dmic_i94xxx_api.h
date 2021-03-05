@@ -3,6 +3,7 @@
 #define _DMIC_I94XXX_API_H_
 
 #include "I94100.h"
+#include "dev_management_api.h"
 
 
 enum  dmic_i94xxx_pinout_e {

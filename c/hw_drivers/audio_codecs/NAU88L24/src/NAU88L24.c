@@ -390,7 +390,7 @@ static uint8_t NAU88L24_ioctl( struct dev_desc_t *adev,
 {
 	struct NAU88L24_config_t *cfg_hndl;
 
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(NAU88L24, adev);
 
 	switch(aIoctl_num)
 	{
@@ -407,4 +407,5 @@ static uint8_t NAU88L24_ioctl( struct dev_desc_t *adev,
 #define	MODULE_NAME                      NAU88L24
 #define	MODULE_IOCTL_FUNCTION            NAU88L24_ioctl
 #define MODULE_CONFIG_DATA_STRUCT_TYPE   struct NAU88L24_config_t
+#define MODULE_HAS_NO_RUNTIME_DATA
 #include "add_module.h"
