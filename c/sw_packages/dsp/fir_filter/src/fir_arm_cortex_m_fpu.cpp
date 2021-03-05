@@ -6,11 +6,13 @@
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 extern "C" {
-#include "errors_api.h"
+	#include "errors_api.h"
+	#include "os_wrapper.h"
 }
 
 #include "dsp_management_api.h"
 #include "common_dsp_api.h"
+#include "dsp_management_internal_api.h"
 
 #include "cpu_config.h"
 #include "arm_math.h"
@@ -55,7 +57,8 @@ void *fir_alloc(size_t number_of_filter_coefficients,
 									sizeof(struct fir_filter_arm_t));
 	errors_api_check_if_malloc_succeed(p_fir_filter);
 
-	p_filter_instance = os_safe_malloc(sizeof(arm_fir_instance_f32));
+	p_filter_instance =
+		(arm_fir_instance_f32*)os_safe_malloc(sizeof(arm_fir_instance_f32));
 	errors_api_check_if_malloc_succeed(p_filter_instance);
 	p_fir_filter->p_filter_instance = p_filter_instance;
 

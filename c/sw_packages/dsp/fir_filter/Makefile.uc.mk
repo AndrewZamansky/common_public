@@ -28,7 +28,7 @@ SRC += fir_coefficients.cpp
 
 ifdef CONFIG_CORTEX_M4
     ifdef CONFIG_INCLUDE_CORTEX_M_FPU
-        SRC += fir_arm_cortex_m_fpu.c
+        SRC += fir_arm_cortex_m_fpu.cpp
         ifdef CONFIG_DSP_IS_SPEED_CRITICAL
             SPEED_CRITICAL_FILES += fir_arm_cortex_m_fpu.cpp
             SPEED_CRITICAL_FILES += libarm_cortexM4lf_math.a

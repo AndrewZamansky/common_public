@@ -1,6 +1,6 @@
 
-#ifndef _fir_filter_API_H_
-#define _fir_filter_API_H_
+#ifndef _fir_filter_internal_API_H_
+#define _fir_filter_internal_API_H_
 
 #include "dsp_management_api.h"
 #include "dsp_management_internal_api.h"
@@ -24,3 +24,4 @@
 void fir_coefficients_calculation( enum fir_filter_mode_e filter_mode,
 		real_t fc, real_t Astop, real_t dfc,
 		real_t sample_rate, real_t *p_coeffs, size_t coeff_num);
+#endif
