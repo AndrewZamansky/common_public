@@ -1,3 +1,7 @@
+ifndef COMMON_MK
+    $(error   you should include common.mk instead of this file)
+endif
+
 current_dir :=$(dir $(abspath $(firstword $(MAKEFILE_LIST))))
 abspath_fix =$(patsubst $(current_dir)%,%,$(abspath $(1) ))
 

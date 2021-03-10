@@ -9,6 +9,8 @@ SHELL := $(CALCULATED_SHELL)
 EMPTY:=
 SPACE:= $(EMPTY) $(EMPTY)
 
+COMMON_MK :=y
+
 include $(MAKEFILES_ROOT_DIR)/_functions/update_global_variables_functions.mk
 
 include $(MAKEFILES_ROOT_DIR)/_functions/usefull_functions.mk

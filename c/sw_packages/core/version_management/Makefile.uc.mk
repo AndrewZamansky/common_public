@@ -1,7 +1,7 @@
 
 INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_VERSION_MENAGMENT)
 
-include $(MAKEFILES_ROOT_DIR)/_functions/usefull_functions.mk
+include $(MAKEFILES_ROOT_DIR)/common.mk
 
 
 #INCLUDE_DIR = 

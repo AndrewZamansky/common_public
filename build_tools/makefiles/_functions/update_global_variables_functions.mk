@@ -1,3 +1,7 @@
+ifndef COMMON_MK
+    $(error   you should include common.mk instead of this file)
+endif
+
 # helper function to append string
 define _APPEND_VAR =
     $(if $(1),$(eval $(1) :=$($(1))$(2)),)

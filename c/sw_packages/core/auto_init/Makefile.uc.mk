@@ -86,7 +86,7 @@ ifdef CONFIG_INCLUDE_ONLY_AUTO_INIT_API
 endif
 
 ifeq ($(MAKECMDGOALS),all)
-    include $(MAKEFILES_ROOT_DIR)/_functions/usefull_functions.mk
+    include $(MAKEFILES_ROOT_DIR)/common.mk
     rwildcard=$(wildcard $1$2)\
          $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2))
 

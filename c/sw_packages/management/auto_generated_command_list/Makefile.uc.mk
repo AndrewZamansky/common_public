@@ -3,7 +3,8 @@ ifeq ($(sort $(CONFIG_INCLUDE_SHELL)),y)
 endif
 
 ifeq ($(MAKECMDGOALS),all)
-    include $(MAKEFILES_ROOT_DIR)/_functions/usefull_functions.mk
+    include $(MAKEFILES_ROOT_DIR)/common.mk
+
     rwildcard=$(wildcard $1$2)\
          $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2))
 
