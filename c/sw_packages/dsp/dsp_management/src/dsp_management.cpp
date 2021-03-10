@@ -38,39 +38,6 @@ static struct dsp_pad_t dummy_output_buff =
 static	void *dsp_buffers_pool = NULL;
 
 
-
-/**
- * my_memcpy()
- *
- * on gcc cortex-m3 memcpy() is slower then direct copy !!!
- * return:
- */
-static void my_memcpy(real_t *dest ,real_t *src , size_t len)
-{
-	while (len--)
-	{
-		*dest++ = *src++;
-	}
-}
-
-
-
-
-/**
- * my_memset()
- *
- * on gcc cortex-m3 memset() is slower then direct copy !!!
- * return:
- */
-static void my_memset(real_t *dest ,real_t val, size_t len)
-{
-	while (len--)
-	{
-		*dest++ = val;
-	}
-}
-
-
 static struct dsp_module_inst_t * find_dsp_by_name(
 		struct dsp_chain_t *p_chain , char const *module_inst_name)
 {
@@ -1006,6 +973,10 @@ void dsp_get_input_buffer_from_pad( struct dsp_module_inst_t * adsp,
 		{
 			pad = &default_zero_buff;
 			tmp_buff_is_zero_buffer = 1;
+		}
+		else if (NULL == pad->buff)
+		{
+			CRITICAL_ERROR("buffer on source dsp module was not allocated");
 		}
 	}
 	else

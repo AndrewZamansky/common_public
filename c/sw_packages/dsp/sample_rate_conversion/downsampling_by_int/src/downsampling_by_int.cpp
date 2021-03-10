@@ -41,6 +41,7 @@ static void downsampling_by_int_dsp(struct dsp_module_inst_t *adsp)
 	factor = handle->factor;
 	if((0 == factor) || (NULL == p_downsampling_by_int_filter))
 	{
+		CRITICAL_ERROR("downsampling not initialized ");
 		return;
 	}
 
@@ -95,10 +96,6 @@ static void set_downsampling_params(
 static uint8_t downsampling_by_int_ioctl(struct dsp_module_inst_t *adsp,
 		const uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2)
 {
-	size_t number_of_filter_coefficients;
-	size_t predefined_data_block_size;
-	float *p_coefficients;
-	struct downsampling_by_int_api_set_params_t *p_band_set_params;
 	struct downsampling_by_int_instance_t *handle;
 
 	handle = (struct downsampling_by_int_instance_t *)adsp->handle;

@@ -26,7 +26,9 @@ struct downsampling_by_int_t {
 	real_t *p_coefficients;
 };
 
-
+#if !defined(CONFIG_DSP_REAL_NUMBER_FORMAT_FLOATING_POINT)
+	#error "support only floating point math"
+#endif
 
 void downsampling_by_int_function(void *p_filter,
 	real_t *in_buf, real_t *tmp_buf, size_t in_buff_len, real_t *out_buf)
@@ -37,6 +39,7 @@ void downsampling_by_int_function(void *p_filter,
 	downsampling_by_int = (struct downsampling_by_int_t *)p_filter;
 	p_arm_fir_decimate = (arm_fir_decimate_instance_f32*)(
 									downsampling_by_int->p_filter_instance);
+	in_buff_len = in_buff_len / sizeof(float);
 	arm_fir_decimate_f32(p_arm_fir_decimate, in_buf, out_buf, in_buff_len);
 }
 
