@@ -8,7 +8,7 @@
 
 
 struct delay_instance_t {
-	uint16_t delay_samples;
+	size_t delay_samples;
 	real_t  *buff;
 };
 

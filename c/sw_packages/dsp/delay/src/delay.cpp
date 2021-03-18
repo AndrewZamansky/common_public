@@ -44,23 +44,43 @@ static void delay_dsp(struct dsp_module_inst_t *adsp)
 	real_t *apCh1Out;
 	real_t *delay_buff;
 	size_t data_len;
-	uint16_t delay_samples;
+	size_t delay_samples;
+	size_t samples_to_copy_from_delay_buffer;
+	size_t samples_left_in_delay_buffer;
 	uint8_t buff_is_zero_buffer;
 
 	buff_is_zero_buffer = 1;
 	dsp_get_input_buffer_from_pad(
-			adsp, 0, &(uint8_t*)apCh1In, &data_len, &buff_is_zero_buffer);
-	dsp_get_output_buffer_from_pad(adsp, 0, &(uint8_t*)apCh1Out, data_len);
+			adsp, 0, (uint8_t**)&apCh1In, &data_len, &buff_is_zero_buffer);
+	dsp_get_output_buffer_from_pad(adsp, 0, (uint8_t**)&apCh1Out, data_len);
+	data_len = data_len / sizeof(real_t);
 
 	handle = (struct delay_instance_t *)adsp->handle;
 	delay_samples = handle->delay_samples;
 	delay_buff = handle->buff;
 
-	data_len = data_len / sizeof(real_t);
-	memcpy_real(apCh1Out, delay_buff, delay_samples);
+	if (delay_samples <= data_len)
+	{
+		samples_to_copy_from_delay_buffer = delay_samples;
+	}
+	else
+	{
+		samples_to_copy_from_delay_buffer = data_len;
+	}
+	memcpy_real(apCh1Out, delay_buff, samples_to_copy_from_delay_buffer);
 	memcpy_real(
-			&apCh1Out[delay_samples], apCh1In, data_len - delay_samples);
-	memcpy_real(delay_buff, apCh1In, delay_samples);
+			&apCh1Out[samples_to_copy_from_delay_buffer],
+			apCh1In, data_len - samples_to_copy_from_delay_buffer);
+
+	samples_left_in_delay_buffer =
+			delay_samples - samples_to_copy_from_delay_buffer;
+	//shift sample left in delay buffer
+	memcpy_real(delay_buff,
+			&delay_buff[samples_to_copy_from_delay_buffer],
+			samples_left_in_delay_buffer);
+
+	memcpy_real(&delay_buff[samples_left_in_delay_buffer],
+			apCh1In, samples_to_copy_from_delay_buffer);
 }
 
 
@@ -85,7 +105,7 @@ static uint8_t delay_ioctl(struct dsp_module_inst_t *adsp,
 			handle->buff =  NULL;
 			break;
 		case IOCTL_DELAY_SET_DELAY_SAMPLES :
-			delay_samples = *((uint16_t*)aIoctl_param1);
+			delay_samples = *((size_t*)aIoctl_param1);
 			handle->delay_samples = delay_samples;
 			buff = handle->buff;
 			buff =

@@ -156,7 +156,8 @@ void fir_coefficients_calculation( enum fir_filter_mode_e filter_mode,
 		real_t fc, real_t Astop, real_t dfc,
 		real_t sample_rate, real_t *p_coeffs, size_t coeff_num)
 {
-	int16_t i, j;
+	int16_t i;
+	int16_t j;
 	real_t Beta;
 	real_t izb;
 	real_t fcf = fc;
@@ -173,7 +174,7 @@ void fir_coefficients_calculation( enum fir_filter_mode_e filter_mode,
 	}
 
 	// clear all coefficients
-	for (i = 0; i < coeff_num; i++) p_coeffs[i] = __zero;
+	for (size_t k = 0; k < coeff_num; k++) p_coeffs[k] = __zero;
 
 	nc = (int16_t)coeff_num;
 	fc = fc / sample_rate;
