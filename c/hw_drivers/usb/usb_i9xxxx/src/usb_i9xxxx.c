@@ -236,19 +236,35 @@ void USBD_IRQHandler(void)
 	}
 }
 
+#define REQ_TYPE_POS           0
+#define W_INDEX_LOW_POS        4
+#define W_INDEX_HIGH_POS       4
+#define INTERFACE_ID_POS    W_INDEX_LOW_POS
+#define ENDPOINT_ID_POS     W_INDEX_LOW_POS
+#define REQ_TYPE_MASK         0x60
+#define REQ_TYPE_CLASS        0x20
+#define REQ_RECIPIENT_MASK    0x1f
+#define REQ_RECIPIENT_INTERFACE    0x01
+#define REQ_RECIPIENT_ENDPOINT     0x02
 
 static void class_request(void)
 {
 	uint8_t buf[8];
 	uint16_t USBwIndex;
+	uint8_t recipient;
 	usb_dev_interface_request_callback_func_t callback_func;
 
 	USBD_GetSetupPacket(buf);
 
-
-	if (0x01 == (buf[0] & 0x1f))// class/interface request
+	if (REQ_TYPE_CLASS != (buf[REQ_TYPE_POS] & REQ_TYPE_MASK))
 	{
-		USBwIndex = buf[4];
+		return ;
+	}
+
+	recipient = buf[REQ_TYPE_POS] & REQ_RECIPIENT_MASK;
+	if (REQ_RECIPIENT_INTERFACE == recipient)
+	{
+		USBwIndex = buf[INTERFACE_ID_POS];
 		if (MAX_NUM_OF_ITERFACES < USBwIndex)
 		{
 			CRITICAL_ERROR("interface number is to high \n");
@@ -260,9 +276,9 @@ static void class_request(void)
 			callback_func(interface_callback_devs[USBwIndex], buf);
 		}
 	}
-	else if (0x02 == (buf[0] & 0x1f))// class/endpoint request
+	else if (REQ_RECIPIENT_ENDPOINT == recipient)
 	{
-		USBwIndex = buf[4];
+		USBwIndex = buf[ENDPOINT_ID_POS];
 		if (MAX_NUM_OF_ENDPOINTS < USBwIndex)
 		{
 			CRITICAL_ERROR("endpoint number is to high \n");
