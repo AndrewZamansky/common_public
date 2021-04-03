@@ -686,7 +686,8 @@ static void init_audio_host_in(struct usb_audio_class_cfg_t *cfg_hndl,
 }
 
 
-static void init_default_volumes(struct usb_audio_class_runtime_t *runtime_hndl)
+static void init_default_volumes_and_mutes(
+			struct usb_audio_class_runtime_t *runtime_hndl)
 {
 	uint16_t i;
 	int16_t *volume_arr;
@@ -701,6 +702,8 @@ static void init_default_volumes(struct usb_audio_class_runtime_t *runtime_hndl)
 	{
 		volume_arr[i] = 0x000; // 0db
 	}
+	runtime_hndl->recording_mute = 0;
+	runtime_hndl->playback_mute = 0;
 }
 
 
@@ -712,7 +715,7 @@ static void start_audio_class(struct dev_desc_t *adev,
 	dbg_usb_audio_class_runtime_hndl = runtime_hndl;
 #endif
 
-	init_default_volumes(runtime_hndl);
+	init_default_volumes_and_mutes(runtime_hndl);
 
 	if (0 != cfg_hndl->enable_recording)
 	{
@@ -739,7 +742,7 @@ static void start_audio_class(struct dev_desc_t *adev,
 }
 
 
-static uint8_t get_master_volume(
+static uint8_t get_master_volumes(
 		struct usb_audio_class_runtime_t *runtime_hndl,
 		int16_t *cur_playback_volume, int16_t *cur_recording_volume)
 {
@@ -747,6 +750,17 @@ static uint8_t get_master_volume(
 	*cur_recording_volume = runtime_hndl->curr_recording_volume[0];
 	return 0;
 }
+
+
+static uint8_t get_master_mutes(
+		struct usb_audio_class_runtime_t *runtime_hndl,
+		int8_t *cur_playback_mute, int8_t *cur_recording_mute)
+{
+	*cur_playback_mute = runtime_hndl->playback_mute;
+	*cur_recording_mute = runtime_hndl->recording_mute;
+	return 0;
+}
+
 
 /**
  * usb_i94xxx_ioctl()
@@ -786,7 +800,10 @@ static uint8_t usb_audio_class_ioctl( struct dev_desc_t *adev,
 		release_tx_buffer(cfg_hndl, runtime_hndl);
 		break;
 	case USB_AUDIO_CLASS_IOCTL_GET_MASTER_VOLUMES :
-		return get_master_volume(runtime_hndl, aIoctl_param1, aIoctl_param2);
+		return get_master_volumes(runtime_hndl, aIoctl_param1, aIoctl_param2);
+		break;
+	case USB_AUDIO_CLASS_IOCTL_GET_MASTER_MUTES :
+		return get_master_mutes(runtime_hndl, aIoctl_param1, aIoctl_param2);
 		break;
 	default :
 		return 1;

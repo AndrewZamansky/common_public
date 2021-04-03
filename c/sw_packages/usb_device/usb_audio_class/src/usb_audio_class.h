@@ -42,8 +42,14 @@ struct usb_audio_class_runtime_t {
 	uint32_t usb_feedback_sample_rate;
 	size_t  curr_write_pos_in_tx_buffer;
 	size_t  curr_read_pos_in_tx_buffer;
+
+	// UAC requests
 	int16_t curr_playback_volume[NUM_OF_PLAYBACK_CHANNELS];
 	int16_t curr_recording_volume[NUM_OF_RECORDING_CHANNELS];
+	/* Record MUTE control. 0 = normal. 1 = MUTE */
+	uint8_t recording_mute;
+	/* Play MUTE control. 0 = normal. 1 = MUTE */
+	uint8_t playback_mute;
 };
 SET_RUNTIME_DATA_TYPE(usb_audio_class, struct usb_audio_class_runtime_t);
 

@@ -70,12 +70,6 @@
 static volatile uint32_t g_usbd_PlaySampleRate = 48000;
 
 
-/* Record MUTE control. 0 = normal. 1 = MUTE */
-static volatile uint8_t g_usbd_RecMute       = 0x01;
-
-/* Play MUTE control. 0 = normal. 1 = MUTE */
-static volatile uint8_t g_usbd_PlayMute      = 0x01;
-
 static volatile int16_t g_usbd_RecMaxVolume  = 0x0000; // 0db
 static volatile int16_t g_usbd_RecMinVolume  = 0xc000; // -127db
 static volatile int16_t g_usbd_RecResVolume  = 0x400;
@@ -88,15 +82,16 @@ static volatile int16_t g_usbd_PlayResVolume = 0x0100;
 #define MAX_DATA_TO_SEND_LEN 2
 static uint8_t data_to_send[MAX_DATA_TO_SEND_LEN];
 
-static uint8_t get_mute(uint8_t unit_id, uint8_t **data, uint16_t *data_len)
+static uint8_t get_mute(struct usb_audio_class_runtime_t *runtime_hndl,
+		uint8_t unit_id, uint8_t **data, uint16_t *data_len)
 {
 	if (REC_FEATURE_UNITID == unit_id)
 	{
-		*data = (uint8_t*)&g_usbd_RecMute;
+		*data = (uint8_t*)&runtime_hndl->recording_mute;
 	}
 	else if (PLAY_FEATURE_UNITID == unit_id)
 	{
-		*data = (uint8_t*)&g_usbd_PlayMute;
+		*data = (uint8_t*)&runtime_hndl->playback_mute;
 	}
 	else
 	{
@@ -219,7 +214,7 @@ static void uac_class_interface_in_request( struct dev_desc_t *usb_hw,
 		switch(control_selector)
 		{
 		case MUTE_CONTROL:
-			ret = get_mute(unit_id, &data, &data_len);
+			ret = get_mute(runtime_hndl, unit_id, &data, &data_len);
 			break;
 		case VOLUME_CONTROL:
 			ret = get_volume(runtime_hndl, unit_id,
@@ -281,18 +276,18 @@ static void uac_class_interface_in_request( struct dev_desc_t *usb_hw,
 
 
 
-static uint8_t set_mute(
+static uint8_t set_mute(struct usb_audio_class_runtime_t *runtime_hndl,
 	struct set_request_out_buffer_t *set_request_out_buffer, uint8_t unit_id)
 {
 	uint8_t *data;
 
 	if (REC_FEATURE_UNITID == unit_id)
 	{
-		data = (uint8_t*)&g_usbd_RecMute;
+		data = (uint8_t*)&runtime_hndl->recording_mute;
 	}
 	else if (PLAY_FEATURE_UNITID == unit_id)
 	{
-		data = (uint8_t*)&g_usbd_PlayMute;
+		data = (uint8_t*)&runtime_hndl->playback_mute;
 	}
 	else
 	{
@@ -357,7 +352,7 @@ static void uac_class_interface_out_request(struct dev_desc_t *usb_hw,
 		switch(request[INTERFACE_CONTROL_SELECTOR_POS])
 		{
 		case MUTE_CONTROL:
-			ret = set_mute(&set_request_out_buffer, unit_id);
+			ret = set_mute(runtime_hndl, &set_request_out_buffer, unit_id);
 			break;
 		case VOLUME_CONTROL:
 			ret = set_volume(runtime_hndl, &set_request_out_buffer,
