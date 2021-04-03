@@ -76,61 +76,47 @@ static volatile uint8_t g_usbd_RecMute       = 0x01;
 /* Play MUTE control. 0 = normal. 1 = MUTE */
 static volatile uint8_t g_usbd_PlayMute      = 0x01;
 
-static volatile int16_t g_usbd_RecMaxVolume  = 0x7FFF;
-static volatile int16_t g_usbd_RecMinVolume  = 0x8000;
+static volatile int16_t g_usbd_RecMaxVolume  = 0x0000; // 0db
+static volatile int16_t g_usbd_RecMinVolume  = 0xc000; // -127db
 static volatile int16_t g_usbd_RecResVolume  = 0x400;
 
-static volatile int16_t g_usbd_PlayMaxVolume = 0x7FFF;
-static volatile int16_t g_usbd_PlayMinVolume = 0x8000;
-static volatile int16_t g_usbd_PlayResVolume = 0x0400;
-
-#define NUM_OF_PLAYBACK_CHANNELS  3 // 0 channel is master
-/* Play channel volume. Range is -32768 ~ 32767 */
-static volatile int16_t curr_playback_volume[NUM_OF_PLAYBACK_CHANNELS] =
-		{0x1000, 0x1000, 0x1000};
-
-#define NUM_OF_RECORDING_CHANNELS  3 // 0 channel is master
-/* Record  channel volume. Range is -32768 ~ 32767 */
-static volatile int16_t curr_recording_volume[NUM_OF_RECORDING_CHANNELS] =
-		{0x1000, 0x1000, 0x1000};
+static volatile int16_t g_usbd_PlayMaxVolume = 0x0000; // 0db
+static volatile int16_t g_usbd_PlayMinVolume = 0xc000; // -127db
+static volatile int16_t g_usbd_PlayResVolume = 0x0100;
 
 
-static uint8_t get_mute(
-	struct set_request_in_buffer_t *set_request_in_buffer, uint8_t unit_id)
+#define MAX_DATA_TO_SEND_LEN 2
+static uint8_t data_to_send[MAX_DATA_TO_SEND_LEN];
+
+static uint8_t get_mute(uint8_t unit_id, uint8_t **data, uint16_t *data_len)
 {
-	uint8_t *data;
-
 	if (REC_FEATURE_UNITID == unit_id)
 	{
-		data = (uint8_t*)&g_usbd_RecMute;
+		*data = (uint8_t*)&g_usbd_RecMute;
 	}
 	else if (PLAY_FEATURE_UNITID == unit_id)
 	{
-		data = (uint8_t*)&g_usbd_PlayMute;
+		*data = (uint8_t*)&g_usbd_PlayMute;
 	}
 	else
 	{
 		return 1;
 	}
-	set_request_in_buffer->data = data;
-	set_request_in_buffer->size = 1;
+	*data_len = 1;
 	return 0;
 }
 
 
-static uint8_t get_volume(
-		struct set_request_in_buffer_t *set_request_in_buffer,
-		uint8_t unit_id, uint8_t channel_id)
+static uint8_t get_volume(struct usb_audio_class_runtime_t *runtime_hndl,
+		uint8_t unit_id, uint8_t channel_id, uint8_t **data, uint16_t *data_len)
 {
-	uint8_t *data;
-
 	if (REC_FEATURE_UNITID == unit_id)
 	{
 		if (NUM_OF_PLAYBACK_CHANNELS <= channel_id)
 		{
 			return 1;
 		}
-		data = (uint8_t*)&curr_recording_volume[channel_id];
+		*data = (uint8_t*)&runtime_hndl->curr_playback_volume[channel_id];
 	}
 	else if (PLAY_FEATURE_UNITID == unit_id)
 	{
@@ -138,83 +124,73 @@ static uint8_t get_volume(
 		{
 			return 1;
 		}
-		data = (uint8_t*)&curr_playback_volume[channel_id];
+		*data = (uint8_t*)&runtime_hndl->curr_recording_volume[channel_id];
 	}
 	else
 	{
 		return 1;
 	}
-	set_request_in_buffer->data = data;
-	set_request_in_buffer->size = 2;
+	*data_len = 2;
 	return 0;
 }
 
 
 static uint8_t get_min_volume(
-	struct set_request_in_buffer_t *set_request_in_buffer, uint8_t unit_id)
+		uint8_t unit_id, uint8_t **data, uint16_t *data_len)
 {
-	uint8_t *data;
-
 	if (REC_FEATURE_UNITID == unit_id)
 	{
-		data = (uint8_t*)&g_usbd_RecMinVolume;
+		*data = (uint8_t*)&g_usbd_RecMinVolume;
 	}
 	else if (PLAY_FEATURE_UNITID == unit_id)
 	{
-		data = (uint8_t*)&g_usbd_PlayMinVolume;
+		*data = (uint8_t*)&g_usbd_PlayMinVolume;
 	}
 	else
 	{
 		return 1;
 	}
-	set_request_in_buffer->data = data;
-	set_request_in_buffer->size = 2;
+	*data_len = 2;
 	return 0;
 }
 
 
 static uint8_t get_max_volume(
-	struct set_request_in_buffer_t *set_request_in_buffer, uint8_t unit_id)
+		uint8_t unit_id, uint8_t **data, uint16_t *data_len)
 {
-	uint8_t *data;
-
 	if (REC_FEATURE_UNITID == unit_id)
 	{
-		data = (uint8_t*)&g_usbd_RecMaxVolume;
+		*data = (uint8_t*)&g_usbd_RecMaxVolume;
 	}
 	else if (PLAY_FEATURE_UNITID == unit_id)
 	{
-		data = (uint8_t*)&g_usbd_PlayMaxVolume;
+		*data = (uint8_t*)&g_usbd_PlayMaxVolume;
 	}
 	else
 	{
 		return 1;
 	}
-	set_request_in_buffer->data = data;
-	set_request_in_buffer->size = 2;
+	*data_len = 2;
 	return 0;
 }
 
 
 static uint8_t get_res_volume(
-	struct set_request_in_buffer_t *set_request_in_buffer, uint8_t unit_id)
+			uint8_t unit_id, uint8_t **data, uint16_t *data_len)
 {
-	uint8_t *data;
-
 	if (REC_FEATURE_UNITID == unit_id)
 	{
-		data = (uint8_t*)&g_usbd_RecResVolume;
+		*data = (uint8_t*)&g_usbd_RecResVolume;
 	}
 	else if (PLAY_FEATURE_UNITID == unit_id)
 	{
-		data = (uint8_t*)&g_usbd_PlayResVolume;
+		*data = (uint8_t*)&g_usbd_PlayResVolume;
 	}
 	else
 	{
 		return 1;
 	}
-	set_request_in_buffer->data = data;
-	set_request_in_buffer->size = 2;
+	*data_len = 2;
 	return 0;
 }
 
@@ -222,13 +198,15 @@ static uint8_t get_res_volume(
 /* uac_class_interface_in_request()
  *
  */
-static void uac_class_interface_in_request(
-							struct dev_desc_t *usb_hw, uint8_t *request)
+static void uac_class_interface_in_request( struct dev_desc_t *usb_hw,
+		struct usb_audio_class_runtime_t *runtime_hndl, uint8_t *request)
 {
 	struct set_request_in_buffer_t set_request_in_buffer;
 	uint8_t ret;
 	uint8_t control_selector;
 	uint8_t unit_id;
+	uint8_t *data;
+	uint16_t data_len;
 
 	// Device to host
 	unit_id = request[FEAURE_UNIT_ID];
@@ -241,11 +219,11 @@ static void uac_class_interface_in_request(
 		switch(control_selector)
 		{
 		case MUTE_CONTROL:
-			ret = get_mute(&set_request_in_buffer, unit_id);
+			ret = get_mute(unit_id, &data, &data_len);
 			break;
 		case VOLUME_CONTROL:
-			ret = get_volume(&set_request_in_buffer,unit_id,
-							request[FEATURE_CHANNEL_SELECTOR_POS]);
+			ret = get_volume(runtime_hndl, unit_id,
+					request[FEATURE_CHANNEL_SELECTOR_POS], &data, &data_len);
 			break;
 		default:
 			break;
@@ -255,7 +233,7 @@ static void uac_class_interface_in_request(
 		switch(control_selector)
 		{
 		case VOLUME_CONTROL:
-			ret = get_min_volume(&set_request_in_buffer, unit_id);
+			ret = get_min_volume(unit_id, &data, &data_len);
 			break;
 		default:
 			break;
@@ -265,7 +243,7 @@ static void uac_class_interface_in_request(
 		switch(control_selector)
 		{
 		case VOLUME_CONTROL:
-			ret = get_max_volume(&set_request_in_buffer, unit_id);
+			ret = get_max_volume(unit_id, &data, &data_len);
 			break;
 		default:
 			break;
@@ -275,7 +253,7 @@ static void uac_class_interface_in_request(
 		switch(control_selector)
 		{
 		case VOLUME_CONTROL:
-			ret = get_res_volume(&set_request_in_buffer, unit_id);
+			ret = get_res_volume(unit_id, &data, &data_len);
 			break;
 		default:
 			break;
@@ -287,6 +265,9 @@ static void uac_class_interface_in_request(
 
 	if (0 == ret)
 	{
+		memcpy(data_to_send, data, data_len);
+		set_request_in_buffer.data = data_to_send;
+		set_request_in_buffer.size = data_len;
 		DEV_IOCTL_1_PARAMS(usb_hw,
 				IOCTL_USB_DEVICE_SET_REQUEST_IN_BUFFER, &set_request_in_buffer);
 	}
@@ -324,7 +305,7 @@ static uint8_t set_mute(
 
 
 
-static uint8_t set_volume(
+static uint8_t set_volume(struct usb_audio_class_runtime_t *runtime_hndl,
 				struct set_request_out_buffer_t *set_request_out_buffer,
 				uint8_t unit_id, uint8_t channel_id)
 {
@@ -336,7 +317,7 @@ static uint8_t set_volume(
 		{
 			return 1;
 		}
-		data = (uint8_t*)&curr_recording_volume[channel_id];
+		data = (uint8_t*)&runtime_hndl->curr_recording_volume[channel_id];
 	}
 	else if (PLAY_FEATURE_UNITID == unit_id)
 	{
@@ -344,7 +325,7 @@ static uint8_t set_volume(
 		{
 			return 1;
 		}
-		data = (uint8_t*)&curr_playback_volume[channel_id];
+		data = (uint8_t*)&runtime_hndl->curr_playback_volume[channel_id];
 	}
 	else
 	{
@@ -360,8 +341,8 @@ static uint8_t set_volume(
 /*  uac_class_interface_out_request()
  *
  */
-static void uac_class_interface_out_request(
-				struct dev_desc_t *usb_hw, uint8_t *request)
+static void uac_class_interface_out_request(struct dev_desc_t *usb_hw,
+		struct usb_audio_class_runtime_t *runtime_hndl, uint8_t *request)
 {
 	struct set_request_out_buffer_t set_request_out_buffer;
 	uint8_t ret;
@@ -379,7 +360,7 @@ static void uac_class_interface_out_request(
 			ret = set_mute(&set_request_out_buffer, unit_id);
 			break;
 		case VOLUME_CONTROL:
-			ret = set_volume(&set_request_out_buffer,
+			ret = set_volume(runtime_hndl, &set_request_out_buffer,
 					unit_id, request[FEATURE_CHANNEL_SELECTOR_POS]);
 			break;
 		default:
@@ -406,19 +387,21 @@ static void uac_class_interface_out_request(
 void uac_interface_class_request(
 		struct dev_desc_t *callback_dev, uint8_t *request)
 {
+	struct usb_audio_class_runtime_t *runtime_hndl;
 	struct usb_audio_class_cfg_t *cfg_hndl;
 	struct dev_desc_t *usb_hw;
 
 	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(usb_audio_class, callback_dev);
+	runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(usb_audio_class, callback_dev);
 	usb_hw = cfg_hndl->usb_hw;
 
 	if(request[BM_REQ_TYPE_POS] & REQ_DIRECTION_MASK)    /* device to host */
 	{// from device to host
-		uac_class_interface_in_request(usb_hw, request);
+		uac_class_interface_in_request(usb_hw, runtime_hndl, request);
 	}
 	else
 	{// from host to device
-		uac_class_interface_out_request(usb_hw, request);
+		uac_class_interface_out_request(usb_hw, runtime_hndl, request);
 	}
 }
 

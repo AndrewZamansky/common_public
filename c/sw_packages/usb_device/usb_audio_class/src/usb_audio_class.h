@@ -23,6 +23,9 @@
 #define  HOST_OUT_MAX_ADDITIONAL_SAMPLES   3
 
 
+#define NUM_OF_PLAYBACK_CHANNELS   3 // 0 channel is master
+#define NUM_OF_RECORDING_CHANNELS  3 // 0 channel is master
+
 struct usb_audio_class_runtime_t {
 	uint8_t  curr_buff_indx;
 	uint8_t  tx_buffer_was_supplied;
@@ -39,6 +42,8 @@ struct usb_audio_class_runtime_t {
 	uint32_t usb_feedback_sample_rate;
 	size_t  curr_write_pos_in_tx_buffer;
 	size_t  curr_read_pos_in_tx_buffer;
+	int16_t curr_playback_volume[NUM_OF_PLAYBACK_CHANNELS];
+	int16_t curr_recording_volume[NUM_OF_RECORDING_CHANNELS];
 };
 SET_RUNTIME_DATA_TYPE(usb_audio_class, struct usb_audio_class_runtime_t);
 
