@@ -11,6 +11,21 @@
 #define USB_AUDIO_CLASS_BIT_CONTROL_MUTE     0x1
 #define USB_AUDIO_CLASS_BIT_CONTROL_VOLUME   0x2
 
+#define USB_AUDIO_CLASS_IN_TERMINAL_TYPE__MIC       0x0201
+#define USB_AUDIO_CLASS_IN_TERMINAL_TYPE__HANDSET   0x0401
+#define USB_AUDIO_CLASS_IN_TERMINAL_TYPE__HEADSET   0x0402
+#define USB_AUDIO_CLASS_IN_TERMINAL_TYPE__SPKPHONE_NO_ECHO_SUPPR     0x0403
+#define USB_AUDIO_CLASS_IN_TERMINAL_TYPE__SPKPHONE_ECHO_SUPPR    0x0404
+#define USB_AUDIO_CLASS_IN_TERMINAL_TYPE__SPKPHONE_ECHO_CANCEL   0x0405
+
+#define USB_AUDIO_CLASS_OUT_TERMINAL_TYPE__SPK       0x0301
+#define USB_AUDIO_CLASS_OUT_TERMINAL_TYPE__HANDSET   0x0401
+#define USB_AUDIO_CLASS_OUT_TERMINAL_TYPE__HEADSET   0x0402
+#define USB_AUDIO_CLASS_OUT_TERMINAL_TYPE__SPKPHONE_NO_ECHO_SUPPR     0x0403
+#define USB_AUDIO_CLASS_OUT_TERMINAL_TYPE__SPKPHONE_ECHO_SUPPR    0x0404
+#define USB_AUDIO_CLASS_OUT_TERMINAL_TYPE__SPKPHONE_ECHO_CANCEL   0x0405
+
+
 enum USB_AUDIO_CLASS_API_ioctl_e {
 	USB_AUDIO_CLASS_IOCTL_GET_RX_BUFF = IOCTL_LAST_COMMON_IOCTL + 1,
 	USB_AUDIO_CLASS_IOCTL_RELEASE_RX_BUFF,
@@ -31,6 +46,7 @@ struct usb_audio_class_cfg_t {
 	// USB HOST AUDIO IN
 	size_t   get_tx_buff_size;
 	uint32_t host_in_sample_rate_hz;
+	uint16_t in_terminal_type;
 	uint8_t  num_of_tx_bytes_per_sample;
 	uint8_t  num_tx_channels;
 	uint8_t  host_in_master_control_bit_map;
@@ -40,6 +56,7 @@ struct usb_audio_class_cfg_t {
 	// USB HOST AUDIO OUT
 	size_t   get_rx_buff_size;
 	uint32_t host_out_sample_rate_hz;
+	uint16_t out_terminal_type;
 	uint8_t  num_of_rx_bytes_per_sample;
 	uint8_t  num_rx_channels;
 	uint8_t  num_of_rx_buffers;

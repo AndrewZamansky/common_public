@@ -72,7 +72,6 @@ static void pcm_splitter_dsp_16and32bit(struct dsp_module_inst_t *adsp)
 {
 	real_t *apChOut[MAX_NUM_OF_OUTPUT_PADS];
 	size_t num_of_frames;
-	size_t out_data_len[MAX_NUM_OF_OUTPUT_PADS] ;
 	uint8_t *pRxBuf;
 	uint8_t num_of_channels ;
 	struct pcm_splitter_instance_t *handle;

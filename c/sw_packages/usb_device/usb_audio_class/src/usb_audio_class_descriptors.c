@@ -53,7 +53,7 @@ extern void new_sample_rate_requested(struct dev_desc_t *adev);
 
 #define WILL_BE_SET_ON_INIT   0
 
-#define B2VAL(x) (x & 0xFF), ((x >> 8) & 0xFF)
+#define W16VAL(x) (x & 0xFF), ((x >> 8) & 0xFF)
 #define AUTO_SET_PCKT_SIZE_MSB   0x00
 #define AUTO_SET_PCKT_SIZE_LSB   0x00
 
@@ -301,7 +301,7 @@ static uint8_t const out_alt_interface[] = {
 	0x05,        // bDescriptorType (See Next Line)
 	WILL_BE_SET_ON_INIT,  // bEndpointAddress (OUT/H2D)
 	0x01,  // bmAttributes (Isochronous, Sync = none)
-	B2VAL(0x4),  // wMaxPacketSize
+	W16VAL(0x4),  // wMaxPacketSize
 	0x01,        // bInterval 1 (unit depends on device speed)
 	0x05,        // bRefresh
 	0x00        // bSyncAddress
@@ -482,6 +482,8 @@ static void add_recording_terminal_desc(
 		struct usb_audio_class_cfg_t *cfg_hndl, uint8_t *terminal_desc)
 {
 	uint8_t *feature_desc;
+	uint8_t *audio_in_terminal_desc;
+	uint16_t in_terminal_type;
 
 	memcpy(terminal_desc,
 		audio_in_terminal_descriptors, sizeof(audio_in_terminal_descriptors));
@@ -489,6 +491,12 @@ static void add_recording_terminal_desc(
 	feature_desc[6] = cfg_hndl->host_in_master_control_bit_map;
 	feature_desc[7] = cfg_hndl->host_in_channel_control_bit_map;
 	feature_desc[8] = cfg_hndl->host_in_channel_control_bit_map;
+
+	audio_in_terminal_desc = &terminal_desc[0];
+	in_terminal_type = cfg_hndl->in_terminal_type;
+	audio_in_terminal_desc[4] = in_terminal_type & 0xFF;
+	audio_in_terminal_desc[5] = (in_terminal_type >> 8) & 0xFF;
+
 }
 
 
@@ -496,13 +504,26 @@ static void add_playback_terminal_desc(
 		struct usb_audio_class_cfg_t *cfg_hndl, uint8_t *terminal_desc)
 {
 	uint8_t *feature_desc;
+	uint8_t *audio_out_terminal_desc;
+	uint16_t audio_out_stream_desc_size;
+	uint16_t feature_desc_size;
+	uint16_t out_terminal_type;
 
 	memcpy(terminal_desc,
 		audio_out_terminal_descriptors, sizeof(audio_out_terminal_descriptors));
-	feature_desc = &terminal_desc[audio_out_terminal_descriptors[0]];
+
+	audio_out_stream_desc_size = audio_out_terminal_descriptors[0];
+	feature_desc = &terminal_desc[audio_out_stream_desc_size];
 	feature_desc[6] = cfg_hndl->host_out_master_control_bit_map;
 	feature_desc[7] = cfg_hndl->host_out_channel_control_bit_map;
 	feature_desc[8] = cfg_hndl->host_out_channel_control_bit_map;
+
+	feature_desc_size = feature_desc[0];
+	audio_out_terminal_desc =
+			&terminal_desc[audio_out_stream_desc_size + feature_desc_size];
+	out_terminal_type = cfg_hndl->out_terminal_type;
+	audio_out_terminal_desc[4] = out_terminal_type & 0xFF;
+	audio_out_terminal_desc[5] = (out_terminal_type >> 8) & 0xFF;
 }
 
 

@@ -329,7 +329,6 @@ void biquads_coefficients_calculation_common(
 	real_t w0;
 	real_t K_div_Q;
 	real_t K_pow_2;
-	real_t one_plus_KmulK;
 
 	ftem = FreqC / SamplingRate	;
 	w0 = __two * ftem * PI;
