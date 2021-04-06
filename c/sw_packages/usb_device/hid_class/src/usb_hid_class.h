@@ -12,8 +12,11 @@
 
 struct usb_hid_class_runtime_t {
 	size_t  sentLen;
+	uint8_t const *report_desc;
+	uint16_t report_desc_size;
 	uint8_t in_endpoint_num;
-	uint8_t init_done;
+	uint8_t device_started;
+	uint8_t hid_report_was_set;
 };
 SET_RUNTIME_DATA_TYPE(usb_hid_class, struct usb_hid_class_runtime_t);
 

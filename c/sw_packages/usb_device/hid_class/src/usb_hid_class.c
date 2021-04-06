@@ -30,10 +30,11 @@
 
 #define B3VAL(x) (x&0xFF), ((x >>8) & 0xFF), ((x >>16) & 0xFF)
 
-#define HID_SET_REPORT              0x09
-#define HID_SET_IDLE                0x0A
-#define HID_GET_REPORT              0x01
-#define HID_SET_PROTOCOL            0x0B
+#define HID_SET_REPORT       0x09
+#define HID_SET_IDLE         0x0A
+#define HID_GET_REPORT       0x01
+#define HID_SET_PROTOCOL     0x0B
+#define INTERFACE_LEN 		 0x09
 
 
 static uint8_t const interface_association_descriptor[]=
@@ -49,33 +50,10 @@ static uint8_t const interface_association_descriptor[]=
 	0x02    ,//  iFunction
 };
 
-#define USB_INTERFACE_DESCRIPTOR_TYPE 0x04
-#define USB_ENDPOINT_DESCRIPTOR_TYPE  0x05
-#define USB_HID_DESCRIPTOR_TYPE       0x21
-
-static const uint8_t default_hid_report_desc[] =
-{
-    0x05, 0x01, // USAGE_PAGE (Generic Desktop)
-    0x09, 0x00, // USAGE (0)
-    0xA1, 0x01, // COLLECTION (Application)
-    0x15, 0x00, // LOGICAL_MINIMUM (0)
-    0x25, 0xFF, // LOGICAL_MAXIMUM (255)
-    0x19, 0x01, // USAGE_MINIMUM (1)
-    0x29, 0x08, // USAGE_MAXIMUM (8)
-    0x95, 0x40, // REPORT_COUNT (8)
-    0x75, 0x08, // REPORT_SIZE (8)
-    0x81, 0x02, // INPUT (Data,Var,Abs)
-    0x19, 0x01, // USAGE_MINIMUM (1)
-    0x29, 0x08, // USAGE_MAXIMUM (8)
-    0x91, 0x02, // OUTPUT (Data,Var,Abs)
-    0xC0        // END_COLLECTION
-};
-
-#define INTERFACE_LEN  0x09
 
 static const uint8_t hid_interface[] =
 {
-	/* I/F descr: HID */
+	/* interface descriptor for HID */
 	INTERFACE_LEN,  /* bLength */
 	USB_INTERFACE_DESCRIPTOR_TYPE, /* bDescriptorType */
 	TO_BE_SET_AUTOMATICALLY,   /* bInterfaceNumber */
@@ -94,8 +72,8 @@ static const uint8_t hid_interface[] =
 	0x01,           /* Number of HID class descriptors to follow. */
 	0x22,          /* Descriptor type: HID report */
 	/* Total length of report descriptor. */
-	sizeof(default_hid_report_desc) & 0x00FF,
-	(sizeof(default_hid_report_desc) & 0xFF00) >> 8,
+	TO_BE_SET_AUTOMATICALLY,
+	TO_BE_SET_AUTOMATICALLY,
 
 	/* EP Descriptor: interrupt in. */
 	0x07,   /* bLength */
@@ -365,8 +343,12 @@ static void update_configuration_desc(struct dev_desc_t *adev,
 	struct usb_descriptors_add_interface_t usb_desc_add_interface;
 	uint8_t *iad;
 	uint8_t *interface;
+	uint8_t *hid_descriptor;
 	struct usb_descriptors_hid_descriptor_t  *p_hid_descriptor;
+	struct usb_hid_class_runtime_t *runtime_hndl;
+	uint16_t report_desc_size;
 
+	runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(usb_hid_class, adev);
 	usb_descriptors_dev = cfg_hndl->usb_descriptors_dev;
 
 	iad = (uint8_t*)os_safe_malloc(sizeof(interface_association_descriptor)) ;
@@ -379,12 +361,14 @@ static void update_configuration_desc(struct dev_desc_t *adev,
 	os_safe_free(iad);
 
 
-
 	interface = (uint8_t*)os_safe_malloc(sizeof(hid_interface)) ;
 	errors_api_check_if_malloc_succeed(interface);
 	memcpy(interface, hid_interface, sizeof(hid_interface));
 	interface[2] = usb_descriptors_alloc_interfaces->interfaces_num[0];
-
+	hid_descriptor = &interface[INTERFACE_LEN];
+	report_desc_size = runtime_hndl->report_desc_size;
+	hid_descriptor[7] = report_desc_size & 0xFF;
+	hid_descriptor[8] = (report_desc_size >> 8) & 0xFF;
 	configure_endpoints(adev, cfg_hndl, interface);
 
 	usb_desc_add_interface.interface_desc = interface;
@@ -394,8 +378,8 @@ static void update_configuration_desc(struct dev_desc_t *adev,
 	usb_desc_add_interface.is_hid_interface = 1;
 	p_hid_descriptor = &usb_desc_add_interface.hid_descriptor;
 	p_hid_descriptor->hid_desc_position_in_config_desc = INTERFACE_LEN;
-	p_hid_descriptor->report_descriptor = default_hid_report_desc;
-	p_hid_descriptor->size = sizeof(default_hid_report_desc);
+	p_hid_descriptor->report_descriptor = runtime_hndl->report_desc;
+	p_hid_descriptor->size = report_desc_size;
 	DEV_IOCTL_1_PARAMS(usb_descriptors_dev,
 			USB_DEVICE_DESCRIPTORS_ADD_INTERFACE, &usb_desc_add_interface);
 	os_safe_free(interface);
@@ -412,6 +396,11 @@ static void start_hid_class(struct dev_desc_t *adev,
 	struct dev_desc_t *usb_descriptors_dev;
 	struct dev_desc_t *usb_hw;
 
+	if (1 == runtime_hndl->device_started) return;
+	if (0 == runtime_hndl->hid_report_was_set)
+	{
+		CRITICAL_ERROR("HID report should be set before startin HID class");
+	}
 
 	usb_descriptors_alloc_interfaces.num_of_interfaces = 1;
 	usb_descriptors_dev = cfg_hndl->usb_descriptors_dev;
@@ -432,6 +421,17 @@ static void start_hid_class(struct dev_desc_t *adev,
 	usb_hw = cfg_hndl->usb_hw;
 	DEV_IOCTL_1_PARAMS(usb_hw,
 			IOCTL_USB_DEVICE_REGISTER_INTERFACES, &register_interfaces);
+	runtime_hndl->device_started = 1;
+}
+
+
+static uint8_t set_hid_report(struct usb_hid_class_runtime_t *runtime_hndl,
+		struct usb_hid_set_report_descriptor_t *set_report_desc)
+{
+	runtime_hndl->report_desc = set_report_desc->report_desc;
+	runtime_hndl->report_desc_size = set_report_desc->report_desc_size;
+	runtime_hndl->hid_report_was_set = 1;
+	return 0;
 }
 
 
@@ -451,13 +451,18 @@ static uint8_t usb_hid_class_ioctl( struct dev_desc_t *adev,
 
 	switch(aIoctl_num)
 	{
-
-
 	case IOCTL_DEVICE_START :
 		start_hid_class(adev, cfg_hndl, runtime_hndl);
 		break;
 	case IOCTL_USB_HID_GET_IN_ENDPOINT_SIZE:
+		if (0 == runtime_hndl->device_started)
+		{
+			CRITICAL_ERROR("device not started yet");
+		}
 		*(uint16_t *)aIoctl_param1 = cfg_hndl->max_host_in_data_packet_size;
+		break;
+	case IOCTL_USB_HID_SET_REPORT_DESCRIPTOR:
+		return set_hid_report(runtime_hndl, aIoctl_param1);
 		break;
 	default :
 		return 1;

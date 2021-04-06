@@ -23,8 +23,6 @@ SET_STATIC_DEV_CONFIG(usb_device_descriptors) =
 	USB_DESC_DT_USB_PID
 };
 
-#define MODULE_HAS_NO_RUNTIME_DATA
-
 #include "add_static_dev.h"
 
 /*

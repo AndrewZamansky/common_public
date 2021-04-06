@@ -318,12 +318,19 @@ static uint8_t usb_device_descriptors_ioctl(
 		void * aIoctl_param1, void * aIoctl_param2)
 {
 	struct usb_device_descriptors_cfg_t *cfg_hndl;
+	struct usb_device_descriptors_runtime_t *runtime_hndl;
 
 	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(usb_device_descriptors, adev);
+	runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(usb_device_descriptors, adev);
 
 	if ((0 == init_done) && (IOCTL_DEVICE_START != aIoctl_num))
 	{
 		CRITICAL_ERROR('usb descriptors not initialized');
+	}
+
+	if (1 == runtime_hndl->usb_device_started)
+	{
+		CRITICAL_ERROR('usb device already started');
 	}
 
 	switch(aIoctl_num)
@@ -354,5 +361,4 @@ static uint8_t usb_device_descriptors_ioctl(
 
 #define MODULE_NAME             usb_device_descriptors
 #define MODULE_IOCTL_FUNCTION   usb_device_descriptors_ioctl
-#define MODULE_HAS_NO_RUNTIME_DATA
 #include "add_module.h"
