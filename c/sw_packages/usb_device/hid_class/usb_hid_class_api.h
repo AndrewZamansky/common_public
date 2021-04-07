@@ -10,15 +10,26 @@
 
 #define  HID_USAGE_PAGE(usage_page)  0x05, usage_page
 #define  HID_USAGE_PAGE_GENERIC_DESKTOP   0x01
+#define  HID_USAGE_PAGE_TELEPHONY         0x0B
+#define  HID_USAGE_PAGE_CONSUMER          0x0C
 
 #define  HID_USAGE(usage)  0x09, usage
+
+// generic page usages
 #define  HID_USAGE_UNDEFINED   0x00
+
+// consumer page usages
+#define  HID_USAGE_CONSUMER_CONTROL   0x01
+#define  HID_USAGE_CONSUMER_PLAYBACK_MUTE      0xE2
+#define  HID_USAGE_CONSUMER_VOLUME_INCREMENT   0xE9
+#define  HID_USAGE_CONSUMER_VOLUME_DECREMENT   0xEA
 
 #define  HID_START_COLLECTION(collection)  0xA1, collection
 #define  HID_COLLECTION_APPLICATION   0x01
-#define  HID_COLLECTION_TELEPHONY     0x0B
 
 #define  HID_END_COLLECTION()  0xC0
+
+#define  HID_REPORT_ID(id) 0x85, id
 
 #define  HID_LOGICAL_MINIMUM(min)  0x15, min
 #define  HID_LOGICAL_MAXIMUM(max)  0x25, max
