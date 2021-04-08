@@ -14,7 +14,7 @@ enum shell_presets_api_ioctl_e {
 };
 
 
-struct shell_presets_cfg_t{
+struct shell_presets_cfg_t {
 	struct dev_desc_t * storage_dev;
 	struct dev_desc_t * shell_backend_dev;
 	uint16_t preset_size;

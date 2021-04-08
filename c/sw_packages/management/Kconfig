@@ -35,11 +35,6 @@ menuconfig INCLUDE_SHELL_PRESETS
 	bool   "shell presets"
 	default n
 
-if INCLUDE_SHELL_PRESETS
-source "$KCONFIG_PUBLIC_START_DIR/sw_packages/management/shell_presets/Kconfig"
-endif
-
-
 
 #if INCLUDE_SHELL || ARM_SEMIHOSTING_CONFIG_ENABLE_RX
 

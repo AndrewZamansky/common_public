@@ -58,12 +58,11 @@ static size_t flash_wrapper_pwrite(struct dev_desc_t *adev,
 	struct flash_wrapper_runtime_t *runtime_handle;
 	uint32_t  erase_block_size;
 	uint8_t  *write_buffer;
-    uint32_t  pageAddr;
-    uint32_t  wrAddr;
-    uint32_t  written_size;
+	uint32_t  pageAddr;
+	uint32_t  wrAddr;
+	uint32_t  written_size;
 	uint32_t  flash_size;
 	uint32_t  page_mask;
-	uint32_t  curr_block_addr;
 
 	os_mutex_take_infinite_wait(flash_wrapper_mutex);
 
@@ -71,47 +70,48 @@ static size_t flash_wrapper_pwrite(struct dev_desc_t *adev,
 	erase_block_size = runtime_handle->erase_block_size;
 	write_buffer = runtime_handle->write_buffer;
 	flash_size = runtime_handle->flash_size;
-	curr_block_addr = runtime_handle->curr_block_addr;
-
 
 	page_mask = erase_block_size - 1; // for example : 4k page -> mask = 0xfff
 	written_size = 0;
 	wrAddr = aOffset;
-    while (aLength)
-    {
-    	size_t wrSize;
-    	size_t offsetInPage;
+	while (aLength)
+	{
+		size_t wrSize;
+		size_t offsetInPage;
+		uint32_t  curr_block_addr;
 
-    	pageAddr = wrAddr & (~page_mask);
-    	if (wrAddr >= flash_size)
-    	{
-    		break;
-    	}
+		pageAddr = wrAddr & (~page_mask);
+		if (wrAddr >= flash_size)
+		{
+			break;
+		}
 
-    	if (pageAddr != curr_block_addr)
-    	{
-    		save_to_flash_and_fetch_new_block(adev, curr_block_addr, pageAddr);
-    	}
+		// curr_block_addr needs to be taken from runtime_handle every loop
+		curr_block_addr = runtime_handle->curr_block_addr;
+		if (pageAddr != curr_block_addr)
+		{
+			save_to_flash_and_fetch_new_block(adev, curr_block_addr, pageAddr);
+		}
 
-    	offsetInPage = wrAddr & page_mask;
+		offsetInPage = wrAddr & page_mask;
 		wrSize = erase_block_size;
-    	if (0 != offsetInPage)
-    	{
-    		wrSize = erase_block_size - offsetInPage;
-    	}
-    	if (wrSize > aLength)
-    	{
-    		wrSize = aLength;
-    	}
+		if (0 != offsetInPage)
+		{
+			wrSize = erase_block_size - offsetInPage;
+		}
+		if (wrSize > aLength)
+		{
+			wrSize = aLength;
+		}
 
-    	memcpy(write_buffer + offsetInPage, apData, wrSize);
-    	runtime_handle->curr_block_is_dirty = 1;
+		memcpy(write_buffer + offsetInPage, apData, wrSize);
+		runtime_handle->curr_block_is_dirty = 1;
 
-        apData += wrSize;
-        wrAddr += wrSize;
-        written_size += wrSize;
-        aLength -= wrSize;
-    }
+		apData += wrSize;
+		wrAddr += wrSize;
+		written_size += wrSize;
+		aLength -= wrSize;
+	}
 
 	os_mutex_give(flash_wrapper_mutex);
 
