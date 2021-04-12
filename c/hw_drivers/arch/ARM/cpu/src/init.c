@@ -7,7 +7,6 @@
 	@description :
 ***************************************** */
 
-/***************   includes    *******************/
 #include "_project.h"
 #include "auto_init_api.h"
 

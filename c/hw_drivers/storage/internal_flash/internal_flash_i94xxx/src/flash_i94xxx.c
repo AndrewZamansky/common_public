@@ -18,22 +18,26 @@
 #include "string.h"
 
 #include "flash_wrapper_api.h"
+#include "dt_memory_layout.h"
 
 
 #define ERASE_BLOCK_SIZE   0x1000    /* 4k */
-#define DATA_FLASH_BASE    0x40000    /* Data Flash  start address */
-#define DATA_FLASH_SIZE   (FMC_APROM_END - DATA_FLASH_BASE)
 
+extern uint32_t __end_of_firmware_on_ROM__;
+
+static uint8_t init_done = 0;
 
 static uint32_t get_actual_read_write_len( uint32_t aLength, uint32_t aOffset)
 {
-	if (DATA_FLASH_SIZE <= aOffset)
+	uint32_t max_size_to_rw;
+	if (DT_INTERNAL_FLASH_MEMORY_SIZE <= aOffset)
 	{
 		return 0;
 	}
-	if (DATA_FLASH_SIZE <= (aOffset + aLength))
+	max_size_to_rw = DT_INTERNAL_FLASH_MEMORY_SIZE - aOffset;
+	if (aLength > max_size_to_rw)
 	{
-		aLength = DATA_FLASH_SIZE - aOffset;
+		aLength = max_size_to_rw;
 	}
 	return aLength;
 }
@@ -52,10 +56,16 @@ static size_t internal_flash_i94xxx_pwrite(struct dev_desc_t *adev,
 	uint32_t write_u32;
 	uint32_t word_offset;
 
+	if (0 == init_done) return 0;
+
 	aLength = get_actual_read_write_len(aLength, aOffset);
 	written_len = aLength;
 
-	wrAddr = aOffset + DATA_FLASH_BASE;
+	wrAddr = aOffset + DT_INTERNAL_FLASH_BASE_ADDR;
+	if (wrAddr < (size_t)&__end_of_firmware_on_ROM__)
+	{
+		return 0;
+	}
 
 	FMC_ENABLE_AP_UPDATE();
 
@@ -114,11 +124,13 @@ static size_t internal_flash_i94xxx_pread(struct dev_desc_t *adev,
 	uint32_t read_u32;
 	uint32_t word_offset;
 
+	if (0 == init_done) return 0;
+
 	// test alignment
 	aLength = get_actual_read_write_len(aLength, aOffset);
 	read_len = aLength;
 
-	readAddr = aOffset + DATA_FLASH_BASE;
+	readAddr = aOffset + DT_INTERNAL_FLASH_BASE_ADDR;
 
 	word_offset = readAddr & 0xf;
 	readAddr = (readAddr & (~0xf));
@@ -160,7 +172,7 @@ static size_t internal_flash_i94xxx_pread(struct dev_desc_t *adev,
 }
 
 #if 0
-static int  set_data_flash_base(uint32_t u32DFBA)
+static int  set_flash_base(uint32_t u32DFBA)
 {
 	uint32_t   au32Config[2]; /* User Configuration */
 
@@ -192,7 +204,31 @@ static int  set_data_flash_base(uint32_t u32DFBA)
 #endif
 
 
-extern uint32_t __relocation_section_end_on_ROM__;
+static void device_start()
+{
+	FMC_Open();
+
+	/* following can be removed after adding erase of config page and
+	 * writing 0x5A5A into CONFIG2 after erasing
+	 */
+	//set_flash_base(DT_INTERNAL_FLASH_BASE_ADDR);
+	init_done = 1;
+}
+
+
+static uint8_t flash_erase(uint32_t errase_addr)
+{
+	if (DT_INTERNAL_FLASH_MEMORY_SIZE <= errase_addr)
+	{
+		return 1;
+	}
+	errase_addr += DT_INTERNAL_FLASH_BASE_ADDR;
+	FMC_ENABLE_AP_UPDATE();
+	FMC_Erase(errase_addr);
+	FMC_DISABLE_AP_UPDATE();
+	return 0;
+}
+
 
 /**
  * internal_flash_i94xxx_ioctl()
@@ -208,41 +244,24 @@ static uint8_t internal_flash_i94xxx_ioctl(struct dev_desc_t *adev,
 //	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(adev);
 //	src_clock = cfg_hndl->src_clock;
 
+	if ((0 == init_done) && (IOCTL_DEVICE_START != aIoctl_num))
+	{
+		return 1;
+	}
 
 	switch(aIoctl_num)
 	{
 	case IOCTL_DEVICE_START :
-		if (DATA_FLASH_BASE < ((size_t)&__relocation_section_end_on_ROM__))
-		{
-			CRITICAL_ERROR("application overlap with data storage location");
-		}
-		FMC_Open();
-
-		/* following can be removed after adding erase of config page and
-		 * writing 0x5A5A into CONFIG2 after erasing
-		 */
-		//set_data_flash_base(DATA_FLASH_BASE);
+		device_start();
 		break;
 	case IOCTL_FLASH_WRAPPER_GET_ERASE_SIZE :
 		*(uint32_t*)aIoctl_param1 = ERASE_BLOCK_SIZE;
 		break;
 	case IOCTL_FLASH_WRAPPER_GET_FLASH_SIZE :
-		*(uint32_t*)aIoctl_param1 = DATA_FLASH_SIZE;
+		*(uint32_t*)aIoctl_param1 = DT_INTERNAL_FLASH_MEMORY_SIZE;
 		break;
 	case IOCTL_FLASH_WRAPPER_ERASE :
-		{
-			uint32_t errAddr;
-
-			errAddr = (*(uint32_t*)aIoctl_param1);
-			if (DATA_FLASH_SIZE <= errAddr)
-			{
-				return 1;
-			}
-			errAddr += DATA_FLASH_BASE;
-			FMC_ENABLE_AP_UPDATE();
-			FMC_Erase(errAddr);
-			FMC_DISABLE_AP_UPDATE();
-		}
+		return flash_erase(*(uint32_t*)aIoctl_param1);
 		break;
 	default :
 		return 1;

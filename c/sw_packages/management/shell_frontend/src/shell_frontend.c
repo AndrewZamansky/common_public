@@ -16,9 +16,26 @@
 #include "shell_frontend.h"
 #include "management_api.h"
 
+#ifdef CONFIG_INCLUDE_SHELL_PRESETS
+	#include "shell_presets_api.h"
+#endif
 
-struct xMessage_t {
-	struct dev_desc_t * pdev;
+enum msg_type_e {
+	MSG_TYPE_FROM_RX_DEVICE,
+	MSG_TYPE_LOAD_PRESET
+};
+
+struct msg_from_rx_device_t {
+	struct dev_desc_t *shell_frontend_target_pdev;
+};
+
+
+struct queue_msg_t {
+	enum msg_type_e msg_type;
+	union {
+		struct msg_from_rx_device_t msg_from_rx_device;
+		struct msg_load_preset_t msg_load_preset;
+	};
 };
 
 #define BIN_FLAGS_EXTENDED_CMD            0x01
@@ -67,12 +84,13 @@ static uint8_t shell_frontend_callback(struct dev_desc_t *adev,
 		const uint8_t aCallback_num,
 		void * aCallback_param1, void * aCallback_param2)
 {
-	struct xMessage_t  queueMsg;
+	struct queue_msg_t  msg;
 
 	if (NULL == xQueue) return 1;
 
-	queueMsg.pdev = adev;
-	os_queue_send_without_wait( xQueue, ( void * ) &queueMsg);
+	msg.msg_type = MSG_TYPE_FROM_RX_DEVICE;
+	msg.msg_from_rx_device.shell_frontend_target_pdev = adev;
+	os_queue_send_without_wait( xQueue, ( void * ) &msg);
 	return 0;
 }
 
@@ -130,6 +148,18 @@ void shell_frontend_reply_bin_msg_data(const uint8_t *data, size_t len)
 		remain_bin_reply_size -= len;
 	}
 	shell_frontend_reply_data(data, len);
+}
+
+
+void shell_frontend_load_preset_from_shell_cmd(
+		struct shell_frontend_load_preset_t *preset_params)
+{
+	if (NULL == curr_runtime_hndl) return;
+	curr_runtime_hndl->msg_load_preset.shell_preset_pdev =
+								preset_params->shell_preset_pdev;
+	curr_runtime_hndl->msg_load_preset.num_of_preset =
+								preset_params->num_of_preset;
+	curr_runtime_hndl->load_preset_flag = 1;
 }
 
 
@@ -214,6 +244,30 @@ static uint8_t *extract_command_from_line(
 }
 
 
+static void load_preset(struct msg_load_preset_t *p_preset)
+{
+	uint8_t ret_val;
+
+	ret_val = 1;
+#ifdef CONFIG_INCLUDE_SHELL_PRESETS
+	ret_val = DEV_IOCTL_1_PARAMS(
+			p_preset->shell_preset_pdev,
+			IOCTL_SHELL_PRESETS_LOAD_PRESET,
+			(void*)(size_t)(p_preset->num_of_preset));
+#endif
+	if (1 == ret_val)
+	{
+		#define err1 "error: cannot load preset\n"
+		shell_frontend_reply_data((uint8_t*)err1, sizeof(err1) - 1);
+	}
+	else if (2 == ret_val)
+	{
+		#define err2 "error: preset no found\n"
+		shell_frontend_reply_data((uint8_t*)err2, sizeof(err1) - 1);
+	}
+}
+
+
 #define SUMS_OF_EOLS	('\r' + '\n')
 
 static void consume_line(struct shell_frontend_cfg_t *config_handle,
@@ -257,6 +311,11 @@ static void consume_line(struct shell_frontend_cfg_t *config_handle,
 		{
 			DEV_WRITE(cmd_save_dev, pCmd, EOL_pos + 1);
 		}
+	}
+
+	if (curr_runtime_hndl->load_preset_flag)
+	{
+		load_preset(&curr_runtime_hndl->msg_load_preset);
 	}
 
 	if (cmd_header_found)
@@ -414,6 +473,64 @@ static size_t process_data_binary(struct shell_frontend_cfg_t *config_handle,
 }
 
 
+static void process_msg_from_rx_device(
+		struct dev_desc_t *shell_frontend_target_pdev)
+{
+	struct shell_frontend_cfg_t *config_handle;
+	struct dev_desc_t * curr_rx_dev;
+	struct ioctl_get_data_buffer_t data_buffer_info;
+	size_t total_length;
+	size_t bytes_consumed;
+	uint8_t *pBufferStart;
+
+	config_handle =
+		DEV_GET_CONFIG_DATA_POINTER(shell_frontend, shell_frontend_target_pdev);
+	curr_runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(
+					shell_frontend, shell_frontend_target_pdev);
+
+	curr_rx_dev = config_handle->server_rx_dev;
+	curr_tx_dev = config_handle->server_tx_dev;
+
+	DEV_IOCTL(curr_rx_dev,
+			IOCTL_GET_AND_LOCK_DATA_BUFFER, &data_buffer_info);
+
+	total_length = data_buffer_info.TotalLength ;
+	pBufferStart = data_buffer_info.pBufferStart ;
+
+	if(0 != data_buffer_info.bufferWasOverflowed)
+	{
+		curr_runtime_hndl->last_tested_pos = 0;
+		curr_runtime_hndl->last_EOL_char = 0;
+	}
+
+	while (total_length)
+	{
+		curr_runtime_hndl->load_preset_flag = 0;
+		if (SHELL_FRONTEND_MODE_ASCII == curr_runtime_hndl->mode)
+		{
+			bytes_consumed = process_data_ASCII(
+					config_handle, pBufferStart, total_length);
+		}
+		else
+		{
+			bytes_consumed = process_data_binary(
+					config_handle, pBufferStart, total_length);
+		}
+
+		// if no data consume then no full frame/EOL exists
+		if (0 == bytes_consumed) break;
+
+		pBufferStart += bytes_consumed;
+		total_length -= bytes_consumed;
+
+		DEV_IOCTL(curr_rx_dev, IOCTL_SET_BYTES_CONSUMED_IN_DATA_BUFFER,
+				(void *)((uint32_t)bytes_consumed));
+	}
+	DEV_IOCTL(curr_rx_dev, IOCTL_SET_UNLOCK_DATA_BUFFER ,(void *) 0);
+	curr_runtime_hndl = NULL;
+}
+
+
 /**
  * shell_frontend_Task()
  *
@@ -421,73 +538,72 @@ static size_t process_data_binary(struct shell_frontend_cfg_t *config_handle,
  */
 static void shell_frontend_Task( void *pvParameters )
 {
-	struct xMessage_t pxRxedMessage;
-	size_t total_length;
-	size_t bytes_consumed;
-	uint8_t *pBufferStart;
-	struct ioctl_get_data_buffer_t data_buffer_info;
-	struct shell_frontend_cfg_t *config_handle;
-	struct dev_desc_t *   curr_rx_dev;
-	struct dev_desc_t *   curr_dev;
+	struct queue_msg_t msg;
 
 	xQueue = os_create_queue(
-			CONFIG_SHELL_FRONTEND_MAX_QUEUE_LEN, sizeof(struct xMessage_t) );
+			CONFIG_SHELL_FRONTEND_MAX_QUEUE_LEN, sizeof(struct queue_msg_t) );
 
-	if ( 0 == xQueue  ) return ;
+	if ( 0 == xQueue  )
+	{
+		CRITICAL_ERROR("cannot create shell frontend queue");
+	}
 
 	while (1)
 	{
 		if ( OS_QUEUE_RECEIVE_SUCCESS !=
-				os_queue_receive_infinite_wait( xQueue, &( pxRxedMessage )) )
+				os_queue_receive_infinite_wait( xQueue, &( msg )) )
 		{
 			continue;
 		}
 
-		curr_dev = pxRxedMessage.pdev;
-		config_handle = DEV_GET_CONFIG_DATA_POINTER(shell_frontend, curr_dev);
-		curr_runtime_hndl =
-				DEV_GET_RUNTIME_DATA_POINTER(shell_frontend, curr_dev);
-		curr_rx_dev = config_handle->server_rx_dev;
-		curr_tx_dev = config_handle->server_tx_dev;
-
-		DEV_IOCTL(curr_rx_dev,
-				IOCTL_GET_AND_LOCK_DATA_BUFFER, &data_buffer_info);
-
-		total_length = data_buffer_info.TotalLength ;
-		pBufferStart = data_buffer_info.pBufferStart ;
-
-		if(0 != data_buffer_info.bufferWasOverflowed)
+		switch (msg.msg_type)
 		{
-			curr_runtime_hndl->last_tested_pos = 0;
-			curr_runtime_hndl->last_EOL_char = 0;
+		case MSG_TYPE_FROM_RX_DEVICE:
+			process_msg_from_rx_device(
+					msg.msg_from_rx_device.shell_frontend_target_pdev);
+			break;
+		case MSG_TYPE_LOAD_PRESET:
+			load_preset(&msg.msg_load_preset);
+			break;
+		default:
+			break;
 		}
-
-		while (total_length)
-		{
-			if (SHELL_FRONTEND_MODE_ASCII == curr_runtime_hndl->mode)
-			{
-				bytes_consumed = process_data_ASCII(
-						config_handle, pBufferStart, total_length);
-			}
-			else
-			{
-				bytes_consumed = process_data_binary(
-						config_handle, pBufferStart, total_length);
-			}
-
-			// if no data consume then no full frame/EOL exists
-			if (0 == bytes_consumed) break;
-
-			pBufferStart += bytes_consumed;
-			total_length -= bytes_consumed;
-
-			DEV_IOCTL(curr_rx_dev, IOCTL_SET_BYTES_CONSUMED_IN_DATA_BUFFER,
-					(void *)((uint32_t)bytes_consumed));
-		}
-		DEV_IOCTL(curr_rx_dev, IOCTL_SET_UNLOCK_DATA_BUFFER ,(void *) 0);
-
 		os_stack_test();
 	}
+}
+
+
+static uint8_t send_load_preset(
+		struct shell_frontend_load_preset_t *preset_params)
+{
+	struct queue_msg_t  msg;
+
+	if (NULL == xQueue) return 1;
+
+	msg.msg_type = MSG_TYPE_LOAD_PRESET;
+	msg.msg_load_preset.shell_preset_pdev = preset_params->shell_preset_pdev;
+	msg.msg_load_preset.num_of_preset = preset_params->num_of_preset;
+
+	if (NULL != curr_runtime_hndl)
+	{
+		/* we are in the middle of processing shell command, so this
+		 * code may be called from shel command, so we cannot send
+		 * message to queue because it can stuck the shell task.
+		 * so return the error and calling task should try it again.
+		 * set preset from shell command should not use this function,
+		 * use shell_frontend_load_preset_from_shell_cmd() insteas
+		 */
+		return 1;
+	}
+	else
+	{
+		if (OS_QUEUE_SEND_SUCCESS !=
+				os_queue_send_infinite_wait( xQueue, ( void * ) &msg))
+		{
+			return 1;
+		}
+	}
+	return 0;
 }
 
 
@@ -535,7 +651,9 @@ static uint8_t shell_frontend_ioctl( struct dev_desc_t *adev,
 		DEV_IOCTL_0_PARAMS(server_dev, IOCTL_DEVICE_START);
 		runtime_handle->mode = SHELL_FRONTEND_MODE_ASCII;
 		break;
-
+	case IOCTL_SHELL_FRONTEND_LOAD_PRESET:
+		return send_load_preset(aIoctl_param1);
+		break;
 	default :
 		return 1;
 	}

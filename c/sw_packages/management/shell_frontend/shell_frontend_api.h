@@ -27,6 +27,20 @@ struct shell_bin_cmd_struct_t {
 	shell_bin_cmd_func_t  bin_cmd_func;
 };
 
+
+enum shell_frontend_api_ioctl_e {
+	// need to load shell preset from shell task because it may
+	// require a lot of stack due to commands parsing (for example u-boot)
+	IOCTL_SHELL_FRONTEND_LOAD_PRESET = IOCTL_LAST_COMMON_IOCTL + 1,
+};
+
+
+struct shell_frontend_load_preset_t {
+	struct dev_desc_t *shell_preset_pdev;
+	uint8_t num_of_preset;
+};
+
+
 struct shell_frontend_cfg_t {
 	struct dev_desc_t *server_tx_dev;
 	struct dev_desc_t *server_rx_dev;
@@ -39,5 +53,7 @@ void shell_frontend_set_mode(uint8_t mode);
 
 void shell_frontend_reply_bin_msg_data(const uint8_t *data, size_t len);
 void shell_frontend_set_reply_bin_msg_data_size(uint16_t msg_size);
+void shell_frontend_load_preset_from_shell_cmd(
+		struct shell_frontend_load_preset_t *preset_params);
 
 #endif
