@@ -198,9 +198,8 @@ else
 
     CREATE_LDS_CMD_TEST := $(CREATE_LDS_CMD) $(FMT_GLOBAL_INCLUDE_DIR)
     CREATE_LDS_CMD_TEST += $(SCATTER_FILE_PATTERN) -o $(SCATTER_FILE)
-    CREATE_LDS_CMD_REDUCED :=$(call reduce_cmd_len, $(CREATE_LDS_CMD_TEST))
-    LONG_LDS_CMD:=$(call check_win_cmd_len, $(CREATE_LDS_CMD_REDUCED))
 
+    LONG_LDS_CMD:=$(call check_win_cmd_len,$(CREATE_LDS_CMD_TEST))
     ifeq ($(LONG_LDS_CMD),TOO_LONG)
         LDS_ARGS_CONTENT :=$(subst \,/,$(FMT_GLOBAL_INCLUDE_DIR))
         LDS_ARGS_FILE :=$(OUT_DIR)/lds.args
@@ -209,7 +208,7 @@ else
         CREATE_LDS_CMD += $(CC_USE_ARGS_FROM_FILE_FLAG)$(LDS_ARGS_FILE)
         CREATE_LDS_CMD += $(SCATTER_FILE_PATTERN) -o $(SCATTER_FILE)
     else
-        CREATE_LDS_CMD :=$(CREATE_LDS_CMD_REDUCED)
+        CREATE_LDS_CMD :=$(CREATE_LDS_CMD_TEST)
     endif
 endif
 

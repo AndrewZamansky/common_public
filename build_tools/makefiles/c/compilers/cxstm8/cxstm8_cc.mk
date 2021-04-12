@@ -14,7 +14,7 @@ format_all_asm_defines = $(call format_all_defines)
 # $(5) - output file (formatted according to cpstm8 or cxstm8 or castm8)
 # if command is too long, use command file(true of 'if')
 define run_compiler
-   $(call reduce_cmd_len, $(2) $(3) $(5) $(4))
+   $(2) $(3) $(5) $(4)
 endef
 
 # for next 5 functions:

@@ -195,7 +195,7 @@ SECTIONS
 	__relocation_section_end_on_RAM__ = .;
 	__relocation_section_end_on_ROM__ =
 			 data_section_start_on_ROM + SIZEOF(.data);
-
+	__end_of_firmware_on_ROM__ = __relocation_section_end_on_ROM__;
 
 
 	.bss . :

@@ -16,7 +16,7 @@ format_all_asm_defines = $(call format_all_defines)
 define run_compiler
    $(if $(1),\
      $(2) @$(1) $(5) $(4),\
-     $(call reduce_cmd_len, $(2) $(3) $(5) $(4)))
+     $(2) $(3) $(5) $(4))
 endef
 
 # for next 5 functions:

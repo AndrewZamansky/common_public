@@ -62,10 +62,12 @@ SRC_CPP   :=$(filter %.cpp,$(SRC))
 SRC_ASM    :=$(filter %.s,$(SRC)) $(filter %.S,$(SRC))
 SRC_ASM_S    :=$(filter %.S,$(SRC))
 SRC_OBJ := $(patsubst %.c,$(CURR_OBJ_DIR)/%.o,$(SRC_C))
-SRC_PREPROC := $(patsubst %.c,$(CURR_OBJ_DIR)/%.preproc,$(SRC_C))
+SRC_C_PREPROC := $(patsubst %.c,$(CURR_OBJ_DIR)/%.c.preproc,$(SRC_C))
 SRC_CMDS := $(patsubst %.c,$(CURR_OBJ_DIR)/cmds/%.cmd,$(SRC_C))
 SRC_CC_OBJ := $(patsubst %.cc,$(CURR_OBJ_DIR)/%.oo,$(SRC_CC))
+SRC_CC_PREPROC := $(patsubst %.c,$(CURR_OBJ_DIR)/%.cc.preproc,$(SRC_CC))
 SRC_CPP_OBJ := $(patsubst %.cpp,$(CURR_OBJ_DIR)/%.oop,$(SRC_CPP))
+SRC_CPP_PREPROC := $(patsubst %.cpp,$(CURR_OBJ_DIR)/%.cpp.preproc,$(SRC_CPP))
 ASM_OBJ := $(patsubst %.s,$(CURR_OBJ_DIR)/%.o.asm,$(SRC_ASM))
 ASM_OBJ_O := $(patsubst %.S,$(CURR_OBJ_DIR)/%.O.asm,$(SRC_ASM_S))
 
@@ -79,8 +81,7 @@ all: $(SRC_OBJ) $(SRC_CC_OBJ) $(SRC_CPP_OBJ) $(ASM_OBJ) $(ASM_OBJ_O)
 ########### start  ASM files #################
 ALL_ASM_FLAGS := $(GLOBAL_ASMFLAGS) $(ASMFLAGS)
 ALL_ASM_DEFS_AND_INCLUDES := $(ALL_ASM_DEFINES) $(ALL_ASM_INCLUDE_DIRS)
-TEST_COMPACT_STR :=$(call reduce_cmd_len, $(ALL_ASM_DEFS_AND_INCLUDES))
-LONG_ASM_CMD :=$(call check_win_cmd_len, $(TEST_COMPACT_STR))
+LONG_ASM_CMD :=$(call check_win_cmd_len, $(ALL_ASM_DEFS_AND_INCLUDES))
 ASM_ARGS_FILE :=$(strip $(if $(LONG_ASM_CMD),$(CURR_OBJ_DIR)/asm.args,))
 ifdef CONFIG_GCC
     ASM_ARGS_CONTENT :=$(ALL_ASM_DEFINES) $(subst \,/,$(ALL_ASM_INCLUDE_DIRS))
@@ -106,8 +107,7 @@ $(ASM_ARGS_FILE): $(ALL_DEPS)
 
 
 ALL_DEFS_AND_INCLUDES := $(ALL_DEFINES) $(ALL_INCLUDE_DIRS)
-TEST_COMPACT_STR :=$(call reduce_cmd_len, $(ALL_DEFS_AND_INCLUDES))
-LONG_CMD :=$(call check_win_cmd_len, $(TEST_COMPACT_STR))
+LONG_CMD :=$(call check_win_cmd_len, $(ALL_DEFS_AND_INCLUDES))
 C_ARGS_FILE :=$(strip $(if $(LONG_CMD),$(CURR_OBJ_DIR)/c.args,))
 ifdef CONFIG_GCC
     C_ARGS_CONTENT :=$(ALL_DEFINES) $(subst \,/,$(ALL_INCLUDE_DIRS))
@@ -175,4 +175,6 @@ $(CURR_OBJ_DIR)/%.oop: $(CPP_DEPS)
 $(C_ARGS_FILE): $(ALL_DEPS)
 	$(eval DUMMY :=$(call fwrite,$(C_ARGS_FILE),$(C_ARGS_CONTENT),TRUNCATE))
 
-.SECONDARY: $(ASM_ARGS_FILE) $(C_ARGS_FILE)
+FILES_TO_KEEP := $(ASM_ARGS_FILE) $(C_ARGS_FILE) $(SRC_C_PREPROC)\
+     $(SRC_CC_PREPROC) $(SRC_CPP_PREPROC)
+.SECONDARY: $(FILES_TO_KEEP)

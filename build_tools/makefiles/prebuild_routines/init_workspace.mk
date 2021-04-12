@@ -8,8 +8,8 @@ MAKEFILES_ROOT_DIR :=$(BUILD_TOOLS_ROOT_DIR)/makefiles
 PREBUILD_ROUTINES_DIR :=$(MAKEFILES_ROOT_DIR)/prebuild_routines
 GENERATE_PRJ_FILES_DIR :=$(MAKEFILES_ROOT_DIR)/generate_project_files
 
-include $(PREBUILD_ROUTINES_DIR)/init_environment.mk
 include $(MAKEFILES_ROOT_DIR)/common.mk
+include $(PREBUILD_ROUTINES_DIR)/init_environment.mk
 
 
 COMMON_PUBLIC_DIR =$(abspath $(BUILD_TOOLS_ROOT_DIR)/..)

@@ -68,6 +68,8 @@ fix_path_if_in_windows =$(if \
 # string is more then 8196 then build proccess will stop because
 # of windows shell limitiation on command length.
 # so we take lower limit: 8100.
+# in Win10 the limit is different, the limit is calculated at the
+# begining of build process and saved in $(MAX_WIN_CMD_LEN)
 
 # functions for string length :
 ASCII := A B C D E F G H I J K L M N O P Q R S T U V W X Y Z
@@ -124,64 +126,13 @@ count_extra_chars =$(call count_extra_chars_step1,$1,$2)
 test_if_string_len_less =$(if \
          $(patsubst 0,,$(call count_extra_chars,$1,$2)),no,yes)
 
-
 __check_cmd_len =$(if \
-    $(findstring no,$(call test_if_string_len_less,$1,8100)),TOO_LONG,)
+    $(findstring no,$(call test_if_string_len_less,$1,$(MAX_WIN_CMD_LEN))),\
+    TOO_LONG,)
 
-check_win_cmd_len =$(if \
-      $(findstring WINDOWS,$(COMPILER_HOST_OS)),$(call __check_cmd_len,$1),)
+check_win_cmd_len =$(strip $(if \
+      $(findstring WINDOWS,$(COMPILER_HOST_OS)),$(call __check_cmd_len,$1),))
 ####################################################################
-
-
-
-
-
-
-# function: reduce_cmd_len
-# usage    : $(call reduce_cmd_len,$(CMD_VAR))
-#
-# $1-$(CMD_VAR): cmd line string
-# function will add environmantal variables to command to replace
-# some pathes
-ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
-    ENV_VAR_PUBLIC_SW_PACKAGES_DIR :=%PUBLIC_SW_PACKAGES_DIR%
-    ENV_VAR_EXTERNAL_SOURCE_ROOT_DIR :=%EXTERNAL_SOURCE_ROOT_DIR%
-    ENV_VAR_PUBLIC_DRIVERS_DIR :=%PUBLIC_DRIVERS_DIR%
-    ENV_VAR_COMMON_PRIVATE_DIR :=%COMMON_PRIVATE_DIR%
-    ENV_VAR_APP_ROOT_DIR :=%APP_ROOT_DIR%
-else
-    ENV_VAR_PUBLIC_SW_PACKAGES_DIR :=$${PUBLIC_SW_PACKAGES_DIR}
-    ENV_VAR_EXTERNAL_SOURCE_ROOT_DIR :=$${EXTERNAL_SOURCE_ROOT_DIR}
-    ENV_VAR_PUBLIC_DRIVERS_DIR :=$${PUBLIC_DRIVERS_DIR}
-    ENV_VAR_COMMON_PRIVATE_DIR :=$${COMMON_PRIVATE_DIR}
-    ENV_VAR_APP_ROOT_DIR :=$${APP_ROOT_DIR}
-endif
-
-reduce_cmd_len_1 =$(subst\
-       $(PUBLIC_SW_PACKAGES_DIR),$(ENV_VAR_PUBLIC_SW_PACKAGES_DIR),$1)
-reduce_cmd_len_2 =$(subst\
-       $(EXTERNAL_SOURCE_ROOT_DIR),$(ENV_VAR_EXTERNAL_SOURCE_ROOT_DIR),\
-       $(call reduce_cmd_len_1,$1))
-reduce_cmd_len_3 =$(subst\
-       $(PUBLIC_DRIVERS_DIR),$(ENV_VAR_PUBLIC_DRIVERS_DIR),\
-       $(call reduce_cmd_len_2,$1))
-reduce_cmd_len_4 =$(subst\
-       $(COMMON_PRIVATE_DIR),$(ENV_VAR_COMMON_PRIVATE_DIR),\
-       $(call reduce_cmd_len_3,$1))
-# for windows: replace also string with backslashs :
-reduce_cmd_len_5 =$(subst\
-       $(subst \,/,$(COMMON_PRIVATE_DIR)),$(ENV_VAR_COMMON_PRIVATE_DIR),\
-       $(call reduce_cmd_len_4,$1))
-reduce_cmd_len_6 =$(subst\
-        $(APP_ROOT_DIR),$(ENV_VAR_APP_ROOT_DIR),$(call reduce_cmd_len_5,$1))
-# for windows: replace also string with backslashs :
-reduce_cmd_len_7 =$(subst\
-       $(subst /,\,$(APP_ROOT_DIR)),$(ENV_VAR_APP_ROOT_DIR),\
-       $(call reduce_cmd_len_6,$1))
-
-reduce_cmd_len =$(SET_CC_ENV_VARS) $(call reduce_cmd_len_7,$1)
-########################################################################
-
 
 
 
