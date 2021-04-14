@@ -325,6 +325,7 @@ static uint8_t abort_recording(
 {
 	runtime_handle->state = SHELL_PRESET_STATE_IDLE;
 	runtime_handle->overflow = 0;
+	return 0;
 }
 
 
@@ -393,7 +394,6 @@ static uint8_t shell_presets_ioctl( struct dev_desc_t *adev,
 		break;
 	case IOCTL_SHELL_PRESETS_ABORT_RECORDING:
 		return abort_recording(config_handle, runtime_handle);
-		break;
 		break;
 	default :
 		return 1;
