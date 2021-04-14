@@ -1,9 +1,10 @@
 menu "`--->  I94XXX configurations"
 
 
-config I94XXX_BSP_VERSION
-	string "i94xxx bsp version in form : xx.xx[.xx]"
-	default "00.01"
+config BSP_I94XXX_GIT_COMMIT_HASH
+	string "BSP i94xxx git commit hash"
+	default ""
+
 
 choice
 	prompt "I94XXX flavors"
