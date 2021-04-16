@@ -295,7 +295,7 @@ static void class_request(void)
 
 
 static void register_interfaces(
-		struct register_interfaces_t *register_interfaces)
+		struct register_interfaces_t *p_register_interfaces)
 {
 	uint8_t i;
 
@@ -303,19 +303,19 @@ static void register_interfaces(
 	{
 		CRITICAL_ERROR("should be done before usb started");
 	}
-	for(i = 0; i < register_interfaces->num_of_interfaces; i++)
+	for(i = 0; i < p_register_interfaces->num_of_interfaces; i++)
 	{
 		struct register_interface_t *register_interface;
 		uint8_t interface_num;
 
-		register_interface = &register_interfaces->register_interface_arr[i];
+		register_interface = &p_register_interfaces->register_interface_arr[i];
 		interface_num = register_interface->interfaces_num;
 		if (MAX_NUM_OF_ITERFACES < interface_num)
 		{
 			CRITICAL_ERROR("interface number is to high \n");
 		}
 		interface_callback_devs[interface_num] =
-								register_interfaces->callback_dev;
+						p_register_interfaces->callback_dev;
 		interface_callback_functions[interface_num] =
 								register_interface->interface_func;
 	}
@@ -494,7 +494,7 @@ static void device_start(struct usb_i9xxxx_cfg_t *cfg_hndl)
 static void usb_device_start()
 {
 	if ((NULL == l_gsInfo.gu8DevDesc) || (NULL == l_gsInfo.gu8ConfigDesc) ||
-		(NULL == l_gsInfo.gu8StringDesc)  || (NULL == l_gsInfo.gu32BOSDesc))
+		(NULL == l_gsInfo.get_str_desc_func) || (NULL == l_gsInfo.gu32BOSDesc))
 	{
 		CRITICAL_ERROR("l_gsInfo structure should be initialized");
 	}
@@ -550,15 +550,24 @@ static void usb_device_start()
 }
 
 
+static usb_device_get_str_desc_func_t usb_device_get_str_desc_func;
+static void get_str_desc_func(uint16_t str_desc_index, const uint8_t **desc)
+{
+	usb_device_get_str_desc_func(str_desc_index, desc);
+}
+
+
 static void set_descriptors(struct set_device_descriptors_t *descriptors)
 {
 	if (USB_STATE_STARTED == usb_state)
 	{
 		CRITICAL_ERROR("should be done before usb started");
 	}
+	usb_device_get_str_desc_func =
+			descriptors->usb_device_get_str_desc_func;
 	l_gsInfo.gu8DevDesc = descriptors->device_desc;
 	l_gsInfo.gu8ConfigDesc = descriptors->config_desc;
-	l_gsInfo.gu8StringDesc = descriptors->pointers_to_strings_descs;
+	l_gsInfo.get_str_desc_func = get_str_desc_func;
 	l_gsInfo.gu8HidReportDesc = descriptors->hid_report_desc;
 	l_gsInfo.gu32BOSDesc = descriptors->BOS_desc;
 	l_gsInfo.gu32HidReportSize = descriptors->hid_report_size;

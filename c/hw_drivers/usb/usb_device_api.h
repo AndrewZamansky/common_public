@@ -4,10 +4,7 @@
 
 #include "dev_management_api.h"
 
-/*****************  defines  **************/
 
-
-/**********  define API  types ************/
 typedef void (*usb_dev_out_endpoint_callback_func_t)(
 		struct dev_desc_t *callback_dev, uint8_t const *buff, size_t size);
 
@@ -85,19 +82,18 @@ struct register_interfaces_t {
 };
 
 
+typedef void (*usb_device_get_str_desc_func_t)(
+			uint16_t str_desc_index, const uint8_t **desc);
 struct set_device_descriptors_t
 {
 	const uint8_t *device_desc;
 	const uint8_t *config_desc;
-	const uint8_t **pointers_to_strings_descs;
+	usb_device_get_str_desc_func_t usb_device_get_str_desc_func;
 	const uint8_t **hid_report_desc;
 	const uint8_t *BOS_desc;
 	const uint32_t *hid_report_size;
 	const uint32_t *config_hid_desc_index;
 };
-
-
-/**********  define API  functions  ************/
 
 
 #endif

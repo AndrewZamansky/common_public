@@ -95,8 +95,11 @@ static uint8_t gu8BOSDescriptor[] =
 	0x02, 0x00, 0x00, 0x00  /* bmAttributes */
 };
 
-
-static uint8_t const **gpu8UsbString = NULL;
+struct str_desc_t {
+	uint16_t str_desc_index;
+	uint8_t const *desc;
+};
+static struct str_desc_t *arr_of_str_desc = NULL;
 
 #define MAX_INTERFACE_NUM_FOR_HID  6
 static uint8_t const *gu8UsbHidReport[MAX_INTERFACE_NUM_FOR_HID] = {NULL};
@@ -108,7 +111,7 @@ static uint32_t gu32ConfigHidDescIdx[MAX_INTERFACE_NUM_FOR_HID] = {0};
 static uint8_t *configuration_desc;
 static uint16_t configuration_desc_size;
 static uint16_t interface_count = 0;
-static uint16_t string_index_count = 0;
+static uint16_t num_of_str_desc = 0;
 static uint8_t init_done = 0;
 
 static void increase_configuration_desc(uint16_t additional_size)
@@ -147,10 +150,12 @@ static void device_start(struct usb_device_descriptors_cfg_t *cfg_hndl)
 	memcpy(
 		configuration_desc, gu8ConfigDescriptor, configuration_desc_size);
 
-	string_index_count = 1;
-	gpu8UsbString = (uint8_t const **)os_safe_malloc(sizeof(uint8_t const *));
-	errors_api_check_if_malloc_succeed(gpu8UsbString);
-	gpu8UsbString[0] = gu8StringLang;
+	arr_of_str_desc =
+			(struct str_desc_t*)os_safe_malloc(sizeof(struct str_desc_t));
+	errors_api_check_if_malloc_succeed(arr_of_str_desc);
+	arr_of_str_desc[0].str_desc_index = 0;
+	arr_of_str_desc[0].desc = gu8StringLang;
+	num_of_str_desc++;
 
 	DEV_IOCTL_0_PARAMS(usb_hw, IOCTL_DEVICE_START);
 	init_done = 1;
@@ -215,6 +220,24 @@ static void add_interface(
 }
 
 
+
+static void usb_device_get_str_desc_func(
+				uint16_t str_desc_index, const uint8_t **desc)
+{
+	uint16_t i;
+
+	*desc = NULL;
+	for (i = 0; i <num_of_str_desc; i++)
+	{
+		if (str_desc_index == arr_of_str_desc[i].str_desc_index)
+		{
+			*desc = arr_of_str_desc[i].desc;
+			return;
+		}
+	}
+}
+
+
 static void usb_device_start(struct usb_device_descriptors_cfg_t *cfg_hndl)
 {
 	struct dev_desc_t *usb_hw;
@@ -237,7 +260,7 @@ static void usb_device_start(struct usb_device_descriptors_cfg_t *cfg_hndl)
 
 	descriptors.device_desc = gu8DeviceDescriptor;
 	descriptors.config_desc = configuration_desc;
-	descriptors.pointers_to_strings_descs = gpu8UsbString;
+	descriptors.usb_device_get_str_desc_func = usb_device_get_str_desc_func;
 	descriptors.BOS_desc = gu8BOSDescriptor;
 	descriptors.hid_report_desc = gu8UsbHidReport;
 	descriptors.hid_report_size = gu32UsbHidReportLen;
@@ -269,7 +292,7 @@ static void add_string_descriptor(struct usb_device_descriptors_cfg_t *cfg_hndl,
 {
 	uint8_t const *string_descriptor;
 	uint32_t size_of_descriptor;// additional step to check validity of call
-	uint16_t curr_string_index_count;
+	uint16_t curr_str_arr_index;
 
 	string_descriptor = usb_descriptors_add_string->string_descriptor;
 	size_of_descriptor = usb_descriptors_add_string->size_of_descriptor;
@@ -282,25 +305,30 @@ static void add_string_descriptor(struct usb_device_descriptors_cfg_t *cfg_hndl,
 		CRITICAL_ERROR('bad string descriptor');
 	}
 
-	curr_string_index_count = string_index_count;
-	string_index_count++;
-	gpu8UsbString = (uint8_t const **)os_safe_realloc(gpu8UsbString,
-								string_index_count * sizeof(uint8_t const *));
-	errors_api_check_if_malloc_succeed(gpu8UsbString);
-
-	gpu8UsbString[curr_string_index_count] = string_descriptor;
-	usb_descriptors_add_string->ret_string_index = curr_string_index_count;
+	curr_str_arr_index = num_of_str_desc;
+	num_of_str_desc++;
+	arr_of_str_desc = (struct str_desc_t*)os_safe_realloc(arr_of_str_desc,
+					num_of_str_desc * sizeof(struct str_desc_t));
+	errors_api_check_if_malloc_succeed(arr_of_str_desc);
+	arr_of_str_desc[curr_str_arr_index].desc = string_descriptor;
 
 	switch (usb_descriptors_add_string->type_of_string)
 	{
 	case USB_DEVICE_DESCRIPTORS_VENDOR_STRING:
-		gu8DeviceDescriptor[VENDOR_STR_POS] = curr_string_index_count;
+		arr_of_str_desc[curr_str_arr_index].str_desc_index = 1;
+		gu8DeviceDescriptor[VENDOR_STR_POS] = 1;
 		break;
 	case USB_DEVICE_DESCRIPTORS_PRODUCT_STRING:
-		gu8DeviceDescriptor[PRODUCT_STR_POS] = curr_string_index_count;
+		arr_of_str_desc[curr_str_arr_index].str_desc_index = 2;
+		gu8DeviceDescriptor[PRODUCT_STR_POS] = 2;
 		break;
 	case USB_DEVICE_DESCRIPTORS_SERIAL_STRING:
-		gu8DeviceDescriptor[SERIAL_STR_POS] = curr_string_index_count;
+		arr_of_str_desc[curr_str_arr_index].str_desc_index = 3;
+		gu8DeviceDescriptor[SERIAL_STR_POS] = 3;
+		break;
+	case USB_DEVICE_DESCRIPTORS_UCQ_STRING:
+		arr_of_str_desc[curr_str_arr_index].str_desc_index = 33; // =0x21
+		gu8DeviceDescriptor[SERIAL_STR_POS] = 3;
 		break;
 	default:
 		break;

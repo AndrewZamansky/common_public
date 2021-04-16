@@ -9,6 +9,8 @@
 #define USB_HID_DESCRIPTOR_TYPE       0x21
 
 #define  HID_USAGE_PAGE(usage_page)  0x05, usage_page
+#define  HID_USAGE_PAGE_2BYTES(usage_page)  \
+						0x06, (usage_page & 0xff), ((usage_page >> 8) & 0xff)
 #define  HID_USAGE_PAGE_GENERIC_DESKTOP   0x01
 #define  HID_USAGE_PAGE_TELEPHONY         0x0B
 #define  HID_USAGE_PAGE_CONSUMER          0x0C
@@ -23,6 +25,11 @@
 #define  HID_USAGE_CONSUMER_PLAYBACK_MUTE      0xE2
 #define  HID_USAGE_CONSUMER_VOLUME_INCREMENT   0xE9
 #define  HID_USAGE_CONSUMER_VOLUME_DECREMENT   0xEA
+
+// telephony page usages
+#define  HID_USAGE_TELEPHONY_HEADSET          0x05
+#define  HID_USAGE_TELEPHONY_HOOK_SWITCH      0x20
+#define  HID_USAGE_TELEPHONY_LINE_BUSY        0x97
 
 #define  HID_START_COLLECTION(collection)  0xA1, collection
 #define  HID_COLLECTION_APPLICATION   0x01
@@ -40,14 +47,20 @@
 #define  HID_REPORT_COUNT(count)  0x95, count
 #define  HID_REPORT_SIZE(size)  0x75, size
 
-#define  HID_INPUT(input)   0x81, input
-#define  HID_OUTPUT(input)  0x91, input
-#define  HID_INOUT_DATA        (0 << 0)
-#define  HID_INOUT_CONSTANT    (1 << 0)
-#define  HID_INOUT_ARRAY       (0 << 1)
-#define  HID_INOUT_VARIABLE    (1 << 1)
-#define  HID_INOUT_ABSOLUTE    (0 << 2)
-#define  HID_INOUT_RELATIVE    (1 << 2)
+#define  HID_INPUT(mode)    0x81, mode
+#define  HID_OUTPUT(mode)   0x91, mode
+#define  HID_FEATURE(mode)  0xB1, mode
+#define  HID_FEATURE_2BYTES(mode0, mode1)  0xB2, mode0, mode1
+#define  HID_IN_OUT_FEATURE_DATA          (0 << 0)
+#define  HID_IN_OUT_FEATURE_CONSTANT      (1 << 0)
+#define  HID_IN_OUT_FEATURE_ARRAY         (0 << 1)
+#define  HID_IN_OUT_FEATURE_VARIABLE      (1 << 1)
+#define  HID_IN_OUT_FEATURE_ABSOLUTE      (0 << 2)
+#define  HID_IN_OUT_FEATURE_RELATIVE      (1 << 2)
+#define  HID_IN_OUT_FEATURE_PREFFERED     (0 << 5)
+#define  HID_IN_OUT_FEATURE_NON_PREFFERED (1 << 5)
+#define  HID_IN_OUT_FEATURE_BIT_FIELD   (0 << 0) // bit 8 or 0 in second byte
+#define  HID_IN_OUT_FEATURE_BUFFERED    (1 << 0) // bit 8 or 0 in second byte
 
 
 enum USB_HID_CLASS_API_ioctl_e {
