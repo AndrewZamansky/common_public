@@ -4,6 +4,11 @@
 
 #include "dev_management_api.h"
 
+enum interface_callback_types_e {
+	INTERFACE_CALLBACK_TYPE_REQUEST,
+	INTERFACE_CALLBACK_TYPE_DATA_OUT_FINISHED,
+};
+
 
 typedef void (*usb_dev_out_endpoint_callback_func_t)(
 		struct dev_desc_t *callback_dev, uint8_t const *buff, size_t size);
@@ -12,10 +17,10 @@ typedef void (*usb_dev_in_endpoint_callback_func_t)(
 							struct dev_desc_t *callback_dev);
 
 typedef void (*usb_dev_interface_request_callback_func_t)(
-					struct dev_desc_t   *callback_dev, uint8_t *request);
+	struct dev_desc_t *callback_dev, uint8_t callback_type, uint8_t *request);
 
 typedef void (*usb_dev_endpoint_request_callback_func_t)(
-					struct dev_desc_t   *callback_dev, uint8_t *request);
+					struct dev_desc_t *callback_dev, uint8_t *request);
 
 
 typedef enum
@@ -65,7 +70,7 @@ struct set_request_in_buffer_t {
 };
 
 struct set_request_out_buffer_t {
-	uint8_t   const *data;
+	uint8_t  *data;
 	size_t    size;
 };
 

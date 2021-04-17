@@ -41,8 +41,8 @@ typedef enum
 
 /***************************************************/
 
-extern void uac_interface_class_request(
-		struct dev_desc_t *callback_dev, uint8_t *request);
+extern void uac_interface_class_request(struct dev_desc_t *callback_dev,
+		uint8_t callback_type, uint8_t *request);
 extern void uac_endpoint_class_request(
 		struct dev_desc_t *callback_dev, uint8_t *request);
 extern void new_usb_audio_received(

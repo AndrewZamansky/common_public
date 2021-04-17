@@ -380,7 +380,7 @@ static void uac_class_interface_out_request(struct dev_desc_t *usb_hw,
 
 
 void uac_interface_class_request(
-		struct dev_desc_t *callback_dev, uint8_t *request)
+	struct dev_desc_t *callback_dev, uint8_t callback_type, uint8_t *request)
 {
 	struct usb_audio_class_runtime_t *runtime_hndl;
 	struct usb_audio_class_cfg_t *cfg_hndl;
@@ -390,6 +390,10 @@ void uac_interface_class_request(
 	runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(usb_audio_class, callback_dev);
 	usb_hw = cfg_hndl->usb_hw;
 
+	if (INTERFACE_CALLBACK_TYPE_DATA_OUT_FINISHED == callback_type)
+	{
+		return;
+	}
 	if(request[BM_REQ_TYPE_POS] & REQ_DIRECTION_MASK)    /* device to host */
 	{// from device to host
 		uac_class_interface_in_request(usb_hw, runtime_hndl, request);

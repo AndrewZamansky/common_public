@@ -230,7 +230,8 @@ size_t usb_virtual_com_pwrite(struct dev_desc_t *adev,
 /* uac_class_in_request()
  *
  */
-static void cdc_class_in_request( struct dev_desc_t *usb_hw, uint8_t *request)
+static void cdc_class_in_request(
+		struct dev_desc_t *usb_hw,  uint8_t *request)
 {
 	struct set_request_in_buffer_t set_request_in_buffer;
 	uint8_t ret;
@@ -299,14 +300,19 @@ static void cdc_class_out_request( struct dev_desc_t *usb_hw, uint8_t *request)
 }
 
 
-static void vcom_class_request(
-		struct dev_desc_t   *callback_dev, uint8_t *request)
+static void vcom_class_request(struct dev_desc_t *callback_dev,
+							uint8_t callback_type, uint8_t *request)
 {
 	struct usb_virtual_com_class_cfg_t *cfg_hndl;
 	struct dev_desc_t *usb_hw;
 
 	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(usb_virtual_com_class, callback_dev);
 	usb_hw = cfg_hndl->usb_hw;
+
+	if (INTERFACE_CALLBACK_TYPE_DATA_OUT_FINISHED == callback_type)
+	{
+		return;
+	}
 
 	if(request[0] & 0x80)    /* request data transfer direction */
 	{// from device to host

@@ -97,10 +97,6 @@ static const uint8_t hid_interface[] =
 };
 
 
-
-#define REPORT_SIZE  8
-static uint8_t report[REPORT_SIZE];
-
 static void new_data_received(
 		struct dev_desc_t *adev, uint8_t const *buff, size_t size)
 {
@@ -186,18 +182,31 @@ static size_t usb_hid_pwrite(struct dev_desc_t *adev,
 /* hid_class_in_request()
  *
  */
-static void hid_class_in_request( struct dev_desc_t *usb_hw, uint8_t *request)
+static void hid_class_in_request(struct dev_desc_t *usb_hw,
+		struct usb_hid_class_runtime_t  *runtime_hndl, uint8_t *request)
 {
+	hid_in_report_over_control_pipe_callback_t callback_func;
 	struct set_request_in_buffer_t set_request_in_buffer;
+	uint16_t  data_size;
+	uint16_t  requested_data_size;
 	uint8_t ret;
 
 	// Device to host
 	ret = 0;
 	switch(request[1])
 	{
-    case HID_GET_REPORT:
-		set_request_in_buffer.data = (uint8_t *)&report;
-		set_request_in_buffer.size = REPORT_SIZE;
+	case HID_GET_REPORT:
+		callback_func =  runtime_hndl->hid_in_report_over_control_pipe_callback;
+		if (NULL != callback_func)
+		{
+			callback_func(request[2], &set_request_in_buffer.data, &data_size);
+		}
+		requested_data_size = request[6] + (request[7] << 8);
+		if (data_size > requested_data_size)
+		{
+			data_size = requested_data_size;
+		}
+		set_request_in_buffer.size = data_size;
 		break;
 	default:
 		ret = 1;
@@ -217,23 +226,28 @@ static void hid_class_in_request( struct dev_desc_t *usb_hw, uint8_t *request)
 }
 
 
-
-
-
 /*  hid_class_out_request()
  *
  */
-static void hid_class_out_request( struct dev_desc_t *usb_hw, uint8_t *request)
+static void hid_class_out_request( struct dev_desc_t *usb_hw,
+		struct usb_hid_class_runtime_t *runtime_hndl, uint8_t *request)
 {
 	struct set_request_out_buffer_t set_request_out_buffer;
 	uint8_t ret;
+	uint16_t  data_size;
 
 	ret = 0;
     switch(request[1])
 	{
     case HID_SET_REPORT:
-		set_request_out_buffer.data = (uint8_t *)&report;
-		set_request_out_buffer.size = REPORT_SIZE;
+		set_request_out_buffer.data = runtime_hndl->report_out_buf;
+		data_size = request[6] + (request[7] << 8);
+		if (data_size > runtime_hndl->report_out_max_buf_size)
+		{
+			data_size = runtime_hndl->report_out_max_buf_size;
+		}
+		runtime_hndl->report_out_received_buf_size = data_size;
+		set_request_out_buffer.size = data_size;
 		break;
 	case HID_SET_IDLE:
 		set_request_out_buffer.data = NULL;
@@ -258,21 +272,34 @@ static void hid_class_out_request( struct dev_desc_t *usb_hw, uint8_t *request)
 }
 
 
-static void hid_class_request(struct dev_desc_t *callback_dev, uint8_t *request)
+static void hid_class_request(struct dev_desc_t *callback_dev,
+							uint8_t callback_type, uint8_t *request)
 {
 	struct usb_hid_class_cfg_t *cfg_hndl;
 	struct dev_desc_t *usb_hw;
+	struct usb_hid_class_runtime_t *runtime_hndl;
 
 	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(usb_hid_class, callback_dev);
+	runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(usb_hid_class, callback_dev);
 	usb_hw = cfg_hndl->usb_hw;
 
+	if (INTERFACE_CALLBACK_TYPE_DATA_OUT_FINISHED == callback_type)
+	{
+		hid_out_report_over_control_pipe_callback_t callback_func;
+		callback_func =  runtime_hndl->hid_out_report_over_control_pipe_callback;
+		if (NULL != callback_func)
+		{
+			callback_func(runtime_hndl->report_out_received_buf_size);
+		}
+		return;
+	}
 	if(request[0] & 0x80)    /* request data transfer direction */
 	{// from device to host
-		hid_class_in_request(usb_hw, request);
+		hid_class_in_request(usb_hw, runtime_hndl, request);
 	}
 	else
 	{// from host to device
-		hid_class_out_request(usb_hw, request);
+		hid_class_out_request(usb_hw, runtime_hndl, request);
 	}
 }
 
@@ -430,6 +457,13 @@ static uint8_t set_hid_report(struct usb_hid_class_runtime_t *runtime_hndl,
 {
 	runtime_hndl->report_desc = set_report_desc->report_desc;
 	runtime_hndl->report_desc_size = set_report_desc->report_desc_size;
+	runtime_hndl->report_out_buf = set_report_desc->report_out_buf;
+	runtime_hndl->report_out_max_buf_size =
+			set_report_desc->report_out_buf_size;
+	runtime_hndl->hid_out_report_over_control_pipe_callback =
+				set_report_desc->hid_out_report_over_control_pipe_callback;
+	runtime_hndl->hid_in_report_over_control_pipe_callback =
+				set_report_desc->hid_in_report_over_control_pipe_callback;
 	runtime_hndl->hid_report_was_set = 1;
 	return 0;
 }

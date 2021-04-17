@@ -69,6 +69,9 @@ usb_dev_interface_request_callback_func_t
 				interface_callback_functions[MAX_NUM_OF_ITERFACES];
 usb_dev_endpoint_request_callback_func_t
 				endpoint_request_callback_functions[MAX_NUM_OF_ENDPOINTS];
+static usb_dev_interface_request_callback_func_t
+						last_interface_callback_func = NULL;
+static struct dev_desc_t *last_interface_dev = NULL;
 
 static uint8_t endpoints_count = 2;
 static uint32_t available_buff_pointer = EP1_BUF_BASE + EP1_BUF_LEN;
@@ -128,113 +131,131 @@ void EP_Handler(uint8_t ep_num)
 
 
 
-/*--------------------------------------------------------------------------*/
+static void int_status_floating_detect()
+{
+	USBD_CLR_INT_FLAG(USBD_INTSTS_FLDET);
+
+	if(USBD_IS_ATTACHED())
+	{
+		// Enable GPB15(VBUS) pull down state to solute suspend event issue.
+		//GPIO_EnablePullState(PB,BIT15,GPIO_PUSEL_PULL_DOWN);
+		/* USB Plug In */
+		USBD_ENABLE_USB();
+	}
+	else
+	{
+		// Disable GPB15 pull down state.
+	//	GPIO_DisablePullState(PB,BIT15);
+		/* USB Un-plug */
+		USBD_DISABLE_USB();
+	}
+}
+
+
+static void int_status_bus_events()
+{
+	uint32_t u32State = USBD_GET_BUS_STATE();
+
+	/* Clear event flag */
+	USBD_CLR_INT_FLAG(USBD_INTSTS_BUS);
+
+	if(u32State & USBD_STATE_USBRST) {
+		/* Bus reset */
+		USBD_ENABLE_USB();
+		USBD_SwReset();
+		DBG_PRINTF("Bus reset\n");
+	}
+	if(u32State & USBD_STATE_SUSPEND) {
+		/* Enable USB but disable PHY */
+		USBD_DISABLE_PHY();
+		DBG_PRINTF("Suspend\n");
+	}
+	if(u32State & USBD_STATE_RESUME) {
+		/* Enable USB and enable PHY */
+		USBD_ENABLE_USB();
+		DBG_PRINTF("Resume\n");
+	}
+}
+
+
+static void int_status_usb_events(uint32_t u32IntSts)
+{
+	uint8_t i;
+	uint32_t endpoint_status_flag;
+	uint8_t get_out_data_done;
+
+	// EP events
+	if(u32IntSts & USBD_INTSTS_EP0)
+	{
+		USBD_CLR_INT_FLAG(USBD_INTSTS_EP0); /* Clear event flag */
+		USBD_CtrlIn(); // control IN
+	}
+
+	if(u32IntSts & USBD_INTSTS_EP1)
+	{
+		USBD_CLR_INT_FLAG(USBD_INTSTS_EP1); /* Clear event flag */
+
+		get_out_data_done = 0;
+		USBD_CtrlOut(&get_out_data_done); // control OUT
+		if ((get_out_data_done) && (NULL != last_interface_callback_func))
+		{
+			last_interface_callback_func(last_interface_dev,
+					INTERFACE_CALLBACK_TYPE_DATA_OUT_FINISHED, NULL);
+		}
+	}
+
+	for (i = 2; i < 12; i++)
+	{
+		endpoint_status_flag = 1 << (USBD_INTSTS_EPEVT0_Pos + i);
+		if (u32IntSts & endpoint_status_flag)
+		{
+			USBD_CLR_INT_FLAG(endpoint_status_flag); /* Clear event flag */
+			EP_Handler(i);
+		}
+	}
+
+	if(u32IntSts & USBD_INTSTS_SETUP) // Setup packet
+	{
+		USBD_CLR_INT_FLAG(USBD_INTSTS_SETUP);/* Clear event flag */
+
+		/* Clear the data IN/OUT ready flag of control end-points */
+		USBD_STOP_TRANSACTION(EP0);
+		USBD_STOP_TRANSACTION(EP1);
+
+		USBD_ProcessSetupPacket();
+	}
+}
+
+
+/* function : USBD_IRQHandler()
+ *
+ */
 void USBD_IRQHandler(void)
 {
 	uint32_t u32IntSts = USBD_GET_INT_FLAG();
-	uint32_t u32State = USBD_GET_BUS_STATE();
 
-	//------------------------------------------------------------------
 	if(u32IntSts & USBD_INTSTS_FLDET)
 	{
-		// Floating detect
-		USBD_CLR_INT_FLAG(USBD_INTSTS_FLDET);
-
-		if(USBD_IS_ATTACHED())
-		{
-			// Enable GPB15(VBUS) pull down state to solute suspend event issue.
-			//GPIO_EnablePullState(PB,BIT15,GPIO_PUSEL_PULL_DOWN);
-			/* USB Plug In */
-			USBD_ENABLE_USB();
-		}
-		else
-		{
-			// Disable GPB15 pull down state.
-		//	GPIO_DisablePullState(PB,BIT15);
-			/* USB Un-plug */
-			USBD_DISABLE_USB();
-		}
+		int_status_floating_detect();
 	}
-
-	//------------------------------------------------------------------
 
 	if ( u32IntSts & USBD_INTSTS_SOF )
 	{
-		/* Clear event flag */
+		/* just clear event flag for now*/
 		USBD_CLR_INT_FLAG(USBD_INTSTS_SOF);
 	}
 
-	//------------------------------------------------------------------
 	if(u32IntSts & USBD_INTSTS_BUS)
 	{
-		/* Clear event flag */
-		USBD_CLR_INT_FLAG(USBD_INTSTS_BUS);
-
-		if(u32State & USBD_STATE_USBRST) {
-			/* Bus reset */
-			USBD_ENABLE_USB();
-			USBD_SwReset();
-			DBG_PRINTF("Bus reset\n");
-		}
-		if(u32State & USBD_STATE_SUSPEND) {
-			/* Enable USB but disable PHY */
-			USBD_DISABLE_PHY();
-			DBG_PRINTF("Suspend\n");
-		}
-		if(u32State & USBD_STATE_RESUME) {
-			/* Enable USB and enable PHY */
-			USBD_ENABLE_USB();
-			DBG_PRINTF("Resume\n");
-		}
+		int_status_bus_events();
 	}
 
-	//------------------------------------------------------------------
 	if(u32IntSts & USBD_INTSTS_USB)
 	{
-		uint8_t i;
-		uint32_t endpoint_status_flag;
-
-		// EP events
-		if(u32IntSts & USBD_INTSTS_EP0) {
-			/* Clear event flag */
-			USBD_CLR_INT_FLAG(USBD_INTSTS_EP0);
-			// control IN
-			USBD_CtrlIn();
-		}
-
-		if(u32IntSts & USBD_INTSTS_EP1) {
-			/* Clear event flag */
-			USBD_CLR_INT_FLAG(USBD_INTSTS_EP1);
-
-			// control OUT
-			USBD_CtrlOut();
-		}
-
-		for (i = 2; i < 12; i++)
-		{
-			endpoint_status_flag = 1 << (USBD_INTSTS_EPEVT0_Pos + i);
-			if (u32IntSts & endpoint_status_flag)
-			{
-				/* Clear event flag */
-				USBD_CLR_INT_FLAG(endpoint_status_flag);
-				EP_Handler(i);
-			}
-		}
-
-		// USB event
-		if(u32IntSts & USBD_INTSTS_SETUP) {
-			// Setup packet
-			/* Clear event flag */
-			USBD_CLR_INT_FLAG(USBD_INTSTS_SETUP);
-
-			/* Clear the data IN/OUT ready flag of control end-points */
-			USBD_STOP_TRANSACTION(EP0);
-			USBD_STOP_TRANSACTION(EP1);
-
-			USBD_ProcessSetupPacket();
-		}
+		int_status_usb_events(u32IntSts);
 	}
 }
+
 
 #define REQ_TYPE_POS           0
 #define W_INDEX_LOW_POS        4
@@ -252,7 +273,6 @@ static void class_request(void)
 	uint8_t buf[8];
 	uint16_t USBwIndex;
 	uint8_t recipient;
-	usb_dev_interface_request_callback_func_t callback_func;
 
 	USBD_GetSetupPacket(buf);
 
@@ -264,6 +284,8 @@ static void class_request(void)
 	recipient = buf[REQ_TYPE_POS] & REQ_RECIPIENT_MASK;
 	if (REQ_RECIPIENT_INTERFACE == recipient)
 	{
+		usb_dev_interface_request_callback_func_t callback_func;
+
 		USBwIndex = buf[INTERFACE_ID_POS];
 		if (MAX_NUM_OF_ITERFACES < USBwIndex)
 		{
@@ -271,13 +293,18 @@ static void class_request(void)
 		}
 
 		callback_func = interface_callback_functions[USBwIndex];
+		last_interface_callback_func = callback_func;
+		last_interface_dev = interface_callback_devs[USBwIndex];
 		if (NULL != callback_func)
 		{
-			callback_func(interface_callback_devs[USBwIndex], buf);
+			callback_func(
+					last_interface_dev, INTERFACE_CALLBACK_TYPE_REQUEST, buf);
 		}
 	}
 	else if (REQ_RECIPIENT_ENDPOINT == recipient)
 	{
+		usb_dev_endpoint_request_callback_func_t callback_func;
+
 		USBwIndex = buf[ENDPOINT_ID_POS];
 		if (MAX_NUM_OF_ENDPOINTS < USBwIndex)
 		{
@@ -326,7 +353,7 @@ static void set_request_out_buffer(
 		struct set_request_out_buffer_t *set_request_out_buffer)
 {
 	USBD_PrepareCtrlOut(
-		(uint8_t*)set_request_out_buffer->data, set_request_out_buffer->size);
+		set_request_out_buffer->data, set_request_out_buffer->size);
 	USBD_PrepareCtrlIn(0, 0);
 }
 
