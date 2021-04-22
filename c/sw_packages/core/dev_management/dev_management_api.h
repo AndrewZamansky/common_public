@@ -85,7 +85,7 @@ extern "C" {
 		DEVICE_PLACEMENT uint8_t   DT_ARRAY_NAME(arr_name)[] = arr_values;
 
 #define DT_UINT8_ARRAY_SIZE(arr_name)  \
-					sizeof(DT_ARRAY_NAME(pins_arr))/sizeof(uint8_t)
+					sizeof(DT_ARRAY_NAME(arr_name))/sizeof(uint8_t)
 
 
 
