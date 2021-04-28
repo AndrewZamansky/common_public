@@ -12,6 +12,7 @@
 #define  HID_USAGE_PAGE_2BYTES(usage_page)  \
 						0x06, (usage_page & 0xff), ((usage_page >> 8) & 0xff)
 #define  HID_USAGE_PAGE_GENERIC_DESKTOP   0x01
+#define  HID_USAGE_PAGE_LEDS              0x08
 #define  HID_USAGE_PAGE_TELEPHONY         0x0B
 #define  HID_USAGE_PAGE_CONSUMER          0x0C
 
@@ -30,6 +31,14 @@
 #define  HID_USAGE_TELEPHONY_HEADSET          0x05
 #define  HID_USAGE_TELEPHONY_HOOK_SWITCH      0x20
 #define  HID_USAGE_TELEPHONY_LINE_BUSY        0x97
+
+// LEDS page usages
+#define  HID_USAGE_LEDS_MUTE              0x09
+#define  HID_USAGE_LEDS_OFF_HOOK          0x23
+#define  HID_USAGE_LEDS_RING              0x24
+#define  HID_USAGE_LEDS_HOLD              0x32
+#define  HID_USAGE_LEDS_MICROPHONE        0x33
+
 
 #define  HID_START_COLLECTION(collection)  0xA1, collection
 #define  HID_COLLECTION_APPLICATION   0x01
