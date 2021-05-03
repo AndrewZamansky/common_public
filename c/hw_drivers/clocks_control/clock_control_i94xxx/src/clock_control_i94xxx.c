@@ -430,7 +430,7 @@ static void clock_i94xxx_spi2_set_parent_clk(struct dev_desc_t *parent_clk)
 		CLK_SetModuleClock(SPI2_MODULE,
 				CLK_CLKSEL2_SPI2SEL_PLL, MODULE_NoMsk);
 	}
-	else if (i94xxx_pclk1_clk_dev == parent_clk)
+	else if (i94xxx_pclk0_clk_dev == parent_clk)
 	{
 		CLK_SetModuleClock(SPI2_MODULE,
 				CLK_CLKSEL2_SPI2SEL_PCLK0, MODULE_NoMsk);
