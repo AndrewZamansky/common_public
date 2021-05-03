@@ -17,7 +17,7 @@
 	#define POINTER_TO_TX_CALLBACK_PDEV        \
 				P_TO_STATIC_DEVICE_INST(I2C_I9XXXX_DT_TX_CALLBACK_PDEV)
 #else
-	#warning "I2C_I9XXXX_DT_TX_CALLBACK_PDEV not defined in device tree"
+	#pragma message "I2C_I9XXXX_DT_TX_CALLBACK_PDEV not defined in device tree"
 	#define POINTER_TO_TX_CALLBACK_PDEV        NULL
 #endif
 
@@ -26,7 +26,7 @@
 	#define POINTER_TO_RX_CALLBACK_PDEV        \
 					P_TO_STATIC_DEVICE_INST(I2C_I9XXXX_DT_RX_CALLBACK_PDEV)
 #else
-	#warning "I2C_I9XXXX_DT_RX_CALLBACK_PDEV not defined in device tree"
+	#pragma message "I2C_I9XXXX_DT_RX_CALLBACK_PDEV not defined in device tree"
 	#define POINTER_TO_RX_CALLBACK_PDEV        NULL
 #endif
 

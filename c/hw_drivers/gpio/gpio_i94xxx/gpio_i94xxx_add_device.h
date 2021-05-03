@@ -25,7 +25,7 @@
 
 #if (GPIO_I94XXX_DT_MODE == GPIO_I94XXX_API_MODE_IN)
 	#ifndef GPIO_I94XXX_DT_CLIENT_DEV
-		#warning "GPIO_I94XXX_DT_CLIENT_DEV not defined"
+		#pragma message "GPIO_I94XXX_DT_CLIENT_DEV not defined"
 		#define P_GPIO_CLIENT_DEV  NULL
 	#else
 		#define P_GPIO_CLIENT_DEV           \

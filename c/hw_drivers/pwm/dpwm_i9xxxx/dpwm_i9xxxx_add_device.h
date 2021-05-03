@@ -22,12 +22,12 @@
 #endif
 
 #ifndef DPWM_I9XXXX_DT_SUB_CH_P_PIN
-	//#warning "DPWM_I9XXXX_DT_SUB_CH_P_PIN not defined"
+	#pragma message "DPWM_I9XXXX_DT_SUB_CH_P_PIN not defined"
 	#define DPWM_I9XXXX_DT_SUB_CH_P_PIN  0xffffffff
 #endif
 
 #ifndef DPWM_I9XXXX_DT_SUB_CH_N_PIN
-	//#warning "DPWM_I9XXXX_DT_SUB_CH_N_PIN not defined"
+	#pragma message "DPWM_I9XXXX_DT_SUB_CH_N_PIN not defined"
 	#define DPWM_I9XXXX_DT_SUB_CH_N_PIN  0xffffffff
 #endif
 

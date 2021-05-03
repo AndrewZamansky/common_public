@@ -14,7 +14,7 @@ size_t uart_stm8_pwrite( struct dev_desc_t *adev ,const uint8_t *apData , size_t
 #ifdef DT_DEV_MODULE
 
 	#ifndef UART_STM8_DT_TX_CALLBACK_PDEV
-		#warning "UART_STM8_DT_TX_CALLBACK_PDEV not defined"
+		#pragma message "UART_STM8_DT_TX_CALLBACK_PDEV not defined"
 		#define		TX_CALLBACK_PDEV	NULL
 	#else
 		EXTERN_DECLARATION_TO_STATIC_DEVICE_INST(UART_STM8_DT_TX_CALLBACK_PDEV) ;

@@ -70,7 +70,7 @@
 #endif
 
 #ifndef I2S_onSPI_I94XXX_DT_MCLK_PIN
-	#warning "I2S_onSPI_I94XXX_DT_MCLK_PIN is not defined"
+	#pragma message "I2S_onSPI_I94XXX_DT_MCLK_PIN is not defined"
 	#define I2S_onSPI_I94XXX_DT_MCLK_PIN    0xffffffff
 #endif
 
