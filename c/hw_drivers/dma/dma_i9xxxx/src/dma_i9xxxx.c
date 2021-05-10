@@ -691,6 +691,7 @@ static uint8_t get_empty_tx_buffer(struct dev_desc_t *ch_pdev,
 	}
 	else
 	{
+		uint8_t i;
 		#ifdef DMA_I9XXXX_DEBUG
 //			bytecount0 = PDMA_GET_TRANS_CNT(0);
 //			bytecount1 = PDMA_GET_TRANS_CNT(1);
@@ -700,11 +701,19 @@ static uint8_t get_empty_tx_buffer(struct dev_desc_t *ch_pdev,
 		{
 			DEV_CALLBACK_0_PARAMS(callback_dev, CALLBACK_TX_BUFFER_OVERFLOW);
 		}
-		//TODO : add overflow sequence
-		// maybe 4th buffer will be needed . with second buffer as initial one.
-		// in NuAudio project , maybe it will happen when audio
-		// process time will drop , suddenly, significantly  .
-		//CRITICAL_ERROR("next tx buffer is still busy \n");
+		if (runtime_hndl->needed_full_dma_start)
+		{
+			for (i = 0; i < num_of_buffers; i++)
+			{
+				runtime_hndl->buff_status[i] = DMA_I9XXXX_BUFF_IDLE;
+			}
+			*buff = runtime_hndl->buff[next_supplied_tx_buffer];
+			*buff_size = cfg_hndl->buff_size;
+			*buffer_state = DMA_I9XXXX_BUFF_TX_DATA_IS_FILLING;
+			runtime_hndl->prefilled_buffers = 0;
+			return 0;
+		}
+		CRITICAL_ERROR("next tx buffer is still busy \n");
 		*buff = NULL;
 		*buff_size = 0;
 		return 1;
