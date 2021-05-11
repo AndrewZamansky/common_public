@@ -199,6 +199,11 @@ static void set_clocks(struct I2S_onSPI_i94xxx_cfg_t *cfg_hndl,
 	uint32_t  res;
 	uint16_t  Mclock_factor_based_on_FSclock;
 
+	if (0xffffffff == cfg_hndl->MCLK_pin)
+	{
+		return;
+	}
+
 	DEV_IOCTL_1_PARAMS(spi_i2s_clk_dev, CLK_IOCTL_GET_FREQ, &src_clk_freq);
 	Mclock_factor_based_on_FSclock = cfg_hndl->Mclock_factor_based_on_FSclock;
 	mclk_freq = cfg_hndl->sample_rate * Mclock_factor_based_on_FSclock;

@@ -13,6 +13,9 @@
 	#ifndef I2S_onSPI_I94XXX_DT_SAMPLE_RATE
 		#error "I2S_onSPI_I94XXX_DT_SAMPLE_RATE should be defined"
 	#endif
+#else
+	#undef I2S_onSPI_I94XXX_DT_SAMPLE_RATE
+	#define I2S_onSPI_I94XXX_DT_SAMPLE_RATE 0
 #endif
 
 #ifndef I2S_onSPI_I94XXX_DT_NUM_OF_BYTES_IN_WORD
@@ -72,6 +75,11 @@
 #ifndef I2S_onSPI_I94XXX_DT_MCLK_PIN
 	#pragma message "I2S_onSPI_I94XXX_DT_MCLK_PIN is not defined"
 	#define I2S_onSPI_I94XXX_DT_MCLK_PIN    0xffffffff
+#else
+	#if ((0 == I2S_onSPI_I94XXX_DT_MCLK_FACTOR_BASED_ON_FSCLK) || \
+			(0 == I2S_onSPI_I94XXX_DT_SAMPLE_RATE))
+		#error "MCLOCK factor and sample rate cannot be 0"
+	#endif
 #endif
 
 #ifndef I2S_onSPI_I94XXX_DT_SRC_CLOCK_PDEV
@@ -104,9 +112,7 @@ SET_STATIC_DEV_CONFIG(I2S_onSPI_i94xxx) =
 #include "add_static_dev.h"
 
 #undef POINTER_TO_SRC_CLOCK_PDEV
-#if	(I2S_onSPI_I94XXX_DT_MASTER_OR_SLAVE_MODE == I2S_onSPI_I94XXX_API_MASTER_MODE)
-    #undef I2S_onSPI_I94XXX_DT_SAMPLE_RATE
-#endif
+#undef I2S_onSPI_I94XXX_DT_SAMPLE_RATE
 #undef I2S_onSPI_I94XXX_DT_MASTER_OR_SLAVE_MODE
 #undef I2S_onSPI_I94XXX_DT_NUM_OF_BYTES_IN_WORD
 #undef _I2S_onSPI_I94XXX_DT_NUM_OF_BYTES_IN_WORD
