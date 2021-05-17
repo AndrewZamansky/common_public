@@ -32,12 +32,19 @@ enum shell_frontend_api_ioctl_e {
 	// need to load shell preset from shell task because it may
 	// require a lot of stack due to commands parsing (for example u-boot)
 	IOCTL_SHELL_FRONTEND_LOAD_PRESET = IOCTL_LAST_COMMON_IOCTL + 1,
+	IOCTL_SHELL_FRONTEND_RUN_BATCH,
 };
 
 
 struct shell_frontend_load_preset_t {
 	struct dev_desc_t *shell_preset_pdev;
 	uint8_t num_of_preset;
+};
+
+
+struct shell_frontend_batch_t {
+	uint8_t *batch_buffer;
+	size_t batch_buffer_size;
 };
 
 

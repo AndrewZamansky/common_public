@@ -156,7 +156,7 @@ static uint8_t async_rx_wrapper_ioctl(struct dev_desc_t *adev,
 		break;
 
 	case IOCTL_SET_UNLOCK_DATA_BUFFER :
-		runtime_handle->isDataInUse= 0 ; // should be modified last
+		runtime_handle->isDataInUse = 0; // should be modified last
 		break;
 
 	case IOCTL_DEVICE_START :
