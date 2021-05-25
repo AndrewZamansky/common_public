@@ -27,17 +27,15 @@ enum msg_type_e {
 };
 
 struct msg_from_rx_device_t {
-	struct dev_desc_t *shell_frontend_target_pdev;
+	uint8_t dummy;
 };
 
 struct msg_load_preset_t {
-	struct dev_desc_t *shell_frontend_target_pdev;
 	struct dev_desc_t *shell_preset_pdev;
 	uint8_t num_of_preset;
 };
 
 struct msg_batch_t {
-	struct dev_desc_t *shell_frontend_target_pdev;
 	uint8_t *batch_buffer;
 	size_t batch_buffer_size;
 };
@@ -45,6 +43,7 @@ struct msg_batch_t {
 
 struct queue_msg_t {
 	enum msg_type_e msg_type;
+	struct dev_desc_t *shell_frontend_target_pdev;
 	union {
 		struct msg_from_rx_device_t msg_from_rx_device;
 		struct msg_load_preset_t msg_load_preset;
@@ -83,6 +82,9 @@ enum Header_positions_t {
 	START_OF_CMD_POS
 };
 
+static size_t process_buffer(struct shell_frontend_cfg_t *config_handle,
+		uint8_t *input_buffer, size_t total_length);
+
 static struct dev_desc_t *curr_tx_dev;
 static struct shell_frontend_runtime_instance_t  *curr_runtime_hndl;
 
@@ -103,7 +105,7 @@ static uint8_t shell_frontend_callback(struct dev_desc_t *adev,
 	if (NULL == xQueue) return 1;
 
 	msg.msg_type = MSG_TYPE_FROM_RX_DEVICE;
-	msg.msg_from_rx_device.shell_frontend_target_pdev = adev;
+	msg.shell_frontend_target_pdev = adev;
 	os_queue_send_without_wait( xQueue, ( void * ) &msg);
 	return 0;
 }
@@ -165,7 +167,7 @@ void shell_frontend_reply_bin_msg_data(const uint8_t *data, size_t len)
 }
 
 
-struct msg_load_preset_t  curr_msg_load_preset;
+static struct msg_load_preset_t  curr_msg_load_preset;
 
 void shell_frontend_load_preset_from_shell_cmd(
 		struct shell_frontend_load_preset_t *preset_params)
@@ -260,27 +262,58 @@ static uint8_t *extract_command_from_line(
 }
 
 
-static void load_preset(struct msg_load_preset_t *p_preset)
+static size_t execute_batch(struct shell_frontend_cfg_t *config_handle,
+		uint8_t *input_buffer, size_t total_length)
+{
+	uint32_t saved_last_tested_pos;
+	saved_last_tested_pos = curr_runtime_hndl->last_tested_pos;
+	curr_runtime_hndl->last_tested_pos = 0;
+	process_buffer(config_handle, input_buffer, total_length);
+	curr_runtime_hndl->last_tested_pos = saved_last_tested_pos;
+}
+
+
+static void load_preset(
+		struct shell_frontend_cfg_t *config_handle,
+		struct msg_load_preset_t *p_preset)
 {
 	uint8_t ret_val;
+	uint8_t *preset_buffer;
+	size_t preset_buff_size;
 
 	ret_val = 1;
+	preset_buffer = NULL;
+	preset_buff_size = 0;
 #ifdef CONFIG_INCLUDE_SHELL_PRESETS
-	ret_val = DEV_IOCTL_1_PARAMS(
+	{
+		struct shell_presets_api_get_buffer_t  shell_presets_api_get_buffer;
+		shell_presets_api_get_buffer.num_of_preset =
+							(size_t)(p_preset->num_of_preset);
+		shell_presets_api_get_buffer.preset_buffer = &preset_buffer;
+		shell_presets_api_get_buffer.preset_size = &preset_buff_size;
+		ret_val = DEV_IOCTL_1_PARAMS(
 			p_preset->shell_preset_pdev,
-			IOCTL_SHELL_PRESETS_LOAD_PRESET,
-			(void*)(size_t)(p_preset->num_of_preset));
+			IOCTL_SHELL_PRESETS_GET_PRESET_BUFFER,
+			&shell_presets_api_get_buffer);
+	}
 #endif
 	if (1 == ret_val)
 	{
 		#define err1 "error: cannot load preset\n"
 		shell_frontend_reply_data((uint8_t*)err1, sizeof(err1) - 1);
+		return;
 	}
 	else if (2 == ret_val)
 	{
 		#define err2 "error: preset no found\n"
 		shell_frontend_reply_data((uint8_t*)err2, sizeof(err1) - 1);
+		return;
 	}
+	execute_batch(config_handle, preset_buffer, preset_buff_size);
+#ifdef CONFIG_INCLUDE_SHELL_PRESETS
+	ret_val = DEV_IOCTL_0_PARAMS(p_preset->shell_preset_pdev,
+			IOCTL_SHELL_PRESETS_RELEASE_PRESET_BUFFER);
+#endif
 }
 
 
@@ -331,7 +364,7 @@ static void consume_line(struct shell_frontend_cfg_t *config_handle,
 
 	if (curr_runtime_hndl->load_preset_flag)
 	{
-		load_preset(&curr_msg_load_preset);
+		load_preset(config_handle, &curr_msg_load_preset);
 	}
 
 	if (cmd_header_found)
@@ -522,17 +555,11 @@ static size_t process_buffer(struct shell_frontend_cfg_t *config_handle,
 
 
 static void process_msg_from_rx_device(
-		struct dev_desc_t *shell_frontend_target_pdev)
+		struct shell_frontend_cfg_t *config_handle)
 {
-	struct shell_frontend_cfg_t *config_handle;
 	struct ioctl_get_data_buffer_t data_buffer_info;
 	size_t bytes_consumed;
 	struct dev_desc_t * curr_rx_dev;
-
-	config_handle =
-		DEV_GET_CONFIG_DATA_POINTER(shell_frontend, shell_frontend_target_pdev);
-	curr_runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(
-					shell_frontend, shell_frontend_target_pdev);
 
 	curr_rx_dev = config_handle->server_rx_dev;
 	curr_tx_dev = config_handle->server_tx_dev;
@@ -554,17 +581,6 @@ static void process_msg_from_rx_device(
 }
 
 
-static void process_batch(struct msg_batch_t *p_msg_batch)
-{
-	struct shell_frontend_cfg_t *config_handle;
-	config_handle = DEV_GET_CONFIG_DATA_POINTER(
-			shell_frontend, p_msg_batch->shell_frontend_target_pdev);
-
-	process_buffer(config_handle,
-			p_msg_batch->batch_buffer, p_msg_batch->batch_buffer_size);
-}
-
-
 /**
  * shell_frontend_Task()
  *
@@ -573,6 +589,7 @@ static void process_batch(struct msg_batch_t *p_msg_batch)
 static void shell_frontend_Task( void *pvParameters )
 {
 	struct queue_msg_t msg;
+	struct shell_frontend_cfg_t *config_handle;
 
 	xQueue = os_create_queue(
 			CONFIG_SHELL_FRONTEND_MAX_QUEUE_LEN, sizeof(struct queue_msg_t) );
@@ -589,20 +606,23 @@ static void shell_frontend_Task( void *pvParameters )
 		{
 			continue;
 		}
+		config_handle = DEV_GET_CONFIG_DATA_POINTER(
+							shell_frontend, msg.shell_frontend_target_pdev);
+		curr_runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(
+						shell_frontend, msg.shell_frontend_target_pdev);
 
-		curr_runtime_hndl = NULL;
 		curr_tx_dev = NULL;
 		switch (msg.msg_type)
 		{
 		case MSG_TYPE_FROM_RX_DEVICE:
-			process_msg_from_rx_device(
-					msg.msg_from_rx_device.shell_frontend_target_pdev);
+			process_msg_from_rx_device(config_handle);
 			break;
 		case MSG_TYPE_LOAD_PRESET:
-			load_preset(&msg.msg_load_preset);
+			load_preset(config_handle, &msg.msg_load_preset);
 			break;
 		case MSG_TYPE_EXECUTE_BATCH:
-			process_batch(&msg.msg_batch);
+			execute_batch(config_handle,
+				msg.msg_batch.batch_buffer, msg.msg_batch.batch_buffer_size);
 			break;
 		default:
 			break;
@@ -632,7 +652,7 @@ static uint8_t send_load_preset(struct dev_desc_t *adev,
 	}
 
 	msg.msg_type = MSG_TYPE_LOAD_PRESET;
-	msg.msg_load_preset.shell_frontend_target_pdev = adev;
+	msg.shell_frontend_target_pdev = adev;
 	msg.msg_load_preset.shell_preset_pdev = preset_params->shell_preset_pdev;
 	msg.msg_load_preset.num_of_preset = preset_params->num_of_preset;
 	if (OS_QUEUE_SEND_SUCCESS !=
@@ -664,7 +684,7 @@ static uint8_t send_batch(struct dev_desc_t *adev,
 	}
 
 	msg.msg_type = MSG_TYPE_EXECUTE_BATCH;
-	msg.msg_batch.shell_frontend_target_pdev = adev;
+	msg.shell_frontend_target_pdev = adev;
 	msg.msg_batch.batch_buffer = batch_params->batch_buffer;
 	msg.msg_batch.batch_buffer_size = batch_params->batch_buffer_size;
 	if (OS_QUEUE_SEND_SUCCESS !=
