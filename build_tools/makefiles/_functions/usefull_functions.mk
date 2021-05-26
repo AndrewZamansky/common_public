@@ -145,6 +145,10 @@ check_win_cmd_len =$(strip $(if \
 # $3-$(OPTIONS): {TRUNCATE, APPEND}
 # function will write data to file
 ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
+    WORKSPACE_CFG_MK :=$(PARENT_OF_COMMON_PUBLIC_DIR)/workspace_config.mk
+    NUM_OF_WORDS_VAR :=\
+          $(WORKSPACE_CFG_MK)/REDEFINE_NUM_OF_WORDS_IN_SHELL_COMMAND
+
     _fwrite_create_file_os = $(if $1,\
           $(shell copy /y /b NUL $(call fix_path_if_in_windows,$2)),do nothing)
 
