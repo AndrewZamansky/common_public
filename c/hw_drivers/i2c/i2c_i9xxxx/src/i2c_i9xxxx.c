@@ -49,6 +49,7 @@
 	#include "clock_control_i94xxx_api.h"
 #endif
 
+#define MAX_REG_ADDR_SIZE   4
 
 static uint8_t dummy_msg;
 static size_t status_debug;
@@ -593,7 +594,7 @@ static void master_write(struct dev_desc_t *adev,
 	I2C_T *i2c_regs;
 	os_queue_t WaitQueue;
 	os_mutex_t  mutex;
-	uint8_t  reg_addr_arr[4];
+	uint8_t  reg_addr_arr[MAX_REG_ADDR_SIZE];
 	size_t   reg_addr_size;
 	size_t   reg_addr;
 	size_t   num_of_bytes_to_write;
@@ -603,6 +604,13 @@ static void master_write(struct dev_desc_t *adev,
 	{
 		wr_struct->num_of_bytes_written = 0;
 		return ;
+	}
+
+	reg_addr_size = wr_struct->reg_addr_size;
+	if (MAX_REG_ADDR_SIZE < reg_addr_size)
+	{
+			runtime_handle->i2c_error = I2C_BAD_REG_ADDR_SIZE;
+			return;
 	}
 
 	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(i2c_i9xxxx, adev);
@@ -624,7 +632,6 @@ static void master_write(struct dev_desc_t *adev,
 	runtime_handle->i2c_error = I2C_OK;
 
 	runtime_handle->remote_slave_addr = wr_struct->device_addr_7bit;
-	reg_addr_size = wr_struct->reg_addr_size;
 	reg_addr = wr_struct->reg_addr;
 	runtime_handle->reg_addr_left_to_transmit = reg_addr_size;
 	while(reg_addr_size)
@@ -663,7 +670,7 @@ static void master_read(struct dev_desc_t *adev,
 	os_queue_t WaitQueue;
 	os_mutex_t  mutex;
 	I2C_T *i2c_regs;
-	uint8_t  reg_addr_arr[4];
+	uint8_t  reg_addr_arr[MAX_REG_ADDR_SIZE];
 	size_t   num_of_bytes_to_read;
 	size_t   num_of_bytes_that_was_read;
 	size_t   reg_addr_size;
@@ -677,6 +684,13 @@ static void master_read(struct dev_desc_t *adev,
 		return;
 	}
 
+	reg_addr_size = rd_struct->reg_addr_size;
+	if (MAX_REG_ADDR_SIZE < reg_addr_size)
+	{
+			runtime_handle->i2c_error = I2C_BAD_REG_ADDR_SIZE;
+			return;
+	}
+	
 	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(i2c_i9xxxx, adev);
 	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(i2c_i9xxxx, adev);
 
@@ -702,7 +716,6 @@ static void master_read(struct dev_desc_t *adev,
 	runtime_handle->size_of_data_to_receive = num_of_bytes_to_read;
 	runtime_handle->rx_data = rd_struct->rx_data;
 	runtime_handle->remote_slave_addr = rd_struct->device_addr_7bit;
-	reg_addr_size = rd_struct->reg_addr_size;
 	reg_addr = rd_struct->reg_addr;
 	runtime_handle->reg_addr_left_to_transmit = reg_addr_size;
 	while(reg_addr_size)

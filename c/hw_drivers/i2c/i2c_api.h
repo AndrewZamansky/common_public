@@ -4,8 +4,7 @@
 
 #include "dev_management_api.h"
 
-typedef enum
-{
+enum i2c_common_ioctl_e {
 	IOCTL_I2C_TURN_OFF = IOCTL_LAST_COMMON_IOCTL+1,
 	IOCTL_I2C_SET_MASTER_CLOCK_RATE_HZ,
 	IOCTL_I2C_DISABLE_TX,
@@ -16,16 +15,16 @@ typedef enum
 	IOCTL_I2C_MASTER_READ,
 //	IOCTL_I2C_FILTER_NON_ASCII_NOISE,
 	IOCTL_LAST_COMMON_I2C_IOCTL
-}I2C_COMMON_API_ioctl_t;
+};
 
-typedef enum
-{
-	I2C_OK                  = 0x00,
-	I2C_DATA_NAK_ERROR      = 0x30,
-	I2C_ARBITRATION_ERROR   = 0x38,
-	I2C_BUS_ERROR           = 0xFF,
-	I2C_DEVICE_TIMEOUT      = 0x20
-} I2C_COMMON_ERROR_CODES;
+enum i2c_common_errors_e {
+	I2C_OK = 0,
+	I2C_DATA_NAK_ERROR,
+	I2C_ARBITRATION_ERROR,
+	I2C_BUS_ERROR,
+	I2C_DEVICE_TIMEOUT,
+	I2C_BAD_REG_ADDR_SIZE
+};
 
 
 struct i2c_api_master_read_t {
