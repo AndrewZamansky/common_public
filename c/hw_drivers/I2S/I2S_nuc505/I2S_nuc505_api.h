@@ -3,21 +3,17 @@
 #define _I2S_NUC505_API_H_
 
 
-/*****************  defines  **************/
-
 #define I2S_NUC505_API_MASTER_MODE		1
 #define I2S_NUC505_API_SLAVE_MODE		0
 
-/**********  define API  types ************/
 
-typedef enum
-{
-	I2S_SET_OUT_VOLUME_LEVEL_DB = IOCTL_LAST_COMMON_IOCTL+1,
+enum I2S_API_ioctl_e {
+	I2S_SET_OUT_VOLUME_LEVEL_DB = IOCTL_LAST_COMMON_IOCTL + 1,
 	I2S_SET_PARAMS,
 	I2S_GET_MEASURED_SAMPLE_RATE,
 	I2S_ENABLE_OUTPUT_IOCTL
 
-}I2S_API_ioctl_t;
+};
 
 
 struct I2S_API_set_params_t
@@ -26,6 +22,5 @@ struct I2S_API_set_params_t
 	uint8_t	num_of_bytes_in_word;
 };
 
-/**********  define API  functions  ************/
 
 #endif

@@ -4,9 +4,6 @@
  *
  */
 
-
-
-/***************   includes    *******************/
 #include "src/_stm8_tim1_prerequirements_check.h"
 
 #include "stm8_tim1_api.h"
@@ -16,28 +13,15 @@
 #include "stm8_tim1_add_component.h"
 
 
-
-/***************   defines    *******************/
-
-
-
-/***************   typedefs    *******************/
-
-/**********   external variables    **************/
-
-
-
-/***********   local variables    **************/
-
-static stm8_tim1_instance_t *pstm8_tim1_instanceParams;
+static struct stm8_tim1_instance_t *pstm8_tim1_instanceParams;
 
 #if defined(CONFIG_STM8_TIM1_USE_INTERNAL_COUNTER)
 static volatile uint32_t currentTick=0;
 #endif
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* ISR to config_handle systick                                                        */
-/*---------------------------------------------------------------------------------------------------------*/
+/*-------*/
+/* ISR to config_handle systick  */
+/*------*/
 INTERRUPT_HANDLER(TIM1_UPD_OVF_TRG_BRK_IRQHandler, 11)
 {
 	timer_callback_func_t timer_callback;
@@ -55,21 +39,10 @@ INTERRUPT_HANDLER(TIM1_UPD_OVF_TRG_BRK_IRQHandler, 11)
 
 
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        stm8_tim1_ioctl                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
 uint8_t stm8_tim1_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
-	stm8_tim1_instance_t *config_handle;
+	struct stm8_tim1_instance_t *config_handle;
 
 	config_handle = DEV_GET_CONFIG_DATA_POINTER(adev);
 	switch(aIoctl_num)

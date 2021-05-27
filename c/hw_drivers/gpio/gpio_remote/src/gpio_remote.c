@@ -4,9 +4,6 @@
  *
  */
 
-
-
-/***************   includes    *******************/
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 #include "_project_func_declarations.h"
@@ -18,28 +15,19 @@
 #include "gpio_remote_api.h"
 
 
-
-
-/***************   defines    *******************/
 #define GPIO_REMOTE_MAX_NUM_OF_GPIOS 4
 
 #define GPIO_REMOTE_OUT 1
 
-/***************   typedefs    *******************/
-typedef struct {
+struct struct gpio_remote_instance_t {
 	uint8_t addr_num[16];
 	uint8_t pin_num;
 	uint8_t mode;
 	struct dev_desc_t * server_dev;
-} GPIO_REMOTE_Instance_t;
+};
 
 
-/**********   external variables    **************/
-
-
-
-/***********   local variables    **************/
-static GPIO_REMOTE_Instance_t GPIO_REMOTE_InstanceParams[GPIO_REMOTE_MAX_NUM_OF_GPIOS];
+static struct gpio_remote_instance_t GPIO_REMOTE_InstanceParams[GPIO_REMOTE_MAX_NUM_OF_GPIOS];
 static uint16_t usedInstances =0 ;
 
 static const dev_param_t GPIO_REMOTE_Dev_Params[]=
@@ -50,7 +38,7 @@ static const dev_param_t GPIO_REMOTE_Dev_Params[]=
 		{IOCTL_GPIO_REMOTE_SET_MODE_PARAM , IOCTL_VOID , (uint8_t*)GPIO_REMOTE_API_MODE_STR, NOT_FOR_SAVE},
 };
 
-#define INSTANCE(hndl)	((GPIO_REMOTE_Instance_t*)hndl)
+#define INSTANCE(hndl)	((struct gpio_remote_instance_t*)hndl)
 
 
 
@@ -59,7 +47,7 @@ static const dev_param_t GPIO_REMOTE_Dev_Params[]=
  *
  *
  */
-uint8_t GPIO_REMOTE_Init(GPIO_REMOTE_Instance_t *pInstance)
+uint8_t GPIO_REMOTE_Init(struct gpio_remote_instance_t *pInstance)
 {
 
 
@@ -67,17 +55,17 @@ uint8_t GPIO_REMOTE_Init(GPIO_REMOTE_Instance_t *pInstance)
 }
 
 static uint8_t cmd[4];//=(uint8_t*)"axx\n";
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        gpio_remote_ioctl                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
+/*
+ * Function:        gpio_remote_ioctl
+ *
+ * Parameters:
+ *
+ *
+ * Returns:
+ * Side effects:
+ * Description:
+ *
+ */
 uint8_t gpio_remote_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
@@ -179,17 +167,17 @@ uint8_t gpio_remote_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 	return 0;
 }
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        gpio_remote_api_dev_descriptor                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
+/*
+ * Function:        gpio_remote_api_init_dev_descriptor
+ *
+ * Parameters:
+ *
+ *
+ * Returns:
+ * Side effects:
+ * Description:
+ *
+ */
 uint8_t  gpio_remote_api_init_dev_descriptor(struct dev_desc_t *aDevDescriptor)
 {
 	if(NULL == aDevDescriptor) return 1;
@@ -201,6 +189,4 @@ uint8_t  gpio_remote_api_init_dev_descriptor(struct dev_desc_t *aDevDescriptor)
 	usedInstances++;
 
 	return 0 ;
-
 }
-

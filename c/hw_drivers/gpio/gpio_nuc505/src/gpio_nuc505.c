@@ -24,26 +24,13 @@
 /*following line add module to available module list for dynamic device tree*/
 #include "gpio_nuc505_add_component.h"
 
-/***************   defines    *******************/
 
-
-
-/***************   typedefs    *******************/
-
-typedef struct
-{
+struct GPIO_PX_t {
     __IO uint32_t MODE;
     __IO uint32_t PUEN;
     __IO uint32_t DOUT;
     __I  uint32_t PIN;
-} GPIO_PX_T;
-
-/**********   external variables    **************/
-
-
-
-/***********   local variables    **************/
-
+};
 
 
 
@@ -56,12 +43,12 @@ uint8_t gpio_nuc505_ioctl( struct dev_desc_t *adev , const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
 	struct gpio_nuc505_cfg_t *config_handle;
-	GPIO_PX_T* GPIOx;
+	struct struct GPIO_PX_t* GPIOx;
 	uint32_t volatile * pDOUT;
 	uint16_t pin_num_mask;
 
 	config_handle = DEV_GET_CONFIG_DATA_POINTER(adev);
-	GPIOx = (GPIO_PX_T*)config_handle->port_num;
+	GPIOx = (struct GPIO_PX_t*)config_handle->port_num;
 	pin_num_mask = config_handle->pin_num_mask;
 	pDOUT = &GPIOx->DOUT;
 

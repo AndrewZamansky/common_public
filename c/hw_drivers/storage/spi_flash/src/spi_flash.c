@@ -7,35 +7,15 @@
  */
 
 
-
-/********  includes *********************/
 #include "spi_flash_api.h"
 #include "gpio_api.h"
 #include "spi_flash.h"
 #include "spi_flash_add_component.h"
 
-/********  defines *********************/
+
+#define INSTANCE(hndl)	((struct spi_flash_instance_t*)hndl)
 
 
-#define INSTANCE(hndl)	((spi_flash_instance_t*)hndl)
-
-
-/********  types  *********************/
-/********  externals *********************/
-
-
-/********  local defs *********************/
-
-
-
-/**********   external variables    **************/
-
-
-
-/***********   local variables    **************/
-
-
-/* Private typedef -----------------------------------------------------------*/
 #define SPI_FLASH_PageSize_in_bits 8
 
 #define SPI_FLASH_PageSize (1 << SPI_FLASH_PageSize_in_bits)
@@ -257,18 +237,19 @@ void SPI_FLASH_PageWrite(const void *apHandle,const uint8_t* pBuffer, uint32_t W
 
 
 
-/*******************************************************************************
+/*****************************************************************************
 * Function Name  : SPI_FLASH_ReadID
 * Description    : Reads FLASH identification.
 * Input          : None
 * Output         : None
 * Return         : FLASH identification
-*******************************************************************************/
+******************************************************************************/
 uint32_t SPI_FLASH_ReadID(const void *apHandle)
 {
 	uint8_t write_data[3];
 	uint32_t retVal = 0;
-	struct dev_desc_t const *spi_server_dev = INSTANCE(apHandle)->spi_server_dev;
+	struct dev_desc_t const *spi_server_dev =
+							INSTANCE(apHandle)->spi_server_dev;
 
 	/* Select the FLASH: Chip Select low */
 	_chip_select_on(apHandle);
@@ -293,20 +274,22 @@ uint32_t SPI_FLASH_ReadID(const void *apHandle)
 
 
 
-/*******************************************************************************
+/****************************************************************************
 * Function Name  : spi_flash_pread
 * Description    : Handle the Read operation from storage.
 * Input          : None.
 * Output         : None.
 * Return         : None.
-*******************************************************************************/
+******************************************************************************/
 #if UINT_MAX < 0xffffffff
-uint32_t  spi_flash_pread( struct dev_desc_t *adev ,uint8_t *apData , uint32_t length ,uint32_t startAddr)
+uint32_t  spi_flash_pread(struct dev_desc_t *adev,
+		uint8_t *apData, uint32_t length ,uint32_t startAddr)
 #else
-size_t  spi_flash_pread( struct dev_desc_t *adev ,uint8_t *apData , size_t length ,size_t startAddr)
+size_t  spi_flash_pread( struct dev_desc_t *adev,
+		uint8_t *apData , size_t length ,size_t startAddr)
 #endif
 {
-	spi_flash_instance_t *config_handle;
+	struct spi_flash_instance_t *config_handle;
 	struct dev_desc_t * spi_server_dev;
 	uint8_t write_data[4];
 
@@ -334,23 +317,26 @@ size_t  spi_flash_pread( struct dev_desc_t *adev ,uint8_t *apData , size_t lengt
 
 
 
-/*******************************************************************************
+/*****************************************************************************
 * Function Name  : spi_flash_pwrite
 * Description    : Handle the Write operation from storage.
 * Input          : None.
 * Output         : None.
 * Return         : None.
-*******************************************************************************/
+*****************************************************************************/
 /*
- * 	size of flash is usualy greater than 2^16 so address must be at least uint32_t
+ * 	size of flash is usualy 
+ *    greater than 2^16 so address must be at least uint32_t
  */
 #if UINT_MAX < 0xffffffff
-uint32_t  spi_flash_pwrite( struct dev_desc_t *adev ,const uint8_t *apData , uint32_t length ,uint32_t startAddr)
+uint32_t  spi_flash_pwrite( struct dev_desc_t *adev,
+         const uint8_t *apData , uint32_t length ,uint32_t startAddr)
 #else
-size_t  spi_flash_pwrite( struct dev_desc_t *adev ,const uint8_t *apData , size_t length ,size_t startAddr)
+size_t  spi_flash_pwrite( struct dev_desc_t *adev,
+		const uint8_t *apData , size_t length ,size_t startAddr)
 #endif
 {
-	spi_flash_instance_t *config_handle;
+	struct spi_flash_instance_t *config_handle;
 #if UINT_MAX < 0xffffffff
 	uint32_t retVal  ;
 #else
@@ -362,7 +348,9 @@ size_t  spi_flash_pwrite( struct dev_desc_t *adev ,const uint8_t *apData , size_
 
 
 	config_handle = DEV_GET_CONFIG_DATA_POINTER(adev);
-	alignmentBytes = ((uint16_t)startAddr) & SPI_FLASH_PageSize_mask;/* in case startAddr is not aligned SPI_FLASH_PageSize   */
+	
+	/* in case startAddr is not aligned SPI_FLASH_PageSize   */
+	alignmentBytes = ((uint16_t)startAddr) & SPI_FLASH_PageSize_mask;
 	while(length)
 	{
 		uint16_t NumOfBytesToWrite;
@@ -389,21 +377,10 @@ size_t  spi_flash_pwrite( struct dev_desc_t *adev ,const uint8_t *apData , size_
 
 
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        spi_flash_ioctl                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
 uint8_t spi_flash_ioctl( struct dev_desc_t *adev,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
-	spi_flash_instance_t *config_handle;
+	struct spi_flash_instance_t *config_handle;
 	uint8_t write_data[4];
 
 	config_handle = DEV_GET_CONFIG_DATA_POINTER(adev);

@@ -108,8 +108,7 @@ extern "C" {
 #define SET_RUNTIME_DATA_TYPE(module, type)  \
 								typedef type MODULE_RUNTIME_DATA_TYPE(module)
 
-typedef enum
-{
+enum dev_param_types_e {
 	DEV_PARAM_TYPE_PDEVICE,
 	DEV_PARAM_TYPE_UINT8  ,
 	DEV_PARAM_TYPE_UINT16 ,
@@ -117,7 +116,7 @@ typedef enum
 	DEV_PARAM_TYPE_UINT32 ,
 	DEV_PARAM_TYPE_STRING ,
 	DEV_PARAM_TYPE_MAPPED_SET_TO_SIZE
-}dev_param_types_t;
+};
 
 
 struct mapped_set_to_size_param_t {
@@ -129,7 +128,7 @@ struct dev_param_t {
 	char               *paramNameStr;
 	uint8_t            paramSetIoctl;
 	uint8_t            paramGetIoctl;
-	dev_param_types_t  param_type;
+	enum dev_param_types_e  param_type;
 	void               *p_mapped_set_type_param;
 	uint8_t            mapped_set_size;
 };

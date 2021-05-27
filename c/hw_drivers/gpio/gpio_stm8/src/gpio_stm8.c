@@ -4,9 +4,6 @@
  *
  */
 
-
-
-/***************   includes    *******************/
 #include "src/_gpio_stm8_prerequirements_check.h"
 #include "gpio_api.h"
 
@@ -17,27 +14,13 @@
 
 #include "gpio_stm8_add_component.h"
 
-/***************   defines    *******************/
-
-
-
-
-/***************   typedefs    *******************/
-
-/**********   external variables    **************/
-
-
-
-/***********   local variables    **************/
-
-
 
 /*
  * function : GPIO_STM8_Init()
  *
  *
  */
-uint8_t GPIO_STM8_Init(gpio_stm8_instance_t *pInstance)
+uint8_t GPIO_STM8_Init(struct gpio_stm8_instance_t *pInstance)
 {
     GPIO_Init(pInstance->GPIOx , pInstance->pin_num, pInstance->mode);
 
@@ -45,20 +28,9 @@ uint8_t GPIO_STM8_Init(gpio_stm8_instance_t *pInstance)
 }
 
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        gpio_stm8_ioctl                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
 uint8_t gpio_stm8_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
 {
-	gpio_stm8_instance_t *config_handle;
+	struct gpio_stm8_instance_t *config_handle;
 	uint8_t pin_num;
 	GPIO_TypeDef* GPIOx;
 

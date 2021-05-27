@@ -8,8 +8,6 @@
 #include <p32xxxx.h>
 
 
-/**********  define API  types ************/
-
 #define GPIO_PIC32MX575_API_PORT_A		(size_t)0xBF886000
 #define GPIO_PIC32MX575_API_PORT_B		(size_t)0xBF886040
 #define GPIO_PIC32MX575_API_PORT_C		(size_t)0xBF886080
@@ -38,12 +36,12 @@
 #define GPIO_PIC32MX575_API_MODE_OUT 	0
 #define GPIO_PIC32MX575_API_MODE_IN 	1
 
-typedef enum
+enum GPIO_PIC32MX575_API_ioctl_e
 {
-	IOCTL_GPIO_PIC32MX575_SET_PACKAGE_PIN_PARAM = IOCTL_LAST_COMMON_GPIO_IOCTL+1,
+	IOCTL_GPIO_PIC32MX575_SET_PACKAGE_PIN_PARAM =
+						IOCTL_LAST_COMMON_GPIO_IOCTL + 1,
 	IOCTL_GPIO_PIC32MX575_SET_MODE_PARAM
 }GPIO_PIC32MX575_API_ioctl_t;
 
-/**********  define API  functions  ************/
 
 #endif

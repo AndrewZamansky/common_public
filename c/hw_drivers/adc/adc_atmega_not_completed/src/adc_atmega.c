@@ -4,9 +4,6 @@
  *
  */
 
-
-
-/***************   includes    *******************/
 #include "_project.h"
 #include "adc_api.h"
 #include "adc_stm32f10x_api.h"
@@ -17,19 +14,13 @@
 #include "stm32f10x_adc.h"
 
 
-/***************   defines    *******************/
 
-#define P_INSTANCE(pHndl)  ((ADC_Instance_t*)pHndl)
+#define P_INSTANCE(pHndl)  ((struct ADC_Instance_t*)pHndl)
 #define ADC_HAL_MAX_NUM_OF_ADCS 	2
-
-/***************   typedefs    *******************/
-
-/**********   external variables    **************/
-
 
 
 /***********   local variables    **************/
-static ADC_Instance_t ADC_InstanceParams[ADC_HAL_MAX_NUM_OF_ADCS] = { {0} };
+static struct ADC_Instance_t ADC_InstanceParams[ADC_HAL_MAX_NUM_OF_ADCS] = { {0} };
 static uint16_t usedInstances =0 ;
 
 //static const dev_param_t ADC_Dev_Params[]=

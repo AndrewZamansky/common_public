@@ -2,17 +2,9 @@
 #ifndef _UART_API_H_
 #define _UART_API_H_
 
-#include "dev_management_api.h" // for device manager defines and typedefs
+#include "dev_management_api.h"
 
-/*****************  defines  **************/
-
-
-/**********  define API  types ************/
-
-
-/**********  define API  functions  ************/
-typedef enum
-{
+enum UART_COMMON_API_ioctl_e {
 	IOCTL_UART_TURN_OFF = IOCTL_LAST_COMMON_IOCTL + 1,
 	IOCTL_UART_SET_BAUD_RATE,
 	IOCTL_UART_DISABLE_TX,
@@ -21,7 +13,7 @@ typedef enum
 	IOCTL_UART_SET_ISR_CALLBACK_RX_DEV,
 //	IOCTL_UART_FILTER_NON_ASCII_NOISE,
 	IOCTL_LAST_COMMON_UART_IOCTL
-}UART_COMMON_API_ioctl_t;
+};
 
 
 #define UART_API_BAUD_RATE_STR "baud_rate"

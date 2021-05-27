@@ -5,8 +5,6 @@
 #include "src/_gpio_stm8_prerequirements_check.h"
 #include "gpio_api.h"
 
-/**********  define API  types ************/
-
 
 #define GPIO_STM8_API_PORT_STR   	"port"
 #define GPIO_STM8_API_PIN_STR   	"pin"
@@ -14,16 +12,14 @@
 
 
 
-typedef enum
-{
+enum GPIO_STM8_API_ioctl_e {
 	IOCTL_GPIO_STM8_SET_PORT_PARAM = IOCTL_LAST_COMMON_GPIO_IOCTL+1,
 	IOCTL_GPIO_STM8_SET_PIN_PARAM,
 	IOCTL_GPIO_STM8_SET_MODE_PARAM
-}GPIO_STM8_API_ioctl_t;
+};
 
 
-typedef enum
-{
+enum GPIO_STM8_API_Mode_e {
   GPIO_STM8_API_MODE_IN_FL_NO_IT      = (uint8_t)0x00,  /*!< Input floating, no external interrupt */
   GPIO_STM8_API_MODE_IN_PU_NO_IT      = (uint8_t)0x40,  /*!< Input pull-up, no external interrupt */
   GPIO_STM8_API_MODE_IN_FL_IT         = (uint8_t)0x20,  /*!< Input floating, external interrupt */
@@ -36,10 +32,9 @@ typedef enum
   GPIO_STM8_API_MODE_OUT_PP_HIGH_FAST = (uint8_t)0xF0,  /*!< Output push-pull, high level, 10MHz */
   GPIO_STM8_API_MODE_OUT_OD_HIZ_SLOW  = (uint8_t)0x90,  /*!< Output open-drain, high-impedance level, 2MHz */
   GPIO_STM8_API_MODE_OUT_PP_HIGH_SLOW = (uint8_t)0xD0   /*!< Output push-pull, high level, 2MHz */
-}GPIO_STM8_API_Mode_TypeDef;
+};
 
-typedef enum
-{
+enum GPIO_STM8_API_Pin_e {
   GPIO_STM8_API_PIN_0    = ((uint8_t)0x01),  /*!< Pin 0 selected */
   GPIO_STM8_API_PIN_1    = ((uint8_t)0x02),  /*!< Pin 1 selected */
   GPIO_STM8_API_PIN_2    = ((uint8_t)0x04),  /*!< Pin 2 selected */
@@ -48,7 +43,7 @@ typedef enum
   GPIO_STM8_API_PIN_5    = ((uint8_t)0x20),  /*!< Pin 5 selected */
   GPIO_STM8_API_PIN_6    = ((uint8_t)0x40),  /*!< Pin 6 selected */
   GPIO_STM8_API_PIN_7    = ((uint8_t)0x80)  /*!< Pin 7 selected */
-}GPIO_STM8_API_Pin_TypeDef;
+};
 
 #include "stm8s.h"
 
@@ -57,6 +52,5 @@ typedef enum
 #define GPIO_STM8_API_PORT_C	GPIOC
 #define GPIO_STM8_API_PORT_D	GPIOD
 
-/**********  define API  functions  ************/
 
 #endif

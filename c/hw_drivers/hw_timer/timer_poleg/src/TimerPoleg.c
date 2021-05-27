@@ -125,8 +125,8 @@ void TWD_1_ISR()
 //
 //---------------------------------------------------------------------------------
 uint8_t TimerPoleg_API_Init_No_Start(int TimerModule, int TimerPort,
-		TimerPoleg_API_TWD_MODE_t twd_mode,int TickPerSecond,
-		TimerPoleg_API_CLK_SOURCE_t clk_source,Timer_Callback_t afTimerCallback)
+		enum TimerPoleg_API_TWD_MODE_e twd_mode,int TickPerSecond,
+		enum TimerPoleg_API_CLK_SOURCE_e clk_source,Timer_Callback_t afTimerCallback)
 {
 
 	//------------------------------------------------
