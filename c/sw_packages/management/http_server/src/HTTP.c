@@ -4,15 +4,12 @@
  *
  */
 
-
-
-/***************   includes    *******************/
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 #include "_project_func_declarations.h"
 #include "errors_api.h"
 
-#include "dev_management_api.h" // for device manager defines and typedefs
+#include "dev_management_api.h"
 #define DEBUG
 #include "PRINTF_api.h"
 
@@ -23,7 +20,7 @@
 #include "ff.h"
 #include "ESP8266_api.h"
 
-/***************   defines    *******************/
+
 
 #define HTTP_TASK_PRIORITY				TASK_NORMAL_PRIORITY
 
@@ -37,35 +34,26 @@
 #define ERR_STR (uint8_t*)"err: file not found"
 
 
-/***************   typedefs    *******************/
-
-typedef enum
-{
+enum HTTP_State_e {
 	HTTP_State_Connecting_To_Main_Manager=0,
 	HTTP_State_Connecting_To_Aux_Manager ,
 	HTTP_State_Connected,
-} HTTP_State_t;
+} ;
 
 
-typedef struct
-{
+struct HTTP_socket_info_t {
 	struct dev_desc_t * low_level_socket;
-} HTTP_socket_info_t;
+};
 
 
-typedef struct
-{
+struct xMessage_t {
 	uint32_t len;
 	uint8_t *pData;
 	struct dev_desc_t * low_level_socket;
-}xMessage_t;
-
-
-/**********   external variables    **************/
+};
 
 
 
-/***********   local variables    **************/
 static const struct dev_param_t HTTP_Dev_Params[]=
 {
 		{IOCTL_HTTP_SET_MNG_SERVER_IP , IOCTL_VOID , (uint8_t*)HTTP_API_MNG_SERVER_IP_STR, NOT_FOR_SAVE},
@@ -104,7 +92,7 @@ static uint16_t unused_bytes_left;
 
 static BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 static uint32_t comm_reply_state;
-static HTTP_State_t currentState ;
+static enum HTTP_State_e currentState ;
 
 static struct dev_desc_t * this_dev;
 static struct dev_desc_t * client_dev;
@@ -117,35 +105,14 @@ static struct dev_desc_t * client_dev;
 static uint8_t poll_str[]="poll 12345678 \n";
 static uint8_t EOF_MARKER_STR[]="\r\n~2@5\r\n";
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        HTTP_API_ParseRequest                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        http_callback                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
+
 uint8_t http_callback(struct dev_desc_t *adev ,const uint8_t aCallback_num
 		, void * aCallback_param1, void * aCallback_param2)
 {
 	uint8_t *requestStr = ((callback_new_data_from_socket_t*)aCallback_param2)->pData;
 	uint32_t str_len =  ((callback_new_data_from_socket_t*)aCallback_param2)->DataLen;
 	uint8_t *pSendData;
-	xMessage_t xMessage;
+	struct xMessage_t xMessage;
 //	struct dev_desc_t * socketHandle=(struct dev_desc_t *)aCallback_param1;
 
 	if(NULL == xQueue)
@@ -194,17 +161,7 @@ uint8_t http_callback(struct dev_desc_t *adev ,const uint8_t aCallback_num
 
 struct dev_desc_t * currLowLevelSocket;
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        HTTP_API_SendData                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
+
 size_t HTTP_pwrite(const void *aHandle ,const uint8_t *apData , size_t aLength, size_t aOffset)
 {
 
@@ -224,20 +181,10 @@ size_t HTTP_pwrite(const void *aHandle ,const uint8_t *apData , size_t aLength, 
 }
 
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        HTTP_Send_Task                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
+
 static void HTTP_Task( void *pvParameters )
 {
-	xMessage_t xRxedMessage;
+	struct xMessage_t xRxedMessage;
 	FIL fp;
 	uint32_t i,file_size ;
 	size_t bytes_was_read;
@@ -248,7 +195,7 @@ static void HTTP_Task( void *pvParameters )
 	ioctl_socket_open_t socketOpenInfo;
 	uint64_t pollPeriod;
 	uint8_t is_timer_elapsed;
-//	const HTTP_socket_info_t *pSocketInfo;
+//	const struct HTTP_socket_info_t *pSocketInfo;
 
 	socketOpenInfo.new_socket_descriptor = &HTTP_menagmentSocketDesc;
 	HTTP_menagmentSocketDesc = NULL;
@@ -436,17 +383,7 @@ static void HTTP_Task( void *pvParameters )
 
 }
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        HTTP_socket_ioctl                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
+
 uint8_t HTTP_socket_ioctl(const void *aHandle ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2 )
 {
@@ -475,17 +412,7 @@ uint8_t HTTP_socket_ioctl(const void *aHandle ,const uint8_t aIoctl_num
 	return 0;
 }
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        HTTP_Start                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
+
 uint32_t  HTTP_Start( )
 {
 	struct dev_desc_t * dev_descriptor;
@@ -493,7 +420,7 @@ uint32_t  HTTP_Start( )
 	dev_descriptor = DEV_OPEN((uint8_t*)"serial");
 	DEV_READ(dev_descriptor,&poll_str[POLL_STR_SERIAL_START],POLL_STR_SERIAL_LEN);
 
-	xQueue = xQueueCreate( HTTP_MAX_QUEUE_LEN , sizeof( xMessage_t ) );
+	xQueue = xQueueCreate( HTTP_MAX_QUEUE_LEN , sizeof( struct xMessage_t ) );
 
 	xTaskCreate( HTTP_Task, "HTTP_Task", HTTP_TASK_STACK_SIZE,(void*) NULL,
 			HTTP_TASK_PRIORITY , NULL );
@@ -506,17 +433,7 @@ uint32_t  HTTP_Start( )
 }
 
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        HTTP_ioctl                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
+
 uint8_t HTTP_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
@@ -601,17 +518,7 @@ uint8_t HTTP_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 	return retVal;
 }
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        HTTP_API_Init_Dev_Descriptor                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
+
 uint8_t  http_server_api_init_dev_descriptor(struct dev_desc_t *aDevDescriptor)
 {
 

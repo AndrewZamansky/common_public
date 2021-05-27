@@ -49,12 +49,6 @@
  #include "nand_if.h"
 #endif /* USE_STM3210E_EVAL */
 
-/* Private typedef -----------------------------------------------------------*/
-/* Private define ------------------------------------------------------------*/
-
-/* Private macro -------------------------------------------------------------*/
-/* Private variables ---------------------------------------------------------*/
-/* External variables --------------------------------------------------------*/
 extern uint8_t Bulk_Data_Buff[BULK_MAX_PACKET_SIZE];  /* data buffer*/
 extern uint8_t Bot_State;
 extern Bulk_Only_CBW CBW;
@@ -63,10 +57,8 @@ extern Bulk_Only_CSW CSW;
 //extern uint32_t Mass_Block_Size[2];
 //extern uint32_t Mass_Block_Count[2];
 
-extern USB_Mass_Storage_Instance_t USB_Mass_Storage_InstanceParams ;
+extern struct USB_Mass_Storage_Instance_t USB_Mass_Storage_InstanceParams ;
 
-/* Private function prototypes -----------------------------------------------*/
-/* Private functions ---------------------------------------------------------*/
 
 /*******************************************************************************
 * Function Name  : SCSI_Inquiry_Cmd

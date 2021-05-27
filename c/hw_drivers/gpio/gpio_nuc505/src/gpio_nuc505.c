@@ -19,7 +19,6 @@
 #include "NUC505Series.h"
 #include "gpio.h"
 
-#include "_gpio_nuc505_prerequirements_check.h"
 
 /*following line add module to available module list for dynamic device tree*/
 #include "gpio_nuc505_add_component.h"

@@ -5,27 +5,14 @@
  */
 
 
-
-/***************   includes    *******************/
-
 #include "serial_number_stm32f10x_config.h"
-#include "dev_management_api.h" // for device manager defines and typedefs
+#include "dev_management_api.h"
 #include "serial_number_api.h"
-#include "src/_serial_number_stm32f10x_prerequirements_check.h" // should be after {uart_stm8_config.h,dev_management_api.h}
 
 #include "serial_number_stm32f10x_api.h"
 #include "serial_number_stm32f10x.h"
 
-/***************   defines    *******************/
 
-
-/***************   typedefs    *******************/
-
-/**********   external variables    **************/
-
-
-
-/***********   local variables    **************/
 
 static uint8_t serial_number[SERIAL_NUMBER_LEN];
 
@@ -61,17 +48,6 @@ static void IntNumToCharNum (uint32_t value , uint8_t *pbuf )
 
 
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        serial_stm32_ioctl                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
 uint8_t serial_stm32f10x_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
@@ -110,17 +86,7 @@ uint8_t serial_stm32f10x_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_nu
 }
 
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        SerialNumber_API_Init_Dev_Descriptor                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
+
 uint8_t  serial_number_stm32f10x_api_init_dev_descriptor(struct dev_desc_t *aDevDescriptor)
 {
 	if(NULL == aDevDescriptor) return 1;

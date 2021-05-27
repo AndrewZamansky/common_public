@@ -3,14 +3,7 @@
  * uart_stm32f10x.c
  *
  *
- *
- *
- *
  */
-
-/********  includes *********************/
-
-#include "src/_uart_stm32f10x_prerequirements_check.h"
 
 #include "irq_api.h"
 #include "stm32f10x_usart.h"
@@ -34,27 +27,11 @@
 #endif
 
 
-/********  defines *********************/
 
 
-/********  types  *********************/
+#define INSTANCE(hndl)	((struct UART_STM32F103x_Instance_t*)hndl)
 
-
-
-/* ---------------------------- External variables ---------------------------------*/
-
-/* ------------------------ External functions ------------------------------*/
-
-/* ------------------------ Exported variables ------------------------------*/
-
-
-/********  local defs *********************/
-
-
-
-#define INSTANCE(hndl)	((UART_STM32F103x_Instance_t*)hndl)
-
-static UART_STM32F103x_Instance_t *pHw_uart_pointer_to_instance[3];
+static struct UART_STM32F103x_Instance_t *pHw_uart_pointer_to_instance[3];
 
 
 /*  function : Common_UART_Isr
@@ -62,7 +39,7 @@ static UART_STM32F103x_Instance_t *pHw_uart_pointer_to_instance[3];
  *
  *
  */
-static void Common_UART_Isr(UART_STM32F103x_Instance_t *pHandle)
+static void Common_UART_Isr(struct UART_STM32F103x_Instance_t *pHandle)
 {
     USART_TypeDef* USARTx;
     uint8_t cChar;
@@ -98,20 +75,9 @@ void UART3_Isr( void )
 
 
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        uart_stm32f10x_pwrite                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
 size_t uart_stm32f10x_pwrite(struct dev_desc_t *adev , const uint8_t *apData , size_t aLength, size_t aOffset)
 {
-	UART_STM32F103x_Instance_t *handle;
+	struct UART_STM32F103x_Instance_t *handle;
     USART_TypeDef* USARTx;
 
 	handle = adev->handle;
@@ -127,7 +93,7 @@ size_t uart_stm32f10x_pwrite(struct dev_desc_t *adev , const uint8_t *apData , s
  *
  *
  */
-inline uint8_t UART_STM32F10x_Init(UART_STM32F103x_Instance_t *apHandle)
+inline uint8_t UART_STM32F10x_Init(struct UART_STM32F103x_Instance_t *apHandle)
 {
     USART_TypeDef* USARTx;
 	USART_InitTypeDef USART_InitStructure;
@@ -222,21 +188,11 @@ inline uint8_t UART_STM32F10x_Init(UART_STM32F103x_Instance_t *apHandle)
 	return 0;
 }
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        uart_stm32f10x_ioctl                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
+
 uint8_t uart_stm32f10x_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
-	UART_STM32F103x_Instance_t *handle;
+	struct UART_STM32F103x_Instance_t *handle;
     USART_TypeDef* USARTx;
 
 	handle = adev->handle;

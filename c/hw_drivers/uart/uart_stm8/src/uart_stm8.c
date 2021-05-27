@@ -5,7 +5,6 @@
  *
  */
 
-/********  includes *********************/
 
 #include "uart_api.h"
 
@@ -20,22 +19,8 @@
 
 #include "uart_stm8_add_component.h"
 
-/********  defines *********************/
 
-
-/********  types  *********************/
-
-
-/* ---------------------------- External variables ---------------------------------*/
-
-/* ------------------------ External functions ------------------------------*/
-
-/* ------------------------ Exported variables ------------------------------*/
-
-
-/********  local defs *********************/
-
-static uart_stm8_instance_t *pHw_uart_pointer_to_instance=NULL;
+static struct uart_stm8_instance_t *pHw_uart_pointer_to_instance=NULL;
 
 void tx_function(void)
 {
@@ -142,7 +127,7 @@ void rx_function(void)
 uint8_t uart_stm8_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
-	uart_stm8_instance_t *config_handle;
+	struct uart_stm8_instance_t *config_handle;
 
 	config_handle = DEV_GET_CONFIG_DATA_POINTER(adev);
 	switch(aIoctl_num)

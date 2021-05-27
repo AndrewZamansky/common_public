@@ -71,7 +71,7 @@ uint8_t gpio_remote_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 {
 	struct dev_desc_t * server_dev;
 	uint8_t i,pin_num;
-	remote_cmd_t	remote_cmd;
+	struct remote_cmd_t	remote_cmd;
 	char str_num[3];
 	remote_cmd.addr_num = INSTANCE(aHandle)->addr_num;
 	pin_num = INSTANCE(aHandle)->pin_num;

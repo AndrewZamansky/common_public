@@ -3,14 +3,10 @@
  * file :   USB.c
  *
  *
- *
- *
- *
  */
 
 
 
-/********  includes *********************/
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 #include "_project_func_declarations.h"
@@ -24,37 +20,20 @@
 //#include "USB_Virtual_COM_API.h"
 
 
-/********  defines *********************/
 #define USB_CHECK_TASK_PRIORITY				TASK_NORMAL_PRIORITY
 
 /* The check task uses the sprintf function so requires a little more stack. */
 #define USB_TASK_STACK_SIZE			DEFINE_STACK_SIZE( 160 )
 
-/********  types  *********************/
 
-
-/********  externals *********************/
-
-
-/********  local defs *********************/
-
-USB_Instance_t USB_InstanceParams = {0} ;
+struct USB_Instance_t USB_InstanceParams = {0} ;
 
 extern void    My_USB_Resume(void);
 //int a0=0,a1=0,a2=0,a3=0,a4=0,a5=0,a6=0,a7=0;
 //extern 	void USB_Virtual_COM_APP_Init(void);
 extern void enable_suspend_interrupt();
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        USB_Task                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
+
+
 static void USB_Task( void *pvParameters )
 {
 
@@ -104,17 +83,6 @@ static void USB_Task( void *pvParameters )
 
 
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        USB_API_Init                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
 uint8_t  USB_API_Init(USB_API_Init_params_t *apInit_params)
 {
 	USB_InstanceParams.chip = apInit_params->chip;

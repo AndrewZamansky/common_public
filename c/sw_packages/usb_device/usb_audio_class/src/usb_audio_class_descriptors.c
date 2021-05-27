@@ -6,7 +6,6 @@
  *
  ******************************************************************************/
 
-/*!<Includes */
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 #include "errors_api.h"
@@ -28,18 +27,16 @@
 #define REC_TERMINAL_ID    0x04
 #define PLAY_TERMINAL_ID   0x01
 
-typedef enum
-{
+enum USB_AUDIO_CLASS_buff_state_e {
 	USB_AUDIO_CLASS_BUFF_IDLE,
 	USB_AUDIO_CLASS_BUFF_IN_PROCCESS,
 	USB_AUDIO_CLASS_BUFF_TX_DATA_IS_FILLING,
 	USB_AUDIO_CLASS_BUFF_TX_DATA_IS_READY,
 	USB_AUDIO_CLASS_BUFF_RX_RADA_READY,
 	USB_AUDIO_CLASS_BUFF_RX_RADA_PROCESSING
-} USB_AUDIO_CLASS_buff_state_t;
+};
 
 
-/***************************************************/
 
 extern void uac_interface_class_request(struct dev_desc_t *callback_dev,
 		uint8_t callback_type, uint8_t *request);

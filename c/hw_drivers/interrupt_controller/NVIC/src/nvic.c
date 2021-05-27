@@ -217,8 +217,8 @@ int irq_register_device_on_interrupt(int int_num, struct dev_desc_t * pdev)
  */
 int irq_disable_interrupt(int int_num)
 {
-	NVIC_DisableIRQ((IRQn_Type_TMP)int_num);
-	NVIC_ClearPendingIRQ((IRQn_Type_TMP)int_num);
+	NVIC_DisableIRQ((IRQn_Type)int_num);
+	NVIC_ClearPendingIRQ((IRQn_Type)int_num);
 	return 0;
 }
 

@@ -4,20 +4,16 @@
  *
  */
 
-
-
-/***************   includes    *******************/
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 #include "_project_func_declarations.h"
 
-#include "dev_management_api.h" // for device manager defines and typedefs
+#include "dev_management_api.h"
 
 #include "gpio_api.h"
 #include "sw_gpio_wrapper_api.h"
 #include "sw_gpio_wrapper.h"
 
-/***************   defines    *******************/
 
 #define GPIO_HAL_MAX_NUM_OF_GPIOS 5
 #define GPIO_HAL_MAX_NUM_OF_OUTPUTS_GPIOS 5
@@ -29,30 +25,28 @@
 #define INSTANCE(hndl)	((GPIO_Instance_t*)hndl)
 
 
-/***************   typedefs    *******************/
-typedef struct {
+struct GPIO_OutputPin_t {
 	GPIO_Instance_t *pGPIO_Instance;
 	uint8_t currCount;
-} GPIO_OutputPin_t;
+};
 
 
-/**********   external variables    **************/
-
-
-
-/***********   local variables    **************/
 
 static const struct dev_param_t GPIO_PIN_Dev_Params[]=
 {
-		{IOCTL_SET_SERVER_DEVICE_BY_NAME , IOCTL_VOID , (uint8_t*)SW_GPIO_WRAPPER_API_SERVER_DEVICE_STR, NOT_FOR_SAVE},
-		{IOCTL_SW_GPIO_WRAPPER_SET_BEHAVIOR_PARAM , IOCTL_VOID , (uint8_t*)SW_GPIO_WRAPPER_API_BEHAVIOR_STR, NOT_FOR_SAVE},
-		{IOCTL_SW_GPIO_WRAPPER_PIN_FORCE_SET , IOCTL_SW_GPIO_WRAPPER_PIN_FORCE_GET , (uint8_t*)SW_GPIO_WRAPPER_API_FORCE_STR, FOR_SAVE}
+	{IOCTL_SET_SERVER_DEVICE_BY_NAME , IOCTL_VOID ,
+		(uint8_t*)SW_GPIO_WRAPPER_API_SERVER_DEVICE_STR, NOT_FOR_SAVE},
+	{IOCTL_SW_GPIO_WRAPPER_SET_BEHAVIOR_PARAM , IOCTL_VOID ,
+		(uint8_t*)SW_GPIO_WRAPPER_API_BEHAVIOR_STR, NOT_FOR_SAVE},
+	{IOCTL_SW_GPIO_WRAPPER_PIN_FORCE_SET, IOCTL_SW_GPIO_WRAPPER_PIN_FORCE_GET,
+		(uint8_t*)SW_GPIO_WRAPPER_API_FORCE_STR, FOR_SAVE}
 };
 
 
 static GPIO_Instance_t GPIO_InstanceParams[GPIO_HAL_MAX_NUM_OF_GPIOS] = { {0} };
 static uint16_t usedInstances =0 ;
-static GPIO_OutputPin_t GPIO_OutputPins[GPIO_HAL_MAX_NUM_OF_OUTPUTS_GPIOS]= { {0} };
+static struct GPIO_OutputPin_t GPIO_OutputPins[
+					GPIO_HAL_MAX_NUM_OF_OUTPUTS_GPIOS]= { {0} };
 static uint16_t usedOutputPins =0 ;
 
 
@@ -78,10 +72,8 @@ uint8_t GPIO_Start(GPIO_Instance_t *pInstance)
 #define GPIO_OUT_STATE_CLEAR		1
 #define GPIO_OUT_STATE_DONT_CHANGE	2
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        change_output_state  */
-/*---------------------------------------------------------------------------------------------------------*/
-static uint8_t change_output_state( GPIO_OutputPin_t *pCurrOutputPin , uint8_t cycles)
+
+static uint8_t change_output_state( struct GPIO_OutputPin_t *pCurrOutputPin , uint8_t cycles)
 {
 	pCurrOutputPin->currCount = (pCurrOutputPin->currCount + 1) % cycles;
 	if((cycles>>1) == pCurrOutputPin->currCount)
@@ -95,24 +87,14 @@ static uint8_t change_output_state( GPIO_OutputPin_t *pCurrOutputPin , uint8_t c
 	return GPIO_OUT_STATE_DONT_CHANGE;
 }
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        SH_Send_Task                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
+
 static void GPIO_output_pins_Task( void *pvParameters )
 {
 	GPIO_Instance_t *pCurrGPIO_Instance;
 	uint32_t i;
 	uint8_t next_state;
 	struct dev_desc_t *   server_dev  ;
-	GPIO_OutputPin_t *pCurrOutputPin ;
+	struct GPIO_OutputPin_t *pCurrOutputPin ;
 	uint8_t cycles;
 
 	for( ;; )
@@ -166,18 +148,9 @@ static void GPIO_output_pins_Task( void *pvParameters )
 }
 
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        GPIO_ioctl                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-uint8_t GPIO_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num , void * aIoctl_param1 , void * aIoctl_param2)
+
+uint8_t GPIO_ioctl( struct dev_desc_t *adev,
+			const uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2)
 {
 	uint32_t retVal;
 	struct dev_desc_t *   server_dev = INSTANCE(aHandle)->server_dev ;
@@ -189,24 +162,25 @@ uint8_t GPIO_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num , void * a
 	{
 		case IOCTL_GET_PARAMS_ARRAY_FUNC :
 			*(const dev_param_t**)aIoctl_param1  = GPIO_PIN_Dev_Params;
-			*(uint8_t*)aIoctl_param2 =  sizeof(GPIO_PIN_Dev_Params)/sizeof(dev_param_t); //size
+			*(uint8_t*)aIoctl_param2 =
+				sizeof(GPIO_PIN_Dev_Params)/sizeof(dev_param_t); //size
 			break;
 		case IOCTL_SET_SERVER_DEVICE_BY_NAME :
 			INSTANCE(aHandle)->server_dev = DEV_OPEN((uint8_t*)aIoctl_param1);
-//			if (NULL!=INSTANCE(aHandle)->server_dev)
-//			{
-//				DEV_IOCTL(INSTANCE(aHandle)->server_dev,IOCTL_SET_ISR_CALLBACK_DEV,(uint32_t)INSTANCE(aHandle)->this_dev);
-//			}
 			break;
 
 		case IOCTL_SW_GPIO_WRAPPER_SET_BEHAVIOR_PARAM :
-			if (0 == memcmp((uint8_t*) aIoctl_param1 , "blink_medium" , sizeof("blink_medium") ))
+			if (0 == memcmp((uint8_t*) aIoctl_param1,
+						"blink_medium" , sizeof("blink_medium") ))
 			{
-				INSTANCE(aHandle)->outputBehavior = GPIO_API_OUT_BLINK_MEDIUM_SPEED;
+				INSTANCE(aHandle)->outputBehavior =
+							GPIO_API_OUT_BLINK_MEDIUM_SPEED;
 			}
-			else if (0 == memcmp((uint8_t*) aIoctl_param1 , "controlled" , sizeof("controlled") ))
+			else if (0 == memcmp((uint8_t*) aIoctl_param1,
+							"controlled" , sizeof("controlled") ))
 			{
-				INSTANCE(aHandle)->outputBehavior = GPIO_API_OUT_CONTROLED_EXTERNALLY;
+				INSTANCE(aHandle)->outputBehavior =
+							GPIO_API_OUT_CONTROLED_EXTERNALLY;
 			}
 			else
 			{
@@ -229,16 +203,19 @@ uint8_t GPIO_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num , void * a
 			break;
 
 		case IOCTL_SW_GPIO_WRAPPER_PIN_FORCE_SET :
-			if (0 == memcmp((uint8_t*) aIoctl_param1 , GPIO_API_FORCE_NONE_STR , sizeof(GPIO_API_FORCE_NONE_STR) ))
+			if (0 == memcmp((uint8_t*) aIoctl_param1,
+					GPIO_API_FORCE_NONE_STR , sizeof(GPIO_API_FORCE_NONE_STR) ))
 			{
 				INSTANCE(aHandle)->forceState = GPIO_Force_None;
 			}
-			else if (0 == memcmp((uint8_t*) aIoctl_param1 , GPIO_API_FORCE_SET_STR , sizeof(GPIO_API_FORCE_SET_STR) ))
+			else if (0 == memcmp((uint8_t*) aIoctl_param1,
+						GPIO_API_FORCE_SET_STR , sizeof(GPIO_API_FORCE_SET_STR) ))
 			{
 				INSTANCE(aHandle)->forceState = GPIO_Force_Set;
 				DEV_IOCTL_0_PARAMS(server_dev,IOCTL_GPIO_PIN_SET);
 			}
-			else if (0 == memcmp((uint8_t*) aIoctl_param1 , GPIO_API_FORCE_CLEAR_STR , sizeof(GPIO_API_FORCE_CLEAR_STR) ))
+			else if (0 == memcmp((uint8_t*) aIoctl_param1,
+					GPIO_API_FORCE_CLEAR_STR , sizeof(GPIO_API_FORCE_CLEAR_STR) ))
 			{
 				INSTANCE(aHandle)->forceState = GPIO_Force_Clear;
 				DEV_IOCTL_0_PARAMS(server_dev,IOCTL_GPIO_PIN_CLEAR);
@@ -250,14 +227,17 @@ uint8_t GPIO_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num , void * a
 			switch(forceState)
 			{
 				case GPIO_Force_Clear:
-					memcpy((uint8_t*) aIoctl_param1 , GPIO_API_FORCE_CLEAR_STR , sizeof(GPIO_API_FORCE_CLEAR_STR));
+					memcpy((uint8_t*) aIoctl_param1,
+						GPIO_API_FORCE_CLEAR_STR , sizeof(GPIO_API_FORCE_CLEAR_STR));
 					break;
 				case GPIO_Force_Set:
-					memcpy((uint8_t*) aIoctl_param1 , GPIO_API_FORCE_SET_STR , sizeof(GPIO_API_FORCE_SET_STR));
+					memcpy((uint8_t*) aIoctl_param1,
+						GPIO_API_FORCE_SET_STR , sizeof(GPIO_API_FORCE_SET_STR));
 					break;
 				case GPIO_Force_None:
 				default:
-					memcpy((uint8_t*) aIoctl_param1 , GPIO_API_FORCE_NONE_STR , sizeof(GPIO_API_FORCE_NONE_STR));
+					memcpy((uint8_t*) aIoctl_param1,
+						GPIO_API_FORCE_NONE_STR , sizeof(GPIO_API_FORCE_NONE_STR));
 					break;
 			}
 			break;
@@ -290,17 +270,6 @@ uint8_t GPIO_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num , void * a
 }
 
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        GPIO_API_Init_Dev_Descriptor                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
 uint8_t  sw_gpio_wrapper_api_init_dev_descriptor(struct dev_desc_t *aDevDescriptor)
 {
 	GPIO_Instance_t *pInstance;

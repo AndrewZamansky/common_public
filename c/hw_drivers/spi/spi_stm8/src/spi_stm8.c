@@ -10,9 +10,6 @@
  *
  */
 
-/********  includes *********************/
-
-#include "src/_spi_stm8_prerequirements_check.h" // should be after {spi_stm8_config.h,dev_management_api.h}
 
 #include "spi_stm8.h"
 
@@ -26,32 +23,20 @@
 #include "spi_stm8_add_component.h"
 
 
-/********  defines *********************/
 
-#define INSTANCE(hndl)	((SPI_STM8_Instance_t*)hndl)
-
-/********  types  *********************/
-
-
-/* ---------------------------- External variables ---------------------------------*/
-
-/* ------------------------ External functions ------------------------------*/
-
-/* ------------------------ Exported variables ------------------------------*/
-
-
-/********  local defs *********************/
+#define INSTANCE(hndl)	((struct SPI_STM8_Instance_t*)hndl)
 
 
 
-/*******************************************************************************
+
+/*****************************************************************************
 * Function Name  : spi_stm8_SendByte
 * Description    : Sends a byte through the SPI interface and return the byte
 *                  received from the SPI bus.
 * Input          : byte : byte to send.
 * Output         : None
 * Return         : The value of the received byte.
-*******************************************************************************/
+*****************************************************************************/
 static uint8_t spi_stm8_SendByte(uint8_t byte)
 {
   /* Loop while DR register in not emplty */
@@ -67,18 +52,9 @@ static uint8_t spi_stm8_SendByte(uint8_t byte)
   return SPI_ReceiveData();
 }
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        spi_stm8_pwrite                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-size_t spi_stm8_pread(struct dev_desc_t *adev , uint8_t *apData , size_t aLength, size_t aOffset)
+
+size_t spi_stm8_pread(struct dev_desc_t *adev,
+		uint8_t *apData , size_t aLength, size_t aOffset)
 {
 	size_t retVal = aLength;
 	while(aLength--)
@@ -92,18 +68,9 @@ size_t spi_stm8_pread(struct dev_desc_t *adev , uint8_t *apData , size_t aLength
 }
 
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        spi_stm8_pwrite                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-size_t spi_stm8_pwrite(struct dev_desc_t *adev ,const uint8_t *apData , size_t aLength, size_t aOffset)
+
+size_t spi_stm8_pwrite(struct dev_desc_t *adev,
+		const uint8_t *apData , size_t aLength, size_t aOffset)
 {
 	size_t retVal = aLength;
 	while(aLength--)
@@ -116,17 +83,7 @@ size_t spi_stm8_pwrite(struct dev_desc_t *adev ,const uint8_t *apData , size_t a
 }
 
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        spi_stm8_ioctl                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                             						 */
-/*---------------------------------------------------------------------------------------------------------*/
+
 uint8_t spi_stm8_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {

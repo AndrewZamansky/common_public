@@ -26,7 +26,6 @@
   */
 
 
-/* Includes ------------------------------------------------------------------*/
 #include "usb_lib.h"
 #include "usb_conf.h"
 #include "usb_prop.h"
@@ -37,10 +36,6 @@
 //#include "memory.h"
 //#include "mass_mal.h"
 
-/* Private typedef -----------------------------------------------------------*/
-/* Private define ------------------------------------------------------------*/
-/* Private macro -------------------------------------------------------------*/
-/* Private variables ---------------------------------------------------------*/
 uint8_t Request = 0;
 
 extern uint8_t *Get_Max_Lun(uint16_t Length);
@@ -108,13 +103,10 @@ ONE_DESCRIPTOR String_Descriptor[5] =
     {(uint8_t*)USB_DESC_StringStorage, USB_DESC_SIZ_STRING_PRODUCT}
   };
 
-/* Extern variables ----------------------------------------------------------*/
 extern unsigned char Bot_State;
 extern Bulk_Only_CBW CBW;
 
-/* Private function prototypes -----------------------------------------------*/
-/* Extern function prototypes ------------------------------------------------*/
-/* Private functions ---------------------------------------------------------*/
+
 /*******************************************************************************
 * Function Name  : USB_Request_init.
 * Description    : Virtual COM Port Mouse init routine.

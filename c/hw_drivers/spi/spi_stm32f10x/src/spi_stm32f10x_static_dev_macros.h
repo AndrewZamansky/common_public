@@ -10,7 +10,7 @@ size_t spi_stm32f10x_pread(const void *aHandle ,uint8_t *apData , size_t aLength
 
 #define __SPI_STM32F10X_API_CREATE_STATIC_DEV(dev,dev_name  )\
 		extern const struct dev_desc_t dev ;						\
-		SPI_STM32F10X_Instance_t handle_of_##dev =	 {0};	\
+		struct SPI_STM32F10X_Instance_t handle_of_##dev =	 {0};	\
 		const struct dev_desc_t dev =								\
 			{											\
 				dev_name,								\

@@ -5,8 +5,6 @@
  */
 
 
-
-/********  includes *********************/
 #include "wireless_uart_config.h"
 #include "dev_management_api.h" // for device manager defines and typedefs
 #include "src/_wireless_uart_prerequirements_check.h" // should be after {wireless_uart_config.h,dev_management_api.h}
@@ -26,27 +24,20 @@
 #endif
 
 
-/********  defines *********************/
 
-#define INSTANCE(hndl)	((WIRELESS_UART_Instance_t*)hndl)
+#define INSTANCE(hndl)	((struct WIRELESS_UART_Instance_t*)hndl)
 
 
-/********  types  *********************/
-typedef struct
-{
+struct xMessage_t {
 	uint8_t dummy;
 //	struct dev_desc_t * dev_descriptor;
-} xMessage_t;
-
-/********  externals *********************/
+} ;
 
 
-
-/********  local defs *********************/
 #if WIRELESS_UART_CONFIG_USE_AS_DYNAMIC_INSTANCE > 0
 
 struct dev_desc_t * this_dev;
-static WIRELESS_UART_Instance_t WIRELESS_UART_InstanceParams = { 0 };
+static struct WIRELESS_UART_Instance_t WIRELESS_UART_InstanceParams = { 0 };
 
 static const dev_param_t wireless_uart_Dev_Params[]=
 {
@@ -65,22 +56,10 @@ static os_queue_t xQueue = NULL;
 
 
 
-
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        sw_uart_wrapper_callback                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
 uint8_t wireless_uart_callback(struct dev_desc_t *adev ,const uint8_t aCallback_num
 		, void * aCallback_param1, void * aCallback_param2)
 {
-	xMessage_t  queueMsg;
+	struct xMessage_t  queueMsg;
 	if (NULL == xQueue)
 	{
 		return 1;
@@ -94,18 +73,8 @@ uint8_t wireless_uart_callback(struct dev_desc_t *adev ,const uint8_t aCallback_
 	return 0;
 }
 
-uint8_t send_packet_buff[6];
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        wireless_uart_pwrite                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
+static uint8_t send_packet_buff[6];
+
 size_t wireless_uart_pwrite(const void *aHandle ,const uint8_t *apData , size_t aLength, size_t aOffset)
 {
 	uint8_t i;
@@ -134,20 +103,10 @@ size_t wireless_uart_pwrite(const void *aHandle ,const uint8_t *apData , size_t 
 }
 
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        wireless_uart_task                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
+
 static void wireless_uart_task( void *aHandle )
 {
-	xMessage_t pxRxedMessage;
+	struct xMessage_t pxRxedMessage;
 	wireless_uart_rx_int_size_t curr_buff_pos,total_length;
 	wireless_uart_rx_int_size_t i;
 	uint8_t *pBufferStart;
@@ -156,7 +115,7 @@ static void wireless_uart_task( void *aHandle )
 	uint8_t cnt,packet_size;
 	uint32_t received_crc;
 
-	xQueue = os_create_queue( WIRELESS_UART_CONFIG_MAX_QUEUE_LEN , sizeof( xMessage_t ) );
+	xQueue = os_create_queue( WIRELESS_UART_CONFIG_MAX_QUEUE_LEN , sizeof( struct  xMessage_t ) );
 
     if( 0 == xQueue  ) return ;
 
@@ -269,17 +228,7 @@ static void wireless_uart_task( void *aHandle )
 }
 
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        HTTP_ioctl                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
+
 uint8_t wireless_uart_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
@@ -336,17 +285,7 @@ uint8_t wireless_uart_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 
 #if WIRELESS_UART_CONFIG_USE_AS_DYNAMIC_INSTANCE > 0
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        wireless_uart_init_dev_descriptor                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
+
 uint8_t  wireless_uart_api_init_dev_descriptor(struct dev_desc_t *aDevDescriptor)
 {
 
@@ -362,4 +301,3 @@ uint8_t  wireless_uart_api_init_dev_descriptor(struct dev_desc_t *aDevDescriptor
 }
 
 #endif
-

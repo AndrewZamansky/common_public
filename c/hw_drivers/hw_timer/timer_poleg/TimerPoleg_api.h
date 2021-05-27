@@ -3,11 +3,6 @@
 #define _Timer_API_H_
 
 
-#include "src/_timer_poleg_prerequirements_check.h"
-
-typedef void*  Timer_API_Handle_t;
-
-
 enum TimerPoleg_API_TWD_MODE_e {
 	TWD_MODE_ONE_SHOT,
 	TWD_MODE_PERIODIC,

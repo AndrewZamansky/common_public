@@ -2,18 +2,11 @@
  *
  * spi_stm32f10x.c
  *
- *
- *
- *
- *
  */
 
-/********  includes *********************/
 
 #include "spi_stm32f10x_config.h"
-#include "dev_management_api.h" // for device manager defines and typedefs
-#include "src/_spi_stm32f10x_prerequirements_check.h" // should be after {spi_stm32f10x_config.h,dev_management_api.h}
-
+#include "dev_management_api.h"
 #include "spi_stm32f10x.h"
 
 #include "stm32f10x_spi.h"
@@ -23,33 +16,21 @@
 #include "spi_stm32f10x_api.h"
 
 
-/********  defines *********************/
-
-#define INSTANCE(hndl)	((SPI_STM32F10X_Instance_t*)hndl)
-
-/********  types  *********************/
+#define INSTANCE(hndl)	((struct SPI_STM32F10X_Instance_t*)hndl)
 
 
-/* ---------------------------- External variables ---------------------------------*/
-
-/* ------------------------ External functions ------------------------------*/
-
-/* ------------------------ Exported variables ------------------------------*/
-
-
-/********  local defs *********************/
 #if SPI_STM32F10X_CONFIG_NUM_OF_DYNAMIC_INSTANCES > 0
 	SPI_STM32F10X_Instance_t SPI_STM32F10X_Instance;
 #endif
 
-/*******************************************************************************
+/*****************************************************************************
 * Function Name  : SPI_FLASH_SendByte
 * Description    : Sends a byte through the SPI interface and return the byte
 *                  received from the SPI bus.
 * Input          : byte : byte to send.
 * Output         : None
 * Return         : The value of the received byte.
-*******************************************************************************/
+*****************************************************************************/
 static uint8_t SPI_STM32F10X_SendByte(uint8_t byte)
 {
   /* Loop while DR register in not emplty */
@@ -65,18 +46,9 @@ static uint8_t SPI_STM32F10X_SendByte(uint8_t byte)
   return SPI_I2S_ReceiveData(SPI1);
 }
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        spi_stm32f10x_pwrite                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-size_t spi_stm32f10x_pread(const void *aHandle , uint8_t *apData , size_t aLength, size_t aOffset)
+
+size_t spi_stm32f10x_pread(const void *aHandle,
+			uint8_t *apData , size_t aLength, size_t aOffset)
 {
 	size_t retVal = aLength;
 	while(aLength--)
@@ -91,18 +63,9 @@ size_t spi_stm32f10x_pread(const void *aHandle , uint8_t *apData , size_t aLengt
 }
 
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        spi_stm32f10x_pwrite                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-size_t spi_stm32f10x_pwrite(const void *aHandle ,const uint8_t *apData , size_t aLength, size_t aOffset)
+
+size_t spi_stm32f10x_pwrite(const void *aHandle,
+			const uint8_t *apData , size_t aLength, size_t aOffset)
 {
 	size_t retVal = aLength;
 	while(aLength--)
@@ -117,17 +80,7 @@ size_t spi_stm32f10x_pwrite(const void *aHandle ,const uint8_t *apData , size_t 
 }
 
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        spi_stm32f10x_ioctl                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
+
 uint8_t spi_stm32f10x_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
@@ -176,17 +129,7 @@ uint8_t spi_stm32f10x_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 
 #if SPI_STM32F10X_CONFIG_NUM_OF_DYNAMIC_INSTANCES>0
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        spi_stm32f10x_api_dev_descriptor                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
+
 uint8_t  spi_stm32f10x_api_init_dev_descriptor(struct dev_desc_t *aDevDescriptor)
 {
 	if(NULL == aDevDescriptor) return 1;

@@ -7,27 +7,11 @@
 	@description :
 ***************************************** */
 
-/***************   includes    *******************/
 #include "_project.h"
-
-/***************   defines    *******************/
-
-
-
-
-/***************   typedefs    *******************/
-
-
-
-/**********   external variables    **************/
 
 
 extern void do_startup(void);
 
-/***********   loacal variables    **************/
-
-
-/******************** default interrupt handlers ******************/
 
 
 #if 0
@@ -75,10 +59,6 @@ void do_reserved_exception()
 }
 
 #endif
-/******************-------------------*****************************/
-
-
-/******************-------------------*****************************/
 
 
 void fill_mem32_with_pattern(uint32_t *start , uint32_t *end , uint32_t pattern)

@@ -7,7 +7,7 @@ uint8_t gpio_pic32mx575_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 
 #define	MODULE_NAME				gpio_pic32mx575
 #define	MODULE_IOCTL_FUNCTION	gpio_pic32mx575_ioctl
-#define MODULE_CONFIG_DATA_STRUCT_TYPE	gpio_pic32mx575_instance_t
+#define MODULE_CONFIG_DATA_STRUCT_TYPE	struct gpio_pic32mx575_instance_t
 
 #ifdef DT_DEV_MODULE
 

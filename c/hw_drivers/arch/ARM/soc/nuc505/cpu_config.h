@@ -15,11 +15,12 @@
 
 #define ARM_MATH_CM4	1
 
-/*IRQn_Type can be defined in different files describing different socs .
- so it needs to be disabled in api functions */
-#define IRQn_Type IRQn_Type_TMP
-#include "NUC505Series.h"
-#undef IRQn_Type
+#ifndef __ASSEMBLER__
+	#include "NUC505Series.h"
+#endif  // for __ASSEMBLER__
+
+#include "dt_interrupts_num.h"
+
 
 #if 0 // defined in NUC505Series.h
 
@@ -83,4 +84,4 @@ IRQn_Type;
 #define TOTAL_NUMBER_OF_EXTERNAL_INTERRUPS	31
 #define INTERRUPT_LOWEST_PRIORITY    ((1<<__NVIC_PRIO_BITS)-1)
 
-#endif /* */
+#endif

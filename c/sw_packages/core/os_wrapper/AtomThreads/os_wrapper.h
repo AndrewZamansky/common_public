@@ -26,11 +26,10 @@
 typedef ATOM_QUEUE* os_queue_t;
 
 
-typedef struct
-{
+struct os_stack_info_t {
 	uint16_t size;
 	uint8_t *stackLocation;
-}os_stack_info_t;
+};
 
 
 

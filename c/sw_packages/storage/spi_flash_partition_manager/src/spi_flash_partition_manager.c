@@ -3,47 +3,25 @@
  * file :   SPI_FLASH_PARTITION_MANAGER.c
  *
  *
- *
- *
- *
  */
 
 
-
-/********  includes *********************/
 #include "spi_flash_partition_manager_config.h"
-#include "dev_management_api.h" // for device manager defines and typedefs
-
- // should be after {spi_stm8_config.h,dev_management_api.h}
-#include "src/_spi_flash_partition_manager_prerequirements_check.h"
+#include "dev_management_api.h"
 
 #include "spi_flash_api.h"
 
 #include "spi_flash_partition_manager_api.h"
 #include "spi_flash_partition_manager.h"
 
-/********  defines *********************/
-#define INSTANCE(hndl)  ((spi_flash_partition_manager_Instance_t*)hndl)
+#define INSTANCE(hndl)  ((struct spi_flash_partition_manager_Instance_t*)hndl)
 
 
 #define SPI_FLASH_PARTITION_MANAGER_TIMEOUT  3000
 
 
-/********  types  *********************/
-/********  externals *********************/
-
-
-/********  local defs *********************/
-
-
-
-/**********   external variables    **************/
-
-
-
-/***********   local variables    **************/
 #if SPI_FLASH_PARTITION_MANAGER_CONFIG_NUM_OF_DYNAMIC_INSTANCES > 0
- static spi_flash_partition_manager_Instance_t
+ static struct spi_flash_partition_manager_Instance_t
  	 	 	 	 	 SPI_FLASH_PARTITION_MANAGER_InstanceParams = {0} ;
 #endif
 
@@ -74,21 +52,15 @@
 #define uint16_high8(x)         (((x) >> 8) & 0xFF)
 
 
-/* Private define ------------------------------------------------------------*/
-/* Private macro -------------------------------------------------------------*/
-/* Private variables ---------------------------------------------------------*/
-/* Private function prototypes -----------------------------------------------*/
-/* Private functions ---------------------------------------------------------*/
 
 
-
-/*******************************************************************************
+/*****************************************************************************
 * Function Name  : spi_flash_partition_manager_pread
 * Description    : Handle the Read operation from storage.
 * Input          : None.
 * Output         : None.
 * Return         : None.
-*******************************************************************************/
+*****************************************************************************/
 size_t  spi_flash_partition_manager_pread(const void *apHandle,
 						uint8_t *apData , size_t length ,size_t startAddr)
 {
@@ -110,13 +82,13 @@ static size_t currWrite4KblockAddr =
 static size_t dirty_512bytes_block;
 
 #define TEMP_BUFF_SIZE 16
-/*******************************************************************************
+/****************************************************************************
 * Function Name  : SPI_FLASH_PARTITION_MANAGER_Copy_from_buffer_to_main_area
 * Description    :
 * Input          : None.
 * Output         : None.
 * Return         : None.
-*******************************************************************************/
+****************************************************************************/
 void  SPI_FLASH_PARTITION_MANAGER_Copy_from_buffer_to_main_area(
 													const void *apHandle)
 {
@@ -169,13 +141,13 @@ void  SPI_FLASH_PARTITION_MANAGER_Copy_from_buffer_to_main_area(
 
 
 
-/*******************************************************************************
+/****************************************************************************
 * Function Name  : spi_flash_partition_manager_pwrite
 * Description    : Handle the Write operation from storage.
 * Input          : None.
 * Output         : None.
 * Return         : None.
-*******************************************************************************/
+****************************************************************************/
 size_t  spi_flash_partition_manager_pwrite( const void *apHandle,
 					const uint8_t *apData, size_t length, size_t startAddr)
 {
@@ -202,7 +174,8 @@ size_t  spi_flash_partition_manager_pwrite( const void *apHandle,
 	}
 
 	dirty_512bytes_block |= next_dirty_512bytes_block;
-	DEV_PWRITE(INSTANCE(apHandle)->spi_flash_server_dev, apData , 512 , SPI_FLASH_PARTITION_MANAGER_BUFFER_ADDR +  offset_in_4k_block);
+	DEV_PWRITE(INSTANCE(apHandle)->spi_flash_server_dev,
+		apData , 512 , SPI_FLASH_PARTITION_MANAGER_BUFFER_ADDR +  offset_in_4k_block);
 //	SPI_FLASH_PARTITION_MANAGER_WriteData(apHandle , SPI_FLASH_PARTITION_MANAGER_BUFFER_ADDR +  offset_in_4k_block , apData , 512);
 
 	if( 0xff == dirty_512bytes_block)

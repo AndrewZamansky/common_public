@@ -606,15 +606,15 @@ static void master_write(struct dev_desc_t *adev,
 		return ;
 	}
 
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(i2c_i9xxxx, adev);
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(i2c_i9xxxx, adev);
+
 	reg_addr_size = wr_struct->reg_addr_size;
 	if (MAX_REG_ADDR_SIZE < reg_addr_size)
 	{
 			runtime_handle->i2c_error = I2C_BAD_REG_ADDR_SIZE;
 			return;
 	}
-
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(i2c_i9xxxx, adev);
-	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(i2c_i9xxxx, adev);
 
 	WaitQueue = runtime_handle->WaitQueue;
 	mutex = runtime_handle->mutex;
@@ -684,15 +684,15 @@ static void master_read(struct dev_desc_t *adev,
 		return;
 	}
 
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(i2c_i9xxxx, adev);
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(i2c_i9xxxx, adev);
+
 	reg_addr_size = rd_struct->reg_addr_size;
 	if (MAX_REG_ADDR_SIZE < reg_addr_size)
 	{
 			runtime_handle->i2c_error = I2C_BAD_REG_ADDR_SIZE;
 			return;
 	}
-	
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(i2c_i9xxxx, adev);
-	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(i2c_i9xxxx, adev);
 
 	if (I2C_I9XXXX_API_MASTER_MODE != cfg_hndl->master_slave_mode)
 	{

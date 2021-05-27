@@ -26,7 +26,6 @@
   */
 
 
-/* Includes ------------------------------------------------------------------*/
 #include "usb_lib.h"
 #include "usb_prop.h"
 #include "usb_pwr.h"
@@ -34,17 +33,11 @@
 #include "USB_api.h"
 #include "../USB.h"
 
-/* Private typedef -----------------------------------------------------------*/
-/* Private define ------------------------------------------------------------*/
-/* Private macro -------------------------------------------------------------*/
-/* Private variables ---------------------------------------------------------*/
+
 __IO uint16_t wIstr;  /* ISTR register last read value */
 __IO uint8_t bIntPackSOF = 0;  /* SOFs received between 2 consecutive packets */
 
-/* Extern variables ----------------------------------------------------------*/
-/* Private function prototypes -----------------------------------------------*/
-/* Private functions ---------------------------------------------------------*/
-/* function pointers to non-control endpoints service routines */
+
 void (*pEpInt_IN[7])(void) =
   {
     EP1_IN_Callback,
@@ -69,7 +62,7 @@ void (*pEpInt_OUT[7])(void) =
 
 #ifndef STM32F10X_CL
 //extern int a0,a1,a2,a3,a4,a5,a6,a7;
-extern USB_Instance_t USB_InstanceParams;
+extern struct USB_Instance_t USB_InstanceParams;
 
 /*******************************************************************************
 * Function Name  : USB_Istr

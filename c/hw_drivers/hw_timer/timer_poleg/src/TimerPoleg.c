@@ -4,35 +4,14 @@
  *
  */
 
-
-
-/***************   includes    *******************/
-#include "src/_timer_poleg_prerequirements_check.h"
 #include "TimerPoleg_API.h"
 #include "TimerPoleg.h"
 
 
-/***************   defines    *******************/
-
-/***************   typedefs    *******************/
-
 #define TimerPoleg_hal_writeRegU32(reg,val)  *((volatile uint32_t *)reg)=val
 #define TimerPoleg_hal_readRegU32(reg) *((volatile uint32_t *)reg)
 #define TimerPoleg_hal_InputClock() 25000000
-/**********   external variables    **************/
 
-
-
-/***********   local variables    **************/
-
-
-
-//---------------------------------------------------------------
-//
-//----------------------------------------------------------------
-
-
-//----------------------------------------------------------------
 void TimerPoleg_API_RestInterrupt(int TimerModule,int PortNum)
 {
 
@@ -95,17 +74,7 @@ uint8_t TWD_DisableTimers()
 	return 0;
 }
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        TWD_1_ISR                                                                       */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                             */
-/*                                                                                                         */
-/* Returns:                                                                                           */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            */
-/*---------------------------------------------------------------------------------------------------------*/
+
 void TWD_1_ISR()
 {
 	static int i=0;
@@ -245,5 +214,3 @@ uint8_t TimerPoleg_API_Start(int TimerModule, int TimerPort)
 
 	return 0;
 }
-
-

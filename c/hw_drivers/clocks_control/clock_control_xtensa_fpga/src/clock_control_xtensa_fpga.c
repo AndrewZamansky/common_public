@@ -6,8 +6,6 @@
  */
 
 
-
-/********  includes *********************/
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 
@@ -16,20 +14,6 @@
 #include "clock_control_api.h"
 #include "clock_control_xtensa_fpga_api.h"
 #include "clock_control_xtensa_fpga.h"
-
-#include "_clock_control_xtensa_fpga_prerequirements_check.h"
-
-
-/********  defines *********************/
-
-/********  types  *********************/
-
-
-/********  externals *********************/
-
-
-/********  local variables *********************/
-
 
 
 

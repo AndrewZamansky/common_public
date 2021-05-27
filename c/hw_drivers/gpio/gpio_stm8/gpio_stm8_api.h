@@ -2,7 +2,6 @@
 #ifndef _GPIO_STM8_API_H_
 #define _GPIO_STM8_API_H_
 
-#include "src/_gpio_stm8_prerequirements_check.h"
 #include "gpio_api.h"
 
 

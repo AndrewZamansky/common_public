@@ -15,11 +15,7 @@
 #include "clock_control_api.h"
 #include "hw_timer_api.h"
 
-
-//locally disable IRQn_Type defined in soc
-#define IRQn_Type IRQn_Type_local
-
-typedef enum IRQn_local {
+enum IRQn_local {
     /******  Cortex-M4 Processor Exceptions Numbers ****************/
     NonMaskableInt_IRQn_local   = -14,   /*!<  2 Non Maskable Interrupt  */
     MemoryManagement_IRQn_local = -12,   /*!<  4 Memory Management Interrupt */
@@ -29,8 +25,7 @@ typedef enum IRQn_local {
     DebugMonitor_IRQn_local     = -4,    /*!< 12 Debug Monitor Interrupt */
     PendSV_IRQn_local           = -2,    /*!< 14 Pend SV Interrupt       */
     SysTick_IRQn_local          = -1,    /*!< 15 System Tick Interrupt    */
-
-} IRQn_Type_local;
+};
 
 #if 1 == CONFIG_CORTEX_M0
  #include "core_cm0.h"
@@ -46,7 +41,7 @@ typedef enum IRQn_local {
 static struct cortexM_systick_instance_t *pcortexM_systick_instanceParams;
 
 static volatile uint64_t currentTick=0;
-//volatile uint64_t currentTick = 0;
+//volatile uint64_t currentTick = 0; // global variable is used for debug
 
 /*
  * SysTick_IRQHandler()

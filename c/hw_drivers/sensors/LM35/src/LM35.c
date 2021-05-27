@@ -4,46 +4,18 @@
  *
  */
 
-
-
-/***************   includes    *******************/
-#include "src/_LM35_prerequirements_check.h" // should be after {LM35_config.h,dev_management_api.h}
-
 #include "LM35_api.h"
 #include "adc_api.h"
 
 #include "LM35_add_component.h"
 
-/***************   defines    *******************/
 
 
-/***************   typedefs    *******************/
-
-
-
-/**********   external variables    **************/
-
-
-
-/***********   local variables    **************/
-
-
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        LM35_ioctl                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
 uint8_t LM35_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
-	LM35_Instance_t 		*config_handle;
-	LM35_runtime_instance_t *runtime_handle;
+	struct LM35_Instance_t 		*config_handle;
+	struct LM35_runtime_instance_t *runtime_handle;
 	struct dev_desc_t *		adc_server_device;
 
 	config_handle = DEV_GET_CONFIG_DATA_POINTER(adev);

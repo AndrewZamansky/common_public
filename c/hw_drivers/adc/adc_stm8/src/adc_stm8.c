@@ -1,15 +1,11 @@
 /*
  *
- *   file  :  ADC.cpp
+ *   file  :  adc_stm8.c
  *
  */
 
 
-
-/***************   includes    *******************/
-#include "_adc_stm8_prerequirements_check.h" // should be after {uart_stm8_config.h,dev_management_api.h}
-
-#include "dev_management_api.h" // for device manager defines and typedefs
+#include "dev_management_api.h"
 #include "adc_api.h"
 
 #include "adc_stm8_api.h"
@@ -18,33 +14,20 @@
 #include "stm8s.h"
 #include "stm8s_adc1.h"
 
-/***************   defines    *******************/
+
 
 #define ADC_STM8_CONFIG_VCC_mV 			3300
 
-/***************   typedefs    *******************/
-
-/**********   external variables    **************/
-
-void ADC1_Init_Reduced(ADC1_PresSel_TypeDef ADC1_PrescalerSelection, ADC1_ExtTrig_TypeDef ADC1_ExtTrigger,
-		FunctionalState ADC1_ExtTriggerState, ADC1_SchmittTrigg_TypeDef ADC1_SchmittTriggerChannel,
-		FunctionalState ADC1_SchmittTriggerState);
 
 
-/***********   local variables    **************/
+void ADC1_Init_Reduced(ADC1_PresSel_TypeDef ADC1_PrescalerSelection,
+			ADC1_ExtTrig_TypeDef ADC1_ExtTrigger,
+			FunctionalState ADC1_ExtTriggerState,
+			ADC1_SchmittTrigg_TypeDef ADC1_SchmittTriggerChannel,
+			FunctionalState ADC1_SchmittTriggerState);
 
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        adc_ioctl                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
+
 uint8_t adc_stm8_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {

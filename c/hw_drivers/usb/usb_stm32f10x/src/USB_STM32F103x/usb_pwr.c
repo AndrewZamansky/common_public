@@ -26,8 +26,6 @@
   */
 
 
-/* Includes ------------------------------------------------------------------*/
-
 #include "usb_lib.h"
 #include "usb_conf.h"
 #include "usb_pwr.h"
@@ -37,10 +35,6 @@
 #include "../USB.h"
 
 
-/* Private typedef -----------------------------------------------------------*/
-/* Private define ------------------------------------------------------------*/
-/* Private macro -------------------------------------------------------------*/
-/* Private variables ---------------------------------------------------------*/
 __IO uint32_t bDeviceState = UNCONNECTED; /* USB device status */
 //__IO bool fSuspendEnabled = TRUE;  /* true when suspend is possible */
 __IO bool fSuspendEnabled = FALSE;  /* az true when suspend is possible */
@@ -51,14 +45,10 @@ struct
   __IO uint8_t bESOFcnt;
 }ResumeS;
 
-/* Extern variables ----------------------------------------------------------*/
 
-extern USB_Instance_t USB_InstanceParams;
+extern struct USB_Instance_t USB_InstanceParams;
 
 
-/* Private function prototypes -----------------------------------------------*/
-/* Extern function prototypes ------------------------------------------------*/
-/* Private functions ---------------------------------------------------------*/
 
 
 /*******************************************************************************

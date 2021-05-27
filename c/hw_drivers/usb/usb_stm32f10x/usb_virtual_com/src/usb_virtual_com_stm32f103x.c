@@ -20,33 +20,15 @@
 #include "src/USB_STM32F103x/usb_desc.h"  // relative to  _hw_drivers/USB
 #include "uart_api.h"
 
-/********  defines *********************/
 
 
-/********  types  *********************/
-
-
-/* ---------------------------- External variables ---------------------------------*/
-
-/* ------------------------ External functions ------------------------------*/
-
-/* ------------------------ Exported variables ------------------------------*/
-
-
-
-typedef struct
-{
+struct LINE_CODING {
   uint32_t bitrate;
   uint8_t format;
   uint8_t paritytype;
   uint8_t datatype;
-}LINE_CODING;
+};
 
-
-/********  externals *********************/
-
-
-/********  local defs *********************/
 
 static struct dev_desc_t *   callback_dev;
 
@@ -57,7 +39,7 @@ static uint8_t USB_Rx_Buffer[USB_MAX_DATA_SIZE];
 
 
 
-LINE_CODING linecoding =
+struct LINE_CODING linecoding =
   {
     115200, /* baud rate*/
     0x00,   /* stop bits-1*/

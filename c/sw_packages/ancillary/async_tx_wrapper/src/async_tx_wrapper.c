@@ -22,15 +22,14 @@
 #define 	TRANSMIT_IN_PROGRESS	0
 #define 	TRANSMIT_DONE			1
 
-typedef struct
-{
+struct xMessage_t {
 	tx_int_size_t len;
 #ifdef CONFIG_ASYNC_TX_WRAPPER_USE_MALLOC
    uint8_t *pData;
 #else
    uint8_t pData[CONFIG_ASYNC_TX_WRAPPER_MAX_TX_BUFFER_SIZE];
 #endif
-} xMessage_t;
+};
 
 static uint8_t dummy_msg;
 
@@ -99,7 +98,7 @@ static uint8_t async_tx_wrapper_callback(struct dev_desc_t *adev,
  */
 static void sw_uart_send_and_wait_for_end(struct dev_desc_t *adev,
 			struct async_tx_wrapper_runtime_t *runtime_handle,
-			xMessage_t *xMessage, uint8_t called_from_task)
+			struct xMessage_t *xMessage, uint8_t called_from_task)
 {
 
 	struct async_tx_wrapper_cfg_t *config_handle;
@@ -184,7 +183,7 @@ static size_t async_tx_wrapper_pwrite(struct dev_desc_t *adev,
 
 	while(dataLen)
 	{
-		xMessage_t xMessage;
+		struct xMessage_t xMessage;
 		os_queue_t xQueue = runtime_handle->xQueue;
 
 		curr_transmit_len = dataLen;
@@ -249,7 +248,7 @@ static size_t async_tx_wrapper_pwrite(struct dev_desc_t *adev,
 static void ASYNC_TX_WRAPPER_Send_Task( void *adev )
 {
 
-	xMessage_t xRxMessage;
+	struct xMessage_t xRxMessage;
 	struct async_tx_wrapper_runtime_t *runtime_handle;
 
 	os_queue_t xQueue ;
@@ -257,7 +256,7 @@ static void ASYNC_TX_WRAPPER_Send_Task( void *adev )
 	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(async_tx_wrapper, adev);
 
 	xQueue = os_create_queue(
-			CONFIG_ASYNC_TX_WRAPPER_MAX_QUEUE_LEN , sizeof(xMessage_t ) );
+			CONFIG_ASYNC_TX_WRAPPER_MAX_QUEUE_LEN , sizeof(struct xMessage_t ) );
 	runtime_handle->xQueue = xQueue ;
 
 

@@ -4,43 +4,13 @@
  *
  */
 
-
-
-/***************   includes    *******************/
-#include "src/_gpio_pic32mx575_prerequirements_check.h"
-
 #include "gpio_api.h"
 #include "gpio_pic32mx575_api.h"
 #include "gpio_pic32mx575.h"
 
 #include "gpio_pic32mx575_add_component.h"
 
-/***************   defines    *******************/
 
-
-
-/***************   typedefs    *******************/
-
-/**********   external variables    **************/
-
-
-
-/***********   local variables    **************/
-
-
-
-
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        gpio_pic32mx575_ioctl                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
 uint8_t gpio_pic32mx575_ioctl( struct dev_desc_t *adev , const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
@@ -113,5 +83,3 @@ uint8_t gpio_pic32mx575_ioctl( struct dev_desc_t *adev , const uint8_t aIoctl_nu
 	}
 	return 0;
 }
-
-

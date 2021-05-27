@@ -262,7 +262,7 @@ static uint8_t *extract_command_from_line(
 }
 
 
-static size_t execute_batch(struct shell_frontend_cfg_t *config_handle,
+static void execute_batch(struct shell_frontend_cfg_t *config_handle,
 		uint8_t *input_buffer, size_t total_length)
 {
 	uint32_t saved_last_tested_pos;

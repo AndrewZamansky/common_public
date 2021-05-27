@@ -6,8 +6,6 @@
  */
 
 
-
-/********  includes *********************/
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 
@@ -22,20 +20,10 @@
 #include "clk.h"
 #include "spim.h"
 
-#include "_clock_control_nuc505_prerequirements_check.h"
 
 uint32_t SystemCoreClock = __HSI;  /*!< System Clock Frequency (Core Clock)*/
 uint32_t CyclesPerUs      = (__HSI / 1000000);  /*!< Cycles per micro second */
 
-/********  defines *********************/
-
-/********  types  *********************/
-
-
-/********  externals *********************/
-
-
-/********  local variables *********************/
 
 
 static uint32_t gau32ClkSrcTbl[] = {__HXT, 0};/*!< System clock source table */

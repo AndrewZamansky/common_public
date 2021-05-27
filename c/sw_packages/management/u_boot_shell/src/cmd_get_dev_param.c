@@ -3,7 +3,6 @@
  */
 #include "_project.h"
 #include "dev_management_config.h"
-#include "src/_dev_management_prerequirements_check.h"// should be after dev_management_config.h
 
 
 #include <u-boot/include/command.h>

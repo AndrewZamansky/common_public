@@ -19,7 +19,6 @@
 #define ADC_HAL_MAX_NUM_OF_ADCS 	2
 
 
-/***********   local variables    **************/
 static struct ADC_Instance_t ADC_InstanceParams[ADC_HAL_MAX_NUM_OF_ADCS] = { {0} };
 static uint16_t usedInstances =0 ;
 
@@ -30,17 +29,6 @@ static uint16_t usedInstances =0 ;
 
 
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        adc_ioctl                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
 static uint8_t adc_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 		, void * aIoctl_param1 , void * aIoctl_param2)
 {
@@ -100,17 +88,7 @@ static uint8_t adc_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 	return 0;
 }
 
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        adc_stm32f10x_api_init_dev_descriptor                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
+
 uint8_t  adc_stm32f10x_api_init_dev_descriptor(struct dev_desc_t *aDevDescriptor)
 {
 	if(NULL == aDevDescriptor) return 1;
@@ -124,4 +102,3 @@ uint8_t  adc_stm32f10x_api_init_dev_descriptor(struct dev_desc_t *aDevDescriptor
 	return 0 ;
 
 }
-

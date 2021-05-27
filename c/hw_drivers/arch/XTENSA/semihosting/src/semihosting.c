@@ -7,7 +7,6 @@
 	@description :
 ***************************************** */
 
-/* ------------------------ INCLUDES ---------------------------------------*/
 
 #include "_project_typedefs.h"
 #include "_project_defines.h"
@@ -20,33 +19,9 @@
 #include <stdio.h>
 
 #include "semihosting.h"
-#include "_semihosting_prerequirements_check.h"
 
 /*following line add module to available module list for dynamic device tree*/
 #include "semihosting_add_component.h"
-
-/* ------------------------ defines ------------------------------*/
-
-/* ------------------------typedefs ------------------------------*/
-
-/* ---------------------------- External variables --------------------------*/
-
-/* ------------------------ External functions ------------------------------*/
-
-/* ------------------------------ Exported variables -----------------------*/
-
-/* ------------------------------ Local variables ---------------------------*/
-
-
-/* ------------------------ Local Functions  -------------------------------*/
-
-
-/********  types  *********************/
-
-/********  externals *********************/
-
-
-/********  local defs *********************/
 
 /*
  * to enable semihosting run following set of gdb commands,

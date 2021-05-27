@@ -4,7 +4,6 @@
  *
  */
 
-#include "src/_gpio_stm8_prerequirements_check.h"
 #include "gpio_api.h"
 
 #include "gpio_stm8_api.h"

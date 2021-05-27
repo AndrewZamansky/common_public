@@ -25,8 +25,6 @@
   ******************************************************************************
   */
 
-
-/* Includes ------------------------------------------------------------------*/
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 #include "_project_func_declarations.h"
@@ -44,10 +42,6 @@
 #include "USB_Mass_Storage_api.h"
 #include "USB_Mass_Storage.h"
 
-/* Private typedef -----------------------------------------------------------*/
-/* Private define ------------------------------------------------------------*/
-/* Private macro -------------------------------------------------------------*/
-/* Private variables ---------------------------------------------------------*/
 __IO uint32_t Block_Read_count = 0;
 __IO uint32_t Block_offset;
 __IO uint32_t Counter = 0;
@@ -55,19 +49,13 @@ uint32_t  Idx;
 uint8_t Data_Buffer[512];  //[BULK_MAX_PACKET_SIZE *2]; /* 512 bytes temporary*/
 //uint32_t Data_Buffer[BULK_MAX_PACKET_SIZE *2]; /* 512 bytes temporary*/
 uint8_t TransferState = TXFR_IDLE;
-/* Extern variables ----------------------------------------------------------*/
+
 extern uint8_t Bulk_Data_Buff[BULK_MAX_PACKET_SIZE];  /* data buffer*/
 extern uint16_t Data_Len;
 extern uint8_t Bot_State;
 extern Bulk_Only_CBW CBW;
 extern Bulk_Only_CSW CSW;
 extern USB_Mass_Storage_Instance_t USB_Mass_Storage_InstanceParams ;
-
-//extern uint32_t Mass_Block_Size[2];
-
-/* Private function prototypes -----------------------------------------------*/
-/* Extern function prototypes ------------------------------------------------*/
-/* Private functions ---------------------------------------------------------*/
 
 
 

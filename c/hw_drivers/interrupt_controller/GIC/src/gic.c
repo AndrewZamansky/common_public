@@ -71,17 +71,16 @@ int GIC_EndOfService(uint32_t  int_num);
  *----------------------------------------------------------------------
  */
 
-typedef struct
-{
+struct GIC_IsrEntry_T {
     isr_t   func;
    // uint32_t       param;
-}   GIC_IsrEntry_T;
+};
 
 /*-----------------------------------------------------------------------
  * Function forward declaration
  *-----------------------------------------------------------------------
  */
-static GIC_IsrEntry_T GIC_handler_table[GIC_INTERRUPT_NUM];
+static struct GIC_IsrEntry_T GIC_handler_table[GIC_INTERRUPT_NUM];
 
 
 static int g_init_done = 0;

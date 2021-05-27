@@ -24,35 +24,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-/********  defines *********************/
 
 
-/********  types  *********************/
-
-/********  externals *********************/
+struct USB_Mass_Storage_Instance_t USB_Mass_Storage_InstanceParams = {0} ;
 
 
-/********  local defs *********************/
-
-
-USB_Mass_Storage_Instance_t USB_Mass_Storage_InstanceParams = {0} ;
-
-
-
-
-
-/*---------------------------------------------------------------------------------------------------------*/
-/* Function:        USB_Mass_Storage_API_Init                                                                          */
-/*                                                                                                         */
-/* Parameters:                                                                                             */
-/*                                                                                         */
-/*                                                                                                  */
-/* Returns:                                                                                      */
-/* Side effects:                                                                                           */
-/* Description:                                                                                            */
-/*                                                            						 */
-/*---------------------------------------------------------------------------------------------------------*/
-uint8_t  USB_Mass_Storage_API_Init(USB_Mass_Storage_API_Init_params_t *apInit_params)
+uint8_t  USB_Mass_Storage_API_Init(struct USB_Mass_Storage_API_Init_params_t *apInit_params)
 {
 	USB_Mass_Storage_InstanceParams.chip = apInit_params->chip;
 	USB_Mass_Storage_InstanceParams.BlockCount = apInit_params->BlockCount;

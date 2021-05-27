@@ -22,11 +22,11 @@ enum common_dsp_ioctl_e {
 #define OUT_PAD(num)  (num)
 
 
-typedef enum dsp_management_api_module_control_e {
+enum dsp_management_api_module_control_e {
 	DSP_MANAGEMENT_API_MODULE_CONTROL_ON = 0,
 	DSP_MANAGEMENT_API_MODULE_CONTROL_BYPASS,
 	DSP_MANAGEMENT_API_MODULE_CONTROL_MUTE,
-} dsp_management_api_module_control_t;
+};
 
 
 #define MAX_DSP_INPUT_PAD   0xff
@@ -88,8 +88,9 @@ uint8_t	dsp_management_api_ioctl_2_params(chain_handle_t chain_handle,
 		char const *module_name, uint8_t ioctl_num, void *param1, void *param2);
 
 
-uint8_t dsp_management_api_set_module_control( chain_handle_t chain_handle,
-			char const*module_name, dsp_management_api_module_control_t ctl);
+uint8_t dsp_management_api_set_module_control(
+			chain_handle_t chain_handle, char const*module_name,
+			enum dsp_management_api_module_control_e ctl);
 
 
 void dsp_management_api_delete_modules(void);

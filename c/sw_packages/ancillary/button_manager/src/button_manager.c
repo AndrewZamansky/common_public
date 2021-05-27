@@ -47,13 +47,12 @@ struct btn_event_t {
 #define MAX_NUM_OF_EVENTS  0xfffffffe
 
 
-typedef enum
-{
+enum btn_state_e {
 	BTN_STATE_IDLE,
 	BTN_STATE_DEBOUNCING_ON_PUSH,
 	BTN_STATE_HOLD,
 	BTN_STATE_DEBOUNCING_ON_RELEASE
-}btn_state_t;
+};
 
 
 /*

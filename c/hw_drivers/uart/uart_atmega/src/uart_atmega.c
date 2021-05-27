@@ -46,24 +46,14 @@
 
 #define AVR_CPU_HZ   8000000
 
-#define INSTANCE(hndl)  ((UART_ATMEGA_Instance_t*)hndl)
-
-/********  types  *********************/
+#define INSTANCE(hndl)  ((struct UART_ATMEGA_Instance_t*)hndl)
 
 
-/* ---------------------------- External variables --------------------------*/
-
-/* ------------------------ External functions ------------------------------*/
-
-/* ------------------------ Exported variables ------------------------------*/
-
-
-/********  local defs *********************/
 #if UART_ATMEGA_CONFIG_NUM_OF_DYNAMIC_INSTANCES > 0
-	UART_ATMEGA_Instance_t UART_ATMEGA_Instance;
+	struct UART_ATMEGA_Instance_t UART_ATMEGA_Instance;
 #endif
 
-static UART_ATMEGA_Instance_t *pHw_uart_pointer_to_instance=NULL;
+static struct UART_ATMEGA_Instance_t *pHw_uart_pointer_to_instance = NULL;
 
 void tx_function(void)
 {

@@ -4,7 +4,6 @@
  *
  */
 
-/********  includes *********************/
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 #include "errors_api.h"
@@ -21,7 +20,6 @@
 
 #include "NUC505Series.h"
 
-#include "_I2S_nuc505_prerequirements_check.h"
 
 /*following line add module to available module list for dynamic device tree*/
 #include "I2S_nuc505_add_component.h"
@@ -35,20 +33,6 @@
 	#error "priority should be lower then maximal priority for os syscalls"
 #endif
 
-/********  defines *********************/
-
-
-/********  types  *********************/
-
-
-/* ------------- External variables ---------------------------------*/
-
-/* ------------------------ External functions ------------------------------*/
-
-/* ------------------------ Exported variables ------------------------------*/
-
-
-/********  local defs *********************/
 
 static struct I2S_nuc505_cfg_t *pI2SHandle;
 

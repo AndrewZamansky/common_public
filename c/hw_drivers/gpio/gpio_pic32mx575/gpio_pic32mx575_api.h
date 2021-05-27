@@ -3,7 +3,6 @@
 #define _GPIO_PIC32MX575_API_H_
 
 
-#include "src/_gpio_pic32mx575_prerequirements_check.h"
 #include "gpio_api.h"
 #include <p32xxxx.h>
 

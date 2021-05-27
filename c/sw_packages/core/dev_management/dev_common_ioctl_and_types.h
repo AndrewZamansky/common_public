@@ -4,8 +4,7 @@
 
 
 
-typedef enum
-{
+enum common_callback_e {
 	CALLBACK_VOID,
 	CALLBACK_INTERRUPT_ARRIVED,
 	CALLBACK_TX_DONE,
@@ -20,11 +19,10 @@ typedef enum
 	CALLBACK_NEW_DATA_FROM_SOCKET_ARRIVED,
 	CALLBACK_BTN_STATE_CHANGED,
 	CALLBACK_LAST_COMMON_IOCTL
-}common_callback_t;
+};
 
 
-typedef enum
-{
+enum common_ioctl_e {
 	IOCTL_VOID ,
 	IOCTL_SET_SERVER_DEVICE,
 	IOCTL_SET_CALLBACK_DEV,
@@ -40,7 +38,7 @@ typedef enum
 	IOCTL_NET_DEVICE_GET_HOST_ADDR,
 	IOCTL_TEST_PARAMS_STATUS,
 	IOCTL_LAST_COMMON_IOCTL
-}common_ioctl_t;
+};
 
 
 struct ioctl_get_data_buffer_t

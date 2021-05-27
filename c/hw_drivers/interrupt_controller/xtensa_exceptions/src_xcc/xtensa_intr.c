@@ -78,12 +78,12 @@ xt_exc_handler xt_set_exception_handler(int n, xt_exc_handler f)
 
 /* Handler table is in xtensa_intr_asm.S */
 
-typedef struct xt_handler_table_entry {
+struct xt_handler_table_entry {
     void * handler;
     void * arg;
-} xt_handler_table_entry;
+};
 
-extern xt_handler_table_entry _xt_interrupt_table[XCHAL_NUM_INTERRUPTS];
+extern struct xt_handler_table_entry _xt_interrupt_table[XCHAL_NUM_INTERRUPTS];
 
 
 /*
@@ -103,7 +103,7 @@ void xt_unhandled_interrupt(void * arg)
 */
 xt_handler xt_set_interrupt_handler(int n, xt_handler f, void * arg)
 {
-    xt_handler_table_entry * entry;
+    struct xt_handler_table_entry * entry;
     xt_handler               old;
 
     if( n < 0 || n >= XCHAL_NUM_INTERRUPTS )

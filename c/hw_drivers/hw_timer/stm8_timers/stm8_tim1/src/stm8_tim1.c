@@ -4,8 +4,6 @@
  *
  */
 
-#include "src/_stm8_tim1_prerequirements_check.h"
-
 #include "stm8_tim1_api.h"
 #include "stm8_tim1.h"
 

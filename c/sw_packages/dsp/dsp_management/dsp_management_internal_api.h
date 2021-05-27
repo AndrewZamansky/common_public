@@ -63,7 +63,7 @@ struct dsp_module_inst_t {
 	struct dsp_module_type_t *module_type;
 	void                     *handle;
 	char const              *module_inst_name;
-	dsp_management_api_module_control_t   ctl;
+	enum dsp_management_api_module_control_e  ctl;
 	struct in_pads_t       in_pads;
 	struct out_pads_t      out_pads;
 	uint16_t               magic_num;

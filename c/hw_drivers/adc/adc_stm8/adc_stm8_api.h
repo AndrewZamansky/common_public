@@ -2,7 +2,6 @@
 #ifndef _adc_stm8_API_H_
 #define _adc_stm8_API_H_
 
-#include "src/_adc_stm8_prerequirements_check.h"
 #include "adc_api.h"
 
 enum adc_stm8_api_channel_e {
