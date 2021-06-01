@@ -1,36 +1,12 @@
-/**
-  ******************************************************************************
-  * @file    memory.c
-  * @author  MCD Application Team
-  * @version V3.4.0
-  * @date    29-June-2012
-  * @brief   Memory management layer
-  ******************************************************************************
-  * @attention
-  *
-  * <h2><center>&copy; COPYRIGHT 2012 STMicroelectronics</center></h2>
-  *
-  * Licensed under MCD-ST Liberty SW License Agreement V2, (the "License");
-  * You may not use this file except in compliance with the License.
-  * You may obtain a copy of the License at:
-  *
-  *        http://www.st.com/software_license_agreement_liberty_v2
-  *
-  * Unless required by applicable law or agreed to in writing, software 
-  * distributed under the License is distributed on an "AS IS" BASIS, 
-  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  * See the License for the specific language governing permissions and
-  * limitations under the License.
-  *
-  ******************************************************************************
-  */
+/*
+ *   memory.c
+ */
 
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 #include "_project_func_declarations.h"
 
-#include "dev_management_api.h" // for device manager defines and typedefs
-
+#include "dev_management_api.h"
 #include "memory.h"
 #include "usb_scsi.h"
 #include "usb_bot.h"
@@ -55,17 +31,10 @@ extern uint16_t Data_Len;
 extern uint8_t Bot_State;
 extern Bulk_Only_CBW CBW;
 extern Bulk_Only_CSW CSW;
-extern USB_Mass_Storage_Instance_t USB_Mass_Storage_InstanceParams ;
+extern struct USB_Mass_Storage_Instance_t USB_Mass_Storage_InstanceParams ;
 
 
 
-/*******************************************************************************
-* Function Name  : Read_Memory
-* Description    : Handle the Read operation from the microSD card.
-* Input          : None.
-* Output         : None.
-* Return         : None.
-*******************************************************************************/
 void Read_Memory(uint8_t lun, uint32_t Memory_Offset, uint32_t Transfer_Length)
 {
   static uint32_t Offset, Length;
@@ -124,14 +93,8 @@ void Read_Memory(uint8_t lun, uint32_t Memory_Offset, uint32_t Transfer_Length)
   }
 }
 
-/*******************************************************************************
-* Function Name  : Write_Memory
-* Description    : Handle the Write operation to the microSD card.
-* Input          : None.
-* Output         : None.
-* Return         : None.
-*******************************************************************************/
-void Write_Memory (uint8_t lun, uint32_t Memory_Offset, uint32_t Transfer_Length)
+void Write_Memory (
+		uint8_t lun, uint32_t Memory_Offset, uint32_t Transfer_Length)
 {
 
   static uint32_t W_Offset, W_Length;
@@ -187,5 +150,3 @@ void Write_Memory (uint8_t lun, uint32_t Memory_Offset, uint32_t Transfer_Length
  //   Led_RW_OFF();
   }
 }
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
-

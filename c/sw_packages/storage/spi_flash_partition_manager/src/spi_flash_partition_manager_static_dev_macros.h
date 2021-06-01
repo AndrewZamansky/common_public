@@ -11,7 +11,7 @@ size_t spi_flash_partition_manager_pread(const void *aHandle ,uint8_t *apData , 
 #define __SPI_FLASH_PARTITION_MANAGER_API_CREATE_STATIC_DEV(dev,dev_name  ,server_dev )\
 		extern const struct dev_desc_t dev ;						\
 		extern const struct dev_desc_t server_dev ;						\
-		spi_flash_partition_manager_Instance_t handle_of_##dev =	 {&server_dev};	\
+		struct spi_flash_partition_manager_Instance_t handle_of_##dev =	 {&server_dev};	\
 		const struct dev_desc_t dev =								\
 			{											\
 				dev_name,								\

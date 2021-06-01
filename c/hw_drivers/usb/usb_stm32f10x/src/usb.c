@@ -11,7 +11,7 @@
 #include "_project_defines.h"
 #include "_project_func_declarations.h"
 
-#include "dev_management_api.h" // for device manager defines and typedefs
+#include "dev_management_api.h"
 #include "PRINTF_api.h"
 
 #include "timer_api.h"
@@ -91,7 +91,8 @@ uint8_t  USB_API_Init(USB_API_Init_params_t *apInit_params)
 
 
 
-    xTaskCreate( USB_Task, "usb_task", USB_TASK_STACK_SIZE, NULL, USB_CHECK_TASK_PRIORITY  , NULL );
+    xTaskCreate( USB_Task,
+		"usb_task", USB_TASK_STACK_SIZE, NULL, USB_CHECK_TASK_PRIORITY  , NULL );
 
     return 0;
 }
