@@ -36,6 +36,12 @@
 #define HID_SET_PROTOCOL     0x0B
 #define INTERFACE_LEN 		 0x09
 
+#define REQUEST_FIELD_POS  1
+#define REPORT_ID_POS      2
+#define REQUEST_LENGTH_LOW_POS  6
+#define REQUEST_LENGTH_HIGH_POS 7
+#define GET_DATA_LENGTH(request) (request[REQUEST_LENGTH_LOW_POS] +\
+									(request[REQUEST_LENGTH_HIGH_POS] << 8))
 
 static uint8_t const interface_association_descriptor[]=
 {
@@ -193,15 +199,16 @@ static void hid_class_in_request(struct dev_desc_t *usb_hw,
 
 	// Device to host
 	ret = 0;
-	switch(request[1])
+	switch(request[REQUEST_FIELD_POS])
 	{
 	case HID_GET_REPORT:
 		callback_func =  runtime_hndl->hid_in_report_over_control_pipe_callback;
 		if (NULL != callback_func)
 		{
-			callback_func(request[2], &set_request_in_buffer.data, &data_size);
+			callback_func(request[REPORT_ID_POS],
+						&set_request_in_buffer.data, &data_size);
 		}
-		requested_data_size = request[6] + (request[7] << 8);
+		requested_data_size = GET_DATA_LENGTH(request);
 		if (data_size > requested_data_size)
 		{
 			data_size = requested_data_size;
@@ -237,11 +244,11 @@ static void hid_class_out_request( struct dev_desc_t *usb_hw,
 	uint16_t  data_size;
 
 	ret = 0;
-    switch(request[1])
+    switch(request[REQUEST_FIELD_POS])
 	{
     case HID_SET_REPORT:
 		set_request_out_buffer.data = runtime_hndl->report_out_buf;
-		data_size = request[6] + (request[7] << 8);
+		data_size =  GET_DATA_LENGTH(request);
 		if (data_size > runtime_hndl->report_out_max_buf_size)
 		{
 			data_size = runtime_hndl->report_out_max_buf_size;
@@ -286,7 +293,7 @@ static void hid_class_request(struct dev_desc_t *callback_dev,
 	if (INTERFACE_CALLBACK_TYPE_DATA_OUT_FINISHED == callback_type)
 	{
 		hid_out_report_over_control_pipe_callback_t callback_func;
-		callback_func =  runtime_hndl->hid_out_report_over_control_pipe_callback;
+		callback_func = runtime_hndl->hid_out_report_over_control_pipe_callback;
 		if (NULL != callback_func)
 		{
 			callback_func(runtime_hndl->report_out_received_buf_size);
