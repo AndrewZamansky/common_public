@@ -79,7 +79,7 @@ endif
 ifdef CONFIG_UBOOT_CMD_SET_DEV_PARAM
     SRC += cmd_set_dev_param.c
 endif
-ifdef CONFIG_UBOOT_CMD_PRINTF_DEV
+ifdef CONFIG_UBOOT_CMD_SET_DBG_DEV
     SRC += cmd_printf_dev.c
 endif
 ifdef CONFIG_UBOOT_CMD_SPI_FORMAT

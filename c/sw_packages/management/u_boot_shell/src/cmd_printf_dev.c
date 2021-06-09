@@ -45,6 +45,9 @@
 
 #include <u-boot/include/command.h>
 #include "u_boot_shell_api.h"
+#include "PRINTF_api.h"
+
+extern struct dev_desc_t * gCurrReplyDev;
 
 
 /*
@@ -57,14 +60,14 @@
  * Return:      None
  *
  */
-int do_printf_dev(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+int do_debug_dev(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
-	pdev_descriptor_const dev;
-	if(argc<2) return CMD_RET_USAGE;
+	struct dev_desc_t * dev;
+	if(argc < 2) return CMD_RET_USAGE;
 
 	if(3 == argc)
 	{
-		dev = DEV_OPEN((uint8_t*)argv[2]);
+		dev = DEV_OPEN(argv[2]);
 		if(NULL == dev)
 		{
 			SHELL_REPLY_STR("unknown dev");
@@ -76,21 +79,25 @@ int do_printf_dev(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		dev = gCurrReplyDev;
 	}
 
-	if(0==memcmp(argv[1],"-r",2))
+	if(0 == memcmp(argv[1], "-r", 2))
 	{
 		PRINTF_API_RemoveDebugOutput(dev);
 	}
-	else if(0==memcmp(argv[1],"-a",2))
+	else if(0 == memcmp(argv[1], "-a", 2))
 	{
 		PRINTF_API_AddDebugOutput(dev);
 
+	}
+	else
+	{
+		SHELL_REPLY_STR("unknown switch");
 	}
 
 	return 0;
 }
 
 U_BOOT_CMD(
-	printf_dev,     255,	0,	do_printf_dev,
+	set_dbg_device, 255, 0, do_debug_dev,
 	"",
 	"info   - \n"
 );
