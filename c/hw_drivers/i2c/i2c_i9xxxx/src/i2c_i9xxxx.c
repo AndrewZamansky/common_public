@@ -432,6 +432,7 @@ static void I2C_MasterRX(struct i2c_i9xxxx_cfg_t *cfg_hndl,
 		data = I2C_GET_DATA(i2c);
 		rx_data[curr_data_pos] = data;
 		curr_data_pos++;
+		runtime_handle->curr_data_pos = curr_data_pos;
 		if (curr_data_pos == runtime_handle->size_of_data_to_receive)
 		{
 			end_of_transmition = 1;
