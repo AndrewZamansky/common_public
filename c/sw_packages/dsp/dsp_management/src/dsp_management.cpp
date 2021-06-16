@@ -908,7 +908,7 @@ void dsp_management_api_set_chain_output_buffer(chain_handle_t chain_handle,
  * return:
  */
 uint8_t dsp_management_api_set_module_control(chain_handle_t chain_handle,
-			char const*module_name, dsp_management_api_module_control_t ctl)
+		char const*module_name, enum dsp_management_api_module_control_e ctl)
 {
 	struct dsp_module_inst_t *module_inst;
 	struct dsp_chain_t *p_chain;
