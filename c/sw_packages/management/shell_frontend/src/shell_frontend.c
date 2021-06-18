@@ -317,13 +317,25 @@ static void load_preset(
 }
 
 
+static void save_to_preset_if_needed(
+	struct shell_frontend_cfg_t *config_handle, uint8_t *buff, size_t buff_size)
+{
+	struct dev_desc_t *cmd_save_dev;
+	cmd_save_dev = config_handle->cmd_save_dev;
+	if (cmd_save_dev )
+	{
+		DEV_WRITE(cmd_save_dev, buff, buff_size);
+	}
+}
+
+
+
 #define SUMS_OF_EOLS	('\r' + '\n')
 
 static void consume_line(struct shell_frontend_cfg_t *config_handle,
 					uint8_t *buff, size_t EOL_pos)
 {
 	struct dev_desc_t *shell_backend_dev;
-	struct dev_desc_t *cmd_save_dev;
 	struct rcvd_cmd_t  rcvd_cmd;
 	uint8_t  cmd_header_found;
 	uint8_t *pCmd;
@@ -355,11 +367,7 @@ static void consume_line(struct shell_frontend_cfg_t *config_handle,
 			DEV_IOCTL_1_PARAMS(
 				shell_backend_dev, IOCTL_SHELL_NEW_FRAME_RECEIVED, &rcvd_cmd);
 		}
-		cmd_save_dev = config_handle->cmd_save_dev;
-		if (cmd_save_dev )
-		{
-			DEV_WRITE(cmd_save_dev, pCmd, EOL_pos + 1);
-		}
+		save_to_preset_if_needed(config_handle, pCmd, EOL_pos + 1);
 	}
 
 	if (curr_runtime_hndl->load_preset_flag)
@@ -470,6 +478,7 @@ static size_t process_data_binary(struct shell_frontend_cfg_t *config_handle,
 {
 	size_t msg_envelope_length;
 	size_t msg_length;
+	size_t cmd_length;
 	uint16_t cmd_id;
 	size_t i;
 	struct shell_bin_cmd_struct_t *bin_cmd;
@@ -499,7 +508,9 @@ static size_t process_data_binary(struct shell_frontend_cfg_t *config_handle,
 		bin_cmd = bin_cmd_table[i];
 		if (bin_cmd->cmd_id == cmd_id)
 		{
-			bin_cmd->bin_cmd_func(&buff[4], msg_length - msg_envelope_length);
+			cmd_length = msg_length - msg_envelope_length;
+			bin_cmd->bin_cmd_func(&buff[4], cmd_length);
+			save_to_preset_if_needed(config_handle, buff, msg_length);
 			break;
 		}
 	}
