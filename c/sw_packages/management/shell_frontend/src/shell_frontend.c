@@ -277,41 +277,42 @@ static void load_preset(
 		struct shell_frontend_cfg_t *config_handle,
 		struct msg_load_preset_t *p_preset)
 {
+#ifdef CONFIG_INCLUDE_SHELL_PRESETS
+	uint8_t retries;
 	uint8_t ret_val;
-	uint8_t *preset_buffer;
-	size_t preset_buff_size;
+	struct shell_presets_api_get_buffer_t  shell_presets_api_get_buffer;
 
 	ret_val = 1;
-	preset_buffer = NULL;
-	preset_buff_size = 0;
-#ifdef CONFIG_INCLUDE_SHELL_PRESETS
+	retries = 50;
+	shell_presets_api_get_buffer.num_of_preset = p_preset->num_of_preset;
+	while (ret_val && retries--)
 	{
-		struct shell_presets_api_get_buffer_t  shell_presets_api_get_buffer;
-		shell_presets_api_get_buffer.num_of_preset =
-							(size_t)(p_preset->num_of_preset);
-		shell_presets_api_get_buffer.preset_buffer = &preset_buffer;
-		shell_presets_api_get_buffer.preset_size = &preset_buff_size;
 		ret_val = DEV_IOCTL_1_PARAMS(
-			p_preset->shell_preset_pdev,
-			IOCTL_SHELL_PRESETS_GET_PRESET_BUFFER,
-			&shell_presets_api_get_buffer);
+				p_preset->shell_preset_pdev,
+				IOCTL_SHELL_PRESETS_GET_PRESET_BUFFER,
+				&shell_presets_api_get_buffer);
+		if (SHELL_PRESET_VALID_PRESET_DOES_NOT_EXIST == ret_val)
+		{
+			break;
+		}
+		os_delay_ms(10);
 	}
-#endif
-	if (1 == ret_val)
+
+	if (SHELL_PRESET_VALID_PRESET_DOES_NOT_EXIST == ret_val)
 	{
-		#define err1 "error: cannot load preset\n"
-		shell_frontend_reply_data((uint8_t*)err1, sizeof(err1) - 1);
+		#define prst_err1 "error: preset no found\n"
+		shell_frontend_reply_data((uint8_t*)prst_err1, sizeof(prst_err1) - 1);
 		return;
 	}
-	else if (2 == ret_val)
+	else if (0 != ret_val)
 	{
-		#define err2 "error: preset no found\n"
-		shell_frontend_reply_data((uint8_t*)err2, sizeof(err1) - 1);
+		#define prst_err2 "error: cannot load preset\n"
+		shell_frontend_reply_data((uint8_t*)prst_err2, sizeof(prst_err2) - 1);
 		return;
 	}
-	execute_batch(config_handle, preset_buffer, preset_buff_size);
-#ifdef CONFIG_INCLUDE_SHELL_PRESETS
-	ret_val = DEV_IOCTL_0_PARAMS(p_preset->shell_preset_pdev,
+	execute_batch(config_handle, shell_presets_api_get_buffer.preset_buffer,
+			shell_presets_api_get_buffer.preset_size);
+	DEV_IOCTL_0_PARAMS(p_preset->shell_preset_pdev,
 			IOCTL_SHELL_PRESETS_RELEASE_PRESET_BUFFER);
 #endif
 }

@@ -6,6 +6,15 @@
 #include "dev_management_api.h"
 
 
+enum shell_presets_error_e {
+	SHELL_PRESET_NOT_READY = 1,
+	SHELL_PRESET_ERROR_BUSY,
+	SHELL_PRESET_VALID_PRESET_DOES_NOT_EXIST,
+	SHELL_PRESET_NUMBER_TOO_BIG,
+	SHELL_PRESET_SIZE_OF_PRESET_IS_TOO_BIG
+};
+
+
 enum shell_presets_api_ioctl_e {
 	IOCTL_SHELL_PRESETS_START_RECORDING = IOCTL_LAST_COMMON_IOCTL + 1,
 	IOCTL_SHELL_PRESETS_STOP_RECORDING,
@@ -16,8 +25,8 @@ enum shell_presets_api_ioctl_e {
 };
 
 struct shell_presets_api_get_buffer_t {
-	uint8_t **preset_buffer;
-	size_t *preset_size;
+	uint8_t *preset_buffer;
+	size_t preset_size;
 	uint8_t num_of_preset;
 };
 

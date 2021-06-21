@@ -102,7 +102,7 @@ static uint8_t save_preset(
 	{
 		if (runtime_handle->overflow)
 		{
-			ret_val = 2;
+			ret_val = SHELL_PRESET_SIZE_OF_PRESET_IS_TOO_BIG;
 			runtime_handle->overflow = 0;
 			goto exit;
 		}
@@ -113,7 +113,7 @@ static uint8_t save_preset(
 	}
 	else
 	{
-		ret_val = 1;
+		ret_val = SHELL_PRESET_ERROR_BUSY;
 		goto exit;
 	}
 
@@ -150,12 +150,12 @@ static uint8_t get_preset(struct shell_presets_cfg_t *config_handle,
 
 	if (SHELL_PRESET_STATE_RECORDING == runtime_handle->state)
 	{
-		return 1;
+		return SHELL_PRESET_ERROR_BUSY;
 	}
 
 	if (config_handle->max_number_of_presets <= num_of_preset)
 	{
-		return 1;
+		return SHELL_PRESET_NUMBER_TOO_BIG;
 	}
 
 	curr_preset_buf = runtime_handle->curr_preset_buf;
@@ -168,7 +168,7 @@ static uint8_t get_preset(struct shell_presets_cfg_t *config_handle,
 	if (0 != memcmp(&curr_preset_buf[MAGIC_NUMBER_POS],
 							&magic_number, MAGIC_NUMBER_SIZE))
 	{
-		return 2;
+		return SHELL_PRESET_VALID_PRESET_DOES_NOT_EXIST;
 	}
 
 	memcpy(&actual_preset_size,
@@ -176,7 +176,7 @@ static uint8_t get_preset(struct shell_presets_cfg_t *config_handle,
 
 	if (actual_preset_size > preset_size)
 	{
-		return 2;
+		return SHELL_PRESET_VALID_PRESET_DOES_NOT_EXIST;
 	}
 
 	runtime_handle->preset_actual_size = actual_preset_size;
@@ -191,12 +191,12 @@ static uint8_t get_preset_buffer(struct shell_presets_cfg_t *config_handle,
 {
 	uint8_t retVal;
 
-	*shell_presets_api_get_buffer->preset_buffer = NULL;
-	*shell_presets_api_get_buffer->preset_size = 0;
+	shell_presets_api_get_buffer->preset_buffer = NULL;
+	shell_presets_api_get_buffer->preset_size = 0;
 
 	if (SHELL_PRESET_STATE_IDLE != runtime_handle->state)
 	{
-		return 1;
+		return SHELL_PRESET_ERROR_BUSY;
 	}
 
 	retVal = get_preset(config_handle, runtime_handle,
@@ -206,10 +206,10 @@ static uint8_t get_preset_buffer(struct shell_presets_cfg_t *config_handle,
 		return retVal;
 	}
 
-	*shell_presets_api_get_buffer->preset_buffer =
+	shell_presets_api_get_buffer->preset_buffer =
 			runtime_handle->curr_preset_buf + DATA_POSITION;
-	*shell_presets_api_get_buffer->preset_size =
-						runtime_handle->preset_actual_size;
+	shell_presets_api_get_buffer->preset_size =
+						runtime_handle->preset_actual_size - DATA_POSITION;
 	runtime_handle->state = SHELL_PRESET_STATE_PRESET_BUFFER_IN_USE;
 	return 0;
 }
@@ -220,7 +220,7 @@ static uint8_t release_preset_buffer(
 {
 	if (SHELL_PRESET_STATE_PRESET_BUFFER_IN_USE != runtime_handle->state)
 	{
-		return 1;
+		return SHELL_PRESET_ERROR_BUSY;
 	}
 	runtime_handle->state = SHELL_PRESET_STATE_IDLE;
 	return 0;
@@ -236,16 +236,12 @@ static uint8_t set_preset_to_default(
 
 	if (SHELL_PRESET_STATE_IDLE != runtime_handle->state)
 	{
-		return 1;
+		return SHELL_PRESET_ERROR_BUSY;
 	}
 
 	runtime_handle->state = SHELL_PRESET_STATE_SAVING_DEFAULT_PRESET;
 	retVal = get_preset(config_handle, runtime_handle, num_of_preset);
-
-	if (0 != retVal)
-	{
-		return 1;
-	}
+	if (retVal) return retVal;
 
 	save_preset(config_handle, runtime_handle, 0);
 
@@ -269,13 +265,13 @@ static uint8_t start_recording_preset(struct shell_presets_cfg_t *config_handle,
 	}
 	if (SHELL_PRESET_STATE_IDLE != runtime_handle->state)
 	{
-		return 1;
+		return SHELL_PRESET_ERROR_BUSY;
 	}
 
 	curr_preset_num = (uint16_t)num_of_preset;
 	if (config_handle->max_number_of_presets <= curr_preset_num)
 	{
-		return 2;
+		return SHELL_PRESET_NUMBER_TOO_BIG;
 	}
 
 	runtime_handle->state = SHELL_PRESET_STATE_RECORDING;
@@ -347,7 +343,7 @@ static uint8_t shell_presets_ioctl( struct dev_desc_t *adev,
 
 	if ((0 == runtime_handle->init_done) && (IOCTL_DEVICE_START != aIoctl_num))
 	{
-		return 1;
+		return SHELL_PRESET_NOT_READY;
 	}
 
 	switch(aIoctl_num)
