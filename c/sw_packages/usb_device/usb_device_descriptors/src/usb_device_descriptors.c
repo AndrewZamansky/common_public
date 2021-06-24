@@ -328,7 +328,6 @@ static void add_string_descriptor(struct usb_device_descriptors_cfg_t *cfg_hndl,
 		break;
 	case USB_DEVICE_DESCRIPTORS_UCQ_STRING:
 		arr_of_str_desc[curr_str_arr_index].str_desc_index = 33; // =0x21
-		gu8DeviceDescriptor[SERIAL_STR_POS] = 3;
 		break;
 	default:
 		break;
