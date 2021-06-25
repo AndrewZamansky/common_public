@@ -24,7 +24,8 @@
  * Return:      None
  *
  */
-int do_get_version (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+static int do_get_version(
+		cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 	struct dev_desc_t * dev;
 	uint8_t ret_buff[MAX_RET_BUFF_SIZE + 1];
@@ -50,7 +51,7 @@ int do_get_version (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 }
 
 U_BOOT_CMD(
-	get_version,     255,	0,	do_get_version,
+	get_version, 255, 0, do_get_version,
 	"",
 	"info   - \n"
 );

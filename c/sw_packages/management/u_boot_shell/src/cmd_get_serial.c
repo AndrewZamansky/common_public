@@ -23,7 +23,8 @@ extern uint8_t *pSerNum;
  * Return:      None
  *
  */
-int do_get_serial (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+static int do_get_serial(
+		cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 	uint8_t *ret_buff;
 

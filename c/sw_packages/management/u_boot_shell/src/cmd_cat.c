@@ -3,7 +3,7 @@
  */
 #include "_project.h"
 
-#include "dev_management_api.h" // for device manager defines and typedefs
+#include "dev_management_api.h"
 
 #include <u-boot/include/command.h>
 #include "u_boot_shell_api.h"
@@ -12,7 +12,7 @@
 #define MAX_RET_BUFF_SIZE 32
 
 /*
- * Subroutine:  force_output
+ * Subroutine:  do_cat
  *
  * Description:
  *
@@ -21,7 +21,7 @@
  * Return:      None
  *
  */
-int do_cat (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+static int do_cat (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 	FIL fp;
 
@@ -49,7 +49,7 @@ int do_cat (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 }
 
 U_BOOT_CMD(
-	cat,     255,	0,	do_cat,
+	cat, 255, 0, do_cat,
 	"",
 	"info   - \n"
 );

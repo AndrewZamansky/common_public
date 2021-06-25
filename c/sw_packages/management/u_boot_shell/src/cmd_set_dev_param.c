@@ -8,7 +8,7 @@
 #include "u_boot_shell_api.h"
 
 /*
- * Subroutine:  force_output
+ * Subroutine:  do_set_dev_param
  *
  * Description:
  *
@@ -17,7 +17,8 @@
  * Return:      None
  *
  */
-int do_set_dev_param (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+static int do_set_dev_param(
+		cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 #if 0 // TODO
 	struct dev_desc_t * dev_descriptor;
@@ -51,7 +52,7 @@ int do_set_dev_param (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 }
 
 U_BOOT_CMD(
-	set_dev_param,     255,	0,	do_set_dev_param,
+	set_dev_param, 255, 0, do_set_dev_param,
 	"set dev param",
 	"info   - \n"
 );

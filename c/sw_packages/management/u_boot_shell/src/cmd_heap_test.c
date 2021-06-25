@@ -1,5 +1,5 @@
 /*
- *  cmd_get_serial.c
+ *  cmd_heap_test.c
  */
 
 #include "_project.h"
@@ -17,7 +17,8 @@ extern size_t get_heap_left(void);
  * Return:      None
  *
  */
-int do_heap_test(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+static int do_heap_test(
+		cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 	size_t  heap_left;
 

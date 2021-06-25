@@ -80,7 +80,7 @@ ifdef CONFIG_UBOOT_CMD_SET_DEV_PARAM
     SRC += cmd_set_dev_param.c
 endif
 ifdef CONFIG_UBOOT_CMD_SET_DBG_DEV
-    SRC += cmd_printf_dev.c
+    SRC += cmd_set_dbg_dev.c
 endif
 ifdef CONFIG_UBOOT_CMD_SPI_FORMAT
     SRC += cmd_spi_format.c
@@ -92,6 +92,7 @@ SRC += command.c
 SRC += cli.c
 SRC += cli_simple.c
 SRC += cmd_help.c
+SRC += cmd_echo.c
 
 ifdef CONFIG_INCLUDE_SHELL
     SRC += cmd_bin.c

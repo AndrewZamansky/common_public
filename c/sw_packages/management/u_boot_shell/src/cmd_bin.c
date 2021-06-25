@@ -1,5 +1,5 @@
 /*
- *  cmd_get_serial.c
+ *  cmd_bin.c
  */
 
 #include "_project.h"
