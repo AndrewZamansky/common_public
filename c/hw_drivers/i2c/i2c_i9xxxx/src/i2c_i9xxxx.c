@@ -679,7 +679,7 @@ static void master_read(struct dev_desc_t *adev,
 
 	num_of_bytes_to_read = rd_struct->num_of_bytes_to_read;
 
-	if (1 >= num_of_bytes_to_read)
+	if (1 > num_of_bytes_to_read)
 	{
 		rd_struct->num_of_bytes_to_read = 0;
 		return;
