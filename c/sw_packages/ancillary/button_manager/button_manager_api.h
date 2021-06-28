@@ -73,9 +73,11 @@ struct buttons_manager_group_t
 typedef void* button_manager_reported_event_handle_t;
 
 
+
 /****** utility for adding state of specific gpio *****/
-#define BTN_MANAGER_ADD_GPIO_STATE(gpio_dev, pins_array, size_of_pinns_array) \
-			P_TO_STATIC_DEVICE_INST(gpio_dev), pins_array, size_of_pinns_array
+#define BTN_MANAGER_ADD_GPIO_STATE(gpio_dev, ...) \
+			P_TO_STATIC_DEVICE_INST(gpio_dev), {__VA_ARGS__}, \
+			sizeof((uint8_t[]){__VA_ARGS__})
 
 
 #define MAX_NUMBER_OF_ALLOWED_ACTIVE_PINS    4
