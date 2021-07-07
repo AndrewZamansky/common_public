@@ -5,6 +5,7 @@
 #include "dev_management_api.h"
 
 enum interface_callback_types_e {
+	INTERFACE_CALLBACK_TYPE_STANDARD_SET_INTERFACE,
 	INTERFACE_CALLBACK_TYPE_REQUEST,
 	INTERFACE_CALLBACK_TYPE_DATA_OUT_FINISHED,
 };

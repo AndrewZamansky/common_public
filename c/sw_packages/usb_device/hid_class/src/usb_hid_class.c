@@ -285,28 +285,33 @@ static void hid_class_request(struct dev_desc_t *callback_dev,
 	struct usb_hid_class_cfg_t *cfg_hndl;
 	struct dev_desc_t *usb_hw;
 	struct usb_hid_class_runtime_t *runtime_hndl;
+	hid_out_report_over_control_pipe_callback_t callback_func;
 
 	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(usb_hid_class, callback_dev);
 	runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(usb_hid_class, callback_dev);
 	usb_hw = cfg_hndl->usb_hw;
-
-	if (INTERFACE_CALLBACK_TYPE_DATA_OUT_FINISHED == callback_type)
+	switch (callback_type)
 	{
-		hid_out_report_over_control_pipe_callback_t callback_func;
+	case INTERFACE_CALLBACK_TYPE_DATA_OUT_FINISHED:
 		callback_func = runtime_hndl->hid_out_report_over_control_pipe_callback;
 		if (NULL != callback_func)
 		{
 			callback_func(runtime_hndl->report_out_received_buf_size);
 		}
+		break;
+	case INTERFACE_CALLBACK_TYPE_REQUEST:
+		if(request[0] & 0x80)    /* request data transfer direction */
+		{// from device to host
+			hid_class_in_request(usb_hw, runtime_hndl, request);
+		}
+		else
+		{// from host to device
+			hid_class_out_request(usb_hw, runtime_hndl, request);
+		}
+		break;
+	case INTERFACE_CALLBACK_TYPE_STANDARD_SET_INTERFACE:
+	default:
 		return;
-	}
-	if(request[0] & 0x80)    /* request data transfer direction */
-	{// from device to host
-		hid_class_in_request(usb_hw, runtime_hndl, request);
-	}
-	else
-	{// from host to device
-		hid_class_out_request(usb_hw, runtime_hndl, request);
 	}
 }
 

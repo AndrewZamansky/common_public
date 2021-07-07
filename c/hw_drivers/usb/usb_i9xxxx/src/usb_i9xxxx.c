@@ -321,6 +321,31 @@ static void class_request(void)
 }
 
 
+static void standard_set_interface_request(void)
+{
+	uint8_t buf[8];
+	uint16_t USBwIndex;
+	usb_dev_interface_request_callback_func_t callback_func;
+	static struct dev_desc_t *interface_dev = NULL;
+
+	USBD_GetSetupPacket(buf);
+
+	USBwIndex = buf[INTERFACE_ID_POS] + buf[INTERFACE_ID_POS + 1];
+	if (MAX_NUM_OF_ITERFACES < USBwIndex)
+	{
+		CRITICAL_ERROR("interface number is to high \n");
+	}
+	callback_func = interface_callback_functions[USBwIndex];
+	interface_dev = interface_callback_devs[USBwIndex];
+	if (NULL != callback_func)
+	{
+		callback_func(interface_dev,
+				INTERFACE_CALLBACK_TYPE_STANDARD_SET_INTERFACE, buf);
+	}
+
+}
+
+
 static void register_interfaces(
 		struct register_interfaces_t *p_register_interfaces)
 {
@@ -536,7 +561,7 @@ static void usb_device_start()
 	}
 
 	/* usb initial */
-	USBD_Open(&l_gsInfo, class_request, NULL);
+	USBD_Open(&l_gsInfo, class_request, standard_set_interface_request);
 
 	/* Endpoint configuration */
 

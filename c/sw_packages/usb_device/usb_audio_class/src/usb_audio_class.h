@@ -26,6 +26,14 @@
 #define NUM_OF_PLAYBACK_CHANNELS   3 // 0 channel is master
 #define NUM_OF_RECORDING_CHANNELS  3 // 0 channel is master
 
+
+enum UAC_REQ_STATE {
+	REQ_STATE_IDLE,
+	REQ_STATE_GETTING_VOLUME,
+	REQ_STATE_GETTING_MUTE,
+};
+
+
 struct usb_audio_class_runtime_t {
 	uint8_t  curr_buff_indx;
 	uint8_t  tx_buffer_was_supplied;
@@ -50,6 +58,9 @@ struct usb_audio_class_runtime_t {
 	uint8_t recording_mute;
 	/* Play MUTE control. 0 = normal. 1 = MUTE */
 	uint8_t playback_mute;
+
+	uint8_t request_state;
+	uint8_t app_is_getting_data;
 };
 SET_RUNTIME_DATA_TYPE(usb_audio_class, struct usb_audio_class_runtime_t);
 

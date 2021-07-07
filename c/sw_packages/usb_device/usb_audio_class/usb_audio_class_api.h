@@ -25,6 +25,11 @@
 #define USB_AUDIO_CLASS_OUT_TERMINAL_TYPE__SPKPHONE_ECHO_SUPPR    0x0404
 #define USB_AUDIO_CLASS_OUT_TERMINAL_TYPE__SPKPHONE_ECHO_CANCEL   0x0405
 
+enum USB_AUDIO_CLASS_API__callback_e {
+	USB_AUDIO_CLASS_CALLBACK_VOLUME_CHANGED = CALLBACK_LAST_COMMON_IOCTL,
+	USB_AUDIO_CLASS_CALLBACK_MUTE_CHANGED
+};
+
 
 enum USB_AUDIO_CLASS_API_ioctl_e {
 	USB_AUDIO_CLASS_IOCTL_GET_RX_BUFF = IOCTL_LAST_COMMON_IOCTL + 1,
@@ -40,7 +45,7 @@ enum USB_AUDIO_CLASS_API_ioctl_e {
 
 struct usb_audio_class_cfg_t {
 	struct dev_desc_t *usb_hw;
-	struct dev_desc_t *callback_dev;
+	struct dev_desc_t *control_callback_dev;
 	struct dev_desc_t *usb_descriptors_dev;
 
 	// USB HOST AUDIO IN

@@ -716,6 +716,8 @@ static void start_audio_class(struct dev_desc_t *adev,
 #endif
 
 	init_default_volumes_and_mutes(runtime_hndl);
+	runtime_hndl->request_state = REQ_STATE_IDLE;
+	runtime_hndl->app_is_getting_data = 0;
 
 	if (0 != cfg_hndl->enable_recording)
 	{
@@ -746,8 +748,17 @@ static uint8_t get_master_volumes(
 		struct usb_audio_class_runtime_t *runtime_hndl,
 		int16_t *cur_playback_volume, int16_t *cur_recording_volume)
 {
+	runtime_hndl->app_is_getting_data = 1;
+	// from this point new USB out request for volume change will get STALL
+	// till app_is_getting_data go to 0
+	if (REQ_STATE_IDLE != runtime_hndl->request_state)
+	{
+		runtime_hndl->app_is_getting_data = 0;
+		return 1;
+	}
 	*cur_playback_volume = runtime_hndl->curr_playback_volume[0];
 	*cur_recording_volume = runtime_hndl->curr_recording_volume[0];
+	runtime_hndl->app_is_getting_data = 0;
 	return 0;
 }
 
@@ -756,8 +767,17 @@ static uint8_t get_master_mutes(
 		struct usb_audio_class_runtime_t *runtime_hndl,
 		int8_t *cur_playback_mute, int8_t *cur_recording_mute)
 {
+	runtime_hndl->app_is_getting_data = 1;
+	// from this point new USB out request for mute change will get STALL
+	// till app_is_getting_data go to 0
+	if (REQ_STATE_IDLE != runtime_hndl->request_state)
+	{
+		runtime_hndl->app_is_getting_data = 0;
+		return 1;
+	}
 	*cur_playback_mute = runtime_hndl->playback_mute;
 	*cur_recording_mute = runtime_hndl->recording_mute;
+	runtime_hndl->app_is_getting_data = 0;
 	return 0;
 }
 

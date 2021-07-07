@@ -309,18 +309,22 @@ static void vcom_class_request(struct dev_desc_t *callback_dev,
 	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(usb_virtual_com_class, callback_dev);
 	usb_hw = cfg_hndl->usb_hw;
 
-	if (INTERFACE_CALLBACK_TYPE_DATA_OUT_FINISHED == callback_type)
+	switch (callback_type)
 	{
+	case INTERFACE_CALLBACK_TYPE_REQUEST:
+		if(request[0] & 0x80)    /* request data transfer direction */
+		{// from device to host
+			cdc_class_in_request(usb_hw, request);
+		}
+		else
+		{// from host to device
+			cdc_class_out_request(usb_hw, request);
+		}
+		break;
+	case INTERFACE_CALLBACK_TYPE_DATA_OUT_FINISHED:
+	case INTERFACE_CALLBACK_TYPE_STANDARD_SET_INTERFACE:
+	default:
 		return;
-	}
-
-	if(request[0] & 0x80)    /* request data transfer direction */
-	{// from device to host
-		cdc_class_in_request(usb_hw, request);
-	}
-	else
-	{// from host to device
-		cdc_class_out_request(usb_hw, request);
 	}
 }
 

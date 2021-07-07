@@ -82,6 +82,7 @@ static volatile int16_t g_usbd_PlayResVolume = 0x0100;
 #define MAX_DATA_TO_SEND_LEN 2
 static uint8_t data_to_send[MAX_DATA_TO_SEND_LEN];
 
+
 static uint8_t get_mute(struct usb_audio_class_runtime_t *runtime_hndl,
 		uint8_t unit_id, uint8_t **data, uint16_t *data_len)
 {
@@ -281,6 +282,11 @@ static uint8_t set_mute(struct usb_audio_class_runtime_t *runtime_hndl,
 {
 	uint8_t *data;
 
+	if (1 == runtime_hndl->app_is_getting_data)
+	{
+		return 1;
+	}
+
 	if (REC_FEATURE_UNITID == unit_id)
 	{
 		data = (uint8_t*)&runtime_hndl->recording_mute;
@@ -295,6 +301,7 @@ static uint8_t set_mute(struct usb_audio_class_runtime_t *runtime_hndl,
 	}
 	set_request_out_buffer->data = data;
 	set_request_out_buffer->size = 1;
+	runtime_hndl->request_state = REQ_STATE_GETTING_MUTE;
 	return 0;
 }
 
@@ -305,6 +312,11 @@ static uint8_t set_volume(struct usb_audio_class_runtime_t *runtime_hndl,
 				uint8_t unit_id, uint8_t channel_id)
 {
 	uint8_t *data;
+
+	if (1 == runtime_hndl->app_is_getting_data)
+	{
+		return 1;
+	}
 
 	if (REC_FEATURE_UNITID == unit_id)
 	{
@@ -329,6 +341,7 @@ static uint8_t set_volume(struct usb_audio_class_runtime_t *runtime_hndl,
 
 	set_request_out_buffer->data = data;
 	set_request_out_buffer->size = 2;
+	runtime_hndl->request_state = REQ_STATE_GETTING_VOLUME;
 	return 0;
 }
 
@@ -379,6 +392,37 @@ static void uac_class_interface_out_request(struct dev_desc_t *usb_hw,
 }
 
 
+static void out_transfer_finished(struct usb_audio_class_cfg_t *cfg_hndl,
+		struct usb_audio_class_runtime_t *runtime_hndl)
+{
+	struct dev_desc_t *control_callback_dev;
+
+	control_callback_dev = cfg_hndl->control_callback_dev;
+	if (NULL == control_callback_dev)
+	{
+		runtime_hndl->request_state = REQ_STATE_IDLE;
+		return;
+	}
+
+	switch (runtime_hndl->request_state)
+	{
+	case REQ_STATE_GETTING_VOLUME:
+		DEV_CALLBACK_0_PARAMS(
+			control_callback_dev, USB_AUDIO_CLASS_CALLBACK_VOLUME_CHANGED);
+		runtime_hndl->request_state = REQ_STATE_IDLE;
+		break;
+	case REQ_STATE_GETTING_MUTE:
+		DEV_CALLBACK_0_PARAMS(
+			control_callback_dev, USB_AUDIO_CLASS_CALLBACK_MUTE_CHANGED);
+		runtime_hndl->request_state = REQ_STATE_IDLE;
+		break;
+	case REQ_STATE_IDLE:
+	default:
+		break;
+	}
+}
+
+
 void uac_interface_class_request(
 	struct dev_desc_t *callback_dev, uint8_t callback_type, uint8_t *request)
 {
@@ -390,17 +434,25 @@ void uac_interface_class_request(
 	runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(usb_audio_class, callback_dev);
 	usb_hw = cfg_hndl->usb_hw;
 
-	if (INTERFACE_CALLBACK_TYPE_DATA_OUT_FINISHED == callback_type)
+	switch (callback_type)
 	{
+	case INTERFACE_CALLBACK_TYPE_STANDARD_SET_INTERFACE:
+		break;
+	case INTERFACE_CALLBACK_TYPE_REQUEST:
+		if(request[BM_REQ_TYPE_POS] & REQ_DIRECTION_MASK)
+		{// from device to host
+			uac_class_interface_in_request(usb_hw, runtime_hndl, request);
+		}
+		else
+		{// from host to device
+			uac_class_interface_out_request(usb_hw, runtime_hndl, request);
+		}
+		break;
+	case INTERFACE_CALLBACK_TYPE_DATA_OUT_FINISHED:
+		out_transfer_finished(cfg_hndl, runtime_hndl);
+		break;
+	default:
 		return;
-	}
-	if(request[BM_REQ_TYPE_POS] & REQ_DIRECTION_MASK)    /* device to host */
-	{// from device to host
-		uac_class_interface_in_request(usb_hw, runtime_hndl, request);
-	}
-	else
-	{// from host to device
-		uac_class_interface_out_request(usb_hw, runtime_hndl, request);
 	}
 }
 
