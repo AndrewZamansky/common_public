@@ -330,7 +330,7 @@ static void standard_set_interface_request(void)
 
 	USBD_GetSetupPacket(buf);
 
-	USBwIndex = buf[INTERFACE_ID_POS] + buf[INTERFACE_ID_POS + 1];
+	USBwIndex = buf[INTERFACE_ID_POS];
 	if (MAX_NUM_OF_ITERFACES < USBwIndex)
 	{
 		CRITICAL_ERROR("interface number is to high \n");

@@ -40,6 +40,8 @@ struct usb_audio_class_runtime_t {
 	uint8_t  next_supplied_rx_buffer;
 	uint8_t  out_endpoint_num;
 	uint8_t  in_endpoint_num;
+	uint8_t  out_interface_num;
+	uint8_t  in_interface_num;
 	uint8_t  in_feedback_endpoint_num;
 	uint8_t  *tx_buff;
 	uint8_t  *tx_pckt_buff;
@@ -61,6 +63,9 @@ struct usb_audio_class_runtime_t {
 
 	uint8_t request_state;
 	uint8_t app_is_getting_data;
+
+	uint8_t host_started_playback;
+	uint8_t host_started_recording;
 };
 SET_RUNTIME_DATA_TYPE(usb_audio_class, struct usb_audio_class_runtime_t);
 

@@ -652,6 +652,7 @@ static void init_audio_host_out(struct usb_audio_class_cfg_t *cfg_hndl,
 		rx_buff[i] = new_buff;
 		rx_buff_status[i] = USB_AUDIO_CLASS_BUFF_IDLE ;
 	}
+	runtime_hndl->host_started_playback = 0;
 }
 
 
@@ -683,6 +684,7 @@ static void init_audio_host_in(struct usb_audio_class_cfg_t *cfg_hndl,
 					cfg_hndl->get_tx_buff_size * NUM_OF_TX_BUFFERS);
 	errors_api_check_if_malloc_succeed(new_buff);
 	runtime_hndl->tx_buff = new_buff;
+	runtime_hndl->host_started_recording = 0;
 }
 
 
@@ -824,6 +826,12 @@ static uint8_t usb_audio_class_ioctl( struct dev_desc_t *adev,
 		break;
 	case USB_AUDIO_CLASS_IOCTL_GET_MASTER_MUTES :
 		return get_master_mutes(runtime_hndl, aIoctl_param1, aIoctl_param2);
+		break;
+	case USB_AUDIO_CLASS_IOCTL_GET_IF_HOST_RECORDING:
+		*(uint8_t *) aIoctl_param1 = runtime_hndl->host_started_recording;
+		break;
+	case USB_AUDIO_CLASS_IOCTL_GET_IF_HOST_IS_STREAMING_OUT:
+		*(uint8_t *) aIoctl_param1 = runtime_hndl->host_started_playback;
 		break;
 	default :
 		return 1;

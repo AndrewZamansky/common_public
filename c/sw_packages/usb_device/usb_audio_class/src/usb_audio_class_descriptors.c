@@ -615,6 +615,7 @@ static void fill_control_descriptor(struct usb_audio_class_cfg_t *cfg_hndl,
 
 static void update_interfaces_desc(struct dev_desc_t *adev,
 		struct usb_audio_class_cfg_t *cfg_hndl,
+		struct usb_audio_class_runtime_t *runtime_hndl,
 	struct usb_descriptors_alloc_interfaces_t *usb_descriptors_alloc_interfaces)
 {
 	struct dev_desc_t *usb_descriptors_dev;
@@ -651,10 +652,10 @@ static void update_interfaces_desc(struct dev_desc_t *adev,
 		i_in_alt1 = (uint8_t*)os_safe_malloc(sizeof(in_alt_interface)) ;
 		errors_api_check_if_malloc_succeed(i_in_alt1);
 		memcpy(i_in_alt1, in_alt_interface, sizeof(in_alt_interface));
-		i_in_alt0[2] = usb_descriptors_alloc_interfaces->interfaces_num[
-															curr_interface_idx];
-		i_in_alt1[2] = usb_descriptors_alloc_interfaces->interfaces_num[
-															curr_interface_idx];
+		runtime_hndl->in_interface_num = usb_descriptors_alloc_interfaces->
+											interfaces_num[curr_interface_idx];
+		i_in_alt0[2] = runtime_hndl->in_interface_num;
+		i_in_alt1[2] = runtime_hndl->in_interface_num;
 		curr_interface_idx++;
 	}
 
@@ -668,10 +669,10 @@ static void update_interfaces_desc(struct dev_desc_t *adev,
 		i_out_alt1 = (uint8_t*)os_safe_malloc(sizeof(out_alt_interface)) ;
 		errors_api_check_if_malloc_succeed(i_out_alt1);
 		memcpy(i_out_alt1, out_alt_interface, sizeof(out_alt_interface));
-		i_out_alt0[2] = usb_descriptors_alloc_interfaces->interfaces_num[
-															curr_interface_idx];
-		i_out_alt1[2] = usb_descriptors_alloc_interfaces->interfaces_num[
-															curr_interface_idx];
+		runtime_hndl->out_interface_num = usb_descriptors_alloc_interfaces->
+											interfaces_num[curr_interface_idx];
+		i_out_alt0[2] = runtime_hndl->out_interface_num;
+		i_out_alt1[2] = runtime_hndl->out_interface_num;
 	}
 
 	configure_endpoints(adev, cfg_hndl, i_in_alt1, i_out_alt1);
@@ -757,7 +758,7 @@ void add_audio_class_device(struct dev_desc_t *adev,
 			USB_DEVICE_DESCRIPTORS_ALLOC_INTERFACES_NUMBERS,
 			&usb_descriptors_alloc_interfaces);
 
-	update_interfaces_desc(adev, cfg_hndl,
+	update_interfaces_desc(adev, cfg_hndl, runtime_hndl,
 						&usb_descriptors_alloc_interfaces);
 
 	register_interface[0].interface_func = uac_interface_class_request;

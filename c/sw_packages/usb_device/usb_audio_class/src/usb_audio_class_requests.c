@@ -33,6 +33,7 @@
 #define W_VALUE_HIGH_POS         3
 #define W_INDEX_LOW_POS          4
 #define W_INDEX_HIGH_POS         5
+#define ALTERNATIVE_ID_POS  W_VALUE_LOW_POS
 #define INTERFACE_ID_POS    W_INDEX_LOW_POS
 #define ENDPOINT_ID_POS     W_INDEX_LOW_POS
 #define FEAURE_UNIT_ID      W_INDEX_HIGH_POS
@@ -423,6 +424,39 @@ static void out_transfer_finished(struct usb_audio_class_cfg_t *cfg_hndl,
 }
 
 
+static void set_interface(struct usb_audio_class_cfg_t *cfg_hndl,
+							struct usb_audio_class_runtime_t *runtime_hndl,
+							uint8_t *request)
+{
+	uint8_t interface;
+	uint8_t alternative;
+	struct dev_desc_t *control_callback_dev;
+
+	control_callback_dev = cfg_hndl->control_callback_dev;
+
+	interface = request[INTERFACE_ID_POS];
+	alternative = request[ALTERNATIVE_ID_POS];
+	if (interface == runtime_hndl->in_interface_num)
+	{
+		runtime_hndl->host_started_recording = alternative ? 1 : 0;
+		if (NULL != control_callback_dev)
+		{
+			DEV_CALLBACK_0_PARAMS(control_callback_dev,
+					USB_AUDIO_CLASS_CALLBACK_HOST_STREAMING_STATE_CHANGED);
+		}
+	}
+	else if (interface == runtime_hndl->out_interface_num)
+	{
+		runtime_hndl->host_started_playback = alternative ? 1 : 0;
+		if (NULL != control_callback_dev)
+		{
+			DEV_CALLBACK_0_PARAMS(control_callback_dev,
+					USB_AUDIO_CLASS_CALLBACK_HOST_STREAMING_STATE_CHANGED);
+		}
+	}
+}
+
+
 void uac_interface_class_request(
 	struct dev_desc_t *callback_dev, uint8_t callback_type, uint8_t *request)
 {
@@ -437,6 +471,7 @@ void uac_interface_class_request(
 	switch (callback_type)
 	{
 	case INTERFACE_CALLBACK_TYPE_STANDARD_SET_INTERFACE:
+		set_interface(cfg_hndl, runtime_hndl, request);
 		break;
 	case INTERFACE_CALLBACK_TYPE_REQUEST:
 		if(request[BM_REQ_TYPE_POS] & REQ_DIRECTION_MASK)
