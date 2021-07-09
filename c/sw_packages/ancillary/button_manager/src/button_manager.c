@@ -117,13 +117,26 @@ static uint8_t compare_gpio_state(struct gpio_api_read_t *curr_gpio_state_arr,
 }
 
 
+static void read_gpio_state(uint8_t num_of_gpio_devs,
+		struct dev_desc_t *   *gpio_devs_arr,
+		struct gpio_api_read_t *curr_gpio_state_arr)
+{
+	uint8_t i;
+
+	for(i = 0; i < num_of_gpio_devs; i++)
+	{
+		DEV_IOCTL_1_PARAMS(
+				gpio_devs_arr[i], IOCTL_GPIO_PIN_READ, &curr_gpio_state_arr[i]);
+	}
+
+}
+
+
 static uint32_t end_of_debounce_on_push(struct dev_desc_t *adev)
 {
 	struct button_manager_runtime_t *runtime_handle;
 	struct button_manager_config_t  *config_handle;
-	struct dev_desc_t *   *gpio_devs_arr;
 	struct dev_desc_t     *client_dev;
-	uint8_t i;
 	uint8_t event_idx;
 	uint8_t num_of_gpio_devs;
 	uint8_t num_of_events;
@@ -136,17 +149,13 @@ static uint32_t end_of_debounce_on_push(struct dev_desc_t *adev)
 
 	curr_gpio_state_arr = runtime_handle->curr_gpio_state_arr;
 
-	gpio_devs_arr = config_handle->gpio_devs_arr;
 	client_dev = config_handle->client_dev;
 	num_of_gpio_devs = config_handle->num_of_gpio_devs;
 	num_of_events = config_handle->num_of_events;
 	btn_events_arr = config_handle->btn_events_arr;
 
-	for(i = 0; i < num_of_gpio_devs; i++)
-	{
-		DEV_IOCTL_1_PARAMS(
-				gpio_devs_arr[i], IOCTL_GPIO_PIN_READ, &curr_gpio_state_arr[i]);
-	}
+	read_gpio_state(
+		num_of_gpio_devs, config_handle->gpio_devs_arr, curr_gpio_state_arr);
 
 	event_found = 0;
 	for (event_idx = 0; event_idx < num_of_events ; event_idx++)
@@ -219,79 +228,78 @@ static uint8_t button_state_hold(struct dev_desc_t *adev, uint8_t event_idx)
 }
 
 
-static uint8_t end_of_debounce_on_release(
-		struct dev_desc_t *adev, uint8_t event_idx)
+static uint8_t check_if_gpio_in_idle(uint8_t num_of_gpio_devs,
+				struct gpio_api_read_t *curr_gpio_state_arr)
 {
-	struct button_manager_runtime_t *runtime_handle;
-	struct button_manager_config_t  *config_handle;
-	uint8_t idle_state_detected;
-	struct dev_desc_t **gpio_devs_arr;
+	struct gpio_api_read_t *curr_gpio_state;
+	uint8_t values_arr_size;
 	uint8_t i;
-	uint8_t num_of_gpio_devs;
-	struct gpio_api_read_t *curr_gpio_state_arr;
-
-	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(button_manager, adev);
-	config_handle = DEV_GET_CONFIG_DATA_POINTER(button_manager, adev);
-
-	curr_gpio_state_arr = runtime_handle->curr_gpio_state_arr;
-	gpio_devs_arr = config_handle->gpio_devs_arr;
-	num_of_gpio_devs = config_handle->num_of_gpio_devs;
 
 	for (i = 0; i < num_of_gpio_devs; i++)
 	{
-		DEV_IOCTL_1_PARAMS(
-				gpio_devs_arr[i], IOCTL_GPIO_PIN_READ, &curr_gpio_state_arr[i]);
-	}
-
-	idle_state_detected = 1;
-	for (i = 0; i < num_of_gpio_devs; i++)
-	{
-		struct gpio_api_read_t *curr_gpio_state;
-		uint8_t values_arr_size;
-
 		curr_gpio_state = &curr_gpio_state_arr[i];
 		values_arr_size = curr_gpio_state->values_arr_size;
 		if (memcmp(curr_gpio_state->pin_bitwise_curr_values,
 				curr_gpio_state->pin_bitwise_idle_values, values_arr_size))
 		{
-			idle_state_detected = 0;
-			break;
+			return 0;
 		}
 	}
+	return 1;
+}
 
-	if (idle_state_detected)
+
+static uint8_t end_of_debounce_on_release(
+		struct dev_desc_t *adev, uint8_t event_idx)
+{
+	struct button_manager_runtime_t *runtime_handle;
+	struct button_manager_config_t  *config_handle;
+	uint8_t num_of_gpio_devs;
+	struct gpio_api_read_t *curr_gpio_state_arr;
+	struct btn_event_t *btn_events_arr;
+	struct dev_desc_t     *client_dev;
+	size_t  reported_flags;
+
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(button_manager, adev);
+	config_handle = DEV_GET_CONFIG_DATA_POINTER(button_manager, adev);
+
+	curr_gpio_state_arr = runtime_handle->curr_gpio_state_arr;
+	num_of_gpio_devs = config_handle->num_of_gpio_devs;
+
+	read_gpio_state(
+		num_of_gpio_devs, config_handle->gpio_devs_arr, curr_gpio_state_arr);
+
+	if (0 == check_if_gpio_in_idle(num_of_gpio_devs, curr_gpio_state_arr))
 	{
-		struct btn_event_t *btn_events_arr;
-		struct dev_desc_t     *client_dev;
-		size_t  reported_flags;
+		return 0;
+	}
 
-		if (ILLEGAL_EVENT == event_idx)
-		{
-			return 1;
-		}
-		client_dev = config_handle->client_dev;
-		btn_events_arr = config_handle->btn_events_arr;
-		reported_flags = 0;
-		if (BTN_REPORT_RELEASE & btn_events_arr[event_idx].report_config)
-		{
-			reported_flags |= BTN_REPORT_RELEASE;
-		}
-		if ((BTN_REPORT_RELEASED_BEFOR_500mS &
-				btn_events_arr[event_idx].report_config) &&
-				(512 >= runtime_handle->hold_count))
-		{
-			reported_flags |= BTN_REPORT_RELEASED_BEFOR_500mS;
-		}
-		if (reported_flags && ( NULL != client_dev))
-		{
-			DEV_CALLBACK_2_PARAMS( client_dev, CALLBACK_BTN_STATE_CHANGED,
-				(void *)reported_flags,
-				btn_events_arr[event_idx].callback_private_data);
-		}
+	if (ILLEGAL_EVENT == event_idx)
+	{
 		return 1;
 	}
-	return 0;
+	client_dev = config_handle->client_dev;
+	btn_events_arr = config_handle->btn_events_arr;
+	reported_flags = 0;
+	if (BTN_REPORT_RELEASE & btn_events_arr[event_idx].report_config)
+	{
+		reported_flags |= BTN_REPORT_RELEASE;
+	}
+	if ((BTN_REPORT_RELEASED_BEFORE_500mS &
+			btn_events_arr[event_idx].report_config) &&
+			(512 >= runtime_handle->hold_count))
+	{
+		reported_flags |= BTN_REPORT_RELEASED_BEFORE_500mS;
+	}
+	if (reported_flags && ( NULL != client_dev))
+	{
+		DEV_CALLBACK_2_PARAMS( client_dev, CALLBACK_BTN_STATE_CHANGED,
+			(void *)reported_flags,
+			btn_events_arr[event_idx].callback_private_data);
+	}
+	return 1;
 }
+
 
 static void state_machine(struct dev_desc_t *adev,
 		uint8_t event_was_received_from_gpio)
@@ -351,11 +359,7 @@ static void state_machine(struct dev_desc_t *adev,
 		case BTN_STATE_DEBOUNCING_ON_RELEASE:
 			if (0 == event_was_received_from_gpio)
 			{
-				uint8_t idle_state_detected;
-
-				idle_state_detected =
-						end_of_debounce_on_release(adev, curr_event_indx);
-				if (idle_state_detected)
+				if (end_of_debounce_on_release(adev, curr_event_indx))
 				{
 					queue_wait_delay = VERY_LONG_WAIT;// not used during idle
 					manager_state = BTN_STATE_IDLE;

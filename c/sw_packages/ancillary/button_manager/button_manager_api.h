@@ -29,12 +29,12 @@
  *
  */
 
-#define BTN_REPORT_PUSH                  0x01
-#define BTN_REPORT_RELEASE               0x02
-#define BTN_REPORT_HOLD_EVERY_0s1        0x04
-#define BTN_REPORT_HOLD_EVERY_1s         0x08
-#define BTN_REPORT_HOLD_ONCE_5s          0x10
-#define BTN_REPORT_RELEASED_BEFOR_500mS  0x20
+#define BTN_REPORT_PUSH                   0x01
+#define BTN_REPORT_RELEASE                0x02
+#define BTN_REPORT_HOLD_EVERY_0s1         0x04
+#define BTN_REPORT_HOLD_EVERY_1s          0x08
+#define BTN_REPORT_HOLD_ONCE_5s           0x10
+#define BTN_REPORT_RELEASED_BEFORE_500mS  0x20
 
 
 
