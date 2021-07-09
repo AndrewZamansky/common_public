@@ -148,7 +148,6 @@ static uint32_t end_of_debounce_on_push(struct dev_desc_t *adev)
 	config_handle = DEV_GET_CONFIG_DATA_POINTER(button_manager, adev);
 
 	curr_gpio_state_arr = runtime_handle->curr_gpio_state_arr;
-
 	client_dev = config_handle->client_dev;
 	num_of_gpio_devs = config_handle->num_of_gpio_devs;
 	num_of_events = config_handle->num_of_events;
@@ -180,7 +179,8 @@ static uint32_t end_of_debounce_on_push(struct dev_desc_t *adev)
 }
 
 
-static uint8_t button_state_hold(struct dev_desc_t *adev, uint8_t event_idx)
+static uint8_t button_state_hold(struct dev_desc_t *adev,
+		uint8_t event_idx, uint8_t event_was_received_from_gpio)
 {
 	struct button_manager_runtime_t *runtime_handle;
 	struct button_manager_config_t  *config_handle;
@@ -188,17 +188,30 @@ static uint8_t button_state_hold(struct dev_desc_t *adev, uint8_t event_idx)
 	struct btn_event_t *btn_events_arr;
 	uint32_t   hold_count;
 	void *callback_private_data;
+	struct gpio_api_read_t *curr_gpio_state_arr;
+	uint8_t num_of_gpio_devs;
 
 	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(button_manager, adev);
 	config_handle = DEV_GET_CONFIG_DATA_POINTER(button_manager, adev);
 
-	client_dev = config_handle->client_dev;
-	if (NULL == client_dev)
-	{
-		return 0;
-	}
-	hold_count = runtime_handle->hold_count;
+	curr_gpio_state_arr = runtime_handle->curr_gpio_state_arr;
+	num_of_gpio_devs = config_handle->num_of_gpio_devs;
 	btn_events_arr = config_handle->btn_events_arr;
+
+	read_gpio_state(num_of_gpio_devs,
+			config_handle->gpio_devs_arr, curr_gpio_state_arr);
+	if (0 == compare_gpio_state(curr_gpio_state_arr,
+			num_of_gpio_devs, &btn_events_arr[event_idx]))
+	{
+		return 1; // if state was changed so hold no more valid
+	}
+
+	if (event_was_received_from_gpio) return 0;
+
+	client_dev = config_handle->client_dev;
+	if (NULL == client_dev) return 0;
+
+	hold_count = runtime_handle->hold_count;
 	callback_private_data = btn_events_arr[event_idx].callback_private_data;
 	hold_count += 128;
 	if(BTN_REPORT_HOLD_EVERY_0s1 & btn_events_arr[event_idx].report_config)
@@ -346,11 +359,8 @@ static void state_machine(struct dev_desc_t *adev,
 			break;
 
 		case BTN_STATE_HOLD:
-			if (0 == event_was_received_from_gpio)
-			{
-				button_state_hold(adev, curr_event_indx);
-			}
-			else
+			if (button_state_hold(
+					adev, curr_event_indx, event_was_received_from_gpio))
 			{
 				queue_wait_delay = DEBOUNCE_DELAY;
 				manager_state = BTN_STATE_DEBOUNCING_ON_RELEASE;
