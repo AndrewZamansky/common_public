@@ -408,13 +408,9 @@ static void out_transfer_finished(struct usb_audio_class_cfg_t *cfg_hndl,
 	switch (runtime_hndl->request_state)
 	{
 	case REQ_STATE_GETTING_VOLUME:
-		DEV_CALLBACK_0_PARAMS(
-			control_callback_dev, USB_AUDIO_CLASS_CALLBACK_VOLUME_CHANGED);
-		runtime_hndl->request_state = REQ_STATE_IDLE;
-		break;
 	case REQ_STATE_GETTING_MUTE:
 		DEV_CALLBACK_0_PARAMS(
-			control_callback_dev, USB_AUDIO_CLASS_CALLBACK_MUTE_CHANGED);
+			control_callback_dev, CALLBACK_USB_AUDIO_CLASS_VOLUME_MUTE_CHANGED);
 		runtime_hndl->request_state = REQ_STATE_IDLE;
 		break;
 	case REQ_STATE_IDLE:
@@ -431,28 +427,26 @@ static void set_interface(struct usb_audio_class_cfg_t *cfg_hndl,
 	uint8_t interface;
 	uint8_t alternative;
 	struct dev_desc_t *control_callback_dev;
-
-	control_callback_dev = cfg_hndl->control_callback_dev;
+	uint8_t report_to_callback = 0;
 
 	interface = request[INTERFACE_ID_POS];
 	alternative = request[ALTERNATIVE_ID_POS];
 	if (interface == runtime_hndl->in_interface_num)
 	{
 		runtime_hndl->host_started_recording = alternative ? 1 : 0;
-		if (NULL != control_callback_dev)
-		{
-			DEV_CALLBACK_0_PARAMS(control_callback_dev,
-					USB_AUDIO_CLASS_CALLBACK_HOST_STREAMING_STATE_CHANGED);
-		}
+		report_to_callback = 1;
 	}
 	else if (interface == runtime_hndl->out_interface_num)
 	{
 		runtime_hndl->host_started_playback = alternative ? 1 : 0;
-		if (NULL != control_callback_dev)
-		{
-			DEV_CALLBACK_0_PARAMS(control_callback_dev,
-					USB_AUDIO_CLASS_CALLBACK_HOST_STREAMING_STATE_CHANGED);
-		}
+		report_to_callback = 1;
+	}
+
+	control_callback_dev = cfg_hndl->control_callback_dev;
+	if ((report_to_callback) && (NULL != control_callback_dev))
+	{
+		DEV_CALLBACK_0_PARAMS(control_callback_dev,
+				CALLBACK_USB_AUDIO_CLASS_HOST_STREAMING_STATE_CHANGED);
 	}
 }
 

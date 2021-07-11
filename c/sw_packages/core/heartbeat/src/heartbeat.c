@@ -107,7 +107,7 @@ static void calculate_cpu_usage_per_sec(struct heartbeat_instance_t *handle)
 			if (NULL != heartbeat_callback_dev)
 			{
 				DEV_CALLBACK_0_PARAMS(heartbeat_callback_dev,
-										HEARTBEAT_API_HEARTBEAT_TICK);
+											CALLBACK_HEARTBEAT_TICK);
 			}
 			cpu_usage_counter_1sec = 0;
 			one_sec_countdown = 1000;

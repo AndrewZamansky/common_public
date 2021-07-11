@@ -15,10 +15,6 @@ enum HEARTBEAT_API_ioctl_t {
 	HEARTBEAT_API_BUSY_WAIT_mS
 };
 
-enum HEARTBEAT_API_callback_e {
-	HEARTBEAT_API_HEARTBEAT_TICK = CALLBACK_LAST_COMMON_IOCTL + 1
-};
-
 
 struct heartbeat_instance_t {
 	struct dev_desc_t * heartbeat_callback_dev;
