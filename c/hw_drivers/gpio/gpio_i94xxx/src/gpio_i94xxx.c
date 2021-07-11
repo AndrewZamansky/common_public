@@ -225,6 +225,7 @@ static void init_gpio(struct dev_desc_t *adev,
 	uint8_t   pin_bitwise_idle_values1;
 	GPIO_T*   GPIOx;
 	uint32_t  pin_control;
+	uint32_t  tmp_pin_control;
 
 	pin_arr_size = config_handle->pin_arr_size;
 	pin_arr = config_handle->pin_arr;
@@ -234,7 +235,7 @@ static void init_gpio(struct dev_desc_t *adev,
 	pin_mask = 0;
 	pin_bitwise_idle_values0 = 0;
 	pin_bitwise_idle_values1 = 0;
-	pin_control = ((config_handle->port_num - GPIOA_BASE) / 0x40) << 8;
+	pin_control = ((config_handle->port_num - GPIOA_BASE) / 0x40) << PORT_POS;
 	for (i = 0; i < pin_arr_size; i++)
 	{
 		curr_pin = pin_arr[i];
@@ -242,9 +243,9 @@ static void init_gpio(struct dev_desc_t *adev,
 		{
 			CRITICAL_ERROR("pin number should be less than 15");
 		}
-		pin_control |= (curr_pin << 4);
+		tmp_pin_control = pin_control | (curr_pin << PIN_POS);
 		// last 4 bits of pin_control are equal to 0, to select GPIO function
-		pin_control_api_set_pin_function(pin_control);
+		pin_control_api_set_pin_function(tmp_pin_control);
 
 		pin_mask |= (1 << curr_pin);
 
@@ -364,6 +365,7 @@ static void stop_gpio(struct dev_desc_t *adev,
 	uint8_t   curr_pin;
 	GPIO_T*   GPIOx;
 	uint32_t  pin_control;
+	uint32_t  tmp_pin_control;
 
 	pin_arr_size = config_handle->pin_arr_size;
 	pin_arr = config_handle->pin_arr;
@@ -377,8 +379,8 @@ static void stop_gpio(struct dev_desc_t *adev,
 		{
 			CRITICAL_ERROR("pin number should be less than 15");
 		}
-		pin_control |= (curr_pin << 4);
-		pin_control_api_clear_pin_function(pin_control);
+		tmp_pin_control = pin_control | (curr_pin << PIN_POS);
+		pin_control_api_clear_pin_function(tmp_pin_control);
 
 		GPIO_DisableInt(GPIOx, curr_pin);
 	}
