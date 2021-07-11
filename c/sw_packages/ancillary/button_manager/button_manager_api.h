@@ -61,11 +61,11 @@ struct buttons_manager_group_t
 	uint8_t  gpio_dev_arr_size;
 };
 
-#define  BTN_MANAGER_SET_GPIO_DEV_ARRAY(buttons_manager_group, gpio_dev_arr) \
+#define  BTN_MANAGER_SET_GPIO_DEV_ARRAY(buttons_manager_group, _gpio_dev_arr) \
 	{   \
-		buttons_manager_group.gpio_dev_arr = gpio_dev_arr;   \
+		buttons_manager_group.gpio_dev_arr = _gpio_dev_arr;   \
 		buttons_manager_group.gpio_dev_arr_size =            \
-					sizeof(gpio_dev_arr) / sizeof(struct dev_desc_t *); \
+					sizeof(_gpio_dev_arr) / sizeof(struct dev_desc_t *); \
 	}
 /****************************************************/
 
