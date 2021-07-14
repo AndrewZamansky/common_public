@@ -67,6 +67,7 @@ static size_t internal_flash_i94xxx_pwrite(struct dev_desc_t *adev,
 		return 0;
 	}
 
+	FMC_Open();
 	FMC_ENABLE_AP_UPDATE();
 
 	word_offset = wrAddr & 0x3;// read/write are in chunks of 4 bytes
@@ -121,8 +122,10 @@ static size_t internal_flash_i94xxx_pread(struct dev_desc_t *adev,
 {
 	size_t read_len;
 	uint32_t readAddr;
+#ifdef USE_ISP_FOR_READ
 	uint32_t read_u32;
 	uint32_t word_offset;
+#endif
 
 	if (0 == init_done) return 0;
 
@@ -131,6 +134,9 @@ static size_t internal_flash_i94xxx_pread(struct dev_desc_t *adev,
 	read_len = aLength;
 
 	readAddr = aOffset + DT_INTERNAL_FLASH_BASE_ADDR;
+
+#ifdef USE_ISP_FOR_READ
+	FMC_Open();
 
 	word_offset = readAddr & 0xf;
 	readAddr = (readAddr & (~0xf));
@@ -167,7 +173,9 @@ static size_t internal_flash_i94xxx_pread(struct dev_desc_t *adev,
 		read_u32 = FMC_Read(readAddr);
 		memcpy(apData, &read_u32, aLength);
 	}
-
+#else
+	memcpy(apData, (uint8_t*)readAddr, read_len);
+#endif
 	return read_len;
 }
 
@@ -206,8 +214,6 @@ static int  set_flash_base(uint32_t u32DFBA)
 
 static void device_start()
 {
-	FMC_Open();
-
 	/* following can be removed after adding erase of config page and
 	 * writing 0x5A5A into CONFIG2 after erasing
 	 */
@@ -223,6 +229,7 @@ static uint8_t flash_erase(uint32_t errase_addr)
 		return 1;
 	}
 	errase_addr += DT_INTERNAL_FLASH_BASE_ADDR;
+	FMC_Open();
 	FMC_ENABLE_AP_UPDATE();
 	FMC_Erase(errase_addr);
 	FMC_DISABLE_AP_UPDATE();
