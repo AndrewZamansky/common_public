@@ -9,8 +9,10 @@
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 #include "dev_management_api.h"
+#include "os_wrapper.h"
 
 struct shell_presets_runtime_t {
+	os_mutex_t  control_mutex;
 	uint8_t *curr_preset_buf;
 	uint16_t preset_actual_size;
 	uint16_t curr_preset_num;

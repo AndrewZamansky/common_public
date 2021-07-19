@@ -311,6 +311,12 @@ static uint8_t device_start(struct shell_presets_cfg_t *config_handle,
 	uint16_t preset_size;
 	uint8_t *curr_preset_buf;
 
+	if (runtime_handle->init_done) return;
+
+	runtime_handle->control_mutex = os_create_mutex();
+	//take mutex here because init_done still 0 so it was not taken before
+	os_mutex_take_infinite_wait(runtime_handle->control_mutex);
+
 	preset_size = config_handle->preset_size;
 	storage_dev = config_handle->storage_dev;
 	if (DATA_POSITION >= preset_size)
@@ -337,46 +343,52 @@ static uint8_t shell_presets_ioctl( struct dev_desc_t *adev,
 {
 	struct shell_presets_cfg_t *config_handle;
 	struct shell_presets_runtime_t *runtime_handle;
+	uint8_t ret_val;
 
 	config_handle = DEV_GET_CONFIG_DATA_POINTER(shell_presets, adev);
 	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(shell_presets, adev);
 
-	if ((0 == runtime_handle->init_done) && (IOCTL_DEVICE_START != aIoctl_num))
+	if (0 == runtime_handle->init_done)
 	{
-		return SHELL_PRESET_NOT_READY;
+		if (IOCTL_DEVICE_START != aIoctl_num) return SHELL_PRESET_NOT_READY;
+	}
+	else
+	{
+		os_mutex_take_infinite_wait(runtime_handle->control_mutex);
 	}
 
 	switch(aIoctl_num)
 	{
 	case IOCTL_DEVICE_START :
-		return device_start(config_handle, runtime_handle);
+		ret_val = device_start(config_handle, runtime_handle);
 		break;
 	case IOCTL_SHELL_PRESETS_START_RECORDING :
-		return start_recording_preset(
+		ret_val = start_recording_preset(
 				config_handle, runtime_handle, (size_t) aIoctl_param1);
 		break;
 	case IOCTL_SHELL_PRESETS_STOP_RECORDING :
-		return save_preset(config_handle,
+		ret_val = save_preset(config_handle,
 				runtime_handle, runtime_handle->curr_preset_num);
 		break;
 	case IOCTL_SHELL_PRESETS_GET_PRESET_BUFFER :
-		return get_preset_buffer(
+		ret_val = get_preset_buffer(
 					config_handle, runtime_handle, aIoctl_param1);
 		break;
 	case IOCTL_SHELL_PRESETS_RELEASE_PRESET_BUFFER :
-		return release_preset_buffer(runtime_handle);
+		ret_val = release_preset_buffer(runtime_handle);
 		break;
 	case IOCTL_SHELL_PRESETS_SET_PRESET_TO_DEFAULT :
-		return set_preset_to_default(
+		ret_val = set_preset_to_default(
 				config_handle, runtime_handle, (size_t) aIoctl_param1);
 		break;
 	case IOCTL_SHELL_PRESETS_ABORT_RECORDING:
-		return abort_recording(config_handle, runtime_handle);
+		ret_val = abort_recording(config_handle, runtime_handle);
 		break;
 	default :
-		return 1;
+		return ret_val = SHELL_PRESET_UNKNOWN_IOCTL;
 	}
-	return 0;
+	os_mutex_give(runtime_handle->control_mutex);
+	return ret_val;
 }
 
 
