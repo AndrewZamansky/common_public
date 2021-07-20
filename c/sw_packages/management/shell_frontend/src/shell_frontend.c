@@ -368,6 +368,9 @@ static void consume_line(struct shell_frontend_cfg_t *config_handle,
 			DEV_IOCTL_1_PARAMS(
 				shell_backend_dev, IOCTL_SHELL_NEW_FRAME_RECEIVED, &rcvd_cmd);
 		}
+
+		// in case of windows it will save /r/n
+		if (SUMS_OF_EOLS == (pCmd[EOL_pos] + pCmd[EOL_pos + 1])) EOL_pos++;
 		save_to_preset_if_needed(config_handle, pCmd, EOL_pos + 1);
 	}
 
