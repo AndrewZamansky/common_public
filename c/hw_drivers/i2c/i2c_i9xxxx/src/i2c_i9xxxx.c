@@ -600,12 +600,10 @@ static void master_write(struct dev_desc_t *adev,
 	size_t   reg_addr;
 	size_t   num_of_bytes_to_write;
 
+	wr_struct->num_of_bytes_written = 0;
 	num_of_bytes_to_write = wr_struct->num_of_bytes_to_write;
-	if (0 == num_of_bytes_to_write)
-	{
-		wr_struct->num_of_bytes_written = 0;
-		return ;
-	}
+
+	if (0 == num_of_bytes_to_write) return ;
 
 	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(i2c_i9xxxx, adev);
 	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(i2c_i9xxxx, adev);
@@ -677,13 +675,9 @@ static void master_read(struct dev_desc_t *adev,
 	size_t   reg_addr_size;
 	size_t   reg_addr;
 
+	rd_struct->num_of_bytes_that_was_read = 0;
 	num_of_bytes_to_read = rd_struct->num_of_bytes_to_read;
-
-	if (1 > num_of_bytes_to_read)
-	{
-		rd_struct->num_of_bytes_to_read = 0;
-		return;
-	}
+	if (1 > num_of_bytes_to_read) return;
 
 	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(i2c_i9xxxx, adev);
 	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(i2c_i9xxxx, adev);
@@ -695,11 +689,7 @@ static void master_read(struct dev_desc_t *adev,
 			return;
 	}
 
-	if (I2C_I9XXXX_API_MASTER_MODE != cfg_hndl->master_slave_mode)
-	{
-		rd_struct->num_of_bytes_to_read = 0;
-		return;
-	}
+	if (I2C_I9XXXX_API_MASTER_MODE != cfg_hndl->master_slave_mode) return;
 
 	WaitQueue = runtime_handle->WaitQueue;
 	mutex = runtime_handle->mutex;
