@@ -311,7 +311,7 @@ static uint8_t device_start(struct shell_presets_cfg_t *config_handle,
 	uint16_t preset_size;
 	uint8_t *curr_preset_buf;
 
-	if (runtime_handle->init_done) return;
+	if (runtime_handle->init_done) return 0;
 
 	runtime_handle->control_mutex = os_create_mutex();
 	//take mutex here because init_done still 0 so it was not taken before
