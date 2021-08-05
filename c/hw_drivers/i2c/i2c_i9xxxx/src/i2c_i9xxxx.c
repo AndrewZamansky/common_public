@@ -342,9 +342,18 @@ static void I2C_MasterRX(struct i2c_i9xxxx_cfg_t *cfg_hndl,
 	switch(u32Status)
 	{
 	case 0x08:
-		/* START has been transmitted and Write SLA+W to Register I2CDAT. */
-		I2C_SET_DATA(i2c, (runtime_handle->remote_slave_addr << 1));
-		I2C_SET_CONTROL_REG(i2c, I2C_CTL_SI);
+		if (reg_addr_left_to_transmit)
+		{
+			/* START has been transmitted and Write SLA+W to Register I2CDAT. */
+			I2C_SET_DATA(i2c, (runtime_handle->remote_slave_addr << 1));
+			I2C_SET_CONTROL_REG(i2c, I2C_CTL_SI);
+		}
+		else
+		{
+			/* Repeat START has been transmitted and prepare SLA+R */
+			I2C_SET_DATA(i2c, (runtime_handle->remote_slave_addr << 1) | 0x01);
+			I2C_SET_CONTROL_REG(i2c, I2C_CTL_SI_AA);
+		}
 		runtime_handle->device_access_tries--;
 		break;
 
