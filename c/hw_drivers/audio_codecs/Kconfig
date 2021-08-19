@@ -11,5 +11,13 @@ config INCLUDE_NAU88L24
 	bool   "NAU88L24"
 	default n
 
+config INCLUDE_NAU83GXX
+	bool   "NAU83GXX"
+	default n
+
+if INCLUDE_NAU83GXX
+source "$KCONFIG_PUBLIC_START_DIR/hw_drivers/audio_codecs/NAU83GXX/Kconfig"
+endif
+
 
 endmenu

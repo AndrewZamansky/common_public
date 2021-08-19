@@ -1,0 +1,10 @@
+#
+	
+menu "`--->  NAU83GXX configurations"
+
+config NAU83GXX_ENABLE_SHELL_COMMANDS
+	bool "enable NAU83GXX shell commands"
+	default n
+
+
+endmenu
