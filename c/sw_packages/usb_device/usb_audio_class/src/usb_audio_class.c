@@ -720,6 +720,10 @@ static void start_audio_class(struct dev_desc_t *adev,
 	init_default_volumes_and_mutes(runtime_hndl);
 	runtime_hndl->request_state = REQ_STATE_IDLE;
 	runtime_hndl->app_is_getting_data = 0;
+	runtime_hndl->playback_volumes_changed = 0;
+	runtime_hndl->playback_mute_changed = 0;
+	runtime_hndl->recording_volumes_changed = 0;
+	runtime_hndl->recording_mute_changed = 0;
 
 	if (0 != cfg_hndl->enable_recording)
 	{
@@ -748,7 +752,7 @@ static void start_audio_class(struct dev_desc_t *adev,
 
 static uint8_t get_master_volumes(
 		struct usb_audio_class_runtime_t *runtime_hndl,
-		int16_t *cur_playback_volume, int16_t *cur_recording_volume)
+		struct usb_audio_class_get_volumes_t  *get_volumes)
 {
 	runtime_hndl->app_is_getting_data = 1;
 	// from this point new USB out request for volume change will get STALL
@@ -758,8 +762,14 @@ static uint8_t get_master_volumes(
 		runtime_hndl->app_is_getting_data = 0;
 		return 1;
 	}
-	*cur_playback_volume = runtime_hndl->curr_playback_volume[0];
-	*cur_recording_volume = runtime_hndl->curr_recording_volume[0];
+	get_volumes->playback_volumes_changed =
+				runtime_hndl->playback_volumes_changed;
+	get_volumes->recording_volumes_changed =
+			runtime_hndl->recording_volumes_changed;
+	get_volumes->curr_playback_volume = runtime_hndl->curr_playback_volume[0];
+	get_volumes->curr_recording_volume = runtime_hndl->curr_recording_volume[0];
+	runtime_hndl->playback_volumes_changed = 0;
+	runtime_hndl->recording_volumes_changed = 0;
 	runtime_hndl->app_is_getting_data = 0;
 	return 0;
 }
@@ -767,7 +777,7 @@ static uint8_t get_master_volumes(
 
 static uint8_t get_master_mutes(
 		struct usb_audio_class_runtime_t *runtime_hndl,
-		int8_t *cur_playback_mute, int8_t *cur_recording_mute)
+		struct usb_audio_class_get_mutes_t *get_mutes)
 {
 	runtime_hndl->app_is_getting_data = 1;
 	// from this point new USB out request for mute change will get STALL
@@ -777,15 +787,20 @@ static uint8_t get_master_mutes(
 		runtime_hndl->app_is_getting_data = 0;
 		return 1;
 	}
-	*cur_playback_mute = runtime_hndl->playback_mute;
-	*cur_recording_mute = runtime_hndl->recording_mute;
+	get_mutes->playback_mute_changed = runtime_hndl->playback_mute_changed;
+	get_mutes->recording_mute_changed =
+				runtime_hndl->recording_volumes_changed;
+	get_mutes->curr_playback_mute = runtime_hndl->playback_mute;
+	get_mutes->curr_recording_mute = runtime_hndl->recording_mute;
+	runtime_hndl->playback_mute_changed = 0;
+	runtime_hndl->recording_mute_changed = 0;
 	runtime_hndl->app_is_getting_data = 0;
 	return 0;
 }
 
 
 /**
- * usb_i94xxx_ioctl()
+ * usb_audio_class_ioctl()
  *
  * return:
  */
@@ -822,10 +837,10 @@ static uint8_t usb_audio_class_ioctl( struct dev_desc_t *adev,
 		release_tx_buffer(cfg_hndl, runtime_hndl);
 		break;
 	case USB_AUDIO_CLASS_IOCTL_GET_MASTER_VOLUMES :
-		return get_master_volumes(runtime_hndl, aIoctl_param1, aIoctl_param2);
+		return get_master_volumes(runtime_hndl, aIoctl_param1);
 		break;
 	case USB_AUDIO_CLASS_IOCTL_GET_MASTER_MUTES :
-		return get_master_mutes(runtime_hndl, aIoctl_param1, aIoctl_param2);
+		return get_master_mutes(runtime_hndl, aIoctl_param1);
 		break;
 	case USB_AUDIO_CLASS_IOCTL_GET_IF_HOST_RECORDING:
 		*(uint8_t *) aIoctl_param1 = runtime_hndl->host_started_recording;

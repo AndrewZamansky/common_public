@@ -290,10 +290,12 @@ static uint8_t set_mute(struct usb_audio_class_runtime_t *runtime_hndl,
 
 	if (REC_FEATURE_UNITID == unit_id)
 	{
+		runtime_hndl->recording_mute_changed = 1;
 		data = (uint8_t*)&runtime_hndl->recording_mute;
 	}
 	else if (PLAY_FEATURE_UNITID == unit_id)
 	{
+		runtime_hndl->playback_mute_changed = 1;
 		data = (uint8_t*)&runtime_hndl->playback_mute;
 	}
 	else
@@ -321,6 +323,7 @@ static uint8_t set_volume(struct usb_audio_class_runtime_t *runtime_hndl,
 
 	if (REC_FEATURE_UNITID == unit_id)
 	{
+		runtime_hndl->recording_volumes_changed = 1;
 		if (NUM_OF_PLAYBACK_CHANNELS <= channel_id)
 		{
 			return 1;
@@ -329,6 +332,7 @@ static uint8_t set_volume(struct usb_audio_class_runtime_t *runtime_hndl,
 	}
 	else if (PLAY_FEATURE_UNITID == unit_id)
 	{
+		runtime_hndl->playback_volumes_changed = 1;
 		if (NUM_OF_RECORDING_CHANNELS <= channel_id)
 		{
 			return 1;

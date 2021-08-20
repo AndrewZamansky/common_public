@@ -41,6 +41,23 @@ enum USB_AUDIO_CLASS_API_ioctl_e {
 	USB_AUDIO_CLASS_IOCTL_GET_IF_HOST_IS_STREAMING_OUT
 };
 
+
+struct usb_audio_class_get_volumes_t {
+	uint8_t playback_volumes_changed;
+	uint8_t recording_volumes_changed;
+	int16_t curr_playback_volume;
+	int16_t curr_recording_volume;
+};
+
+
+struct usb_audio_class_get_mutes_t {
+	uint8_t playback_mute_changed;
+	uint8_t recording_mute_changed;
+	int8_t curr_playback_mute;
+	int8_t curr_recording_mute;
+};
+
+
 struct usb_audio_class_cfg_t {
 	struct dev_desc_t *usb_hw;
 	struct dev_desc_t *control_callback_dev;

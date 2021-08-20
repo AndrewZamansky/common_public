@@ -38,7 +38,7 @@ int do_dsp_getkcs_setup(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[
 	int   data_print_word_sizing = 0;
 	char *pEnd;
 	int i;
-	struct dev_desc_t *kcs_i2c_dev;
+	struct dev_desc_t *kcs_i2c_dev = NULL;
 	uint8_t   *recvBuf;
 	uint32_t   status = 0;
 	int rc = RC_OK;
