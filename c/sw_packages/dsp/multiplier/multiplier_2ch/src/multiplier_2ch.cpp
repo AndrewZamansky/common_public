@@ -25,7 +25,7 @@ char multiplier_2ch_module_name[] = "multiplier_2ch";
 #define ln_of_10   2.302585092994f
 #define _20_div_ln_of_10   8.685889638065f
 
-#define  WEIGHT_ALFA_F  0.08f
+#define  WEIGHT_ALFA_F  0.03f
 static real_t WEIGHT_ALFA = WEIGHT_ALFA_F;
 static real_t ONE_MINUS_WEIGHT_ALFA = (1.0f - WEIGHT_ALFA_F);
 
