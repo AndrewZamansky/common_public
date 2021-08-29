@@ -788,8 +788,7 @@ static uint8_t get_master_mutes(
 		return 1;
 	}
 	get_mutes->playback_mute_changed = runtime_hndl->playback_mute_changed;
-	get_mutes->recording_mute_changed =
-				runtime_hndl->recording_volumes_changed;
+	get_mutes->recording_mute_changed = runtime_hndl->recording_mute_changed;
 	get_mutes->curr_playback_mute = runtime_hndl->playback_mute;
 	get_mutes->curr_recording_mute = runtime_hndl->recording_mute;
 	runtime_hndl->playback_mute_changed = 0;
