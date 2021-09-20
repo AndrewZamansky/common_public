@@ -23,6 +23,7 @@
 #include "irq_api.h"
 #include "usb_device_api.h"
 #include "pin_control_api.h"
+#include "errors_api.h"
 
 #include "usbd.h"
 #include "string.h"
@@ -93,6 +94,9 @@ uint32_t CyclesPerUs      = 0;
 	(*((__IO uint32_t *) ((uint32_t)&USBD->EP[0].CFG + (uint32_t)((ep) << 4))))
 
 
+static uint8_t *tmp_USB_out_buff = NULL;
+static size_t max_endpoint_size = 0;
+
 void EP_Handler(uint8_t ep_num)
 {
 	uint32_t ep_cfg_state;
@@ -118,11 +122,18 @@ void EP_Handler(uint8_t ep_num)
 		pu8Src = (uint8_t *)(
 				(uint32_t)USBD_BUF_BASE + USBD_GET_EP_BUF_ADDR(ep_num));
 		u32Len = USBD_GET_PAYLOAD_LEN(ep_num);
+		if (max_endpoint_size < u32Len)
+		{
+			u32Len = max_endpoint_size;
+		}
+		// CANNOT USE REGULAR memcpy(). SHOULD BE COPIED BYTE BY BYTE
+		USBD_MemCopy(tmp_USB_out_buff, pu8Src, u32Len);
 
 		callback_func_out = out_callback_functions[ep_num];
 		if (NULL != callback_func_out)
 		{
-			callback_func_out(endpoint_callback_devs[ep_num], pu8Src, u32Len);
+			callback_func_out(
+					endpoint_callback_devs[ep_num], tmp_USB_out_buff, u32Len);
 		}
 		/* Prepare for nex OUT packet */
 		USBD_SET_PAYLOAD_LEN(ep_num, max_pckt_sizes[ep_num]);
@@ -399,23 +410,16 @@ static void set_data_to_in_endpoint_func(
 {
 	uint8_t endpoint_num;
 	uint8_t *pu8Dest;
-	uint8_t const *pu8Src;
-	size_t  size;
-	uint16_t i;
+	size_t size;
 
 	endpoint_num = set_data_to_in_endpoint->endpoint_num;
 	pu8Dest = (uint8_t *)((uint32_t)USBD_BUF_BASE +
 						USBD_GET_EP_BUF_ADDR(endpoint_num));
 
 	size = set_data_to_in_endpoint->size;
-	pu8Src = set_data_to_in_endpoint->data;
-	//MUST BE COPIED BY  SINGLE BYTES
+	//MUST BE COPIED BY  SINGLE BYTES. CANNOT USE memcpy()
 	//memcpy(pu8Dest, set_data_to_in_endpoint->data, size);
-
-	for (i = 0; i < size; i++)
-	{
-		*pu8Dest++ = *pu8Src++;
-	}
+	USBD_MemCopy(pu8Dest, (uint8_t*)set_data_to_in_endpoint->data, size);
 	USBD_SET_PAYLOAD_LEN(endpoint_num, size);
 }
 
@@ -450,6 +454,15 @@ static void set_endpoint_func(struct set_endpoints_t *set_endpoints)
 		{
 			CRITICAL_ERROR("unsupported endpoint size\n");
 		}
+
+		if (max_endpoint_size < max_pckt_size)
+		{
+			tmp_USB_out_buff =
+					(uint8_t*) os_safe_realloc(tmp_USB_out_buff, max_pckt_size);
+			errors_api_check_if_malloc_succeed(tmp_USB_out_buff);
+			max_endpoint_size = max_pckt_size;
+		}
+
 		available_buff_pointer += max_pckt_size;
 		// hw requires alignment by 8 bytes:
 		available_buff_pointer = (available_buff_pointer + 7) & (~0x7);
