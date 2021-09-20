@@ -2,16 +2,6 @@
  *  cmd_dsp_status.c
  */
 
-/*
- * Subroutine:  dsp_status
- *
- * Description:
- *
- * Inputs:
- *
- * Return:      None
- *
- */
 #include "audio_path_api.h"
 #include "_project.h"
 

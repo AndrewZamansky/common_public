@@ -1,5 +1,5 @@
 /*
- *  cmd_bin_0x00.c
+ *  cmd_kcs_send_setup_bin.c
  */
 
 #include "_project.h"

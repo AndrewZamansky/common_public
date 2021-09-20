@@ -2,16 +2,6 @@
  *  cmd_dsp_counter.c
  */
 
-/*
- * Subroutine:  dsp_counter
- *
- * Description:
- *
- * Inputs:
- *
- * Return:      None
- *
- */
 #include "audio_path_api.h"
 #include "_project.h"
 

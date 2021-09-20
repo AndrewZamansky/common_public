@@ -2,16 +2,6 @@
  *  cmd_dsp_setkcs_send.c
  */
 
-/*
- * Subroutine:  dsp_setkcs_send
- *
- * Description:
- *
- * Inputs:
- *
- * Return:      None
- *
- */
 #include "audio_path_api.h"
 #include "_project.h"
 

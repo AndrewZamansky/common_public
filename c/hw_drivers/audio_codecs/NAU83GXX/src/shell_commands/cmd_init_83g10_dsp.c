@@ -1,10 +1,7 @@
 /*
- *
- */
-
-/*
  *  cmd_init_83g10_dsp.c
  */
+
 #include "audio_path_api.h"
 #include "_project.h"
 

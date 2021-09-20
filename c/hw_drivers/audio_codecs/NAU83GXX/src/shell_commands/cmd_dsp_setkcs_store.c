@@ -2,18 +2,6 @@
  *  cmd_dsp_setkcs_store.c
  */
 
-/*
- * Subroutine:  dsp_setkcs_store
- *
- * Description: Writes 4 bytes to the buffer of the kcs_i2c device and
- *              increments the counter by 4 to proceed to the next memory
- *              address.
- *
- * Inputs:
- *
- * Return:      None
- *
- */
 #include "audio_path_api.h"
 #include "_project.h"
 
@@ -28,6 +16,18 @@
 extern struct dev_desc_t *G10_0x10;
 extern struct dev_desc_t *G10_0x11;
 
+/*
+ * Subroutine:  dsp_setkcs_store
+ *
+ * Description: Writes 4 bytes to the buffer of the kcs_i2c device and
+ *              increments the counter by 4 to proceed to the next memory
+ *              address.
+ *
+ * Inputs:
+ *
+ * Return:      None
+ *
+ */
 int do_dsp_setkcs_store(
 		cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {

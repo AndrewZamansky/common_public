@@ -2,16 +2,6 @@
  *  cmd_dsp_getkcs_setup.c
  */
 
-/*
- * Subroutine:  dsp_getkcs_setup
- *
- * Description:
- *
- * Inputs:
- *
- * Return:      None
- *
- */
 #include "audio_path_api.h"
 #include "_project.h"
 

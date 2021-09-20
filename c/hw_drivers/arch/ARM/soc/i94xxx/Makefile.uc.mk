@@ -5,7 +5,7 @@ ifeq ($(sort $(CONFIG_I94XXX)),y)
     ifeq ("$(wildcard $(BSP_I94XXX_PATH))","")
         $(info !--- I94XXX BSP path $(BSP_I94XXX_PATH) does not exist)
         $(info !--- get I94XXX BSP git and unpack it to $(BSP_I94XXX_PATH))
-        $(info !--- make sure Library and SampleCode folders are)
+        $(info !--- make sure .git directory is)
         $(info !--- located in $(BSP_I94XXX_PATH)/  after unpacking)
         $(error )
     endif

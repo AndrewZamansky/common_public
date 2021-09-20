@@ -2,16 +2,6 @@
  *  cmd_dsp_swrev.c
  */
 
-/*
- * Subroutine:  dsp_swrev
- *
- * Description:
- *
- * Inputs:
- *
- * Return:      None
- *
- */
 #include "audio_path_api.h"
 #include "_project.h"
 
@@ -23,10 +13,8 @@
 #include "i2c_api.h"
 
 
-
 extern struct dev_desc_t *G10_0x10;
 extern struct dev_desc_t *G10_0x11;
-
 
 
 int do_dsp_swrev(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])

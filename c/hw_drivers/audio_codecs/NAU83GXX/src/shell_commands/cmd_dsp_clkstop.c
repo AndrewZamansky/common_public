@@ -2,16 +2,6 @@
  *  cmd_dsp_clkstop.c
  */
 
-/*
- * Subroutine:  dsp_clkstop
- *
- * Description:
- *
- * Inputs:
- *
- * Return:      None
- *
- */
 #include "audio_path_api.h"
 #include "_project.h"
 
