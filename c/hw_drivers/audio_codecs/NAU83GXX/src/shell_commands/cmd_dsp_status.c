@@ -65,15 +65,8 @@ end:
 
 	if(RC_OK == rc)
 	{
-//		status = (val[0]) | (val[1] << 8) | (val[2] << 16) | (val[3] << 24);
 		SHELL_REPLY_PRINTF("%08X\n\r", status);
 	}
-#ifdef KCS_RC_DEBUG_COUNTER
-	else
-	{
-		kcs_rc_debug_counter++;
-	}
-#endif
 
 	// needed for Klippel GUI:
 	SHELL_REPLY_PRINTF("%c", 0x04UL);

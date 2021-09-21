@@ -25,16 +25,13 @@
 	#error  "NAU83GXX_TASK_STACK_SIZE should be define in project"
 #endif
 
+#define I2C_DEV_DESC 0x46
 
 #define KCS_I2C_DSP_MAX_TX_SIZE            ( 96 )
 
 //#define VBST_LEVEL 0x3402
 #define AUTO_START_BIQUAD
 
-
-#ifdef KCS_RC_DEBUG_COUNTER
-uint32_t kcs_rc_debug_counter = 0;
-#endif
 
 enum init_sel_e {
 	INIT_WITH_RESET_ONLY,
@@ -142,7 +139,8 @@ extern void NAU83GXX_OCP_recovery(struct NAU83GXX_config_t *config_handle);
 
 static uint8_t send_simple_cmd(
 	struct NAU83GXX_config_t *config_handle, uint8_t cmd, uint32_t *response);
-static uint8_t patch_for_correct_setup_write(struct NAU83GXX_config_t *config_handle);
+static uint8_t patch_for_correct_setup_write(
+				struct NAU83GXX_config_t *config_handle);
 static uint8_t send_header_and_update_lenU32(
 		struct NAU83GXX_config_t *config_handle, uint8_t cmd,
 		uint16_t sendLen, uint16_t *msg_len_u32, uint16_t *padding);
@@ -476,7 +474,8 @@ static uint8_t send_postamble_and_get_reply(
 }
 
 
-static uint8_t patch_for_correct_setup_write(struct NAU83GXX_config_t *config_handle)
+static uint8_t patch_for_correct_setup_write(
+							struct NAU83GXX_config_t *config_handle)
 {
 	uint16_t lenInU32, padding;
 	uint8_t tmp_rx_buf[4];
@@ -574,6 +573,13 @@ static uint8_t process_init_hw_msg(struct NAU83GXX_config_t *config_handle,
 		if (rc) return rc;
 		break;
 	case INIT_WITH_REG_AND_KCS:
+		nau83gxx_read_wordU16(i2c_dev, dev_addr, I2C_DEV_DESC, &read_dat);
+		read_dat = read_dat & 0xF0;
+		if (read_dat != config_handle->chip_type)
+		{
+			CRITICAL_ERROR("wrong chip type");
+		}
+
 		rc = nau83gxx_init_i2c_regs(config_handle);
 		if (rc) return rc;
 		//os_delay_ms(500);
@@ -583,12 +589,6 @@ static uint8_t process_init_hw_msg(struct NAU83GXX_config_t *config_handle,
 			os_delay_ms(5);
 		}
 
-		nau83gxx_read_wordU16(i2c_dev, dev_addr, I2C_DEV_DESC, &read_dat);
-		read_dat = read_dat & 0xF0;
-		if (read_dat != config_handle->chip_type)
-		{
-			CRITICAL_ERROR("wrong chip type");
-		}
 		#ifdef VBST_LEVEL
 		//changes VBST to defined VBST_LEVEL
 			nau83gxx_write_wordU16(i2c_dev, dev_addr, 0x17, VBST_LEVEL);
@@ -998,7 +998,8 @@ static void init_driver(struct dev_desc_t *adev,
 }
 
 
-static uint8_t init_hw_with_hw_reset_only(struct NAU83GXX_config_t *config_handle,
+static uint8_t init_hw_with_hw_reset_only(
+		struct NAU83GXX_config_t *config_handle,
 		struct NAU83GXX_runtime_t *runtime_handle)
 {
 	struct task_message_t msg;
@@ -1136,6 +1137,30 @@ static uint8_t send_kcs_send_setup_non_blocking(
 }
 
 
+static uint8_t get_info(
+	struct NAU83GXX_config_t *config_handle,
+	struct NAU83GXX_runtime_t *runtime_handle,
+	struct NAU83GXX_get_info_t *p_get_info)
+{
+	p_get_info->chip_type = config_handle->chip_type;
+	enum state_e {
+		STATE_NOT_INITIALIZED = 0,
+		STATE_DRIVER_INIT_DONE,
+		STATE_IDLE,
+		STATE_PROCESSING_GET_CMD,
+		STATE_COLLECTING_DATA_FOR_SEND
+	};
+	if (STATE_IDLE > runtime_handle->state)
+	{
+		p_get_info->chip_type = NAU83GXX_CHIP_STATE_INITIALIZING;
+	}
+	else
+	{
+		p_get_info->chip_type = NAU83GXX_CHIP_STATE_RUNNING;
+	}
+}
+
+
 /**
  * kcs_i2c_ioctl()
  *
@@ -1184,6 +1209,8 @@ static uint8_t NAU83GXX_ioctl(struct dev_desc_t *adev,
 		return send_kcs_send_collected_setup_data(runtime_handle);
 	case IOCTL_KCS_SEND_SETUP_NON_BLOCKING:
 		return send_kcs_send_setup_non_blocking(runtime_handle, aIoctl_param1);
+	case IOCTL_GET_INFO:
+		return get_info(config_handle, runtime_handle, aIoctl_param1);
 	default :
 		return 1;
 	}

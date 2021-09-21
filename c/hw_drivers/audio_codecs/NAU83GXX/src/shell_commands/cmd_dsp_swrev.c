@@ -66,12 +66,6 @@ end:
 	{
 		SHELL_REPLY_PRINTF("%08X\n\r", status);
 	}
-#ifdef KCS_RC_DEBUG_COUNTER
-	else
-	{
-		kcs_rc_debug_counter++;
-	}
-#endif
 
 	// needed for Klippel GUI:
 	SHELL_REPLY_PRINTF("%c", 0x04UL);

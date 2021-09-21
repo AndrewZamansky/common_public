@@ -109,13 +109,6 @@ end:
 	}
 	rc = DEV_IOCTL_0_PARAMS(kcs_i2c_dev, IOCTL_KCS_EXIT_GET_STATE);
 
-#ifdef KCS_RC_DEBUG_COUNTER
-	else
-	{
-		kcs_rc_debug_counter++;
-	}
-#endif
-
 	// needed for Klippel GUI:
 	SHELL_REPLY_PRINTF("%c", 0x04UL);
 

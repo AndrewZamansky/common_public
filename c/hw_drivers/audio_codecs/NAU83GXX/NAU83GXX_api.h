@@ -44,14 +44,8 @@ struct S_I2CCMD {
 
 typedef void (*end_of_ioctl_callback_f)(uint8_t);
 
-#define L_CH_DEV_ADDR 0x10
-#define R_CH_DEV_ADDR 0x11
-#define I2C_DEV_DESC 0x46
-
-
-#ifdef KCS_RC_DEBUG_COUNTER
-	extern uint32_t kcs_rc_debug_counter;
-#endif
+#define L_CH_DEV_ADDR 0x10 // should be removed after klippel upgrade of db-lab
+#define R_CH_DEV_ADDR 0x11 // should be removed after klippel upgrade of db-lab
 
 
 /*
@@ -117,6 +111,7 @@ enum kcs_i2c_ioctl_e {
 	IOCTL_KCS_ADD_DATA_FOR_SEND,
 	IOCTL_KCS_SEND_COLLECTED_SETUP_DATA,
 	IOCTL_KCS_SEND_SETUP_NON_BLOCKING,
+	IOCTL_GET_INFO,
 };
 
 struct hw_is_ready_ioctl_t {
@@ -155,6 +150,18 @@ struct kcs_send_setup_non_blocking_ioctl_t {
 	uint16_t        offset;
 	uint8_t         *data;
 	uint16_t        size;
+};
+
+
+enum NAU83GXX_chip_state_e {
+	 NAU83GXX_CHIP_STATE_INITIALIZING = 0,
+	 NAU83GXX_CHIP_STATE_RUNNING
+};
+
+
+struct NAU83GXX_get_info_t {
+	uint8_t chip_type;
+	uint8_t chip_state;
 };
 
 

@@ -78,16 +78,10 @@ int do_dsp_setkcs_start(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[
 	rc = DEV_IOCTL_1_PARAMS(kcs_i2c_dev,
 		IOCTL_KCS_START_COLLECT_DATA_FOR_SEND, &collect_data_ioctl);
 
-	end:
+end:
 	os_delay_ms(1);
 	SHELL_REPLY_PRINTF("rc%02X\n\r", rc);
 
-#ifdef KCS_RC_DEBUG_COUNTER
-	if(rc)
-	{
-		kcs_rc_debug_counter++;
-	}
-#endif
 
 	// needed for Klippel GUI:
 	SHELL_REPLY_PRINTF("%c", 0x04UL);

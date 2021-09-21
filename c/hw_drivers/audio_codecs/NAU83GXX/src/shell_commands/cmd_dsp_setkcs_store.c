@@ -93,13 +93,6 @@ end:
 	os_delay_ms(1);
 	SHELL_REPLY_PRINTF("rc%02X\n\r", rc);
 
-#ifdef KCS_RC_DEBUG_COUNTER
-	if(rc)
-	{
-		kcs_rc_debug_counter++;
-	}
-#endif
-
 	// needed for Klippel GUI:
 	SHELL_REPLY_PRINTF("%c", 0x04UL);
 	return 0;
