@@ -1143,13 +1143,7 @@ static uint8_t get_info(
 	struct NAU83GXX_get_info_t *p_get_info)
 {
 	p_get_info->chip_type = config_handle->chip_type;
-	enum state_e {
-		STATE_NOT_INITIALIZED = 0,
-		STATE_DRIVER_INIT_DONE,
-		STATE_IDLE,
-		STATE_PROCESSING_GET_CMD,
-		STATE_COLLECTING_DATA_FOR_SEND
-	};
+
 	if (STATE_IDLE > runtime_handle->state)
 	{
 		p_get_info->chip_type = NAU83GXX_CHIP_STATE_INITIALIZING;
@@ -1158,6 +1152,7 @@ static uint8_t get_info(
 	{
 		p_get_info->chip_type = NAU83GXX_CHIP_STATE_RUNNING;
 	}
+	return RC_OK;
 }
 
 
