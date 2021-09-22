@@ -287,6 +287,10 @@ void new_usb_audio_received(
 		return;
 	}
 
+	//perform shift protection in case corrupted USB packet has wrong size
+	// by always align to frame size
+	size -= size % cfg_hndl->frame_size;
+
 	while (0 != size)
 	{
 		copy_to_current_rx_buffer(cfg_hndl, runtime_hndl, &buff, &size);

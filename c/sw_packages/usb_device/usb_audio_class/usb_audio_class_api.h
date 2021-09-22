@@ -69,6 +69,7 @@ struct usb_audio_class_cfg_t {
 	uint16_t in_terminal_type;
 	uint8_t  num_of_tx_bytes_per_sample;
 	uint8_t  num_tx_channels;
+	uint16_t frame_size;
 	uint8_t  host_in_master_control_bit_map;
 	uint8_t  host_in_channel_control_bit_map;
 	uint8_t  enable_recording;
