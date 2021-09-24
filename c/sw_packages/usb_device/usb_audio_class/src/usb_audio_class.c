@@ -383,7 +383,8 @@ void new_usb_audio_requested(struct dev_desc_t *adev)
 	else
 	{
 		/* Setup error, stall the device */
-		DEV_IOCTL_0_PARAMS(cfg_hndl->usb_hw, IOCTL_USB_DEVICE_SET_STALL);
+		DEV_IOCTL_0_PARAMS(
+				cfg_hndl->usb_hw, IOCTL_USB_DEVICE_STALL_CONTROL_ENDPOINT);
 #ifdef  DEBUG
 		dbg_in_underflow_cnt++;
 #endif

@@ -73,6 +73,9 @@ usb_dev_endpoint_request_callback_func_t
 static usb_dev_interface_request_callback_func_t
 						last_interface_callback_func = NULL;
 static struct dev_desc_t *last_interface_dev = NULL;
+static usb_device_suspend_callback_t  usb_device_suspend_callback_func = NULL;
+static usb_device_resume_callback_t  usb_device_resume_callback_func = NULL;
+static usb_device_reset_callback_t  usb_device_reset_callback_func = NULL;
 
 static uint8_t endpoints_count = 2;
 static uint32_t available_buff_pointer = EP1_BUF_BASE + EP1_BUF_LEN;
@@ -170,20 +173,35 @@ static void int_status_bus_events()
 	/* Clear event flag */
 	USBD_CLR_INT_FLAG(USBD_INTSTS_BUS);
 
-	if(u32State & USBD_STATE_USBRST) {
+	if(u32State & USBD_STATE_USBRST)
+	{
 		/* Bus reset */
 		USBD_ENABLE_USB();
 		USBD_SwReset();
+		if (NULL != usb_device_reset_callback_func)
+		{
+			usb_device_reset_callback_func();
+		}
 		DBG_PRINTF("Bus reset\n");
 	}
-	if(u32State & USBD_STATE_SUSPEND) {
+	if(u32State & USBD_STATE_SUSPEND)
+	{
 		/* Enable USB but disable PHY */
 		USBD_DISABLE_PHY();
+		if (NULL != usb_device_suspend_callback_func)
+		{
+			usb_device_suspend_callback_func();
+		}
 		DBG_PRINTF("Suspend\n");
 	}
-	if(u32State & USBD_STATE_RESUME) {
+	if(u32State & USBD_STATE_RESUME)
+	{
 		/* Enable USB and enable PHY */
 		USBD_ENABLE_USB();
+		if (NULL != usb_device_resume_callback_func)
+		{
+			usb_device_resume_callback_func();
+		}
 		DBG_PRINTF("Resume\n");
 	}
 }
@@ -386,19 +404,19 @@ static void register_interfaces(
 
 
 static void set_request_out_buffer(
-		struct set_request_out_buffer_t *set_request_out_buffer)
+		struct set_request_out_buffer_t *p_set_request_out_buffer)
 {
 	USBD_PrepareCtrlOut(
-		set_request_out_buffer->data, set_request_out_buffer->size);
+		p_set_request_out_buffer->data, p_set_request_out_buffer->size);
 	USBD_PrepareCtrlIn(0, 0);
 }
 
 
 static void set_request_in_buffer(
-		struct set_request_in_buffer_t *set_request_in_buffer)
+		struct set_request_in_buffer_t *p_set_request_in_buffer)
 {
 	USBD_PrepareCtrlIn(
-			set_request_in_buffer->data, set_request_in_buffer->size);
+			p_set_request_in_buffer->data, p_set_request_in_buffer->size);
 	// Trigger next Control Out DATA1 Transaction.
 	/* Status stage */
 	USBD_PrepareCtrlOut(0, 0);
@@ -683,8 +701,17 @@ static uint8_t usb_i9xxxx_ioctl( struct dev_desc_t *adev,
 	case IOCTL_USB_DEVICE_SET_REQUEST_OUT_BUFFER :
 		set_request_out_buffer(aIoctl_param1);
 		break;
-	case IOCTL_USB_DEVICE_SET_STALL:
+	case IOCTL_USB_DEVICE_STALL_CONTROL_ENDPOINT:
 		USBD_SetStall(0);
+		break;
+	case IOCTL_USB_DEVICE_SET_SUSPEND_CALLBACK:
+		usb_device_suspend_callback_func = aIoctl_param1;
+		break;
+	case IOCTL_USB_DEVICE_SET_RESUME_CALLBACK:
+		usb_device_resume_callback_func = aIoctl_param1;
+		break;
+	case IOCTL_USB_DEVICE_SET_RESET_CALLBACK:
+		usb_device_reset_callback_func = aIoctl_param1;
 		break;
 	default :
 		return 1;

@@ -23,16 +23,23 @@ typedef void (*usb_dev_interface_request_callback_func_t)(
 typedef void (*usb_dev_endpoint_request_callback_func_t)(
 					struct dev_desc_t *callback_dev, uint8_t *request);
 
+typedef void (*usb_device_reset_callback_t)();
+typedef void (*usb_device_suspend_callback_t)();
+typedef void (*usb_device_resume_callback_t)();
+
 
 enum USB_DEVICE_COMMON_API_IOCTL_e
 {
 	IOCTL_USB_DEVICE_SET_DESCRIPTORS = IOCTL_LAST_COMMON_IOCTL + 1,
 	IOCTL_USB_DEVICE_START,
 	IOCTL_USB_DEVICE_SET_ENDPOINTS,
+	IOCTL_USB_DEVICE_SET_SUSPEND_CALLBACK,
+	IOCTL_USB_DEVICE_SET_RESUME_CALLBACK,
+	IOCTL_USB_DEVICE_SET_RESET_CALLBACK,
 	IOCTL_USB_DEVICE_REGISTER_INTERFACES,
 	IOCTL_USB_DEVICE_SET_REQUEST_IN_BUFFER,
 	IOCTL_USB_DEVICE_SET_REQUEST_OUT_BUFFER,
-	IOCTL_USB_DEVICE_SET_STALL,
+	IOCTL_USB_DEVICE_STALL_CONTROL_ENDPOINT,
 	IOCTL_USB_DEVICE_SENT_DATA_TO_IN_ENDPOINT
 };
 

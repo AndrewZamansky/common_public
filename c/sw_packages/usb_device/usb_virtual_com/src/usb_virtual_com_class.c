@@ -257,7 +257,7 @@ static void cdc_class_in_request(
 	else
 	{
 		/* Setup error, stall the device */
-		DEV_IOCTL_0_PARAMS(usb_hw, IOCTL_USB_DEVICE_SET_STALL);
+		DEV_IOCTL_0_PARAMS(usb_hw, IOCTL_USB_DEVICE_STALL_CONTROL_ENDPOINT);
 	}
 }
 
@@ -295,7 +295,7 @@ static void cdc_class_out_request( struct dev_desc_t *usb_hw, uint8_t *request)
 	else
 	{
 		/* Setup error, stall the device */
-		DEV_IOCTL_0_PARAMS(usb_hw, IOCTL_USB_DEVICE_SET_STALL);
+		DEV_IOCTL_0_PARAMS(usb_hw, IOCTL_USB_DEVICE_STALL_CONTROL_ENDPOINT);
 	}
 }
 
