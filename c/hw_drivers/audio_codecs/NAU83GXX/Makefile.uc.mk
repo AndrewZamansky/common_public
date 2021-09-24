@@ -15,7 +15,7 @@ SRC += src/NAU83GXX.c
 SRC += src/NAU83GXX_utils.c
 
 
-ifeq ($(sort $(CONFIG_NAU83GXX_ENABLE_SHELL_COMMANDS)),y)
+ifeq ($(sort $(CONFIG_NAU83GXX_ENABLE_DB_LAB_SHELL_COMMANDS)),y)
     SRC += src/shell_commands/cmd_init_83g10_dsp.c
     SRC += src/shell_commands/cmd_dsp_counter.c
     SRC += src/shell_commands/cmd_dsp_status.c
@@ -27,8 +27,8 @@ ifeq ($(sort $(CONFIG_NAU83GXX_ENABLE_SHELL_COMMANDS)),y)
     SRC += src/shell_commands/cmd_dsp_setkcs_start.c
     SRC += src/shell_commands/cmd_dsp_setkcs_store.c
     SRC += src/shell_commands/cmd_dsp_setkcs_send.c
-    SRC += src/shell_commands/cmd_kcs_send_setup_bin.c
 endif
+SRC += src/shell_commands/cmd_kcs_send_setup_bin.c
 
 VPATH =
 
