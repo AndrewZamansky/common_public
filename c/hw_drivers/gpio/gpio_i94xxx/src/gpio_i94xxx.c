@@ -379,10 +379,9 @@ static void stop_gpio(struct dev_desc_t *adev,
 		{
 			CRITICAL_ERROR("pin number should be less than 15");
 		}
+		GPIO_DisableInt(GPIOx, curr_pin);
 		tmp_pin_control = pin_control | (curr_pin << PIN_POS);
 		pin_control_api_clear_pin_function(tmp_pin_control);
-
-		GPIO_DisableInt(GPIOx, curr_pin);
 	}
 	runtime_handle->pin_mask = 0;
 	runtime_handle->init_done = 0;

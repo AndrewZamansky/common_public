@@ -49,6 +49,7 @@ enum main_msg_e {
 	MSG_SEND_COLLECTED_SETUP,
 	MSG_SEND_SETUP,
 	MSG_CONTINUE_RECOVERY,
+	MSG_POWER_DOWN,
 };
 
 
@@ -620,6 +621,19 @@ static uint8_t process_init_hw_msg(struct NAU83GXX_config_t *config_handle,
 }
 
 
+static uint8_t process_power_down_msg(
+		struct NAU83GXX_config_t *config_handle,
+		struct NAU83GXX_runtime_t *runtime_handle)
+{
+	uint8_t rc;
+
+	DEV_IOCTL_0_PARAMS(config_handle->irq_pin, IOCTL_DEVICE_STOP);
+	rc = nau83gxx_write_wordU16(
+			config_handle->i2c_dev, config_handle->dev_addr, 0x0, 0x0);
+	runtime_handle->state = STATE_NOT_INITIALIZED;
+	return rc;
+}
+
 static uint8_t process_reinit_i2c_regs_msg(
 			struct NAU83GXX_config_t *config_handle)
 {
@@ -877,6 +891,9 @@ static void nau83gxx_task (void * adev)
 		case MSG_CONTINUE_RECOVERY:
 			runtime_handle->do_recovery = 1;
 			break;
+		case MSG_POWER_DOWN:
+			rc = process_power_down_msg(config_handle, runtime_handle);
+			break;
 		default:
 			CRITICAL_ERROR("no such case");
 			break;
@@ -1121,6 +1138,15 @@ static uint8_t send_kcs_send_collected_setup_data(
 }
 
 
+static uint8_t send_power_down(struct NAU83GXX_runtime_t *runtime_handle)
+{
+	struct task_message_t msg;
+	msg.msg_type = MSG_POWER_DOWN;
+	return send_msg_and_wait(runtime_handle, &msg);
+}
+
+
+
 static uint8_t send_kcs_send_setup_non_blocking(
 	struct NAU83GXX_runtime_t *runtime_handle,
 	struct kcs_send_setup_non_blocking_ioctl_t *p_setup_data_ioctl)
@@ -1184,7 +1210,7 @@ static uint8_t NAU83GXX_ioctl(struct dev_desc_t *adev,
 				aIoctl_param1);
 	case IOCTL_HW_IS_READY_TO_INIT_WITH_HW_RESET_ONLY:
 		return init_hw_with_hw_reset_only(config_handle, runtime_handle);
-	case IOCTL_REINIT_I2C_REGISTERS:
+	case IOCTL_NAU83GXX_REINIT_I2C_REGISTERS:
 		return reinit_i2c_registers(config_handle, runtime_handle);
 	case IOCTL_KCS_SIMPLE_CMD:
 		return send_kcs_simple_cmd(runtime_handle, aIoctl_param1);
@@ -1204,8 +1230,10 @@ static uint8_t NAU83GXX_ioctl(struct dev_desc_t *adev,
 		return send_kcs_send_collected_setup_data(runtime_handle);
 	case IOCTL_KCS_SEND_SETUP_NON_BLOCKING:
 		return send_kcs_send_setup_non_blocking(runtime_handle, aIoctl_param1);
-	case IOCTL_GET_INFO:
+	case IOCTL_NAU83GXX_GET_INFO:
 		return get_info(config_handle, runtime_handle, aIoctl_param1);
+	case IOCTL_NAU83GXX_POWER_DOWN:
+		return send_power_down(runtime_handle);
 	default :
 		return 1;
 	}
