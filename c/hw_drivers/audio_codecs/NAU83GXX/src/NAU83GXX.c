@@ -160,9 +160,14 @@ static uint8_t NAU83GXX_callback(struct dev_desc_t *adev,
 	struct NAU83GXX_runtime_t *runtime_handle;
 	uint8_t irq_not_in_idle;
 	struct task_message_t msg;
+	os_queue_t msg_queue;
+
 
 	config_handle = DEV_GET_CONFIG_DATA_POINTER(NAU83GXX, adev);
 	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(NAU83GXX, adev);
+	msg_queue = runtime_handle->msg_queue;
+	if (NULL == msg_queue) return 1;  // driver not ready to receive messages
+
 	if (CALLBACK_INTERRUPT_ARRIVED == aCallback_num)
 	{
 		DEV_IOCTL_1_PARAMS(config_handle->irq_pin,
@@ -171,7 +176,7 @@ static uint8_t NAU83GXX_callback(struct dev_desc_t *adev,
 		{
 			msg.msg_type = MSG_CONTINUE_RECOVERY;
 			if (OS_QUEUE_SEND_SUCCESS !=
-					os_queue_send_without_wait(runtime_handle->msg_queue, &msg))
+								os_queue_send_without_wait(msg_queue, &msg))
 			{
 				// the queue is full, so run recovery at the end of next message
 				runtime_handle->do_recovery = 0;
@@ -631,6 +636,7 @@ static uint8_t process_power_down_msg(
 	rc = nau83gxx_write_wordU16(
 			config_handle->i2c_dev, config_handle->dev_addr, 0x0, 0x0);
 	runtime_handle->state = STATE_NOT_INITIALIZED;
+	free(runtime_handle->dataBuf);
 	return rc;
 }
 
@@ -851,6 +857,7 @@ static void nau83gxx_task (void * adev)
 		{
 			continue;
 		}
+		if (STATE_NOT_INITIALIZED == runtime_handle->state) continue;
 
 		switch(msg.msg_type)
 		{
@@ -920,15 +927,18 @@ static uint8_t send_msg_and_wait(struct NAU83GXX_runtime_t *runtime_handle,
 	struct reply_message_t release_wait_msg;
 	os_queue_t msg_queue;
 	os_queue_t wait_for_finish_queue;
+	os_mutex_t main_mutex;
+
+	main_mutex = runtime_handle->main_mutex;
+	os_mutex_take_infinite_wait(main_mutex);
 
 	msg_queue = runtime_handle->msg_queue;
 	wait_for_finish_queue = runtime_handle->wait_for_finish_queue;
 	if ((NULL == msg_queue) || (NULL == wait_for_finish_queue))
 	{
+		os_mutex_give(main_mutex);
 		return RC_DRIVER_NOT_READY | runtime_handle->state;
 	}
-
-	os_mutex_take_infinite_wait(runtime_handle->main_mutex);
 
 	// clean wait queue
 	os_queue_receive_with_timeout(wait_for_finish_queue, &release_wait_msg, 0);
@@ -937,10 +947,10 @@ static uint8_t send_msg_and_wait(struct NAU83GXX_runtime_t *runtime_handle,
 	if( OS_QUEUE_RECEIVE_SUCCESS != os_queue_receive_infinite_wait(
 					wait_for_finish_queue, &release_wait_msg))
 	{
-		os_mutex_give(runtime_handle->main_mutex);
+		os_mutex_give(main_mutex);
 		return RC_DRIVER_BUSY | runtime_handle->state;
 	}
-	os_mutex_give(runtime_handle->main_mutex);
+	os_mutex_give(main_mutex);
 	return release_wait_msg.rc;
 }
 
@@ -949,17 +959,29 @@ static uint8_t send_msg_no_wait(struct NAU83GXX_runtime_t *runtime_handle,
 		struct task_message_t *msg)
 {
 	os_queue_t msg_queue;
+	os_mutex_t main_mutex;
+	uint8_t mutex_take_ret;
 
 	msg_queue = runtime_handle->msg_queue;
+	main_mutex = runtime_handle->main_mutex;
+	mutex_take_ret = os_mutex_take_with_timeout(main_mutex, 0);
+	if (OS_MUTEX_TAKE_SUCCESS != mutex_take_ret)
+	{
+		return RC_DRIVER_BUSY | runtime_handle->state;
+	}
+
 	if (NULL == msg_queue)
 	{
+		os_mutex_give(main_mutex);
 		return RC_DRIVER_NOT_READY | runtime_handle->state;
 	}
 
 	if (OS_QUEUE_SEND_SUCCESS != os_queue_send_without_wait(msg_queue, msg))
 	{
+		os_mutex_give(main_mutex);
 		return RC_DRIVER_BUSY | runtime_handle->state;
 	}
+	os_mutex_give(main_mutex);
 	return RC_OK;
 }
 
@@ -1007,8 +1029,8 @@ static void init_driver(struct dev_desc_t *adev,
 		CRITICAL_ERROR("cannot create mutex");
 	}
 
-	os_create_task("nau83gxx" , nau83gxx_task, adev,
-				NAU83GXX_TASK_STACK_SIZE , NAU83GXX_TASK_PRIORITY);
+	runtime_handle->task_handle = os_create_task("nau83gxx", nau83gxx_task,
+					adev, NAU83GXX_TASK_STACK_SIZE , NAU83GXX_TASK_PRIORITY);
 
 	runtime_handle->do_recovery = 0;
 	runtime_handle->state = STATE_DRIVER_INIT_DONE;
@@ -1140,9 +1162,44 @@ static uint8_t send_kcs_send_collected_setup_data(
 
 static uint8_t send_power_down(struct NAU83GXX_runtime_t *runtime_handle)
 {
+	struct reply_message_t release_wait_msg;
+	os_queue_t msg_queue;
+	os_queue_t wait_for_finish_queue;
+	os_mutex_t main_mutex;
 	struct task_message_t msg;
+
+	msg_queue = runtime_handle->msg_queue;
+	wait_for_finish_queue = runtime_handle->wait_for_finish_queue;
+	if ((NULL == msg_queue) || (NULL == wait_for_finish_queue))
+	{
+		return RC_DRIVER_NOT_READY | runtime_handle->state;
+	}
+
+	main_mutex = runtime_handle->main_mutex;
+	os_mutex_take_infinite_wait(main_mutex);
+
+	// clean wait queue
+	os_queue_receive_with_timeout(wait_for_finish_queue, &release_wait_msg, 0);
+
 	msg.msg_type = MSG_POWER_DOWN;
-	return send_msg_and_wait(runtime_handle, &msg);
+	os_queue_send_infinite_wait(msg_queue, &msg);
+	if( OS_QUEUE_RECEIVE_SUCCESS != os_queue_receive_infinite_wait(
+					wait_for_finish_queue, &release_wait_msg))
+	{
+		os_mutex_give(main_mutex);
+		return RC_DRIVER_BUSY | runtime_handle->state;
+	}
+
+	os_delete_task(runtime_handle->task_handle);
+	os_queue_delete(wait_for_finish_queue);
+	runtime_handle->msg_queue = NULL;
+	os_queue_delete(msg_queue);
+
+	os_mutex_give(main_mutex);
+	os_delay_ms(5); // wait for all tasks to stop waiting on mutex
+	os_delete_mutex(main_mutex);
+
+	return RC_OK;
 }
 
 

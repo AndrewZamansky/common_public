@@ -48,6 +48,11 @@ typedef SemaphoreHandle_t  os_mutex_t;
 /** type : [os_queue_t]  **/
 typedef QueueHandle_t  os_queue_t;
 
+/***********  task handler type definition *******/
+/** os_create_task should return os_task_t  **/
+/** type : [os_task_t]  **/
+typedef TaskHandle_t  os_task_t;
+
 
 
 #ifndef CONFIG_USE_ONLY_OS_API
@@ -180,17 +185,21 @@ uint8_t os_queue_send_without_wait(os_queue_t queue,  void * pData);
 		xQueueReceive(queue, pData, ( TickType_t ) portMAX_DELAY )
 
 
+/***********  queue retrieval **********/
+/** function : [os_queue_delete()]  **/
+#define os_queue_delete(queue)   vQueueDelete(queue)
+
 
 /***********  task creation **********/
 /** function : [os_create_task()]  **/
-void *os_create_task_FreeRTOS(
+os_task_t os_create_task_FreeRTOS(
 		char *taskName, void (*taskFunction)(void *apParam),
 		void *taskFunctionParam, size_t stack_size_bytes, uint8_t priority);
 
 #define os_create_task(name, func, funcParam, stack_size_bytes, priority) \
 	os_create_task_FreeRTOS(name, func, funcParam, stack_size_bytes, priority)
 
-
+#define os_delete_task(task)  vTaskDelete(task)
 
 /***********  delay **********/
 /** function : [os_delay_ms()]  **/

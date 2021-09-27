@@ -821,6 +821,22 @@ static uint8_t  device_start(struct dev_desc_t *adev)
 }
 
 
+static uint8_t  device_stop(struct dev_desc_t *adev)
+{
+	struct i2c_i9xxxx_cfg_t *cfg_hndl;
+	I2C_T *i2c_regs;
+
+	struct i2c_i9xxxx_runtime_t *runtime_handle;
+
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(i2c_i9xxxx, adev);
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(i2c_i9xxxx, adev);
+	i2c_regs = (I2C_T *)cfg_hndl->base_address;
+
+	pin_control_api_clear_pin_function(cfg_hndl->SCL_pinout);
+	pin_control_api_clear_pin_function(cfg_hndl->SDA_pinout);
+}
+
+
 /**
  * i2c_i9xxxx_ioctl()
  *
@@ -856,6 +872,9 @@ static uint8_t i2c_i9xxxx_ioctl( struct dev_desc_t *adev,
 		break;
 	case IOCTL_I2C_MASTER_WRITE :
 		master_write(adev, aIoctl_param1);
+		break;
+	case IOCTL_DEVICE_STOP :
+		device_stop(adev);
 		break;
 	default :
 		return 1;

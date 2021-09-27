@@ -90,8 +90,16 @@ static uint8_t I2S_i9xxxx_callback(struct dev_desc_t *adev,
 }
 
 
-static void disable_pinout(struct I2S_i9xxxx_cfg_t *cfg_hndl)
+static void i9xxxx_I2S_stop(struct I2S_i9xxxx_cfg_t *cfg_hndl)
 {
+	I2S_T*  base_address;
+
+	base_address = (I2S_T*)cfg_hndl->base_address;
+	I2S_DISABLE_TX(base_address);
+	I2S_DISABLE_RX(base_address);
+	I2S_DISABLE(base_address);
+	I2S_Close(base_address);
+	I2S_DisableMCLK(base_address);
 	pin_control_api_clear_pin_function(cfg_hndl->BCLK_pin);
 	pin_control_api_clear_pin_function(cfg_hndl->LRCLK_pin);
 	pin_control_api_clear_pin_function(cfg_hndl->DI_pin);
@@ -213,16 +221,17 @@ static void set_i2s_fifo_params(I2S_T*  base_address,
 }
 
 
-static void i9xxxx_I2S_init(struct dev_desc_t *adev,
+static void i9xxxx_I2S_init(
 		struct I2S_i9xxxx_cfg_t *cfg_hndl,
-		struct I2S_i9xxxx_runtime_t *runtime_handle,
-		I2S_T*  base_address)
+		struct I2S_i9xxxx_runtime_t *runtime_handle)
 {
 	uint8_t   num_of_bytes_in_word;
 	uint32_t  i2s_format;
+	I2S_T*  base_address;
 
 	if (runtime_handle->init_done) return;
 
+	base_address = (I2S_T*)cfg_hndl->base_address;
 	i2s_format = cfg_hndl->i2s_format;
 	num_of_bytes_in_word = cfg_hndl->num_of_bytes_in_word;
 
@@ -357,7 +366,6 @@ static uint8_t I2S_i9xxxx_ioctl( struct dev_desc_t *adev,
 {
 	struct I2S_i9xxxx_cfg_t *cfg_hndl;
 	struct I2S_i9xxxx_runtime_t *runtime_handle;
-	I2S_T*  base_address;
 
 	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(I2S_i9xxxx, adev);
 	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(I2S_i9xxxx, adev);
@@ -366,11 +374,10 @@ static uint8_t I2S_i9xxxx_ioctl( struct dev_desc_t *adev,
 		CRITICAL_ERROR("not initialized yet");
 	}
 
-	base_address = (I2S_T*)cfg_hndl->base_address;
 	switch(aIoctl_num)
 	{
 	case IOCTL_DEVICE_START :
-		i9xxxx_I2S_init(adev, cfg_hndl, runtime_handle, base_address);
+		i9xxxx_I2S_init(cfg_hndl, runtime_handle);
 		break;
 	case I2S_I9XXXX_ENABLE_OUTPUT_IOCTL:
 		enable_tx(adev, cfg_hndl);
@@ -379,22 +386,14 @@ static uint8_t I2S_i9xxxx_ioctl( struct dev_desc_t *adev,
 		enable_rx(adev, cfg_hndl);
 		break;
 	case I2S_I9XXXX_STOP_IOCTL:
-		I2S_DISABLE_TX(base_address);
-		I2S_DISABLE_RX(base_address);
-		I2S_DISABLE(base_address);
-		I2S_Close(base_address);
-		I2S_DisableMCLK(base_address);
-		disable_pinout(cfg_hndl);
+		i9xxxx_I2S_stop(cfg_hndl);
 		break;
-
 	case I2S_I9XXXX_GET_MEASURED_SAMPLE_RATE:
 		*((uint32_t*)aIoctl_param1) = runtime_handle->actual_sample_rate;
 		break;
-
 	case I2S_I9XXXX_SYNC_FS_TO_DPWM_FS_RATE:
 		i9xxxx_sync_to_dpwm_fs_rate(cfg_hndl, runtime_handle, aIoctl_param1);
 		break;
-
 	case I2S_I9XXXX_SET_INTERRUPT_HANDLER:
 		runtime_handle->int_handler = aIoctl_param1;
 		break;

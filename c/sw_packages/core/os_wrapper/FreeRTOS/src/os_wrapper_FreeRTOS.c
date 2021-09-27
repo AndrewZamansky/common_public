@@ -55,7 +55,7 @@ void *pvPortRealloc(void *p, size_t xWantedSize)
 	return pvReturn;
 }
 
-void *os_create_task_FreeRTOS(
+os_task_t os_create_task_FreeRTOS(
 		char *taskName, void (*taskFunction)(void *apParam),
 		void *taskFunctionParam, size_t stack_size_bytes, uint8_t priority)
 {
@@ -63,7 +63,7 @@ void *os_create_task_FreeRTOS(
 	xTaskCreate( (TaskFunction_t)taskFunction, taskName,
 			(stack_size_bytes / sizeof(StackType_t)),
 			(void*) taskFunctionParam, priority , &xHandle);
-	return (void*)xHandle;
+	return xHandle;
 }
 
 

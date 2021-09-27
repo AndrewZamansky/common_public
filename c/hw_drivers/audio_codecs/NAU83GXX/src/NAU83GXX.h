@@ -20,6 +20,7 @@ struct NAU83GXX_runtime_t {
 	os_queue_t msg_queue;
 	os_queue_t wait_for_finish_queue;
 	os_mutex_t main_mutex;
+	os_task_t  task_handle;
 	uint16_t dataSetBufPos;
 	uint16_t addr_offset;
 	uint16_t sendLen;
