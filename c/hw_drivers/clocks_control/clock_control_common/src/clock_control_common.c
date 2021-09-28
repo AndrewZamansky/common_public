@@ -124,6 +124,12 @@ static uint8_t clk_cntl_ioctl(struct dev_desc_t *adev,
 			cfg_clk->enable_clk_func();
 		}
 		break;
+	case CLK_IOCTL_DISABLE:
+		if (NULL != cfg_clk->disable_clk_func)
+		{
+			cfg_clk->disable_clk_func();
+		}
+		break;
 	case CLK_IOCTL_GET_ROOT_CLK:
 		get_root_clock(adev, aIoctl_param1);
 		break;
