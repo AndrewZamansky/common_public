@@ -1289,7 +1289,7 @@ static uint8_t NAU83GXX_ioctl(struct dev_desc_t *adev,
 		return send_kcs_send_setup_non_blocking(runtime_handle, aIoctl_param1);
 	case IOCTL_NAU83GXX_GET_INFO:
 		return get_info(config_handle, runtime_handle, aIoctl_param1);
-	case IOCTL_NAU83GXX_POWER_DOWN:
+	case IOCTL_DEVICE_STOP:
 		return send_power_down(runtime_handle);
 	default :
 		return 1;

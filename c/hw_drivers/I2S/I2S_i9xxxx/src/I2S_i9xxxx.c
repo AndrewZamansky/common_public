@@ -385,7 +385,7 @@ static uint8_t I2S_i9xxxx_ioctl( struct dev_desc_t *adev,
 	case I2S_I9XXXX_ENABLE_INPUT_IOCTL:
 		enable_rx(adev, cfg_hndl);
 		break;
-	case I2S_I9XXXX_STOP_IOCTL:
+	case IOCTL_DEVICE_STOP:
 		i9xxxx_I2S_stop(cfg_hndl);
 		break;
 	case I2S_I9XXXX_GET_MEASURED_SAMPLE_RATE:
