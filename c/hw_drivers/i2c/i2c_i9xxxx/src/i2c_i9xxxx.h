@@ -29,6 +29,7 @@ struct i2c_i9xxxx_runtime_t {
 	os_queue_t WaitQueue;
 	os_mutex_t mutex;
 	uint8_t   i2c_error;
+	uint8_t   init_done;
 };
 SET_RUNTIME_DATA_TYPE(i2c_i9xxxx, struct i2c_i9xxxx_runtime_t);
 

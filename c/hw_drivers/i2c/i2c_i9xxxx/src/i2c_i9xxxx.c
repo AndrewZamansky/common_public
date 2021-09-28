@@ -596,13 +596,11 @@ static size_t i2c_i9xxxx_pwrite(struct dev_desc_t *adev,
  *
  * return:
  */
-static void master_write(struct dev_desc_t *adev,
+static uint8_t master_write(struct i2c_i9xxxx_cfg_t *cfg_hndl,
+				struct i2c_i9xxxx_runtime_t *runtime_handle,
 				struct i2c_api_master_write_t *wr_struct)
 {
-	struct i2c_i9xxxx_cfg_t *cfg_hndl;
-	struct i2c_i9xxxx_runtime_t *runtime_handle;
 	I2C_T *i2c_regs;
-	os_queue_t WaitQueue;
 	os_mutex_t  mutex;
 	uint8_t  reg_addr_arr[MAX_REG_ADDR_SIZE];
 	size_t   reg_addr_size;
@@ -612,25 +610,25 @@ static void master_write(struct dev_desc_t *adev,
 	wr_struct->num_of_bytes_written = 0;
 	num_of_bytes_to_write = wr_struct->num_of_bytes_to_write;
 
-	if (0 == num_of_bytes_to_write) return ;
-
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(i2c_i9xxxx, adev);
-	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(i2c_i9xxxx, adev);
+	if (0 == num_of_bytes_to_write) return 0;
 
 	reg_addr_size = wr_struct->reg_addr_size;
 	if (MAX_REG_ADDR_SIZE < reg_addr_size)
 	{
-			runtime_handle->i2c_error = I2C_BAD_REG_ADDR_SIZE;
-			return;
+		wr_struct->i2c_error = I2C_BAD_REG_ADDR_SIZE;
+		return 1;
 	}
 
-	WaitQueue = runtime_handle->WaitQueue;
 	mutex = runtime_handle->mutex;
+	os_mutex_take_infinite_wait(mutex);
+	if (0 == runtime_handle->init_done) // check if driver still running
+	{
+		os_mutex_give(mutex);
+		wr_struct->i2c_error = I2C_NOT_INITIALIZED;
+		return 1;
+	}
 
 	i2c_regs =(I2C_T *)cfg_hndl->base_address;
-
-	os_mutex_take_infinite_wait(mutex);
-
 	while (0xf8 != I2C_GET_STATUS(i2c_regs)); //wait till bus is not released
 
 	runtime_handle->device_access_tries = NUM_OF_TRIES_TO_ACCESS_I2C_DEVICE;
@@ -653,7 +651,7 @@ static void master_write(struct dev_desc_t *adev,
 	I2C_EnableInt(i2c_regs);
 	I2C_START(i2c_regs);
 
-	os_queue_receive_infinite_wait( WaitQueue ,  &dummy_msg  );
+	os_queue_receive_infinite_wait(runtime_handle->WaitQueue,  &dummy_msg);
 	wr_struct->i2c_error = runtime_handle->i2c_error;
 
 	if (0 == runtime_handle->device_access_tries)
@@ -667,15 +665,14 @@ static void master_write(struct dev_desc_t *adev,
 	}
 
 	os_mutex_give(mutex);
+	return 0;
 }
 
 
-static void master_read(struct dev_desc_t *adev,
+static uint8_t master_read(struct i2c_i9xxxx_cfg_t *cfg_hndl,
+				struct i2c_i9xxxx_runtime_t *runtime_handle,
 				struct i2c_api_master_read_t *rd_struct)
 {
-	struct i2c_i9xxxx_cfg_t *cfg_hndl;
-	struct i2c_i9xxxx_runtime_t *runtime_handle;
-	os_queue_t WaitQueue;
 	os_mutex_t  mutex;
 	I2C_T *i2c_regs;
 	uint8_t  reg_addr_arr[MAX_REG_ADDR_SIZE];
@@ -686,27 +683,27 @@ static void master_read(struct dev_desc_t *adev,
 
 	rd_struct->num_of_bytes_that_was_read = 0;
 	num_of_bytes_to_read = rd_struct->num_of_bytes_to_read;
-	if (1 > num_of_bytes_to_read) return;
-
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(i2c_i9xxxx, adev);
-	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(i2c_i9xxxx, adev);
+	if (1 > num_of_bytes_to_read) return 0;
 
 	reg_addr_size = rd_struct->reg_addr_size;
 	if (MAX_REG_ADDR_SIZE < reg_addr_size)
 	{
-			runtime_handle->i2c_error = I2C_BAD_REG_ADDR_SIZE;
-			return;
+		rd_struct->i2c_error = I2C_BAD_REG_ADDR_SIZE;
+		return 1;
 	}
 
-	if (I2C_I9XXXX_API_MASTER_MODE != cfg_hndl->master_slave_mode) return;
+	if (I2C_I9XXXX_API_MASTER_MODE != cfg_hndl->master_slave_mode) return 1;
 
-	WaitQueue = runtime_handle->WaitQueue;
 	mutex = runtime_handle->mutex;
+	os_mutex_take_infinite_wait(mutex);
+	if (0 == runtime_handle->init_done) // check if driver still running
+	{
+		os_mutex_give(mutex);
+		rd_struct->i2c_error = I2C_NOT_INITIALIZED;
+		return 1;
+	}
 
 	i2c_regs =(I2C_T *)cfg_hndl->base_address;
-
-	os_mutex_take_infinite_wait(mutex);
-
 	while (0xf8 != I2C_GET_STATUS(i2c_regs)); //wait till bus is not released
 
 	// first byte is address of slave
@@ -729,7 +726,7 @@ static void master_read(struct dev_desc_t *adev,
 	I2C_EnableInt(i2c_regs);
 	I2C_START(i2c_regs);
 
-	os_queue_receive_infinite_wait( WaitQueue ,  &dummy_msg  );
+	os_queue_receive_infinite_wait(runtime_handle->WaitQueue,  &dummy_msg);
 
 	rd_struct->i2c_error = runtime_handle->i2c_error;
 
@@ -742,27 +739,25 @@ static void master_read(struct dev_desc_t *adev,
 		num_of_bytes_that_was_read = runtime_handle->curr_data_pos;
 	}
 	rd_struct->num_of_bytes_that_was_read = num_of_bytes_that_was_read;
-
 	os_mutex_give(mutex);
+	return 0;
 }
 
 
 
-static uint8_t  device_start(struct dev_desc_t *adev)
+static uint8_t  device_start(struct dev_desc_t *adev,
+		struct i2c_i9xxxx_cfg_t *cfg_hndl,
+		struct i2c_i9xxxx_runtime_t *runtime_handle)
 {
-	struct i2c_i9xxxx_cfg_t *cfg_hndl;
 	I2C_T *i2c_regs;
 	int i2c_irq;
 	uint32_t i2c_module_rst;
 	struct dev_desc_t	*i2c_clk_dev;
-	struct i2c_i9xxxx_runtime_t *runtime_handle;
 
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(i2c_i9xxxx, adev);
-	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(i2c_i9xxxx, adev);
 	i2c_regs = (I2C_T *)cfg_hndl->base_address;
 
-	runtime_handle->WaitQueue = os_create_queue(1, sizeof(uint8_t ));
 	runtime_handle->mutex = os_create_mutex();
+	runtime_handle->WaitQueue = os_create_queue(1, sizeof(uint8_t ));
 	if(NULL == runtime_handle->WaitQueue)
 	{
 		CRITICAL_ERROR("Wait Queue NULL");
@@ -817,23 +812,62 @@ static uint8_t  device_start(struct dev_desc_t *adev)
 	irq_register_device_on_interrupt(i2c_irq, adev);
 	irq_set_priority(i2c_irq, INTERRUPT_PRIORITY_FOR_I2C );
 	irq_enable_interrupt(i2c_irq);
+	runtime_handle->init_done = 1;
 	return 0;
 }
 
 
-static uint8_t  device_stop(struct dev_desc_t *adev)
+static void SYS_put_on_reset(uint32_t u32ModuleIndex)
 {
-	struct i2c_i9xxxx_cfg_t *cfg_hndl;
+    /* Generate reset signal to the corresponding module */
+    *(volatile uint32_t *)((uint32_t)&SYS->IPRST0 + (u32ModuleIndex >> 24)) |=
+    										1 << (u32ModuleIndex & 0x00ffffff);
+}
+
+static uint8_t  device_stop(
+		struct i2c_i9xxxx_cfg_t *cfg_hndl,
+		struct i2c_i9xxxx_runtime_t *runtime_handle)
+{
+	os_mutex_t  mutex;
 	I2C_T *i2c_regs;
+	int i2c_irq;
+	uint32_t i2c_module_rst;
 
-	struct i2c_i9xxxx_runtime_t *runtime_handle;
+	mutex = runtime_handle->mutex;
+	os_mutex_take_infinite_wait(mutex);
+	if (0 == runtime_handle->init_done) // check if driver still running
+	{
+		os_mutex_give(mutex);
+		return 1;
+	}
 
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(i2c_i9xxxx, adev);
-	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(i2c_i9xxxx, adev);
+	runtime_handle->init_done = 0;
+
 	i2c_regs = (I2C_T *)cfg_hndl->base_address;
+	if(I2C0 == i2c_regs)
+	{
+		i2c_irq = I2C0_IRQn;
+		i2c_module_rst = I2C0_RST;
+		//i2c_clk_dev = i9xxxx_i2c0_clk_dev;
+	}
+	else
+	{
+		i2c_irq = I2C1_IRQn;
+		i2c_module_rst = I2C1_RST;
+		//i2c_clk_dev = i9xxxx_i2c1_clk_dev;
+	}
+
+	irq_disable_interrupt(i2c_irq);
+	I2C_DisableInt(i2c_regs);
+	SYS_put_on_reset(i2c_module_rst);
 
 	pin_control_api_clear_pin_function(cfg_hndl->SCL_pinout);
 	pin_control_api_clear_pin_function(cfg_hndl->SDA_pinout);
+	os_queue_delete(runtime_handle->WaitQueue);
+	os_mutex_give(mutex);
+	os_delay_ms(5); // wait for all tasks to stop waiting on mutex
+	os_delete_mutex(mutex);
+	return 0;
 }
 
 
@@ -846,14 +880,21 @@ static uint8_t i2c_i9xxxx_ioctl( struct dev_desc_t *adev,
 		uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2)
 {
 	struct i2c_i9xxxx_cfg_t *cfg_hndl;
+	struct i2c_i9xxxx_runtime_t *runtime_handle;
 	I2C_T *i2c_regs;
+
+	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(i2c_i9xxxx, adev);
+	if ((0 == runtime_handle->init_done) && (IOCTL_DEVICE_START != aIoctl_num))
+	{
+		return 1;
+	}
 
 	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(i2c_i9xxxx, adev);
 	i2c_regs = (I2C_T *)cfg_hndl->base_address;
 	switch(aIoctl_num)
 	{
 	case IOCTL_DEVICE_START :
-		return device_start(adev);
+		return device_start(adev, cfg_hndl, runtime_handle);
 	case IOCTL_I2C_DISABLE_TX :
 		break;
 	case IOCTL_I2C_ENABLE_TX :
@@ -868,14 +909,11 @@ static uint8_t i2c_i9xxxx_ioctl( struct dev_desc_t *adev,
 		I2C_SetBusClockFreq(i2c_regs, *(uint32_t*)aIoctl_param1);
 		break;
 	case IOCTL_I2C_MASTER_READ :
-		master_read(adev, aIoctl_param1);
-		break;
+		return master_read(cfg_hndl, runtime_handle, aIoctl_param1);
 	case IOCTL_I2C_MASTER_WRITE :
-		master_write(adev, aIoctl_param1);
-		break;
+		return master_write(cfg_hndl, runtime_handle, aIoctl_param1);
 	case IOCTL_DEVICE_STOP :
-		device_stop(adev);
-		break;
+		return device_stop(cfg_hndl, runtime_handle);
 	default :
 		return 1;
 	}
