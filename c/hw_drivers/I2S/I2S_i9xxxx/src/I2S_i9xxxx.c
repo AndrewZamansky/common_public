@@ -90,16 +90,34 @@ static uint8_t I2S_i9xxxx_callback(struct dev_desc_t *adev,
 }
 
 
-static void i9xxxx_I2S_stop(struct I2S_i9xxxx_cfg_t *cfg_hndl)
+static void i9xxxx_I2S_stop(struct I2S_i9xxxx_cfg_t *cfg_hndl,
+							struct I2S_i9xxxx_runtime_t *runtime_handle)
 {
 	I2S_T*  base_address;
+	int i2s_irq;
 
 	base_address = (I2S_T*)cfg_hndl->base_address;
+
+	#ifdef CONFIG_I94XXX
+		i2s_irq = I2S0_IRQn;
+	#elif CONFIG_I96XXX_M0
+		if (base_address == I2S0)
+		{
+			i2s_irq = I2S0_IRQn;
+		}
+		else
+		{
+			i2s_irq = I2S1_IRQn;
+		}
+	#endif
+	irq_disable_interrupt(i2s_irq);
+
 	I2S_DISABLE_TX(base_address);
 	I2S_DISABLE_RX(base_address);
 	I2S_DISABLE(base_address);
-	I2S_Close(base_address);
 	I2S_DisableMCLK(base_address);
+	I2S_DISABLE_INT(base_address, 0x000f0707);// all interrupt mask
+	I2S_Close(base_address);
 	pin_control_api_clear_pin_function(cfg_hndl->BCLK_pin);
 	pin_control_api_clear_pin_function(cfg_hndl->LRCLK_pin);
 	pin_control_api_clear_pin_function(cfg_hndl->DI_pin);
@@ -108,6 +126,8 @@ static void i9xxxx_I2S_stop(struct I2S_i9xxxx_cfg_t *cfg_hndl)
 	{
 		pin_control_api_clear_pin_function(cfg_hndl->MCLK_pin);
 	}
+	DEV_IOCTL_0_PARAMS(runtime_handle->i9xxxx_i2s_clk_dev, CLK_IOCTL_DISABLE);
+
 }
 
 
@@ -386,7 +406,7 @@ static uint8_t I2S_i9xxxx_ioctl( struct dev_desc_t *adev,
 		enable_rx(adev, cfg_hndl);
 		break;
 	case IOCTL_DEVICE_STOP:
-		i9xxxx_I2S_stop(cfg_hndl);
+		i9xxxx_I2S_stop(cfg_hndl, runtime_handle);
 		break;
 	case I2S_I9XXXX_GET_MEASURED_SAMPLE_RATE:
 		*((uint32_t*)aIoctl_param1) = runtime_handle->actual_sample_rate;

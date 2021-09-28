@@ -832,6 +832,7 @@ static uint8_t  device_stop(
 	I2C_T *i2c_regs;
 	int i2c_irq;
 	uint32_t i2c_module_rst;
+	struct dev_desc_t	*i2c_clk_dev;
 
 	mutex = runtime_handle->mutex;
 	os_mutex_take_infinite_wait(mutex);
@@ -848,13 +849,13 @@ static uint8_t  device_stop(
 	{
 		i2c_irq = I2C0_IRQn;
 		i2c_module_rst = I2C0_RST;
-		//i2c_clk_dev = i9xxxx_i2c0_clk_dev;
+		i2c_clk_dev = i9xxxx_i2c0_clk_dev;
 	}
 	else
 	{
 		i2c_irq = I2C1_IRQn;
 		i2c_module_rst = I2C1_RST;
-		//i2c_clk_dev = i9xxxx_i2c1_clk_dev;
+		i2c_clk_dev = i9xxxx_i2c1_clk_dev;
 	}
 
 	irq_disable_interrupt(i2c_irq);
@@ -863,6 +864,7 @@ static uint8_t  device_stop(
 
 	pin_control_api_clear_pin_function(cfg_hndl->SCL_pinout);
 	pin_control_api_clear_pin_function(cfg_hndl->SDA_pinout);
+	DEV_IOCTL_0_PARAMS(i2c_clk_dev, CLK_IOCTL_DISABLE);
 	os_queue_delete(runtime_handle->WaitQueue);
 	os_mutex_give(mutex);
 	os_delay_ms(5); // wait for all tasks to stop waiting on mutex

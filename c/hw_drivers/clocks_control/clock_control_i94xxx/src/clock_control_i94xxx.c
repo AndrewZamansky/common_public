@@ -503,6 +503,11 @@ static void clock_i94xxx_i2s_enable()
 	CLK->APBCLK0 |= CLK_APBCLK0_I2S0CKEN_Msk;
 }
 
+static void clock_i94xxx_i2s_disable()
+{
+	CLK->APBCLK0 &= ~CLK_APBCLK0_I2S0CKEN_Msk;
+}
+
 static void clock_i94xxx_i2s_set_parent_clk(struct dev_desc_t *parent_clk)
 {
 	uint32_t curr_val;
@@ -534,6 +539,7 @@ static void clock_i94xxx_i2s_set_parent_clk(struct dev_desc_t *parent_clk)
 #define DT_DEV_MODULE             clk_cntl
 
 #define CLK_DT_ENABLE_CLK_FUNC      clock_i94xxx_i2s_enable
+#define CLK_DT_DISABLE_CLK_FUNC     clock_i94xxx_i2s_disable
 #define CLK_DT_SET_PARENT_CLK_FUNC  clock_i94xxx_i2s_set_parent_clk
 
 #include "clk_cntl_add_device.h"
