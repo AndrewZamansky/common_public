@@ -67,6 +67,7 @@ enum DMA_I9XXXX_buff_state_e {
 #define MAX_NUMBER_OF_CHANNELS	16
 static struct dev_desc_t * channel_pdev[MAX_NUMBER_OF_CHANNELS] = {0};
 
+static uint8_t num_of_active_channels = 0;
 //#define DMA_I9XXXX_DEBUG
 
 #ifdef DMA_I9XXXX_DEBUG
@@ -513,6 +514,8 @@ static uint8_t start_dma_i9xxxx_device(struct dev_desc_t *adev,
 	uint16_t transfer_word_size;
 	uint32_t buff_size;
 
+	if (runtime_hndl->init_done) return 0;
+
 	ret = 0;
 	channel_num = cfg_hndl->channel_num;
 	peripheral_type = cfg_hndl->peripheral_type;
@@ -555,6 +558,7 @@ static uint8_t start_dma_i9xxxx_device(struct dev_desc_t *adev,
 		irq_enable_interrupt(PDMA_IRQn);
 		PDMA_EnableInt(channel_num, PDMA_INT_TRANS_DONE);
 		runtime_hndl->init_done = 1;
+		num_of_active_channels++;
 	}
 
 	return ret;
@@ -858,6 +862,39 @@ static uint8_t release_tx_buffer(struct dma_i9xxxx_cfg_t *cfg_hndl,
 }
 
 
+/* func : stop_dma_i9xxxx_device
+ *
+ */
+static uint8_t stop_dma_i9xxxx_device(
+		struct dma_i9xxxx_cfg_t *cfg_hndl,
+		struct dma_i9xxxx_runtime_t *runtime_hndl)
+{
+	uint16_t i;
+	uint8_t channel_num;
+
+	if (0 == runtime_hndl->init_done) return 0;
+
+	channel_num = cfg_hndl->channel_num;
+	PDMA_DisableInt(channel_num, PDMA_INT_TRANS_DONE);
+	PDMA_DISABLE_CHANNEL(1 << channel_num);
+
+	for (i = 0; i < cfg_hndl->num_of_buffers; i++)
+	{
+		os_safe_free(runtime_hndl->buff[i]);
+	}
+	os_safe_free(runtime_hndl->buff_status);
+	os_safe_free(runtime_hndl->buff);
+
+	num_of_active_channels--;
+	if (0 == num_of_active_channels)
+	{
+		irq_disable_interrupt(PDMA_IRQn);
+		CLK_DisableModuleClock(PDMA_MODULE);
+	}
+	return 0;
+}
+
+
 /**
  * dma_i9xxxx_ioctl()
  *
@@ -892,6 +929,9 @@ uint8_t dma_i9xxxx_ioctl( struct dev_desc_t *adev, const uint8_t aIoctl_num,
 		break;
 	case DMA_I9XXXX_IOCTL_RELEASE_TX_BUFF :
 		ret = release_tx_buffer(cfg_hndl, runtime_hndl);
+		break;
+	case IOCTL_DEVICE_STOP :
+		ret = stop_dma_i9xxxx_device(cfg_hndl, runtime_hndl);
 		break;
 	default :
 		return 1;
