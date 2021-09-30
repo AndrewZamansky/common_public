@@ -206,6 +206,70 @@ static size_t uart_i9xxxx_pwrite(struct dev_desc_t *adev,
 
 }
 
+
+static void start_device(struct dev_desc_t *adev,
+				struct uart_i9xxxx_cfg_t *cfg_hndl,
+				struct i9xxx_uart_runtime_t *i9xxx_uart_runtime)
+{
+	int uart_irq;
+	UART_T *uart_regs;
+	struct dev_desc_t  *src_clock;
+	struct dev_desc_t  *uart_clock;
+	uint32_t uart_module_rst;
+
+	if (i9xxx_uart_runtime->init_done) return;
+
+	pin_control_api_set_pin_function(cfg_hndl->tx_pin);
+	pin_control_api_set_pin_function(cfg_hndl->rx_pin);
+
+	src_clock = cfg_hndl->src_clock;
+	uart_regs = (UART_T *)cfg_hndl->base_address;
+	if ((UART_T *)UART0_BASE == uart_regs)
+	{
+		uart_clock = i9xxxx_uart0_clk_dev;
+		uart_module_rst = UART0_RST;
+		uart_irq = UART0_IRQn;
+	}
+	else
+	{
+		CRITICAL_ERROR("TODO");
+	}
+	DEV_IOCTL_0_PARAMS(uart_clock, IOCTL_DEVICE_START);
+	DEV_IOCTL_1_PARAMS(uart_clock, CLK_IOCTL_SET_PARENT, src_clock);
+	DEV_IOCTL_0_PARAMS(uart_clock, CLK_IOCTL_ENABLE);
+
+	SYS_ResetModule(uart_module_rst);
+
+	UART_Open(uart_regs, cfg_hndl->baud_rate);
+
+	/* Enable UART RDA/RLS/Time-out interrupt */
+	UART_EnableInt(uart_regs,
+			(UART_INTEN_RDAIEN_Msk  | UART_INTEN_RXTOIEN_Msk));
+
+	irq_register_device_on_interrupt(uart_irq, adev);
+	irq_set_priority(uart_irq, INTERRUPT_PRIORITY_FOR_UART );
+	irq_enable_interrupt(uart_irq);
+	i9xxx_uart_runtime->init_done = 1;
+}
+
+
+static void stop_device(struct uart_i9xxxx_cfg_t *cfg_hndl,
+				struct i9xxx_uart_runtime_t *i9xxx_uart_runtime)
+{
+	UART_T *uart_regs;
+
+	if (0 == i9xxx_uart_runtime->init_done) return;
+
+	uart_regs = (UART_T *)cfg_hndl->base_address;
+	i9xxx_uart_runtime->init_done = 0;
+	irq_disable_interrupt(UART0_IRQn);
+	pin_control_api_clear_pin_function(cfg_hndl->tx_pin);
+	pin_control_api_clear_pin_function(cfg_hndl->rx_pin);
+	UART_Close(uart_regs);
+	DEV_IOCTL_0_PARAMS(i9xxxx_uart0_clk_dev, CLK_IOCTL_DISABLE);
+}
+
+
 /**
  * uart_i9xxxx_ioctl()
  *
@@ -217,10 +281,6 @@ static uint8_t uart_i9xxxx_ioctl( struct dev_desc_t *adev,
 	struct uart_i9xxxx_cfg_t *cfg_hndl;
 	struct i9xxx_uart_runtime_t *i9xxx_uart_runtime;
 	UART_T *uart_regs;
-	int uart_irq;
-	uint32_t uart_module_rst;
-	struct dev_desc_t  *src_clock;
-	struct dev_desc_t  *uart_clock;
 
 	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(uart_i9xxxx, adev);
 	i9xxx_uart_runtime = DEV_GET_RUNTIME_DATA_POINTER(uart_i9xxxx, adev);
@@ -238,58 +298,23 @@ static uint8_t uart_i9xxxx_ioctl( struct dev_desc_t *adev,
 		UART_Open(uart_regs, cfg_hndl->baud_rate);
 		break;
 	case IOCTL_DEVICE_START :
-		if (i9xxx_uart_runtime->init_done)
-		{
-			break;
-		}
-		pin_control_api_set_pin_function(cfg_hndl->tx_pin);
-		pin_control_api_set_pin_function(cfg_hndl->rx_pin);
-
-		src_clock = cfg_hndl->src_clock;
-		if ((UART_T *)UART0_BASE == uart_regs)
-		{
-			uart_clock = i9xxxx_uart0_clk_dev;
-			uart_module_rst = UART0_RST;
-			uart_irq = UART0_IRQn;
-		}
-		else
-		{
-			CRITICAL_ERROR("TODO");
-		}
-		DEV_IOCTL_0_PARAMS(uart_clock, IOCTL_DEVICE_START);
-		DEV_IOCTL_1_PARAMS(uart_clock, CLK_IOCTL_SET_PARENT, src_clock);
-		DEV_IOCTL_0_PARAMS(uart_clock, CLK_IOCTL_ENABLE);
-
-		SYS_ResetModule(uart_module_rst);
-
-		UART_Open(uart_regs, cfg_hndl->baud_rate);
-
-		/* Enable UART RDA/RLS/Time-out interrupt */
-		UART_EnableInt(uart_regs,
-				(UART_INTEN_RDAIEN_Msk  | UART_INTEN_RXTOIEN_Msk));
-
-		irq_register_device_on_interrupt(uart_irq, adev);
-		irq_set_priority(uart_irq, INTERRUPT_PRIORITY_FOR_UART );
-		irq_enable_interrupt(uart_irq);
-		i9xxx_uart_runtime->init_done = 1;
+		start_device(adev, cfg_hndl, i9xxx_uart_runtime);
 		break;
-
 	case IOCTL_UART_DISABLE_TX :
 		UART_DISABLE_INT(uart_regs,  UART_INTEN_TXENDIEN_Msk);
 		i9xxx_uart_runtime->send_data_len = 0;
 		break;
-
 	case IOCTL_UART_ENABLE_TX :
 		break;
-
 	case IOCTL_UART_SET_ISR_CALLBACK_TX_DEV:
 		cfg_hndl->callback_tx_dev =(struct dev_desc_t *) aIoctl_param1;
 		break;
-
 	case IOCTL_UART_SET_ISR_CALLBACK_RX_DEV:
 		cfg_hndl->callback_rx_dev =(struct dev_desc_t *) aIoctl_param1;
 		break;
-
+	case IOCTL_DEVICE_STOP:
+		stop_device(cfg_hndl, i9xxx_uart_runtime);
+		break;
 	default :
 		return 1;
 	}

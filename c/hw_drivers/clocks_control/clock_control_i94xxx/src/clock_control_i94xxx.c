@@ -861,6 +861,11 @@ static void clock_i9xxxx_uart0_enable()
 	CLK_EnableModuleClock(UART0_MODULE);
 }
 
+static void clock_i9xxxx_uart0_disable()
+{
+	CLK_DisableModuleClock(UART0_MODULE);
+}
+
 static void clock_i9xxxx_uart0_set_parent_clk(struct dev_desc_t *parent_clk)
 {
 	if (i94xxx_ext_clk_dev == parent_clk)
@@ -888,6 +893,7 @@ static void clock_i9xxxx_uart0_set_parent_clk(struct dev_desc_t *parent_clk)
 #define DT_DEV_MODULE             clk_cntl
 
 #define CLK_DT_ENABLE_CLK_FUNC      clock_i9xxxx_uart0_enable
+#define CLK_DT_DISABLE_CLK_FUNC     clock_i9xxxx_uart0_disable
 #define CLK_DT_SET_PARENT_CLK_FUNC  clock_i9xxxx_uart0_set_parent_clk
 
 #include "clk_cntl_add_device.h"
@@ -902,7 +908,7 @@ static void clock_i94xxx_i2c1_enable()
 
 static void clock_i94xxx_i2c1_disable()
 {
-	CLK_EnableModuleClock(I2C1_MODULE);
+	CLK_DisableModuleClock(I2C1_MODULE);
 }
 
 #define DT_DEV_NAME                i94xxx_i2c1_clk_dev
@@ -924,7 +930,7 @@ static void clock_i94xxx_i2c0_enable()
 
 static void clock_i94xxx_i2c0_disable()
 {
-	CLK_EnableModuleClock(I2C0_MODULE);
+	CLK_DisableModuleClock(I2C0_MODULE);
 }
 
 #define DT_DEV_NAME                i94xxx_i2c0_clk_dev
