@@ -3,12 +3,13 @@
 # not defined then required file function will be implemented as dummy
 INCLUDE_THIS_COMPONENT :=y
 
+# !!IMPORTANT!! : should be used before any 'include' statement in makefile:
+CURR_COMPONENT_DIR :=$(call get_curr_component_dir)
+
 ifeq ($(sort $(CONFIG_INTERNAL_FILE_DESCRIPTORS_MANAGER)),y)
-    # calculation of CURR_COMPONENT_DIR must be before all 'include' directives
-    CURR_COMPONENT_DIR :=\
-        $(patsubst %/,%,$(dir $(realpath $(lastword $(MAKEFILE_LIST)))))
     ifeq ($(sort $(CONFIG_USE_INTERNAL_SOCKETS_IMPLEMENTATION)),y)
-        DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH, $(CURR_COMPONENT_DIR)/include)
+        DUMMY :=\
+           $(call ADD_TO_GLOBAL_INCLUDE_PATH, $(CURR_COMPONENT_DIR)/include)
     endif
 endif
 

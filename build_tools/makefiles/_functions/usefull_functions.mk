@@ -29,6 +29,16 @@ define mkdir_if_not_exists
 endef
 endif
 
+
+# function : get_curr_component_dir
+# usage    : $(call get_curr_component_dir)
+#
+# !!IMPORTANT!! : should be used before any 'include' statement in makefile
+define get_curr_component_dir
+$(patsubst %/,%,$(dir $(realpath $(lastword $(MAKEFILE_LIST)))))
+endef
+
+
 # function : exit
 # usage    : $(call exit,1)
 #

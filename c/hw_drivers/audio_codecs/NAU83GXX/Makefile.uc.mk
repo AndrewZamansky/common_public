@@ -8,12 +8,11 @@ endif
 
 #ASMFLAGS =
 
-CURR_COMPONENT_DIR :=\
-   $(patsubst %/,%,$(dir $(realpath $(lastword $(MAKEFILE_LIST)))))
+# !!IMPORTANT!! : should be used before any 'include' statement in makefile:
+CURR_COMPONENT_DIR :=$(call get_curr_component_dir)
 
 SRC += src/NAU83GXX.c
 SRC += src/NAU83GXX_utils.c
-
 
 ifeq ($(sort $(CONFIG_NAU83GXX_ENABLE_DB_LAB_SHELL_COMMANDS)),y)
     SRC += src/shell_commands/cmd_init_83g10_dsp.c
@@ -53,7 +52,6 @@ ifeq ($(sort $(CONFIG_NAU83GXX_USE_KCS_REMOTE_INTERFACE)),y)
     INCLUDE_DIR += $(KCS_REMOTE_INTERFACE_PATH)
     DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH,\
                       $(KCS_REMOTE_INTERFACE_PATH)/include)
-    DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH, $(CURR_COMPONENT_DIR)/include)
 
     SRC += src/kcs_remote_interface_wrapper.c
     SRC += src/CTRCoreModules/KCS_remote_interface.c 

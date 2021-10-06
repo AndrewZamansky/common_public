@@ -1,9 +1,8 @@
 ifeq ($(sort $(CONFIG_INCLUDE_UBOOT_SHELL)),y)
     INCLUDE_THIS_COMPONENT := y
 
-    # calculation of CURR_COMPONENT_DIR must be before all 'include' directives
-    CURR_COMPONENT_DIR :=\
-       $(patsubst %/,%,$(dir $(realpath $(lastword $(MAKEFILE_LIST)))))
+    # !!IMPORTANT!! : should be used before any 'include' statement in makefile:
+    CURR_COMPONENT_DIR :=$(call get_curr_component_dir)
 
     U_BOOT_PATH :=$(EXTERNAL_SOURCE_ROOT_DIR)/u-boot
     ifeq ("$(wildcard $(U_BOOT_PATH))","")

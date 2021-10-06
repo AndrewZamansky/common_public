@@ -3,9 +3,8 @@ INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_WOLFSSL)
 
 ifeq ($(strip $(CONFIG_INCLUDE_WOLFSSL)),y)
 
-    # calculation of CURR_COMPONENT_DIR must be before all 'include' directives
-    CURR_COMPONENT_DIR :=\
-       $(patsubst %/,%,$(dir $(realpath $(lastword $(MAKEFILE_LIST)))))
+    # !!IMPORTANT!! : should be used before any 'include' statement in makefile:
+    CURR_COMPONENT_DIR :=$(call get_curr_component_dir)
 
     # test if current commit and branch of nghttp2 git is
     # the same as required by application

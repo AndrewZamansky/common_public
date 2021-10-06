@@ -22,9 +22,6 @@ PARENT_OF_COMMON_PUBLIC_DIR := $(patsubst $(APP_ROOT_DIR)/%,%,$(TEMP))
 WORKSPACE_ROOT_DIR :=$(PARENT_OF_COMMON_PUBLIC_DIR)
 
 
-
-WORKSPACE_NAME := $(notdir $(abspath $(PARENT_OF_COMMON_PUBLIC_DIR)/..))
-
 TEMP :=$(call calc_parent_dir,$(PARENT_OF_COMMON_PUBLIC_DIR))
 EXTERNAL_SOURCE_ROOT_DIR :=$(TEMP)/external_source
 $(call mkdir_if_not_exists, $(EXTERNAL_SOURCE_ROOT_DIR))
