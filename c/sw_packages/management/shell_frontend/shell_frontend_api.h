@@ -37,14 +37,14 @@ enum shell_frontend_api_ioctl_e {
 
 
 struct shell_frontend_load_preset_t {
-	struct dev_desc_t *shell_preset_pdev;
-	uint8_t num_of_preset;
+	struct dev_desc_t *shell_preset_pdev; // - pointer to preset manager module
+	uint8_t num_of_preset;                // - number of preset to load
 };
 
 
 struct shell_frontend_batch_t {
-	uint8_t *batch_buffer;
-	size_t batch_buffer_size;
+	uint8_t *batch_buffer;     // - buffer of shell command
+	size_t batch_buffer_size;  // - size of buffer
 };
 
 

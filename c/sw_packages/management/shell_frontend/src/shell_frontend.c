@@ -659,7 +659,8 @@ static uint8_t send_load_preset(struct dev_desc_t *adev,
 	{
 		/* we are in the middle of processing shell command, so this
 		 * code may be called from shell command, so we cannot send
-		 * message to queue because it can stuck the shell task.
+		 * message to queue because it can stuck the shell task (even if
+		 * we use non-blocking send_queue(full queue will stay full forever)).
 		 * so return the error and calling task should try it again.
 		 * set preset from shell command should not use this function,
 		 * use shell_frontend_load_preset_from_shell_cmd() instead
@@ -690,11 +691,12 @@ static uint8_t send_batch(struct dev_desc_t *adev,
 	if (NULL != curr_runtime_hndl)
 	{
 		/* we are in the middle of processing shell command, so this
-		 * code may be called from shel command, so we cannot send
-		 * message to queue because it can stuck the shell task.
+		 * code may be called from shell command, so we cannot send
+		 * message to queue because it can stuck the shell task (even if
+		 * we use non-blocking send_queue(full queue will stay full forever)).
 		 * so return the error and calling task should try it again.
 		 * set preset from shell command should not use this function,
-		 * use shell_frontend_load_preset_from_shell_cmd() insteas
+		 * use shell_frontend_load_preset_from_shell_cmd() instead
 		 */
 		return 1;
 	}
