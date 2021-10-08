@@ -122,7 +122,7 @@ uint8_t ram_disk_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 
 		case IOCTL_DEVICE_START :
 			/* Deselect the FLASH: Chip Select high */
-			DEV_IOCTL_0_PARAMS(INSTANCE(aHandle)->gpio_select_dev , IOCTL_GPIO_PIN_SET );
+			DEV_IOCTL(INSTANCE(aHandle)->gpio_select_dev , IOCTL_GPIO_PIN_SET );
 //			{ // for spi test
 //				uint32_t tmp=SPI_FLASH_ReadID(aHandle);
 //			}

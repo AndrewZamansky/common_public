@@ -75,7 +75,7 @@ int do_dsp_setkcs_start(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[
 
 	collect_data_ioctl.offset = offset;
 	collect_data_ioctl.size_to_collect = size;
-	rc = DEV_IOCTL_1_PARAMS(kcs_i2c_dev,
+	rc = DEV_IOCTL(kcs_i2c_dev,
 		IOCTL_KCS_START_COLLECT_DATA_FOR_SEND, &collect_data_ioctl);
 
 end:

@@ -38,10 +38,9 @@ static void init_clocks(struct clk_cntl_i96xxx_hifi3_cfg_t *cfg_hndl)
 {
 	uint32_t rate;
 
-	DEV_IOCTL_0_PARAMS(i96xxx_hifi3_dsp_clk_dev, IOCTL_DEVICE_START);
-	DEV_IOCTL_1_PARAMS(i96xxx_hifi3_dsp_clk_dev,
+	DEV_IOCTL(i96xxx_hifi3_dsp_clk_dev, IOCTL_DEVICE_START);
+	DEV_IOCTL(i96xxx_hifi3_dsp_clk_dev,
 			CLK_IOCTL_SET_FREQ, &cfg_hndl->dsp_rate);
-
 }
 
 

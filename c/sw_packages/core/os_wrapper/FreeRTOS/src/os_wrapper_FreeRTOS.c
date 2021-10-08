@@ -110,7 +110,7 @@ void system_tick_callback(void)
 #ifdef CONFIG_INCLUDE_HEARTBEAT
 	if(NULL != l_heartbeat_dev)
 	{
-		DEV_IOCTL_0_PARAMS(l_heartbeat_dev, HEARTBEAT_API_EACH_1mS_CALL );
+		DEV_IOCTL(l_heartbeat_dev, HEARTBEAT_API_EACH_1mS_CALL );
 	}
 #endif
 	xPortSysTickHandler();
@@ -121,7 +121,7 @@ void vApplicationIdleHook()
 #ifdef CONFIG_INCLUDE_HEARTBEAT
 	if(NULL != l_heartbeat_dev)
 	{
-		DEV_IOCTL_0_PARAMS(l_heartbeat_dev, HEARTBEAT_API_CALL_FROM_IDLE_TASK);
+		DEV_IOCTL(l_heartbeat_dev, HEARTBEAT_API_CALL_FROM_IDLE_TASK);
 	}
 #endif
 	os_sleep_arch_related_components();
@@ -134,9 +134,8 @@ void vApplicationIdleHook()
  */
 void vPortSetupTimerInterrupt( void )
 {
-	DEV_IOCTL_1_PARAMS(l_timer_dev,
-					IOCTL_TIMER_CALLBACK_SET, system_tick_callback);
-	DEV_IOCTL_0_PARAMS(l_timer_dev, IOCTL_DEVICE_START );
+	DEV_IOCTL(l_timer_dev, IOCTL_TIMER_CALLBACK_SET, system_tick_callback);
+	DEV_IOCTL(l_timer_dev, IOCTL_DEVICE_START );
 }
 
 
@@ -155,7 +154,7 @@ void os_init(void)
 #ifdef CONFIG_INCLUDE_HEARTBEAT
 	if(NULL != l_heartbeat_dev)
 	{
-		DEV_IOCTL_0_PARAMS(l_heartbeat_dev, IOCTL_DEVICE_START);
+		DEV_IOCTL(l_heartbeat_dev, IOCTL_DEVICE_START);
 	}
 #endif
 }

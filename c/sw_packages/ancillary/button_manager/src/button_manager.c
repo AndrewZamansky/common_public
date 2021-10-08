@@ -125,7 +125,7 @@ static void read_gpio_state(uint8_t num_of_gpio_devs,
 
 	for(i = 0; i < num_of_gpio_devs; i++)
 	{
-		DEV_IOCTL_1_PARAMS(
+		DEV_IOCTL(
 				gpio_devs_arr[i], IOCTL_GPIO_PIN_READ, &curr_gpio_state_arr[i]);
 	}
 
@@ -555,8 +555,7 @@ static void set_gpio_states_for_event(
 	gpio_dev_arr = config_handle->gpio_devs_arr;
 	for (i = 0; i < num_of_gpio_devs; i++)
 	{
-		DEV_IOCTL_1_PARAMS(gpio_dev_arr[i],
-							IOCTL_GPIO_PIN_READ, &gpio_read_data);
+		DEV_IOCTL(gpio_dev_arr[i], IOCTL_GPIO_PIN_READ, &gpio_read_data);
 		values_arr_size = gpio_read_data.values_arr_size;
 		pin_bitwise_requested_values_arr = (uint8_t *)malloc(values_arr_size);
 		errors_api_check_if_malloc_succeed(pin_bitwise_requested_values_arr);

@@ -86,8 +86,7 @@ int do_dsp_setkcs_store(
 	add_data_ioctl.size = 4;
 	add_data_ioctl.data = data;
 
-	rc = DEV_IOCTL_1_PARAMS(kcs_i2c_dev,
-			IOCTL_KCS_ADD_DATA_FOR_SEND, &add_data_ioctl);
+	rc = DEV_IOCTL(kcs_i2c_dev, IOCTL_KCS_ADD_DATA_FOR_SEND, &add_data_ioctl);
 
 end:
 	os_delay_ms(1);

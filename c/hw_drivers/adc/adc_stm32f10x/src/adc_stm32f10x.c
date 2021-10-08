@@ -58,10 +58,10 @@ static void init_adc(struct dev_desc_t *adev,
 	}
 	runtime_handle->channel = channel;
 
-	DEV_IOCTL_0_PARAMS(stm32f10x_adc_clk_dev, IOCTL_DEVICE_START);
-	DEV_IOCTL_1_PARAMS(stm32f10x_adc_clk_dev,
+	DEV_IOCTL(stm32f10x_adc_clk_dev, IOCTL_DEVICE_START);
+	DEV_IOCTL(stm32f10x_adc_clk_dev,
 			CLK_IOCTL_SET_FREQ, &config_handle->adc_clock_rate);
-	DEV_IOCTL_0_PARAMS(stm32f10x_adc_clk_dev, CLK_IOCTL_ENABLE);
+	DEV_IOCTL(stm32f10x_adc_clk_dev, CLK_IOCTL_ENABLE);
 
 	ADC_DeInit(ADC1);
 

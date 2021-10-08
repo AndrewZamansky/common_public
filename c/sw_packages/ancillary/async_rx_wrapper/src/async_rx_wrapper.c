@@ -167,7 +167,7 @@ static uint8_t async_rx_wrapper_ioctl(struct dev_desc_t *adev,
 		errors_api_check_if_malloc_succeed(config_handle->rx_buff);
 #endif
 
-		DEV_IOCTL_0_PARAMS(server_dev, IOCTL_DEVICE_START );
+		DEV_IOCTL(server_dev, IOCTL_DEVICE_START );
 		break;
 
 	default :

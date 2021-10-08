@@ -80,8 +80,7 @@ int do_dsp_getkcs(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	kcs_cmd_get_ioctl.size_to_read = size;
 	kcs_cmd_get_ioctl.recieved_size = &recieved_size;
 	kcs_cmd_get_ioctl.recieved_data = &recvBuf;
-	rc = DEV_IOCTL_1_PARAMS(
-			kcs_i2c_dev, IOCTL_KCS_GET_RESULTS_CMD, &kcs_cmd_get_ioctl);
+	rc = DEV_IOCTL(kcs_i2c_dev, IOCTL_KCS_GET_RESULTS_CMD, &kcs_cmd_get_ioctl);
 
 end:
 	//Delay by 1 ms to ensure shell doesn't hog resources [redundant]
@@ -107,7 +106,7 @@ end:
 			SHELL_REPLY_PRINTF("\n\r");
 		}
 	}
-	rc = DEV_IOCTL_0_PARAMS(kcs_i2c_dev, IOCTL_KCS_EXIT_GET_STATE);
+	rc = DEV_IOCTL(kcs_i2c_dev, IOCTL_KCS_EXIT_GET_STATE);
 
 	// needed for Klippel GUI:
 	SHELL_REPLY_PRINTF("%c", 0x04UL);

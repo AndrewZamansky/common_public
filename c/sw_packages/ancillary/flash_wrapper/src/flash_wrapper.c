@@ -35,8 +35,7 @@ static void save_to_flash_and_fetch_new_block( struct dev_desc_t *adev,
 
 	if (runtime_handle->curr_block_is_dirty)
 	{
-		DEV_IOCTL_1_PARAMS(hw_flash_dev,
-				IOCTL_FLASH_WRAPPER_ERASE, &curr_block_addr);
+		DEV_IOCTL(hw_flash_dev, IOCTL_FLASH_WRAPPER_ERASE, &curr_block_addr);
 		DEV_PWRITE(hw_flash_dev,
 				write_buffer, erase_block_size, curr_block_addr);
 	}
@@ -198,13 +197,13 @@ static uint8_t flash_wrapper_ioctl(struct dev_desc_t *adev,
 	switch(aIoctl_num)
 	{
 	case IOCTL_DEVICE_START :
-		DEV_IOCTL_0_PARAMS(hw_flash_dev, IOCTL_DEVICE_START );
-		DEV_IOCTL_1_PARAMS(hw_flash_dev,
+		DEV_IOCTL(hw_flash_dev, IOCTL_DEVICE_START );
+		DEV_IOCTL(hw_flash_dev,
 				IOCTL_FLASH_WRAPPER_GET_ERASE_SIZE, &erase_block_size);
 		runtime_handle->erase_block_size = erase_block_size;
 		runtime_handle->write_buffer = (uint8_t*)malloc(erase_block_size);
 		errors_api_check_if_malloc_succeed(runtime_handle->write_buffer);
-		DEV_IOCTL_1_PARAMS(hw_flash_dev,
+		DEV_IOCTL(hw_flash_dev,
 				IOCTL_FLASH_WRAPPER_GET_FLASH_SIZE, &flash_size);
 		runtime_handle->flash_size = flash_size;
 		runtime_handle->curr_block_addr = flash_size;//dummy address

@@ -42,9 +42,9 @@ static void heartbeat_timer_callback()
 static void cpu_usage_calibration(struct heartbeat_instance_t *handle)
 {
 	cpu_usage_counter = 0;
-	DEV_IOCTL_1_PARAMS(handle->callibration_timer,
+	DEV_IOCTL(handle->callibration_timer,
 			IOCTL_TIMER_CALLBACK_SET, heartbeat_timer_callback);
-	DEV_IOCTL_0_PARAMS(handle->callibration_timer, IOCTL_DEVICE_START );
+	DEV_IOCTL(handle->callibration_timer, IOCTL_DEVICE_START );
 
 	irq_unblock_all();
 	while (1)
@@ -64,7 +64,7 @@ static void cpu_usage_calibration(struct heartbeat_instance_t *handle)
 		timer_tick_counter = 0;
 	}
 	irq_block_all();
-	DEV_IOCTL_0_PARAMS(handle->callibration_timer, IOCTL_TIMER_STOP );
+	DEV_IOCTL(handle->callibration_timer, IOCTL_TIMER_STOP );
 	empty_cpu_usage_counter_per_mSec = cpu_usage_counter;
 }
 

@@ -47,7 +47,7 @@ static void get_rate(struct cfg_clk_t *cfg_clk,
 	parent_rate = 0;
 	if (NULL != parent_clk)
 	{
-		DEV_IOCTL_1_PARAMS(parent_clk, CLK_IOCTL_GET_FREQ, &parent_rate);
+		DEV_IOCTL(parent_clk, CLK_IOCTL_GET_FREQ, &parent_rate);
 	}
 	if (NULL != cfg_clk->get_freq_func)
 	{
@@ -104,8 +104,7 @@ static uint8_t clk_cntl_ioctl(struct dev_desc_t *adev,
 		{
 			if (NULL != parent_clk)
 			{
-				DEV_IOCTL_1_PARAMS(
-						parent_clk, CLK_IOCTL_GET_FREQ, &parent_rate);
+				DEV_IOCTL(parent_clk, CLK_IOCTL_GET_FREQ, &parent_rate);
 			}
 			cfg_clk->set_freq_func(*(uint32_t*)aIoctl_param1, parent_rate);
 			runtime_data->rate = *(uint32_t*)aIoctl_param1;

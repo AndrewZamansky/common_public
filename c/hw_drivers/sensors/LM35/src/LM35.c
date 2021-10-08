@@ -38,7 +38,7 @@ uint8_t LM35_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 		case IOCTL_DEVICE_START :
 			if((0 == runtime_handle->run_state) && (NULL != adc_server_device))
 			{
-				DEV_IOCTL_0_PARAMS(adc_server_device , IOCTL_DEVICE_START );
+				DEV_IOCTL(adc_server_device , IOCTL_DEVICE_START );
 				runtime_handle->run_state = 1;
 			}
 			break;

@@ -90,7 +90,7 @@ uint8_t xtensa_internal_timers_ioctl( struct dev_desc_t *adev,
 		break;
 
 	case IOCTL_DEVICE_START :
-		DEV_IOCTL_1_PARAMS(config_handle->clock_dev,
+		DEV_IOCTL(config_handle->clock_dev,
 				CLK_IOCTL_GET_FREQ, &core_clock_rate );
 
 		 /* set rate */

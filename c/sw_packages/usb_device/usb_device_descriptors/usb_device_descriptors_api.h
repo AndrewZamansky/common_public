@@ -61,7 +61,7 @@ struct usb_descriptors_add_string_t {
 		__str_desc_s.type_of_string = string_type;              \
 		__str_desc_s.string_descriptor = string_desc;           \
 		__str_desc_s.size_of_descriptor = sizeof(string_desc);  \
-		DEV_IOCTL_1_PARAMS(__usb_device_descriptors_dev,      \
+		DEV_IOCTL(__usb_device_descriptors_dev,      \
 			USB_DEVICE_DESCRIPTORS_ADD_STRING_DESCRIPTOR, &__str_desc_s);\
 	}
 

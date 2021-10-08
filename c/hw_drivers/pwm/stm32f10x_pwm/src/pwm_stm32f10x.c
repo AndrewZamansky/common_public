@@ -22,8 +22,8 @@ static const uint8_t channel_lookup_table_port_A[16] =
 static void pwm_init(struct pwm_stm32f10x_instance_t *config_handle,
 		struct pwm_stm32f10x_runtime_t *runtime_handle)
 {
-	DEV_IOCTL_0_PARAMS(stm32f10x_tim1_clk_dev, IOCTL_DEVICE_START);
-	DEV_IOCTL_0_PARAMS(stm32f10x_tim1_clk_dev, CLK_IOCTL_ENABLE);
+	DEV_IOCTL(stm32f10x_tim1_clk_dev, IOCTL_DEVICE_START);
+	DEV_IOCTL(stm32f10x_tim1_clk_dev, CLK_IOCTL_ENABLE);
 	runtime_handle->init_done = 1;
 }
 
@@ -98,7 +98,7 @@ static uint8_t pwm_set_params(struct pwm_stm32f10x_instance_t *config_handle,
 	runtime_handle->channel = channel;
 	runtime_handle->TIMx = TIMx;
 
-	DEV_IOCTL_1_PARAMS(stm32f10x_tim1_clk_dev,
+	DEV_IOCTL(stm32f10x_tim1_clk_dev,
 					CLK_IOCTL_GET_FREQ, &tim1_clock_rate );
 
 	freq = set_params->freq;

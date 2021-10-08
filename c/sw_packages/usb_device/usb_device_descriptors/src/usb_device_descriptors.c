@@ -157,7 +157,7 @@ static void device_start(struct usb_device_descriptors_cfg_t *cfg_hndl)
 	arr_of_str_desc[0].desc = gu8StringLang;
 	num_of_str_desc++;
 
-	DEV_IOCTL_0_PARAMS(usb_hw, IOCTL_DEVICE_START);
+	DEV_IOCTL(usb_hw, IOCTL_DEVICE_START);
 	init_done = 1;
 }
 
@@ -265,8 +265,8 @@ static void usb_device_start(struct usb_device_descriptors_cfg_t *cfg_hndl)
 	descriptors.hid_report_desc = gu8UsbHidReport;
 	descriptors.hid_report_size = gu32UsbHidReportLen;
 	descriptors.config_hid_desc_index = gu32ConfigHidDescIdx;
-	DEV_IOCTL_1_PARAMS(usb_hw, IOCTL_USB_DEVICE_SET_DESCRIPTORS, &descriptors);
-	DEV_IOCTL_0_PARAMS(usb_hw, IOCTL_USB_DEVICE_START);
+	DEV_IOCTL(usb_hw, IOCTL_USB_DEVICE_SET_DESCRIPTORS, &descriptors);
+	DEV_IOCTL(usb_hw, IOCTL_USB_DEVICE_START);
 
 }
 

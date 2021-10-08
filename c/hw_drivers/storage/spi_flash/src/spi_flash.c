@@ -58,7 +58,7 @@
 static void _chip_select_on(const void *apHandle   )
 {
 	/* Select the FLASH: Chip Select low */
-	DEV_IOCTL_0_PARAMS(
+	DEV_IOCTL(
 			INSTANCE(apHandle)->gpio_select_dev , IOCTL_GPIO_PIN_CLEAR );
 }
 
@@ -72,7 +72,7 @@ static void _chip_select_on(const void *apHandle   )
 static void _chip_select_off(const void *apHandle )
 {
 	/* Deselect the FLASH: Chip Select high */
-	DEV_IOCTL_0_PARAMS(INSTANCE(apHandle)->gpio_select_dev , IOCTL_GPIO_PIN_SET );
+	DEV_IOCTL(INSTANCE(apHandle)->gpio_select_dev , IOCTL_GPIO_PIN_SET );
 }
 
 /*******************************************************************************
@@ -389,8 +389,8 @@ uint8_t spi_flash_ioctl( struct dev_desc_t *adev,const uint8_t aIoctl_num
 		case IOCTL_DEVICE_START :
 			/* Deselect the FLASH: Chip Select high */
 			_chip_select_off(config_handle );
-			DEV_IOCTL_0_PARAMS(config_handle->gpio_select_dev , IOCTL_DEVICE_START );
-			DEV_IOCTL_0_PARAMS(config_handle->spi_server_dev , IOCTL_DEVICE_START );
+			DEV_IOCTL(config_handle->gpio_select_dev , IOCTL_DEVICE_START );
+			DEV_IOCTL(config_handle->spi_server_dev , IOCTL_DEVICE_START );
 //			{ // for spi test
 //				uint32_t tmp=SPI_FLASH_ReadID(aHandle);
 //			}

@@ -30,8 +30,8 @@ struct dev_param_t const *get_config_param(struct dev_desc_t * pdev,
 #endif
 
 
-uint8_t	DEV_IOCTL_2_PARAMS(struct dev_desc_t *adev,
-						uint8_t ioctl_num, void *param1, void *param2)
+uint8_t _ioctl_2_params(
+		struct dev_desc_t * adev, uint8_t ioctl_num, void *param1, void *param2)
 {
 	if ( NULL == adev )
 	{
@@ -293,7 +293,7 @@ uint8_t DEV_SET_PARAM(char *dev_name_str,
 		{
 			struct dev_desc_t * param_pdev;
 			param_pdev = DEV_OPEN(param_val_str);
-			DEV_IOCTL_1_PARAMS(pdev,
+			DEV_IOCTL(pdev,
 					config_param->paramSetIoctl, param_pdev);
 		}
 		break;
@@ -301,14 +301,14 @@ uint8_t DEV_SET_PARAM(char *dev_name_str,
 		{
 			uint8_t param_int;
 			param_int = atoi((char*)param_val_str);
-			DEV_IOCTL_1_PARAMS(pdev, config_param->paramSetIoctl, &param_int);
+			DEV_IOCTL(pdev, config_param->paramSetIoctl, &param_int);
 		}
 		break;
 	case DEV_PARAM_TYPE_UINT32:
 		{
 			uint32_t param_int;
 			param_int = atoi((char*)param_val_str);
-			DEV_IOCTL_1_PARAMS(pdev, config_param->paramSetIoctl, &param_int);
+			DEV_IOCTL(pdev, config_param->paramSetIoctl, &param_int);
 		}
 		break;
 	case DEV_PARAM_TYPE_MAPPED_SET_TO_SIZE:
@@ -322,7 +322,7 @@ uint8_t DEV_SET_PARAM(char *dev_name_str,
 			{
 				if(0 == strcmp(param_val_str, p_mapped_set_type_param->nameStr))
 				{
-					DEV_IOCTL_1_PARAMS(pdev, config_param->paramSetIoctl,
+					DEV_IOCTL(pdev, config_param->paramSetIoctl,
 												&p_mapped_set_type_param->val);
 					break;
 				}
@@ -359,21 +359,21 @@ uint8_t DEV_GET_PARAM(char *dev_name_str, char *param_name_str,
 	case DEV_PARAM_TYPE_PDEVICE:
 		{
 			struct dev_desc_t * param_pdev;
-			DEV_IOCTL_1_PARAMS(pdev, config_param->paramGetIoctl, &param_pdev);
+			DEV_IOCTL(pdev, config_param->paramGetIoctl, &param_pdev);
 			strncpy(param_val_str, param_pdev->name, param_val_str_size);
 		}
 		break;
 	case DEV_PARAM_TYPE_UINT8:
 		{
 			uint8_t param_int;
-			DEV_IOCTL_1_PARAMS(pdev, config_param->paramGetIoctl, &param_int);
+			DEV_IOCTL(pdev, config_param->paramGetIoctl, &param_int);
 			//TODO
 		}
 		break;
 	case DEV_PARAM_TYPE_UINT32:
 		{
 			uint32_t param_int;
-			DEV_IOCTL_1_PARAMS(pdev, config_param->paramGetIoctl, &param_int);
+			DEV_IOCTL(pdev, config_param->paramGetIoctl, &param_int);
 			//TODO
 		}
 		break;
@@ -385,7 +385,7 @@ uint8_t DEV_GET_PARAM(char *dev_name_str, char *param_name_str,
 
 			p_mapped_set_type_param = config_param->p_mapped_set_type_param;
 			mapped_set_size = config_param->mapped_set_size;
-			DEV_IOCTL_1_PARAMS(pdev, config_param->paramGetIoctl, &val);
+			DEV_IOCTL(pdev, config_param->paramGetIoctl, &val);
 
 			while (mapped_set_size--)
 			{

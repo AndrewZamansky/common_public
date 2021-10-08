@@ -73,7 +73,7 @@ static uint8_t async_tx_wrapper_callback(struct dev_desc_t *adev,
 	    else
 	    {
 	    	os_queue_t xTX_WaitQueue  ;
-	    	DEV_IOCTL_0_PARAMS(server_dev,IOCTL_UART_DISABLE_TX);
+	    	DEV_IOCTL(server_dev,IOCTL_UART_DISABLE_TX);
 	    	xTX_WaitQueue = runtime_handle->xTX_WaitQueue;
 
 	    	/* need to be here to avoid additional loop on stuck check */
@@ -147,7 +147,7 @@ static void sw_uart_send_and_wait_for_end(struct dev_desc_t *adev,
 		}
 	}
 
-	DEV_IOCTL_0_PARAMS(server_dev ,IOCTL_UART_DISABLE_TX);
+	DEV_IOCTL(server_dev ,IOCTL_UART_DISABLE_TX);
 	/* after disabling TX interrupt should never be called
 	 * so it's safe to zero data_length
 	 */
@@ -319,7 +319,7 @@ static uint8_t async_tx_wrapper_ioctl(struct dev_desc_t *adev,
 						ASYNC_TX_WRAPPER_Send_Task, adev,
 						ASYNC_TX_WRAPPER_TASK_STACK_SIZE,
 						ASYNC_TX_WRAPPER_TASK_PRIORITY);
-				DEV_IOCTL_0_PARAMS(server_dev , IOCTL_DEVICE_START );
+				DEV_IOCTL(server_dev , IOCTL_DEVICE_START );
 			}
 			break;
 

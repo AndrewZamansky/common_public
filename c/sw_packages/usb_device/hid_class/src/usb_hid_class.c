@@ -178,7 +178,7 @@ static size_t usb_hid_pwrite(struct dev_desc_t *adev,
 	set_data_to_in_endpoint.endpoint_num = runtime_hndl->in_endpoint_num;
 	set_data_to_in_endpoint.data = apData;
 	set_data_to_in_endpoint.size = sentLen;
-	DEV_IOCTL_1_PARAMS(usb_hw,
+	DEV_IOCTL(usb_hw,
 		IOCTL_USB_DEVICE_SENT_DATA_TO_IN_ENDPOINT, &set_data_to_in_endpoint);
 
 	return sentLen;
@@ -222,13 +222,13 @@ static void hid_class_in_request(struct dev_desc_t *usb_hw,
 
 	if (0 == ret)
 	{
-		DEV_IOCTL_1_PARAMS(usb_hw,
+		DEV_IOCTL(usb_hw,
 				IOCTL_USB_DEVICE_SET_REQUEST_IN_BUFFER, &set_request_in_buffer);
 	}
 	else
 	{
 		/* Setup error, stall the device */
-		DEV_IOCTL_0_PARAMS(usb_hw, IOCTL_USB_DEVICE_STALL_CONTROL_ENDPOINT);
+		DEV_IOCTL(usb_hw, IOCTL_USB_DEVICE_STALL_CONTROL_ENDPOINT);
 	}
 }
 
@@ -268,13 +268,13 @@ static void hid_class_out_request( struct dev_desc_t *usb_hw,
 
     if (0 == ret)
     {
-    	DEV_IOCTL_1_PARAMS(usb_hw,
+    	DEV_IOCTL(usb_hw,
     		IOCTL_USB_DEVICE_SET_REQUEST_OUT_BUFFER, &set_request_out_buffer);
     }
 	else
 	{
 		/* Setup error, stall the device */
-		DEV_IOCTL_0_PARAMS(usb_hw, IOCTL_USB_DEVICE_STALL_CONTROL_ENDPOINT);
+		DEV_IOCTL(usb_hw, IOCTL_USB_DEVICE_STALL_CONTROL_ENDPOINT);
 	}
 }
 
@@ -358,7 +358,7 @@ static void configure_endpoints(struct dev_desc_t *adev,
 	endpoints_type_arr[0] = USB_DEVICE_API_EP_TYPE_INTERRUPT_IN;
 	endpoints_type_arr[1] = USB_DEVICE_API_EP_TYPE_INTERRUPT_OUT;
 	set_endpoints.endpoints_type_arr = endpoints_type_arr;
-	DEV_IOCTL_1_PARAMS(usb_hw, IOCTL_USB_DEVICE_SET_ENDPOINTS, &set_endpoints);
+	DEV_IOCTL(usb_hw, IOCTL_USB_DEVICE_SET_ENDPOINTS, &set_endpoints);
 
 	in_endpoint_num = endpoints_num_arr[0];
 	out_endpoint_num = endpoints_num_arr[1];
@@ -395,7 +395,7 @@ static void update_configuration_desc(struct dev_desc_t *adev,
 	memcpy(iad, interface_association_descriptor,
 						sizeof(interface_association_descriptor));
 	iad[2] = usb_descriptors_alloc_interfaces->interfaces_num[0];
-	DEV_IOCTL_1_PARAMS(usb_descriptors_dev,
+	DEV_IOCTL(usb_descriptors_dev,
 			USB_DEVICE_DESCRIPTORS_ADD_INTERFACE_ASSOCIATION_DESCRIPTOR, iad);
 	os_safe_free(iad);
 
@@ -419,7 +419,7 @@ static void update_configuration_desc(struct dev_desc_t *adev,
 	p_hid_descriptor->hid_desc_position_in_config_desc = INTERFACE_LEN;
 	p_hid_descriptor->report_descriptor = runtime_hndl->report_desc;
 	p_hid_descriptor->size = report_desc_size;
-	DEV_IOCTL_1_PARAMS(usb_descriptors_dev,
+	DEV_IOCTL(usb_descriptors_dev,
 			USB_DEVICE_DESCRIPTORS_ADD_INTERFACE, &usb_desc_add_interface);
 	os_safe_free(interface);
 }
@@ -443,7 +443,7 @@ static void start_hid_class(struct dev_desc_t *adev,
 
 	usb_descriptors_alloc_interfaces.num_of_interfaces = 1;
 	usb_descriptors_dev = cfg_hndl->usb_descriptors_dev;
-	DEV_IOCTL_1_PARAMS(usb_descriptors_dev,
+	DEV_IOCTL(usb_descriptors_dev,
 			USB_DEVICE_DESCRIPTORS_ALLOC_INTERFACES_NUMBERS,
 			&usb_descriptors_alloc_interfaces);
 
@@ -458,7 +458,7 @@ static void start_hid_class(struct dev_desc_t *adev,
 	register_interfaces.register_interface_arr = register_interface;
 	register_interfaces.callback_dev = adev;
 	usb_hw = cfg_hndl->usb_hw;
-	DEV_IOCTL_1_PARAMS(usb_hw,
+	DEV_IOCTL(usb_hw,
 			IOCTL_USB_DEVICE_REGISTER_INTERFACES, &register_interfaces);
 	runtime_hndl->device_started = 1;
 }

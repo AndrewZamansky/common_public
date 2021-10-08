@@ -14,8 +14,8 @@
 
 static void init_pwr(struct pwr_stm32f10x_runtime_t *runtime_handle)
 {
-	DEV_IOCTL_0_PARAMS(stm32f10x_pwr_clk_dev, IOCTL_DEVICE_START);
-	DEV_IOCTL_0_PARAMS(stm32f10x_pwr_clk_dev, CLK_IOCTL_ENABLE);
+	DEV_IOCTL(stm32f10x_pwr_clk_dev, IOCTL_DEVICE_START);
+	DEV_IOCTL(stm32f10x_pwr_clk_dev, CLK_IOCTL_ENABLE);
 
 	runtime_handle->init_done = 1;
 }

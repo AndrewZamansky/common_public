@@ -386,17 +386,17 @@ static void init_clocks(struct clk_cntl_stm32f10x_cfg_t *cfg_hndl)
 
 	if (0 != cfg_hndl->hsirc_rate)
 	{
-		DEV_IOCTL_0_PARAMS(stm32f10x_hsirc_clk_dev, IOCTL_DEVICE_START);
-		DEV_IOCTL_0_PARAMS(stm32f10x_hsirc_clk_dev, CLK_IOCTL_ENABLE);
-		DEV_IOCTL_1_PARAMS(stm32f10x_hsirc_clk_dev,
+		DEV_IOCTL(stm32f10x_hsirc_clk_dev, IOCTL_DEVICE_START);
+		DEV_IOCTL(stm32f10x_hsirc_clk_dev, CLK_IOCTL_ENABLE);
+		DEV_IOCTL(stm32f10x_hsirc_clk_dev,
 				CLK_IOCTL_SET_FREQ, &cfg_hndl->hsirc_rate);
 	}
 
 	if (0 != cfg_hndl->hsirc_rate)
 	{
-		DEV_IOCTL_0_PARAMS(stm32f10x_lsirc_clk_dev, IOCTL_DEVICE_START);
-		DEV_IOCTL_0_PARAMS(stm32f10x_lsirc_clk_dev, CLK_IOCTL_ENABLE);
-		DEV_IOCTL_1_PARAMS(stm32f10x_lsirc_clk_dev,
+		DEV_IOCTL(stm32f10x_lsirc_clk_dev, IOCTL_DEVICE_START);
+		DEV_IOCTL(stm32f10x_lsirc_clk_dev, CLK_IOCTL_ENABLE);
+		DEV_IOCTL(stm32f10x_lsirc_clk_dev,
 				CLK_IOCTL_SET_FREQ, &cfg_hndl->lsirc_rate);
 	}
 
@@ -405,14 +405,12 @@ static void init_clocks(struct clk_cntl_stm32f10x_cfg_t *cfg_hndl)
 		uint32_t xtal_rate;
 
 		xtal_rate = cfg_hndl->xtal_rate;
-		DEV_IOCTL_0_PARAMS(stm32f10x_xtal_clk_dev, IOCTL_DEVICE_START);
-		DEV_IOCTL_0_PARAMS(stm32f10x_xtal_clk_dev, CLK_IOCTL_ENABLE);
-		DEV_IOCTL_1_PARAMS(
-				stm32f10x_xtal_clk_dev, CLK_IOCTL_SET_FREQ, &xtal_rate);
-		DEV_IOCTL_0_PARAMS(stm32f10x_xtal_div128_clk_dev, IOCTL_DEVICE_START);
+		DEV_IOCTL(stm32f10x_xtal_clk_dev, IOCTL_DEVICE_START);
+		DEV_IOCTL(stm32f10x_xtal_clk_dev, CLK_IOCTL_ENABLE);
+		DEV_IOCTL(stm32f10x_xtal_clk_dev, CLK_IOCTL_SET_FREQ, &xtal_rate);
+		DEV_IOCTL(stm32f10x_xtal_div128_clk_dev, IOCTL_DEVICE_START);
 		xtal_rate /= 128;
-		DEV_IOCTL_1_PARAMS(
-				stm32f10x_xtal_clk_dev, CLK_IOCTL_SET_FREQ, &xtal_rate);
+		DEV_IOCTL(stm32f10x_xtal_clk_dev, CLK_IOCTL_SET_FREQ, &xtal_rate);
 	}
 
 	/* 2 wait states required on the flash. */
@@ -423,18 +421,15 @@ static void init_clocks(struct clk_cntl_stm32f10x_cfg_t *cfg_hndl)
 		CRITICAL_ERROR("TODO");
 	}
 
-	DEV_IOCTL_0_PARAMS(stm32f10x_sysclk_dev, IOCTL_DEVICE_START);
-	DEV_IOCTL_1_PARAMS(stm32f10x_sysclk_dev,
+	DEV_IOCTL(stm32f10x_sysclk_dev, IOCTL_DEVICE_START);
+	DEV_IOCTL(stm32f10x_sysclk_dev,
 					CLK_IOCTL_SET_PARENT, cfg_hndl->sysclk_src_clk_dev);
-	DEV_IOCTL_0_PARAMS(stm32f10x_hclk_clk_dev, IOCTL_DEVICE_START);
-	DEV_IOCTL_1_PARAMS(stm32f10x_hclk_clk_dev,
-					CLK_IOCTL_SET_FREQ, &cfg_hndl->hclk_rate);
-	DEV_IOCTL_0_PARAMS(stm32f10x_apb1_clk_dev, IOCTL_DEVICE_START);
-	DEV_IOCTL_1_PARAMS(stm32f10x_apb1_clk_dev,
-			CLK_IOCTL_SET_FREQ, &cfg_hndl->apb1_rate);
-	DEV_IOCTL_0_PARAMS(stm32f10x_apb2_clk_dev, IOCTL_DEVICE_START);
-	DEV_IOCTL_1_PARAMS(stm32f10x_apb2_clk_dev,
-			CLK_IOCTL_SET_FREQ, &cfg_hndl->apb2_rate);
+	DEV_IOCTL(stm32f10x_hclk_clk_dev, IOCTL_DEVICE_START);
+	DEV_IOCTL(stm32f10x_hclk_clk_dev, CLK_IOCTL_SET_FREQ, &cfg_hndl->hclk_rate);
+	DEV_IOCTL(stm32f10x_apb1_clk_dev, IOCTL_DEVICE_START);
+	DEV_IOCTL(stm32f10x_apb1_clk_dev, CLK_IOCTL_SET_FREQ, &cfg_hndl->apb1_rate);
+	DEV_IOCTL(stm32f10x_apb2_clk_dev, IOCTL_DEVICE_START);
+	DEV_IOCTL(stm32f10x_apb2_clk_dev, CLK_IOCTL_SET_FREQ, &cfg_hndl->apb2_rate);
 }
 
 

@@ -390,9 +390,9 @@ static uint8_t spi_i94xxx_ioctl( struct dev_desc_t *adev,
 		pin_control_api_set_pin_function(cfg_hndl->MOSI_pin);
 		pin_control_api_set_pin_function(cfg_hndl->SS_pin);
 
-		DEV_IOCTL_0_PARAMS(spi_clk_dev, IOCTL_DEVICE_START);
-		DEV_IOCTL_1_PARAMS(spi_clk_dev, CLK_IOCTL_SET_PARENT, src_clock);
-		DEV_IOCTL_0_PARAMS(spi_clk_dev, CLK_IOCTL_ENABLE);
+		DEV_IOCTL(spi_clk_dev, IOCTL_DEVICE_START);
+		DEV_IOCTL(spi_clk_dev, CLK_IOCTL_SET_PARENT, src_clock);
+		DEV_IOCTL(spi_clk_dev, CLK_IOCTL_ENABLE);
 
 		SYS_ResetModule(spi_module_rst);
 

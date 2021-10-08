@@ -17,16 +17,15 @@ static uint8_t perform_send_setup( struct dev_desc_t *NAU83GXX_dev,
 {
 	uint8_t reply;
 
-	reply = DEV_IOCTL_1_PARAMS(NAU83GXX_dev,
+	reply = DEV_IOCTL(NAU83GXX_dev,
 		IOCTL_KCS_START_COLLECT_DATA_FOR_SEND, p_collect_data_ioctl);
 	if (reply) return reply;
 
-	reply = DEV_IOCTL_1_PARAMS(NAU83GXX_dev,
+	reply = DEV_IOCTL(NAU83GXX_dev,
 			IOCTL_KCS_ADD_DATA_FOR_SEND, p_add_data_ioctl);
 	if (reply) return reply;
 
-	reply = DEV_IOCTL_0_PARAMS(
-			NAU83GXX_dev, IOCTL_KCS_SEND_COLLECTED_SETUP_DATA);
+	reply = DEV_IOCTL(NAU83GXX_dev, IOCTL_KCS_SEND_COLLECTED_SETUP_DATA);
 	return reply;
 }
 

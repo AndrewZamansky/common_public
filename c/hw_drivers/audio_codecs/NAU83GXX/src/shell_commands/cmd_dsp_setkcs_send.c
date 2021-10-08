@@ -56,7 +56,7 @@ int do_dsp_setkcs_send(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]
 		goto end;
 	}
 
-	rc = DEV_IOCTL_0_PARAMS(kcs_i2c_dev, IOCTL_KCS_SEND_COLLECTED_SETUP_DATA);
+	rc = DEV_IOCTL(kcs_i2c_dev, IOCTL_KCS_SEND_COLLECTED_SETUP_DATA);
 
 	end:
 	os_delay_ms(1);

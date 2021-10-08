@@ -287,8 +287,7 @@ static void load_preset(
 	shell_presets_api_get_buffer.num_of_preset = p_preset->num_of_preset;
 	while (ret_val && retries--)
 	{
-		ret_val = DEV_IOCTL_1_PARAMS(
-				p_preset->shell_preset_pdev,
+		ret_val = DEV_IOCTL( p_preset->shell_preset_pdev,
 				IOCTL_SHELL_PRESETS_GET_PRESET_BUFFER,
 				&shell_presets_api_get_buffer);
 		if (SHELL_PRESET_VALID_PRESET_DOES_NOT_EXIST == ret_val)
@@ -312,7 +311,7 @@ static void load_preset(
 	}
 	execute_batch(config_handle, shell_presets_api_get_buffer.preset_buffer,
 			shell_presets_api_get_buffer.preset_size);
-	DEV_IOCTL_0_PARAMS(p_preset->shell_preset_pdev,
+	DEV_IOCTL(p_preset->shell_preset_pdev,
 			IOCTL_SHELL_PRESETS_RELEASE_PRESET_BUFFER);
 #endif
 }
@@ -365,7 +364,7 @@ static void consume_line(struct shell_frontend_cfg_t *config_handle,
 			rcvd_cmd.reply_dev = curr_tx_dev;
 			rcvd_cmd.cmd_buf = pCmd;
 			rcvd_cmd.cmd_len = EOL_pos + 1;
-			DEV_IOCTL_1_PARAMS(
+			DEV_IOCTL(
 				shell_backend_dev, IOCTL_SHELL_NEW_FRAME_RECEIVED, &rcvd_cmd);
 		}
 
@@ -592,7 +591,7 @@ static void process_msg_from_rx_device(
 			data_buffer_info.pBufferStart, data_buffer_info.TotalLength);
 	DEV_IOCTL(curr_rx_dev, IOCTL_SET_BYTES_CONSUMED_IN_DATA_BUFFER,
 			(void *)((uint32_t)bytes_consumed));
-	DEV_IOCTL_0_PARAMS(curr_rx_dev, IOCTL_SET_UNLOCK_DATA_BUFFER);
+	DEV_IOCTL(curr_rx_dev, IOCTL_SET_UNLOCK_DATA_BUFFER);
 }
 
 
@@ -753,9 +752,9 @@ static uint8_t shell_frontend_ioctl( struct dev_desc_t *adev,
 				SHELL_FRONTEND_TASK_STACK_SIZE, SHELL_FRONTEND_TASK_PRIORITY);
 		}
 		server_dev = config_handle->server_tx_dev;
-		DEV_IOCTL_0_PARAMS(server_dev, IOCTL_DEVICE_START);
+		DEV_IOCTL(server_dev, IOCTL_DEVICE_START);
 		server_dev = config_handle->server_rx_dev;
-		DEV_IOCTL_0_PARAMS(server_dev, IOCTL_DEVICE_START);
+		DEV_IOCTL(server_dev, IOCTL_DEVICE_START);
 		runtime_handle->mode = SHELL_FRONTEND_MODE_ASCII;
 		break;
 	case IOCTL_SHELL_FRONTEND_LOAD_PRESET:

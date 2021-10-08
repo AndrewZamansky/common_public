@@ -265,13 +265,13 @@ static void uac_class_interface_in_request( struct dev_desc_t *usb_hw,
 		memcpy(data_to_send, data, data_len);
 		set_request_in_buffer.data = data_to_send;
 		set_request_in_buffer.size = data_len;
-		DEV_IOCTL_1_PARAMS(usb_hw,
+		DEV_IOCTL(usb_hw,
 				IOCTL_USB_DEVICE_SET_REQUEST_IN_BUFFER, &set_request_in_buffer);
 	}
 	else
 	{
 		/* Setup error, stall the device */
-		DEV_IOCTL_0_PARAMS(usb_hw, IOCTL_USB_DEVICE_STALL_CONTROL_ENDPOINT);
+		DEV_IOCTL(usb_hw, IOCTL_USB_DEVICE_STALL_CONTROL_ENDPOINT);
 	}
 }
 
@@ -386,13 +386,13 @@ static void uac_class_interface_out_request(struct dev_desc_t *usb_hw,
 
 	if (0 == ret)
 	{
-		DEV_IOCTL_1_PARAMS(usb_hw,
+		DEV_IOCTL(usb_hw,
 			IOCTL_USB_DEVICE_SET_REQUEST_OUT_BUFFER, &set_request_out_buffer);
 	}
 	else
 	{
 		/* Setup error, stall the device */
-		DEV_IOCTL_0_PARAMS(usb_hw, IOCTL_USB_DEVICE_STALL_CONTROL_ENDPOINT);
+		DEV_IOCTL(usb_hw, IOCTL_USB_DEVICE_STALL_CONTROL_ENDPOINT);
 	}
 }
 
@@ -506,7 +506,7 @@ static void uac_class_endpoint_out_request( struct dev_desc_t *usb_hw,
 		{
 			set_request_out_buffer.data = (uint8_t*)&g_usbd_PlaySampleRate;
 			set_request_out_buffer.size = 3;
-			DEV_IOCTL_1_PARAMS(usb_hw, IOCTL_USB_DEVICE_SET_REQUEST_OUT_BUFFER,
+			DEV_IOCTL(usb_hw, IOCTL_USB_DEVICE_SET_REQUEST_OUT_BUFFER,
 				&set_request_out_buffer);
 			return;
 		}
@@ -514,7 +514,7 @@ static void uac_class_endpoint_out_request( struct dev_desc_t *usb_hw,
 	default:
 		break;
 	}
-	DEV_IOCTL_0_PARAMS(usb_hw, IOCTL_USB_DEVICE_STALL_CONTROL_ENDPOINT);
+	DEV_IOCTL(usb_hw, IOCTL_USB_DEVICE_STALL_CONTROL_ENDPOINT);
 }
 
 
@@ -535,7 +535,7 @@ static void uac_class_endpoint_in_request( struct dev_desc_t *usb_hw,
 		{
 			set_request_in_buffer.data = (uint8_t*)&g_usbd_PlaySampleRate;
 			set_request_in_buffer.size = 3;
-			DEV_IOCTL_1_PARAMS(usb_hw, IOCTL_USB_DEVICE_SET_REQUEST_IN_BUFFER,
+			DEV_IOCTL(usb_hw, IOCTL_USB_DEVICE_SET_REQUEST_IN_BUFFER,
 				&set_request_in_buffer);
 			return;
 		}
@@ -543,7 +543,7 @@ static void uac_class_endpoint_in_request( struct dev_desc_t *usb_hw,
 	default:
 		break;
 	}
-	DEV_IOCTL_0_PARAMS(usb_hw, IOCTL_USB_DEVICE_STALL_CONTROL_ENDPOINT);
+	DEV_IOCTL(usb_hw, IOCTL_USB_DEVICE_STALL_CONTROL_ENDPOINT);
 }
 
 

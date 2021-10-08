@@ -71,7 +71,7 @@ static void get_parent_clock_rate(struct cfg_clk_t *cfg_clk, uint32_t *rate)
 
 	parent_clk_dev = cfg_clk->parent_clk;
 	if (NULL == parent_clk_dev) CRITICAL_ERROR("bad parent clock\n");
-	DEV_IOCTL_1_PARAMS(parent_clk_dev, CLK_IOCTL_GET_FREQ, rate);
+	DEV_IOCTL(parent_clk_dev, CLK_IOCTL_GET_FREQ, rate);
 }
 
 
@@ -173,7 +173,7 @@ uint8_t clock_control_nuc505_ioctl( struct dev_desc_t *adev,
 	switch(aIoctl_num)
 	{
 	case IOCTL_DEVICE_START :
-		DEV_IOCTL_1_PARAMS(nuc505_core_clk_dev,
+		DEV_IOCTL(nuc505_core_clk_dev,
 				CLK_IOCTL_SET_FREQ, &cfg_hndl->core_rate);
 
 		break;

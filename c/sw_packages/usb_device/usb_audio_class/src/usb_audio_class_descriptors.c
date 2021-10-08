@@ -440,7 +440,7 @@ static void configure_endpoints(struct dev_desc_t *adev,
 	set_endpoints.callback_dev = adev;
 	set_endpoints.max_pckt_sizes = max_pckt_sizes;
 	set_endpoints.endpoints_type_arr = endpoints_type_arr;
-	DEV_IOCTL_1_PARAMS(usb_hw, IOCTL_USB_DEVICE_SET_ENDPOINTS, &set_endpoints);
+	DEV_IOCTL(usb_hw, IOCTL_USB_DEVICE_SET_ENDPOINTS, &set_endpoints);
 
 	fill_endpoint_descriptors(cfg_hndl, runtime_hndl,
 			endpoints_num_arr, i_in_alt1, i_out_alt1,
@@ -469,7 +469,7 @@ static void fill_association_descriptor(struct usb_audio_class_cfg_t *cfg_hndl,
 		num_of_interfaces++;
 	}
 	iad[3] = num_of_interfaces;
-	DEV_IOCTL_1_PARAMS(cfg_hndl->usb_descriptors_dev,
+	DEV_IOCTL(cfg_hndl->usb_descriptors_dev,
 			USB_DEVICE_DESCRIPTORS_ADD_INTERFACE_ASSOCIATION_DESCRIPTOR, iad);
 	os_safe_free(iad);
 }
@@ -607,7 +607,7 @@ static void fill_control_descriptor(struct usb_audio_class_cfg_t *cfg_hndl,
 	usb_desc_add_interface.interface_desc = i_ctl;
 	usb_desc_add_interface.interface_desc_size = control_interface_size;
 	usb_desc_add_interface.alt_interface_desc = NULL;
-	DEV_IOCTL_1_PARAMS(cfg_hndl->usb_descriptors_dev,
+	DEV_IOCTL(cfg_hndl->usb_descriptors_dev,
 			USB_DEVICE_DESCRIPTORS_ADD_INTERFACE, &usb_desc_add_interface);
 	os_safe_free(i_ctl);
 }
@@ -693,7 +693,7 @@ static void update_interfaces_desc(struct dev_desc_t *adev,
 		usb_desc_add_interface.alt_interface_desc_size =
 													sizeof(in_alt_interface);
 		usb_desc_add_interface.is_hid_interface = 0;
-		DEV_IOCTL_1_PARAMS(usb_descriptors_dev,
+		DEV_IOCTL(usb_descriptors_dev,
 				USB_DEVICE_DESCRIPTORS_ADD_INTERFACE, &usb_desc_add_interface);
 		os_safe_free(i_in_alt0);
 		os_safe_free(i_in_alt1);
@@ -720,7 +720,7 @@ static void update_interfaces_desc(struct dev_desc_t *adev,
 			usb_desc_add_interface.alt_interface_desc_size -= 0x9;
 		}
 		usb_desc_add_interface.is_hid_interface = 0;
-		DEV_IOCTL_1_PARAMS(usb_descriptors_dev,
+		DEV_IOCTL(usb_descriptors_dev,
 				USB_DEVICE_DESCRIPTORS_ADD_INTERFACE, &usb_desc_add_interface);
 		os_safe_free(i_out_alt0);
 		os_safe_free(i_out_alt1);
@@ -754,7 +754,7 @@ void add_audio_class_device(struct dev_desc_t *adev,
 		num_of_interfaces++;
 	}
 	usb_descriptors_alloc_interfaces.num_of_interfaces = num_of_interfaces;
-	DEV_IOCTL_1_PARAMS(usb_descriptors_dev,
+	DEV_IOCTL(usb_descriptors_dev,
 			USB_DEVICE_DESCRIPTORS_ALLOC_INTERFACES_NUMBERS,
 			&usb_descriptors_alloc_interfaces);
 
@@ -784,6 +784,6 @@ void add_audio_class_device(struct dev_desc_t *adev,
 	register_interfaces.num_of_interfaces = num_of_interfaces;
 	register_interfaces.callback_dev = adev;
 	usb_hw = cfg_hndl->usb_hw;
-	DEV_IOCTL_1_PARAMS(usb_hw,
+	DEV_IOCTL(usb_hw,
 			IOCTL_USB_DEVICE_REGISTER_INTERFACES, &register_interfaces);
 }

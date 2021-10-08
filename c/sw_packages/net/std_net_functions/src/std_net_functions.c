@@ -107,7 +107,7 @@ static  uint8_t  get_ip_addr_str(
 			continue;
 		}
 
-		if (0 == DEV_IOCTL_1_PARAMS(net_dev,
+		if (0 == DEV_IOCTL(net_dev,
 			IOCTL_NET_DEVICE_GET_HOST_ADDR , &ioctl_net_device_get_host_addr))
 		{
 			return 0;

@@ -43,11 +43,11 @@ int do_init_83g10_dsp(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 
 	if (0x10 == device_addr)
 	{
-		DEV_IOCTL_0_PARAMS(G10_0x10, IOCTL_NAU83GXX_REINIT_I2C_REGISTERS);
+		DEV_IOCTL(G10_0x10, IOCTL_NAU83GXX_REINIT_I2C_REGISTERS);
 	}
 	else
 	{
-		DEV_IOCTL_0_PARAMS(G10_0x11, IOCTL_NAU83GXX_REINIT_I2C_REGISTERS);
+		DEV_IOCTL(G10_0x11, IOCTL_NAU83GXX_REINIT_I2C_REGISTERS);
 	}
 	//temporary add delay. will be removed after added sync with KCS task
 	os_delay_ms(100);

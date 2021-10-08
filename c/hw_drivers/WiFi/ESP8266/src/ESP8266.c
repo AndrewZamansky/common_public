@@ -981,7 +981,7 @@ static void process_message_from_hw(struct esp8266_cfg_t *config_handle,
 			IOCTL_SET_BYTES_CONSUMED_IN_DATA_BUFFER , (void*)bytes_consumed);
 	}
 
-	DEV_IOCTL_0_PARAMS(uart_rx_dev, IOCTL_SET_UNLOCK_DATA_BUFFER);
+	DEV_IOCTL(uart_rx_dev, IOCTL_SET_UNLOCK_DATA_BUFFER);
 }
 
 
@@ -1419,9 +1419,9 @@ static void init_esp8266(struct dev_desc_t *adev,
 	}
 
 	sockets = esp8266_runtime_hndl->sockets;
-	DEV_IOCTL_0_PARAMS(config_handle->uart_tx_dev, IOCTL_DEVICE_START );
-	DEV_IOCTL_0_PARAMS(config_handle->uart_rx_dev, IOCTL_DEVICE_START );
-	DEV_IOCTL_0_PARAMS(config_handle->timer_dev, IOCTL_DEVICE_START );
+	DEV_IOCTL(config_handle->uart_tx_dev, IOCTL_DEVICE_START );
+	DEV_IOCTL(config_handle->uart_rx_dev, IOCTL_DEVICE_START );
+	DEV_IOCTL(config_handle->timer_dev, IOCTL_DEVICE_START );
 
 	for(i = 0; i < ESP8266_MAX_NUM_OF_SOCKETS; i++)
 	{

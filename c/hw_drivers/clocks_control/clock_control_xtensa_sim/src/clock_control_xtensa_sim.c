@@ -24,7 +24,7 @@ static void get_parent_clock_rate(struct cfg_clk_t *cfg_clk, uint32_t *rate)
 
 	parent_clk_dev = cfg_clk->parent_clk;
 	if (NULL == parent_clk_dev) CRITICAL_ERROR("bad parent clock\n");
-	DEV_IOCTL_1_PARAMS(parent_clk_dev, CLK_IOCTL_GET_FREQ, rate);
+	DEV_IOCTL(parent_clk_dev, CLK_IOCTL_GET_FREQ, rate);
 }
 
 

@@ -234,9 +234,9 @@ static void start_device(struct dev_desc_t *adev,
 	{
 		CRITICAL_ERROR("TODO");
 	}
-	DEV_IOCTL_0_PARAMS(uart_clock, IOCTL_DEVICE_START);
-	DEV_IOCTL_1_PARAMS(uart_clock, CLK_IOCTL_SET_PARENT, src_clock);
-	DEV_IOCTL_0_PARAMS(uart_clock, CLK_IOCTL_ENABLE);
+	DEV_IOCTL(uart_clock, IOCTL_DEVICE_START);
+	DEV_IOCTL(uart_clock, CLK_IOCTL_SET_PARENT, src_clock);
+	DEV_IOCTL(uart_clock, CLK_IOCTL_ENABLE);
 
 	SYS_ResetModule(uart_module_rst);
 
@@ -266,7 +266,7 @@ static void stop_device(struct uart_i9xxxx_cfg_t *cfg_hndl,
 	pin_control_api_clear_pin_function(cfg_hndl->tx_pin);
 	pin_control_api_clear_pin_function(cfg_hndl->rx_pin);
 	UART_Close(uart_regs);
-	DEV_IOCTL_0_PARAMS(i9xxxx_uart0_clk_dev, CLK_IOCTL_DISABLE);
+	DEV_IOCTL(i9xxxx_uart0_clk_dev, CLK_IOCTL_DISABLE);
 }
 
 

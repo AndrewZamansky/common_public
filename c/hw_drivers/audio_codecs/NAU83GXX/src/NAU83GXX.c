@@ -170,7 +170,7 @@ static uint8_t NAU83GXX_callback(struct dev_desc_t *adev,
 
 	if (CALLBACK_INTERRUPT_ARRIVED == aCallback_num)
 	{
-		DEV_IOCTL_1_PARAMS(config_handle->irq_pin,
+		DEV_IOCTL(config_handle->irq_pin,
 				IOCTL_GPIO_TEST_IF_PINS_NOT_IN_IDLE, &irq_not_in_idle);
 		if (irq_not_in_idle)
 		{
@@ -632,7 +632,7 @@ static uint8_t process_power_down_msg(
 {
 	uint8_t rc;
 
-	DEV_IOCTL_0_PARAMS(config_handle->irq_pin, IOCTL_DEVICE_STOP);
+	DEV_IOCTL(config_handle->irq_pin, IOCTL_DEVICE_STOP);
 	rc = nau83gxx_write_wordU16(
 			config_handle->i2c_dev, config_handle->dev_addr, 0x0, 0x0);
 	runtime_handle->state = STATE_NOT_INITIALIZED;

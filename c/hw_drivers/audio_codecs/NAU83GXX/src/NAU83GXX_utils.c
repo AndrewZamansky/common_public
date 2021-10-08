@@ -196,7 +196,7 @@ uint8_t nau83gxx_read(struct dev_desc_t *i2c_dev, uint8_t device_addr,
 	i2c_read_struct.i2c_error = 1;
 	while((i2c_read_struct.i2c_error) && (retries--))
 	{
-		DEV_IOCTL_1_PARAMS(i2c_dev, IOCTL_I2C_MASTER_READ, &i2c_read_struct);
+		DEV_IOCTL(i2c_dev, IOCTL_I2C_MASTER_READ, &i2c_read_struct);
 	}
 	return (i2c_read_struct.i2c_error ? RC_I2C_ERROR : RC_OK);
 }
@@ -247,8 +247,7 @@ uint8_t nau83gxx_write(struct dev_desc_t *i2c_dev, uint8_t device_addr,
 		}
 
 		PRINTF_DBG("error: 0x%02X\tRetrying...\n\r",i2c_write_struct.i2c_error);
-		DEV_IOCTL_1_PARAMS(
-				i2c_dev, IOCTL_I2C_MASTER_WRITE, &i2c_write_struct);
+		DEV_IOCTL(i2c_dev, IOCTL_I2C_MASTER_WRITE, &i2c_write_struct);
 	}
 
 	return 0;
@@ -510,7 +509,7 @@ static void enable_recovery(struct NAU83GXX_config_t *config_handle,
 	reg_0x0A_data |= (1 << 11); // enable IRQ
 	nau83gxx_write_wordU16(i2c_dev, dev_addr, 0x0A, reg_0x0A_data);
 
-	DEV_IOCTL_0_PARAMS(config_handle->irq_pin, IOCTL_DEVICE_START );
+	DEV_IOCTL(config_handle->irq_pin, IOCTL_DEVICE_START );
 }
 
 

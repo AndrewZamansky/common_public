@@ -92,8 +92,8 @@ static uint8_t cortexM_systick_ioctl( struct dev_desc_t *adev,
 		break;
 
 	case IOCTL_DEVICE_START :
-		DEV_IOCTL_0_PARAMS(config_handle->clock_dev, IOCTL_DEVICE_START);
-		DEV_IOCTL_1_PARAMS(config_handle->clock_dev,
+		DEV_IOCTL(config_handle->clock_dev, IOCTL_DEVICE_START);
+		DEV_IOCTL(config_handle->clock_dev,
 				CLK_IOCTL_GET_FREQ, &core_clock_rate );
 		pcortexM_systick_instanceParams = config_handle;
 		/* Configure SysTick to interrupt at the requested rate. */

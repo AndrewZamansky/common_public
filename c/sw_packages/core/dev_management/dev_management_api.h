@@ -148,7 +148,7 @@ enum params_status_e {
 struct dev_desc_t;// pre-declare dev_desc_t structure to avoid warnings
 
 typedef uint8_t (*dev_ioctl_func_t)(struct dev_desc_t *adev,
-		 uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2);
+			uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2);
 typedef size_t (*dev_pwrite_func_t)(struct dev_desc_t *adev,
 				const   uint8_t *apData, size_t aLength, size_t aOffset);
 typedef uint32_t (*dev_pwrite32_func_t)(struct dev_desc_t *adev,
@@ -206,14 +206,42 @@ struct included_module_t {
 	(MODULE_RUNTIME_DATA_TYPE(module)*)( \
 			((struct dev_desc_t *)dev)->p_runtime_data)
 
-/*  ioctl functions */
-#define DEV_IOCTL        DEV_IOCTL_1_PARAMS
-#define DEV_IOCTL_0_PARAMS(dev, ioctl_num)    \
-				DEV_IOCTL_2_PARAMS(dev, ioctl_num, NULL, NULL)
-#define DEV_IOCTL_1_PARAMS(dev, ioctl_num, ioctl_param1)    \
-				DEV_IOCTL_2_PARAMS(dev, ioctl_num, ioctl_param1, NULL)
-uint8_t DEV_IOCTL_2_PARAMS(struct dev_desc_t * dev,
-						uint8_t ioctl_num, void *param1, void *param2);
+
+/* Following macros are used to create DEV_IOCTL() macro */
+#define PP_ARG_N( \
+          _1,  _2,  _3,  _4,  _5,  _6,  _7,  _8,  _9, _10, \
+         _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, \
+         _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, \
+         _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, \
+         _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, \
+         _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, \
+         _61, _62, _63, N, ...) N
+
+#define PP_RSEQ_N()                                        \
+         62, 61, 60,                                       \
+         59, 58, 57, 56, 55, 54, 53, 52, 51, 50,           \
+         49, 48, 47, 46, 45, 44, 43, 42, 41, 40,           \
+         39, 38, 37, 36, 35, 34, 33, 32, 31, 30,           \
+         29, 28, 27, 26, 25, 24, 23, 22, 21, 20,           \
+         19, 18, 17, 16, 15, 14, 13, 12, 11, 10,           \
+          9,  8,  7,  6,  5,  4,  3,  2,  1,  0 , 0
+
+#define PP_NARG_(...)    PP_ARG_N(__VA_ARGS__)
+
+#define PP_NARG(...)     PP_NARG_(__VA_ARGS__, PP_RSEQ_N())
+
+#define _ioctl_1_params(dev, ioctl_num, param1) \
+				_ioctl_2_params(dev, ioctl_num, param1, NULL)
+#define _ioctl_0_params(dev, ioctl_num) \
+				_ioctl_2_params(dev, ioctl_num, NULL, NULL)
+#define _IOCTL_STEP2(a,dev,...)  _ioctl_##a##_params(dev, __VA_ARGS__)
+#define _IOCTL_STEP1(a,dev,...)  _IOCTL_STEP2(a, dev, __VA_ARGS__)
+#define DEV_IOCTL(dev, ...) _IOCTL_STEP1(PP_NARG(__VA_ARGS__), dev, __VA_ARGS__)
+
+/* end of macros for creating DEV_IOCTL() macro */
+
+uint8_t _ioctl_2_params(struct dev_desc_t * dev,
+			uint8_t ioctl_num, void *param1, void *param2);
 
 
 /* callback functions */

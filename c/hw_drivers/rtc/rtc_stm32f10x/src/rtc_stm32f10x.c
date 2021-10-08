@@ -51,7 +51,7 @@ static void set_prescaler(struct rtc_stm32f10x_runtime_t *runtime_handle,
 	uint64_t prescaler_u64;
 	uint32_t prescaler_u32;
 
-	DEV_IOCTL_1_PARAMS(stm32f10x_rtc_clk_dev, CLK_IOCTL_GET_FREQ, &rtc_freq);
+	DEV_IOCTL(stm32f10x_rtc_clk_dev, CLK_IOCTL_GET_FREQ, &rtc_freq);
 
 	// according to datasheet same clock as parent can produce glitches
 	if (rtc_freq == freq)
@@ -85,12 +85,12 @@ static void init_rtc(struct rtc_stm32f10x_config_t *config_handle,
 
 	PWR_BackupAccessCmd(ENABLE);
 
-	DEV_IOCTL_0_PARAMS(stm32f10x_rtc_clk_dev, IOCTL_DEVICE_START);
-	DEV_IOCTL_1_PARAMS(stm32f10x_rtc_clk_dev,
+	DEV_IOCTL(stm32f10x_rtc_clk_dev, IOCTL_DEVICE_START);
+	DEV_IOCTL(stm32f10x_rtc_clk_dev,
 			CLK_IOCTL_SET_PARENT, config_handle->src_clock);
 
 	// RTC and BKP clock need to be enabled before setting the rate
-	DEV_IOCTL_0_PARAMS(stm32f10x_rtc_clk_dev, CLK_IOCTL_ENABLE);
+	DEV_IOCTL(stm32f10x_rtc_clk_dev, CLK_IOCTL_ENABLE);
 	set_prescaler(runtime_handle, config_handle->rtc_counter_rate_hz);
 	//PWR_BackupAccessCmd(DISABLE);
 

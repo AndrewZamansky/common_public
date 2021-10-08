@@ -60,8 +60,7 @@ static void send_to_88L24(struct dev_desc_t *i2c_bus_dev, uint8_t dev_addr,
 
 	i2c_write_struct.tx_data = send_i2c_data;
 
-	ret_val = DEV_IOCTL_1_PARAMS(
-			i2c_bus_dev, IOCTL_I2C_MASTER_WRITE, &i2c_write_struct);
+	ret_val = DEV_IOCTL(i2c_bus_dev, IOCTL_I2C_MASTER_WRITE, &i2c_write_struct);
 	if ( (0 != ret_val) || (0 != i2c_write_struct.i2c_error))
 	{
 		CRITICAL_ERROR("write to 88L24 failed");
@@ -89,8 +88,8 @@ static void init_88L24_clocks(struct NAU88L24_config_t *cfg_hndl)
 	i2s_mclk_clock = cfg_hndl->i2s_mclk_clock;
 	i2s_fsclk_clock = cfg_hndl->i2s_fsclk_clock;
 
-	DEV_IOCTL_1_PARAMS(i2s_mclk_clock, CLK_IOCTL_GET_FREQ, &mclk_clock_rate);
-	DEV_IOCTL_1_PARAMS(i2s_fsclk_clock, CLK_IOCTL_GET_FREQ, &fsclk_clock_rate);
+	DEV_IOCTL(i2s_mclk_clock, CLK_IOCTL_GET_FREQ, &mclk_clock_rate);
+	DEV_IOCTL(i2s_fsclk_clock, CLK_IOCTL_GET_FREQ, &fsclk_clock_rate);
 
 	internal_MCLK = 256 * fsclk_clock_rate;
 	MCLK_div = 1;

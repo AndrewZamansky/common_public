@@ -216,7 +216,7 @@ static void wireless_uart_task( void *aHandle )
 
 			}
 
-			DEV_IOCTL_0_PARAMS(INSTANCE(aHandle)->server_dev, IOCTL_SET_UNLOCK_DATA_BUFFER );
+			DEV_IOCTL(INSTANCE(aHandle)->server_dev, IOCTL_SET_UNLOCK_DATA_BUFFER );
 
 
 		}

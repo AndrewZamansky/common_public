@@ -204,7 +204,7 @@ static void set_clocks(struct I2S_onSPI_i94xxx_cfg_t *cfg_hndl,
 		return;
 	}
 
-	DEV_IOCTL_1_PARAMS(spi_i2s_clk_dev, CLK_IOCTL_GET_FREQ, &src_clk_freq);
+	DEV_IOCTL(spi_i2s_clk_dev, CLK_IOCTL_GET_FREQ, &src_clk_freq);
 	Mclock_factor_based_on_FSclock = cfg_hndl->Mclock_factor_based_on_FSclock;
 	mclk_freq = cfg_hndl->sample_rate * Mclock_factor_based_on_FSclock;
 
@@ -263,12 +263,12 @@ static void i94xxx_I2S_onSPI_init(struct dev_desc_t *adev,
 
 	configure_i2s_spi_pinout(cfg_hndl);
 
-	DEV_IOCTL_0_PARAMS(clk_dev, IOCTL_DEVICE_START);
-	DEV_IOCTL_1_PARAMS(clk_dev, CLK_IOCTL_SET_PARENT, src_clock);
-	DEV_IOCTL_0_PARAMS(clk_dev, CLK_IOCTL_ENABLE);
-	DEV_IOCTL_0_PARAMS(fs_clk_dev, IOCTL_DEVICE_START);
-	DEV_IOCTL_0_PARAMS(bclk_clk_dev, IOCTL_DEVICE_START);
-	DEV_IOCTL_0_PARAMS(mclk_clk_dev, IOCTL_DEVICE_START);
+	DEV_IOCTL(clk_dev, IOCTL_DEVICE_START);
+	DEV_IOCTL(clk_dev, CLK_IOCTL_SET_PARENT, src_clock);
+	DEV_IOCTL(clk_dev, CLK_IOCTL_ENABLE);
+	DEV_IOCTL(fs_clk_dev, IOCTL_DEVICE_START);
+	DEV_IOCTL(bclk_clk_dev, IOCTL_DEVICE_START);
+	DEV_IOCTL(mclk_clk_dev, IOCTL_DEVICE_START);
 
 	SPI_I2SOpen(I2S_SPI_module, clk_mode, sample_rate, data_width,
 										audio_format, txrx_format);
@@ -336,20 +336,19 @@ static void i94xxx_sync_to_dpwm_fs_rate(struct I2S_onSPI_i94xxx_cfg_t *cfg_hndl,
 	uint32_t i2s_sample_rate_hz;
 
 	I2S_SPI_module = (SPI_T*)cfg_hndl->base_address;
-	DEV_IOCTL_1_PARAMS(dpwm_dev,
-			DPWM_I9XXXX_GET_ROOT_CLK_DEV, &dpwm_root_clk_dev);
+	DEV_IOCTL(dpwm_dev, DPWM_I9XXXX_GET_ROOT_CLK_DEV, &dpwm_root_clk_dev);
 	if ((SPI_T*)SPI1_BASE == I2S_SPI_module)
 	{
-		DEV_IOCTL_1_PARAMS(i94xxx_spi1_clk_dev,
+		DEV_IOCTL(i94xxx_spi1_clk_dev,
 				CLK_IOCTL_GET_ROOT_CLK, &i2s_root_clk_dev);
-		DEV_IOCTL_1_PARAMS(i94xxx_I2S_onSPI1_FSCLK_clk_dev,
+		DEV_IOCTL(i94xxx_I2S_onSPI1_FSCLK_clk_dev,
 				CLK_IOCTL_GET_FREQ, &i2s_sample_rate_hz);
 	}
 	else if ((SPI_T*)SPI2_BASE == I2S_SPI_module)
 	{
-		DEV_IOCTL_1_PARAMS(i94xxx_spi2_clk_dev,
+		DEV_IOCTL(i94xxx_spi2_clk_dev,
 				CLK_IOCTL_GET_ROOT_CLK, &i2s_root_clk_dev);
-		DEV_IOCTL_1_PARAMS(i94xxx_I2S_onSPI2_FSCLK_clk_dev,
+		DEV_IOCTL(i94xxx_I2S_onSPI2_FSCLK_clk_dev,
 				CLK_IOCTL_GET_FREQ, &i2s_sample_rate_hz);
 	}
 
@@ -358,8 +357,7 @@ static void i94xxx_sync_to_dpwm_fs_rate(struct I2S_onSPI_i94xxx_cfg_t *cfg_hndl,
 		CRITICAL_ERROR("synchronized dpwm and i2s should be from same root clock");
 	}
 
-	DEV_IOCTL_1_PARAMS(dpwm_dev,
-			DPWM_I9XXXX_GET_SAMPLE_RATE_HZ, &dpwm_sample_rate_hz);
+	DEV_IOCTL(dpwm_dev, DPWM_I9XXXX_GET_SAMPLE_RATE_HZ, &dpwm_sample_rate_hz);
 
 	if ( dpwm_sample_rate_hz != i2s_sample_rate_hz)
 	{

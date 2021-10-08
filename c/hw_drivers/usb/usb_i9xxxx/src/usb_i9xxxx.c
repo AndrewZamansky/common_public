@@ -559,12 +559,12 @@ static void device_start(struct usb_i9xxxx_cfg_t *cfg_hndl)
 	usb_clk_dev = i96xxx_usb_clk_dev;
 #endif
 
-	DEV_IOCTL_0_PARAMS(usb_clk_dev, IOCTL_DEVICE_START);
-	DEV_IOCTL_1_PARAMS(usb_clk_dev, CLK_IOCTL_SET_PARENT, cfg_hndl->src_clock);
-	DEV_IOCTL_0_PARAMS(usb_clk_dev, CLK_IOCTL_ENABLE);
+	DEV_IOCTL(usb_clk_dev, IOCTL_DEVICE_START);
+	DEV_IOCTL(usb_clk_dev, CLK_IOCTL_SET_PARENT, cfg_hndl->src_clock);
+	DEV_IOCTL(usb_clk_dev, CLK_IOCTL_ENABLE);
 	freq = 48000000;
-	DEV_IOCTL_1_PARAMS(usb_clk_dev, CLK_IOCTL_SET_FREQ, &freq);
-	DEV_IOCTL_0_PARAMS(usb_clk_dev, CLK_IOCTL_ENABLE);
+	DEV_IOCTL(usb_clk_dev, CLK_IOCTL_SET_FREQ, &freq);
+	DEV_IOCTL(usb_clk_dev, CLK_IOCTL_ENABLE);
 
 	//irq_register_device_on_interrupt(USBD_IRQn, adev);
 	irq_register_interrupt(USBD_IRQn, USBD_IRQHandler);

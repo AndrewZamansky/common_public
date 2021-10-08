@@ -993,34 +993,30 @@ static void init_clocks(struct clk_cntl_i94xxx_cfg_t *cfg_hndl)
 	clk_cntl_cfg = cfg_hndl;
 	if (0 != cfg_hndl->ext_rate)
 	{
-		DEV_IOCTL_0_PARAMS(i94xxx_ext_clk_dev, IOCTL_DEVICE_START);
-		DEV_IOCTL_0_PARAMS(i94xxx_ext_clk_dev, CLK_IOCTL_ENABLE);
-		DEV_IOCTL_1_PARAMS(i94xxx_ext_clk_dev,
-				CLK_IOCTL_SET_FREQ, &cfg_hndl->ext_rate);
+		DEV_IOCTL(i94xxx_ext_clk_dev, IOCTL_DEVICE_START);
+		DEV_IOCTL(i94xxx_ext_clk_dev, CLK_IOCTL_ENABLE);
+		DEV_IOCTL(i94xxx_ext_clk_dev, CLK_IOCTL_SET_FREQ, &cfg_hndl->ext_rate);
 	}
 
 	if (0 != cfg_hndl->hirc_rate)
 	{
-		DEV_IOCTL_0_PARAMS(i94xxx_hirc_clk_dev, IOCTL_DEVICE_START);
-		DEV_IOCTL_0_PARAMS(i94xxx_hirc_clk_dev, CLK_IOCTL_ENABLE);
-		DEV_IOCTL_1_PARAMS(i94xxx_hirc_clk_dev,
+		DEV_IOCTL(i94xxx_hirc_clk_dev, IOCTL_DEVICE_START);
+		DEV_IOCTL(i94xxx_hirc_clk_dev, CLK_IOCTL_ENABLE);
+		DEV_IOCTL(i94xxx_hirc_clk_dev,
 				CLK_IOCTL_SET_FREQ, &cfg_hndl->hirc_rate);
 	}
 
-	DEV_IOCTL_0_PARAMS(i94xxx_pll_clk_dev, IOCTL_DEVICE_START);
-	DEV_IOCTL_1_PARAMS(i94xxx_pll_clk_dev,
+	DEV_IOCTL(i94xxx_pll_clk_dev, IOCTL_DEVICE_START);
+	DEV_IOCTL(i94xxx_pll_clk_dev,
 			CLK_IOCTL_SET_PARENT, cfg_hndl->pll_src_clk_dev);
-	DEV_IOCTL_1_PARAMS(i94xxx_pll_clk_dev,
-			CLK_IOCTL_SET_FREQ, &cfg_hndl->pll_rate);
+	DEV_IOCTL(i94xxx_pll_clk_dev, CLK_IOCTL_SET_FREQ, &cfg_hndl->pll_rate);
 
-	DEV_IOCTL_0_PARAMS(i94xxx_hclk_clk_dev, IOCTL_DEVICE_START);
-	DEV_IOCTL_1_PARAMS(i94xxx_hclk_clk_dev,
-			CLK_IOCTL_SET_PARENT, i94xxx_pll_clk_dev);
-//	DEV_IOCTL_1_PARAMS(i94xxx_hclk_clk_dev,
-//			CLK_IOCTL_SET_FREQ, &cfg_hndl->hclk_rate);
+	DEV_IOCTL(i94xxx_hclk_clk_dev, IOCTL_DEVICE_START);
+	DEV_IOCTL(i94xxx_hclk_clk_dev, CLK_IOCTL_SET_PARENT, i94xxx_pll_clk_dev);
+//	DEV_IOCTL(i94xxx_hclk_clk_dev, CLK_IOCTL_SET_FREQ, &cfg_hndl->hclk_rate);
 
 
-	DEV_IOCTL_1_PARAMS(i94xxx_hclk_clk_dev,	CLK_IOCTL_GET_FREQ, &rate);
+	DEV_IOCTL(i94xxx_hclk_clk_dev,	CLK_IOCTL_GET_FREQ, &rate);
 
 	/* PCLK cannot be greater than 80mhz*/
 	if (160000000 < rate)
@@ -1031,10 +1027,10 @@ static void init_clocks(struct clk_cntl_i94xxx_cfg_t *cfg_hndl)
 	{
 		rate = rate / 2;
 	}
-	DEV_IOCTL_0_PARAMS(i94xxx_pclk0_clk_dev, IOCTL_DEVICE_START);
-	DEV_IOCTL_1_PARAMS(i94xxx_pclk0_clk_dev, CLK_IOCTL_SET_FREQ, &rate);
-	DEV_IOCTL_0_PARAMS(i94xxx_pclk1_clk_dev, IOCTL_DEVICE_START);
-	DEV_IOCTL_1_PARAMS(i94xxx_pclk1_clk_dev, CLK_IOCTL_SET_FREQ, &rate);
+	DEV_IOCTL(i94xxx_pclk0_clk_dev, IOCTL_DEVICE_START);
+	DEV_IOCTL(i94xxx_pclk0_clk_dev, CLK_IOCTL_SET_FREQ, &rate);
+	DEV_IOCTL(i94xxx_pclk1_clk_dev, IOCTL_DEVICE_START);
+	DEV_IOCTL(i94xxx_pclk1_clk_dev, CLK_IOCTL_SET_FREQ, &rate);
 
 }
 

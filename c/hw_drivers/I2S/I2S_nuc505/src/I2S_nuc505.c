@@ -72,7 +72,7 @@ void __attribute__((section(".critical_text"))) I2S_IRQHandler(void)
 
 		DEV_IOCTL(pI2SHandle->timer_dev,
 				IOCTL_TIMER_WRAPPER_API_GET_COUNTER, (void*)&timer_counter);
-		DEV_IOCTL_0_PARAMS(pI2SHandle->timer_dev,
+		DEV_IOCTL(pI2SHandle->timer_dev,
 						IOCTL_TIMER_WRAPPER_API_RESTART_COUNTER);
 
 		if(relax == 0)
@@ -371,7 +371,7 @@ void demo_LineIn(void)
 //		NVIC_EnableIRQ(I2S_IRQn);
 		I2S_EnableInt(I2S, (I2S_IEN_RDMATIEN_Msk|I2S_IEN_RDMAEIEN_Msk));
 
-		DEV_IOCTL_0_PARAMS(pI2SHandle->timer_dev,
+		DEV_IOCTL(pI2SHandle->timer_dev,
 					IOCTL_TIMER_WRAPPER_API_RESTART_COUNTER);
 
  }
@@ -424,7 +424,7 @@ uint8_t I2S_nuc505_ioctl( struct dev_desc_t *adev ,const uint8_t aIoctl_num
 				float measured_sample_rate;
 				uint32_t timer_rate;
 
-				DEV_IOCTL_1_PARAMS(pI2SHandle->timer_dev,
+				DEV_IOCTL(pI2SHandle->timer_dev,
 						IOCTL_TIMER_WRAPPER_API_GET_RATE_HZ, &timer_rate);
 				measured_sample_rate = ( timer_rate *
 					 num_of_words_in_buffer_per_chenel * ACCUMULATION_TIMES) /

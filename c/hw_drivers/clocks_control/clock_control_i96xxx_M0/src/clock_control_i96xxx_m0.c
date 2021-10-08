@@ -868,63 +868,60 @@ static void init_clocks(struct clk_cntl_i96xxx_m0_cfg_t *cfg_hndl)
 
 	if (0 != cfg_hndl->xtal_rate)
 	{
-		DEV_IOCTL_0_PARAMS(i96xxx_xtal_clk_dev, IOCTL_DEVICE_START);
-		DEV_IOCTL_0_PARAMS(i96xxx_xtal_clk_dev, CLK_IOCTL_ENABLE);
-		DEV_IOCTL_1_PARAMS(i96xxx_xtal_clk_dev,
+		DEV_IOCTL(i96xxx_xtal_clk_dev, IOCTL_DEVICE_START);
+		DEV_IOCTL(i96xxx_xtal_clk_dev, CLK_IOCTL_ENABLE);
+		DEV_IOCTL(i96xxx_xtal_clk_dev,
 				CLK_IOCTL_SET_FREQ, &cfg_hndl->xtal_rate);
 	}
 
 	if (0 != cfg_hndl->hirc_rate)
 	{
-		DEV_IOCTL_0_PARAMS(i96xxx_hirc_clk_dev, IOCTL_DEVICE_START);
-		DEV_IOCTL_0_PARAMS(i96xxx_hirc_clk_dev, CLK_IOCTL_ENABLE);
-		DEV_IOCTL_1_PARAMS(i96xxx_hirc_clk_dev,
+		DEV_IOCTL(i96xxx_hirc_clk_dev, IOCTL_DEVICE_START);
+		DEV_IOCTL(i96xxx_hirc_clk_dev, CLK_IOCTL_ENABLE);
+		DEV_IOCTL(i96xxx_hirc_clk_dev,
 				CLK_IOCTL_SET_FREQ, &cfg_hndl->hirc_rate);
 	}
 
 	if (0 != cfg_hndl->ext_Mclk_rate)
 	{
-		DEV_IOCTL_0_PARAMS(i96xxx_ext_mclk_clk_dev, IOCTL_DEVICE_START);
-		DEV_IOCTL_0_PARAMS(i96xxx_ext_mclk_clk_dev, CLK_IOCTL_ENABLE);
-		DEV_IOCTL_1_PARAMS(i96xxx_ext_mclk_clk_dev,
+		DEV_IOCTL(i96xxx_ext_mclk_clk_dev, IOCTL_DEVICE_START);
+		DEV_IOCTL(i96xxx_ext_mclk_clk_dev, CLK_IOCTL_ENABLE);
+		DEV_IOCTL(i96xxx_ext_mclk_clk_dev,
 				CLK_IOCTL_SET_FREQ, &cfg_hndl->ext_Mclk_rate);
 	}
 
 	if (0 != cfg_hndl->pll_rate)
 	{
-		DEV_IOCTL_0_PARAMS(i96xxx_pll_clk_dev, IOCTL_DEVICE_START);
-		DEV_IOCTL_1_PARAMS(i96xxx_pll_clk_dev,
+		DEV_IOCTL(i96xxx_pll_clk_dev, IOCTL_DEVICE_START);
+		DEV_IOCTL(i96xxx_pll_clk_dev,
 				CLK_IOCTL_SET_PARENT, cfg_hndl->pll_src_clk_dev);
-		DEV_IOCTL_1_PARAMS(i96xxx_pll_clk_dev,
-				CLK_IOCTL_SET_FREQ, &cfg_hndl->pll_rate);
+		DEV_IOCTL(i96xxx_pll_clk_dev, CLK_IOCTL_SET_FREQ, &cfg_hndl->pll_rate);
 	}
 
-	DEV_IOCTL_0_PARAMS(i96xxx_hclk_clk_dev, IOCTL_DEVICE_START);
-	DEV_IOCTL_1_PARAMS(i96xxx_hclk_clk_dev,
+	DEV_IOCTL(i96xxx_hclk_clk_dev, IOCTL_DEVICE_START);
+	DEV_IOCTL(i96xxx_hclk_clk_dev,
 			CLK_IOCTL_SET_PARENT, cfg_hndl->hclk_src_clk_dev);
-	DEV_IOCTL_1_PARAMS(i96xxx_hclk_clk_dev,
-			CLK_IOCTL_SET_FREQ, &cfg_hndl->hclk_rate);
+	DEV_IOCTL(i96xxx_hclk_clk_dev, CLK_IOCTL_SET_FREQ, &cfg_hndl->hclk_rate);
 
 	if (0 != cfg_hndl->pclk0_rate)
 	{
-		DEV_IOCTL_0_PARAMS(i96xxx_pclk0_clk_dev, IOCTL_DEVICE_START);
-		DEV_IOCTL_1_PARAMS(i96xxx_pclk0_clk_dev,
+		DEV_IOCTL(i96xxx_pclk0_clk_dev, IOCTL_DEVICE_START);
+		DEV_IOCTL(i96xxx_pclk0_clk_dev,
 				CLK_IOCTL_SET_FREQ, &cfg_hndl->pclk0_rate);
 	}
 
 	if (0 != cfg_hndl->pclk1_rate)
 	{
-		DEV_IOCTL_0_PARAMS(i96xxx_pclk1_clk_dev, IOCTL_DEVICE_START);
-		DEV_IOCTL_1_PARAMS(i96xxx_pclk1_clk_dev,
+		DEV_IOCTL(i96xxx_pclk1_clk_dev, IOCTL_DEVICE_START);
+		DEV_IOCTL(i96xxx_pclk1_clk_dev,
 				CLK_IOCTL_SET_FREQ, &cfg_hndl->pclk1_rate);
 	}
 
 	if (0 != cfg_hndl->dsp_rate)
 	{
-		DEV_IOCTL_0_PARAMS(i96xxx_dsp_clk_dev, IOCTL_DEVICE_START);
-		DEV_IOCTL_0_PARAMS(i96xxx_dsp_clk_dev, CLK_IOCTL_ENABLE);
-		DEV_IOCTL_1_PARAMS(i96xxx_dsp_clk_dev,
-				CLK_IOCTL_SET_FREQ, &cfg_hndl->dsp_rate);
+		DEV_IOCTL(i96xxx_dsp_clk_dev, IOCTL_DEVICE_START);
+		DEV_IOCTL(i96xxx_dsp_clk_dev, CLK_IOCTL_ENABLE);
+		DEV_IOCTL(i96xxx_dsp_clk_dev, CLK_IOCTL_SET_FREQ, &cfg_hndl->dsp_rate);
 	}
 }
 

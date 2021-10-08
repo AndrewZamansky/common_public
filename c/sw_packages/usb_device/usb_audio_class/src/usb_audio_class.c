@@ -376,15 +376,14 @@ void new_usb_audio_requested(struct dev_desc_t *adev)
 				curr_read_pos_in_tx_buffer = 0;
 			}
 		}
-		DEV_IOCTL_1_PARAMS(cfg_hndl->usb_hw,
+		DEV_IOCTL(cfg_hndl->usb_hw,
 				IOCTL_USB_DEVICE_SENT_DATA_TO_IN_ENDPOINT, &data_to_endpoint);
 		runtime_hndl->curr_read_pos_in_tx_buffer = curr_read_pos_in_tx_buffer;
 	}
 	else
 	{
 		/* Setup error, stall the device */
-		DEV_IOCTL_0_PARAMS(
-				cfg_hndl->usb_hw, IOCTL_USB_DEVICE_STALL_CONTROL_ENDPOINT);
+		DEV_IOCTL(cfg_hndl->usb_hw, IOCTL_USB_DEVICE_STALL_CONTROL_ENDPOINT);
 #ifdef  DEBUG
 		dbg_in_underflow_cnt++;
 #endif
@@ -413,7 +412,7 @@ void new_sample_rate_requested(struct dev_desc_t *adev)
 	data_to_endpoint.endpoint_num = runtime_hndl->in_feedback_endpoint_num;
 	data_to_endpoint.data = tx_buff;
 	data_to_endpoint.size = 3;
-	DEV_IOCTL_1_PARAMS(cfg_hndl->usb_hw,
+	DEV_IOCTL(cfg_hndl->usb_hw,
 			IOCTL_USB_DEVICE_SENT_DATA_TO_IN_ENDPOINT, &data_to_endpoint);
 }
 
@@ -601,7 +600,7 @@ static uint8_t release_tx_buffer(struct usb_audio_class_cfg_t *cfg_hndl,
 		data_to_endpoint.data = NULL;
 		data_to_endpoint.size = 0;
 
-		DEV_IOCTL_1_PARAMS(cfg_hndl->usb_hw,
+		DEV_IOCTL(cfg_hndl->usb_hw,
 				IOCTL_USB_DEVICE_SENT_DATA_TO_IN_ENDPOINT, &data_to_endpoint);
 		g_usbd_RecStarted = 1;
 	}
@@ -749,7 +748,7 @@ static void start_audio_class(struct dev_desc_t *adev,
 		data_to_endpoint.endpoint_num = runtime_hndl->in_feedback_endpoint_num;
 		data_to_endpoint.data = NULL;
 		data_to_endpoint.size = 0;
-		DEV_IOCTL_1_PARAMS(cfg_hndl->usb_hw,
+		DEV_IOCTL(cfg_hndl->usb_hw,
 				IOCTL_USB_DEVICE_SENT_DATA_TO_IN_ENDPOINT, &data_to_endpoint);
 	}
 }

@@ -90,7 +90,7 @@ static void Config_Task( void *pvParameters )
 		for(i=0;i< DEV_CONFIG_MAX_NUM_OF_DYNAMIC_DEVICES; i++)
 		{
 			if( ( 0 != currDev->name[0] )&&
-					(0==DEV_IOCTL(currDev , IOCTL_TEST_PARAMS_STATUS ,  &paramStatus )) )
+					(0==DEV_IOCTL, IOCTL_TEST_PARAMS_STATUS ,  &paramStatus )) )
 			{
 				if(PARAMS_STATUS_NO_CHANGED_AFTER_LAST_TEST == paramStatus)
 				{
@@ -99,7 +99,7 @@ static void Config_Task( void *pvParameters )
 					{
 //						PRINTF_DBG("[\r\n");
 						f_write(&fp,"[\r\n",sizeof("[\r\n")-1,&bytes_written);
-						DEV_IOCTL_2_PARAMS(currDev , IOCTL_GET_PARAMS_ARRAY_FUNC , &dev_Params, &dev_Num_Of_Params );
+						DEV_IOCTL, IOCTL_GET_PARAMS_ARRAY_FUNC , &dev_Params, &dev_Num_Of_Params );
 						while(dev_Num_Of_Params)
 						{
 							if(FOR_SAVE == dev_Params->usedForSave )
@@ -266,7 +266,7 @@ uint32_t config_device(uint8_t *config_buff , uint32_t buff_len)
 	}
 
 	//afInitDev(dev_descriptor);
-	DEV_IOCTL_2_PARAMS(dev_descriptor , IOCTL_GET_PARAMS_ARRAY_FUNC , &dev_Params, &dev_Num_Of_Params );
+	DEV_IOCTL(dev_descriptor , IOCTL_GET_PARAMS_ARRAY_FUNC , &dev_Params, &dev_Num_Of_Params );
 
 //		PRINTF_DBG("aDev_Num_Of_Params=%d  \n",aDev_Num_Of_Params);
 	while(dev_Num_Of_Params)
@@ -306,7 +306,7 @@ uint32_t config_device(uint8_t *config_buff , uint32_t buff_len)
 		dev_Params++;
 	}
 
-	DEV_IOCTL_0_PARAMS(dev_descriptor , IOCTL_DEVICE_START );
+	DEV_IOCTL(dev_descriptor , IOCTL_DEVICE_START );
 	return 0;
 }
 
@@ -343,7 +343,7 @@ uint32_t config_saved_params(uint8_t *config_buff)
 				jsmn_init(&parser);
 				maxTokenAvailable = jsmn_parse(&parser, (char*)config_buff ,readLen ,
 						tokens , MAX_JSMN_TOKEN_ALLOWED);
-				DEV_IOCTL_2_PARAMS(currDev , IOCTL_GET_PARAMS_ARRAY_FUNC , &dev_Params, &dev_Num_Of_Params );
+				DEV_IOCTL, IOCTL_GET_PARAMS_ARRAY_FUNC , &dev_Params, &dev_Num_Of_Params );
 				while(dev_Num_Of_Params)
 				{
 					if(FOR_SAVE == dev_Params->usedForSave )
@@ -359,7 +359,7 @@ uint32_t config_saved_params(uint8_t *config_buff)
 								pParam=&config_buff[curr_token.start];
 								pParam[curr_token.end - curr_token.start] = 0;
 								PRINTF_DBG("%s = %s\n",dev_Params->paramStr,pParam);
-								DEV_IOCTL(currDev , dev_Params->paramSetIoctl , pParam);
+								DEV_IOCTL, dev_Params->paramSetIoctl , pParam);
 							}
 						}
 					}

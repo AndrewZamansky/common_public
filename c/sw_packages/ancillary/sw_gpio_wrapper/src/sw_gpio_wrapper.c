@@ -130,11 +130,11 @@ static void GPIO_output_pins_Task( void *pvParameters )
 
 				if(GPIO_OUT_STATE_SET == next_state)
 				{
-					DEV_IOCTL_0_PARAMS(server_dev,IOCTL_GPIO_PIN_SET);
+					DEV_IOCTL(server_dev,IOCTL_GPIO_PIN_SET);
 				}
 				else if(GPIO_OUT_STATE_CLEAR ==next_state)
 				{
-					DEV_IOCTL_0_PARAMS(server_dev,IOCTL_GPIO_PIN_CLEAR);
+					DEV_IOCTL(server_dev,IOCTL_GPIO_PIN_CLEAR);
 				}
 			}
 
@@ -191,14 +191,14 @@ uint8_t GPIO_ioctl( struct dev_desc_t *adev,
 		case IOCTL_GPIO_PIN_SET :
 			if(GPIO_Force_None == forceState)
 			{
-				DEV_IOCTL_0_PARAMS(server_dev,IOCTL_GPIO_PIN_SET);
+				DEV_IOCTL(server_dev,IOCTL_GPIO_PIN_SET);
 			}
 			break;
 
 		case IOCTL_GPIO_PIN_CLEAR :
 			if(GPIO_Force_None == forceState)
 			{
-				DEV_IOCTL_0_PARAMS(server_dev,IOCTL_GPIO_PIN_CLEAR);
+				DEV_IOCTL(server_dev,IOCTL_GPIO_PIN_CLEAR);
 			}
 			break;
 
@@ -212,13 +212,13 @@ uint8_t GPIO_ioctl( struct dev_desc_t *adev,
 						GPIO_API_FORCE_SET_STR , sizeof(GPIO_API_FORCE_SET_STR) ))
 			{
 				INSTANCE(aHandle)->forceState = GPIO_Force_Set;
-				DEV_IOCTL_0_PARAMS(server_dev,IOCTL_GPIO_PIN_SET);
+				DEV_IOCTL(server_dev,IOCTL_GPIO_PIN_SET);
 			}
 			else if (0 == memcmp((uint8_t*) aIoctl_param1,
 					GPIO_API_FORCE_CLEAR_STR , sizeof(GPIO_API_FORCE_CLEAR_STR) ))
 			{
 				INSTANCE(aHandle)->forceState = GPIO_Force_Clear;
-				DEV_IOCTL_0_PARAMS(server_dev,IOCTL_GPIO_PIN_CLEAR);
+				DEV_IOCTL(server_dev,IOCTL_GPIO_PIN_CLEAR);
 			}
 			INSTANCE(aHandle)->paramStatus = PARAMS_STATUS_CHANGED_AFTER_LAST_TEST;
 			break;

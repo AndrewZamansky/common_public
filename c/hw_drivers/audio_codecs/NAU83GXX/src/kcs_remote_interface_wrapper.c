@@ -38,11 +38,10 @@ uint8_t cmd_read_kcs_setup(void *dev, uint8_t *data,
 	kcs_cmd_get_ioctl.recieved_size = &recieved_size;
 	kcs_cmd_get_ioctl.recieved_data = &recvBuf;
 
-	rc = DEV_IOCTL_1_PARAMS(
-				kcs_i2c_dev, IOCTL_KCS_GET_SETUP_CMD, &kcs_cmd_get_ioctl);
+	rc = DEV_IOCTL(kcs_i2c_dev, IOCTL_KCS_GET_SETUP_CMD, &kcs_cmd_get_ioctl);
 
 	if(rc == RC_OK) memcpy(data, recvBuf, sizeof(uint8_t) * len);
-	DEV_IOCTL_0_PARAMS(kcs_i2c_dev, IOCTL_KCS_EXIT_GET_STATE);
+	DEV_IOCTL(kcs_i2c_dev, IOCTL_KCS_EXIT_GET_STATE);
 
 	return rc;
 }
@@ -69,18 +68,17 @@ uint8_t cmd_set_kcs_setup(void *dev, uint8_t const *data,
 	kcs_i2c_dev = (struct dev_desc_t *)dev;
 	collect_data_ioctl.offset = offset;
 	collect_data_ioctl.size_to_collect = len;
-	rc = DEV_IOCTL_1_PARAMS(kcs_i2c_dev,
+	rc = DEV_IOCTL(kcs_i2c_dev,
 			IOCTL_KCS_START_COLLECT_DATA_FOR_SEND, &collect_data_ioctl);
 	if(rc) return rc;
 
 	add_data_ioctl.size = len;
 	add_data_ioctl.data = data;
 
-	rc = DEV_IOCTL_1_PARAMS(kcs_i2c_dev,
-			IOCTL_KCS_ADD_DATA_FOR_SEND, &add_data_ioctl);
+	rc = DEV_IOCTL(kcs_i2c_dev, IOCTL_KCS_ADD_DATA_FOR_SEND, &add_data_ioctl);
 	if(rc) return rc;
 
-	rc = DEV_IOCTL_0_PARAMS(kcs_i2c_dev, IOCTL_KCS_SEND_COLLECTED_SETUP_DATA);
+	rc = DEV_IOCTL(kcs_i2c_dev, IOCTL_KCS_SEND_COLLECTED_SETUP_DATA);
 
 	return rc;
 }
@@ -112,11 +110,10 @@ uint8_t cmd_read_kcs_results(void *dev, uint8_t *data,
 	kcs_cmd_get_ioctl.recieved_size = &recieved_size;
 	kcs_cmd_get_ioctl.recieved_data = &recvBuf;
 
-	rc = DEV_IOCTL_1_PARAMS(kcs_i2c_dev,
-			IOCTL_KCS_GET_RESULTS_CMD, &kcs_cmd_get_ioctl);
+	rc = DEV_IOCTL(kcs_i2c_dev, IOCTL_KCS_GET_RESULTS_CMD, &kcs_cmd_get_ioctl);
 
 	if(rc == RC_OK) memcpy(data, recvBuf, sizeof(uint8_t) * len);
-	DEV_IOCTL_0_PARAMS(kcs_i2c_dev, IOCTL_KCS_EXIT_GET_STATE);
+	DEV_IOCTL(kcs_i2c_dev, IOCTL_KCS_EXIT_GET_STATE);
 
 	return rc;
 }

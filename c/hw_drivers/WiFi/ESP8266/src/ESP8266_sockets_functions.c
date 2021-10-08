@@ -422,8 +422,7 @@ static uint8_t open_socket(struct dev_desc_t *adev,
 
 	ioctl_socket_open.new_socket_descriptor =
 								&new_socket_descriptor->internal_desc;
-	retVal = DEV_IOCTL_1_PARAMS(
-			adev, IOCTL_ESP8266_SOCKET_OPEN , &ioctl_socket_open);
+	retVal = DEV_IOCTL(adev, IOCTL_ESP8266_SOCKET_OPEN , &ioctl_socket_open);
 	if (0 != retVal)
 	{
 		return -1;

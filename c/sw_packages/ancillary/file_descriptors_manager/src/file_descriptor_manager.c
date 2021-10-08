@@ -271,8 +271,7 @@ int connect(
 			continue;
 		}
 
-		if (0 == DEV_IOCTL_1_PARAMS(underlying_dev,
-										IOCTL_OPEN_SOCKET, &sock_open))
+		if (0 == DEV_IOCTL(underlying_dev, IOCTL_OPEN_SOCKET, &sock_open))
 		{
 			ret_val = curr_fd->file_desc_ops.connect_func(
 								curr_fd->internal_desc, addr, addrlen);
@@ -427,8 +426,7 @@ static int set_socket_level_option(struct file_desc_t  *curr_fd,
 			if (NULL == underlying_dev) return -1;
 
 			sock_open.new_socket_descriptor = curr_fd;
-			if (0 == DEV_IOCTL_1_PARAMS(underlying_dev,
-											IOCTL_OPEN_SOCKET, &sock_open))
+			if (0 == DEV_IOCTL(underlying_dev, IOCTL_OPEN_SOCKET, &sock_open))
 			{
 				curr_fd->underlying_dev = underlying_dev;
 			}

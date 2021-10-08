@@ -39,13 +39,13 @@ static void dmic_init(struct dmic_i94xxx_cfg_t *cfg_hndl)
 	pin_control_api_set_pin_function(cfg_hndl->dmic_data1_pin);
 	pin_control_api_set_pin_function(cfg_hndl->dmic_clk1_pin);
 
-	DEV_IOCTL_0_PARAMS(i94xxx_dmic_clk_dev, IOCTL_DEVICE_START);
-	DEV_IOCTL_1_PARAMS(i94xxx_dmic_clk_dev, CLK_IOCTL_SET_PARENT, src_clock);
-	DEV_IOCTL_0_PARAMS(i94xxx_dmic_clk_dev, CLK_IOCTL_ENABLE);
+	DEV_IOCTL(i94xxx_dmic_clk_dev, IOCTL_DEVICE_START);
+	DEV_IOCTL(i94xxx_dmic_clk_dev, CLK_IOCTL_SET_PARENT, src_clock);
+	DEV_IOCTL(i94xxx_dmic_clk_dev, CLK_IOCTL_ENABLE);
 
 	SYS_ResetModule(DMIC_RST);
 
-	DEV_IOCTL_1_PARAMS(i94xxx_dmic_clk_dev, CLK_IOCTL_GET_FREQ, &src_clk_rate);
+	DEV_IOCTL(i94xxx_dmic_clk_dev, CLK_IOCTL_GET_FREQ, &src_clk_rate);
 
 	sample_rate = cfg_hndl->sample_rate;
 	Mclk_rate = sample_rate * 256;

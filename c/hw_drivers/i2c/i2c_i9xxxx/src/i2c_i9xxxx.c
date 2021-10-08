@@ -789,8 +789,8 @@ static uint8_t  device_start(struct dev_desc_t *adev,
 	}
 
 
-	DEV_IOCTL_0_PARAMS(i2c_clk_dev, IOCTL_DEVICE_START);
-	DEV_IOCTL_0_PARAMS(i2c_clk_dev, CLK_IOCTL_ENABLE);
+	DEV_IOCTL(i2c_clk_dev, IOCTL_DEVICE_START);
+	DEV_IOCTL(i2c_clk_dev, CLK_IOCTL_ENABLE);
 
 	/* Reset I2C module */
 	SYS_ResetModule(i2c_module_rst);
@@ -864,7 +864,7 @@ static uint8_t  device_stop(
 
 	pin_control_api_clear_pin_function(cfg_hndl->SCL_pinout);
 	pin_control_api_clear_pin_function(cfg_hndl->SDA_pinout);
-	DEV_IOCTL_0_PARAMS(i2c_clk_dev, CLK_IOCTL_DISABLE);
+	DEV_IOCTL(i2c_clk_dev, CLK_IOCTL_DISABLE);
 	os_queue_delete(runtime_handle->WaitQueue);
 	os_mutex_give(mutex);
 	os_delay_ms(5); // wait for all tasks to stop waiting on mutex

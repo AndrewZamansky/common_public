@@ -775,7 +775,7 @@ static void enable_peripheral_output( uint8_t peripheral_type,
 		break;
 
 	case PDMA_DPWM :
-		//DEV_IOCTL_0_PARAMS(peripheral_dev , IOCTL_DEVICE_START );
+		//DEV_IOCTL(peripheral_dev , IOCTL_DEVICE_START );
 		DPWM->PDMACTL |= DPWM_PDMACTL_PDMAEN_Msk;
 		DPWM->CTL |= (DPWM_CTL_DPWMEN_Msk | DPWM_CTL_DRVEN_Msk);
 		break;

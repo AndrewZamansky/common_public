@@ -76,7 +76,7 @@ uint8_t remote_devices_callback(struct dev_desc_t *adev ,const uint8_t aCallback
 	DEV_IOCTL((struct dev_desc_t *)aCallback_param1,
 		IOCTL_SET_BYTES_CONSUMED_IN_DATA_BUFFER,
 		(void*)(uint32_t)total_length);
-	DEV_IOCTL_0_PARAMS(
+	DEV_IOCTL(
 		(struct dev_desc_t *)aCallback_param1, IOCTL_SET_UNLOCK_DATA_BUFFER );
 
 	return 0;

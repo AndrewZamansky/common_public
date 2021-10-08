@@ -55,8 +55,7 @@ int do_dsp_status(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 
 	kcs_simple_cmd_ioctl.cmd = DSP_CMD_GET_STATUS;
 	kcs_simple_cmd_ioctl.p_recieved_U32_reply = &status;
-	rc = DEV_IOCTL_1_PARAMS(
-			kcs_i2c_dev, IOCTL_KCS_SIMPLE_CMD, &kcs_simple_cmd_ioctl);
+	rc = DEV_IOCTL(kcs_i2c_dev, IOCTL_KCS_SIMPLE_CMD, &kcs_simple_cmd_ioctl);
 
 end:
 	os_delay_ms(1);

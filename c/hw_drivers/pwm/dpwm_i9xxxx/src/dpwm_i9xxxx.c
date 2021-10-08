@@ -162,10 +162,10 @@ static void dpwm_init(struct dpwm_i9xxxx_cfg_t *cfg_hndl)
 	src_clock = cfg_hndl->src_clock;
 	sample_rate = cfg_hndl->sample_rate_hz;
 
-	DEV_IOCTL_0_PARAMS(clk_dev, IOCTL_DEVICE_START);
-	DEV_IOCTL_1_PARAMS(clk_dev,	CLK_IOCTL_SET_PARENT, src_clock);
-	DEV_IOCTL_1_PARAMS(clk_dev,	CLK_IOCTL_GET_FREQ, &src_clk_rate);
-	DEV_IOCTL_0_PARAMS(clk_dev, CLK_IOCTL_ENABLE);
+	DEV_IOCTL(clk_dev, IOCTL_DEVICE_START);
+	DEV_IOCTL(clk_dev,	CLK_IOCTL_SET_PARENT, src_clock);
+	DEV_IOCTL(clk_dev,	CLK_IOCTL_GET_FREQ, &src_clk_rate);
+	DEV_IOCTL(clk_dev, CLK_IOCTL_ENABLE);
 
 	SYS_ResetModule(DPWM_RST);
 
@@ -241,7 +241,7 @@ static uint8_t dpwm_i9xxxx_ioctl( struct dev_desc_t *adev,
 		break;
 
 	case DPWM_I9XXXX_GET_ROOT_CLK_DEV:
-		DEV_IOCTL_1_PARAMS(DPWM_CLK_DEV, CLK_IOCTL_GET_ROOT_CLK, aIoctl_param1);
+		DEV_IOCTL(DPWM_CLK_DEV, CLK_IOCTL_GET_ROOT_CLK, aIoctl_param1);
 		break;
 
 	default :
