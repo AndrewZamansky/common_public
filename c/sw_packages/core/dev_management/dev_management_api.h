@@ -207,7 +207,7 @@ struct included_module_t {
 			((struct dev_desc_t *)dev)->p_runtime_data)
 
 
-/* Following macros are used to create DEV_IOCTL() macro */
+/* Following macros are used to create DEV_IOCTL() and DEV_CALLBACK() macros */
 #define PP_ARG_N( \
           _1,  _2,  _3,  _4,  _5,  _6,  _7,  _8,  _9, _10, \
          _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, \
@@ -227,30 +227,34 @@ struct included_module_t {
           9,  8,  7,  6,  5,  4,  3,  2,  1,  0 , 0
 
 #define PP_NARG_(...)    PP_ARG_N(__VA_ARGS__)
-
 #define PP_NARG(...)     PP_NARG_(__VA_ARGS__, PP_RSEQ_N())
 
+/* ioctl functions */
+uint8_t _ioctl_2_params(struct dev_desc_t * dev,
+			uint8_t ioctl_num, void *param1, void *param2);
 #define _ioctl_1_params(dev, ioctl_num, param1) \
 				_ioctl_2_params(dev, ioctl_num, param1, NULL)
 #define _ioctl_0_params(dev, ioctl_num) \
 				_ioctl_2_params(dev, ioctl_num, NULL, NULL)
-#define _IOCTL_STEP2(a,dev,...)  _ioctl_##a##_params(dev, __VA_ARGS__)
-#define _IOCTL_STEP1(a,dev,...)  _IOCTL_STEP2(a, dev, __VA_ARGS__)
+#define _IOCTL_STEP2(a, dev, ...)  _ioctl_##a##_params(dev, __VA_ARGS__)
+#define _IOCTL_STEP1(a, dev, ...)  _IOCTL_STEP2(a, dev, __VA_ARGS__)
 #define DEV_IOCTL(dev, ...) _IOCTL_STEP1(PP_NARG(__VA_ARGS__), dev, __VA_ARGS__)
-
-/* end of macros for creating DEV_IOCTL() macro */
-
-uint8_t _ioctl_2_params(struct dev_desc_t * dev,
-			uint8_t ioctl_num, void *param1, void *param2);
 
 
 /* callback functions */
-#define DEV_CALLBACK_0_PARAMS(dev, callback_num)    \
-				DEV_CALLBACK_2_PARAMS(dev, callback_num, NULL, NULL)
-#define DEV_CALLBACK_1_PARAMS(dev, callback_num, param1)    \
-				DEV_CALLBACK_2_PARAMS(dev, callback_num, param1, NULL)
-uint8_t	DEV_CALLBACK_2_PARAMS(struct dev_desc_t *adev,
-						uint8_t ioctl_num, void *param1, void *param2);
+uint8_t _callback_2_params(struct dev_desc_t * dev,
+			uint8_t callback_num, void *param1, void *param2);
+#define _callback_1_params(dev, callback_num, param1) \
+				_callback_2_params(dev, callback_num, param1, NULL)
+#define _callback_0_params(dev, callback_num) \
+					_callback_2_params(dev, callback_num, NULL, NULL)
+#define _CALLBACK_STEP2(a, dev, ...)  _callback_##a##_params(dev, __VA_ARGS__)
+#define _CALLBACK_STEP1(a, dev, ...)  _CALLBACK_STEP2(a, dev, __VA_ARGS__)
+#define DEV_CALLBACK(dev, ...)  \
+				_CALLBACK_STEP1(PP_NARG(__VA_ARGS__), dev, __VA_ARGS__)
+
+/* end of macros for creating DEV_IOCTL() and DEV_CALLBACK() macros */
+
 
 
 size_t	DEV_PWRITE(struct dev_desc_t *adev,

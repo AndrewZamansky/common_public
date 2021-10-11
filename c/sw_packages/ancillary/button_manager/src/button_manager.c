@@ -167,7 +167,7 @@ static uint32_t end_of_debounce_on_push(struct dev_desc_t *adev)
 			if ((NULL != client_dev) &&
 				(BTN_REPORT_PUSH & btn_events_arr[event_idx].report_config))
 			{
-				DEV_CALLBACK_2_PARAMS(client_dev, CALLBACK_BTN_STATE_CHANGED,
+				DEV_CALLBACK(client_dev, CALLBACK_BTN_STATE_CHANGED,
 					(void *)BTN_REPORT_PUSH,
 					btn_events_arr[event_idx].callback_private_data);
 			}
@@ -216,14 +216,14 @@ static uint8_t button_state_hold(struct dev_desc_t *adev,
 	hold_count += 128;
 	if(BTN_REPORT_HOLD_EVERY_0s1 & btn_events_arr[event_idx].report_config)
 	{
-		DEV_CALLBACK_2_PARAMS( client_dev, CALLBACK_BTN_STATE_CHANGED,
+		DEV_CALLBACK( client_dev, CALLBACK_BTN_STATE_CHANGED,
 			(void *)BTN_REPORT_HOLD_EVERY_0s1, callback_private_data);
 	}
 	if( 0x0 == (hold_count & 0x3ff) ) // enter each 1024
 	{
 		if(BTN_REPORT_HOLD_EVERY_1s & btn_events_arr[event_idx].report_config)
 		{
-			DEV_CALLBACK_2_PARAMS( client_dev ,CALLBACK_BTN_STATE_CHANGED ,
+			DEV_CALLBACK( client_dev ,CALLBACK_BTN_STATE_CHANGED ,
 				(void *)BTN_REPORT_HOLD_EVERY_1s, callback_private_data);
 		}
 	}
@@ -231,7 +231,7 @@ static uint8_t button_state_hold(struct dev_desc_t *adev,
 	{
 		if (BTN_REPORT_HOLD_ONCE_5s & btn_events_arr[event_idx].report_config)
 		{
-			DEV_CALLBACK_2_PARAMS( client_dev ,CALLBACK_BTN_STATE_CHANGED ,
+			DEV_CALLBACK( client_dev ,CALLBACK_BTN_STATE_CHANGED ,
 				(void *)BTN_REPORT_HOLD_ONCE_5s, callback_private_data);
 		}
 	}
@@ -306,7 +306,7 @@ static uint8_t end_of_debounce_on_release(
 	}
 	if (reported_flags && ( NULL != client_dev))
 	{
-		DEV_CALLBACK_2_PARAMS( client_dev, CALLBACK_BTN_STATE_CHANGED,
+		DEV_CALLBACK( client_dev, CALLBACK_BTN_STATE_CHANGED,
 			(void *)reported_flags,
 			btn_events_arr[event_idx].callback_private_data);
 	}

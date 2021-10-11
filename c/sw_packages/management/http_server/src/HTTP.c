@@ -241,7 +241,7 @@ static void HTTP_Task( void *pvParameters )
 
 					comm_reply_state = 0;
 
-					DEV_CALLBACK_1_PARAMS( client_dev,CALLBACK_NEW_DATA_ARRIVED , this_dev  ) ;
+					DEV_CALLBACK( client_dev,CALLBACK_NEW_DATA_ARRIVED , this_dev  ) ;
 
 					while(0xffffffff != comm_reply_state)
 					{

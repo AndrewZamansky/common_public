@@ -65,8 +65,9 @@ void tx_function(void)
 	{
 		if(pHw_uart_pointer_to_instance->callback_dev)
 		{
-			DEV_CALLBACK_1_PARAMS(pHw_uart_pointer_to_instance->callback_dev,
-					CALLBACK_TX_DONE,1);
+			DEV_CALLBACK(
+				pHw_uart_pointer_to_instance->callback_dev,
+				CALLBACK_TX_DONE, 1);
 		}
 	}
 

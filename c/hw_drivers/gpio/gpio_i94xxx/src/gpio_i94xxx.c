@@ -71,7 +71,7 @@ static void notify_listeners(GPIO_T *GPIOx,
 		callback_dev = config_handle->client_dev;
 		if (NULL != callback_dev)
 		{
-			DEV_CALLBACK_0_PARAMS(callback_dev, CALLBACK_INTERRUPT_ARRIVED);
+			DEV_CALLBACK(callback_dev, CALLBACK_INTERRUPT_ARRIVED);
 		}
 	}
 }

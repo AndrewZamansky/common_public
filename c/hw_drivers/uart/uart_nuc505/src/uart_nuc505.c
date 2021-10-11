@@ -83,7 +83,7 @@ uint8_t uart_nuc505_callback(struct dev_desc_t *adev,
 		callback_rx_dev = config_handle->callback_rx_dev;
 		if (NULL != callback_rx_dev)
 		{
-			DEV_CALLBACK_2_PARAMS(callback_rx_dev,
+			DEV_CALLBACK(callback_rx_dev,
 					CALLBACK_DATA_RECEIVED, buffer, (void*)numOfReceivedChars);
 		}
 	}
@@ -95,7 +95,7 @@ uint8_t uart_nuc505_callback(struct dev_desc_t *adev,
 		callback_tx_dev = config_handle->callback_tx_dev;
 		if (NULL != callback_tx_dev)
 		{
-			DEV_CALLBACK_1_PARAMS(callback_tx_dev, CALLBACK_TX_DONE, (void*)1);
+			DEV_CALLBACK(callback_tx_dev, CALLBACK_TX_DONE, (void*)1);
 		}
    }
 

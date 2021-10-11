@@ -57,7 +57,7 @@ struct LINE_CODING linecoding =
 *******************************************************************************/
 void EP1_IN_Callback (void)
 {
-	DEV_CALLBACK_1_PARAMS(callback_dev , CALLBACK_TX_DONE, (void*)sentLen);
+	DEV_CALLBACK(callback_dev , CALLBACK_TX_DONE, (void*)sentLen);
 }
 
 
@@ -73,7 +73,8 @@ void EP3_OUT_Callback(void)
 	uint32_t USB_Rx_Cnt;
 	/* Get the received data buffer and update the counter */
 	USB_Rx_Cnt = USB_SIL_Read(EP3_OUT, USB_Rx_Buffer);
-	DEV_CALLBACK_2_PARAMS(callback_dev , CALLBACK_DATA_RECEIVED, USB_Rx_Buffer, (void*)USB_Rx_Cnt);
+	DEV_CALLBACK(
+		callback_dev, CALLBACK_DATA_RECEIVED, USB_Rx_Buffer, (void*)USB_Rx_Cnt);
 
 #ifndef STM32F10X_CL
   /* Enable the receive of data on EP3 */

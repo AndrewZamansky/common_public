@@ -30,8 +30,8 @@ enum
 //#ifndef IOCTL_LAST_COMMON_IOCTL
 //	IOCTL_LAST_COMMON_IOCTL_not_declared_in_project_header_files =sizeof((int)IOCTL_LAST_COMMON_IOCTL),
 //#endif
-//#ifndef DEV_CALLBACK_1_PARAMS
-//	DEV_CALLBACK_1_PARAMS_not_declared_in_project_header_files =sizeof((int)DEV_CALLBACK_1_PARAMS),
+//#ifndef DEV_CALLBACK
+//	DEV_CALLBACK_not_declared_in_project_header_files =sizeof((int)DEV_CALLBACK),
 //#endif
 
 

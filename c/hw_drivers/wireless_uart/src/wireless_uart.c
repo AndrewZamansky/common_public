@@ -175,7 +175,7 @@ static void wireless_uart_task( void *aHandle )
 						{
 							currWorkingBuffer = &pBufferStart[curr_buff_pos + 1];
 							currWorkingBufferLen = packet_size - 1 - 4 ; // -1 for size byte , -4 for crc bytes
-							if( 0 == DEV_CALLBACK_1_PARAMS( INSTANCE(aHandle)->callback_dev,
+							if( 0 == DEV_CALLBACK( INSTANCE(aHandle)->callback_dev,
 									CALLBACK_NEW_DATA_ARRIVED ,  INSTANCE(aHandle)->this_dev  ) )
 							{
 								while(currWorkingBufferLen)

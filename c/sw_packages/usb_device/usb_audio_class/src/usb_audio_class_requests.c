@@ -413,7 +413,7 @@ static void out_transfer_finished(struct usb_audio_class_cfg_t *cfg_hndl,
 	{
 	case REQ_STATE_GETTING_VOLUME:
 	case REQ_STATE_GETTING_MUTE:
-		DEV_CALLBACK_0_PARAMS(
+		DEV_CALLBACK(
 			control_callback_dev, CALLBACK_USB_AUDIO_CLASS_VOLUME_MUTE_CHANGED);
 		runtime_hndl->request_state = REQ_STATE_IDLE;
 		break;
@@ -449,7 +449,7 @@ static void set_interface(struct usb_audio_class_cfg_t *cfg_hndl,
 	control_callback_dev = cfg_hndl->control_callback_dev;
 	if ((report_to_callback) && (NULL != control_callback_dev))
 	{
-		DEV_CALLBACK_0_PARAMS(control_callback_dev,
+		DEV_CALLBACK(control_callback_dev,
 				CALLBACK_USB_AUDIO_CLASS_HOST_STREAMING_STATE_CHANGED);
 	}
 }

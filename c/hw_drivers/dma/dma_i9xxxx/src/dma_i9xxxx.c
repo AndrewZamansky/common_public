@@ -151,7 +151,7 @@ static void update_tx_buffer(struct dev_desc_t * ch_pdev,
 	{
 		if (NULL != callback_dev)
 		{
-			DEV_CALLBACK_1_PARAMS( callback_dev,
+			DEV_CALLBACK( callback_dev,
 					CALLBACK_TX_BUFFER_UNDERFLOW_THRESHOLD_REACHED, ch_pdev);
 		}
 		#ifdef DMA_I9XXXX_DEBUG
@@ -171,16 +171,14 @@ static void update_tx_buffer(struct dev_desc_t * ch_pdev,
 				buff_status, runtime_hndl, next_dma_buff_indx);
 		if (NULL != callback_dev)
 		{
-			DEV_CALLBACK_1_PARAMS(
-					callback_dev, CALLBACK_TX_DONE, ch_pdev);
+			DEV_CALLBACK(callback_dev, CALLBACK_TX_DONE, ch_pdev);
 		}
 		return;
 	}
 
 	if (NULL != callback_dev)
 	{
-		DEV_CALLBACK_1_PARAMS(
-				callback_dev, CALLBACK_TX_BUFFER_UNDERFLOW, ch_pdev);
+		DEV_CALLBACK(callback_dev, CALLBACK_TX_BUFFER_UNDERFLOW, ch_pdev);
 	}
 	runtime_hndl->needed_full_dma_start = 1;
 }
@@ -214,7 +212,7 @@ static void update_rx_buffer(struct dev_desc_t * ch_pdev,
 
 	if (NULL != callback_dev)
 	{
-		DEV_CALLBACK_1_PARAMS(callback_dev, CALLBACK_NEW_DATA_ARRIVED, ch_pdev);
+		DEV_CALLBACK(callback_dev, CALLBACK_NEW_DATA_ARRIVED, ch_pdev);
 	}
 
 	buff_status[curr_dma_buff_indx] =	DMA_I9XXXX_BUFF_RX_RADA_READY;
@@ -224,8 +222,7 @@ static void update_rx_buffer(struct dev_desc_t * ch_pdev,
 		next_dma_buff_indx = curr_dma_buff_indx;
 		if (NULL != callback_dev)
 		{
-			DEV_CALLBACK_1_PARAMS(
-					callback_dev, CALLBACK_RX_BUFFER_OVERFLOW, ch_pdev);
+			DEV_CALLBACK(callback_dev, CALLBACK_RX_BUFFER_OVERFLOW, ch_pdev);
 		}
 
 	}
@@ -603,7 +600,7 @@ static uint8_t get_full_rx_buffer(struct dma_i9xxxx_cfg_t *cfg_hndl,
 		callback_dev = cfg_hndl->callback_dev;
 		if (NULL != callback_dev)
 		{
-			DEV_CALLBACK_0_PARAMS(callback_dev, CALLBACK_RX_BUFFER_UNDERFLOW);
+			DEV_CALLBACK(callback_dev, CALLBACK_RX_BUFFER_UNDERFLOW);
 		}
 		*buff = NULL;
 		*buff_size = 0;
@@ -680,7 +677,7 @@ static uint8_t get_empty_tx_buffer(struct dev_desc_t *ch_pdev,
 		#endif
 		if (NULL != callback_dev)
 		{
-			DEV_CALLBACK_1_PARAMS( callback_dev,
+			DEV_CALLBACK( callback_dev,
 					CALLBACK_TX_BUFFER_OVERFLOW_THRESHOLD_REACHED, ch_pdev);
 		}
 	}
@@ -703,7 +700,7 @@ static uint8_t get_empty_tx_buffer(struct dev_desc_t *ch_pdev,
 		#endif
 		if (NULL != callback_dev)
 		{
-			DEV_CALLBACK_0_PARAMS(callback_dev, CALLBACK_TX_BUFFER_OVERFLOW);
+			DEV_CALLBACK(callback_dev, CALLBACK_TX_BUFFER_OVERFLOW);
 		}
 		if (runtime_hndl->needed_full_dma_start)
 		{

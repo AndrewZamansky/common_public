@@ -106,7 +106,7 @@ static void calculate_cpu_usage_per_sec(struct heartbeat_instance_t *handle)
 			cpu_usage_measure_mPercents = 100000 - cpu_free_mPercents;
 			if (NULL != heartbeat_callback_dev)
 			{
-				DEV_CALLBACK_0_PARAMS(heartbeat_callback_dev,
+				DEV_CALLBACK(heartbeat_callback_dev,
 											CALLBACK_HEARTBEAT_TICK);
 			}
 			cpu_usage_counter_1sec = 0;

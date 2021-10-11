@@ -103,8 +103,7 @@ size_t uart_linux_pwrite(struct dev_desc_t *adev,
 
 	if (NULL != callback_tx_dev)
 	{
-		DEV_CALLBACK_1_PARAMS(
-				callback_tx_dev, CALLBACK_TX_DONE, (void*)written_size);
+		DEV_CALLBACK(callback_tx_dev, CALLBACK_TX_DONE, (void*)written_size);
 	}
 
 }
@@ -149,7 +148,7 @@ static void *receive_thread(void *adev)
 #endif
 		if (NULL != callback_rx_dev)
 		{
-			DEV_CALLBACK_2_PARAMS( callback_rx_dev,
+			DEV_CALLBACK( callback_rx_dev,
 				CALLBACK_DATA_RECEIVED, rd_buf, (void*)(size_t)curr_read_num);
 		}
 

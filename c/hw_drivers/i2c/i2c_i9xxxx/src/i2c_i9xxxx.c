@@ -111,7 +111,7 @@ static void slave_end_of_transmition(struct i2c_i9xxxx_cfg_t *cfg_hndl,
 		callback_tx_dev = cfg_hndl->callback_tx_dev;
 		if ((0 == runtime_handle->tx_data_size) && (NULL != callback_tx_dev))
 		{
-			DEV_CALLBACK_1_PARAMS(callback_tx_dev ,
+			DEV_CALLBACK(callback_tx_dev ,
 					CALLBACK_TX_DONE, (void*)transmitted_data_size);
 			runtime_handle->transmitted_data_size = 0;
 			runtime_handle->tx_data = NULL;
@@ -193,7 +193,7 @@ static void I2C_SlaveTRx(
 
 		if (NULL != callback_rx_dev)
 		{
-			DEV_CALLBACK_2_PARAMS(callback_rx_dev,
+			DEV_CALLBACK(callback_rx_dev,
 				CALLBACK_DATA_RECEIVED, in_buff, (void*)(size_t)curr_data_pos);
 		}
 		I2C_SET_CONTROL_REG(i2c, I2C_CTL_SI_AA);

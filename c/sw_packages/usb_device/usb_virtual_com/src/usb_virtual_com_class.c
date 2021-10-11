@@ -157,7 +157,7 @@ static void new_data_received(
 	{
 		return;
 	}
-	DEV_CALLBACK_2_PARAMS(callback_rx_dev,
+	DEV_CALLBACK(callback_rx_dev,
 			CALLBACK_DATA_RECEIVED, (void*)buff, (void*)(size_t)size);
 }
 
@@ -177,7 +177,7 @@ static void end_of_transmit_callback(struct dev_desc_t *adev)
 	callback_tx_dev = cfg_hndl->callback_tx_dev;
 	if ((NULL != callback_tx_dev) && (1 == runtime_hndl->tx_on))
 	{
-		DEV_CALLBACK_1_PARAMS(callback_tx_dev,
+		DEV_CALLBACK(callback_tx_dev,
 							CALLBACK_TX_DONE, (void*)(runtime_hndl->sentLen));
 	}
 

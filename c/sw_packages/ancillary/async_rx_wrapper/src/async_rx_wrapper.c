@@ -79,7 +79,7 @@ static uint8_t async_rx_wrapper_callback(struct dev_desc_t *adev ,
 
 		if(NULL != client_dev)
 		{
-			return DEV_CALLBACK_0_PARAMS(client_dev, CALLBACK_NEW_DATA_ARRIVED);
+			return DEV_CALLBACK(client_dev, CALLBACK_NEW_DATA_ARRIVED);
 		}
 	}
 	return 0;

@@ -218,7 +218,7 @@ size_t semihosting_pwrite( struct dev_desc_t *adev,
 	{
 		/* !!! to avoid recursivity in
 		 * semihosting transmited length should be '>=aLength' */
-		DEV_CALLBACK_1_PARAMS(callback_dev, CALLBACK_TX_DONE, (void*)aLength);
+		DEV_CALLBACK(callback_dev, CALLBACK_TX_DONE, (void*)aLength);
 	}
 	return aLength;
 }
@@ -352,7 +352,7 @@ static void test_for_input_ready( struct dev_desc_t *adev  )
 		if (callback_dev )
 		{
 
-			DEV_CALLBACK_2_PARAMS(callback_dev,
+			DEV_CALLBACK(callback_dev,
 					CALLBACK_DATA_RECEIVED,  sh_rx_buffer, (void*)i);
 		}
 

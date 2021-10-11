@@ -47,8 +47,8 @@ uint8_t _ioctl_2_params(
 }
 
 
-uint8_t	DEV_CALLBACK_2_PARAMS(struct dev_desc_t *adev,
-						uint8_t ioctl_num, void *param1, void *param2)
+uint8_t	_callback_2_params(struct dev_desc_t *adev,
+						uint8_t callback_num, void *param1, void *param2)
 {
 	if ( NULL == adev )
 	{
@@ -60,7 +60,7 @@ uint8_t	DEV_CALLBACK_2_PARAMS(struct dev_desc_t *adev,
 	 *  be NULL if module or p_runtime_data will not be allocated.
 	 *  if ( NULL == adev->p_runtime_data )	{	}
 	 */
-	return (adev->module->callback)(adev, ioctl_num, param1, param2);
+	return (adev->module->callback)(adev, callback_num, param1, param2);
 }
 
 size_t	DEV_PWRITE(struct dev_desc_t *adev,

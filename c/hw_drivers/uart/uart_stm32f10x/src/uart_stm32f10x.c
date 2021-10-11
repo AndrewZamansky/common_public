@@ -48,13 +48,14 @@ static void Common_UART_Isr(struct UART_STM32F103x_Instance_t *pHandle)
 
     if( USART_GetITStatus( USARTx, USART_IT_TXE ) == SET )
     {
-    	DEV_CALLBACK_1_PARAMS(pHandle->callback_dev , CALLBACK_TX_DONE,(void*)1);
+    	DEV_CALLBACK(pHandle->callback_dev , CALLBACK_TX_DONE,(void*)1);
     }
 
     if( USART_GetITStatus( USARTx, USART_IT_RXNE ) == SET )
     {
 		cChar = USART_ReceiveData( USARTx );
-		DEV_CALLBACK_2_PARAMS(pHandle->callback_dev , CALLBACK_DATA_RECEIVED,  &cChar, (void*)1);
+		DEV_CALLBACK(
+			pHandle->callback_dev , CALLBACK_DATA_RECEIVED,  &cChar, (void*)1);
     }
 }
 

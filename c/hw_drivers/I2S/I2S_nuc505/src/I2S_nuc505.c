@@ -129,7 +129,7 @@ void __attribute__((section(".critical_text"))) I2S_IRQHandler(void)
 	{
 		if(NULL !=pI2SHandle->callback_dev)
 		{
-			DEV_CALLBACK_2_PARAMS( pI2SHandle->callback_dev ,
+			DEV_CALLBACK( pI2SHandle->callback_dev ,
 					CALLBACK_NEW_DATA_ARRIVED, pRxBuf ,  pTxBuf) ;
 		}
 	}

@@ -34,7 +34,7 @@ void tx_function(void)
 		callback_tx_dev = pHw_uart_pointer_to_instance->callback_tx_dev ;
 		if(NULL != callback_tx_dev)
 		{
-			DEV_CALLBACK_1_PARAMS(callback_tx_dev , CALLBACK_TX_DONE, 1);
+			DEV_CALLBACK(callback_tx_dev , CALLBACK_TX_DONE, 1);
 		}
 	}
 }
@@ -80,8 +80,7 @@ void rx_function(void)
 		callback_rx_dev = pHw_uart_pointer_to_instance->callback_rx_dev;
 		if (NULL == callback_rx_dev)  return ;
 
-		DEV_CALLBACK_2_PARAMS( callback_rx_dev ,
-				CALLBACK_DATA_RECEIVED,  &cChar,  1);
+		DEV_CALLBACK( callback_rx_dev, CALLBACK_DATA_RECEIVED,  &cChar,  1);
 
 	}
 }

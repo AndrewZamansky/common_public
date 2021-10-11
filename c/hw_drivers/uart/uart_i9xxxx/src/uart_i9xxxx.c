@@ -114,7 +114,7 @@ static uint8_t uart_i9xxxx_callback(struct dev_desc_t *adev ,
 					PRINT_DATA_DBG_ISR("|e.rcv0|\n", sizeof("|e.rcv0|\n") - 1);
 				}
 			}
-			DEV_CALLBACK_2_PARAMS(callback_rx_dev,
+			DEV_CALLBACK(callback_rx_dev,
 				CALLBACK_DATA_RECEIVED,  rcv_data, (void*)(size_t)rcv_data_len);
 			rcv_data_len = 0;// start getting data again
 		}
@@ -129,7 +129,7 @@ static uint8_t uart_i9xxxx_callback(struct dev_desc_t *adev ,
 			dbg_print(rcv_data, rcv_data_len);
 			PRINT_DATA_DBG_ISR("}", 1);
 		}
-		DEV_CALLBACK_2_PARAMS(callback_rx_dev,
+		DEV_CALLBACK(callback_rx_dev,
 				CALLBACK_DATA_RECEIVED,  rcv_data,  (void*)rcv_data_len);
 	}
 
@@ -143,7 +143,7 @@ static uint8_t uart_i9xxxx_callback(struct dev_desc_t *adev ,
 		UART_DISABLE_INT(uart_regs,  UART_INTEN_TXENDIEN_Msk);
 		if (NULL != callback_tx_dev)
 		{
-			DEV_CALLBACK_1_PARAMS( callback_tx_dev,
+			DEV_CALLBACK( callback_tx_dev,
 					CALLBACK_TX_DONE, (void*)i9xxx_uart_runtime->send_data_len);
 		}
 	}

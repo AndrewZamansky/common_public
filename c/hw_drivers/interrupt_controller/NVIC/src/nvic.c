@@ -108,7 +108,7 @@ IRQ_ATTR void common_interrupt_handler()
 	pdev = callback_devs[curr_isr];
 	if (NULL != pdev)
 	{
-		DEV_CALLBACK_0_PARAMS( pdev, CALLBACK_INTERRUPT_ARRIVED) ;
+		DEV_CALLBACK( pdev, CALLBACK_INTERRUPT_ARRIVED) ;
 		return ;
 	}
 	CRITICAL_ERROR("received interrupt was not registerd yet");
