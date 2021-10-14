@@ -5,8 +5,13 @@
  *
  */
 
-#include "_project.h"
+#ifndef FOR_EXPORT
+	#include "_project.h"
+#else
+	#include "hal.h"
+#endif
 #include "dev_management_api.h"
+#include "os_wrapper.h"
 
 //#define DEBUG
 #include "PRINTF_api.h"
@@ -14,9 +19,10 @@
 #include "os_wrapper.h"
 #include "NAU83GXX_api.h"
 #include "NAU83GXX.h"
-#include "i2c_api.h"
-#include "gpio_api.h"
-
+#ifndef FOR_EXPORT
+	#include "i2c_api.h"
+	#include "gpio_api.h"
+#endif
 
 #ifndef  NAU83GXX_TASK_PRIORITY
 	#error  "NAU83GXX_TASK_PRIORITY should be define in project"
@@ -1296,6 +1302,23 @@ static uint8_t NAU83GXX_ioctl(struct dev_desc_t *adev,
 	}
 	return 0;
 }
+
+
+#ifdef FOR_EXPORT
+	uint8_t dev_NAU83GXX_ioctl(struct dev_desc_t *adev,
+					const uint8_t aIoctl_num, void *aIoctl_param)
+	{
+		return NAU83GXX_ioctl(adev, aIoctl_num, aIoctl_param, NULL);
+	}
+
+	uint8_t dev_NAU83GXX_callback(struct dev_desc_t *adev,
+					const uint8_t aCallback_num)
+	{
+		return NAU83GXX_callback(adev, aCallback_num, NULL, NULL);
+	}
+
+#endif
+
 
 #define	MODULE_NAME                      NAU83GXX
 #define	MODULE_IOCTL_FUNCTION            NAU83GXX_ioctl

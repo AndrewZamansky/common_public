@@ -185,7 +185,7 @@ uint8_t os_queue_send_without_wait(os_queue_t queue,  void * pData);
 		xQueueReceive(queue, pData, ( TickType_t ) portMAX_DELAY )
 
 
-/***********  queue retrieval **********/
+/***********  queue delete **********/
 /** function : [os_queue_delete()]  **/
 #define os_queue_delete(queue)   vQueueDelete(queue)
 

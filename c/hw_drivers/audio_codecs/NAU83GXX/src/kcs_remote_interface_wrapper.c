@@ -2,15 +2,14 @@
  *  kcs_remote_interface_wrapper.c
  */
 
-#include "audio_path_api.h"
-#include "_project.h"
-
-#include "u-boot/include/command.h"
-#include "u_boot_shell_api.h"
+#ifndef FOR_EXPORT
+	#include "_project.h"
+#else
+	#include "hal.h"
+#endif
 
 #include "os_wrapper.h"
 #include "NAU83GXX_api.h"
-#include "i2c_api.h"
 
 /** \brief communication stub to read a number of raw bytes from a remote KCS
       *  Setup location

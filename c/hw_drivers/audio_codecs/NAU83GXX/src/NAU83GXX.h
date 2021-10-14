@@ -1,19 +1,19 @@
 /*
  *
- * file :   85L40.c
+ * file :   NAU83GXX.h
  *
  *
  */
 
-#ifndef _83G10_H
-#define _83G10_H
+#ifndef _NAU83GXX_H
+#define _NAU83GXX_H
 
-#include "_project.h"
+#ifndef FOR_EXPORT
+	#include "_project.h"
+#else
+	#include "hal.h"
+#endif
 #include "dev_management_api.h"
-
-//#define DEBUG
-#include "PRINTF_api.h"
-
 #include "os_wrapper.h"
 
 struct NAU83GXX_runtime_t {

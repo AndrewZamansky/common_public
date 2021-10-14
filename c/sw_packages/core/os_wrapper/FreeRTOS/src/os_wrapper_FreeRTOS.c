@@ -59,10 +59,10 @@ os_task_t os_create_task_FreeRTOS(
 		char *taskName, void (*taskFunction)(void *apParam),
 		void *taskFunctionParam, size_t stack_size_bytes, uint8_t priority)
 {
-	TaskHandle_t xHandle=NULL;
+	TaskHandle_t xHandle = NULL;
 	xTaskCreate( (TaskFunction_t)taskFunction, taskName,
 			(stack_size_bytes / sizeof(StackType_t)),
-			(void*) taskFunctionParam, priority , &xHandle);
+			(void*) taskFunctionParam, priority, &xHandle);
 	return xHandle;
 }
 

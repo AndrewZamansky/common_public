@@ -52,6 +52,8 @@ ifeq ($(sort $(CONFIG_NAU83GXX_USE_KCS_REMOTE_INTERFACE)),y)
     INCLUDE_DIR += $(KCS_REMOTE_INTERFACE_PATH)
     DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH,\
                       $(KCS_REMOTE_INTERFACE_PATH)/include)
+    DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH, $(CURR_COMPONENT_DIR)/include)
+    CFLAGS += -include kcs_port.h
 
     SRC += src/kcs_remote_interface_wrapper.c
     SRC += src/CTRCoreModules/KCS_remote_interface.c 

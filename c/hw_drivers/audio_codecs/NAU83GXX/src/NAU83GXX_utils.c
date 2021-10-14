@@ -2,7 +2,11 @@
  *  NAU83GXX_utils.c
  */
 
-#include "_project.h"
+#ifndef FOR_EXPORT
+	#include "_project.h"
+#else
+	#include "hal.h"
+#endif
 #include "dev_management_api.h"
 
 #include "os_wrapper.h"
@@ -12,8 +16,9 @@
 
 #include "NAU83GXX_api.h"
 #include "NAU83GXX.h"
-#include "i2c_api.h"
-
+#ifndef FOR_EXPORT
+	#include "i2c_api.h"
+#endif
 
 /*
  * Array table to be flashed onto 83G10. This is device specific and will not

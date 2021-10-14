@@ -1,6 +1,6 @@
 
-#ifndef _KCS_I2C_API_H_
-#define _KCS_I2C_API_H_
+#ifndef _NAU83GXX_API_H_
+#define _NAU83GXX_API_H_
 
 #include "dev_management_api.h"
 #include "os_wrapper.h"
@@ -35,7 +35,6 @@
 
 #define KCS_I2C_MAX_BUFFER_IN_BYTES        ( 4095 )
 #define FULL_KCS_DIAG_READ                 ( 3876 )
-//#define KCS_RC_DEBUG_COUNTER
 
 struct S_I2CCMD {
 	size_t  u8Reg;
@@ -181,4 +180,11 @@ struct NAU83GXX_config_t {
 
 SET_CONFIG_TYPE(NAU83GXX, struct NAU83GXX_config_t);
 
+#ifdef FOR_EXPORT
+	uint8_t dev_NAU83GXX_ioctl(struct dev_desc_t *adev,
+			const uint8_t aIoctl_num, void *aIoctl_param);
+	uint8_t dev_NAU83GXX_callback(struct dev_desc_t *adev,
+					const uint8_t aCallback_num);
+#endif
+			
 #endif
