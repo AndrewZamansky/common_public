@@ -67,17 +67,7 @@
 
 
 
-
 static volatile uint32_t g_usbd_PlaySampleRate = 48000;
-
-
-static volatile int16_t g_usbd_RecMaxVolume  = 0x0000; // 0db
-static volatile int16_t g_usbd_RecMinVolume  = 0xc000; // -127db
-static volatile int16_t g_usbd_RecResVolume  = 0x400;
-
-static volatile int16_t g_usbd_PlayMaxVolume = 0x0000; // 0db
-static volatile int16_t g_usbd_PlayMinVolume = 0xc000; // -127db
-static volatile int16_t g_usbd_PlayResVolume = 0x0100;
 
 
 #define MAX_DATA_TO_SEND_LEN 2
@@ -132,16 +122,16 @@ static uint8_t get_volume(struct usb_audio_class_runtime_t *runtime_hndl,
 }
 
 
-static uint8_t get_min_volume(
+static uint8_t get_min_volume(struct usb_audio_class_runtime_t *runtime_hndl,
 		uint8_t unit_id, uint8_t **data, uint16_t *data_len)
 {
 	if (REC_FEATURE_UNITID == unit_id)
 	{
-		*data = (uint8_t*)&g_usbd_RecMinVolume;
+		*data = (uint8_t*)&runtime_hndl->min_recording_volume;
 	}
 	else if (PLAY_FEATURE_UNITID == unit_id)
 	{
-		*data = (uint8_t*)&g_usbd_PlayMinVolume;
+		*data = (uint8_t*)&runtime_hndl->min_playback_volume;
 	}
 	else
 	{
@@ -152,16 +142,16 @@ static uint8_t get_min_volume(
 }
 
 
-static uint8_t get_max_volume(
+static uint8_t get_max_volume(struct usb_audio_class_runtime_t *runtime_hndl,
 		uint8_t unit_id, uint8_t **data, uint16_t *data_len)
 {
 	if (REC_FEATURE_UNITID == unit_id)
 	{
-		*data = (uint8_t*)&g_usbd_RecMaxVolume;
+		*data = (uint8_t*)&runtime_hndl->max_recording_volume;
 	}
 	else if (PLAY_FEATURE_UNITID == unit_id)
 	{
-		*data = (uint8_t*)&g_usbd_PlayMaxVolume;
+		*data = (uint8_t*)&runtime_hndl->max_playback_volume;
 	}
 	else
 	{
@@ -172,16 +162,16 @@ static uint8_t get_max_volume(
 }
 
 
-static uint8_t get_res_volume(
+static uint8_t get_res_volume(struct usb_audio_class_runtime_t *runtime_hndl,
 			uint8_t unit_id, uint8_t **data, uint16_t *data_len)
 {
 	if (REC_FEATURE_UNITID == unit_id)
 	{
-		*data = (uint8_t*)&g_usbd_RecResVolume;
+		*data = (uint8_t*)&runtime_hndl->recording_volume_res;
 	}
 	else if (PLAY_FEATURE_UNITID == unit_id)
 	{
-		*data = (uint8_t*)&g_usbd_PlayResVolume;
+		*data = (uint8_t*)&runtime_hndl->playback_volume_res;
 	}
 	else
 	{
@@ -230,7 +220,7 @@ static void uac_class_interface_in_request( struct dev_desc_t *usb_hw,
 		switch(control_selector)
 		{
 		case VOLUME_CONTROL:
-			ret = get_min_volume(unit_id, &data, &data_len);
+			ret = get_min_volume(runtime_hndl, unit_id, &data, &data_len);
 			break;
 		default:
 			break;
@@ -240,7 +230,7 @@ static void uac_class_interface_in_request( struct dev_desc_t *usb_hw,
 		switch(control_selector)
 		{
 		case VOLUME_CONTROL:
-			ret = get_max_volume(unit_id, &data, &data_len);
+			ret = get_max_volume(runtime_hndl, unit_id, &data, &data_len);
 			break;
 		default:
 			break;
@@ -250,7 +240,7 @@ static void uac_class_interface_in_request( struct dev_desc_t *usb_hw,
 		switch(control_selector)
 		{
 		case VOLUME_CONTROL:
-			ret = get_res_volume(unit_id, &data, &data_len);
+			ret = get_res_volume(runtime_hndl, unit_id, &data, &data_len);
 			break;
 		default:
 			break;

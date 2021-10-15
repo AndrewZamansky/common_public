@@ -724,6 +724,21 @@ static void start_audio_class(struct dev_desc_t *adev,
 	init_default_volumes_and_mutes(runtime_hndl);
 	runtime_hndl->request_state = REQ_STATE_IDLE;
 	runtime_hndl->app_is_getting_data = 0;
+
+	// map to int16_t with 1/256db step : range = [0x8001, 0x7fff]
+	runtime_hndl->max_recording_volume =
+			(int16_t)(cfg_hndl->max_recording_volume_db * 256);
+	runtime_hndl->min_recording_volume =
+			(int16_t)(cfg_hndl->min_recording_volume_db * 256);
+	runtime_hndl->recording_volume_res =
+			(int16_t)(cfg_hndl->recording_volume_resolution_db * 256);
+	runtime_hndl->max_playback_volume =
+			(int16_t)(cfg_hndl->max_playback_volume_db * 256);
+	runtime_hndl->min_playback_volume =
+			(int16_t)(cfg_hndl->min_playback_volume_db * 256);
+	runtime_hndl->playback_volume_res =
+			(int16_t)(cfg_hndl->playback_volume_resolution_db * 256);
+
 	runtime_hndl->playback_volumes_changed = 0;
 	runtime_hndl->playback_mute_changed = 0;
 	runtime_hndl->recording_volumes_changed = 0;
@@ -770,8 +785,12 @@ static uint8_t get_master_volumes(
 				runtime_hndl->playback_volumes_changed;
 	get_volumes->recording_volumes_changed =
 			runtime_hndl->recording_volumes_changed;
-	get_volumes->curr_playback_volume = runtime_hndl->curr_playback_volume[0];
-	get_volumes->curr_recording_volume = runtime_hndl->curr_recording_volume[0];
+	// according to UAC specification, the volume value is from -128db to +128db
+	// with resolution of volumes is 1/256db. so /256 to convert to float
+	get_volumes->curr_playback_volume_db =
+			((float)runtime_hndl->curr_playback_volume[0]) / 256;
+	get_volumes->curr_recording_volume_db =
+			((float)runtime_hndl->curr_recording_volume[0]) / 256;
 	runtime_hndl->playback_volumes_changed = 0;
 	runtime_hndl->recording_volumes_changed = 0;
 	runtime_hndl->app_is_getting_data = 0;

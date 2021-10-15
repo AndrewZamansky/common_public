@@ -45,8 +45,8 @@ enum USB_AUDIO_CLASS_API_ioctl_e {
 struct usb_audio_class_get_volumes_t {
 	uint8_t playback_volumes_changed;
 	uint8_t recording_volumes_changed;
-	int16_t curr_playback_volume;
-	int16_t curr_recording_volume;
+	float curr_playback_volume_db;
+	float curr_recording_volume_db;
 };
 
 
@@ -73,6 +73,9 @@ struct usb_audio_class_cfg_t {
 	uint8_t  host_in_master_control_bit_map;
 	uint8_t  host_in_channel_control_bit_map;
 	uint8_t  enable_recording;
+	float    max_recording_volume_db; // max is +127.9961db
+	float    min_recording_volume_db; // max is -127.9961db
+	float    recording_volume_resolution_db; // [1/256db, 127.9961db]
 
 	// USB HOST AUDIO OUT
 	size_t   get_rx_buff_size;
@@ -85,6 +88,9 @@ struct usb_audio_class_cfg_t {
 	uint8_t  host_out_master_control_bit_map;
 	uint8_t  host_out_channel_control_bit_map;
 	uint8_t  playback_type;
+	float    max_playback_volume_db; // max is +127.9961db
+	float    min_playback_volume_db; // max is -127.9961db
+	float    playback_volume_resolution_db; // [1/256db, 127.9961db]
 };
 SET_CONFIG_TYPE(usb_audio_class, struct usb_audio_class_cfg_t);
 

@@ -126,9 +126,9 @@ static uint8_t const audio_out_terminal_descriptors[] =
 	PLAY_FEATURE_UNITID, // bUnitID, used in all requests to address this Unit
 	PLAY_TERMINAL_ID,    // bSourceID
 	0x01,        // bControlSize 1
-	0x01,  // bmaControls[0] (Mute) (master)
-	0x02,  // bmaControls[1] (Volume)
-	0x02,  // bmaControls[1] (Volume)
+	WILL_BE_SET_ON_INIT,  // bmaControls(0) (master vol/mute,.. control)
+	WILL_BE_SET_ON_INIT,  // bmaControls(1) (ch1 vol/mute,.. control)
+	WILL_BE_SET_ON_INIT,  // bmaControls(2) (ch2 vol/mute,.. control)
 	0x00,
 
 // Output Terminal Descriptor
@@ -136,7 +136,7 @@ static uint8_t const audio_out_terminal_descriptors[] =
 	0x24,        // bDescriptorType (See Next Line)
 	0x03,        // bDescriptorSubtype (CS_INTERFACE -> OUTPUT_TERMINAL)
 	0x03,        // bTerminalID
-	0x01, 0x03,  // wTerminalType (Speaker)
+	WILL_BE_SET_ON_INIT, WILL_BE_SET_ON_INIT,  // wTerminalType (Speaker)
 	0x00,        // bAssocTerminal
 	PLAY_FEATURE_UNITID,        // bSourceID
 	0x00         // iTerminal
@@ -150,7 +150,7 @@ static uint8_t const audio_in_terminal_descriptors[] =
 	0x24,        // bDescriptorType (See Next Line)
 	0x02,        // bDescriptorSubtype (CS_INTERFACE -> INPUT_TERMINAL)
 	REC_TERMINAL_ID,   // bTerminalID
-	0x01, 0x02,  // wTerminalType (Microphone)
+	WILL_BE_SET_ON_INIT, WILL_BE_SET_ON_INIT,  // wTerminalType (Microphone)
 	0x00,        // bAssocTerminal
 	0x02,        // bNrChannels 2
 	0x03, 0x00,  // wChannelConfig (Left and Right Front)
@@ -164,9 +164,9 @@ static uint8_t const audio_in_terminal_descriptors[] =
 	REC_FEATURE_UNITID,// bUnitID, used in all requests to address this Unit
 	REC_TERMINAL_ID,   // bSourceID
 	0x01,        // bControlSize 1
-    0x01,        // bmaControls(0) (master control)
-    0x02,        // bmaControls(1)
-    0x02,        // bmaControls(2)
+	WILL_BE_SET_ON_INIT,  // bmaControls(0) (master vol/mute,.. control)
+	WILL_BE_SET_ON_INIT,  // bmaControls(1) (ch1 vol/mute,.. control)
+	WILL_BE_SET_ON_INIT,  // bmaControls(2) (ch2 vol/mute,.. control)
     0x00,        // iFeature
 
 // Output Terminal Descriptor for USB Streaming

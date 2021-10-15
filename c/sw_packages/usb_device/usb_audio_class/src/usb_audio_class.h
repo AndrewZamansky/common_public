@@ -59,6 +59,13 @@ struct usb_audio_class_runtime_t {
 	uint8_t recording_volumes_changed;
 	uint8_t recording_mute_changed;
 
+	int16_t    max_recording_volume; // max is +127.9961db (0x7fff)
+	int16_t    min_recording_volume; // max is -127.9961db (0x8001)
+	int16_t    recording_volume_res; // [1/256db(0x0001), 127.9961db(0x7fff)]
+	int16_t    max_playback_volume; // max is +127.9961db (0x7fff)
+	int16_t    min_playback_volume; // max is -127.9961db (0x8001)
+	int16_t    playback_volume_res; // [1/256db(0x0001), 127.9961db(0x7fff)]
+
 	int16_t curr_playback_volume[NUM_OF_PLAYBACK_CHANNELS];
 	int16_t curr_recording_volume[NUM_OF_RECORDING_CHANNELS];
 	/* Record MUTE control. 0 = normal. 1 = MUTE */
