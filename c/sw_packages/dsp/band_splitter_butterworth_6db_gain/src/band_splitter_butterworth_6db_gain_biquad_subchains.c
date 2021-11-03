@@ -60,8 +60,7 @@ void band_splitter_butterworth_6db_gain_init_subchains(
 			DSP_MANAGEMENT_API_CREATE_STATIC_CHAIN(chain_1_pole);
 	handle->filter_1_pole_dsp_chain =  filter_1_pole_dsp_chain;
 
-	dsp_management_api_ioctl_1_params(
-			filter_1_pole_dsp_chain,
+	DSP_IOCTL(filter_1_pole_dsp_chain,
 			band_splitter_butterworth_6db_filter_all_pass_1_pole,
 			IOCTL_BIQUAD_FILTER_SET_NUM_OF_BANDS , (void*) 1 );
 
@@ -69,9 +68,7 @@ void band_splitter_butterworth_6db_gain_init_subchains(
 			DSP_MANAGEMENT_API_CREATE_STATIC_CHAIN(chain_2_poles);
 	handle->filter_2_poles_dsp_chain =  filter_2_poles_dsp_chain;
 
-	dsp_management_api_ioctl_1_params(
-			filter_2_poles_dsp_chain,
+	DSP_IOCTL(filter_2_poles_dsp_chain,
 			band_splitter_butterworth_6db_filter_all_pass_2_poles,
 			IOCTL_BIQUAD_FILTER_SET_NUM_OF_BANDS , (void*) 1 );
-
 }

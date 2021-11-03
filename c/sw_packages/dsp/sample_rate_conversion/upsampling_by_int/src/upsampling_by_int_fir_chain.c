@@ -32,7 +32,7 @@ chain_handle_t upsampling_by_int_init_fir_chain(
 {
 	chain_handle_t fir_dsp_chain;
 	fir_dsp_chain = DSP_MANAGEMENT_API_CREATE_STATIC_CHAIN(fir_chain);
-	dsp_management_api_ioctl_1_params(fir_dsp_chain, lowpass_fir_filter,
-					IOCTL_FIR_FILTER_SET_FIR_COEFFICIENTS, fir_set_params);
+	DSP_IOCTL(fir_dsp_chain, lowpass_fir_filter,
+				IOCTL_FIR_FILTER_SET_FIR_COEFFICIENTS, fir_set_params);
 	return fir_dsp_chain;
 }

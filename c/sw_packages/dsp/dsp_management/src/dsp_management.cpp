@@ -62,7 +62,7 @@ static struct dsp_module_inst_t * find_dsp_by_name(
 }
 
 
-uint8_t	dsp_management_api_ioctl_2_params(chain_handle_t chain_handle,
+uint8_t	_dsp_ioctl_2_params(chain_handle_t chain_handle,
 		char const *module_name, uint8_t ioctl_num, void *param1, void *param2)
 {
 	struct dsp_module_inst_t *module_inst;
@@ -86,23 +86,6 @@ uint8_t	dsp_management_api_ioctl_2_params(chain_handle_t chain_handle,
 	return (module_inst->module_type->ioctl)(
 					module_inst, ioctl_num, param1, param2);
 }
-
-uint8_t	dsp_management_api_ioctl_1_params(chain_handle_t chain_handle,
-		char const *module_name, uint8_t ioctl_num, void *param1)
-{
-	return dsp_management_api_ioctl_2_params(
-			chain_handle, module_name, ioctl_num, param1, NULL);
-}
-
-uint8_t	dsp_management_api_ioctl_0_params(chain_handle_t chain_handle,
-		char const *module_name, uint8_t ioctl_num)
-{
-	return dsp_management_api_ioctl_1_params(
-			chain_handle, module_name, ioctl_num, NULL);
-}
-
-
-
 
 
 /**

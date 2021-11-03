@@ -123,17 +123,14 @@ static 	void set_freq(
 	p_band_set_params->Fc = freq;
 	p_band_set_params->filter_mode = BIQUADS_ALL_PASS_BUTTERWORTH_1_POLE;
 	band_set.band_num = 0;
-	dsp_management_api_ioctl_1_params(
-			filter_1_pole_dsp_chain,
+	DSP_IOCTL(filter_1_pole_dsp_chain,
 			band_splitter_butterworth_6db_filter_all_pass_1_pole,
 			IOCTL_BIQUAD_FILTER_SET_BAND, &band_set );
 	p_band_set_params->filter_mode = BIQUADS_ALL_PASS_BUTTERWORTH_2_POLES;
 	band_set.band_num = 0;
-	dsp_management_api_ioctl_1_params(
-			filter_2_poles_dsp_chain,
+	DSP_IOCTL(filter_2_poles_dsp_chain,
 			band_splitter_butterworth_6db_filter_all_pass_2_poles,
 			IOCTL_BIQUAD_FILTER_SET_BAND, &band_set );
-
 }
 
 

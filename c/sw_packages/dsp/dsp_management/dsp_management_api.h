@@ -78,14 +78,42 @@ extern char chain_inputs_module_name[] ;
 #define CHAIN_INPUTS_DSPT   chain_inputs_module_name
 
 
+/* Following macros are used to create DSP_IOCTL()*/
+#define DSP_PP_ARG_N( \
+          _1,  _2,  _3,  _4,  _5,  _6,  _7,  _8,  _9, _10, \
+         _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, \
+         _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, \
+         _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, \
+         _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, \
+         _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, \
+         _61, _62, _63, N, ...) N
 
-/*  ioctl functions */
-uint8_t	dsp_management_api_ioctl_0_params(chain_handle_t chain_handle,
-		char const*module_name, uint8_t ioctl_num);
-uint8_t	dsp_management_api_ioctl_1_params(chain_handle_t chain_handle,
-		char const *module_name, uint8_t ioctl_num, void *param1);
-uint8_t	dsp_management_api_ioctl_2_params(chain_handle_t chain_handle,
+#define DSP_PP_RSEQ_N()                                        \
+         62, 61, 60,                                       \
+         59, 58, 57, 56, 55, 54, 53, 52, 51, 50,           \
+         49, 48, 47, 46, 45, 44, 43, 42, 41, 40,           \
+         39, 38, 37, 36, 35, 34, 33, 32, 31, 30,           \
+         29, 28, 27, 26, 25, 24, 23, 22, 21, 20,           \
+         19, 18, 17, 16, 15, 14, 13, 12, 11, 10,           \
+          9,  8,  7,  6,  5,  4,  3,  2,  1,  0 , 0
+
+#define DSP_PP_NARG_(...)    DSP_PP_ARG_N(__VA_ARGS__)
+#define DSP_PP_NARG(...)     DSP_PP_NARG_(__VA_ARGS__, DSP_PP_RSEQ_N())
+
+/* ioctl functions */
+uint8_t _dsp_ioctl_2_params(chain_handle_t chain_handle,
 		char const *module_name, uint8_t ioctl_num, void *param1, void *param2);
+#define _ioctl_1_params(chain, dsp, ioctl_num, param1) \
+				_dsp_ioctl_2_params(chain, dsp, ioctl_num, param1, NULL)
+#define _ioctl_0_params(chain, dsp, ioctl_num) \
+				_dsp_ioctl_2_params(chain, dsp, ioctl_num, NULL, NULL)
+#define _DSP_IOCTL_STEP2(a, chain, dsp, ...)  \
+					_ioctl_##a##_params(chain, dsp, __VA_ARGS__)
+#define _DSP_IOCTL_STEP1(a, chain, dsp, ...)  \
+					_DSP_IOCTL_STEP2(a, chain, dsp, __VA_ARGS__)
+#define DSP_IOCTL(chain, dsp, ...)   \
+			_DSP_IOCTL_STEP1(DSP_PP_NARG(__VA_ARGS__), chain, dsp, __VA_ARGS__)
+
 
 
 uint8_t dsp_management_api_set_module_control(
