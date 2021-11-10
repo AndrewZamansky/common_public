@@ -103,12 +103,12 @@ extern char chain_inputs_module_name[] ;
 /* ioctl functions */
 uint8_t _dsp_ioctl_2_params(chain_handle_t chain_handle,
 		char const *module_name, uint8_t ioctl_num, void *param1, void *param2);
-#define _ioctl_1_params(chain, dsp, ioctl_num, param1) \
+#define _dsp_ioctl_1_params(chain, dsp, ioctl_num, param1) \
 				_dsp_ioctl_2_params(chain, dsp, ioctl_num, param1, NULL)
-#define _ioctl_0_params(chain, dsp, ioctl_num) \
+#define _dsp_ioctl_0_params(chain, dsp, ioctl_num) \
 				_dsp_ioctl_2_params(chain, dsp, ioctl_num, NULL, NULL)
 #define _DSP_IOCTL_STEP2(a, chain, dsp, ...)  \
-					_ioctl_##a##_params(chain, dsp, __VA_ARGS__)
+					_dsp_ioctl_##a##_params(chain, dsp, __VA_ARGS__)
 #define _DSP_IOCTL_STEP1(a, chain, dsp, ...)  \
 					_DSP_IOCTL_STEP2(a, chain, dsp, __VA_ARGS__)
 #define DSP_IOCTL(chain, dsp, ...)   \
