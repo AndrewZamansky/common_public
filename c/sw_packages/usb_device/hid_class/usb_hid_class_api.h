@@ -57,7 +57,11 @@
 #define  HID_REPORT_ID(id) 0x85, id
 
 #define  HID_LOGICAL_MINIMUM(min)  0x15, min
-#define  HID_LOGICAL_MAXIMUM(max)  0x25, max
+// some system parse this values as always signed so for values [128, 0x7fff]
+// item with 2 bytes data is used
+#define  HID_LOGICAL_MAXIMUM_0xFF_to_0x7F(max)  0x25, max
+#define  HID_LOGICAL_MAXIMUM_0xFFFF_to_0x7FFF(max) \
+										0x26, (max & 0xFF), ((max >> 8) & 0xFF)
 
 #define  HID_USAGE_MINIMUM(min)  0x19, min
 #define  HID_USAGE_MAXIMUM(max)  0x29, max
