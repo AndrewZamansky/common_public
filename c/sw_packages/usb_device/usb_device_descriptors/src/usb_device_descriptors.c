@@ -26,13 +26,17 @@
 
 #define DESC_STRING         0x03
 
-#define VID_POS      8
-#define PID_POS      10
+#define VID_POS              8
+#define PID_POS             10
 #define VENDOR_STR_POS      14
 #define PRODUCT_STR_POS     15
 #define SERIAL_STR_POS      16
 
 #define WILL_BE_CALC_LATER   0
+
+#define CONFIG_DESC_MAX_CURRENT_POS  8
+#define CONFIG_DESC_BM_ATTR_POS      7
+#define SELF_POWERED_MASK        (1 << 6)
 
 /*----------------------------------------------------------------------------*/
 /*!<USB Device Descriptor */
@@ -41,9 +45,9 @@ static uint8_t gu8DeviceDescriptor[] =
 	0x12,        /* bLength */
 	0x01,       /* bDescriptorType */
 	WBVAL(0x0200),     /* bcdUSB */
-	0x00,              /* bDeviceClass */
-	0x00,              /* bDeviceSubClass */
-	0x00,              /* bDeviceProtocol */
+	0xEF,              /* bDeviceClass = Misc device class changed from 0x00*/
+	0x02,              /* bDeviceSubClass + bDeviceProtocol  set device */
+	0x01,              /*   classes according to assosiation descriptors*/
 	EP0_MAX_PKT_SIZE,  /* bMaxPacketSize0 */
 	WBVAL(USBD_VID),   /* idVendor */
 	WBVAL(USBD_PID),   /* idProduct */ 
@@ -138,17 +142,23 @@ static void device_start(struct usb_device_descriptors_cfg_t *cfg_hndl)
 		CRITICAL_ERROR('usb descriptors already initialized');
 	}
 
-	configuration_desc_size = sizeof(gu8ConfigDescriptor);
-	configuration_desc = (uint8_t*)os_safe_malloc(configuration_desc_size);
-	errors_api_check_if_malloc_succeed(configuration_desc);
 	VID = cfg_hndl->VID;
 	gu8DeviceDescriptor[VID_POS] = VID & 0xff;
 	gu8DeviceDescriptor[VID_POS + 1] = (VID >> 8) & 0xff;
 	PID = cfg_hndl->PID;
 	gu8DeviceDescriptor[PID_POS] = PID & 0xff;
 	gu8DeviceDescriptor[PID_POS + 1] = (PID >> 8) & 0xff;
-	memcpy(
-		configuration_desc, gu8ConfigDescriptor, configuration_desc_size);
+
+	configuration_desc_size = sizeof(gu8ConfigDescriptor);
+	configuration_desc = (uint8_t*)os_safe_malloc(configuration_desc_size);
+	errors_api_check_if_malloc_succeed(configuration_desc);
+	memcpy(configuration_desc, gu8ConfigDescriptor, configuration_desc_size);
+	configuration_desc[CONFIG_DESC_MAX_CURRENT_POS] =
+						cfg_hndl->max_current_consumption_2mA;
+	if (cfg_hndl->is_self_powered)
+	{
+		configuration_desc[CONFIG_DESC_BM_ATTR_POS] |= SELF_POWERED_MASK;
+	}
 
 	arr_of_str_desc =
 			(struct str_desc_t*)os_safe_malloc(sizeof(struct str_desc_t));

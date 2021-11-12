@@ -70,6 +70,8 @@ struct usb_device_descriptors_cfg_t {
 	struct dev_desc_t *usb_hw;
 	uint16_t VID;
 	uint16_t PID;
+	uint16_t max_current_consumption_2mA; // in 2mA according to USB standard
+	uint8_t  is_self_powered;
 };
 SET_CONFIG_TYPE(usb_device_descriptors, struct usb_device_descriptors_cfg_t);
 

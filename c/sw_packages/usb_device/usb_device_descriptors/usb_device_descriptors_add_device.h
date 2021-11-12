@@ -16,11 +16,26 @@ EXTERN_DECLARATION_TO_STATIC_DEVICE_INST(USB_DESC_DT_USB_PDEV);
 	#error "USB_DESC_DT_USB_PID should be defined"
 #endif
 
+#ifndef USB_DESC_DT_MAX_CURRENT_mA
+	#define USB_DESC_DT_MAX_CURRENT_mA  100
+#endif
+#if (USB_DESC_DT_MAX_CURRENT_mA > 500)
+	#error "maximal allowed current is 500mA"
+#endif
+//convert to 2mA scale according to USB standard:
+#define __USB_DESC_DT_MAX_CURRENT_2mA  (USB_DESC_DT_MAX_CURRENT_mA / 2)
+
+#ifndef USB_DESC_DT_IS_SELF_POWERED
+	#define USB_DESC_DT_IS_SELF_POWERED  0
+#endif
+
 SET_STATIC_DEV_CONFIG(usb_device_descriptors) =
 {
 	_POINTER_TO_USB_PDEV,
 	USB_DESC_DT_USB_VID,
-	USB_DESC_DT_USB_PID
+	USB_DESC_DT_USB_PID,
+	__USB_DESC_DT_MAX_CURRENT_2mA,
+	USB_DESC_DT_IS_SELF_POWERED
 };
 
 #include "add_static_dev.h"
@@ -33,3 +48,6 @@ SET_STATIC_DEV_CONFIG(usb_device_descriptors) =
 #undef _POINTER_TO_USB_PDEV
 #undef USB_DESC_DT_USB_VID
 #undef USB_DESC_DT_USB_PID
+#undef USB_DESC_DT_MAX_CURRENT_mA
+#undef __USB_DESC_DT_MAX_CURRENT_2mA
+#undef USB_DESC_DT_IS_SELF_POWERED
