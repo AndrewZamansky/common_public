@@ -16,6 +16,8 @@
 #include "dev_management_api.h"
 #include "os_wrapper.h"
 
+#define NAU83GXX_REG_DEVICE_ID  0x46
+
 struct NAU83GXX_runtime_t {
 	os_queue_t msg_queue;
 	os_queue_t wait_for_finish_queue;
@@ -27,6 +29,7 @@ struct NAU83GXX_runtime_t {
 	uint8_t *dataBuf;
 	uint8_t  state;
 	uint8_t  do_recovery;
+	uint8_t chip_type;
 };
 SET_RUNTIME_DATA_TYPE(NAU83GXX, struct NAU83GXX_runtime_t);
 

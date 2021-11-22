@@ -22,7 +22,7 @@ int do_dsp_setkcs_start(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[
 	long int   device_addr;
 	uint16_t   offset, size;
 	char *pEnd;
-	int rc = RC_OK;
+	int rc = NAU83GXX_RC_OK;
 	struct dev_desc_t *kcs_i2c_dev;
 	struct kcs_start_collect_data_for_send_ioctl_t collect_data_ioctl;
 
@@ -35,7 +35,7 @@ int do_dsp_setkcs_start(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[
 	 */
 	if(argc != 4)
 	{
-		rc = RC_SYNTAX_ERROR;
+		rc = NAU83GXX_RC_SYNTAX_ERROR;
 		goto end;
 	}
 
@@ -53,7 +53,7 @@ int do_dsp_setkcs_start(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[
 	}
 	else
 	{
-		rc = RC_DEVICE_DOES_NOT_EXIST;
+		rc = NAU83GXX_RC_DEVICE_DOES_NOT_EXIST;
 		goto end;
 	}
 
@@ -63,13 +63,13 @@ int do_dsp_setkcs_start(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[
 
 	if((offset > 0xffff) || ((size > 0xffff)))
 	{
-		rc = RC_PARAMETERS_OUT_OF_RANGE;
+		rc = NAU83GXX_RC_PARAMETERS_OUT_OF_RANGE;
 		goto end;
 	}
 
 	if(KCS_I2C_MAX_BUFFER_IN_BYTES < size)
 	{
-		rc = RC_INPUT_SIZE_TOO_LARGE_ERR;
+		rc = NAU83GXX_RC_INPUT_SIZE_TOO_LARGE_ERR;
 		goto end;
 	}
 

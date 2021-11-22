@@ -31,7 +31,6 @@
 	#error  "NAU83GXX_TASK_STACK_SIZE should be define in project"
 #endif
 
-#define I2C_DEV_DESC 0x46
 
 #define KCS_I2C_DSP_MAX_TX_SIZE            ( 96 )
 
@@ -127,7 +126,8 @@ enum state_e {
 	STATE_COLLECTING_DATA_FOR_SEND
 };
 
-extern uint8_t nau83gxx_init_i2c_regs(struct NAU83GXX_config_t *config_handle);
+extern uint8_t nau83gxx_init_i2c_regs(struct NAU83GXX_config_t *config_handle,
+									struct NAU83GXX_runtime_t *runtime_handle);
 extern uint8_t nau83gxx_write(struct dev_desc_t *i2c_dev, uint8_t device_addr,
 		uint16_t reg_addr, const uint8_t *data, size_t write_data_size);
 extern uint8_t nau83gxx_read(struct dev_desc_t *i2c_dev, uint8_t device_addr,
@@ -225,7 +225,7 @@ static uint8_t check_if_idle(struct NAU83GXX_config_t *config_handle)
 		if(rc)
 		{
 			// communication error
-			PRINTF_DBG("IDLE_WORD RC_COMMUNICATION_ERROR\n\r");
+			PRINTF_DBG("IDLE_WORD NAU83GXX_RC_COMMUNICATION_ERROR\n\r");
 		}
 		if(u32Data == DSP_COMM_IDLE_WORD)
 		{
@@ -236,10 +236,10 @@ static uint8_t check_if_idle(struct NAU83GXX_config_t *config_handle)
 	//or previous synchronization issue
 	if(retries == 0)
 	{
-		PRINTF_DBG("RC_TIMEDOUT_FOR_IDLE_WORD\n\r");
-		return RC_TIMEDOUT_FOR_IDLE_WORD;
+		PRINTF_DBG("NAU83GXX_RC_TIMEDOUT_FOR_IDLE_WORD\n\r");
+		return NAU83GXX_RC_TIMEDOUT_FOR_IDLE_WORD;
 	}
-	return RC_OK;
+	return NAU83GXX_RC_OK;
 }
 
 
@@ -248,7 +248,7 @@ static uint8_t get_preamble(struct NAU83GXX_config_t *config_handle,
 {
 	int retries;
 	uint8_t replyStatus = 0;
-	uint8_t rc = RC_OK;
+	uint8_t rc = NAU83GXX_RC_OK;
 	uint8_t data[SIZE_OF_STD_DSP_WORD] = {0};
 
 	for (retries = 10; retries > 0; retries--)
@@ -257,7 +257,7 @@ static uint8_t get_preamble(struct NAU83GXX_config_t *config_handle,
 		if (rc)
 		{
 			// communication error
-			PRINTF_DBG("PREAMBLE RC_COMMUNICATION_ERROR\n\r");
+			PRINTF_DBG("PREAMBLE NAU83GXX_RC_COMMUNICATION_ERROR\n\r");
 		}
 		// check for preamble;
 		if(data[0] == ((DSP_COMM_PREAMBLE >> 8) & 0xFF) &&
@@ -273,12 +273,12 @@ static uint8_t get_preamble(struct NAU83GXX_config_t *config_handle,
 	// DSP data was not ready after the amount of retries
 	if(retries == 0)
 	{
-		PRINTF_DBG("RC_PREAMBLE_NOT_FOUND\n\r");
-		return RC_PREAMBLE_NOT_FOUND;
+		PRINTF_DBG("NAU83GXX_RC_PREAMBLE_NOT_FOUND\n\r");
+		return NAU83GXX_RC_PREAMBLE_NOT_FOUND;
 	}
 
 	// Check they reply from the DSP
-	if(replyStatus != 0) return (RC_REPLY_STATUS_ERR | replyStatus);
+	if(replyStatus != 0) return (NAU83GXX_RC_REPLY_STATUS_ERR | replyStatus);
 	else return rc;
 }
 
@@ -312,11 +312,11 @@ static uint8_t send_header_and_update_lenU32(
 	if(rc)
 	{
 		// communication error
-		PRINTF_DBG("RC_COMMUNICATION_ERROR preamble\n\r");
-		return RC_COMMUNICATION_ERROR;
+		PRINTF_DBG("NAU83GXX_RC_COMMUNICATION_ERROR preamble\n\r");
+		return NAU83GXX_RC_COMMUNICATION_ERROR;
 	}
 	*msg_len_u32 = lenInU32;
-	return RC_OK;
+	return NAU83GXX_RC_OK;
 }
 
 
@@ -326,12 +326,8 @@ static uint8_t send_offset_and_length(struct NAU83GXX_config_t *config_handle,
 	uint8_t rc;
 	uint8_t data[SIZE_OF_STD_DSP_WORD] = {0};
 
-	//send cmd parameters
-	if(0 == data_len)
-	{
-		PRINTF_DBG("OFFSET AND LENGTH RC_INTERNAL_ERROR\n\r");
-		return RC_INTERNAL_ERROR;
-	}
+	if(0 == data_len) return NAU83GXX_RC_OK; // nothing to read
+
 	data[0] = addr_offset & 0xFF;
 	data[1] = (addr_offset >> 8) & 0xFF;
 	data[2] = data_len & 0xFF;
@@ -342,7 +338,7 @@ static uint8_t send_offset_and_length(struct NAU83GXX_config_t *config_handle,
 	if (rc)
 	{
 		// communication error
-		return RC_COMMUNICATION_ERROR;
+		return NAU83GXX_RC_COMMUNICATION_ERROR;
 	}
 	return rc;
 }
@@ -357,7 +353,7 @@ static uint8_t send_payload(struct NAU83GXX_config_t *config_handle,
 	uint16_t left_size;
 	uint8_t data[SIZE_OF_STD_DSP_WORD] = {0};
 
-	if (0 == sendLen) return RC_OK;
+	if (0 == sendLen) return NAU83GXX_RC_OK;
 
 	lenInU32 = (sendLen + 3) / 4;
 	left_size = sendLen;
@@ -381,12 +377,13 @@ static uint8_t send_payload(struct NAU83GXX_config_t *config_handle,
 		if(rc)
 		{
 			// communication error
-			PRINTF_DBG("PAYLOAD RC_COMMUNICATION_ERROR fragment %d\n\r",i);
-			return RC_COMMUNICATION_ERROR;
+			PRINTF_DBG(
+				"PAYLOAD NAU83GXX_RC_COMMUNICATION_ERROR fragment %d\n\r",i);
+			return NAU83GXX_RC_COMMUNICATION_ERROR;
 		}
 		left_size -= 4;
 	}
-	return RC_OK;
+	return NAU83GXX_RC_OK;
 }
 
 
@@ -401,7 +398,7 @@ static uint8_t get_reply(struct NAU83GXX_config_t *config_handle,
 	// read all data except two last word
 	if(NULL == dataRecv)
 	{
-		return RC_UNEXPECTED_REPLY;
+		return NAU83GXX_RC_UNEXPECTED_REPLY;
 	}
 
 	*recvLen = 0;
@@ -413,7 +410,7 @@ static uint8_t get_reply(struct NAU83GXX_config_t *config_handle,
 		if(rc)
 		{
 			// communication error
-			PRINTF_DBG("REPLY RC_COMMUNICATION_ERROR\n\r");
+			PRINTF_DBG("REPLY NAU83GXX_RC_COMMUNICATION_ERROR\n\r");
 		}
 		for (j = 0; j < SIZE_OF_STD_DSP_WORD; ++j)
 		{
@@ -427,7 +424,7 @@ static uint8_t get_reply(struct NAU83GXX_config_t *config_handle,
 	if(rc)
 	{
 		// communication error
-		PRINTF_DBG("TRAILING FRAGMENT RC_COMMUNICATION_ERROR\n\r");
+		PRINTF_DBG("TRAILING FRAGMENT NAU83GXX_RC_COMMUNICATION_ERROR\n\r");
 	}
 
 	verifyLen = data[0] + ((data[1] & 0xc0) << 2);
@@ -435,12 +432,12 @@ static uint8_t get_reply(struct NAU83GXX_config_t *config_handle,
 	{
 		PRINTF_DBG("ERROR LEN_POST = %02X, expected %02X\n\r",
 				verifyLen,lenInU32);
-		return RC_REPLY_DATA_INTEGRITY_ERROR;
+		return NAU83GXX_RC_REPLY_DATA_INTEGRITY_ERROR;
 	}
 	padding =  (data[1] & 0x30) >> 4;
 	*recvLen = (lenInU32 - 1) * 4 - padding;
 
-	return RC_OK;
+	return NAU83GXX_RC_OK;
 }
 
 
@@ -464,8 +461,8 @@ static uint8_t send_postamble_and_get_reply(
 		if(rc)
 		{
 			// communication error
-			PRINTF_DBG("RC_COMMUNICATION_ERROR postamble\n\r");
-			return RC_COMMUNICATION_ERROR;
+			PRINTF_DBG("NAU83GXX_RC_COMMUNICATION_ERROR postamble\n\r");
+			return NAU83GXX_RC_COMMUNICATION_ERROR;
 		}
 	}
 
@@ -480,9 +477,9 @@ static uint8_t send_postamble_and_get_reply(
 	{
 		rc = get_reply(config_handle, lenInU32, reqRecvLen, dataRecv, recvLen);
 		if(rc) return rc;
-		if( *recvLen > reqRecvLen) return RC_REPLY_LEN_TOO_LONG;
+		if( *recvLen > reqRecvLen) return NAU83GXX_RC_REPLY_LEN_TOO_LONG;
 	}
-	return RC_OK;
+	return NAU83GXX_RC_OK;
 }
 
 
@@ -513,12 +510,12 @@ static uint8_t send_kcs_setup(
 {
 	uint16_t lenInU32, padding;
 	uint16_t  retries;
-	uint8_t rc = RC_OK;
+	uint8_t rc = NAU83GXX_RC_OK;
 	uint16_t  send_len;
 
 	if (KCS_I2C_MAX_BUFFER_IN_BYTES <= size_to_send)
 	{
-		return RC_INPUT_SIZE_TOO_LARGE_ERR;
+		return NAU83GXX_RC_INPUT_SIZE_TOO_LARGE_ERR;
 	}
 
 	while (size_to_send)
@@ -559,8 +556,8 @@ static uint8_t send_kcs_setup(
 		size_to_send -= send_len;
 		addr_offset += send_len;
 	}
-	while (RC_OK != patch_for_correct_setup_write(config_handle));
-	return RC_OK;
+	while (NAU83GXX_RC_OK != patch_for_correct_setup_write(config_handle));
+	return NAU83GXX_RC_OK;
 }
 
 
@@ -573,30 +570,38 @@ static uint8_t process_init_hw_msg(struct NAU83GXX_config_t *config_handle,
 	struct dev_desc_t * i2c_dev;
 	uint32_t status;
 	uint8_t rc;
+	uint8_t ioctl_under_process;
 
 	dev_addr = config_handle->dev_addr;
 	i2c_dev = config_handle->i2c_dev;
 
-	rc = RC_OK;
+	rc = NAU83GXX_RC_OK;
 	switch(p_init_hw_msg->init_sel)
 	{
 	case INIT_WITH_RESET_ONLY:
+		ioctl_under_process = IOCTL_HW_IS_READY_TO_INIT_WITH_HW_RESET_ONLY;
 		rc = nau83gxx_write_wordU16(i2c_dev, dev_addr, 0x0, 0x0);
-		if (rc) return rc;
 		break;
 	case INIT_WITH_REG_AND_KCS:
-		nau83gxx_read_wordU16(i2c_dev, dev_addr, I2C_DEV_DESC, &read_dat);
+		ioctl_under_process = IOCTL_HW_IS_READY_TO_INIT_WITH_FULL_KCS;
+		rc = nau83gxx_read_wordU16(
+				i2c_dev, dev_addr, NAU83GXX_REG_DEVICE_ID, &read_dat);
+		if (0 != rc)
+		{
+			rc = NAU83GXX_RC_DEVICE_DOES_NOT_EXIST;
+			break;
+		}
 		read_dat = read_dat & 0xF0;
 		if (read_dat != config_handle->chip_type)
 		{
 			CRITICAL_ERROR("wrong chip type");
 		}
 
-		rc = nau83gxx_init_i2c_regs(config_handle);
-		if (rc) return rc;
+		rc = nau83gxx_init_i2c_regs(config_handle, runtime_handle);
+		if (rc) break;
 		//os_delay_ms(500);
-		while (RC_OK != send_simple_cmd(config_handle, DSP_CMD_GET_STATUS,
-																&status))
+		while (NAU83GXX_RC_OK !=
+				send_simple_cmd(config_handle, DSP_CMD_GET_STATUS, &status))
 		{
 			os_delay_ms(5);
 		}
@@ -613,20 +618,17 @@ static uint8_t process_init_hw_msg(struct NAU83GXX_config_t *config_handle,
 		rc = send_kcs_setup(config_handle, 0,
 				p_init_hw_msg->kcs_spkr_param_data,
 				p_init_hw_msg->kcs_spkr_param_size);
-		if (NULL != p_init_hw_msg->end_of_ioctl_callback)
-		{
-			p_init_hw_msg->end_of_ioctl_callback(
-							IOCTL_HW_IS_READY_TO_INIT_WITH_FULL_KCS);
-		}
 		break;
 	default:
+		ioctl_under_process = 0xff;
 		break;
 	}
 
-	if (rc)
+	if (NULL != p_init_hw_msg->end_of_ioctl_callback)
 	{
-		CRITICAL_ERROR("cannot init NAU83GXX");
+		p_init_hw_msg->end_of_ioctl_callback(ioctl_under_process, rc);
 	}
+
 	runtime_handle->state = STATE_IDLE;
 	return rc;
 }
@@ -647,9 +649,10 @@ static uint8_t process_power_down_msg(
 }
 
 static uint8_t process_reinit_i2c_regs_msg(
-			struct NAU83GXX_config_t *config_handle)
+			struct NAU83GXX_config_t *config_handle,
+			struct NAU83GXX_runtime_t *runtime_handle)
 {
-	return nau83gxx_init_i2c_regs(config_handle);
+	return nau83gxx_init_i2c_regs(config_handle, runtime_handle);
 }
 
 
@@ -671,7 +674,7 @@ static uint8_t send_simple_cmd(
 
 	*response = (response_data[0]) | (response_data[1] << 8) |
 			(response_data[2] << 16) | (response_data[3] << 24);
-	return RC_OK;
+	return NAU83GXX_RC_OK;
 }
 
 
@@ -682,7 +685,7 @@ static uint8_t process_kcs_simple_cmd_msg(
 {
 	if (STATE_IDLE != runtime_handle->state)
 	{
-		return RC_DRIVER_BUSY | runtime_handle->state;
+		return NAU83GXX_RC_DRIVER_BUSY | runtime_handle->state;
 	}
 
 	return send_simple_cmd(config_handle,  p_kcs_simple_cmd_msg->cmd,
@@ -701,7 +704,7 @@ static uint8_t process_kcs_get_cmd_msg(struct NAU83GXX_config_t *config_handle,
 
 	if (STATE_IDLE != runtime_handle->state)
 	{
-		return RC_DRIVER_BUSY | runtime_handle->state;
+		return NAU83GXX_RC_DRIVER_BUSY | runtime_handle->state;
 	}
 	runtime_handle->state = STATE_PROCESSING_GET_CMD;
 
@@ -709,18 +712,18 @@ static uint8_t process_kcs_get_cmd_msg(struct NAU83GXX_config_t *config_handle,
 			config_handle, p_kcs_get_cmd_msg->cmd, 4, &lenInU32, &padding);
 	if(rc) return rc;
 
+	size_to_read = p_kcs_get_cmd_msg->size_to_read;
 	rc = send_offset_and_length(config_handle,
-			p_kcs_get_cmd_msg->size_to_read, p_kcs_get_cmd_msg->offset);
+						size_to_read, p_kcs_get_cmd_msg->offset);
 	if(rc) return rc;
 
-	size_to_read = p_kcs_get_cmd_msg->size_to_read;
 	rc = send_postamble_and_get_reply(config_handle, lenInU32, padding,
 			size_to_read, runtime_handle->dataBuf, &recieved_len);
 	*p_kcs_get_cmd_msg->recieved_size = recieved_len;
 	*p_kcs_get_cmd_msg->recieved_data = runtime_handle->dataBuf;
 	if(rc) return rc;
 
-	return RC_OK;
+	return NAU83GXX_RC_OK;
 }
 
 
@@ -729,10 +732,10 @@ static uint8_t process_kcs_exit_get_state_msg(
 {
 	if (STATE_PROCESSING_GET_CMD != runtime_handle->state)
 	{
-		return RC_DRIVER_BUSY | runtime_handle->state;
+		return NAU83GXX_RC_DRIVER_BUSY | runtime_handle->state;
 	}
 	runtime_handle->state = STATE_IDLE;
-	return RC_OK;
+	return NAU83GXX_RC_OK;
 }
 
 
@@ -744,17 +747,17 @@ static uint8_t process_start_collect_data_for_send_msg(
 {
 	if (STATE_IDLE != runtime_handle->state)
 	{
-		return RC_DRIVER_BUSY | runtime_handle->state;
+		return NAU83GXX_RC_DRIVER_BUSY | runtime_handle->state;
 	}
 	if (KCS_I2C_MAX_BUFFER_IN_BYTES < start_collect_data_msg->size_to_collect)
 	{
-		return RC_INPUT_SIZE_TOO_LARGE_ERR;
+		return NAU83GXX_RC_INPUT_SIZE_TOO_LARGE_ERR;
 	}
 	runtime_handle->state = STATE_COLLECTING_DATA_FOR_SEND;
 	runtime_handle->addr_offset = start_collect_data_msg->offset;
 	runtime_handle->sendLen = start_collect_data_msg->size_to_collect;
 	runtime_handle->dataSetBufPos = 0;
-	return RC_OK;
+	return NAU83GXX_RC_OK;
 }
 
 
@@ -770,7 +773,7 @@ static uint8_t process_add_data_for_send_msg(
 
 	if (STATE_COLLECTING_DATA_FOR_SEND != runtime_handle->state)
 	{
-		return RC_DRIVER_BUSY | runtime_handle->state;
+		return NAU83GXX_RC_DRIVER_BUSY | runtime_handle->state;
 	}
 
 	new_data_size = add_data_msg->size;
@@ -778,12 +781,12 @@ static uint8_t process_add_data_for_send_msg(
 	dataSetBufPos_u32 = dataSetBufPos + new_data_size;
 	if (runtime_handle->sendLen < dataSetBufPos_u32)
 	{
-		return RC_BUFFER_OVERFLOW_ERR;
+		return NAU83GXX_RC_BUFFER_OVERFLOW_ERR;
 	}
 	memcpy(&runtime_handle->dataBuf[dataSetBufPos],
 						add_data_msg->data, new_data_size);
 	runtime_handle->dataSetBufPos = dataSetBufPos_u32;
-	return RC_OK;
+	return NAU83GXX_RC_OK;
 }
 
 
@@ -793,11 +796,11 @@ static uint8_t process_kcs_send_collected_setup_data_msg(
 {
 	if (STATE_COLLECTING_DATA_FOR_SEND != runtime_handle->state)
 	{
-		return RC_DRIVER_BUSY | runtime_handle->state;
+		return NAU83GXX_RC_DRIVER_BUSY | runtime_handle->state;
 	}
 	if (runtime_handle->dataSetBufPos != runtime_handle->sendLen)
 	{
-		return RC_BUFFER_NOT_EQUAL_TO_SIZE;
+		return NAU83GXX_RC_BUFFER_NOT_EQUAL_TO_SIZE;
 	}
 	runtime_handle->state = STATE_IDLE;
 
@@ -813,7 +816,7 @@ static uint8_t process_kcs_send_setup_data_msg(
 {
 	if (STATE_IDLE != runtime_handle->state)
 	{
-		return RC_DRIVER_BUSY | runtime_handle->state;
+		return NAU83GXX_RC_DRIVER_BUSY | runtime_handle->state;
 	}
 
 	return send_kcs_setup(config_handle, p_send_setup_data_msg->offset,
@@ -834,7 +837,8 @@ static void nau83gxx_task (void * adev)
 	struct reply_message_t release_wait_msg;
 	struct NAU83GXX_config_t *config_handle;
 	struct NAU83GXX_runtime_t *runtime_handle;
-	uint8_t rc = RC_OK;
+	uint8_t rc = NAU83GXX_RC_OK;
+	uint8_t need_to_release_waitnig_tasks;
 
 	config_handle = DEV_GET_CONFIG_DATA_POINTER(NAU83GXX, adev);
 	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(NAU83GXX, adev);
@@ -865,14 +869,16 @@ static void nau83gxx_task (void * adev)
 		}
 		if (STATE_NOT_INITIALIZED == runtime_handle->state) continue;
 
+		need_to_release_waitnig_tasks = 1;
 		switch(msg.msg_type)
 		{
 		case MSG_TYPE_INIT_HW:
 			rc = process_init_hw_msg(
 					config_handle, runtime_handle, &msg.init_hw_msg);
+			need_to_release_waitnig_tasks = 0;
 			break;
 		case MSG_TYPE_REINIT_I2C_REGS:
-			rc = process_reinit_i2c_regs_msg(config_handle);
+			rc = process_reinit_i2c_regs_msg(config_handle, runtime_handle);
 			break;
 		case MSG_KCS_I2C_SIMPLE_CMD:
 			rc = process_kcs_simple_cmd_msg(
@@ -900,6 +906,7 @@ static void nau83gxx_task (void * adev)
 		case MSG_SEND_SETUP:
 			rc = process_kcs_send_setup_data_msg(config_handle,
 							runtime_handle, &msg.send_setup_data_msg);
+			need_to_release_waitnig_tasks = 0;
 			break;
 		case MSG_CONTINUE_RECOVERY:
 			runtime_handle->do_recovery = 1;
@@ -916,7 +923,7 @@ static void nau83gxx_task (void * adev)
 		{
 			NAU83GXX_OCP_recovery(config_handle);
 		}
-		else
+		else if (need_to_release_waitnig_tasks)
 		{
 			release_wait_msg.rc = rc;
 			os_queue_send_without_wait(
@@ -943,7 +950,7 @@ static uint8_t send_msg_and_wait(struct NAU83GXX_runtime_t *runtime_handle,
 	if ((NULL == msg_queue) || (NULL == wait_for_finish_queue))
 	{
 		os_mutex_give(main_mutex);
-		return RC_DRIVER_NOT_READY | runtime_handle->state;
+		return NAU83GXX_RC_DRIVER_NOT_READY | runtime_handle->state;
 	}
 
 	// clean wait queue
@@ -954,7 +961,7 @@ static uint8_t send_msg_and_wait(struct NAU83GXX_runtime_t *runtime_handle,
 					wait_for_finish_queue, &release_wait_msg))
 	{
 		os_mutex_give(main_mutex);
-		return RC_DRIVER_BUSY | runtime_handle->state;
+		return NAU83GXX_RC_DRIVER_BUSY | runtime_handle->state;
 	}
 	os_mutex_give(main_mutex);
 	return release_wait_msg.rc;
@@ -973,22 +980,22 @@ static uint8_t send_msg_no_wait(struct NAU83GXX_runtime_t *runtime_handle,
 	mutex_take_ret = os_mutex_take_with_timeout(main_mutex, 0);
 	if (OS_MUTEX_TAKE_SUCCESS != mutex_take_ret)
 	{
-		return RC_DRIVER_BUSY | runtime_handle->state;
+		return NAU83GXX_RC_DRIVER_BUSY | runtime_handle->state;
 	}
 
 	if (NULL == msg_queue)
 	{
 		os_mutex_give(main_mutex);
-		return RC_DRIVER_NOT_READY | runtime_handle->state;
+		return NAU83GXX_RC_DRIVER_NOT_READY | runtime_handle->state;
 	}
 
 	if (OS_QUEUE_SEND_SUCCESS != os_queue_send_without_wait(msg_queue, msg))
 	{
 		os_mutex_give(main_mutex);
-		return RC_DRIVER_BUSY | runtime_handle->state;
+		return NAU83GXX_RC_DRIVER_BUSY | runtime_handle->state;
 	}
 	os_mutex_give(main_mutex);
-	return RC_OK;
+	return NAU83GXX_RC_OK;
 }
 
 
@@ -1053,6 +1060,7 @@ static uint8_t init_hw_with_hw_reset_only(
 	msg.msg_type = MSG_TYPE_INIT_HW;
 	p_init_hw_msg = &msg.init_hw_msg;
 	p_init_hw_msg->init_sel = INIT_WITH_RESET_ONLY;
+	p_init_hw_msg->end_of_ioctl_callback = NULL;
 	return send_msg_no_wait(runtime_handle, &msg);
 }
 
@@ -1062,7 +1070,7 @@ uint8_t check_correct_state(const uint8_t aIoctl_num, uint8_t state)
 	switch(state)
 	{
 	case STATE_NOT_INITIALIZED:
-		if (IOCTL_DEVICE_START != aIoctl_num) return RC_INTERNAL_ERROR;
+		if (IOCTL_DEVICE_START != aIoctl_num) return NAU83GXX_RC_INTERNAL_ERROR;
 		break;
 	case STATE_DRIVER_INIT_DONE:
 		switch(aIoctl_num)
@@ -1071,13 +1079,13 @@ uint8_t check_correct_state(const uint8_t aIoctl_num, uint8_t state)
 		case IOCTL_HW_IS_READY_TO_INIT_WITH_FULL_KCS:
 			break;
 		default:
-			return RC_INTERNAL_ERROR;
+			return NAU83GXX_RC_INTERNAL_ERROR;
 		}
 		break;
 	default:
 		break;
 	}
-	return RC_OK;
+	return NAU83GXX_RC_OK;
 }
 
 
@@ -1178,7 +1186,7 @@ static uint8_t send_power_down(struct NAU83GXX_runtime_t *runtime_handle)
 	wait_for_finish_queue = runtime_handle->wait_for_finish_queue;
 	if ((NULL == msg_queue) || (NULL == wait_for_finish_queue))
 	{
-		return RC_DRIVER_NOT_READY | runtime_handle->state;
+		return NAU83GXX_RC_DRIVER_NOT_READY | runtime_handle->state;
 	}
 
 	main_mutex = runtime_handle->main_mutex;
@@ -1193,7 +1201,7 @@ static uint8_t send_power_down(struct NAU83GXX_runtime_t *runtime_handle)
 					wait_for_finish_queue, &release_wait_msg))
 	{
 		os_mutex_give(main_mutex);
-		return RC_DRIVER_BUSY | runtime_handle->state;
+		return NAU83GXX_RC_DRIVER_BUSY | runtime_handle->state;
 	}
 
 	os_delete_task(runtime_handle->task_handle);
@@ -1205,7 +1213,7 @@ static uint8_t send_power_down(struct NAU83GXX_runtime_t *runtime_handle)
 	os_delay_ms(5); // wait for all tasks to stop waiting on mutex
 	os_delete_mutex(main_mutex);
 
-	return RC_OK;
+	return NAU83GXX_RC_OK;
 }
 
 
@@ -1235,13 +1243,13 @@ static uint8_t get_info(
 
 	if (STATE_IDLE > runtime_handle->state)
 	{
-		p_get_info->chip_type = NAU83GXX_CHIP_STATE_INITIALIZING;
+		p_get_info->chip_state = NAU83GXX_CHIP_STATE_INITIALIZING;
 	}
 	else
 	{
-		p_get_info->chip_type = NAU83GXX_CHIP_STATE_RUNNING;
+		p_get_info->chip_state = NAU83GXX_CHIP_STATE_RUNNING;
 	}
-	return RC_OK;
+	return NAU83GXX_RC_OK;
 }
 
 

@@ -24,7 +24,7 @@ int do_dsp_status(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	struct kcs_simple_cmd_ioctl_t  kcs_simple_cmd_ioctl;
 	struct dev_desc_t *kcs_i2c_dev;
 	uint32_t status = 0;
-	int rc = RC_OK;
+	int rc = NAU83GXX_RC_OK;
 
 	/*
 	 * Arguments:
@@ -33,7 +33,7 @@ int do_dsp_status(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	 */
 	if(argc != 2)
 	{
-		rc = RC_SYNTAX_ERROR;
+		rc = NAU83GXX_RC_SYNTAX_ERROR;
 		goto end;
 	}
 
@@ -49,7 +49,7 @@ int do_dsp_status(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	}
 	else
 	{
-		rc = RC_DEVICE_DOES_NOT_EXIST;
+		rc = NAU83GXX_RC_DEVICE_DOES_NOT_EXIST;
 		goto end;
 	}
 
@@ -62,7 +62,7 @@ end:
 
 	SHELL_REPLY_PRINTF("rc%02X\n\r", rc);
 
-	if(RC_OK == rc)
+	if(NAU83GXX_RC_OK == rc)
 	{
 		SHELL_REPLY_PRINTF("%08X\n\r", status);
 	}

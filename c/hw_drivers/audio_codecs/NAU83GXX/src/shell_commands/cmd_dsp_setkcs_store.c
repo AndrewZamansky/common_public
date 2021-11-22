@@ -35,7 +35,7 @@ int do_dsp_setkcs_store(
 	long int   device_addr;
 	uint32_t   data_val;
 	char *pEnd;
-	int rc = RC_OK;
+	int rc = NAU83GXX_RC_OK;
 	struct dev_desc_t *kcs_i2c_dev;
 	uint8_t data[4];
 
@@ -47,7 +47,7 @@ int do_dsp_setkcs_store(
 	 */
 	if(argc != 3)
 	{
-		rc = RC_SYNTAX_ERROR;
+		rc = NAU83GXX_RC_SYNTAX_ERROR;
 		goto end;
 	}
 
@@ -65,7 +65,7 @@ int do_dsp_setkcs_store(
 	}
 	else
 	{
-		rc = RC_DEVICE_DOES_NOT_EXIST;
+		rc = NAU83GXX_RC_DEVICE_DOES_NOT_EXIST;
 		goto end;
 	}
 
@@ -74,7 +74,7 @@ int do_dsp_setkcs_store(
 
 	if(0xFFFFFFFF == data_val)
 	{
-		rc = RC_BUFFER_OVERFLOW_ERR;
+		rc = NAU83GXX_RC_BUFFER_OVERFLOW_ERR;
 		goto end;
 	}
 

@@ -203,7 +203,7 @@ uint8_t nau83gxx_read(struct dev_desc_t *i2c_dev, uint8_t device_addr,
 	{
 		DEV_IOCTL(i2c_dev, IOCTL_I2C_MASTER_READ, &i2c_read_struct);
 	}
-	return (i2c_read_struct.i2c_error ? RC_I2C_ERROR : RC_OK);
+	return (i2c_read_struct.i2c_error ? NAU83GXX_RC_I2C_ERROR : NAU83GXX_RC_OK);
 }
 
 uint8_t nau83gxx_read_wordU16(struct dev_desc_t *i2c_dev, uint8_t device_addr,
@@ -248,14 +248,14 @@ uint8_t nau83gxx_write(struct dev_desc_t *i2c_dev, uint8_t device_addr,
 		if (0 == retries--)
 		{
 			PRINTF_DBG("error: 0x%02X\n\r",i2c_write_struct.i2c_error);
-			return RC_I2C_ERROR;
+			return NAU83GXX_RC_I2C_ERROR;
 		}
 
 		PRINTF_DBG("error: 0x%02X\tRetrying...\n\r",i2c_write_struct.i2c_error);
 		DEV_IOCTL(i2c_dev, IOCTL_I2C_MASTER_WRITE, &i2c_write_struct);
 	}
 
-	return 0;
+	return NAU83GXX_RC_OK;
 }
 
 
@@ -361,7 +361,9 @@ uint8_t nau83gxx_init_biquad(const struct S_I2CCMD *cmd_biquad_init,
  * tx_data                : Data that is to be transmitted (1-4 Bytes)
  *
  */
-static uint8_t init_83g10_dsp(long int device_addr, struct dev_desc_t *i2c_dev)
+static uint8_t init_83g10_dsp(
+		long int device_addr, struct dev_desc_t *i2c_dev,
+		struct NAU83GXX_runtime_t *runtime_handle)
 {
 	uint16_t gl_i;
 	uint8_t rc;
@@ -370,32 +372,32 @@ static uint8_t init_83g10_dsp(long int device_addr, struct dev_desc_t *i2c_dev)
 	uint8_t read_i2c_data[2];
 	uint8_t device_id;
 
-	rc = nau83gxx_read(i2c_dev, device_addr, 0x46, read_i2c_data, 2);
+	rc = nau83gxx_read(
+			i2c_dev, device_addr, NAU83GXX_REG_DEVICE_ID, read_i2c_data, 2);
 	if (rc) return rc;
 
-	device_id = read_i2c_data[1];
+	device_id = read_i2c_data[1] & 0xF0;
 
+	runtime_handle->chip_type = device_id;
 	switch(device_id)
 	{
 	case 0xE0:
-	case 0xE1:
 		cmd_init_array = cmd_83G10c_init;
 		cmd_init_array_size = cmd_83G10c_init_size;
 		break;
 
-	case 0xF1:
+	case 0xF0:
 		cmd_init_array = cmd_83G10b_init;
 		cmd_init_array_size = cmd_83G10b_init_size;
 		break;
 
 	case 0x60:
-	case 0x61:
 		cmd_init_array = cmd_83G20a_init;
 		cmd_init_array_size = cmd_83G20a_init_size;
 		break;
 
 	default:
-		return 0x20;
+		return NAU83GXX_RC_NOT_SUPPORTED_DEVICE_ID;
 		break;
 	}
 
@@ -412,7 +414,7 @@ static uint8_t init_83g10_dsp(long int device_addr, struct dev_desc_t *i2c_dev)
 				cmd_init_array[gl_i].u8Reg, cmd_init_array[gl_i].u8Value, 2);
 		}
 	}
-	return 0;
+	return NAU83GXX_RC_OK;
 }
 
 
@@ -474,13 +476,14 @@ static uint8_t set_pcm_ctl(struct NAU83GXX_config_t *config_handle,
 #define CURRENT_BOOST_LIMIT_POS 8
 static uint8_t set_current_and_boost_limits(
 		struct NAU83GXX_config_t *config_handle,
+		struct NAU83GXX_runtime_t *runtime_handle,
 		struct dev_desc_t * i2c_dev, uint8_t dev_addr)
 {
 	uint16_t reg_0x6B_data;
 	uint16_t reg_0x17_data;
 	uint16_t current_limit_8ohm;
 
-	if (NAU83GXX_CHIP_TYPE_G10 == config_handle->chip_type)
+	if (NAU83GXX_CHIP_TYPE_G10 == runtime_handle->chip_type)
 	{
 		current_limit_8ohm = config_handle->current_limit_8ohm - 1200;
 		current_limit_8ohm = current_limit_8ohm / 190;// steps of 0.19V
@@ -492,9 +495,13 @@ static uint8_t set_current_and_boost_limits(
 						CURRENT_BOOST_LIMIT_POS);
 		nau83gxx_write_wordU16(i2c_dev, dev_addr, 0x17, reg_0x17_data);
 	}
-	else
+	else if (NAU83GXX_CHIP_TYPE_G20 == runtime_handle->chip_type)
 	{
 		reg_0x6B_data = 0x0070;// default value
+	}
+	else
+	{
+		return NAU83GXX_RC_NOT_SUPPORTED_DEVICE_ID;
 	}
 	return nau83gxx_write_wordU16(i2c_dev, dev_addr, 0x6B, reg_0x6B_data);
 }
@@ -518,7 +525,8 @@ static void enable_recovery(struct NAU83GXX_config_t *config_handle,
 }
 
 
-uint8_t nau83gxx_init_i2c_regs(struct NAU83GXX_config_t *config_handle)
+uint8_t nau83gxx_init_i2c_regs(struct NAU83GXX_config_t *config_handle,
+								struct NAU83GXX_runtime_t *runtime_handle)
 {
 	uint8_t dev_addr;
 	struct dev_desc_t * i2c_dev;
@@ -532,13 +540,14 @@ uint8_t nau83gxx_init_i2c_regs(struct NAU83GXX_config_t *config_handle)
 	rc = nau83gxx_write_wordU16(i2c_dev, dev_addr, 0x000, 0x000);
 	if (rc) return rc;
 
-	rc = init_83g10_dsp(dev_addr, i2c_dev);
+	rc = init_83g10_dsp(dev_addr, i2c_dev, runtime_handle);
 	if (rc) return rc;
 
 	rc = set_pcm_ctl(config_handle, i2c_dev, dev_addr);
 	if (rc) return rc;
 
-	rc = set_current_and_boost_limits(config_handle, i2c_dev, dev_addr);
+	rc = set_current_and_boost_limits(
+			config_handle, runtime_handle, i2c_dev, dev_addr);
 	if (rc) return rc;
 
 	rc = nau83gxx_write_wordU16(i2c_dev, dev_addr, 0x01, 0x0000); // soft reset

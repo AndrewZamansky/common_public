@@ -5,8 +5,9 @@
 #include "dev_management_api.h"
 #include "os_wrapper.h"
 
-#define NAU83GXX_CHIP_TYPE_G10        0xE0
-#define NAU83GXX_CHIP_TYPE_G20        0x60
+#define NAU83GXX_CHIP_TYPE_AUTO_DETECT  0x00
+#define NAU83GXX_CHIP_TYPE_G10          0xE0
+#define NAU83GXX_CHIP_TYPE_G20          0x60
 
 #define NAU83GXX_IN_CHANNEL_I2S_CHANNEL_0      0
 #define NAU83GXX_IN_CHANNEL_TDM_CHANNEL_0      0
@@ -41,7 +42,8 @@ struct S_I2CCMD {
 	uint8_t  u8Value[2];
 };
 
-typedef void (*end_of_ioctl_callback_f)(uint8_t);
+typedef void (*end_of_ioctl_callback_f)(
+				uint8_t ret_from_ioctl, uint8_t ret_code);
 
 #define L_CH_DEV_ADDR 0x10 // should be removed after klippel upgrade of db-lab
 #define R_CH_DEV_ADDR 0x11 // should be removed after klippel upgrade of db-lab
@@ -53,36 +55,35 @@ typedef void (*end_of_ioctl_callback_f)(uint8_t);
  * finished.
  */
 
-enum kcs_i2c_return_code_t {
-	RC_OK                         = 0x00,
+enum NAU83GXX_NAU83GXX_RC_e {
+	NAU83GXX_RC_OK                         = 0x00,
 	//Messages for KCS Device
-	RC_COMMUNICATION_ERROR        = 0x01,
-	RC_PREAMBLE_NOT_FOUND         = 0x02,
-	RC_REPLY_LEN_TOO_LONG         = 0x03,
-	RC_REPLY_DATA_INTEGRITY_ERROR = 0x04,
-	RC_TIMEDOUT_FOR_IDLE_WORD     = 0x05,
-	RC_REPLY_STATUS_ERR           = 0x10,
-	//Messages for Data Handling
-	RC_BUFFER_OVERFLOW_ERR        = 0x20,
-	RC_INPUT_SIZE_TOO_LARGE_ERR   = 0x21,
-	RC_BUFFER_NOT_EQUAL_TO_SIZE   = 0x22,
-	//Messages for  driver
-	RC_UNEXPECTED_REPLY           = 0x23,
-	RC_INTERNAL_ERROR             = 0x24,
-	RC_SYNTAX_ERROR               = 0x30,
-	RC_DEVICE_DOES_NOT_EXIST      = 0x31,
-	RC_PARAMETERS_OUT_OF_RANGE    = 0x32,
-	//Messages for Filesystem Interface
-	RC_FILESYSTEM_NOT_FOUND       = 0x33,
-	RC_FILE_READ_FAILED           = 0x34,
-	RC_FILE_WRITE_FAILED          = 0x35,
+	NAU83GXX_RC_COMMUNICATION_ERROR        = 0x01,
+	NAU83GXX_RC_PREAMBLE_NOT_FOUND         = 0x02,
+	NAU83GXX_RC_REPLY_LEN_TOO_LONG         = 0x03,
+	NAU83GXX_RC_REPLY_DATA_INTEGRITY_ERROR = 0x04,
+	NAU83GXX_RC_TIMEDOUT_FOR_IDLE_WORD     = 0x05,
+	NAU83GXX_RC_REPLY_STATUS_ERR           = 0x10,
 
-	RC_I2C_ERROR                  = 0x43,
+	NAU83GXX_RC_BUFFER_OVERFLOW_ERR        = 0x20,
+	NAU83GXX_RC_INPUT_SIZE_TOO_LARGE_ERR   = 0x21,
+	NAU83GXX_RC_BUFFER_NOT_EQUAL_TO_SIZE   = 0x22,
+
+	NAU83GXX_RC_UNEXPECTED_REPLY           = 0x23,
+	NAU83GXX_RC_INTERNAL_ERROR             = 0x24,
+	NAU83GXX_RC_SYNTAX_ERROR               = 0x30,
+
+	NAU83GXX_RC_DEVICE_DOES_NOT_EXIST      = 0x31,
+	NAU83GXX_RC_PARAMETERS_OUT_OF_RANGE    = 0x32,
+	NAU83GXX_RC_NOT_SUPPORTED_DEVICE_ID    = 0x33,
+
+
+	NAU83GXX_RC_I2C_ERROR                  = 0x43,
 
 	//Messages for Driver State (muxed with state)
-	RC_DRIVER_NOT_READY           = 0xA0,
-	RC_DRIVER_BUSY                = 0xB0,
-	RC_OS_QUEUE_TIMEOUT           = 0xEF
+	NAU83GXX_RC_DRIVER_NOT_READY           = 0xA0,
+	NAU83GXX_RC_DRIVER_BUSY                = 0xB0,
+	NAU83GXX_RC_OS_QUEUE_TIMEOUT           = 0xEF
 };
 
 

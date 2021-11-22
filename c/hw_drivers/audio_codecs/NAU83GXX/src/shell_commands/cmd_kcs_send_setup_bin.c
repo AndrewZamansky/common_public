@@ -45,7 +45,7 @@ static void do_send_setup_bin(uint8_t *buff, size_t length)
 	struct kcs_start_collect_data_for_send_ioctl_t collect_data_ioctl;
 	struct kcs_add_data_for_send_ioctl_t add_data_ioctl;
 
-	reply = RC_DEVICE_DOES_NOT_EXIST;
+	reply = NAU83GXX_RC_DEVICE_DOES_NOT_EXIST;
 	shell_frontend_set_reply_bin_msg_data_size(1);
 
 	collect_data_ioctl.offset = buff[1] + (buff[2] << 8);

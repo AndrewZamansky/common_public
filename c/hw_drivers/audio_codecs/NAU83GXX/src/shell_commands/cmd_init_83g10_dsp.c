@@ -35,7 +35,7 @@ int do_init_83g10_dsp(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 
 	if(argc != 2)
 	{
-		rc = RC_SYNTAX_ERROR;
+		rc = NAU83GXX_RC_SYNTAX_ERROR;
 		goto end;
 	}
 

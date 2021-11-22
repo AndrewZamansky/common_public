@@ -28,7 +28,7 @@ uint8_t cmd_read_kcs_setup(void *dev, uint8_t *data,
 	struct dev_desc_t *kcs_i2c_dev;
 	struct kcs_cmd_get_ioctl_t 	kcs_cmd_get_ioctl;
 	uint16_t   recieved_size;
-	uint8_t rc = RC_OK;
+	uint8_t rc = NAU83GXX_RC_OK;
 	uint8_t *recvBuf;
 
 	kcs_i2c_dev = (struct dev_desc_t *)dev;
@@ -39,7 +39,7 @@ uint8_t cmd_read_kcs_setup(void *dev, uint8_t *data,
 
 	rc = DEV_IOCTL(kcs_i2c_dev, IOCTL_KCS_GET_SETUP_CMD, &kcs_cmd_get_ioctl);
 
-	if(rc == RC_OK) memcpy(data, recvBuf, sizeof(uint8_t) * len);
+	if(rc == NAU83GXX_RC_OK) memcpy(data, recvBuf, sizeof(uint8_t) * len);
 	DEV_IOCTL(kcs_i2c_dev, IOCTL_KCS_EXIT_GET_STATE);
 
 	return rc;
@@ -62,7 +62,7 @@ uint8_t cmd_set_kcs_setup(void *dev, uint8_t const *data,
 	struct dev_desc_t *kcs_i2c_dev;
 	struct kcs_start_collect_data_for_send_ioctl_t collect_data_ioctl;
 	struct kcs_add_data_for_send_ioctl_t add_data_ioctl;
-	int rc = RC_OK;
+	int rc = NAU83GXX_RC_OK;
 
 	kcs_i2c_dev = (struct dev_desc_t *)dev;
 	collect_data_ioctl.offset = offset;
@@ -100,7 +100,7 @@ uint8_t cmd_read_kcs_results(void *dev, uint8_t *data,
 	struct dev_desc_t *kcs_i2c_dev;
 	struct kcs_cmd_get_ioctl_t 	kcs_cmd_get_ioctl;
 	uint16_t   recieved_size;
-	uint8_t rc = RC_OK;
+	uint8_t rc = NAU83GXX_RC_OK;
 	uint8_t *recvBuf;
 
 	kcs_i2c_dev = (struct dev_desc_t *)dev;
@@ -111,7 +111,7 @@ uint8_t cmd_read_kcs_results(void *dev, uint8_t *data,
 
 	rc = DEV_IOCTL(kcs_i2c_dev, IOCTL_KCS_GET_RESULTS_CMD, &kcs_cmd_get_ioctl);
 
-	if(rc == RC_OK) memcpy(data, recvBuf, sizeof(uint8_t) * len);
+	if(rc == NAU83GXX_RC_OK) memcpy(data, recvBuf, sizeof(uint8_t) * len);
 	DEV_IOCTL(kcs_i2c_dev, IOCTL_KCS_EXIT_GET_STATE);
 
 	return rc;

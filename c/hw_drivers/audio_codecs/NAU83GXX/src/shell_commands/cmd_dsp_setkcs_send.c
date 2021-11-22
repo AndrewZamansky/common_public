@@ -23,7 +23,7 @@ int do_dsp_setkcs_send(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]
 
 	struct dev_desc_t *kcs_i2c_dev;
 
-	int rc = RC_OK;
+	int rc = NAU83GXX_RC_OK;
 
 	/*
 	 * Arguments:
@@ -34,7 +34,7 @@ int do_dsp_setkcs_send(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]
 	 */
 	if(argc != 2)
 	{
-		rc = RC_SYNTAX_ERROR;
+		rc = NAU83GXX_RC_SYNTAX_ERROR;
 		goto end;
 	}
 
@@ -52,7 +52,7 @@ int do_dsp_setkcs_send(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]
 	}
 	else
 	{
-		rc = RC_DEVICE_DOES_NOT_EXIST;
+		rc = NAU83GXX_RC_DEVICE_DOES_NOT_EXIST;
 		goto end;
 	}
 
