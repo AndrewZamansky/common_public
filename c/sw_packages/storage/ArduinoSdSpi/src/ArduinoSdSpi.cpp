@@ -170,13 +170,11 @@ bool digitalWrite(int pin, int logic)
 {
 	if (HIGH == logic)
 	{
-		DEV_IOCTL_0_PARAMS(
-				lookup_table[pin].spi_dev, IOCTL_SPI_API_SET_CS_HIGH);
+		DEV_IOCTL(lookup_table[pin].spi_dev, IOCTL_SPI_API_SET_CS_HIGH);
 	}
 	else if (LOW == logic)
 	{
-		DEV_IOCTL_0_PARAMS(
-				lookup_table[pin].spi_dev, IOCTL_SPI_API_SET_CS_LOW);
+		DEV_IOCTL(lookup_table[pin].spi_dev, IOCTL_SPI_API_SET_CS_LOW);
 	}
 	return 1;
 }
@@ -286,7 +284,7 @@ static uint8_t ArduinoSdSpi_ioctl( struct dev_desc_t *adev,
 
 		if (NULL == runtime_handle->sd_spi_inst )
 		{
-			DEV_IOCTL_0_PARAMS(spi_dev, IOCTL_DEVICE_START );
+			DEV_IOCTL(spi_dev, IOCTL_DEVICE_START );
 
 			os_delay_ms(1);
 
@@ -306,8 +304,7 @@ static uint8_t ArduinoSdSpi_ioctl( struct dev_desc_t *adev,
 					(SdSpiDriver *)runtime_handle->SdSpiAltDriver_obj,
 					num_dev_inst, spiSettings);
 			}
-			DEV_IOCTL_1_PARAMS(
-					spi_dev, IOCTL_SPI_API_SET_CLK, (void *)clk_freq);
+			DEV_IOCTL(spi_dev, IOCTL_SPI_API_SET_CLK, (void *)clk_freq);
 		}
 		break;
 
