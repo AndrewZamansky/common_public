@@ -438,7 +438,7 @@ static void start_hid_class(struct dev_desc_t *adev,
 	if (1 == runtime_hndl->device_started) return;
 	if (0 == runtime_hndl->hid_report_was_set)
 	{
-		CRITICAL_ERROR("HID report should be set before startin HID class");
+		CRITICAL_ERROR("HID report should be set before starting HID class");
 	}
 
 	usb_descriptors_alloc_interfaces.num_of_interfaces = 1;
