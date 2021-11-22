@@ -57,7 +57,7 @@ enum BUTTON_MANAGER_API_IOCTL_E
 
 struct buttons_manager_group_t
 {
-	struct dev_desc_t **gpio_dev_arr;
+	struct dev_desc_t const **gpio_dev_arr;
 	uint8_t  gpio_dev_arr_size;
 };
 
