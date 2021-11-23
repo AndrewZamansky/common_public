@@ -106,39 +106,29 @@ static const uint8_t hid_interface[] =
 static void new_data_received(
 		struct dev_desc_t *adev, uint8_t const *buff, size_t size)
 {
-	struct usb_hid_class_cfg_t *cfg_hndl;
-	struct dev_desc_t * callback_rx_dev ;
+	hid_out_report_received_callback_t callback_func;
+	struct usb_hid_class_runtime_t *runtime_hndl;
 
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(usb_hid_class, adev);
-
-	callback_rx_dev = cfg_hndl->callback_rx_dev;
-	if (NULL == callback_rx_dev)
+	runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(usb_hid_class, adev);
+	callback_func = runtime_hndl->hid_out_report_received_callback;
+	if (NULL != callback_func)
 	{
-		return;
+		callback_func(buff, size);
 	}
-	DEV_CALLBACK( callback_rx_dev,
-			CALLBACK_DATA_RECEIVED, (void*)buff, (void*)(size_t)size);
 }
 
 
 
 static void end_of_transmit_callback(struct dev_desc_t *adev)
 {
-	struct usb_hid_class_cfg_t *cfg_hndl;
 	struct usb_hid_class_runtime_t  *runtime_hndl;
-	struct dev_desc_t * callback_tx_dev ;
+	tx_done_callback_t tx_done_callback;
 
-	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(usb_hid_class, adev);
 	runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(usb_hid_class, adev);
 
-
-	callback_tx_dev = cfg_hndl->callback_tx_dev;
-	if (NULL != callback_tx_dev)
-	{
-		DEV_CALLBACK(callback_tx_dev,
-							CALLBACK_TX_DONE, (void*)(runtime_hndl->sentLen));
-	}
-
+	tx_done_callback = runtime_hndl->tx_done_callback;
+	if (NULL != tx_done_callback) tx_done_callback(runtime_hndl->sentLen);
+	runtime_hndl->send_in_progress = 0;
 }
 
 
@@ -156,10 +146,19 @@ static size_t usb_hid_pwrite(struct dev_desc_t *adev,
 	struct usb_hid_class_runtime_t  *runtime_hndl;
 	size_t sentLen;
 	uint16_t max_host_out_data_packet_size;
+	os_mutex_t  mutex;
 
 
 	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(usb_hid_class, adev);
 	runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(usb_hid_class, adev);
+
+	mutex = runtime_hndl->mutex;
+	os_mutex_take_infinite_wait(mutex);
+	if ((0 == aLength) || (1 == runtime_hndl->send_in_progress))
+	{
+		os_mutex_give(mutex);
+		return 0;
+	}
 
 	usb_hw = cfg_hndl->usb_hw;
 	max_host_out_data_packet_size = cfg_hndl->max_host_out_data_packet_size;
@@ -178,9 +177,11 @@ static size_t usb_hid_pwrite(struct dev_desc_t *adev,
 	set_data_to_in_endpoint.endpoint_num = runtime_hndl->in_endpoint_num;
 	set_data_to_in_endpoint.data = apData;
 	set_data_to_in_endpoint.size = sentLen;
+	runtime_hndl->send_in_progress = 1;
 	DEV_IOCTL(usb_hw,
 		IOCTL_USB_DEVICE_SENT_DATA_TO_IN_ENDPOINT, &set_data_to_in_endpoint);
 
+	os_mutex_give(mutex);
 	return sentLen;
 }
 
@@ -191,7 +192,7 @@ static size_t usb_hid_pwrite(struct dev_desc_t *adev,
 static void hid_class_in_request(struct dev_desc_t *usb_hw,
 		struct usb_hid_class_runtime_t  *runtime_hndl, uint8_t *request)
 {
-	hid_in_report_over_control_pipe_callback_t callback_func;
+	hid_in_report_requested_callback_t callback_func;
 	struct set_request_in_buffer_t set_request_in_buffer;
 	uint16_t  data_size;
 	uint16_t  requested_data_size;
@@ -202,7 +203,7 @@ static void hid_class_in_request(struct dev_desc_t *usb_hw,
 	switch(request[REQUEST_FIELD_POS])
 	{
 	case HID_GET_REPORT:
-		callback_func =  runtime_hndl->hid_in_report_over_control_pipe_callback;
+		callback_func =  runtime_hndl->hid_in_report_requested_callback;
 		if (NULL != callback_func)
 		{
 			callback_func(request[REPORT_ID_POS],
@@ -236,22 +237,27 @@ static void hid_class_in_request(struct dev_desc_t *usb_hw,
 /*  hid_class_out_request()
  *
  */
-static void hid_class_out_request( struct dev_desc_t *usb_hw,
-		struct usb_hid_class_runtime_t *runtime_hndl, uint8_t *request)
+static void hid_class_out_request(
+		struct usb_hid_class_cfg_t *cfg_hndl,
+		struct dev_desc_t *usb_hw,
+		struct usb_hid_class_runtime_t *runtime_hndl,
+		uint8_t *request)
 {
 	struct set_request_out_buffer_t set_request_out_buffer;
 	uint8_t ret;
 	uint16_t  data_size;
+	uint16_t  max_host_out_data_packet_size;
 
 	ret = 0;
-    switch(request[REQUEST_FIELD_POS])
+	switch(request[REQUEST_FIELD_POS])
 	{
-    case HID_SET_REPORT:
+	case HID_SET_REPORT:
+		max_host_out_data_packet_size = cfg_hndl->max_host_out_data_packet_size;
 		set_request_out_buffer.data = runtime_hndl->report_out_buf;
 		data_size =  GET_DATA_LENGTH(request);
-		if (data_size > runtime_hndl->report_out_max_buf_size)
+		if (data_size > max_host_out_data_packet_size)
 		{
-			data_size = runtime_hndl->report_out_max_buf_size;
+			data_size = max_host_out_data_packet_size;
 		}
 		runtime_hndl->report_out_received_buf_size = data_size;
 		set_request_out_buffer.size = data_size;
@@ -285,7 +291,7 @@ static void hid_class_request(struct dev_desc_t *callback_dev,
 	struct usb_hid_class_cfg_t *cfg_hndl;
 	struct dev_desc_t *usb_hw;
 	struct usb_hid_class_runtime_t *runtime_hndl;
-	hid_out_report_over_control_pipe_callback_t callback_func;
+	hid_out_report_received_callback_t callback_func;
 
 	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(usb_hid_class, callback_dev);
 	runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(usb_hid_class, callback_dev);
@@ -293,10 +299,11 @@ static void hid_class_request(struct dev_desc_t *callback_dev,
 	switch (callback_type)
 	{
 	case INTERFACE_CALLBACK_TYPE_DATA_OUT_FINISHED:
-		callback_func = runtime_hndl->hid_out_report_over_control_pipe_callback;
+		callback_func = runtime_hndl->hid_out_report_received_callback;
 		if (NULL != callback_func)
 		{
-			callback_func(runtime_hndl->report_out_received_buf_size);
+			callback_func(runtime_hndl->report_out_buf,
+					runtime_hndl->report_out_received_buf_size);
 		}
 		break;
 	case INTERFACE_CALLBACK_TYPE_REQUEST:
@@ -306,7 +313,7 @@ static void hid_class_request(struct dev_desc_t *callback_dev,
 		}
 		else
 		{// from host to device
-			hid_class_out_request(usb_hw, runtime_hndl, request);
+			hid_class_out_request(cfg_hndl, usb_hw, runtime_hndl, request);
 		}
 		break;
 	case INTERFACE_CALLBACK_TYPE_STANDARD_SET_INTERFACE:
@@ -441,6 +448,7 @@ static void start_hid_class(struct dev_desc_t *adev,
 		CRITICAL_ERROR("HID report should be set before starting HID class");
 	}
 
+	runtime_hndl->mutex = os_create_mutex();
 	usb_descriptors_alloc_interfaces.num_of_interfaces = 1;
 	usb_descriptors_dev = cfg_hndl->usb_descriptors_dev;
 	DEV_IOCTL(usb_descriptors_dev,
@@ -464,18 +472,27 @@ static void start_hid_class(struct dev_desc_t *adev,
 }
 
 
-static uint8_t set_hid_report(struct usb_hid_class_runtime_t *runtime_hndl,
+static uint8_t set_hid_report(struct usb_hid_class_cfg_t *cfg_hndl,
+		struct usb_hid_class_runtime_t *runtime_hndl,
 		struct usb_hid_set_report_descriptor_t *set_report_desc)
 {
+	uint16_t  report_out_max_buf_size;
+	uint8_t  *report_out_buf;
+
 	runtime_hndl->report_desc = set_report_desc->report_desc;
 	runtime_hndl->report_desc_size = set_report_desc->report_desc_size;
-	runtime_hndl->report_out_buf = set_report_desc->report_out_buf;
-	runtime_hndl->report_out_max_buf_size =
-			set_report_desc->report_out_buf_size;
-	runtime_hndl->hid_out_report_over_control_pipe_callback =
-				set_report_desc->hid_out_report_over_control_pipe_callback;
-	runtime_hndl->hid_in_report_over_control_pipe_callback =
-				set_report_desc->hid_in_report_over_control_pipe_callback;
+	report_out_max_buf_size = cfg_hndl->max_host_out_data_packet_size;
+	report_out_buf =
+		(uint8_t *)os_safe_malloc(report_out_max_buf_size * sizeof(uint8_t));
+	errors_api_check_if_malloc_succeed(report_out_buf);
+	runtime_hndl->report_out_buf = report_out_buf;
+
+	runtime_hndl->hid_out_report_received_callback =
+				set_report_desc->hid_out_report_received_callback;
+	runtime_hndl->hid_in_report_requested_callback =
+				set_report_desc->hid_in_report_requested_callback;
+	runtime_hndl->tx_done_callback = NULL;
+
 	runtime_hndl->hid_report_was_set = 1;
 	return 0;
 }
@@ -508,7 +525,9 @@ static uint8_t usb_hid_class_ioctl( struct dev_desc_t *adev,
 		*(uint16_t *)aIoctl_param1 = cfg_hndl->max_host_in_data_packet_size;
 		break;
 	case IOCTL_USB_HID_SET_REPORT_DESCRIPTOR:
-		return set_hid_report(runtime_hndl, aIoctl_param1);
+		return set_hid_report(cfg_hndl, runtime_hndl, aIoctl_param1);
+	case IOCTL_SET_TX_DONE_CALLBACK:
+		runtime_hndl->tx_done_callback = aIoctl_param1;
 		break;
 	default :
 		return 1;

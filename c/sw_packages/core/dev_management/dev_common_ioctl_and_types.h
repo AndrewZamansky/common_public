@@ -29,6 +29,7 @@ enum common_ioctl_e {
 	IOCTL_VOID ,
 	IOCTL_SET_SERVER_DEVICE,
 	IOCTL_SET_CALLBACK_DEV,
+	IOCTL_SET_TX_DONE_CALLBACK,
 	IOCTL_SET_ISR_CALLBACK_DEV,
 	IOCTL_ADD_ISR_CALLBACK_DEV,
 	IOCTL_GET_AND_LOCK_DATA_BUFFER,
@@ -65,5 +66,7 @@ struct ioctl_net_device_get_local_addr_t {
 	uint8_t addr_str_len;
 	uint16_t  port;
 };
+
+typedef void (*tx_done_callback_t)(size_t size);
 
 #endif

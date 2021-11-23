@@ -92,27 +92,21 @@ enum USB_HID_CLASS_API_ioctl_e {
 };
 
 
-typedef void (*hid_out_report_over_control_pipe_callback_t)(
-							uint16_t report_out_received_buf_size);
-typedef void (*hid_in_report_over_control_pipe_callback_t)(
-							uint8_t report_id, uint8_t **data, uint16_t *size);
+typedef void (*hid_out_report_received_callback_t)(
+							uint8_t const *data, uint16_t size);
+typedef void (*hid_in_report_requested_callback_t)(
+						uint8_t report_id, uint8_t **data, uint16_t *size);
 
 struct usb_hid_set_report_descriptor_t {
 	uint8_t const *report_desc;
 	uint16_t report_desc_size;
-	uint8_t  *report_out_buf;
-	uint16_t  report_out_buf_size;
-	hid_out_report_over_control_pipe_callback_t
-					hid_out_report_over_control_pipe_callback;
-	hid_in_report_over_control_pipe_callback_t
-					hid_in_report_over_control_pipe_callback;
+	hid_out_report_received_callback_t hid_out_report_received_callback;
+	hid_in_report_requested_callback_t hid_in_report_requested_callback;
 };
 
 
 struct usb_hid_class_cfg_t {
 	struct dev_desc_t *usb_hw;
-	struct dev_desc_t *callback_tx_dev;
-	struct dev_desc_t *callback_rx_dev;
 	struct dev_desc_t *usb_descriptors_dev;
 	uint16_t  max_host_in_data_packet_size;
 	uint16_t  max_host_out_data_packet_size;

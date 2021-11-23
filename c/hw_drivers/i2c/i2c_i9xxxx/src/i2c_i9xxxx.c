@@ -623,8 +623,8 @@ static uint8_t master_write(struct i2c_i9xxxx_cfg_t *cfg_hndl,
 	os_mutex_take_infinite_wait(mutex);
 	if (0 == runtime_handle->init_done) // check if driver still running
 	{
-		os_mutex_give(mutex);
 		wr_struct->i2c_error = I2C_NOT_INITIALIZED;
+		os_mutex_give(mutex);
 		return 1;
 	}
 
