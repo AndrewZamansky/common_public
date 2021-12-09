@@ -8,6 +8,7 @@
 #define NAU83GXX_CHIP_TYPE_AUTO_DETECT  0x00
 #define NAU83GXX_CHIP_TYPE_G10          0xE0
 #define NAU83GXX_CHIP_TYPE_G20          0x60
+#define NAU83GXX_CHIP_TYPE_G60          0x40
 
 #define NAU83GXX_IN_CHANNEL_I2S_CHANNEL_0      0
 #define NAU83GXX_IN_CHANNEL_TDM_CHANNEL_0      0
@@ -37,13 +38,12 @@
 #define KCS_I2C_MAX_BUFFER_IN_BYTES        ( 4095 )
 #define FULL_KCS_DIAG_READ                 ( 3876 )
 
-struct S_I2CCMD {
+struct NAU83GXX_reg_s {
 	size_t  u8Reg;
 	uint8_t  u8Value[2];
 };
 
-typedef void (*end_of_ioctl_callback_f)(
-				uint8_t ret_from_ioctl, uint8_t ret_code);
+typedef void (*end_of_ioctl_callback_f)(uint8_t ret_code);
 
 #define L_CH_DEV_ADDR 0x10 // should be removed after klippel upgrade of db-lab
 #define R_CH_DEV_ADDR 0x11 // should be removed after klippel upgrade of db-lab
@@ -70,7 +70,7 @@ enum NAU83GXX_NAU83GXX_RC_e {
 	NAU83GXX_RC_BUFFER_NOT_EQUAL_TO_SIZE   = 0x22,
 
 	NAU83GXX_RC_UNEXPECTED_REPLY           = 0x23,
-	NAU83GXX_RC_INTERNAL_ERROR             = 0x24,
+	NAU83GXX_RC_DRIVER_IN_WRONG_STATE      = 0x24,
 	NAU83GXX_RC_SYNTAX_ERROR               = 0x30,
 
 	NAU83GXX_RC_DEVICE_DOES_NOT_EXIST      = 0x31,
@@ -99,9 +99,8 @@ enum kcs_i2c_cmd_e {
 };
 
 
-enum kcs_i2c_ioctl_e {
-	IOCTL_HW_IS_READY_TO_INIT_WITH_FULL_KCS = IOCTL_LAST_COMMON_IOCTL + 1,
-	IOCTL_HW_IS_READY_TO_INIT_WITH_HW_RESET_ONLY,
+enum NAU83GXX_IOCTL_e {
+	IOCTL_HW_IS_READY_TO_INIT = IOCTL_LAST_COMMON_IOCTL + 1,
 	IOCTL_NAU83GXX_REINIT_I2C_REGISTERS,
 	IOCTL_KCS_SIMPLE_CMD,
 	IOCTL_KCS_GET_SETUP_CMD,
@@ -115,11 +114,16 @@ enum kcs_i2c_ioctl_e {
 };
 
 struct hw_is_ready_ioctl_t {
-	const struct S_I2CCMD *biquad_init_arr;
-	uint16_t biquad_init_arr_size;
+	const struct NAU83GXX_reg_s *registers_init_arr;
+	uint16_t registers_init_arr_num_of_items;
+	const struct NAU83GXX_reg_s *biquad_init_arr;
+	uint16_t biquad_init_arr_num_of_items;
 	uint8_t *kcs_spkr_param_data;
 	size_t kcs_spkr_param_size;
 	end_of_ioctl_callback_f  end_of_ioctl_callback;
+	uint8_t try_more_i2c_addr;
+	uint8_t additional_i2c_addr;
+	uint8_t perform_only_hw_reset;
 };
 
 

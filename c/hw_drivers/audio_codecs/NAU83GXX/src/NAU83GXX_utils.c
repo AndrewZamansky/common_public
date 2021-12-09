@@ -27,10 +27,10 @@
  */
 
 // Command for 83G10(transfer via I2C0)
-static const struct S_I2CCMD cmd_83G10b_init[] = {
+static const struct NAU83GXX_reg_s cmd_83G10b_init[] = {
 		//-- 2-Byte Address -- 2-Byte Data -----//
-		{  0x0000  ,  {  0x00  ,  0x01  }  }  ,  // Reset all registers
-		{  0x0000  ,  {  0x00  ,  0x00  }  }  ,  // Release reset
+//		{  0x0000  ,  {  0x00  ,  0x01  }  }  ,  // Reset all registers
+//		{  0x0000  ,  {  0x00  ,  0x00  }  }  ,  // Release reset
 		{  0x0002  ,  {  0x00  ,  0x01  }  }  ,  // Latch I2C address on GPIO's
 		{  0x0003  ,  {  0x00  ,  0x04  }  }  ,  // Block MCLK
 		{  0x000E  ,  {  0x00  ,  0x00  }  }  ,  // Default I2S setup
@@ -78,10 +78,10 @@ static const struct S_I2CCMD cmd_83G10b_init[] = {
 
 uint16_t cmd_83G10b_init_size = sizeof(cmd_83G10b_init);
 
-static const struct S_I2CCMD cmd_83G10c_init[] = {
+static const struct NAU83GXX_reg_s cmd_83G10c_init[] = {
 		//-- 2-Byte Address -- 2-Byte Data -----//
-		{  0x0000  ,  {  0x00  ,  0x01  }  }  , // Reset all registers
-		{  0x0000  ,  {  0x00  ,  0x00  }  }  , // Release reset
+//		{  0x0000  ,  {  0x00  ,  0x01  }  }  , // Reset all registers
+//		{  0x0000  ,  {  0x00  ,  0x00  }  }  , // Release reset
 		{  0x0002  ,  {  0x00  ,  0x01  }  }  , // Latch I2C address on GPIO's
 		{  0x0003  ,  {  0x00  ,  0x04  }  }  , // Block MCLK
 		{  0x001A  ,  {  0x00  ,  0x10  }  }  , // Stall DSP
@@ -132,10 +132,10 @@ static const struct S_I2CCMD cmd_83G10c_init[] = {
 
 uint16_t cmd_83G10c_init_size = sizeof(cmd_83G10c_init);
 
-static const struct S_I2CCMD cmd_83G20a_init[] = {
+static const struct NAU83GXX_reg_s cmd_83G20a_init[] = {
 		//-- 2-Byte Address -- 2-Byte Data -----//
-		{  0x0000 , {  0x00  ,  0x01  }  }  ,// Reset all registers
-		{  0x0000 , {  0x00  ,  0x00  }  }  ,// Release reset
+//		{  0x0000 , {  0x00  ,  0x01  }  }  ,// Reset all registers
+//		{  0x0000 , {  0x00  ,  0x00  }  }  ,// Release reset
 		{  0x0002 , {  0x00  ,  0x01  }  }  ,// Latch I2C address on GPIO's
 		{  0x0003 , {  0x00  ,  0x04  }  }  ,// Block MCLK
 		{  0x001A , {  0x00  ,  0x10  }  }  ,// Stall DSP
@@ -184,6 +184,14 @@ static const struct S_I2CCMD cmd_83G20a_init[] = {
 
 uint16_t cmd_83G20a_init_size = sizeof(cmd_83G20a_init);
 
+
+
+static const struct NAU83GXX_reg_s cmd_83G60_init[] = {
+		//-- 2-Byte Address -- 2-Byte Data -----//
+		{  0x0000 , {  0x00  ,  0x01  }  }  ,
+};
+
+uint16_t cmd_83G60_init_size = sizeof(cmd_83G60_init);
 
 
 uint8_t nau83gxx_read(struct dev_desc_t *i2c_dev, uint8_t device_addr,
@@ -271,7 +279,8 @@ uint8_t nau83gxx_write_wordU16(struct dev_desc_t *i2c_dev,
 
 
 #define OCP_THRESHOLD 5
-void NAU83GXX_OCP_recovery(struct NAU83GXX_config_t *config_handle)
+void NAU83GXX_OCP_recovery(struct NAU83GXX_config_t *config_handle,
+		struct NAU83GXX_runtime_t *runtime_handle)
 {
 	uint16_t reg_0x06_data;
 	uint16_t reg_0x62_data;
@@ -281,7 +290,7 @@ void NAU83GXX_OCP_recovery(struct NAU83GXX_config_t *config_handle)
 	uint8_t tries = 3;
 	uint8_t ocp_tests;
 
-	dev_addr = config_handle->dev_addr;
+	dev_addr = runtime_handle->dev_addr;
 	i2c_dev = config_handle->i2c_dev;
 
 	nau83gxx_read_wordU16(i2c_dev, dev_addr, 0x06, &reg_0x06_data);
@@ -326,95 +335,97 @@ void NAU83GXX_OCP_recovery(struct NAU83GXX_config_t *config_handle)
 }
 
 
-uint8_t nau83gxx_init_biquad(const struct S_I2CCMD *cmd_biquad_init,
-		uint16_t cmd_biquad_init_size, long int device_addr,
-		struct dev_desc_t *i2c_dev)
+ uint8_t  send_register_array(struct dev_desc_t *i2c_dev, uint8_t device_addr,
+		 const struct NAU83GXX_reg_s *reg_array, uint16_t array_size)
 {
-	uint16_t gl_i;
-	uint8_t rc;
+	uint16_t i;
+	uint8_t ret;
 
-	rc = 0;
-	for(gl_i = 0;gl_i < (cmd_biquad_init_size / sizeof(struct S_I2CCMD));gl_i++)
+	for(i = 0; i < array_size; i++)
 	{
-		rc = nau83gxx_write(i2c_dev, device_addr,
-				cmd_biquad_init[gl_i].u8Reg, cmd_biquad_init[gl_i].u8Value, 2);
+		if(0xDDDD == reg_array[i].u8Reg)
+		{
+			os_delay_ms(reg_array[i].u8Value[1]);
+		}
+		else
+		{
+			ret = nau83gxx_write(i2c_dev, device_addr,
+					reg_array[i].u8Reg, reg_array[i].u8Value, 2);
+			if (ret) return ret;
+		}
+		os_delay_ms(10); // TO REMOVE
 	}
-	return rc;
+	return NAU83GXX_RC_OK;
 }
 
 
-/*
- * Subroutine:  init_83g10_dsp
- *
- * Description:
- * Initialization of 83G10 Chip through I2C bus.
- *
- * Inputs:
- * I2C Device requires i2c_api_master_write_t structure when (Master) of which
- * the following needs to be set:
- *
- * Return:      None
- * device_addr            : Address of Device you wish to send to (Single Byte)
- * num_of_bytes_to_write  : Number of Bytes you wish to send (1 - 4)
- * reg_addr_size          : The register address size on the device (1 - 2)
- * reg_addr               : Address of Register on device (1 - 2 Bytes)
- * tx_data                : Data that is to be transmitted (1-4 Bytes)
- *
- */
-static uint8_t init_83g10_dsp(
-		long int device_addr, struct dev_desc_t *i2c_dev,
+uint8_t update_real_device_id(struct dev_desc_t *i2c_dev,
 		struct NAU83GXX_runtime_t *runtime_handle)
 {
-	uint16_t gl_i;
 	uint8_t rc;
-	uint16_t cmd_init_array_size = 0;
-	const struct S_I2CCMD *cmd_init_array;
 	uint8_t read_i2c_data[2];
 	uint8_t device_id;
+	uint8_t device_addr;
+	uint8_t low_4bits_in_dev_addr;
 
+	device_addr = runtime_handle->dev_addr;
 	rc = nau83gxx_read(
 			i2c_dev, device_addr, NAU83GXX_REG_DEVICE_ID, read_i2c_data, 2);
 	if (rc) return rc;
 
 	device_id = read_i2c_data[1] & 0xF0;
 
-	runtime_handle->chip_type = device_id;
-	switch(device_id)
+	if (NAU83GXX_CHIP_TYPE_G20 == device_id)
 	{
-	case 0xE0:
-		cmd_init_array = cmd_83G10c_init;
-		cmd_init_array_size = cmd_83G10c_init_size;
-		break;
+		low_4bits_in_dev_addr = device_addr & 0x0F;
+		if ((0xA == low_4bits_in_dev_addr) || (0x0B == low_4bits_in_dev_addr))
+		{
+			device_id = NAU83GXX_CHIP_TYPE_G60;
+		}
+	}
+	runtime_handle->chip_type = device_id;
+	return NAU83GXX_RC_OK;
+}
 
-	case 0xF0:
-		cmd_init_array = cmd_83G10b_init;
-		cmd_init_array_size = cmd_83G10b_init_size;
-		break;
 
-	case 0x60:
-		cmd_init_array = cmd_83G20a_init;
-		cmd_init_array_size = cmd_83G20a_init_size;
-		break;
+/*
+ * Subroutine:  init_83gXX_dsp
+ *
+ * Description:
+ * Initialization of 83GXX Chip through I2C bus.
+ *
+ * Inputs:
+ * Return:      None
+ */
+static uint8_t init_83gXX_dsp(struct dev_desc_t *i2c_dev,
+		uint8_t device_addr,  struct NAU83GXX_runtime_t *runtime_handle)
+{
+	uint16_t init_array_size = 0;
+	const struct NAU83GXX_reg_s *init_array;
 
+	switch(runtime_handle->chip_type)
+	{
+	case NAU83GXX_CHIP_TYPE_G10:
+		init_array = cmd_83G10c_init;
+		init_array_size = cmd_83G10c_init_size;
+		break;
+	case NAU83GXX_CHIP_TYPE_G20:
+		init_array = cmd_83G20a_init;
+		init_array_size = cmd_83G20a_init_size;
+		break;
+	case NAU83GXX_CHIP_TYPE_G60:
+		init_array = cmd_83G60_init;
+		init_array_size = cmd_83G60_init_size;
+		break;
 	default:
 		return NAU83GXX_RC_NOT_SUPPORTED_DEVICE_ID;
 		break;
 	}
 
-	for(gl_i = 0;
-			gl_i < (cmd_init_array_size / sizeof(struct S_I2CCMD)); gl_i++)
-	{
-		if(0xDDDD == cmd_init_array[gl_i].u8Reg)
-		{
-			os_delay_ms(cmd_init_array[gl_i].u8Value[1]);
-		}
-		else
-		{
-			nau83gxx_write(i2c_dev, device_addr,
-				cmd_init_array[gl_i].u8Reg, cmd_init_array[gl_i].u8Value, 2);
-		}
-	}
-	return NAU83GXX_RC_OK;
+	init_array_size = init_array_size / sizeof(struct NAU83GXX_reg_s);
+
+	return send_register_array(
+			i2c_dev, device_addr, init_array, init_array_size);
 }
 
 
@@ -532,7 +543,7 @@ uint8_t nau83gxx_init_i2c_regs(struct NAU83GXX_config_t *config_handle,
 	struct dev_desc_t * i2c_dev;
 	uint8_t rc;
 
-	dev_addr = config_handle->dev_addr;
+	dev_addr = runtime_handle->dev_addr;
 	i2c_dev = config_handle->i2c_dev;
 
 	//HW reset
@@ -540,8 +551,13 @@ uint8_t nau83gxx_init_i2c_regs(struct NAU83GXX_config_t *config_handle,
 	rc = nau83gxx_write_wordU16(i2c_dev, dev_addr, 0x000, 0x000);
 	if (rc) return rc;
 
-	rc = init_83g10_dsp(dev_addr, i2c_dev, runtime_handle);
+	rc = init_83gXX_dsp(i2c_dev, dev_addr, runtime_handle);
 	if (rc) return rc;
+
+	if (NAU83GXX_CHIP_TYPE_G60 == runtime_handle->chip_type)
+	{
+		return 0;
+	}
 
 	rc = set_pcm_ctl(config_handle, i2c_dev, dev_addr);
 	if (rc) return rc;

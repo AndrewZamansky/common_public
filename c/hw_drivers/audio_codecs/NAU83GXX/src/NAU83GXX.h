@@ -23,6 +23,8 @@ struct NAU83GXX_runtime_t {
 	os_queue_t wait_for_finish_queue;
 	os_mutex_t main_mutex;
 	os_task_t  task_handle;
+	const struct NAU83GXX_reg_s *registers_init_arr;
+	uint16_t registers_init_arr_num_of_items;
 	uint16_t dataSetBufPos;
 	uint16_t addr_offset;
 	uint16_t sendLen;
@@ -30,6 +32,7 @@ struct NAU83GXX_runtime_t {
 	uint8_t  state;
 	uint8_t  do_recovery;
 	uint8_t chip_type;
+	uint8_t dev_addr;
 };
 SET_RUNTIME_DATA_TYPE(NAU83GXX, struct NAU83GXX_runtime_t);
 
