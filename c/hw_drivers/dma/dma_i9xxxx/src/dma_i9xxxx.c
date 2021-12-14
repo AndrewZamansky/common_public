@@ -149,11 +149,7 @@ static void update_tx_buffer(struct dev_desc_t * ch_pdev,
 	if (DMA_I9XXXX_BUFF_TX_DATA_IS_READY !=
 			runtime_hndl->buff_status[look_foward_tx_buffer])
 	{
-		if (NULL != callback_dev)
-		{
-			DEV_CALLBACK( callback_dev,
-					CALLBACK_TX_BUFFER_UNDERFLOW_THRESHOLD_REACHED, ch_pdev);
-		}
+		runtime_hndl->tx_underflow_threshold_reached = 1;
 		#ifdef DMA_I9XXXX_DEBUG
 		dma_i9xxxx_dbg_cnt7++;
 		bytecount1 = PDMA_GET_TRANS_CNT(2);
@@ -176,10 +172,7 @@ static void update_tx_buffer(struct dev_desc_t * ch_pdev,
 		return;
 	}
 
-	if (NULL != callback_dev)
-	{
-		DEV_CALLBACK(callback_dev, CALLBACK_TX_BUFFER_UNDERFLOW, ch_pdev);
-	}
+	runtime_hndl->tx_underflow = 1;
 	runtime_hndl->needed_full_dma_start = 1;
 }
 
@@ -218,13 +211,8 @@ static void update_rx_buffer(struct dev_desc_t * ch_pdev,
 	buff_status[curr_dma_buff_indx] =	DMA_I9XXXX_BUFF_RX_RADA_READY;
 	if (DMA_I9XXXX_BUFF_IDLE != buff_status[next_dma_buff_indx])
 	{
-		//CRITICAL_ERROR("next rx buffer not ready\n");
 		next_dma_buff_indx = curr_dma_buff_indx;
-		if (NULL != callback_dev)
-		{
-			DEV_CALLBACK(callback_dev, CALLBACK_RX_BUFFER_OVERFLOW, ch_pdev);
-		}
-
+		runtime_hndl->rx_overflow = 1;
 	}
 
 	channel_num = cfg_hndl->channel_num;
@@ -568,7 +556,6 @@ static uint8_t get_full_rx_buffer(struct dma_i9xxxx_cfg_t *cfg_hndl,
 {
 	uint8_t next_supplied_rx_buffer;
 	uint8_t *buffer_state;
-	struct dev_desc_t *callback_dev;
 
 	if (0 == runtime_hndl->init_done)
 	{
@@ -597,11 +584,7 @@ static uint8_t get_full_rx_buffer(struct dma_i9xxxx_cfg_t *cfg_hndl,
 	}
 	else
 	{
-		callback_dev = cfg_hndl->callback_dev;
-		if (NULL != callback_dev)
-		{
-			DEV_CALLBACK(callback_dev, CALLBACK_RX_BUFFER_UNDERFLOW);
-		}
+		runtime_hndl->rx_underflow = 1;
 		*buff = NULL;
 		*buff_size = 0;
 	}
@@ -639,7 +622,6 @@ static uint8_t get_empty_tx_buffer(struct dev_desc_t *ch_pdev,
 	uint8_t next_supplied_tx_buffer;
 	uint8_t look_foward_tx_buffer;
 	uint8_t *buffer_state;
-	struct dev_desc_t *callback_dev;
 	uint8_t num_of_buffers;
 
 	if (0 == runtime_hndl->init_done)
@@ -662,7 +644,6 @@ static uint8_t get_empty_tx_buffer(struct dev_desc_t *ch_pdev,
 	#ifdef DMA_I9XXXX_DEBUG
 	dma_i9xxxx_dbg_cnt4++;
 	#endif
-	callback_dev = cfg_hndl->callback_dev;
 	num_of_buffers = cfg_hndl->num_of_buffers;
 
 	next_supplied_tx_buffer = runtime_hndl->next_supplied_tx_buffer ;
@@ -675,11 +656,7 @@ static uint8_t get_empty_tx_buffer(struct dev_desc_t *ch_pdev,
 		#ifdef DMA_I9XXXX_DEBUG
 		dma_i9xxxx_dbg_cnt5++;
 		#endif
-		if (NULL != callback_dev)
-		{
-			DEV_CALLBACK( callback_dev,
-					CALLBACK_TX_BUFFER_OVERFLOW_THRESHOLD_REACHED, ch_pdev);
-		}
+		runtime_hndl->tx_overflow_threshold_reached = 1;
 	}
 
 
@@ -698,10 +675,7 @@ static uint8_t get_empty_tx_buffer(struct dev_desc_t *ch_pdev,
 //			bytecount1 = PDMA_GET_TRANS_CNT(1);
 //			bytecount2 = PDMA_GET_TRANS_CNT(2);
 		#endif
-		if (NULL != callback_dev)
-		{
-			DEV_CALLBACK(callback_dev, CALLBACK_TX_BUFFER_OVERFLOW);
-		}
+		runtime_hndl->tx_overflow = 1;
 		if (runtime_hndl->needed_full_dma_start)
 		{
 			for (i = 0; i < num_of_buffers; i++)
@@ -714,7 +688,6 @@ static uint8_t get_empty_tx_buffer(struct dev_desc_t *ch_pdev,
 			runtime_hndl->prefilled_buffers = 0;
 			return 0;
 		}
-		CRITICAL_ERROR("next tx buffer is still busy \n");
 		*buff = NULL;
 		*buff_size = 0;
 		return 1;
@@ -892,6 +865,32 @@ static uint8_t stop_dma_i9xxxx_device(
 }
 
 
+/* func : dma_i9xxxx_get_status
+ *
+ */
+static uint8_t dma_i9xxxx_get_status(
+		struct dma_i9xxxx_runtime_t *runtime_hndl,
+		struct dma_i9xxxx_get_status_t *dma_i9xxxx_get_status)
+{
+	dma_i9xxxx_get_status->tx_underflow = runtime_hndl->tx_underflow;
+	dma_i9xxxx_get_status->tx_underflow_threshold_reached =
+					runtime_hndl->tx_underflow_threshold_reached;
+	dma_i9xxxx_get_status->tx_overflow = runtime_hndl->tx_overflow;
+	dma_i9xxxx_get_status->tx_overflow_threshold_reached =
+					runtime_hndl->tx_overflow_threshold_reached;
+	dma_i9xxxx_get_status->rx_underflow = runtime_hndl->rx_underflow;
+	dma_i9xxxx_get_status->rx_overflow = runtime_hndl->rx_overflow;
+
+	runtime_hndl->tx_underflow = 0;
+	runtime_hndl->tx_underflow_threshold_reached = 0;
+	runtime_hndl->tx_overflow = 0;
+	runtime_hndl->tx_overflow_threshold_reached = 0;
+	runtime_hndl->rx_underflow = 0;
+	runtime_hndl->rx_overflow = 0;
+	return 0;
+}
+
+
 /**
  * dma_i9xxxx_ioctl()
  *
@@ -926,6 +925,9 @@ uint8_t dma_i9xxxx_ioctl( struct dev_desc_t *adev, const uint8_t aIoctl_num,
 		break;
 	case DMA_I9XXXX_IOCTL_RELEASE_TX_BUFF :
 		ret = release_tx_buffer(cfg_hndl, runtime_hndl);
+		break;
+	case DMA_I9XXXX_IOCTL_GET_STATUS:
+		ret = dma_i9xxxx_get_status(runtime_hndl, aIoctl_param1);
 		break;
 	case IOCTL_DEVICE_STOP :
 		ret = stop_dma_i9xxxx_device(cfg_hndl, runtime_hndl);

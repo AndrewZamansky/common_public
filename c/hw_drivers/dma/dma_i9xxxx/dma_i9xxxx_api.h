@@ -35,8 +35,19 @@ enum DMA_I9XXXX_API_ioctl_t {
 	DMA_I9XXXX_IOCTL_RELEASE_RX_BUFF,
 	DMA_I9XXXX_IOCTL_GET_EMPTY_TX_BUFF,
 	DMA_I9XXXX_IOCTL_RELEASE_TX_BUFF,
-//	DMA_I9XXXX_IOCTL_SET_BUFF_SIZE
+	DMA_I9XXXX_IOCTL_GET_STATUS
 };
+
+
+struct dma_i9xxxx_get_status_t {
+	uint8_t   tx_underflow;
+	uint8_t   tx_underflow_threshold_reached;
+	uint8_t   tx_overflow;
+	uint8_t   tx_overflow_threshold_reached;
+	uint8_t   rx_underflow;
+	uint8_t   rx_overflow;
+};
+
 
 struct dma_i9xxxx_cfg_t {
 	struct dev_desc_t *callback_dev;
