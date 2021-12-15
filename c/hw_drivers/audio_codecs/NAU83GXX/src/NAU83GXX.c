@@ -597,9 +597,6 @@ static uint8_t perform_full_init( struct NAU83GXX_config_t *config_handle,
 		CRITICAL_ERROR("wrong chip type");
 	}
 
-	runtime_handle->registers_init_arr = p_init_hw_msg->registers_init_arr;
-	runtime_handle->registers_init_arr_num_of_items =
-			p_init_hw_msg->registers_init_arr_num_of_items;
 	if (NULL != runtime_handle->registers_init_arr)
 	{
 		rc = send_register_array(i2c_dev, dev_addr,
@@ -644,28 +641,38 @@ static uint8_t process_init_hw_msg(struct NAU83GXX_config_t *config_handle,
 	struct dev_desc_t * i2c_dev;
 	uint8_t rc = NAU83GXX_RC_OK;
 
-	i2c_dev = config_handle->i2c_dev;
+	runtime_handle->registers_init_arr = p_init_hw_msg->registers_init_arr;
+	runtime_handle->registers_init_arr_num_of_items =
+			p_init_hw_msg->registers_init_arr_num_of_items;
 
+	i2c_dev = config_handle->i2c_dev;
 	rc = update_real_device_id(i2c_dev, runtime_handle);
 	if (rc)
 	{
 		if (p_init_hw_msg->try_more_i2c_addr)
 		{
 			runtime_handle->dev_addr = p_init_hw_msg->additional_i2c_addr;
+			rc = update_real_device_id(i2c_dev, runtime_handle);
 		}
-		rc = update_real_device_id(i2c_dev, runtime_handle);
-		if (rc) return NAU83GXX_RC_DEVICE_DOES_NOT_EXIST;
+		if (rc)
+		{
+			rc = NAU83GXX_RC_DEVICE_DOES_NOT_EXIST;
+			goto error;
+		}
 	}
+
 	dev_addr = runtime_handle->dev_addr;
 
 	// perform reset:
 	rc = nau83gxx_write_wordU16(i2c_dev, dev_addr, 0x0, 0x0);
+	if (rc) goto error;
 
 	if (0 == p_init_hw_msg->perform_only_hw_reset)
 	{
 		rc = perform_full_init(config_handle, runtime_handle, p_init_hw_msg);
 	}
 
+	error:
 	if (NULL != p_init_hw_msg->end_of_ioctl_callback)
 	{
 		p_init_hw_msg->end_of_ioctl_callback(rc);
