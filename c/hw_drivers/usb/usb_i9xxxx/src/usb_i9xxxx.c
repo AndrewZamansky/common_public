@@ -573,6 +573,7 @@ static void device_start(struct usb_i9xxxx_cfg_t *cfg_hndl)
 	init_done = 1;
 }
 
+#define USBD_INT_WAKEUP_NO_NEVWKIEW         ( USBD_INTEN_WKEN_Msk)
 
 static void usb_device_start()
 {
@@ -628,7 +629,7 @@ static void usb_device_start()
 
 	/* Enable USB-related interrupts. */
 	USBD_ENABLE_INT(USBD_INT_BUS | USBD_INT_USB |
-			USBD_INT_FLDET | USBD_INT_WAKEUP | USBD_INTEN_SOFIEN_Msk);
+		USBD_INT_FLDET | USBD_INT_WAKEUP_NO_NEVWKIEW | USBD_INTEN_SOFIEN_Msk);
 
 }
 
