@@ -20,12 +20,12 @@ struct dma_i9xxxx_runtime_t {
 	uint32_t  buff_size_in_transfer_words;
 	uint8_t   needed_full_dma_start;
 	uint8_t   prefilled_buffers;
-	uint8_t   tx_underflow;
-	uint8_t   tx_underflow_threshold_reached;
-	uint8_t   tx_overflow;
-	uint8_t   tx_overflow_threshold_reached;
-	uint8_t   rx_underflow;
-	uint8_t   rx_overflow;
+	uint32_t   tx_underflow;
+	uint32_t   tx_underflow_threshold_reached;
+	uint32_t   tx_overflow;
+	uint32_t   tx_overflow_threshold_reached;
+	uint32_t   rx_underflow;
+	uint32_t   rx_overflow;
 };
 
 SET_RUNTIME_DATA_TYPE(dma_i9xxxx, struct dma_i9xxxx_runtime_t);

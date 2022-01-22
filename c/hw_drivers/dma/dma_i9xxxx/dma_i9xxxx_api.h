@@ -40,12 +40,12 @@ enum DMA_I9XXXX_API_ioctl_t {
 
 
 struct dma_i9xxxx_get_status_t {
-	uint8_t   tx_underflow;
-	uint8_t   tx_underflow_threshold_reached;
-	uint8_t   tx_overflow;
-	uint8_t   tx_overflow_threshold_reached;
-	uint8_t   rx_underflow;
-	uint8_t   rx_overflow;
+	uint32_t   tx_underflow;
+	uint32_t   tx_underflow_threshold_reached;
+	uint32_t   tx_overflow;
+	uint32_t   tx_overflow_threshold_reached;
+	uint32_t   rx_underflow;
+	uint32_t   rx_overflow;
 };
 
 

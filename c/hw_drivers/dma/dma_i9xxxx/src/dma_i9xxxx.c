@@ -149,7 +149,7 @@ static void update_tx_buffer(struct dev_desc_t * ch_pdev,
 	if (DMA_I9XXXX_BUFF_TX_DATA_IS_READY !=
 			runtime_hndl->buff_status[look_foward_tx_buffer])
 	{
-		runtime_hndl->tx_underflow_threshold_reached = 1;
+		runtime_hndl->tx_underflow_threshold_reached++;
 		#ifdef DMA_I9XXXX_DEBUG
 		dma_i9xxxx_dbg_cnt7++;
 		bytecount1 = PDMA_GET_TRANS_CNT(2);
@@ -172,7 +172,7 @@ static void update_tx_buffer(struct dev_desc_t * ch_pdev,
 		return;
 	}
 
-	runtime_hndl->tx_underflow = 1;
+	runtime_hndl->tx_underflow++;
 	runtime_hndl->needed_full_dma_start = 1;
 }
 
@@ -212,7 +212,7 @@ static void update_rx_buffer(struct dev_desc_t * ch_pdev,
 	if (DMA_I9XXXX_BUFF_IDLE != buff_status[next_dma_buff_indx])
 	{
 		next_dma_buff_indx = curr_dma_buff_indx;
-		runtime_hndl->rx_overflow = 1;
+		runtime_hndl->rx_overflow++;
 	}
 
 	channel_num = cfg_hndl->channel_num;
@@ -584,7 +584,7 @@ static uint8_t get_full_rx_buffer(struct dma_i9xxxx_cfg_t *cfg_hndl,
 	}
 	else
 	{
-		runtime_hndl->rx_underflow = 1;
+		runtime_hndl->rx_underflow++;
 		*buff = NULL;
 		*buff_size = 0;
 	}
@@ -656,7 +656,7 @@ static uint8_t get_empty_tx_buffer(struct dev_desc_t *ch_pdev,
 		#ifdef DMA_I9XXXX_DEBUG
 		dma_i9xxxx_dbg_cnt5++;
 		#endif
-		runtime_hndl->tx_overflow_threshold_reached = 1;
+		runtime_hndl->tx_overflow_threshold_reached++;
 	}
 
 
@@ -675,7 +675,7 @@ static uint8_t get_empty_tx_buffer(struct dev_desc_t *ch_pdev,
 //			bytecount1 = PDMA_GET_TRANS_CNT(1);
 //			bytecount2 = PDMA_GET_TRANS_CNT(2);
 		#endif
-		runtime_hndl->tx_overflow = 1;
+		runtime_hndl->tx_overflow++;
 		if (runtime_hndl->needed_full_dma_start)
 		{
 			for (i = 0; i < num_of_buffers; i++)
