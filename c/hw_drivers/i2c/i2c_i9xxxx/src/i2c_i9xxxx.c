@@ -754,6 +754,8 @@ static uint8_t  device_start(struct dev_desc_t *adev,
 	uint32_t i2c_module_rst;
 	struct dev_desc_t	*i2c_clk_dev;
 
+	if (runtime_handle->init_done) return 0;
+
 	i2c_regs = (I2C_T *)cfg_hndl->base_address;
 
 	runtime_handle->mutex = os_create_mutex();
