@@ -802,6 +802,7 @@ static uint8_t  device_start(struct dev_desc_t *adev,
 
 	if (I2C_I9XXXX_API_SLAVE_MODE == cfg_hndl->master_slave_mode)
 	{
+		runtime_handle->slave_address = cfg_hndl->slave_address;
 		I2C_SetSlaveAddr(i2c_regs, 0, (cfg_hndl->slave_address) >> 1 , 0);
 		I2C_SetSlaveAddrMask(i2c_regs, 0, 0x01);
 
@@ -825,6 +826,26 @@ static void SYS_put_on_reset(uint32_t u32ModuleIndex)
     *(volatile uint32_t *)((uint32_t)&SYS->IPRST0 + (u32ModuleIndex >> 24)) |=
     										1 << (u32ModuleIndex & 0x00ffffff);
 }
+
+
+static uint8_t  set_new_slave_addr(
+		struct i2c_i9xxxx_cfg_t *cfg_hndl,
+		struct i2c_i9xxxx_runtime_t *runtime_handle,
+		uint8_t *new_slave_addr_7bit)
+{
+	I2C_T *i2c_regs;
+
+	if (I2C_I9XXXX_API_SLAVE_MODE == cfg_hndl->master_slave_mode)
+	{
+		i2c_regs = (I2C_T *)cfg_hndl->base_address;
+		runtime_handle->slave_address = *new_slave_addr_7bit;
+
+		I2C_SetSlaveAddr(i2c_regs, 0, *new_slave_addr_7bit >> 1 , 0);
+		return 0;
+	}
+	return 1;
+}
+
 
 static uint8_t  device_stop(
 		struct i2c_i9xxxx_cfg_t *cfg_hndl,
@@ -918,6 +939,8 @@ static uint8_t i2c_i9xxxx_ioctl( struct dev_desc_t *adev,
 		return master_write(cfg_hndl, runtime_handle, aIoctl_param1);
 	case IOCTL_DEVICE_STOP :
 		return device_stop(cfg_hndl, runtime_handle);
+	case IOCTL_I2C_SET_NEW_SLAVE_ADDR:
+		return set_new_slave_addr(cfg_hndl, runtime_handle, aIoctl_param1);
 	default :
 		return 1;
 	}

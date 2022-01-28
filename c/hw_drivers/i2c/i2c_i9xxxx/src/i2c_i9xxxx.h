@@ -28,6 +28,7 @@ struct i2c_i9xxxx_runtime_t {
 	uint8_t   device_access_tries;
 	os_queue_t WaitQueue;
 	os_mutex_t mutex;
+	uint8_t  slave_address;
 	uint8_t   i2c_error;
 	uint8_t   init_done;
 };
