@@ -248,7 +248,7 @@ static void clock_i94xxx_hclk_set_parent_clk(struct dev_desc_t *parent_clk)
 {
 	if (i94xxx_ext_clk_dev == parent_clk)
 	{
-		CLK_SetHCLK(CLK_CLKSEL0_HCLKSEL_HIRC, CLK_CLKDIV0_HCLK(1));
+		CLK_SetHCLK(CLK_CLKSEL0_HCLKSEL_HXT, CLK_CLKDIV0_HCLK(1));
 	}
 	else if (i94xxx_hirc_clk_dev == parent_clk)
 	{
