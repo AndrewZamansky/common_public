@@ -313,8 +313,8 @@ void NAU83GXX_OCP_recovery(struct NAU83GXX_config_t *config_handle)
 			}
 			if (OCP_THRESHOLD <= ocp_counter)
 			{
-				nau83gxx_read_wordU16(i2c_dev, dev_addr, 0x06, &reg_0x62_data);
-				reg_0x62_data &= (0x30); // clear 'class-D enable' bits
+				nau83gxx_read_wordU16(i2c_dev, dev_addr, 0x62, &reg_0x62_data);
+				reg_0x62_data &= ~(0x30); // clear 'class-D enable' bits
 				nau83gxx_write_wordU16(i2c_dev, dev_addr, 0x62, reg_0x62_data);
 				os_delay_ms(1);
 				reg_0x62_data |= 0x10; // enable class-D
