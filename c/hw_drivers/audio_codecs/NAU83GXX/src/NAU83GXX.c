@@ -639,8 +639,20 @@ static uint8_t process_power_down_msg(
 	uint8_t rc;
 
 	DEV_IOCTL(config_handle->irq_pin, IOCTL_DEVICE_STOP);
+
+	// added soft mute to fix small pop-up noise on power down and
+	// after exiting from hibernation on some PC
+	rc = nau83gxx_write_wordU16(
+			config_handle->i2c_dev, config_handle->dev_addr, 0x13, 0xF1CF);
+	os_delay_ms(10);
+	//////////////
+
 	rc = nau83gxx_write_wordU16(
 			config_handle->i2c_dev, config_handle->dev_addr, 0x0, 0x0);
+	rc = nau83gxx_write_wordU16(
+			config_handle->i2c_dev, config_handle->dev_addr, 0x1, 0x1);
+	rc = nau83gxx_write_wordU16(
+			config_handle->i2c_dev, config_handle->dev_addr, 0x1, 0x0);
 	runtime_handle->state = STATE_NOT_INITIALIZED;
 	free(runtime_handle->dataBuf);
 	return rc;
