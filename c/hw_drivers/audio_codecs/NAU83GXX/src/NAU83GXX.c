@@ -648,11 +648,7 @@ static uint8_t process_power_down_msg(
 	//////////////
 
 	rc = nau83gxx_write_wordU16(
-			config_handle->i2c_dev, config_handle->dev_addr, 0x0, 0x0);
-	rc = nau83gxx_write_wordU16(
-			config_handle->i2c_dev, config_handle->dev_addr, 0x1, 0x1);
-	rc = nau83gxx_write_wordU16(
-			config_handle->i2c_dev, config_handle->dev_addr, 0x1, 0x0);
+			config_handle->i2c_dev, config_handle->dev_addr, 0x00, 0x0);
 	runtime_handle->state = STATE_NOT_INITIALIZED;
 	free(runtime_handle->dataBuf);
 	return rc;
