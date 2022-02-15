@@ -353,7 +353,6 @@ void NAU83GXX_OCP_recovery(struct NAU83GXX_config_t *config_handle,
 					reg_array[i].u8Reg, reg_array[i].u8Value, 2);
 			if (ret) return ret;
 		}
-		os_delay_ms(10); // TO REMOVE
 	}
 	return NAU83GXX_RC_OK;
 }
