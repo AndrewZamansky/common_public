@@ -41,18 +41,18 @@
 
 #define PRINTF_DBG(...)       PRINTF_printf(PRINTF_TYPE_DBG, __VA_ARGS__)
 #define PRINTF_DBG_ISR(...)   PRINTF_printf(PRINTF_TYPE_DBG_ISR, __VA_ARGS__)
- #define PRINTF_NOTE(...)     PRINTF_printf(PRINTF_TYPE_NOTE, __VA_ARGS__)
+#define PRINTF_NOTE(...)      PRINTF_printf(PRINTF_TYPE_NOTE, __VA_ARGS__)
 
  // use following functions to avoid  printf  code
 #define PRINT_STR_DBG(str)      PRINTF_print_str(PRINTF_TYPE_DBG, str)
 #define PRINT_STR_DBG_ISR(str)  PRINTF_print_str(PRINTF_TYPE_DBG_ISR, str)
- #define PRINT_STR_NOTE(str)    PRINTF_print_str(PRINTF_TYPE_NOTE, str)
+#define PRINT_STR_NOTE(str)     PRINTF_print_str(PRINTF_TYPE_NOTE, str)
 
 #define PRINT_DATA_DBG(data, len)     \
 				PRINTF_print_data(PRINTF_TYPE_DBG, (uint8_t*)data, len)
 #define PRINT_DATA_DBG_ISR(data, len)     \
 				PRINTF_print_data(PRINTF_TYPE_DBG_ISR, (uint8_t*)data, len)
- #define PRINT_DATA_NOTE(data, len)    \
+#define PRINT_DATA_NOTE(data, len)    \
 				PRINTF_print_data(PRINTF_TYPE_NOTE, (uint8_t*)data, len)
 
 #endif //#if (CONFIG_USE_MINIMAL_PRINTF)
@@ -71,10 +71,12 @@
 	#undef PRINTF_DBG
 	#undef PRINT_STR_DBG
 	#undef PRINT_DATA_DBG
+	#undef PRINT_DATA_DBG_ISR
 
-	#define PRINTF_DBG(...)
-	#define PRINT_STR_DBG(str)
-	#define PRINT_DATA_DBG(data,len)
+	static void __attribute__((unused)) PRINTF_DBG() {} ;
+	static void __attribute__((unused)) PRINT_DATA_DBG_ISR() {} ;
+	static void __attribute__((unused)) PRINT_STR_DBG() {} ;
+	static void __attribute__((unused)) PRINT_DATA_DBG() {} ;
 
 #endif
 

@@ -326,8 +326,6 @@ void PRINTF_print_str(enum PRINTF_TYPE_e aPrntType, const char* str)
 }
 
 
-#ifndef _DONT_USE_PRINTF
-
 /**
  * PRINTF_printf()
  *
@@ -349,8 +347,4 @@ void PRINTF_printf(enum PRINTF_TYPE_e aPrntType, const char* Format, ...)
 	PRINTF_print_str(aPrntType, buffer);
 }
 
-
-#endif
-
-
-#endif
+#endif // if (CONFIG_USE_MINIMAL_PRINTF)
