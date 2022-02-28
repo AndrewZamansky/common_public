@@ -111,7 +111,8 @@ enum NAU83GXX_IOCTL_e {
 	IOCTL_KCS_SEND_COLLECTED_SETUP_DATA,
 	IOCTL_KCS_SEND_SETUP_NON_BLOCKING,
 	IOCTL_NAU83GXX_GET_INFO,
-	IOCTL_NAU83GXX_BYPASS_KCS
+	IOCTL_NAU83GXX_BYPASS_KCS,
+	IOCTL_NAU83GXX_BYPASS_BIQUADS
 };
 
 struct hw_is_ready_ioctl_t {
@@ -159,6 +160,10 @@ struct kcs_send_setup_non_blocking_ioctl_t {
 
 
 struct nau83gxx_bypass_kcs_ioctl_t {
+	uint8_t   bypass; // 0 - don't bypass, 1-255 - bypass
+};
+
+struct nau83gxx_bypass_biquads_ioctl_t {
 	uint8_t   bypass; // 0 - don't bypass, 1-255 - bypass
 };
 

@@ -54,6 +54,7 @@ enum main_msg_e {
 	MSG_SEND_COLLECTED_SETUP,
 	MSG_SEND_SETUP,
 	MSG_SEND_BYPASS_KCS,
+	MSG_SEND_BYPASS_BIQUADS,
 	MSG_CONTINUE_RECOVERY,
 	MSG_POWER_DOWN,
 };
@@ -933,6 +934,39 @@ static uint8_t process_send_bypass_kcs_msg(
 	return rc;
 }
 
+
+static uint8_t process_send_bypass_biquads_msg(
+		struct NAU83GXX_config_t *config_handle,
+		struct NAU83GXX_runtime_t *runtime_handle,
+		struct send_bypass_msg_t *p_send_bypass_msg)
+{
+	uint8_t rc;
+	uint16_t val;
+
+	if (STATE_IDLE != runtime_handle->state)
+	{
+		return NAU83GXX_RC_DRIVER_BUSY | runtime_handle->state;
+	}
+
+	 nau83gxx_read_wordU16(config_handle->i2c_dev,
+				runtime_handle->dev_addr, 0x9D, &val);
+	if (p_send_bypass_msg->bypass)
+	{
+		val |= 0xE000;
+	}
+	else
+	{
+		val &= ~0xE000;
+	}
+
+
+	rc = nau83gxx_write_wordU16(config_handle->i2c_dev,
+			runtime_handle->dev_addr, 0x9D, val);
+
+	return rc;
+}
+
+
 /**
  * nau83gxx_task()
  *
@@ -1025,6 +1059,10 @@ static void nau83gxx_task (void * adev)
 			break;
 		case MSG_SEND_BYPASS_KCS:
 			rc = process_send_bypass_kcs_msg(config_handle,
+					runtime_handle, &msg.send_bypass_msg);
+			break;
+		case MSG_SEND_BYPASS_BIQUADS:
+			rc = process_send_bypass_biquads_msg(config_handle,
 					runtime_handle, &msg.send_bypass_msg);
 			break;
 		default:
@@ -1357,6 +1395,20 @@ static uint8_t send_bypass_kcs(
 }
 
 
+static uint8_t send_bypass_biquads(
+	struct NAU83GXX_runtime_t *runtime_handle,
+	struct nau83gxx_bypass_kcs_ioctl_t *p_nau83gxx_bypass_kcs_ioctl)
+{
+	struct send_bypass_msg_t  *p_send_bypass_msg;
+	struct task_message_t msg;
+
+	msg.msg_type = MSG_SEND_BYPASS_BIQUADS;
+	p_send_bypass_msg = &msg.send_bypass_msg;
+	p_send_bypass_msg->bypass = p_nau83gxx_bypass_kcs_ioctl->bypass;
+	return send_msg_and_wait(runtime_handle, &msg);
+}
+
+
 static uint8_t get_info(
 	struct NAU83GXX_config_t *config_handle,
 	struct NAU83GXX_runtime_t *runtime_handle,
@@ -1427,6 +1479,8 @@ static uint8_t NAU83GXX_ioctl(struct dev_desc_t *adev,
 		return send_power_down(runtime_handle);
 	case IOCTL_NAU83GXX_BYPASS_KCS:
 		return send_bypass_kcs(runtime_handle, aIoctl_param1);
+	case IOCTL_NAU83GXX_BYPASS_BIQUADS:
+		return send_bypass_biquads(runtime_handle, aIoctl_param1);
 	default :
 		return 1;
 	}
