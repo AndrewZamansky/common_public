@@ -42,7 +42,7 @@ int do_dsp_setkcs_send(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]
 	//I2C device address have to be either 0x10 or 0x11
 	device_addr = strtol(argv[1], &pEnd, 16);
 
-	if(0x10 == device_addr)
+	if ((0x10 == device_addr) || (0x100 == device_addr))
 	{
 		kcs_i2c_dev = G10_0x10;
 	}
