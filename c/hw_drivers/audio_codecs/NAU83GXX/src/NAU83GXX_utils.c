@@ -70,7 +70,7 @@ static const struct NAU83GXX_reg_s cmd_83G10b_init[] = {
 		{  0x0004  ,  {  0x00  ,  0x67  }  }  ,
 		{  0x001a  ,  {  0x00  ,  0x20  }  }  ,  // Disable DSP bypass -  Enable= 0010
 #if BYTES_PER_PCM_CHANNEL == 2
-		{  0x000D  ,  {  0x00  ,  0x02  }  }  ,  // I2S Port Word Length = 16bit
+//		{  0x000D  ,  {  0x00  ,  0x02  }  }  ,  // I2S Port Word Length = 16bit
 #endif
 //		{  0x0001  ,  {  0x00  ,  0x01  }  }  ,  // Soft Reset
 //		{  0x0001  ,  {  0x00  ,  0x01  }  }
@@ -122,7 +122,7 @@ static const struct NAU83GXX_reg_s cmd_83G10c_init[] = {
 		{  0x0004  ,  {  0x00  ,  0x67  }  }  ,// Enable DAC, IVsense channels, DSP_CLK = MCLK * 8 = 12.288M * 8 = 98.304M
 		{  0x0068  ,  {  0x06  ,  0x4F  }  }  , // Enable clock multiplier
 #if BYTES_PER_PCM_CHANNEL == 2
-		{  0x000D  ,  {  0x00  ,  0x02  }  }  , // I2S Port Word Length = 16bit
+//		{  0x000D  ,  {  0x00  ,  0x02  }  }  , // I2S Port Word Length = 16bit
 #endif
 //		{  0x0001  ,  {  0x00  ,  0x00  }  }  , // Soft Reset
 //		{  0x0001  ,  {  0x00  ,  0x00  }  }  , // Soft Reset
@@ -169,7 +169,7 @@ static const struct NAU83GXX_reg_s cmd_83G20a_init[] = {
 		{  0x0001 , {  0x00  ,  0x00  }  }  ,// Soft Reset
 		{  0x0001 , {  0x00  ,  0x00  }  }  ,// Soft Reset
 #if BYTES_PER_PCM_CHANNEL == 2
-		{  0x000D  ,  {  0x00  ,  0x02  }  }  , // I2S Port Word Length = 16bit
+//		{  0x000D  ,  {  0x00  ,  0x02  }  }  , // I2S Port Word Length = 16bit
 #endif
 		{  0x0061 , {  0x55  ,  0x55  }  }  ,// Enable Bias, DAC & ADC's with clock gating
 		{  0x0062 , {  0x00  ,  0x14  }  }  ,// Enable Class-D & disable fast reference power up with clock gating
@@ -437,6 +437,7 @@ static uint8_t set_pcm_ctl(struct NAU83GXX_config_t *config_handle,
 {
 	uint16_t reg_0xB_data;
 	uint16_t reg_0xC_data;
+	uint16_t reg_0xD_data;
 	uint8_t rc;
 
 	reg_0xB_data = config_handle->I2S_in_channel << SOURCE_CHANNEL_POS;
@@ -479,7 +480,25 @@ static uint8_t set_pcm_ctl(struct NAU83GXX_config_t *config_handle,
 	rc = nau83gxx_write_wordU16(i2c_dev, dev_addr, 0x0B, reg_0xB_data);
 	if (rc) return rc;
 
-	return nau83gxx_write_wordU16(i2c_dev, dev_addr, 0x0C, reg_0xC_data);
+	rc = nau83gxx_write_wordU16(i2c_dev, dev_addr, 0x0C, reg_0xC_data);
+	if (rc) return rc;
+
+	reg_0xD_data = 0x2; // default - standard I2S
+	switch (config_handle->I2S_word_length)
+	{
+	case 4:
+		reg_0xD_data |= 0xC0;
+		break;
+	case 3:
+		reg_0xD_data |= 0x80;
+		break;
+	default:
+	case 2:
+		// do nothing
+		break;
+	}
+
+	return nau83gxx_write_wordU16(i2c_dev, dev_addr, 0x0D, reg_0xD_data);
 }
 
 #define CURRENT_LIMIT_POS 11

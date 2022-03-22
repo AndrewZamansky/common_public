@@ -187,6 +187,7 @@ struct NAU83GXX_config_t {
 	uint8_t dev_addr;
 	uint8_t chip_type;
 	uint8_t I2S_in_channel;
+	uint8_t I2S_word_length;
 	uint8_t I2S_out_left_ch_data_type;
 	uint8_t I2S_out_right_ch_data_type;
 	uint8_t enable_recovery;
