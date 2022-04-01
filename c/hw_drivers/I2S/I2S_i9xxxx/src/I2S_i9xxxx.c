@@ -7,6 +7,7 @@
 #include "I2S_i9xxxx_api.h"
 #include "_project_typedefs.h"
 #include "_project_defines.h"
+#include "errors_api.h"
 
 #include "I2S_i9xxxx.h"
 #include "irq_api.h"
@@ -32,24 +33,16 @@
 #include "pin_control_api.h"
 
 
-
-//#define  DEBUG_USE_INTERRUPT
-
-#ifdef  DEBUG_USE_INTERRUPT
-	#if !defined(INTERRUPT_PRIORITY_FOR_I2S)
-		#error "INTERRUPT_PRIORITY_FOR_I2S should be defined"
-	#endif
-
-	#if CHECK_INTERRUPT_PRIO_FOR_OS_SYSCALLS(INTERRUPT_PRIORITY_FOR_I2S)
-		#error "priority should be lower then maximal priority for os syscalls"
-	#endif
-
-
-
-#define TEST_COUNT   100
-static uint32_t i2s_data[TEST_COUNT + 1] = {0};
-static int pos = 0;
+#if !defined(INTERRUPT_PRIORITY_FOR_I2S)
+	#error "INTERRUPT_PRIORITY_FOR_I2S should be defined"
 #endif
+
+#if CHECK_INTERRUPT_PRIO_FOR_OS_SYSCALLS(INTERRUPT_PRIORITY_FOR_I2S)
+	#error "priority should be lower then maximal priority for os syscalls"
+#endif
+
+#define MAX_NUM_OF_U32_WORDS_IN_INPUT_BUFFER 16
+
 
 static uint8_t I2S_i9xxxx_callback(struct dev_desc_t *adev,
 		uint8_t aCallback_num , void * aCallback_param1,
@@ -60,33 +53,66 @@ static uint8_t I2S_i9xxxx_callback(struct dev_desc_t *adev,
 	struct I2S_i9xxxx_runtime_t *runtime_handle;
 	I2S_T*  base_address;
 	i2s_interrupt_handler_t  int_handler;
+	uint32_t *in_buff_u32;
+	size_t  buff_pos;
 
 	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(I2S_i9xxxx, adev);
 	runtime_handle = DEV_GET_RUNTIME_DATA_POINTER(I2S_i9xxxx, adev);
 	base_address = (I2S_T*)cfg_hndl->base_address;
 	status = base_address->STATUS0;
-    if ((status & I2S_STATUS0_RXEMPTY_Msk) == 0)
-    {
-    	int_handler = runtime_handle->int_handler;
-    	if (NULL != int_handler)
-    	{
-    		// TODO:
-    		//int_handler();
-    	}
-#ifdef  DEBUG_USE_INTERRUPT
-		if (pos < TEST_COUNT)
+	in_buff_u32 = (uint32_t *)runtime_handle->in_buff;
+	buff_pos = 0;
+	while ((status & I2S_STATUS0_RXEMPTY_Msk) == 0)
+	{
+		in_buff_u32[buff_pos] = base_address->RXFIFO;
+		buff_pos++;
+		if (MAX_NUM_OF_U32_WORDS_IN_INPUT_BUFFER <= buff_pos) break;
+	}
+	I2S_CLR_INT_FLAG(base_address, I2S_RXTH_INT_FLAG);
+
+	if (status & I2S_STATUS0_RXOVIF_Msk)
+	{
+		I2S_CLR_INT_FLAG(base_address, I2S_RXOV_INT_FLAG);
+		return 0; // just discard data
+	}
+
+	if (buff_pos)
+	{
+		int_handler = runtime_handle->int_handler;
+		if (NULL != int_handler)
 		{
-			pos++;
+			int_handler((uint8_t*)in_buff_u32, buff_pos * 4);
 		}
-		else
-		{
-			pos = 0;
-		}
-		i2s_data[pos] = I2S0->RXFIFO;
-		I2S0->TXFIFO = 0x22224444;//i2s_data[pos];
-#endif
-    }
-    return 0;
+	}
+	return 0;
+}
+
+
+/**
+ * I2S_i9xxxx_pwrite()
+ *
+ * return:
+ */
+static size_t I2S_i9xxxx_pwrite(struct dev_desc_t *adev,
+			const uint8_t *apData, size_t aLength, size_t aOffset)
+{
+	struct I2S_i9xxxx_cfg_t *cfg_hndl;
+	I2S_T*  base_address;
+
+	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(I2S_i9xxxx, adev);
+	base_address = (I2S_T*)cfg_hndl->base_address;
+	if (0 != (aLength % 4))
+	{
+		CRITICAL_ERROR("data should be in U32 words")
+	}
+
+	while (aLength)
+	{
+		base_address->TXFIFO = *(uint32_t*)apData;
+		apData += 4;
+		aLength -= 4;
+	}
+	return aLength;
 }
 
 
@@ -338,9 +364,9 @@ static void enable_tx(
 		struct dev_desc_t *adev, struct I2S_i9xxxx_cfg_t *cfg_hndl)
 {
 	I2S_T*  base_address;
+
 	base_address = (I2S_T*)cfg_hndl->base_address;
 
-	I2S_ENABLE_TX(base_address);
 	if (I2S_I9XXXX_API_DATA_TRANSFER_TYPE_DMA == cfg_hndl->data_transfer_type)
 	{
 		base_address->CTL0 |= I2S_CTL0_TXPDMAEN_Msk;
@@ -349,25 +375,31 @@ static void enable_tx(
 	{
 		enable_I2S_irq(adev, base_address);
 	}
+	I2S_ENABLE_TX(base_address);
 }
 
 
-static void enable_rx(
-		struct dev_desc_t *adev, struct I2S_i9xxxx_cfg_t *cfg_hndl)
+static void enable_rx(struct dev_desc_t *adev,
+		struct I2S_i9xxxx_cfg_t *cfg_hndl,
+		struct I2S_i9xxxx_runtime_t *runtime_handle)
 {
 	I2S_T*  base_address;
 	base_address = (I2S_T*)cfg_hndl->base_address;
+	uint16_t buff_size;
 
-	I2S_ENABLE_RX(base_address);
 	if (I2S_I9XXXX_API_DATA_TRANSFER_TYPE_DMA == cfg_hndl->data_transfer_type)
 	{
 		base_address->CTL0 |= I2S_CTL0_RXPDMAEN_Msk;
 	}
 	else
 	{
+		buff_size = MAX_NUM_OF_U32_WORDS_IN_INPUT_BUFFER * 4;
+		runtime_handle->in_buff = (uint8_t*)os_safe_malloc(buff_size);
+		errors_api_check_if_malloc_succeed(runtime_handle->in_buff);
 		enable_I2S_irq(adev, base_address);
 		I2S_ENABLE_INT(base_address, I2S_IEN_RXTHIEN_Msk);
 	}
+	I2S_ENABLE_RX(base_address);
 }
 
 
@@ -377,7 +409,7 @@ static void enable_rx(
  * return:
  */
 static uint8_t I2S_i9xxxx_ioctl( struct dev_desc_t *adev,
-		const uint8_t aIoctl_num, void * aIoctl_param1 , void * aIoctl_param2)
+		const uint8_t aIoctl_num, void * aIoctl_param1, void * aIoctl_param2)
 {
 	struct I2S_i9xxxx_cfg_t *cfg_hndl;
 	struct I2S_i9xxxx_runtime_t *runtime_handle;
@@ -398,7 +430,7 @@ static uint8_t I2S_i9xxxx_ioctl( struct dev_desc_t *adev,
 		enable_tx(adev, cfg_hndl);
 		break;
 	case I2S_I9XXXX_ENABLE_INPUT_IOCTL:
-		enable_rx(adev, cfg_hndl);
+		enable_rx(adev, cfg_hndl, runtime_handle);
 		break;
 	case IOCTL_DEVICE_STOP:
 		i9xxxx_I2S_stop(cfg_hndl, runtime_handle);
@@ -421,4 +453,5 @@ static uint8_t I2S_i9xxxx_ioctl( struct dev_desc_t *adev,
 #define	MODULE_NAME                       I2S_i9xxxx
 #define	MODULE_IOCTL_FUNCTION             I2S_i9xxxx_ioctl
 #define MODULE_CALLBACK_FUNCTION          I2S_i9xxxx_callback
+#define MODULE_PWRITE_FUNCTION            I2S_i9xxxx_pwrite
 #include "add_module.h"

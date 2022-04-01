@@ -8,4 +8,4 @@
 
 #define NUMBER_OF_NVIC_EXTERNAL_INTERRUPTS   32
 
-#endif /* */
+#endif

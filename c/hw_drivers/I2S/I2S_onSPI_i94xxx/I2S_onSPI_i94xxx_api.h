@@ -25,17 +25,22 @@
 #define I2S_onSPI_I94XXX_API_TXRX_FORMAT_PCMA     SPI_I2SFORMAT_PCMA
 #define I2S_onSPI_I94XXX_API_TXRX_FORMAT_PCMB     (3 << SPI_I2SCTL_FORMAT_Pos)
 
+#define I2S_onSPI_I9XXXX_API_DATA_TRANSFER_TYPE_INTERRUPT_HANDLER     0
+#define I2S_onSPI_I9XXXX_API_DATA_TRANSFER_TYPE_DMA                   1
 
-/**********  define API  types ************/
 
 enum I2SonSPI_API_ioctl_e {
 	SPI_I2S_ENABLE_INPUT_IOCTL = IOCTL_LAST_COMMON_IOCTL + 1,
 	SPI_I2S_DISABLE_INPUT_IOCTL,
 	SPI_I2S_ENABLE_OUTPUT_IOCTL,
 	SPI_I2S_DISABLE_OUTPUT_IOCTL,
-	SPI_I2S_I94XXX_SYNC_FS_TO_DPWM_FS_RATE
+	SPI_I2S_I94XXX_SYNC_FS_TO_DPWM_FS_RATE,
+	SPI_I2S_I9XXXX_SET_INTERRUPT_HANDLER,
+	SPI_I2S_I9XXXX_GET_OVERFLOW_COUNTER
 };
 
+typedef void (*i2s_on_spi_interrupt_handler_t)(
+					uint8_t *in_out_data, size_t in_out_data_len);
 
 struct I2S_onSPI_i94xxx_cfg_t {
 	struct dev_desc_t *   src_clock;
@@ -51,6 +56,8 @@ struct I2S_onSPI_i94xxx_cfg_t {
 	uint32_t     DI_pin;
 	uint32_t     DO_pin;
 	uint32_t     MCLK_pin;
+
+	uint8_t  data_transfer_type;
 
 	// fix for uint8_t/uint16_t access if needed:
 	uint8_t     do_reordering_for_16or8bit_channels;
