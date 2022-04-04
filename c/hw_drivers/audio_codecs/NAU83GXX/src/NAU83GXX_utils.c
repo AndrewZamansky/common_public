@@ -487,10 +487,10 @@ static uint8_t set_pcm_ctl(struct NAU83GXX_config_t *config_handle,
 	switch (config_handle->I2S_word_length)
 	{
 	case 4:
-		reg_0xD_data |= 0xC0;
+		reg_0xD_data |= 0xC;
 		break;
 	case 3:
-		reg_0xD_data |= 0x80;
+		reg_0xD_data |= 0x8;
 		break;
 	default:
 	case 2:
