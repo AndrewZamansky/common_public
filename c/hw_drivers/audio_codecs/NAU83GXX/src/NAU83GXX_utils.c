@@ -32,7 +32,7 @@ static const struct NAU83GXX_reg_s cmd_83G10b_init[] = {
 //		{  0x0000  ,  {  0x00  ,  0x01  }  }  ,  // Reset all registers
 //		{  0x0000  ,  {  0x00  ,  0x00  }  }  ,  // Release reset
 		{  0x0002  ,  {  0x00  ,  0x01  }  }  ,  // Latch I2C address on GPIO's
-		{  0x0003  ,  {  0x00  ,  0x04  }  }  ,  // Block MCLK
+		{  0x0004  ,  {  0x07  ,  0x00  }  }  ,  // Block MCLK
 		{  0x000E  ,  {  0x00  ,  0x00  }  }  ,  // Default I2S setup
 		//-------
 //		{  0x000C  ,  {  0x0c  ,  0x24  }  }  ,  // ADCOUT channels
@@ -48,7 +48,7 @@ static const struct NAU83GXX_reg_s cmd_83G10b_init[] = {
 		{  0x002E  ,  {  0x33  ,  0x10  }  }  ,  // Enable Auto-Attenuator, Enable ALC & set threshold & mode
 		{  0x002F  ,  {  0x01  ,  0x3F  }  }  ,  // was 0x00BF changed after luxare project tests
 		{  0x0040  ,  {  0x08  ,  0x01  }  }  ,  // Set target sample rate
-		{  0x0004  ,  {  0x00  ,  0x07  }  }  ,  // Enable DAC & ADC's (??)
+		{  0x0004  ,  {  0x07  ,  0x07  }  }  ,  // Enable DAC & ADC's (??)
 //		{  0x0017  ,  {  0x3a  ,  0x02  }  }  ,  // Maximum Boost Voltage and Margin
 		{  0x0030  ,  {  0x7d  ,  0x24  }  }  ,  // ?? Unknown, according to trim
 		{  0x0033  ,  {  0xbd  ,  0xc0  }  }  ,  // ?? Unknown, according to trim
@@ -67,7 +67,7 @@ static const struct NAU83GXX_reg_s cmd_83G10b_init[] = {
 		{  0x0062  ,  {  0x00  ,  0x15  }  }  ,  // Enable Boost & Class-D & disable fast reference power up with clock gating
 		{  0x0003  ,  {  0x08  ,  0xE0  }  }  ,  // Set ADC to 12kHz
 		{  0x0068  ,  {  0x00  ,  0x0F  }  }  ,
-		{  0x0004  ,  {  0x00  ,  0x67  }  }  ,
+		{  0x0004  ,  {  0x00  ,  0x67  }  }  ,  // DSP_CLK = (MCLK/2)*16 ; get MCLK from MCLK_PIN
 		{  0x001a  ,  {  0x00  ,  0x20  }  }  ,  // Disable DSP bypass -  Enable= 0010
 #if BYTES_PER_PCM_CHANNEL == 2
 //		{  0x000D  ,  {  0x00  ,  0x02  }  }  ,  // I2S Port Word Length = 16bit
@@ -83,7 +83,7 @@ static const struct NAU83GXX_reg_s cmd_83G10c_init[] = {
 //		{  0x0000  ,  {  0x00  ,  0x01  }  }  , // Reset all registers
 //		{  0x0000  ,  {  0x00  ,  0x00  }  }  , // Release reset
 		{  0x0002  ,  {  0x00  ,  0x01  }  }  , // Latch I2C address on GPIO's
-		{  0x0003  ,  {  0x00  ,  0x04  }  }  , // Block MCLK
+		{  0x0004  ,  {  0x07  ,  0x00  }  }  , // Block MCLK
 		{  0x001A  ,  {  0x00  ,  0x10  }  }  , // Stall DSP
 		{  0x000E  ,  {  0x00  ,  0x00  }  }  , // Default I2S setup
 		//-------
@@ -100,7 +100,7 @@ static const struct NAU83GXX_reg_s cmd_83G10c_init[] = {
 		{  0x002E  ,  {  0x33  ,  0x10  }  }  , // Enable Auto-Attenuator, Enable ALC & set threshold & mode
 		{  0x002F  ,  {  0x01  ,  0x3F  }  }  ,  // was 0x00BF changed after luxare project tests
 		{  0x0040  ,  {  0x08  ,  0x01  }  }  , // Set target sample rate
-		{  0x0004  ,  {  0x00  ,  0x07  }  }  , // Enable DAC & ADC's
+		{  0x0004  ,  {  0x07  ,  0x07  }  }  , // Enable DAC & ADC's
 //		{  0x0017  ,  {  0x3A  ,  0x02  }  }  , // Set Boost Maximum and Margin
 		{  0x0030  ,  {  0x7d  ,  0x00  }  }  ,
 		{  0x0033  ,  {  0xbd  ,  0xc0  }  }  ,
@@ -119,7 +119,7 @@ static const struct NAU83GXX_reg_s cmd_83G10c_init[] = {
 		{  0x0061  ,  {  0x55  ,  0x55  }  }  , // Enable Bias, DAC & ADC's with clock gating
 		{  0x0062  ,  {  0x00  ,  0x15  }  }  , // Enable Boost & Class-D & disable fast reference power up with clock gating
 		{  0x0003  ,  {  0x08  ,  0xE0  }  }  , // Set MCLK, ADC & DAC clock dividers
-		{  0x0004  ,  {  0x00  ,  0x67  }  }  ,// Enable DAC, IVsense channels, DSP_CLK = MCLK * 8 = 12.288M * 8 = 98.304M
+		{  0x0004  ,  {  0x00  ,  0x67  }  }  , // DSP_CLK = (MCLK/2)*16 ; get MCLK from MCLK_PIN
 		{  0x0068  ,  {  0x06  ,  0x4F  }  }  , // Enable clock multiplier
 #if BYTES_PER_PCM_CHANNEL == 2
 //		{  0x000D  ,  {  0x00  ,  0x02  }  }  , // I2S Port Word Length = 16bit
@@ -137,7 +137,7 @@ static const struct NAU83GXX_reg_s cmd_83G20a_init[] = {
 //		{  0x0000 , {  0x00  ,  0x01  }  }  ,// Reset all registers
 //		{  0x0000 , {  0x00  ,  0x00  }  }  ,// Release reset
 		{  0x0002 , {  0x00  ,  0x01  }  }  ,// Latch I2C address on GPIO's
-		{  0x0003 , {  0x00  ,  0x04  }  }  ,// Block MCLK
+		{  0x0004 , {  0x07  ,  0x00  }  }  ,// Block MCLK
 		{  0x001A , {  0x00  ,  0x10  }  }  ,// Stall DSP
 		{  0x000E , {  0x00  ,  0x00  }  }  ,// Default I2S setup
 		//-------
@@ -154,7 +154,7 @@ static const struct NAU83GXX_reg_s cmd_83G20a_init[] = {
 		{  0x002E , {  0xC6  ,  0xE0  }  }  ,// Enable ALC & set threshold & mode
 		{  0x002F , {  0x00  ,  0xFF  }  }  ,// Set segment threshold
 		{  0x0040 , {  0x08  ,  0x01  }  }  ,// Set target sample rate
-		{  0x0004 , {  0x00  ,  0x07  }  }  ,// Enable DAC & ADC's
+		{  0x0004 , {  0x07  ,  0x07  }  }  ,// Enable DAC & ADC's
 		{  0x0030 , {  0x7d  ,  0x00  }  }  ,// Set Isense Temperature Coefficient
 		{  0x0033 , {  0xbd  ,  0xc0  }  }  ,// Set Isense TC low pas filter
 		{  0x0018 , {  0x80  ,  0x00  }  }  ,// Set TC EN
@@ -175,7 +175,7 @@ static const struct NAU83GXX_reg_s cmd_83G20a_init[] = {
 		{  0x0062 , {  0x00  ,  0x14  }  }  ,// Enable Class-D & disable fast reference power up with clock gating
 		{  0x0003 , {  0x08  ,  0xE0  }  }  ,// Set MCLK, ADC & DAC clock dividers
 		{  0x0068 , {  0x06  ,  0x4F  }  }  ,// VREF Bandgap buffer ON, I/V Sense Ref Buffer Setting -1.5dB
-		{  0x0004 , {  0x00  ,  0x67  }  }  ,//  DSP_CLK = (MCLK/2)*16
+		{  0x0004 , {  0x00  ,  0x67  }  }  ,//  // DSP_CLK = (MCLK/2)*16 ; get MCLK from MCLK_PIN
 //		{  0x0001 , {  0x00  ,  0x00  }  }  , // Soft Reset
 //		{  0x0001 , {  0x00  ,  0x00  }  }  , // Soft Reset
 //		{  0xDDDD , {  0  ,  63  }  }  , // Firmware Delay
