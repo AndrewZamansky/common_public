@@ -176,6 +176,7 @@ enum NAU83GXX_chip_state_e {
 struct NAU83GXX_get_info_t {
 	uint8_t chip_type;
 	uint8_t chip_state;
+	uint8_t is_kcs_loaded;
 };
 
 

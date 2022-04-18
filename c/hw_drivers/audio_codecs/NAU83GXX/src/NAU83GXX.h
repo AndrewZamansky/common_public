@@ -33,6 +33,7 @@ struct NAU83GXX_runtime_t {
 	uint8_t  do_recovery;
 	uint8_t chip_type;
 	uint8_t dev_addr;
+	uint8_t is_kcs_loaded;
 };
 SET_RUNTIME_DATA_TYPE(NAU83GXX, struct NAU83GXX_runtime_t);
 

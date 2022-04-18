@@ -636,6 +636,10 @@ static uint8_t perform_full_init( struct NAU83GXX_config_t *config_handle,
 		rc = send_kcs_setup(config_handle, runtime_handle, 0,
 			p_init_hw_msg->kcs_spkr_param_data,
 			p_init_hw_msg->kcs_spkr_param_size);
+		if (0 == rc)
+		{
+			runtime_handle->is_kcs_loaded = 1;
+		}
 	}
 	return rc;
 }
@@ -722,6 +726,7 @@ static uint8_t process_reinit_i2c_regs_msg(
 {
 	if (NULL != runtime_handle->registers_init_arr)
 	{
+		runtime_handle->is_kcs_loaded = 0;
 		return send_register_array(config_handle->i2c_dev,
 				runtime_handle->dev_addr,
 				runtime_handle->registers_init_arr,
@@ -729,6 +734,7 @@ static uint8_t process_reinit_i2c_regs_msg(
 	}
 	else
 	{
+		runtime_handle->is_kcs_loaded = 0;
 		return nau83gxx_init_i2c_regs(config_handle, runtime_handle);
 	}
 }
@@ -884,6 +890,7 @@ static uint8_t process_kcs_send_collected_setup_data_msg(
 		return NAU83GXX_RC_BUFFER_NOT_EQUAL_TO_SIZE;
 	}
 	runtime_handle->state = STATE_IDLE;
+	runtime_handle->is_kcs_loaded = 1;
 
 	return send_kcs_setup(config_handle, runtime_handle,
 			runtime_handle->addr_offset,
@@ -1424,6 +1431,8 @@ static uint8_t get_info(
 	{
 		p_get_info->chip_state = NAU83GXX_CHIP_STATE_RUNNING;
 	}
+
+	p_get_info->is_kcs_loaded = runtime_handle->is_kcs_loaded;
 	return NAU83GXX_RC_OK;
 }
 
