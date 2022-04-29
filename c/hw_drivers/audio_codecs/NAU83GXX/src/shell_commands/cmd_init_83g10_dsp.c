@@ -14,8 +14,8 @@
 #include "i2c_api.h"
 
 
-extern struct dev_desc_t *G10_0x10;
-extern struct dev_desc_t *G10_0x11;
+extern struct dev_desc_t *NAU83GXX_left_dev;
+extern struct dev_desc_t *NAU83GXX_right_dev;
 
 /*
  * Subroutine:  do_init_83g10_dsp
@@ -43,11 +43,11 @@ int do_init_83g10_dsp(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 
 	if ((0x10 == device_addr) || (0x100 == device_addr))
 	{
-		rc = DEV_IOCTL(G10_0x10, IOCTL_NAU83GXX_REINIT_I2C_REGISTERS);
+		rc = DEV_IOCTL(NAU83GXX_left_dev, IOCTL_NAU83GXX_REINIT_I2C_REGISTERS);
 	}
 	else
 	{
-		rc = DEV_IOCTL(G10_0x11, IOCTL_NAU83GXX_REINIT_I2C_REGISTERS);
+		rc = DEV_IOCTL(NAU83GXX_right_dev, IOCTL_NAU83GXX_REINIT_I2C_REGISTERS);
 	}
 	//temporary add delay. will be removed after added sync with KCS task
 	os_delay_ms(100);

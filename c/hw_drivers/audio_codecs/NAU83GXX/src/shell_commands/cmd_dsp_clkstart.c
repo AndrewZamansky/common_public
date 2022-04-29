@@ -13,8 +13,8 @@
 #include "i2c_api.h"
 
 
-extern struct dev_desc_t *G10_0x10;
-extern struct dev_desc_t *G10_0x11;
+extern struct dev_desc_t *NAU83GXX_left_dev;
+extern struct dev_desc_t *NAU83GXX_right_dev;
 
 
 int do_dsp_clkstart(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
@@ -41,11 +41,11 @@ int do_dsp_clkstart(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 
 	if ((0x10 == device_addr) || (0x100 == device_addr))
 	{
-		kcs_i2c_dev = G10_0x10;
+		kcs_i2c_dev = NAU83GXX_left_dev;
 	}
 	else if(0x11 == device_addr)
 	{
-		kcs_i2c_dev = G10_0x11;
+		kcs_i2c_dev = NAU83GXX_right_dev;
 	}
 	else
 	{
@@ -58,11 +58,11 @@ int do_dsp_clkstart(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	rc = DEV_IOCTL(kcs_i2c_dev, IOCTL_KCS_SIMPLE_CMD, &kcs_simple_cmd_ioctl);
 
 end:
-	SHELL_REPLY_PRINTF("rc%02X\n\r", rc);
+	SHELL_REPLY_PRINTF("rc%02X\r\n", rc);
 
 	if(NAU83GXX_RC_OK == rc)
 	{
-		SHELL_REPLY_PRINTF("%08X\n\r", status);
+		SHELL_REPLY_PRINTF("%08X\r\n", status);
 	}
 
 	// needed for Klippel GUI:
@@ -74,5 +74,5 @@ U_BOOT_CMD(
     dsp_clkstart ,     255,	0,	do_dsp_clkstart,
 	"[-device address]\n\tReads the counter from DSP that increments at every read.",
 	"info   - NAU83G10 Specific, Reads a register that returns the \
-	current status of the DSP.\n\r"
+	current status of the DSP.\r\n"
 );

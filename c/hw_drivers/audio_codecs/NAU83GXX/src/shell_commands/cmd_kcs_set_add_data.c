@@ -1,5 +1,5 @@
 /*
- *  cmd_dsp_setkcs_store.c
+ *  cmd_kcs_set_add_data.c
  */
 
 #include "audio_path_api.h"
@@ -10,14 +10,10 @@
 
 #include "os_wrapper.h"
 #include "NAU83GXX_api.h"
-#include "i2c_api.h"
 
-
-extern struct dev_desc_t *NAU83GXX_left_dev;
-extern struct dev_desc_t *NAU83GXX_right_dev;
 
 /*
- * Subroutine:  dsp_setkcs_store
+ * Subroutine:  kcs_set_add_data
  *
  * Description: Writes 4 bytes to the buffer of the kcs_i2c device and
  *              increments the counter by 4 to proceed to the next memory
@@ -28,21 +24,20 @@ extern struct dev_desc_t *NAU83GXX_right_dev;
  * Return:      None
  *
  */
-int do_dsp_setkcs_store(
+int do_kcs_set_add_data(
 		cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 	struct kcs_add_data_for_send_ioctl_t add_data_ioctl;
-	long int   device_addr;
 	uint32_t   data_val;
 	char *pEnd;
 	int rc = NAU83GXX_RC_OK;
-	struct dev_desc_t *kcs_i2c_dev;
+	struct dev_desc_t *kcs_dev;
 	uint8_t data[4];
 
 	/*
 	 * Arguments:
 	 *     [0] Command
-	 *     [1] Device Address
+	 *     [1] Device name
 	 *     [2] Data being stored (4 bytes)
 	 */
 	if(argc != 3)
@@ -51,26 +46,15 @@ int do_dsp_setkcs_store(
 		goto end;
 	}
 
-	//Get I2C device address, same was as c programs in linux off gcc
-	//I2C device address have to be either 0x10 or 0x11
-	device_addr = strtol(argv[1], &pEnd, 16);
+	kcs_dev = DEV_OPEN(argv[1]);
 
-	if ((0x10 == device_addr) || (0x100 == device_addr))
-	{
-		kcs_i2c_dev = NAU83GXX_left_dev;
-	}
-	else if(0x11 == device_addr)
-	{
-		kcs_i2c_dev = NAU83GXX_right_dev;
-	}
-	else
+	if (NULL == kcs_dev)
 	{
 		rc = NAU83GXX_RC_DEVICE_DOES_NOT_EXIST;
 		goto end;
 	}
 
-	//Get data in hex
-	data_val = strtoul(argv[2], &pEnd, 16);
+	data_val = strtoul(argv[2], &pEnd, 0);
 
 	if(0xFFFFFFFF == data_val)
 	{
@@ -86,20 +70,16 @@ int do_dsp_setkcs_store(
 	add_data_ioctl.size = 4;
 	add_data_ioctl.data = data;
 
-	rc = DEV_IOCTL(kcs_i2c_dev, IOCTL_KCS_ADD_DATA_FOR_SEND, &add_data_ioctl);
+	rc = DEV_IOCTL(kcs_dev, IOCTL_KCS_ADD_DATA_FOR_SEND, &add_data_ioctl);
 
 end:
-	os_delay_ms(1);
-	SHELL_REPLY_PRINTF("rc%02X\n\r", rc);
+	SHELL_REPLY_PRINTF("rc%02X\r\n", rc);
 
-	// needed for Klippel GUI:
-	SHELL_REPLY_PRINTF("%c", 0x04UL);
 	return 0;
 }
 
 U_BOOT_CMD(
-    dsp_setkcs_store ,     255,	0,	do_dsp_setkcs_store,
+    kcs_set_add_data , 255, 0, do_kcs_set_add_data,
 	"[-device_address] [-four_bytes_to_store_in_buffer]\n\tStores and increments buffer by four bytes",
-	"info   - NAU83G10 Specific, Reads a specific amount of words \
-	by an offset in the DSP.\n\r"
+	"info   - \r\n"
 );

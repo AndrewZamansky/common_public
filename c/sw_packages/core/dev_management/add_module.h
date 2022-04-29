@@ -1,4 +1,4 @@
-#ifndef __add_module_h__
+// #ifndef __add_module_h__
 #define __add_module_h__
 
 #include "dev_management_api.h"
@@ -94,4 +94,19 @@ MODULES_PLACEMENT struct included_module_t MODULE_INST(MODULE_NAME) =
 	};
 
 
-#endif/*__add_module_h__*/
+#undef  MODULE_NAME
+#undef  MODULE_IOCTL_FUNCTION
+#undef  MODULE_PWRITE_FUNCTION
+#undef  MODULE_PREAD_FUNCTION
+#undef  MODULE_HAS_NO_CONFIG_DATA
+#undef  MODULE_HAS_NO_RUNTIME_DATA
+#undef  MODULE_RUNTIME_DATA_SIZE
+#undef  MODULE_CALLBACK_FUNCTION
+#undef  MODULE_HAS_NO_CONFIG_DATA
+#undef  MODULE_PARAMS_ARR2
+#undef  MODULE_PARAMS_ARR
+#undef  POINTER_TO_CONFIGURABLE_PARAMS_ARRAY
+#undef  SIZE_OF_POINTER_TO_CONFIGURABLE_PARAMS_ARRAY
+
+
+// #endif/*__add_module_h__*/

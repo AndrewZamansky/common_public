@@ -29,14 +29,9 @@
 #define NAU83GXX_OUT_CHANNEL_AEC            4
 
 
-#define NAU83GXX_DSP_REG         0xF000
-#define SIZE_OF_STD_DSP_WORD     4
-#define DSP_COMM_IDLE_WORD       0xF4F3F2F1
-#define DSP_COMM_PREAMBLE        0xA1B2
-#define DSP_SPKR_PARAM_MAX_BYTES 972
-
+#define NAU83GXX_DSP_CORE_0_REG             0xF000
+#define NAU83GXX_DSP_CORE_1_REG             0xF002
 #define KCS_I2C_MAX_BUFFER_IN_BYTES        ( 4095 )
-#define FULL_KCS_DIAG_READ                 ( 3876 )
 
 struct NAU83GXX_reg_s {
 	size_t  u8Reg;
@@ -44,9 +39,6 @@ struct NAU83GXX_reg_s {
 };
 
 typedef void (*end_of_ioctl_callback_f)(uint8_t ret_code);
-
-#define L_CH_DEV_ADDR 0x10 // should be removed after klippel upgrade of db-lab
-#define R_CH_DEV_ADDR 0x11 // should be removed after klippel upgrade of db-lab
 
 
 /*
@@ -102,6 +94,7 @@ enum kcs_i2c_cmd_e {
 enum NAU83GXX_IOCTL_e {
 	IOCTL_HW_IS_READY_TO_INIT = IOCTL_LAST_COMMON_IOCTL + 1,
 	IOCTL_NAU83GXX_REINIT_I2C_REGISTERS,
+	IOCTL_KCS_REINIT_I2C_REGISTERS,
 	IOCTL_KCS_SIMPLE_CMD,
 	IOCTL_KCS_GET_SETUP_CMD,
 	IOCTL_KCS_GET_RESULTS_CMD,
@@ -194,14 +187,23 @@ struct NAU83GXX_config_t {
 	uint8_t enable_recovery;
 	struct dev_desc_t *irq_pin;
 };
-
 SET_CONFIG_TYPE(NAU83GXX, struct NAU83GXX_config_t);
 
+
+struct KCS_config_t {
+	struct dev_desc_t * nau83gxx;
+	uint16_t dsp_core;
+};
+SET_CONFIG_TYPE(KCS, struct KCS_config_t);
+
+
 #ifdef FOR_EXPORT
-	uint8_t dev_NAU83GXX_ioctl(struct dev_desc_t *adev,
-			const uint8_t aIoctl_num, void *aIoctl_param);
-	uint8_t dev_NAU83GXX_callback(struct dev_desc_t *adev,
-					const uint8_t aCallback_num);
+uint8_t dev_NAU83GXX_ioctl(struct dev_desc_t *adev,
+		const uint8_t aIoctl_num, void *aIoctl_param);
+uint8_t dev_NAU83GXX_ioctl(struct dev_desc_t *adev,
+		const uint8_t aIoctl_num, void *aIoctl_param);
+uint8_t dev_KCS_ioctl(struct dev_desc_t *adev,
+		const uint8_t aIoctl_num, void *aIoctl_param);
 #endif
 			
 #endif

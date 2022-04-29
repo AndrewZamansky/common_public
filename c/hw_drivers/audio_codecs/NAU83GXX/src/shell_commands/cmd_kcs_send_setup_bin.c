@@ -7,25 +7,24 @@
 #include "NAU83GXX_api.h"
 
 
-extern struct dev_desc_t *G10_0x10;
-extern struct dev_desc_t *G10_0x11;
+extern struct dev_desc_t *NAU83GXX_left_dev;
+extern struct dev_desc_t *NAU83GXX_right_dev;
 
 
-static uint8_t perform_send_setup( struct dev_desc_t *NAU83GXX_dev,
+static uint8_t perform_send_setup( struct dev_desc_t *dev,
 		struct kcs_start_collect_data_for_send_ioctl_t *p_collect_data_ioctl,
 		struct kcs_add_data_for_send_ioctl_t *p_add_data_ioctl)
 {
 	uint8_t reply;
 
-	reply = DEV_IOCTL(NAU83GXX_dev,
+	reply = DEV_IOCTL(dev,
 		IOCTL_KCS_START_COLLECT_DATA_FOR_SEND, p_collect_data_ioctl);
 	if (reply) return reply;
 
-	reply = DEV_IOCTL(NAU83GXX_dev,
-			IOCTL_KCS_ADD_DATA_FOR_SEND, p_add_data_ioctl);
+	reply = DEV_IOCTL(dev, IOCTL_KCS_ADD_DATA_FOR_SEND, p_add_data_ioctl);
 	if (reply) return reply;
 
-	reply = DEV_IOCTL(NAU83GXX_dev, IOCTL_KCS_SEND_COLLECTED_SETUP_DATA);
+	reply = DEV_IOCTL(dev, IOCTL_KCS_SEND_COLLECTED_SETUP_DATA);
 	return reply;
 }
 
@@ -57,13 +56,13 @@ static void do_send_setup_bin(uint8_t *buff, size_t length)
 	if (0x1 & buff[0])
 	{
 		reply =
-			perform_send_setup(G10_0x10, &collect_data_ioctl, &add_data_ioctl);
+			perform_send_setup(NAU83GXX_left_dev, &collect_data_ioctl, &add_data_ioctl);
 		if (reply) goto end;
 	}
 	if (0x2 & buff[0])
 	{
 		reply =
-			perform_send_setup(G10_0x11, &collect_data_ioctl, &add_data_ioctl);
+			perform_send_setup(NAU83GXX_right_dev, &collect_data_ioctl, &add_data_ioctl);
 		if (reply) goto end;
 	}
 

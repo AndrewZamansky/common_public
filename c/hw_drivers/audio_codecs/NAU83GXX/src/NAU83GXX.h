@@ -24,8 +24,9 @@ struct NAU83GXX_runtime_t {
 	os_mutex_t main_mutex;
 	os_task_t  task_handle;
 	const struct NAU83GXX_reg_s *registers_init_arr;
+	uint16_t dsp_core_address;
 	uint16_t registers_init_arr_num_of_items;
-	uint16_t dataSetBufPos;
+	uint16_t data_set_buff_pos;
 	uint16_t addr_offset;
 	uint16_t sendLen;
 	uint8_t *dataBuf;

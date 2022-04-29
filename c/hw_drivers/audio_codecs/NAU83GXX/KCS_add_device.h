@@ -1,0 +1,30 @@
+/* !! DONT PUT HEADER FILE PROTECTIONS IN THIS FILE !! */
+
+#include "NAU83GXX_api.h"
+#include "src/NAU83GXX.h"
+
+
+#ifndef  KCS_DT_NAU83GXX_DEV
+	#error "KCS_DT_NAU83GXX_DEV should be defined"
+#endif
+EXTERN_DECLARATION_TO_STATIC_DEVICE_INST(KCS_DT_NAU83GXX_DEV);
+#define _POINTER_TO_NAU83GXX_DEV   P_TO_STATIC_DEVICE_INST(KCS_DT_NAU83GXX_DEV)
+
+#ifndef  KCS_DT_DSP_CORE
+	#error "KCS_DT_DSP_CORE should be defined"
+#endif
+
+
+SET_STATIC_DEV_CONFIG(KCS) =
+{
+	_POINTER_TO_NAU83GXX_DEV,
+	KCS_DT_DSP_CORE,
+};
+
+#define MODULE_HAS_NO_RUNTIME_DATA
+
+#include "add_static_dev.h"
+
+#undef  KCS_DT_NAU83GXX_DEV
+#undef  _POINTER_TO_NAU83GXX_DEV
+#undef  KCS_DT_DSP_CORE

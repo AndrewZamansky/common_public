@@ -245,7 +245,7 @@ uint8_t nau83gxx_write(struct dev_desc_t *i2c_dev, uint8_t device_addr,
 	i2c_write_struct.reg_addr_size = 2;
 	i2c_write_struct.num_of_bytes_written = 0;
 
-	PRINTF_DBG( "sending reg = 0x%02x : 0x%02x 0x%02x 0x%02x 0x%02x\n\r",
+	PRINTF_DBG( "sending reg = 0x%02x : 0x%02x 0x%02x 0x%02x 0x%02x\r\n",
 			i2c_write_struct.reg_addr, i2c_write_struct.tx_data[0],
 			i2c_write_struct.tx_data[1], i2c_write_struct.tx_data[2],
 										i2c_write_struct.tx_data[3] );
@@ -255,11 +255,11 @@ uint8_t nau83gxx_write(struct dev_desc_t *i2c_dev, uint8_t device_addr,
 	{
 		if (0 == retries--)
 		{
-			PRINTF_DBG("error: 0x%02X\n\r",i2c_write_struct.i2c_error);
+			PRINTF_DBG("error: 0x%02X\r\n",i2c_write_struct.i2c_error);
 			return NAU83GXX_RC_I2C_ERROR;
 		}
 
-		PRINTF_DBG("error: 0x%02X\tRetrying...\n\r",i2c_write_struct.i2c_error);
+		PRINTF_DBG("error: 0x%02X\tRetrying...\r\n",i2c_write_struct.i2c_error);
 		DEV_IOCTL(i2c_dev, IOCTL_I2C_MASTER_WRITE, &i2c_write_struct);
 	}
 

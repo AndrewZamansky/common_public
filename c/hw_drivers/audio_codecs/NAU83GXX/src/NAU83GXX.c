@@ -34,6 +34,10 @@
 
 #define KCS_I2C_DSP_MAX_TX_SIZE            ( 96 )
 
+#define SIZE_OF_STD_DSP_WORD     4
+#define DSP_COMM_IDLE_WORD       0xF4F3F2F1
+#define DSP_COMM_PREAMBLE        0xA1B2
+
 //#define VBST_LEVEL 0x3402
 #define AUTO_START_BIQUAD
 
@@ -114,6 +118,7 @@ struct send_bypass_msg_t {
 struct task_message_t
 {
 	uint8_t    msg_type;
+	uint16_t dsp_core_address;
 	union {
 		struct init_hw_msg_t  init_hw_msg;
 		struct kcs_simple_cmd_msg_t  kcs_simple_cmd_msg;
@@ -209,7 +214,7 @@ static uint8_t kcs_i2c_write(struct NAU83GXX_config_t *config_handle,
 					uint8_t const *write_data, size_t write_data_size)
 {
 	return nau83gxx_write(config_handle->i2c_dev, runtime_handle->dev_addr,
-			NAU83GXX_DSP_REG, write_data, write_data_size);
+			runtime_handle->dsp_core_address, write_data, write_data_size);
 
 }
 
@@ -219,7 +224,7 @@ static uint8_t kcs_i2c_read(struct NAU83GXX_config_t *config_handle,
 	uint8_t rc;
 
 	rc = nau83gxx_read(config_handle->i2c_dev, runtime_handle->dev_addr,
-			NAU83GXX_DSP_REG, read_data, SIZE_OF_STD_DSP_WORD);
+			runtime_handle->dsp_core_address, read_data, SIZE_OF_STD_DSP_WORD);
 
 	return rc;
 }
@@ -238,7 +243,7 @@ static uint8_t check_if_idle(struct NAU83GXX_config_t *config_handle,
 		if(rc)
 		{
 			// communication error
-			PRINTF_DBG("IDLE_WORD NAU83GXX_RC_COMMUNICATION_ERROR\n\r");
+			PRINTF_DBG("IDLE_WORD NAU83GXX_RC_COMMUNICATION_ERROR\r\n");
 		}
 		if(u32Data == DSP_COMM_IDLE_WORD)
 		{
@@ -249,7 +254,7 @@ static uint8_t check_if_idle(struct NAU83GXX_config_t *config_handle,
 	//or previous synchronization issue
 	if(retries == 0)
 	{
-		PRINTF_DBG("NAU83GXX_RC_TIMEDOUT_FOR_IDLE_WORD\n\r");
+		PRINTF_DBG("NAU83GXX_RC_TIMEDOUT_FOR_IDLE_WORD\r\n");
 		return NAU83GXX_RC_TIMEDOUT_FOR_IDLE_WORD;
 	}
 	return NAU83GXX_RC_OK;
@@ -270,7 +275,7 @@ static uint8_t get_preamble(struct NAU83GXX_config_t *config_handle,
 		if (rc)
 		{
 			// communication error
-			PRINTF_DBG("PREAMBLE NAU83GXX_RC_COMMUNICATION_ERROR\n\r");
+			PRINTF_DBG("PREAMBLE NAU83GXX_RC_COMMUNICATION_ERROR\r\n");
 		}
 		// check for preamble;
 		if(data[0] == ((DSP_COMM_PREAMBLE >> 8) & 0xFF) &&
@@ -286,7 +291,7 @@ static uint8_t get_preamble(struct NAU83GXX_config_t *config_handle,
 	// DSP data was not ready after the amount of retries
 	if(retries == 0)
 	{
-		PRINTF_DBG("NAU83GXX_RC_PREAMBLE_NOT_FOUND\n\r");
+		PRINTF_DBG("NAU83GXX_RC_PREAMBLE_NOT_FOUND\r\n");
 		return NAU83GXX_RC_PREAMBLE_NOT_FOUND;
 	}
 
@@ -327,7 +332,7 @@ static uint8_t send_header_and_update_lenU32(
 	if(rc)
 	{
 		// communication error
-		PRINTF_DBG("NAU83GXX_RC_COMMUNICATION_ERROR preamble\n\r");
+		PRINTF_DBG("NAU83GXX_RC_COMMUNICATION_ERROR preamble\r\n");
 		return NAU83GXX_RC_COMMUNICATION_ERROR;
 	}
 	*msg_len_u32 = lenInU32;
@@ -396,7 +401,7 @@ static uint8_t send_payload(struct NAU83GXX_config_t *config_handle,
 		{
 			// communication error
 			PRINTF_DBG(
-				"PAYLOAD NAU83GXX_RC_COMMUNICATION_ERROR fragment %d\n\r",i);
+				"PAYLOAD NAU83GXX_RC_COMMUNICATION_ERROR fragment %d\r\n",i);
 			return NAU83GXX_RC_COMMUNICATION_ERROR;
 		}
 		left_size -= 4;
@@ -429,7 +434,7 @@ static uint8_t get_reply(struct NAU83GXX_config_t *config_handle,
 		if(rc)
 		{
 			// communication error
-			PRINTF_DBG("REPLY NAU83GXX_RC_COMMUNICATION_ERROR\n\r");
+			PRINTF_DBG("REPLY NAU83GXX_RC_COMMUNICATION_ERROR\r\n");
 		}
 		for (j = 0; j < SIZE_OF_STD_DSP_WORD; ++j)
 		{
@@ -443,13 +448,13 @@ static uint8_t get_reply(struct NAU83GXX_config_t *config_handle,
 	if(rc)
 	{
 		// communication error
-		PRINTF_DBG("TRAILING FRAGMENT NAU83GXX_RC_COMMUNICATION_ERROR\n\r");
+		PRINTF_DBG("TRAILING FRAGMENT NAU83GXX_RC_COMMUNICATION_ERROR\r\n");
 	}
 
 	verifyLen = data[0] + ((data[1] & 0xc0) << 2);
 	if(verifyLen != lenInU32)
 	{
-		PRINTF_DBG("ERROR LEN_POST = %02X, expected %02X\n\r",
+		PRINTF_DBG("ERROR LEN_POST = %02X, expected %02X\r\n",
 				verifyLen,lenInU32);
 		return NAU83GXX_RC_REPLY_DATA_INTEGRITY_ERROR;
 	}
@@ -482,7 +487,7 @@ static uint8_t send_postamble_and_get_reply(
 		if(rc)
 		{
 			// communication error
-			PRINTF_DBG("NAU83GXX_RC_COMMUNICATION_ERROR postamble\n\r");
+			PRINTF_DBG("NAU83GXX_RC_COMMUNICATION_ERROR postamble\r\n");
 			return NAU83GXX_RC_COMMUNICATION_ERROR;
 		}
 	}
@@ -843,7 +848,7 @@ static uint8_t process_start_collect_data_for_send_msg(
 	runtime_handle->state = STATE_COLLECTING_DATA_FOR_SEND;
 	runtime_handle->addr_offset = start_collect_data_msg->offset;
 	runtime_handle->sendLen = start_collect_data_msg->size_to_collect;
-	runtime_handle->dataSetBufPos = 0;
+	runtime_handle->data_set_buff_pos = 0;
 	return NAU83GXX_RC_OK;
 }
 
@@ -854,8 +859,8 @@ static uint8_t process_add_data_for_send_msg(
 		struct NAU83GXX_runtime_t *runtime_handle,
 		struct add_data_for_send_msg_t  *add_data_msg)
 {
-	uint32_t dataSetBufPos;
-	uint32_t dataSetBufPos_u32; // u32 to avoid overflow of u16
+	uint32_t data_set_buff_pos;
+	uint32_t data_set_buff_pos_u32; // u32 to avoid overflow of u16
 	uint16_t new_data_size;
 
 	if (STATE_COLLECTING_DATA_FOR_SEND != runtime_handle->state)
@@ -864,15 +869,15 @@ static uint8_t process_add_data_for_send_msg(
 	}
 
 	new_data_size = add_data_msg->size;
-	dataSetBufPos = runtime_handle->dataSetBufPos;
-	dataSetBufPos_u32 = dataSetBufPos + new_data_size;
-	if (runtime_handle->sendLen < dataSetBufPos_u32)
+	data_set_buff_pos = runtime_handle->data_set_buff_pos;
+	data_set_buff_pos_u32 = data_set_buff_pos + new_data_size;
+	if (runtime_handle->sendLen < data_set_buff_pos_u32)
 	{
 		return NAU83GXX_RC_BUFFER_OVERFLOW_ERR;
 	}
-	memcpy(&runtime_handle->dataBuf[dataSetBufPos],
+	memcpy(&runtime_handle->dataBuf[data_set_buff_pos],
 						add_data_msg->data, new_data_size);
-	runtime_handle->dataSetBufPos = dataSetBufPos_u32;
+	runtime_handle->data_set_buff_pos = data_set_buff_pos_u32;
 	return NAU83GXX_RC_OK;
 }
 
@@ -885,7 +890,7 @@ static uint8_t process_kcs_send_collected_setup_data_msg(
 	{
 		return NAU83GXX_RC_DRIVER_BUSY | runtime_handle->state;
 	}
-	if (runtime_handle->dataSetBufPos != runtime_handle->sendLen)
+	if (runtime_handle->data_set_buff_pos != runtime_handle->sendLen)
 	{
 		return NAU83GXX_RC_BUFFER_NOT_EQUAL_TO_SIZE;
 	}
@@ -1020,6 +1025,7 @@ static void nau83gxx_task (void * adev)
 		if (STATE_NOT_INITIALIZED == runtime_handle->state) continue;
 
 		need_to_release_waitnig_tasks = 1;
+		runtime_handle->dsp_core_address = msg.dsp_core_address;
 		switch(msg.msg_type)
 		{
 		case MSG_TYPE_INIT_HW:
@@ -1246,12 +1252,14 @@ uint8_t check_correct_state(const uint8_t aIoctl_num, uint8_t state)
 
 
 static uint8_t send_kcs_simple_cmd(struct NAU83GXX_runtime_t *runtime_handle,
-						struct kcs_simple_cmd_ioctl_t  *kcs_simple_cmd_ioctl)
+						struct kcs_simple_cmd_ioctl_t  *kcs_simple_cmd_ioctl,
+						uint16_t dsp_core_address)
 {
 	struct task_message_t msg;
 	struct kcs_simple_cmd_msg_t  *p_kcs_simple_cmd_msg;
 
 	msg.msg_type = MSG_KCS_I2C_SIMPLE_CMD;
+	msg.dsp_core_address = dsp_core_address;
 	p_kcs_simple_cmd_msg = &msg.kcs_simple_cmd_msg;
 	p_kcs_simple_cmd_msg->cmd = kcs_simple_cmd_ioctl->cmd;
 	p_kcs_simple_cmd_msg->p_recieved_U32_reply =
@@ -1262,12 +1270,13 @@ static uint8_t send_kcs_simple_cmd(struct NAU83GXX_runtime_t *runtime_handle,
 
 static uint8_t send_kcs_get_cmd(struct NAU83GXX_runtime_t *runtime_handle,
 						struct kcs_cmd_get_ioctl_t  *kcs_cmd_get_ioctl,
-						uint8_t cmd)
+						uint8_t cmd, uint16_t dsp_core_address)
 {
 	struct task_message_t msg;
 	struct kcs_get_cmd_msg_t  *p_kcs_get_cmd_msg;
 
 	msg.msg_type = MSG_KCS_I2C_GET_CMD;
+	msg.dsp_core_address = dsp_core_address;
 	p_kcs_get_cmd_msg = &msg.kcs_get_cmd_msg;
 	p_kcs_get_cmd_msg->cmd = cmd;
 	p_kcs_get_cmd_msg->offset = kcs_cmd_get_ioctl->offset;
@@ -1320,10 +1329,12 @@ static uint8_t send_add_data_msg(
 
 
 static uint8_t send_kcs_send_collected_setup_data(
-				struct NAU83GXX_runtime_t *runtime_handle)
+				struct NAU83GXX_runtime_t *runtime_handle,
+				uint16_t dsp_core_address)
 {
 	struct task_message_t msg;
 	msg.msg_type = MSG_SEND_COLLECTED_SETUP;
+	msg.dsp_core_address = dsp_core_address;
 	return send_msg_and_wait(runtime_handle, &msg);
 }
 
@@ -1374,12 +1385,14 @@ static uint8_t send_power_down(struct NAU83GXX_runtime_t *runtime_handle)
 
 static uint8_t send_kcs_send_setup_non_blocking(
 	struct NAU83GXX_runtime_t *runtime_handle,
-	struct kcs_send_setup_non_blocking_ioctl_t *p_setup_data_ioctl)
+	struct kcs_send_setup_non_blocking_ioctl_t *p_setup_data_ioctl,
+	uint16_t dsp_core_address)
 {
 	struct send_setup_data_msg_t  *p_send_setup_data_msg;
 	struct task_message_t msg;
 
 	msg.msg_type = MSG_SEND_SETUP;
+	msg.dsp_core_address = dsp_core_address;
 	p_send_setup_data_msg = &msg.send_setup_data_msg;
 	p_send_setup_data_msg->data = p_setup_data_ioctl->data;
 	p_send_setup_data_msg->size = p_setup_data_ioctl->size;
@@ -1421,7 +1434,7 @@ static uint8_t get_info(
 	struct NAU83GXX_runtime_t *runtime_handle,
 	struct NAU83GXX_get_info_t *p_get_info)
 {
-	p_get_info->chip_type = config_handle->chip_type;
+	p_get_info->chip_type = runtime_handle->chip_type;
 
 	if (STATE_IDLE > runtime_handle->state)
 	{
@@ -1439,7 +1452,7 @@ static uint8_t get_info(
 
 
 /**
- * kcs_i2c_ioctl()
+ * NAU83GXX_ioctl()
  *
  * return:
  */
@@ -1465,13 +1478,13 @@ static uint8_t NAU83GXX_ioctl(struct dev_desc_t *adev,
 	case IOCTL_NAU83GXX_REINIT_I2C_REGISTERS:
 		return reinit_i2c_registers(config_handle, runtime_handle);
 	case IOCTL_KCS_SIMPLE_CMD:
-		return send_kcs_simple_cmd(runtime_handle, aIoctl_param1);
+		return send_kcs_simple_cmd(runtime_handle, aIoctl_param1, 0);
 	case IOCTL_KCS_GET_SETUP_CMD:
 		return send_kcs_get_cmd(
-				runtime_handle, aIoctl_param1, DSP_CMD_GET_KCS_SETUP);
+				runtime_handle, aIoctl_param1, DSP_CMD_GET_KCS_SETUP, 0);
 	case IOCTL_KCS_GET_RESULTS_CMD:
 		return send_kcs_get_cmd(
-				runtime_handle, aIoctl_param1, DSP_CMD_GET_KCS_RESULTS);
+				runtime_handle, aIoctl_param1, DSP_CMD_GET_KCS_RESULTS, 0);
 	case IOCTL_KCS_START_COLLECT_DATA_FOR_SEND:
 		return send_start_collect_data(runtime_handle, aIoctl_param1);
 	case IOCTL_KCS_ADD_DATA_FOR_SEND:
@@ -1479,9 +1492,10 @@ static uint8_t NAU83GXX_ioctl(struct dev_desc_t *adev,
 	case IOCTL_KCS_EXIT_GET_STATE:
 		return send_kcs_exit_get_state(runtime_handle);
 	case IOCTL_KCS_SEND_COLLECTED_SETUP_DATA:
-		return send_kcs_send_collected_setup_data(runtime_handle);
+		return send_kcs_send_collected_setup_data(runtime_handle, 0);
 	case IOCTL_KCS_SEND_SETUP_NON_BLOCKING:
-		return send_kcs_send_setup_non_blocking(runtime_handle, aIoctl_param1);
+		return send_kcs_send_setup_non_blocking(
+						runtime_handle, aIoctl_param1, 0);
 	case IOCTL_NAU83GXX_GET_INFO:
 		return get_info(config_handle, runtime_handle, aIoctl_param1);
 	case IOCTL_DEVICE_STOP:
@@ -1497,11 +1511,78 @@ static uint8_t NAU83GXX_ioctl(struct dev_desc_t *adev,
 }
 
 
+/**
+ * KCS_ioctl()
+ *
+ * return:
+ */
+static uint8_t KCS_ioctl(struct dev_desc_t *adev,
+		const uint8_t aIoctl_num, void *aIoctl_param1, void *aIoctl_param2)
+{
+	struct dev_desc_t *NAU83GXX_dev;
+	struct NAU83GXX_config_t *NAU83GXX_config_handle;
+	struct NAU83GXX_runtime_t *NAU83GXX_runtime_handle;
+	struct KCS_config_t *kcs_config_handle;
+	uint16_t dsp_core_address;
+	uint8_t ret_val;
+
+	kcs_config_handle = DEV_GET_CONFIG_DATA_POINTER(KCS, adev);
+	NAU83GXX_dev = kcs_config_handle->nau83gxx;
+	NAU83GXX_config_handle =
+			DEV_GET_CONFIG_DATA_POINTER(NAU83GXX, NAU83GXX_dev);
+	NAU83GXX_runtime_handle =
+			DEV_GET_RUNTIME_DATA_POINTER(NAU83GXX, NAU83GXX_dev);
+
+	dsp_core_address = kcs_config_handle->dsp_core;
+	ret_val = check_correct_state(aIoctl_num, NAU83GXX_runtime_handle->state);
+	if (ret_val) return ret_val;
+
+	switch(aIoctl_num)
+	{
+	case IOCTL_DEVICE_START:
+		return 0;
+	case IOCTL_KCS_REINIT_I2C_REGISTERS:
+		return reinit_i2c_registers(
+				NAU83GXX_config_handle, NAU83GXX_runtime_handle);
+	case IOCTL_KCS_SIMPLE_CMD:
+		return send_kcs_simple_cmd(
+				NAU83GXX_runtime_handle, aIoctl_param1, dsp_core_address);
+	case IOCTL_KCS_GET_SETUP_CMD:
+		return send_kcs_get_cmd(NAU83GXX_runtime_handle,
+				aIoctl_param1, DSP_CMD_GET_KCS_SETUP, dsp_core_address);
+	case IOCTL_KCS_GET_RESULTS_CMD:
+		return send_kcs_get_cmd(NAU83GXX_runtime_handle,
+				aIoctl_param1, DSP_CMD_GET_KCS_RESULTS, dsp_core_address);
+	case IOCTL_KCS_START_COLLECT_DATA_FOR_SEND:
+		return send_start_collect_data(NAU83GXX_runtime_handle, aIoctl_param1);
+	case IOCTL_KCS_ADD_DATA_FOR_SEND:
+		return send_add_data_msg(NAU83GXX_runtime_handle, aIoctl_param1);
+	case IOCTL_KCS_EXIT_GET_STATE:
+		return send_kcs_exit_get_state(NAU83GXX_runtime_handle);
+	case IOCTL_KCS_SEND_COLLECTED_SETUP_DATA:
+		return send_kcs_send_collected_setup_data(
+				NAU83GXX_runtime_handle, dsp_core_address);
+	case IOCTL_KCS_SEND_SETUP_NON_BLOCKING:
+		return send_kcs_send_setup_non_blocking(
+				NAU83GXX_runtime_handle, aIoctl_param1, dsp_core_address);
+	default :
+		return 1;
+	}
+	return 0;
+}
+
+
 #ifdef FOR_EXPORT
 	uint8_t dev_NAU83GXX_ioctl(struct dev_desc_t *adev,
 					const uint8_t aIoctl_num, void *aIoctl_param)
 	{
 		return NAU83GXX_ioctl(adev, aIoctl_num, aIoctl_param, NULL);
+	}
+
+	uint8_t dev_KCS_ioctl(struct dev_desc_t *adev,
+					const uint8_t aIoctl_num, void *aIoctl_param)
+	{
+		return KCS_ioctl(adev, aIoctl_num, aIoctl_param, NULL);
 	}
 
 	uint8_t dev_NAU83GXX_callback(struct dev_desc_t *adev,
@@ -1516,4 +1597,9 @@ static uint8_t NAU83GXX_ioctl(struct dev_desc_t *adev,
 #define	MODULE_NAME                      NAU83GXX
 #define	MODULE_IOCTL_FUNCTION            NAU83GXX_ioctl
 #define	MODULE_CALLBACK_FUNCTION         NAU83GXX_callback
+#include "add_module.h"
+
+#define	MODULE_NAME                      KCS
+#define	MODULE_IOCTL_FUNCTION            KCS_ioctl
+#define MODULE_HAS_NO_RUNTIME_DATA
 #include "add_module.h"

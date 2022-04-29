@@ -15,6 +15,18 @@ SRC += src/NAU83GXX.c
 SRC += src/NAU83GXX_utils.c
 
 ifeq ($(sort $(CONFIG_NAU83GXX_ENABLE_DB_LAB_SHELL_COMMANDS)),y)
+    SRC += src/shell_commands/cmd_kcs_init_nau83gxx_chip.c
+    SRC += src/shell_commands/cmd_kcs_get_status.c
+    SRC += src/shell_commands/cmd_kcs_get_counter.c
+    SRC += src/shell_commands/cmd_kcs_get_data.c
+    SRC += src/shell_commands/cmd_kcs_set_start.c
+    SRC += src/shell_commands/cmd_kcs_set_add_data.c
+    SRC += src/shell_commands/cmd_kcs_set_send.c
+    SRC += src/shell_commands/cmd_kcs_swrev.c
+    SRC += src/shell_commands/cmd_kcs_clkstart.c
+    SRC += src/shell_commands/cmd_kcs_clkstop.c
+    SRC += src/shell_commands/cmd_kcs_get_setup.c
+
     SRC += src/shell_commands/cmd_init_83g10_dsp.c
     SRC += src/shell_commands/cmd_dsp_counter.c
     SRC += src/shell_commands/cmd_dsp_status.c
