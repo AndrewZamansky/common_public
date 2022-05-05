@@ -1478,13 +1478,14 @@ static uint8_t NAU83GXX_ioctl(struct dev_desc_t *adev,
 	case IOCTL_NAU83GXX_REINIT_I2C_REGISTERS:
 		return reinit_i2c_registers(config_handle, runtime_handle);
 	case IOCTL_KCS_SIMPLE_CMD:
-		return send_kcs_simple_cmd(runtime_handle, aIoctl_param1, 0);
+		return send_kcs_simple_cmd(
+				runtime_handle, aIoctl_param1, NAU83GXX_DSP_CORE_0_REG);
 	case IOCTL_KCS_GET_SETUP_CMD:
-		return send_kcs_get_cmd(
-				runtime_handle, aIoctl_param1, DSP_CMD_GET_KCS_SETUP, 0);
+		return send_kcs_get_cmd(runtime_handle,
+				aIoctl_param1, DSP_CMD_GET_KCS_SETUP, NAU83GXX_DSP_CORE_0_REG);
 	case IOCTL_KCS_GET_RESULTS_CMD:
-		return send_kcs_get_cmd(
-				runtime_handle, aIoctl_param1, DSP_CMD_GET_KCS_RESULTS, 0);
+		return send_kcs_get_cmd(runtime_handle,
+			aIoctl_param1, DSP_CMD_GET_KCS_RESULTS, NAU83GXX_DSP_CORE_0_REG);
 	case IOCTL_KCS_START_COLLECT_DATA_FOR_SEND:
 		return send_start_collect_data(runtime_handle, aIoctl_param1);
 	case IOCTL_KCS_ADD_DATA_FOR_SEND:
@@ -1492,10 +1493,11 @@ static uint8_t NAU83GXX_ioctl(struct dev_desc_t *adev,
 	case IOCTL_KCS_EXIT_GET_STATE:
 		return send_kcs_exit_get_state(runtime_handle);
 	case IOCTL_KCS_SEND_COLLECTED_SETUP_DATA:
-		return send_kcs_send_collected_setup_data(runtime_handle, 0);
+		return send_kcs_send_collected_setup_data(
+					runtime_handle, NAU83GXX_DSP_CORE_0_REG);
 	case IOCTL_KCS_SEND_SETUP_NON_BLOCKING:
 		return send_kcs_send_setup_non_blocking(
-						runtime_handle, aIoctl_param1, 0);
+						runtime_handle, aIoctl_param1, NAU83GXX_DSP_CORE_0_REG);
 	case IOCTL_NAU83GXX_GET_INFO:
 		return get_info(config_handle, runtime_handle, aIoctl_param1);
 	case IOCTL_DEVICE_STOP:
@@ -1505,7 +1507,7 @@ static uint8_t NAU83GXX_ioctl(struct dev_desc_t *adev,
 	case IOCTL_NAU83GXX_BYPASS_BIQUADS:
 		return send_bypass_biquads(runtime_handle, aIoctl_param1);
 	default :
-		return 1;
+		return NAU83GXX_RC_NOT_SUPPORTED_IOCTL;
 	}
 	return 0;
 }
@@ -1566,7 +1568,7 @@ static uint8_t KCS_ioctl(struct dev_desc_t *adev,
 		return send_kcs_send_setup_non_blocking(
 				NAU83GXX_runtime_handle, aIoctl_param1, dsp_core_address);
 	default :
-		return 1;
+		return NAU83GXX_RC_NOT_SUPPORTED_IOCTL;
 	}
 	return 0;
 }
