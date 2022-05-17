@@ -34,6 +34,7 @@ SRC :=
 CFLAGS :=
 ASMFLAGS :=
 DEFINES :=
+ADDITIONAL_DEPS :=
 
 # move global prerequirements_check compilation to first place
 SUBDIRS :=$(sort $(SUBDIRS))
@@ -98,12 +99,14 @@ $(SUBDIRS_LAST): $(SUBDIRS)
 	$(eval CFLAGS :=)
 	$(eval DEFINES :=)
 	$(eval ASMFLAGS :=)
+	$(eval ADDITIONAL_DEPS :=)
 	$(eval export COMMON_CC)
 	$(eval export SRC)
 	$(eval export CFLAGS)
 	$(eval export DEFINES)
 	$(eval export ASMFLAGS)
 	$(eval export VPATH)
+	$(eval export ADDITIONAL_DEPS)
 	$(info - $(patsubst $(PARENT_OF_COMMON_PUBLIC_DIR)/%,%,$@))
 	$(MAKE) -r -C $@ -f Makefile.uc.mk all
 
@@ -116,12 +119,14 @@ $(SUBDIRS):
 	$(eval CFLAGS :=)
 	$(eval DEFINES :=)
 	$(eval ASMFLAGS :=)
+	$(eval ADDITIONAL_DEPS :=)
 	$(eval export COMMON_CC)
 	$(eval export SRC)
 	$(eval export CFLAGS)
 	$(eval export DEFINES)
 	$(eval export ASMFLAGS)
 	$(eval export VPATH)
+	$(eval export ADDITIONAL_DEPS)
 	$(info - $(patsubst $(PARENT_OF_COMMON_PUBLIC_DIR)/%,%,$@))
 	$(MAKE) -r -C $@ -f Makefile.uc.mk all
 

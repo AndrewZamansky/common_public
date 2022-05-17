@@ -72,7 +72,8 @@ ASM_OBJ := $(patsubst %.s,$(CURR_OBJ_DIR)/%.o.asm,$(SRC_ASM))
 ASM_OBJ_O := $(patsubst %.S,$(CURR_OBJ_DIR)/%.O.asm,$(SRC_ASM_S))
 
 
-ALL_DEPS :=$(HEADER_FILES_DEPS) $(APP_ROOT_DIR)/.config
+ALL_DEPS :=$(HEADER_FILES_DEPS) $(APP_ROOT_DIR)/.config \
+                $(ADDITIONAL_DEPS)
 
 
 all: $(SRC_OBJ) $(SRC_CC_OBJ) $(SRC_CPP_OBJ) $(ASM_OBJ) $(ASM_OBJ_O)
