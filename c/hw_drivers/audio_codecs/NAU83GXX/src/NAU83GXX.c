@@ -621,6 +621,8 @@ static uint8_t perform_full_init( struct NAU83GXX_config_t *config_handle,
 		rc = nau83gxx_init_i2c_regs(config_handle, runtime_handle);
 	}
 	if (rc) return rc;
+
+	runtime_handle->dsp_core_address = NAU83GXX_DSP_CORE_0_REG;
 	//os_delay_ms(500);
 	while (NAU83GXX_RC_OK != send_simple_cmd(config_handle,
 						runtime_handle, DSP_CMD_GET_STATUS, &status))
@@ -641,6 +643,14 @@ static uint8_t perform_full_init( struct NAU83GXX_config_t *config_handle,
 		rc = send_kcs_setup(config_handle, runtime_handle, 0,
 			p_init_hw_msg->kcs_spkr_param_data,
 			p_init_hw_msg->kcs_spkr_param_size);
+
+		if (NAU83GXX_CHIP_TYPE_G60 == runtime_handle->chip_type)
+		{
+			runtime_handle->dsp_core_address = NAU83GXX_DSP_CORE_1_REG;
+			rc = send_kcs_setup(config_handle, runtime_handle, 0,
+				p_init_hw_msg->kcs_spkr_param_data,
+				p_init_hw_msg->kcs_spkr_param_size);
+		}
 		if (0 == rc)
 		{
 			runtime_handle->is_kcs_loaded = 1;
