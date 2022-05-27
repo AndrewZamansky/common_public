@@ -50,8 +50,6 @@ end:
 		SHELL_REPLY_PRINTF("%08X\r\n", status);
 	}
 
-	// needed for Klippel GUI:
-	SHELL_REPLY_PRINTF("%c", 0x04UL);
 	return 0;
 }
 

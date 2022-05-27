@@ -10,6 +10,7 @@
 
 #include "os_wrapper.h"
 #include "NAU83GXX_api.h"
+#include "NAU83GXX.h"
 
 /** \brief communication stub to read a number of raw bytes from a remote KCS
       *  Setup location
@@ -62,7 +63,15 @@ uint8_t cmd_set_kcs_setup(void *dev, uint8_t const *data,
 	struct dev_desc_t *kcs_i2c_dev;
 	struct kcs_start_collect_data_for_send_ioctl_t collect_data_ioctl;
 	struct kcs_add_data_for_send_ioctl_t add_data_ioctl;
-	int rc = NAU83GXX_RC_OK;
+	uint8_t rc = NAU83GXX_RC_OK;
+
+	// first try internal device mode
+	rc = NAU83GXX_send_setup_data_from_kcs_remote_interface(
+			dev, offset, data, len);
+	if (NAU83GXX_RC_NOT_INTERNAL_DEVICE != rc)
+	{
+		return rc; // internal device was detected and setup was sent
+	}
 
 	kcs_i2c_dev = (struct dev_desc_t *)dev;
 	collect_data_ioctl.offset = offset;

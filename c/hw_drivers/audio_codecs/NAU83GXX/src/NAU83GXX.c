@@ -61,6 +61,7 @@ enum main_msg_e {
 	MSG_SEND_BYPASS_BIQUADS,
 	MSG_CONTINUE_RECOVERY,
 	MSG_POWER_DOWN,
+	MSG_SEND_ALC_DATA
 };
 
 
@@ -115,6 +116,19 @@ struct send_bypass_msg_t {
 };
 
 
+struct set_alc_data_msg_t {
+	float max_battery_level;
+	float min_battery_level_V;
+	float battery_change_step_V;
+	float max_kcs_gain;
+	float min_kcs_gain;
+	float max_limiter_voltage;
+	float min_limiter_voltage;
+	uint8_t alc_segment_num; // set 0xff to skip update of any segment
+	uint8_t alc_enable;
+};
+
+
 struct task_message_t
 {
 	uint8_t    msg_type;
@@ -128,6 +142,7 @@ struct task_message_t
 		struct add_data_for_send_msg_t add_data_for_send_msg;
 		struct send_setup_data_msg_t send_setup_data_msg;
 		struct send_bypass_msg_t  send_bypass_msg;
+		struct set_alc_data_msg_t set_alc_data_msg;
 	};
 };
 
@@ -168,6 +183,9 @@ static uint8_t patch_for_correct_setup_write(
 				struct NAU83GXX_config_t *config_handle,
 				struct NAU83GXX_runtime_t *runtime_handle);
 
+void nau83gxx_sw_perform_routine_tasks(
+		struct NAU83GXX_config_t *config_handle,
+		struct NAU83GXX_runtime_t *runtime_handle);
 
 /**
  * NAU83GXX_callback()
@@ -913,6 +931,30 @@ static uint8_t process_kcs_send_collected_setup_data_msg(
 }
 
 
+uint8_t NAU83GXX_send_setup_data_from_kcs_remote_interface(
+		struct NAU83GXX_internal_dsp_access_t *internal_dev,
+		uint16_t offset, uint8_t const *data, uint16_t size)
+{
+	struct NAU83GXX_runtime_t *runtime_handle;
+
+	if ((NULL != internal_dev->null_pointer1) ||
+			(NULL != internal_dev->null_pointer2) ||
+			(INTERNAL_DSP_ACCESS_MAGIC_NUMBER != internal_dev->magic_number))
+	{
+		return NAU83GXX_RC_NOT_INTERNAL_DEVICE;
+	}
+
+	runtime_handle = internal_dev->runtime_handle;
+	if (STATE_IDLE != runtime_handle->state)
+	{
+		return NAU83GXX_RC_DRIVER_BUSY | runtime_handle->state;
+	}
+
+	return send_kcs_setup(internal_dev->config_handle, runtime_handle,
+			offset, data, size);
+}
+
+
 static uint8_t process_kcs_send_setup_data_msg(
 		struct NAU83GXX_config_t *config_handle,
 		struct NAU83GXX_runtime_t *runtime_handle,
@@ -989,6 +1031,60 @@ static uint8_t process_send_bypass_biquads_msg(
 }
 
 
+static uint8_t process_send_alc_data_msg(
+		struct NAU83GXX_config_t *config_handle,
+		struct NAU83GXX_runtime_t *runtime_handle,
+		struct set_alc_data_msg_t *set_alc_data_msg)
+{
+	struct NAU83GXX_alc_segment_t *p_alc_segment;
+	uint8_t segment_num;
+	float vbat_diff;
+	float kcs_gain_a;
+	float min_kcs_gain;
+	float u_limit_a;
+	float min_u_limit;
+	float min_battery_level_V;
+
+	runtime_handle->sw_alc_enabled = set_alc_data_msg->alc_enable;
+	segment_num = set_alc_data_msg->alc_segment_num;
+	if (0xff == segment_num)
+	{
+		return NAU83GXX_RC_OK;
+	}
+
+	if (MAX_ALC_SEGMENTS <= segment_num)
+	{
+		return NAU83GXX_RC_ALC_SEGMENT_TOO_BIG;
+	}
+
+	min_battery_level_V = set_alc_data_msg->min_battery_level_V;
+	vbat_diff = set_alc_data_msg->max_battery_level - min_battery_level_V;
+
+	if (0 >= vbat_diff)
+	{
+		return NAU83GXX_RC_ALC_WRONG_VBAT_MIN_MAX_LEVELS;
+	}
+	p_alc_segment = &runtime_handle->alc_segment[segment_num];
+	p_alc_segment->battery_change_step_V =
+			set_alc_data_msg->battery_change_step_V;
+
+	min_kcs_gain = set_alc_data_msg->min_kcs_gain;
+	kcs_gain_a = (set_alc_data_msg->max_kcs_gain - min_kcs_gain) / vbat_diff;
+	p_alc_segment->kcs_gain_a = kcs_gain_a;
+	p_alc_segment->kcs_gain_b = min_kcs_gain -
+					(kcs_gain_a * min_battery_level_V);
+
+	min_u_limit = set_alc_data_msg->min_limiter_voltage;
+	u_limit_a =
+			(set_alc_data_msg->max_limiter_voltage - min_u_limit) / vbat_diff;
+	p_alc_segment->u_limit_a = u_limit_a;
+	p_alc_segment->u_limit_b = min_u_limit -
+					(u_limit_a * min_battery_level_V);
+
+	return NAU83GXX_RC_OK;
+}
+
+
 /**
  * nau83gxx_task()
  *
@@ -1028,8 +1124,9 @@ static void nau83gxx_task (void * adev)
 	while (1)
 	{
 		if( OS_QUEUE_RECEIVE_SUCCESS !=
-				os_queue_receive_infinite_wait( msg_queue , &msg))
+				os_queue_receive_with_timeout( msg_queue , &msg, 200))
 		{
+			nau83gxx_sw_perform_routine_tasks(config_handle, runtime_handle);
 			continue;
 		}
 		if (STATE_NOT_INITIALIZED == runtime_handle->state) continue;
@@ -1087,6 +1184,10 @@ static void nau83gxx_task (void * adev)
 		case MSG_SEND_BYPASS_BIQUADS:
 			rc = process_send_bypass_biquads_msg(config_handle,
 					runtime_handle, &msg.send_bypass_msg);
+			break;
+		case MSG_SEND_ALC_DATA:
+			rc = process_send_alc_data_msg(config_handle,
+					runtime_handle, &msg.set_alc_data_msg);
 			break;
 		default:
 			CRITICAL_ERROR("no such case");
@@ -1173,8 +1274,7 @@ static uint8_t send_msg_no_wait(struct NAU83GXX_runtime_t *runtime_handle,
 }
 
 
-static uint8_t reinit_i2c_registers(struct NAU83GXX_config_t *config_handle,
-						struct NAU83GXX_runtime_t *runtime_handle)
+static uint8_t reinit_i2c_registers(struct NAU83GXX_runtime_t *runtime_handle)
 {
 	struct task_message_t msg;
 
@@ -1183,8 +1283,7 @@ static uint8_t reinit_i2c_registers(struct NAU83GXX_config_t *config_handle,
 }
 
 
-static uint8_t init_hw(struct NAU83GXX_config_t *config_handle,
-						struct NAU83GXX_runtime_t *runtime_handle,
+static uint8_t init_hw(struct NAU83GXX_runtime_t *runtime_handle,
 						struct hw_is_ready_ioctl_t *hw_is_ready_ioctl)
 {
 	struct task_message_t msg;
@@ -1349,6 +1448,36 @@ static uint8_t send_kcs_send_collected_setup_data(
 }
 
 
+static uint8_t send_kcs_alc_data(struct NAU83GXX_runtime_t *runtime_handle,
+		struct kcs_cmd_set_alc_data_ioctl_t  *kcs_cmd_set_alc_data_ioctl)
+{
+	struct set_alc_data_msg_t *set_alc_data_msg;
+	struct task_message_t msg;
+
+	msg.msg_type = MSG_SEND_ALC_DATA;
+	set_alc_data_msg = &msg.set_alc_data_msg;
+	set_alc_data_msg->max_battery_level =
+			kcs_cmd_set_alc_data_ioctl->max_battery_level;
+	set_alc_data_msg->min_battery_level_V =
+			kcs_cmd_set_alc_data_ioctl->min_battery_level_V;
+	set_alc_data_msg->battery_change_step_V =
+			kcs_cmd_set_alc_data_ioctl->battery_change_step_V;
+	set_alc_data_msg->max_kcs_gain =
+			kcs_cmd_set_alc_data_ioctl->max_kcs_gain;
+	set_alc_data_msg->min_kcs_gain =
+			kcs_cmd_set_alc_data_ioctl->min_kcs_gain;
+	set_alc_data_msg->max_limiter_voltage =
+			kcs_cmd_set_alc_data_ioctl->max_limiter_voltage;
+	set_alc_data_msg->min_limiter_voltage =
+			kcs_cmd_set_alc_data_ioctl->min_limiter_voltage;
+	set_alc_data_msg->alc_segment_num =
+			kcs_cmd_set_alc_data_ioctl->alc_segment_num;
+	set_alc_data_msg->alc_enable =
+			kcs_cmd_set_alc_data_ioctl->alc_enable;
+	return send_msg_and_wait(runtime_handle, &msg);
+}
+
+
 static uint8_t send_power_down(struct NAU83GXX_runtime_t *runtime_handle)
 {
 	struct reply_message_t release_wait_msg;
@@ -1484,9 +1613,9 @@ static uint8_t NAU83GXX_ioctl(struct dev_desc_t *adev,
 	case IOCTL_DEVICE_START:
 		return init_driver(adev, config_handle, runtime_handle);
 	case IOCTL_HW_IS_READY_TO_INIT:
-		return init_hw(config_handle, runtime_handle, aIoctl_param1);
+		return init_hw(runtime_handle, aIoctl_param1);
 	case IOCTL_NAU83GXX_REINIT_I2C_REGISTERS:
-		return reinit_i2c_registers(config_handle, runtime_handle);
+		return reinit_i2c_registers(runtime_handle);
 	case IOCTL_KCS_SIMPLE_CMD:
 		return send_kcs_simple_cmd(
 				runtime_handle, aIoctl_param1, NAU83GXX_DSP_CORE_0_REG);
@@ -1532,7 +1661,6 @@ static uint8_t KCS_ioctl(struct dev_desc_t *adev,
 		const uint8_t aIoctl_num, void *aIoctl_param1, void *aIoctl_param2)
 {
 	struct dev_desc_t *NAU83GXX_dev;
-	struct NAU83GXX_config_t *NAU83GXX_config_handle;
 	struct NAU83GXX_runtime_t *NAU83GXX_runtime_handle;
 	struct KCS_config_t *kcs_config_handle;
 	uint16_t dsp_core_address;
@@ -1540,8 +1668,6 @@ static uint8_t KCS_ioctl(struct dev_desc_t *adev,
 
 	kcs_config_handle = DEV_GET_CONFIG_DATA_POINTER(KCS, adev);
 	NAU83GXX_dev = kcs_config_handle->nau83gxx;
-	NAU83GXX_config_handle =
-			DEV_GET_CONFIG_DATA_POINTER(NAU83GXX, NAU83GXX_dev);
 	NAU83GXX_runtime_handle =
 			DEV_GET_RUNTIME_DATA_POINTER(NAU83GXX, NAU83GXX_dev);
 
@@ -1554,8 +1680,7 @@ static uint8_t KCS_ioctl(struct dev_desc_t *adev,
 	case IOCTL_DEVICE_START:
 		return 0;
 	case IOCTL_KCS_REINIT_I2C_REGISTERS:
-		return reinit_i2c_registers(
-				NAU83GXX_config_handle, NAU83GXX_runtime_handle);
+		return reinit_i2c_registers(NAU83GXX_runtime_handle);
 	case IOCTL_KCS_SIMPLE_CMD:
 		return send_kcs_simple_cmd(
 				NAU83GXX_runtime_handle, aIoctl_param1, dsp_core_address);
@@ -1574,6 +1699,8 @@ static uint8_t KCS_ioctl(struct dev_desc_t *adev,
 	case IOCTL_KCS_SEND_COLLECTED_SETUP_DATA:
 		return send_kcs_send_collected_setup_data(
 				NAU83GXX_runtime_handle, dsp_core_address);
+	case IOCTL_KCS_SET_ALC_DATA:
+		return send_kcs_alc_data(NAU83GXX_runtime_handle, aIoctl_param1);
 	case IOCTL_KCS_SEND_SETUP_NON_BLOCKING:
 		return send_kcs_send_setup_non_blocking(
 				NAU83GXX_runtime_handle, aIoctl_param1, dsp_core_address);

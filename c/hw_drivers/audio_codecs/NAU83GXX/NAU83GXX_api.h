@@ -55,6 +55,8 @@ enum NAU83GXX_NAU83GXX_RC_e {
 	NAU83GXX_RC_REPLY_LEN_TOO_LONG         = 0x03,
 	NAU83GXX_RC_REPLY_DATA_INTEGRITY_ERROR = 0x04,
 	NAU83GXX_RC_TIMEDOUT_FOR_IDLE_WORD     = 0x05,
+	NAU83GXX_RC_ALC_SEGMENT_TOO_BIG        = 0x06,
+	NAU83GXX_RC_ALC_WRONG_VBAT_MIN_MAX_LEVELS = 0x07,
 	NAU83GXX_RC_REPLY_STATUS_ERR           = 0x10,
 
 	NAU83GXX_RC_BUFFER_OVERFLOW_ERR        = 0x20,
@@ -69,6 +71,7 @@ enum NAU83GXX_NAU83GXX_RC_e {
 	NAU83GXX_RC_PARAMETERS_OUT_OF_RANGE    = 0x32,
 	NAU83GXX_RC_NOT_SUPPORTED_DEVICE_ID    = 0x33,
 	NAU83GXX_RC_NOT_SUPPORTED_IOCTL        = 0x34,
+	NAU83GXX_RC_NOT_INTERNAL_DEVICE        = 0x35,
 
 
 	NAU83GXX_RC_I2C_ERROR                  = 0x43,
@@ -106,7 +109,8 @@ enum NAU83GXX_IOCTL_e {
 	IOCTL_KCS_SEND_SETUP_NON_BLOCKING,
 	IOCTL_NAU83GXX_GET_INFO,
 	IOCTL_NAU83GXX_BYPASS_KCS,
-	IOCTL_NAU83GXX_BYPASS_BIQUADS
+	IOCTL_NAU83GXX_BYPASS_BIQUADS,
+	IOCTL_KCS_SET_ALC_DATA
 };
 
 struct hw_is_ready_ioctl_t {
@@ -160,6 +164,20 @@ struct nau83gxx_bypass_kcs_ioctl_t {
 struct nau83gxx_bypass_biquads_ioctl_t {
 	uint8_t   bypass; // 0 - don't bypass, 1-255 - bypass
 };
+
+
+struct kcs_cmd_set_alc_data_ioctl_t {
+	float max_battery_level;
+	float min_battery_level_V;
+	float battery_change_step_V;
+	float max_kcs_gain;
+	float min_kcs_gain;
+	float max_limiter_voltage;
+	float min_limiter_voltage;
+	uint8_t alc_segment_num; // set 0xff to skip update of any segment
+	uint8_t alc_enable;
+};
+
 
 enum NAU83GXX_chip_state_e {
 	 NAU83GXX_CHIP_STATE_INITIALIZING = 0,

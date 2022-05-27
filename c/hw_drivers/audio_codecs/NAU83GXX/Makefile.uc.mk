@@ -13,6 +13,7 @@ CURR_COMPONENT_DIR :=$(call get_curr_component_dir)
 
 SRC += src/NAU83GXX.c
 SRC += src/NAU83GXX_utils.c
+SRC += src/nau83gxx_routine_tasks.c
 
 ifeq ($(sort $(CONFIG_NAU83GXX_ENABLE_DB_LAB_SHELL_COMMANDS)),y)
     SRC += src/shell_commands/cmd_kcs_init_nau83gxx_chip.c
@@ -26,6 +27,7 @@ ifeq ($(sort $(CONFIG_NAU83GXX_ENABLE_DB_LAB_SHELL_COMMANDS)),y)
     SRC += src/shell_commands/cmd_kcs_clkstart.c
     SRC += src/shell_commands/cmd_kcs_clkstop.c
     SRC += src/shell_commands/cmd_kcs_get_setup.c
+    SRC += src/shell_commands/cmd_kcs_set_sw_alc.c
 
     SRC += src/shell_commands/cmd_init_83g10_dsp.c
     SRC += src/shell_commands/cmd_dsp_counter.c
@@ -69,6 +71,8 @@ ifeq ($(sort $(CONFIG_NAU83GXX_USE_KCS_REMOTE_INTERFACE)),y)
 
     SRC += src/kcs_remote_interface_wrapper.c
     SRC += src/CTRCoreModules/KCS_remote_interface.c 
+    SRC += src/shell_commands/cmd_kcs_get_info.c
+
     VPATH += | $(KCS_REMOTE_INTERFACE_PATH)
 endif
 
