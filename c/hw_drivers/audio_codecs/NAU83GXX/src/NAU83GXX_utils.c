@@ -365,7 +365,6 @@ uint8_t update_real_device_id(struct dev_desc_t *i2c_dev,
 	uint8_t read_i2c_data[2];
 	uint8_t device_id;
 	uint8_t device_addr;
-	uint8_t low_4bits_in_dev_addr;
 
 	device_addr = runtime_handle->dev_addr;
 	rc = nau83gxx_read(
@@ -374,14 +373,6 @@ uint8_t update_real_device_id(struct dev_desc_t *i2c_dev,
 
 	device_id = read_i2c_data[1] & 0xF0;
 
-	if (NAU83GXX_CHIP_TYPE_G20 == device_id)
-	{
-		low_4bits_in_dev_addr = device_addr & 0x0F;
-		if ((0xA == low_4bits_in_dev_addr) || (0x0B == low_4bits_in_dev_addr))
-		{
-			device_id = NAU83GXX_CHIP_TYPE_G60;
-		}
-	}
 	runtime_handle->chip_type = device_id;
 	return NAU83GXX_RC_OK;
 }

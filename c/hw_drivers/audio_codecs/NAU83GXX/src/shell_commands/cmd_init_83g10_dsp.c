@@ -41,7 +41,8 @@ int do_init_83g10_dsp(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 
 	device_addr = strtol(argv[1], &pEnd, 16);
 
-	if ((0x10 == device_addr) || (0x100 == device_addr))
+	if ((0x10 == device_addr)
+			|| (0x100 == device_addr) || (0x101 == device_addr))
 	{
 		rc = DEV_IOCTL(NAU83GXX_left_dev, IOCTL_NAU83GXX_REINIT_I2C_REGISTERS);
 	}

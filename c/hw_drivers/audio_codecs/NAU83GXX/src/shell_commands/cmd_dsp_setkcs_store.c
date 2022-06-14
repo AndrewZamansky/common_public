@@ -13,8 +13,9 @@
 #include "i2c_api.h"
 
 
-extern struct dev_desc_t *NAU83GXX_left_dev;
-extern struct dev_desc_t *NAU83GXX_right_dev;
+extern struct dev_desc_t *kcs_left_dev;
+extern struct dev_desc_t *kcs_right_dev;
+extern struct dev_desc_t *kcs_right_core_1_dev;
 
 /*
  * Subroutine:  dsp_setkcs_store
@@ -36,7 +37,7 @@ int do_dsp_setkcs_store(
 	uint32_t   data_val;
 	char *pEnd;
 	int rc = NAU83GXX_RC_OK;
-	struct dev_desc_t *kcs_i2c_dev;
+	struct dev_desc_t *kcs_dev = NULL;
 	uint8_t data[4];
 
 	/*
@@ -57,11 +58,15 @@ int do_dsp_setkcs_store(
 
 	if ((0x10 == device_addr) || (0x100 == device_addr))
 	{
-		kcs_i2c_dev = NAU83GXX_left_dev;
+		kcs_dev = kcs_left_dev;
 	}
-	else if(0x11 == device_addr)
+	else if (0x11 == device_addr)
 	{
-		kcs_i2c_dev = NAU83GXX_right_dev;
+		kcs_dev = kcs_right_dev;
+	}
+	else if (0x101 == device_addr)
+	{
+		kcs_dev = kcs_right_core_1_dev;
 	}
 	else
 	{
@@ -86,7 +91,7 @@ int do_dsp_setkcs_store(
 	add_data_ioctl.size = 4;
 	add_data_ioctl.data = data;
 
-	rc = DEV_IOCTL(kcs_i2c_dev, IOCTL_KCS_ADD_DATA_FOR_SEND, &add_data_ioctl);
+	rc = DEV_IOCTL(kcs_dev, IOCTL_KCS_ADD_DATA_FOR_SEND, &add_data_ioctl);
 
 end:
 	os_delay_ms(1);

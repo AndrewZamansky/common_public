@@ -13,10 +13,9 @@
 #include "i2c_api.h"
 
 
-extern struct dev_desc_t *NAU83GXX_left_dev;
-extern struct dev_desc_t *NAU83GXX_right_dev;
-
-
+extern struct dev_desc_t *kcs_left_dev;
+extern struct dev_desc_t *kcs_right_dev;
+extern struct dev_desc_t *kcs_right_core_1_dev;
 
 int do_dsp_getkcs(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
@@ -29,7 +28,7 @@ int do_dsp_getkcs(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	int   data_print_word_sizing = 0;
 	char *pEnd;
 	int i;
-	struct dev_desc_t *kcs_i2c_dev = NULL;
+	struct dev_desc_t *kcs_dev = NULL;
 	uint8_t   *recvBuf;
 	uint32_t   status = 0;
 	int rc = NAU83GXX_RC_OK;
@@ -53,11 +52,15 @@ int do_dsp_getkcs(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 
 	if ((0x10 == device_addr) || (0x100 == device_addr))
 	{
-		kcs_i2c_dev = NAU83GXX_left_dev;
+		kcs_dev = kcs_left_dev;
 	}
-	else if(0x11 == device_addr)
+	else if (0x11 == device_addr)
 	{
-		kcs_i2c_dev = NAU83GXX_right_dev;
+		kcs_dev = kcs_right_dev;
+	}
+	else if (0x101 == device_addr)
+	{
+		kcs_dev = kcs_right_core_1_dev;
 	}
 	else
 	{
@@ -80,7 +83,7 @@ int do_dsp_getkcs(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	kcs_cmd_get_ioctl.size_to_read = size;
 	kcs_cmd_get_ioctl.recieved_size = &recieved_size;
 	kcs_cmd_get_ioctl.recieved_data = &recvBuf;
-	rc = DEV_IOCTL(kcs_i2c_dev, IOCTL_KCS_GET_RESULTS_CMD, &kcs_cmd_get_ioctl);
+	rc = DEV_IOCTL(kcs_dev, IOCTL_KCS_GET_RESULTS_CMD, &kcs_cmd_get_ioctl);
 
 end:
 	//Delay by 1 ms to ensure shell doesn't hog resources [redundant]
@@ -105,8 +108,8 @@ end:
 			}
 			SHELL_REPLY_PRINTF("\n\r");
 		}
+		rc = DEV_IOCTL(kcs_dev, IOCTL_KCS_EXIT_GET_STATE);
 	}
-	rc = DEV_IOCTL(kcs_i2c_dev, IOCTL_KCS_EXIT_GET_STATE);
 
 	// needed for Klippel GUI:
 	SHELL_REPLY_PRINTF("%c", 0x04UL);

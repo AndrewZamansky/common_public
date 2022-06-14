@@ -231,9 +231,14 @@ static uint8_t kcs_i2c_write(struct NAU83GXX_config_t *config_handle,
 							struct NAU83GXX_runtime_t *runtime_handle,
 					uint8_t const *write_data, size_t write_data_size)
 {
-	return nau83gxx_write(config_handle->i2c_dev, runtime_handle->dev_addr,
+	uint8_t rc;
+	rc = nau83gxx_write(config_handle->i2c_dev, runtime_handle->dev_addr,
 			runtime_handle->dsp_core_address, write_data, write_data_size);
-
+	if (NAU83GXX_CHIP_TYPE_G60 == runtime_handle->chip_type)
+	{// workaroud for corrupted (duplicated) data in I2C buffer when DSP is busy
+		os_delay_ms(1);
+	}
+	return rc;
 }
 
 static uint8_t kcs_i2c_read(struct NAU83GXX_config_t *config_handle,
@@ -243,6 +248,10 @@ static uint8_t kcs_i2c_read(struct NAU83GXX_config_t *config_handle,
 
 	rc = nau83gxx_read(config_handle->i2c_dev, runtime_handle->dev_addr,
 			runtime_handle->dsp_core_address, read_data, SIZE_OF_STD_DSP_WORD);
+	if (NAU83GXX_CHIP_TYPE_G60 == runtime_handle->chip_type)
+	{// workaroud for corrupted (duplicated) data in I2C buffer when DSP is busy
+		os_delay_ms(1);
+	}
 
 	return rc;
 }
@@ -262,6 +271,7 @@ static uint8_t check_if_idle(struct NAU83GXX_config_t *config_handle,
 		{
 			// communication error
 			PRINTF_DBG("IDLE_WORD NAU83GXX_RC_COMMUNICATION_ERROR\r\n");
+			continue;
 		}
 		if(u32Data == DSP_COMM_IDLE_WORD)
 		{
@@ -294,6 +304,7 @@ static uint8_t get_preamble(struct NAU83GXX_config_t *config_handle,
 		{
 			// communication error
 			PRINTF_DBG("PREAMBLE NAU83GXX_RC_COMMUNICATION_ERROR\r\n");
+			continue;
 		}
 		// check for preamble;
 		if(data[0] == ((DSP_COMM_PREAMBLE >> 8) & 0xFF) &&
@@ -453,10 +464,11 @@ static uint8_t get_reply(struct NAU83GXX_config_t *config_handle,
 		{
 			// communication error
 			PRINTF_DBG("REPLY NAU83GXX_RC_COMMUNICATION_ERROR\r\n");
+			return NAU83GXX_RC_COMMUNICATION_ERROR;
 		}
 		for (j = 0; j < SIZE_OF_STD_DSP_WORD; ++j)
 		{
-			if( (i*4 + j) < reqRecvLen)
+			if( (i * 4 + j) < reqRecvLen)
 				dataRecv[ (i * 4) + j ] =  data[j];
 		}
 	}
@@ -467,6 +479,7 @@ static uint8_t get_reply(struct NAU83GXX_config_t *config_handle,
 	{
 		// communication error
 		PRINTF_DBG("TRAILING FRAGMENT NAU83GXX_RC_COMMUNICATION_ERROR\r\n");
+		return NAU83GXX_RC_COMMUNICATION_ERROR;
 	}
 
 	verifyLen = data[0] + ((data[1] & 0xc0) << 2);
@@ -476,6 +489,7 @@ static uint8_t get_reply(struct NAU83GXX_config_t *config_handle,
 				verifyLen,lenInU32);
 		return NAU83GXX_RC_REPLY_DATA_INTEGRITY_ERROR;
 	}
+
 	padding =  (data[1] & 0x30) >> 4;
 	*recvLen = (lenInU32 - 1) * 4 - padding;
 

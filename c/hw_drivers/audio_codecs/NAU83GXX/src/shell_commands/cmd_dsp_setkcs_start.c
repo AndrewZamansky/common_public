@@ -13,9 +13,9 @@
 #include "i2c_api.h"
 
 
-extern struct dev_desc_t *NAU83GXX_left_dev;
-extern struct dev_desc_t *NAU83GXX_right_dev;
-
+extern struct dev_desc_t *kcs_left_dev;
+extern struct dev_desc_t *kcs_right_dev;
+extern struct dev_desc_t *kcs_right_core_1_dev;
 
 int do_dsp_setkcs_start(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
@@ -23,7 +23,7 @@ int do_dsp_setkcs_start(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[
 	uint16_t   offset, size;
 	char *pEnd;
 	int rc = NAU83GXX_RC_OK;
-	struct dev_desc_t *kcs_i2c_dev;
+	struct dev_desc_t *kcs_dev = NULL;
 	struct kcs_start_collect_data_for_send_ioctl_t collect_data_ioctl;
 
 	/*
@@ -45,11 +45,15 @@ int do_dsp_setkcs_start(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[
 
 	if ((0x10 == device_addr) || (0x100 == device_addr))
 	{
-		kcs_i2c_dev = NAU83GXX_left_dev;
+		kcs_dev = kcs_left_dev;
 	}
-	else if(0x11 == device_addr)
+	else if (0x11 == device_addr)
 	{
-		kcs_i2c_dev = NAU83GXX_right_dev;
+		kcs_dev = kcs_right_dev;
+	}
+	else if (0x101 == device_addr)
+	{
+		kcs_dev = kcs_right_core_1_dev;
 	}
 	else
 	{
@@ -75,7 +79,7 @@ int do_dsp_setkcs_start(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[
 
 	collect_data_ioctl.offset = offset;
 	collect_data_ioctl.size_to_collect = size;
-	rc = DEV_IOCTL(kcs_i2c_dev,
+	rc = DEV_IOCTL(kcs_dev,
 		IOCTL_KCS_START_COLLECT_DATA_FOR_SEND, &collect_data_ioctl);
 
 end:

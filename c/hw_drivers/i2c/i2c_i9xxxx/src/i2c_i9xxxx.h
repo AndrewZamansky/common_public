@@ -20,7 +20,8 @@ struct i2c_i9xxxx_runtime_t {
 	uint8_t  const  *tx_data;
 	uint8_t  *rx_data;
 	uint8_t  const *reg_addr_arr;
-	uint8_t  reg_addr_left_to_transmit;
+	uint8_t  reg_addr_arr_pos;
+	uint8_t  reg_addr_size;
 	size_t   tx_data_size;
 	size_t   transmitted_data_size;
 	size_t   size_of_data_to_receive;
