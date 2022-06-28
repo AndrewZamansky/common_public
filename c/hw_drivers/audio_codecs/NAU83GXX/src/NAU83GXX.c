@@ -226,6 +226,16 @@ static uint8_t NAU83GXX_callback(struct dev_desc_t *adev,
 	return 0;
 }
 
+volatile uint8_t _dummy;
+static void i2c_workaround_delay(struct NAU83GXX_runtime_t *runtime_handle)
+{
+	runtime_handle->_delay = 2000;
+	while (runtime_handle->_delay--)
+	{
+		_dummy++;
+	}
+}
+
 
 static uint8_t kcs_i2c_write(struct NAU83GXX_config_t *config_handle,
 							struct NAU83GXX_runtime_t *runtime_handle,
@@ -236,10 +246,12 @@ static uint8_t kcs_i2c_write(struct NAU83GXX_config_t *config_handle,
 			runtime_handle->dsp_core_address, write_data, write_data_size);
 	if (NAU83GXX_CHIP_TYPE_G60 == runtime_handle->chip_type)
 	{// workaroud for corrupted (duplicated) data in I2C buffer when DSP is busy
-		os_delay_ms(1);
+//		os_delay_ms(1);
+		i2c_workaround_delay(runtime_handle);
 	}
 	return rc;
 }
+
 
 static uint8_t kcs_i2c_read(struct NAU83GXX_config_t *config_handle,
 		struct NAU83GXX_runtime_t *runtime_handle, uint8_t *read_data)
@@ -250,7 +262,8 @@ static uint8_t kcs_i2c_read(struct NAU83GXX_config_t *config_handle,
 			runtime_handle->dsp_core_address, read_data, SIZE_OF_STD_DSP_WORD);
 	if (NAU83GXX_CHIP_TYPE_G60 == runtime_handle->chip_type)
 	{// workaroud for corrupted (duplicated) data in I2C buffer when DSP is busy
-		os_delay_ms(1);
+//		os_delay_ms(1);
+		i2c_workaround_delay(runtime_handle);
 	}
 
 	return rc;

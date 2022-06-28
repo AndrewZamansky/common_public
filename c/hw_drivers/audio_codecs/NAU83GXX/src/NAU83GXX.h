@@ -66,6 +66,7 @@ struct NAU83GXX_runtime_t {
 	uint8_t dev_addr;
 	uint8_t is_kcs_loaded;
 	uint8_t sw_alc_enabled;
+	uint32_t _delay;
 };
 SET_RUNTIME_DATA_TYPE(NAU83GXX, struct NAU83GXX_runtime_t);
 
