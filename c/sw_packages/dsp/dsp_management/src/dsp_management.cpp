@@ -1023,7 +1023,8 @@ void dsp_get_output_buffer_from_pad( struct dsp_module_inst_t * adsp,
 		default:
 			if (NULL != pad->buff)
 			{
-				CRITICAL_ERROR("pad buffer should not be allocated in this case");
+				CRITICAL_ERROR(
+						"pad buffer should not be allocated in this case");
 			}
 			pad = &dummy_output_buff;
 			if (buff_len > pad->buff_size)

@@ -69,8 +69,10 @@ static void tone_generator_dsp(struct dsp_module_inst_t *adsp)
 		CRITICAL_ERROR("tone generator: bad output buffer size");
 	}
 
-	dsp_get_output_buffer_from_pad(adsp, 0, &apCh1Out, output_buff_size);
-	dsp_get_output_buffer_from_pad(adsp, 1, &apCh2Out, output_buff_size);
+	dsp_get_output_buffer_from_pad(
+			adsp, 0, (uint8_t**)&apCh1Out, output_buff_size);
+	dsp_get_output_buffer_from_pad(
+			adsp, 1, (uint8_t**)&apCh2Out, output_buff_size);
 
 	volume_lin = handle->volume_lin;
 	curr_time = handle->curr_time;
