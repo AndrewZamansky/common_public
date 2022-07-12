@@ -1085,6 +1085,7 @@ static uint8_t process_send_alc_data_msg(
 	}
 
 	min_battery_level_V = set_alc_data_msg->min_battery_level_V;
+
 	vbat_diff = set_alc_data_msg->max_battery_level - min_battery_level_V;
 
 	if (0 >= vbat_diff)
@@ -1092,6 +1093,7 @@ static uint8_t process_send_alc_data_msg(
 		return NAU83GXX_RC_ALC_WRONG_VBAT_MIN_MAX_LEVELS;
 	}
 	p_alc_segment = &runtime_handle->alc_segment[segment_num];
+	p_alc_segment->min_battery_level_V = min_battery_level_V;
 	p_alc_segment->battery_change_step_V =
 			set_alc_data_msg->battery_change_step_V;
 
