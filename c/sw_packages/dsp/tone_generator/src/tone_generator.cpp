@@ -60,7 +60,6 @@ static void tone_generator_dsp(struct dsp_module_inst_t *adsp)
 	real_t curr_time;
 	real_t curr_time_delta;
 	real_t prev_val;
-	uint8_t buff_is_zero_buffer;
 
 	handle = (struct TONE_GENERATOR_Instance_t *)adsp->handle;
 	output_buff_size = handle->output_buff_size;
