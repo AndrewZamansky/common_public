@@ -40,6 +40,8 @@ ifeq ($(sort $(CONFIG_NAU83GXX_ENABLE_DB_LAB_SHELL_COMMANDS)),y)
     SRC += src/shell_commands/cmd_dsp_setkcs_start.c
     SRC += src/shell_commands/cmd_dsp_setkcs_store.c
     SRC += src/shell_commands/cmd_dsp_setkcs_send.c
+    SRC += src/shell_commands/cmd_kcs_read_i2c_reg.c
+    SRC += src/shell_commands/cmd_kcs_write_i2c_reg.c
 endif
 SRC += src/shell_commands/cmd_kcs_send_setup_bin.c
 

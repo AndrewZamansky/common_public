@@ -358,23 +358,31 @@ void NAU83GXX_OCP_recovery(struct NAU83GXX_config_t *config_handle,
 }
 
 
-uint8_t update_real_device_id(struct dev_desc_t *i2c_dev,
+uint8_t update_real_device_id(struct NAU83GXX_config_t *config_handle,
+		struct dev_desc_t *i2c_dev,
 		struct NAU83GXX_runtime_t *runtime_handle)
 {
 	uint8_t rc;
 	uint8_t read_i2c_data[2];
 	uint8_t device_id;
 	uint8_t device_addr;
+	uint8_t i;
 
-	device_addr = runtime_handle->dev_addr;
-	rc = nau83gxx_read(
-			i2c_dev, device_addr, NAU83GXX_REG_DEVICE_ID, read_i2c_data, 2);
-	if (rc) return rc;
+	for (i = 0; i < config_handle->i2c_addr_arr_size; i++)
+	{
+		device_addr = config_handle->i2c_addr_arr[i];
+		rc = nau83gxx_read(
+				i2c_dev, device_addr, NAU83GXX_REG_DEVICE_ID, read_i2c_data, 2);
+		if (0 == rc)
+		{
+			runtime_handle->dev_addr = device_addr;
+			device_id = read_i2c_data[1] & 0xF0;
+			runtime_handle->chip_type = device_id;
+			return 0;
+		}
+	}
 
-	device_id = read_i2c_data[1] & 0xF0;
-
-	runtime_handle->chip_type = device_id;
-	return NAU83GXX_RC_OK;
+	return NAU83GXX_RC_DEVICE_DOES_NOT_EXIST;
 }
 
 
