@@ -110,7 +110,9 @@ enum NAU83GXX_IOCTL_e {
 	IOCTL_NAU83GXX_GET_INFO,
 	IOCTL_NAU83GXX_BYPASS_KCS,
 	IOCTL_NAU83GXX_BYPASS_BIQUADS,
-	IOCTL_KCS_SET_ALC_DATA
+	IOCTL_KCS_SET_ALC_DATA,
+	IOCTL_KCS_REGISTER_READ,
+	IOCTL_KCS_REGISTER_WRITE
 };
 
 struct hw_is_ready_ioctl_t {
@@ -121,8 +123,6 @@ struct hw_is_ready_ioctl_t {
 	uint8_t *kcs_spkr_param_data;
 	size_t kcs_spkr_param_size;
 	end_of_ioctl_callback_f  end_of_ioctl_callback;
-	uint8_t try_more_i2c_addr;
-	uint8_t additional_i2c_addr;
 	uint8_t perform_only_hw_reset;
 };
 
@@ -179,6 +179,18 @@ struct kcs_cmd_set_alc_data_ioctl_t {
 };
 
 
+struct kcs_cmd_register_read_ioctl_t {
+	uint16_t reg_addr;
+	uint32_t data;
+};
+
+
+struct kcs_cmd_register_write_ioctl_t {
+	uint16_t reg_addr;
+	uint32_t data;
+};
+
+
 enum NAU83GXX_chip_state_e {
 	 NAU83GXX_CHIP_STATE_INITIALIZING = 0,
 	 NAU83GXX_CHIP_STATE_RUNNING
@@ -197,7 +209,8 @@ struct NAU83GXX_config_t {
 	uint16_t boost_target_limit_mv;
 	uint16_t boost_margin_mv;
 	uint16_t current_limit_8ohm;
-	uint8_t dev_addr;
+	uint8_t i2c_addr_arr_size;
+	uint8_t *i2c_addr_arr;
 	uint8_t chip_type;
 	uint8_t I2S_in_channel;
 	uint8_t I2S_word_length;

@@ -10,7 +10,7 @@
 
 #include "os_wrapper.h"
 #include "NAU83GXX_api.h"
-
+#include <math.h>
 #include "CoreModules/KCS_RemoteInterface.h"
 
 int do_kcs_get_info(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])

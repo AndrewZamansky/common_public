@@ -86,8 +86,6 @@ struct init_hw_msg_t {
 	uint8_t *kcs_spkr_param_data;
 	size_t kcs_spkr_param_size;
 	end_of_ioctl_callback_f  end_of_ioctl_callback;
-	uint8_t try_more_i2c_addr;
-	uint8_t additional_i2c_addr;
 	uint8_t perform_only_hw_reset;
 };
 
@@ -173,8 +171,8 @@ extern uint8_t nau83gxx_write_wordU16(struct dev_desc_t *i2c_dev,
 		uint8_t device_addr, uint16_t reg_addr, uint16_t write_dat);
 extern void NAU83GXX_OCP_recovery(struct NAU83GXX_config_t *config_handle,
 		struct NAU83GXX_runtime_t *runtime_handle);
-extern uint8_t update_real_device_id(struct dev_desc_t *i2c_dev,
-							struct NAU83GXX_runtime_t *runtime_handle);
+extern uint8_t update_real_device_id(struct NAU83GXX_config_t *config_handle,
+		struct dev_desc_t *i2c_dev, struct NAU83GXX_runtime_t *runtime_handle);
 
 
 static uint8_t send_simple_cmd(struct NAU83GXX_config_t *config_handle,
@@ -718,19 +716,10 @@ static uint8_t process_init_hw_msg(struct NAU83GXX_config_t *config_handle,
 			p_init_hw_msg->registers_init_arr_num_of_items;
 
 	i2c_dev = config_handle->i2c_dev;
-	rc = update_real_device_id(i2c_dev, runtime_handle);
+	rc = update_real_device_id(config_handle, i2c_dev, runtime_handle);
 	if (rc)
 	{
-		if (p_init_hw_msg->try_more_i2c_addr)
-		{
-			runtime_handle->dev_addr = p_init_hw_msg->additional_i2c_addr;
-			rc = update_real_device_id(i2c_dev, runtime_handle);
-		}
-		if (rc)
-		{
-			rc = NAU83GXX_RC_DEVICE_DOES_NOT_EXIST;
-			goto error;
-		}
+		goto error;
 	}
 
 	dev_addr = runtime_handle->dev_addr;
@@ -769,12 +758,12 @@ static uint8_t process_power_down_msg(
 	// added soft mute to fix small pop-up noise on power down and
 	// after exiting from hibernation on some PC
 	rc = nau83gxx_write_wordU16(
-			config_handle->i2c_dev, config_handle->dev_addr, 0x13, 0xF1CF);
+			config_handle->i2c_dev, runtime_handle->dev_addr, 0x13, 0xF1CF);
 	os_delay_ms(10);
 	//////////////
 
 	rc = nau83gxx_write_wordU16(
-			config_handle->i2c_dev, config_handle->dev_addr, 0x00, 0x0);
+			config_handle->i2c_dev, runtime_handle->dev_addr, 0x00, 0x0);
 	runtime_handle->state = STATE_NOT_INITIALIZED;
 	free(runtime_handle->dataBuf);
 	return rc;
@@ -1330,8 +1319,6 @@ static uint8_t init_hw(struct NAU83GXX_runtime_t *runtime_handle,
 	p_init_hw_msg->kcs_spkr_param_size = hw_is_ready_ioctl->kcs_spkr_param_size;
 	p_init_hw_msg->end_of_ioctl_callback =
 			hw_is_ready_ioctl->end_of_ioctl_callback;
-	p_init_hw_msg->try_more_i2c_addr = hw_is_ready_ioctl->try_more_i2c_addr;
-	p_init_hw_msg->additional_i2c_addr = hw_is_ready_ioctl->additional_i2c_addr;
 	p_init_hw_msg->perform_only_hw_reset =
 			hw_is_ready_ioctl->perform_only_hw_reset;
 
@@ -1354,7 +1341,7 @@ static uint8_t init_driver(struct dev_desc_t *adev,
 		CRITICAL_ERROR("cannot create mutex");
 	}
 
-	runtime_handle->dev_addr = config_handle->dev_addr;
+	runtime_handle->dev_addr = 0x00;
 	runtime_handle->task_handle = os_create_task("nau83gxx", nau83gxx_task,
 					adev, NAU83GXX_TASK_STACK_SIZE , NAU83GXX_TASK_PRIORITY);
 
@@ -1618,6 +1605,97 @@ static uint8_t get_info(
 }
 
 
+static uint8_t kcs_register_read_ioctl(
+		struct NAU83GXX_config_t *config_handle,
+		struct NAU83GXX_runtime_t *runtime_handle,
+		struct kcs_cmd_register_read_ioctl_t *p_register_read_ioctl)
+{
+	uint8_t rc;
+	uint8_t device_addr;
+	uint16_t reg_addr;
+	uint16_t data_size;
+	uint8_t read_i2c_data[4] = {0};
+	uint32_t data;
+
+	device_addr = runtime_handle->dev_addr;
+	if (0 == device_addr)
+	{
+		return NAU83GXX_RC_DRIVER_NOT_READY;
+	}
+
+	reg_addr = p_register_read_ioctl->reg_addr;
+	if (0xff >= reg_addr)
+	{
+		data_size = 2;
+	}
+	else
+	{
+		data_size = 4;
+	}
+
+	rc = nau83gxx_read(config_handle->i2c_dev,
+			device_addr, reg_addr, read_i2c_data, data_size);
+	if (rc)
+	{
+		return NAU83GXX_RC_DEVICE_DOES_NOT_EXIST;
+	}
+
+	data = (read_i2c_data[0] << 8) | read_i2c_data[1];
+	if (0xff < reg_addr)
+	{
+		data = data << 16;
+		data |= (read_i2c_data[2] << 8) | read_i2c_data[3];
+	}
+	p_register_read_ioctl->data = data;
+	return NAU83GXX_RC_OK;
+}
+
+
+static uint8_t kcs_register_write_ioctl(
+		struct NAU83GXX_config_t *config_handle,
+		struct NAU83GXX_runtime_t *runtime_handle,
+		struct kcs_cmd_register_read_ioctl_t *p_register_read_ioctl)
+{
+	uint8_t rc;
+	uint8_t device_addr;
+	uint16_t reg_addr;
+	uint16_t data_size;
+	uint8_t write_i2c_data[4] = {0};
+	uint32_t data;
+
+	device_addr = runtime_handle->dev_addr;
+	if (0 == device_addr)
+	{
+		return NAU83GXX_RC_DRIVER_NOT_READY;
+	}
+
+	reg_addr = p_register_read_ioctl->reg_addr;
+	data = p_register_read_ioctl->data;
+	if (0xff >= reg_addr)
+	{
+		data_size = 2;
+		write_i2c_data[0] = (data >> 8) & 0xFF;
+		write_i2c_data[1] = data & 0xFF;
+	}
+	else
+	{
+		data_size = 4;
+		write_i2c_data[0] = (data >> 24) & 0xFF;
+		write_i2c_data[1] = (data >> 16) & 0xFF;
+		write_i2c_data[2] = (data >> 8) & 0xFF;
+		write_i2c_data[3] = data & 0xFF;
+	}
+
+	rc = nau83gxx_write(config_handle->i2c_dev,
+			device_addr, reg_addr, write_i2c_data, data_size);
+	if (rc)
+	{
+		return NAU83GXX_RC_DEVICE_DOES_NOT_EXIST;
+	}
+
+	return NAU83GXX_RC_OK;
+}
+
 
 /**
  * NAU83GXX_ioctl()
@@ -1691,6 +1769,7 @@ static uint8_t KCS_ioctl(struct dev_desc_t *adev,
 {
 	struct dev_desc_t *NAU83GXX_dev;
 	struct NAU83GXX_runtime_t *NAU83GXX_runtime_handle;
+	struct NAU83GXX_config_t *NAU83GXX_config_handle;
 	struct KCS_config_t *kcs_config_handle;
 	uint16_t dsp_core_address;
 	uint8_t ret_val;
@@ -1699,6 +1778,8 @@ static uint8_t KCS_ioctl(struct dev_desc_t *adev,
 	NAU83GXX_dev = kcs_config_handle->nau83gxx;
 	NAU83GXX_runtime_handle =
 			DEV_GET_RUNTIME_DATA_POINTER(NAU83GXX, NAU83GXX_dev);
+	NAU83GXX_config_handle =
+			DEV_GET_CONFIG_DATA_POINTER(NAU83GXX, NAU83GXX_dev);
 
 	dsp_core_address = kcs_config_handle->dsp_core;
 	ret_val = check_correct_state(aIoctl_num, NAU83GXX_runtime_handle->state);
@@ -1733,6 +1814,12 @@ static uint8_t KCS_ioctl(struct dev_desc_t *adev,
 	case IOCTL_KCS_SEND_SETUP_NON_BLOCKING:
 		return send_kcs_send_setup_non_blocking(
 				NAU83GXX_runtime_handle, aIoctl_param1, dsp_core_address);
+	case IOCTL_KCS_REGISTER_READ:
+		return kcs_register_read_ioctl(
+				NAU83GXX_config_handle, NAU83GXX_runtime_handle, aIoctl_param1);
+	case IOCTL_KCS_REGISTER_WRITE:
+		return kcs_register_write_ioctl(
+				NAU83GXX_config_handle, NAU83GXX_runtime_handle, aIoctl_param1);
 	default :
 		return NAU83GXX_RC_NOT_SUPPORTED_IOCTL;
 	}
