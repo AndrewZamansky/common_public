@@ -2,62 +2,57 @@
  *
  * file :   math_functions.c
  *
- *
  */
 
-
-/********  includes *********************/
 
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 
 #include "common_dsp_api.h"
-
 #include <math.h>
 
-/********  defines *********************/
+#if defined(__GNUC__)
+	#if (4 != __SIZEOF_FLOAT__)
+		#error "only floats of 4 byte size are supported"
+	#endif
+	#if ((__BYTE_ORDER__ != __ORDER_LITTLE_ENDIAN__) || \
+			(__FLOAT_WORD_ORDER__ != __ORDER_LITTLE_ENDIAN__))
+		#error "only little endian order supported supported"
+	#endif
+#else
+	#warning "not tested yet"
+#endif
 
-
-/********  types  *********************/
-
-/********  externals *********************/
-
-
-/********  local defs *********************/
-
-
-/**********   external variables    **************/
-
-
-
-/***********   local variables    **************/
 #define USE_LOG2_EIGHTH_ORDER
 #ifdef USE_LOG2_EIGHTH_ORDER
-	#define A0_log2 (-0.41503749927884381855f)
-	#define A1_log2 (1.92359338785195120981f)
-	#define A2_log2 (-1.28239559190130080654f)
-	#define A3_log2 (1.13990719280115627248f)
-	#define A4_log2 (-1.13990719280115627248f)
-	#define A5_log2 (1.21590100565456669065f)
-	#define A6_log2 (-1.35100111739396298961f)
-	#define A7_log2 (1.54400127702167198812f)
-	#define A8_log2 (-1.80133482319195065281f)
+	#define A0_log2  (-0.41503749927884381855f)
+	#define A1_log2  (1.92359338785195120981f)
+	#define A2_log2  (-1.28239559190130080654f)
+	#define A3_log2  (1.13990719280115627248f)
+	#define A4_log2  (-1.13990719280115627248f)
+	#define A5_log2  (1.21590100565456669065f)
+	#define A6_log2  (-1.35100111739396298961f)
+	#define A7_log2  (1.54400127702167198812f)
+	#define A8_log2  (-1.80133482319195065281f)
 #else
-	#define A2_log2		(-1.28239559190130080654f)
-	#define A1_log2		(3.84718677570390241963f)
-	#define A0_log2		(-2.57908006061228892959f)
+	#define A2_log2  (-1.28239559190130080654f)
+	#define A1_log2  (3.84718677570390241963f)
+	#define A0_log2  (-2.57908006061228892959f)
 #endif
 
 static inline float b_mult_log2_of_a(float b, float a)
 {
-	float	fraction;
-	int exp;
-	uint32_t	a_in_raw_bit_represantation;
-	uint32_t	fraction_in_bit_represantation;
-	float	log2_of_fraction ;
-	float	log2_of_a;
+	float     fraction;
+	int       exp;
+	uint32_t  a_in_raw_bit_represantation;
+	uint32_t  *tmp_casting_pointer_32;
+	float     *tmp_casting_float;
+	uint32_t  fraction_in_bit_represantation;
+	float     log2_of_fraction ;
+	float     log2_of_a;
 
-	a_in_raw_bit_represantation=*((uint32_t*)&a);
+	tmp_casting_pointer_32 = (uint32_t*)&a;
+	a_in_raw_bit_represantation = *tmp_casting_pointer_32;
 	exp = a_in_raw_bit_represantation >> 23;
 
 	/* we want to calculate b * ( log2((1 + fraction)/2) * (exp + 1) )  */
@@ -67,7 +62,8 @@ static inline float b_mult_log2_of_a(float b, float a)
 	fraction_in_bit_represantation =
 			a_in_raw_bit_represantation | ( (-1 + 127)<<23 );
 
-	*(uint32_t*)&fraction = fraction_in_bit_represantation;
+	tmp_casting_float = (float*)&fraction_in_bit_represantation;
+	fraction = *tmp_casting_float;
 
 #ifdef USE_LOG2_EIGHTH_ORDER
 	/* log2(a) = exp + log2(fraction)
@@ -115,34 +111,34 @@ static inline float b_mult_log2_of_a(float b, float a)
 #define USE_SEVENTH_TAYLOR_POWER
 //#define USE_THIRD_TAYLOR_POWER
 #ifdef USE_THIRD_TAYLOR_POWER
-	#define A3_2_power_x		(0.05550410866482157995f)
-	#define A2_2_power_x		(0.24022650695910071233f)
-	#define A1_2_power_x		(0.69314718055994530942f)
-	#define A0_2_power_x		(1.0f)
+	#define A3_2_power_x  (0.05550410866482157995f)
+	#define A2_2_power_x  (0.24022650695910071233f)
+	#define A1_2_power_x  (0.69314718055994530942f)
+	#define A0_2_power_x  (1.0f)
 #elif defined(USE_SEVENTH_TAYLOR_POWER)
 	#ifdef USE_TAYLOR_AROUND_0_5 //for taylor around x=0.5
-		#define A7_2_power_x		(0.000021570623008968f)
-		#define A6_2_power_x		(0.00021783881590746449f)
-		#define A5_2_power_x		(0.00188564987653693711f)
-		#define A4_2_power_x		(0.01360208862866362641f)
-		#define A3_2_power_x		(0.07849466324122069881f)
-		#define A2_2_power_x		(0.33973158418307492704f)
-		#define A1_2_power_x		(0.98025814346854719171f)
-		#define A0_2_power_x		(1.4142135623730950488f)
+		#define A7_2_power_x  (0.000021570623008968f)
+		#define A6_2_power_x  (0.00021783881590746449f)
+		#define A5_2_power_x  (0.00188564987653693711f)
+		#define A4_2_power_x  (0.01360208862866362641f)
+		#define A3_2_power_x  (0.07849466324122069881f)
+		#define A2_2_power_x  (0.33973158418307492704f)
+		#define A1_2_power_x  (0.98025814346854719171f)
+		#define A0_2_power_x  (1.4142135623730950488f)
 	#else
-		#define A7_2_power_x		(0.00001525273380405984f)
-		#define A6_2_power_x		(0.0001540353039338161f)
-		#define A5_2_power_x		(0.00133335581464284434f)
-		#define A4_2_power_x		(0.00961812910762847716f)
-		#define A3_2_power_x		(0.05550410866482157995f)
-		#define A2_2_power_x		(0.24022650695910071233f)
-		#define A1_2_power_x		(0.69314718055994530942f)
-		#define A0_2_power_x		(1.0f)
+		#define A7_2_power_x  (0.00001525273380405984f)
+		#define A6_2_power_x  (0.0001540353039338161f)
+		#define A5_2_power_x  (0.00133335581464284434f)
+		#define A4_2_power_x  (0.00961812910762847716f)
+		#define A3_2_power_x  (0.05550410866482157995f)
+		#define A2_2_power_x  (0.24022650695910071233f)
+		#define A1_2_power_x  (0.69314718055994530942f)
+		#define A0_2_power_x  (1.0f)
 	#endif
 #else
-	#define A2_2_power_x		(0.33973f)
-	#define A1_2_power_x		(0.64053f)
-	#define A0_2_power_x		(1.009f)
+	#define A2_2_power_x  (0.33973f)
+	#define A1_2_power_x  (0.64053f)
+	#define A0_2_power_x  (1.009f)
 #endif
 /* function : fast_pow
  *	assuming that a is positive
@@ -162,11 +158,12 @@ static inline float b_mult_log2_of_a(float b, float a)
  */
 float fast_pow_float(float a, float b)
 {
-	float	z;
-	int32_t	int_of_z;
-	float	fraction_of_z;
-	float retVal;
-	float	power_of_fraction;
+	float    z;
+	int32_t  int_of_z;
+	float    fraction_of_z;
+	float    ret_val;
+	float    power_of_fraction;
+	uint32_t  *tmp_casting_pointer_32;
 
 	if (a < 0)
 	{
@@ -178,8 +175,12 @@ float fast_pow_float(float a, float b)
 	//2^z calculation
 	int_of_z = (int32_t)z ;
 
-	// int_of_z may be negative
-	*(uint32_t*)&retVal = (int_of_z + 127) << 23; //calculation of integer part
+	tmp_casting_pointer_32 = (uint32_t*)&ret_val;
+
+	// note: int_of_z may be negative
+
+	//calculation of integer part:
+	*tmp_casting_pointer_32 = (int_of_z + 127) << 23;
 	fraction_of_z = z - (float)int_of_z;
 
 #ifdef USE_THIRD_TAYLOR_POWER
@@ -233,9 +234,9 @@ float fast_pow_float(float a, float b)
 	power_of_fraction += A0_2_power_x;
 #endif
 
-	retVal = retVal * power_of_fraction;
+	ret_val = ret_val * power_of_fraction;
 
-	return retVal;
+	return ret_val;
 }
 
 
