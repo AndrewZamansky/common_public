@@ -15,11 +15,10 @@
 int do_kcs_write_i2c_reg(
 		cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
-	struct kcs_cmd_register_read_ioctl_t register_read_ioctl;
+	struct kcs_cmd_register_write_ioctl_t register_write_ioctl;
 	struct dev_desc_t *kcs_dev;
 	int rc = NAU83GXX_RC_OK;
 	char *pEnd;
-	uint32_t data;
 
 	/*
 	 * Arguments:
@@ -42,10 +41,10 @@ int do_kcs_write_i2c_reg(
 		goto end;
 	}
 
-	register_read_ioctl.reg_addr = strtol(argv[2], &pEnd, 0);
-	register_read_ioctl.data = strtol(argv[3], &pEnd, 0);
+	register_write_ioctl.reg_addr = strtol(argv[2], &pEnd, 0);
+	register_write_ioctl.data = strtol(argv[3], &pEnd, 0);
 
-	rc = DEV_IOCTL(kcs_dev, IOCTL_KCS_REGISTER_WRITE, &register_read_ioctl);
+	rc = DEV_IOCTL(kcs_dev, IOCTL_KCS_REGISTER_WRITE, &register_write_ioctl);
 
 end:
 
