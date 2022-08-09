@@ -70,4 +70,17 @@ struct NAU83GXX_runtime_t {
 };
 SET_RUNTIME_DATA_TYPE(NAU83GXX, struct NAU83GXX_runtime_t);
 
+
+extern uint8_t nau83gxx_write(struct dev_desc_t *i2c_dev, uint8_t device_addr,
+		uint16_t reg_addr, const uint8_t *data, size_t write_data_size);
+extern uint8_t nau83gxx_read(struct dev_desc_t *i2c_dev, uint8_t device_addr,
+		uint16_t reg_addr, uint8_t *read_data, uint16_t size_to_read);
+extern uint8_t  NAU83GXX_send_register_array(struct dev_desc_t *i2c_dev,
+		uint8_t device_addr, const struct NAU83GXX_reg_s *reg_array,
+		uint16_t array_size);
+extern uint8_t nau83gxx_read_wordU16(struct dev_desc_t *i2c_dev,
+		uint8_t device_addr, uint16_t reg_addr, uint16_t *read_dat);
+extern uint8_t nau83gxx_write_wordU16(struct dev_desc_t *i2c_dev,
+		uint8_t device_addr, uint16_t reg_addr, uint16_t write_dat);
+
 #endif
