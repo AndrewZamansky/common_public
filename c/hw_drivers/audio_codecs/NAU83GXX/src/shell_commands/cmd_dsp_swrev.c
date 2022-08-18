@@ -13,8 +13,10 @@
 #include "i2c_api.h"
 
 extern struct dev_desc_t *kcs_left_dev;
+extern struct dev_desc_t *kcs_left_core_1_dev;
 extern struct dev_desc_t *kcs_right_dev;
 extern struct dev_desc_t *kcs_right_core_1_dev;
+
 
 int do_dsp_swrev(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
@@ -42,15 +44,25 @@ int do_dsp_swrev(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	{
 		kcs_dev = kcs_left_dev;
 	}
-	else if (0x11 == device_addr)
+	else if ((0x11 == device_addr) || (0x110 == device_addr))
 	{
 		kcs_dev = kcs_right_dev;
 	}
 	else if (0x101 == device_addr)
 	{
+		kcs_dev = kcs_left_core_1_dev;
+	}
+	else if (0x111 == device_addr)
+	{
 		kcs_dev = kcs_right_core_1_dev;
 	}
 	else
+	{
+		rc = NAU83GXX_RC_DEVICE_DOES_NOT_EXIST;
+		goto end;
+	}
+
+	if (NULL == kcs_dev)
 	{
 		rc = NAU83GXX_RC_DEVICE_DOES_NOT_EXIST;
 		goto end;

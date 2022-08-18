@@ -275,7 +275,7 @@ static uint8_t set_current_and_boost_limits(
 	reg_0x17_data = (config_handle->boost_margin_mv / 190) |
 			((config_handle->boost_target_limit_mv / 190) <<
 					CURRENT_BOOST_LIMIT_POS);
-	nau83gxx_write_wordU16(i2c_dev, dev_addr, 0x17, reg_0x17_data);
+	rc = nau83gxx_write_wordU16(i2c_dev, dev_addr, 0x17, reg_0x17_data);
 	if (rc) return rc;
 
 	current_limit_8ohm = config_handle->current_limit_8ohm - 1200;

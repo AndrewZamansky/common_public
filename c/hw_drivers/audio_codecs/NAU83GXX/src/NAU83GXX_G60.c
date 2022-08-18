@@ -25,12 +25,10 @@ static uint8_t init_G60_regs(
 {
 	uint8_t dev_addr;
 	struct dev_desc_t * i2c_dev;
-	uint8_t rc;
 
 	dev_addr = runtime_handle->dev_addr;
 	i2c_dev = config_handle->i2c_dev;
 
-	rc = NAU83GXX_send_register_array(
+	return NAU83GXX_send_register_array(
 			i2c_dev, dev_addr, cmd_83G60_init, cmd_83G60_init_size);
-	if (rc) return rc;
 }
