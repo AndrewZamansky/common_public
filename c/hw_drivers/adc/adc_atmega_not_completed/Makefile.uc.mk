@@ -1,8 +1,5 @@
-ifeq ($(findstring nuc505,$(CONFIG_SOC_TYPE)),nuc505)
-    ifeq ($(findstring YES,$(CONFIG_INCLUDE_INTERNAL_ADC)),YES) 	 
-        _INCLUDE_ADC := YES
-    	INCLUDE_THIS_COMPONENT := YES   # must be here !!
-    endif  
+ifeq ($(sort $(CONFIG_NUC505)),y)
+    INCLUDE_THIS_COMPONENT = $(CONFIG_INCLUDE_INTERNAL_ADC)
 endif
 
 

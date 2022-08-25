@@ -1,8 +1,5 @@
-ifeq ($(findstring atmega328,$(CONFIG_SOC_TYPE)),atmega328)
-    ifeq ($(findstring YES,$(CONFIG_INCLUDE_INTERNAL_SERIAL_NUMBER)),YES) 	 
-	    _INCLUDE_SERIAL_NUMBER := YES
-	    INCLUDE_THIS_COMPONENT := YES   # must be here !!
-    endif  
+ifeq ($(sort $(CONFIG_ATMEGA328)),y)
+    INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_INTERNAL_SERIAL_NUMBER) 
 endif
 
 

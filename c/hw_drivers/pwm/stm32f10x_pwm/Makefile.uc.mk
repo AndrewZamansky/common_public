@@ -1,4 +1,4 @@
-ifeq ($(findstring stm32f10x,$(CONFIG_SOC_TYPE)),stm32f10x)
+ifeq ($(sort $(CONFIG_STM32F10X)),y)
     INCLUDE_THIS_COMPONENT :=$(CONFIG_INCLUDE_INTERNAL_PWM)
 endif
 

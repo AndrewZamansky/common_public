@@ -1,8 +1,5 @@
-ifeq ($(findstring stm32f10x,$(CONFIG_SOC_TYPE)),stm32f10x)
-    ifeq ($(findstring YES,$(CONFIG_INCLUDE_INTERNAL_SERIAL_NUMBER)),YES) 	 
-	    _INCLUDE_SERIAL_NUMBER := YES
-	    INCLUDE_THIS_COMPONENT := YES   # must be here !!
-    endif  
+ifeq ($(sort $(CONFIG_STM32F10X)),y)
+    INCLUDE_THIS_COMPONENT := $(CONFIG_INCLUDE_INTERNAL_SERIAL_NUMBER) 
 endif
 
 

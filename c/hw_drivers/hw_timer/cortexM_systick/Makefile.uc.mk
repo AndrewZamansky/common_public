@@ -1,7 +1,7 @@
 
 INCLUDE_THIS_COMPONENT :=$(CONFIG_INCLUDE_CORTEXM_SYSTICK)
 
-ifeq ($(findstring stm32f10x,$(CONFIG_SOC_TYPE)),stm32f10x)
+ifeq ($(sort $(CONFIG_STM32F10X)),y)
     INCLUDE_DIR = $(EXTERNAL_SOURCE_ROOT_DIR)/ST/STM32F10x_StdPeriph_Driver/inc
 endif
 

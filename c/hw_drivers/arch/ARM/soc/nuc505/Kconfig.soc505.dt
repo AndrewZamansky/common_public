@@ -2,8 +2,8 @@ menu "nuc505 soc configuration"
 
 
 config NUC505_BSP_VERSION
-    string "nuc bsp version in form : xx.xx[.xx]"
-    default "3.00.003"
+	string "nuc bsp version in form : xx.xx[.xx]"
+	default "3.00.003"
 
 ##################################################
 ##############  memories on soc ##################
@@ -12,23 +12,23 @@ menu "memories"
 
 comment "sram start : 0x20000000"
 config DT_SOC_RAM_START_ADDR
-    hex 
-    default 0x20000000
+	hex 
+	default 0x20000000
 
 comment "sram size : 0x20000"
 config DT_SOC_RAM_SIZE
-    hex
-    default 0x20000    
+	hex
+	default 0x20000
 
 comment "flash start : 0x0"
 config DT_SOC_FLASH_START_ADDR
-    hex
-    default 0x0
+	hex
+	default 0x0
 
 comment "flash size : 0x100000"
 config DT_SOC_FLASH_SIZE
-    hex
-    default 0x100000
+	hex
+	default 0x100000
 
 endmenu
 
@@ -37,7 +37,7 @@ endmenu
 
 comment "number of external interrupts : 30"
 config DT_NUMBER_OF_EXTERNAL_INTERRUPTS
-    int
-    default 30
+	int
+	default 30
 
 endmenu
