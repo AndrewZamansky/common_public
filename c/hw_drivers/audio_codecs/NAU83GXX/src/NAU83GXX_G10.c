@@ -52,7 +52,8 @@ static const struct NAU83GXX_reg_s cmd_83G10b_init[] = {
 //	{0x0001, {0x00, 0x01} }
 };
 
-uint16_t cmd_83G10b_init_size = sizeof(cmd_83G10b_init);
+uint16_t cmd_83G10b_init_size =
+		sizeof(cmd_83G10b_init) / sizeof(struct NAU83GXX_reg_s);
 
 static const struct NAU83GXX_reg_s cmd_83G10c_init[] = {
 //-- 2-Byte Address -- 2-Byte Data -----//
@@ -106,7 +107,8 @@ static const struct NAU83GXX_reg_s cmd_83G10c_init[] = {
 //	{0x001A, {0x00, 0x20} }
 };
 
-uint16_t cmd_83G10c_init_size = sizeof(cmd_83G10c_init);
+uint16_t cmd_83G10c_init_size =
+		sizeof(cmd_83G10c_init) / sizeof(struct NAU83GXX_reg_s);
 
 
 #define OCP_THRESHOLD 5

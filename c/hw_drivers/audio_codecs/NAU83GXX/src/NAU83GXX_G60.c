@@ -9,7 +9,8 @@ static const struct NAU83GXX_reg_s cmd_83G60_init[] = {
 	{0x0000, {0x00, 0x01} }, // like described in datasheet (one write)
 };
 
-uint16_t cmd_83G60_init_size = sizeof(cmd_83G60_init);
+uint16_t cmd_83G60_init_size =
+		sizeof(cmd_83G60_init) / sizeof(struct NAU83GXX_reg_s);
 
 
 static void run_G60_OCP_recovery(

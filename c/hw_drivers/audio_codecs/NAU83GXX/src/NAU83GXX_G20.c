@@ -52,7 +52,8 @@ static const struct NAU83GXX_reg_s cmd_83G20a_init[] = {
 //	{0x001A, {0x00, 0x20} }  //   enable DSP output
 };
 
-uint16_t cmd_83G20a_init_size = sizeof(cmd_83G20a_init);
+uint16_t cmd_83G20a_init_size =
+			sizeof(cmd_83G20a_init) / sizeof(struct NAU83GXX_reg_s);
 
 static uint8_t G10_G20_set_pcm_ctl(struct NAU83GXX_config_t *config_handle,
 								struct dev_desc_t * i2c_dev, uint8_t dev_addr);
