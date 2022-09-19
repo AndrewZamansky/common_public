@@ -18,7 +18,7 @@ extern "C" {
 
 struct fir_filter_c_t {
 	size_t number_of_filter_coefficients;
-	size_t predefined_data_block_size;
+	size_t expected_number_of_input_samples;
 	real_t *p_coefficients;
 	real_t *state;
 };
@@ -33,7 +33,7 @@ void fir_filter_function(
 {
 	struct fir_filter_c_t *fir_filter;
 	size_t number_of_filter_coefficients;
-	size_t predefined_data_block_size;
+	size_t expected_number_of_input_samples;
 	real_t *p_coefficients;
 	real_t *state;
 	real_t out_val;
@@ -43,7 +43,8 @@ void fir_filter_function(
 
 	fir_filter = (struct fir_filter_c_t *)pFilter;
 	number_of_filter_coefficients = fir_filter->number_of_filter_coefficients;
-	predefined_data_block_size = fir_filter->predefined_data_block_size;
+	expected_number_of_input_samples =
+			fir_filter->expected_number_of_input_samples;
 	p_coefficients = fir_filter->p_coefficients;
 	state = fir_filter->state;
 	state_new_input = &state[number_of_filter_coefficients - 1];
@@ -51,9 +52,9 @@ void fir_filter_function(
 	while (buff_len)
 	{
 		curr_len = buff_len;
-		if (predefined_data_block_size < curr_len)
+		if (expected_number_of_input_samples < curr_len)
 		{
-			curr_len = predefined_data_block_size;
+			curr_len = expected_number_of_input_samples;
 		}
 
 		for (size_t i = 0; i < curr_len; i++)
@@ -86,7 +87,7 @@ void fir_filter_function(
 
 
 void *fir_alloc(size_t number_of_filter_coefficients,
-		real_t *p_coefficients, size_t predefined_data_block_size)
+		real_t *p_coefficients, size_t expected_number_of_input_samples)
 {
 	struct fir_filter_c_t *p_fir_filter;
 	real_t *state;
@@ -96,10 +97,12 @@ void *fir_alloc(size_t number_of_filter_coefficients,
 		(struct fir_filter_c_t *)os_safe_malloc(sizeof(struct fir_filter_c_t));
 	errors_api_check_if_malloc_succeed(p_fir_filter);
 	p_fir_filter->number_of_filter_coefficients = number_of_filter_coefficients;
-	p_fir_filter->predefined_data_block_size = predefined_data_block_size;
+	p_fir_filter->expected_number_of_input_samples =
+			expected_number_of_input_samples;
 	p_fir_filter->p_coefficients = p_coefficients;
 
-	state_len = number_of_filter_coefficients + predefined_data_block_size - 1;
+	state_len =
+		number_of_filter_coefficients + expected_number_of_input_samples - 1;
 	state = (real_t *)os_safe_malloc(sizeof(real_t) * state_len);
 	errors_api_check_if_malloc_succeed(p_fir_filter);
 	for (size_t i = 0; i < state_len; i++) state[i] = (int16_t) 0;

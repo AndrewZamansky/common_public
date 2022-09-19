@@ -42,12 +42,13 @@ void fir_filter_function(
 /*   func : fir_alloc()
  *    The coefficients are stored in the array pCoeffs in the following order:
  *
- *    y[n] = b[0] * x[n] + b[1] * x[n-1] + b[2] * x[n-2] + ...+ b[numTaps-1] * x[n-numTaps+1]
+ *    y[n] = b[0] * x[n] + b[1] * x[n-1] +
+ *              + b[2] * x[n-2] + ...+ b[numTaps-1] * x[n-numTaps+1]
  *
  *    {b[numTaps-1], b[numTaps-2], b[N-2], ..., b[1], b[0]}
  */
 void *fir_alloc(size_t number_of_filter_coefficients,
-		float *p_coefficients ,size_t predefined_data_block_size)
+		float *p_coefficients ,size_t expected_number_of_input_samples)
 {
 	struct fir_filter_arm_t *p_fir_filter;
 	arm_fir_instance_f32* p_filter_instance;
@@ -63,13 +64,13 @@ void *fir_alloc(size_t number_of_filter_coefficients,
 	p_fir_filter->p_filter_instance = p_filter_instance;
 
 	p_fir_filter_state = (float*)os_safe_malloc(sizeof(float) *
-			(number_of_filter_coefficients + predefined_data_block_size - 1));
+		(number_of_filter_coefficients + expected_number_of_input_samples - 1));
 	errors_api_check_if_malloc_succeed(p_fir_filter_state);
 	p_fir_filter->p_fir_filter_state = p_fir_filter_state;
 
 	arm_fir_init_f32 (p_filter_instance,
-			(uint16_t)number_of_filter_coefficients,
-			p_coefficients, p_fir_filter_state, predefined_data_block_size);
+		(uint16_t)number_of_filter_coefficients,
+		p_coefficients, p_fir_filter_state, expected_number_of_input_samples);
 	return p_fir_filter;
 }
 

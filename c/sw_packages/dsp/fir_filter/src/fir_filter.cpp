@@ -57,7 +57,7 @@ static uint8_t create_filter(struct fir_filter_t *handle,
 {
 	struct fir_filter_api_set_coefficients_by_params_t *fir_params;
 	size_t number_of_filter_coefficients;
-	size_t predefined_data_block_size;
+	size_t expected_number_of_input_samples;
 	real_t *p_coefficients;
 	float *p_new_coefficients;
 	size_t i;
@@ -71,8 +71,9 @@ static uint8_t create_filter(struct fir_filter_t *handle,
 	}
 	number_of_filter_coefficients = p_set_params->number_of_filter_coefficients;
 	handle->number_of_filter_coefficients = number_of_filter_coefficients;
-	predefined_data_block_size = p_set_params->predefined_data_block_size;
-	handle->predefined_data_block_size = predefined_data_block_size;
+	expected_number_of_input_samples =
+			p_set_params->expected_number_of_input_samples;
+	handle->expected_number_of_input_samples = expected_number_of_input_samples;
 
 	p_coefficients = (real_t *)os_safe_realloc(handle->p_coefficients,
 							sizeof(real_t) * number_of_filter_coefficients);
@@ -101,7 +102,7 @@ static uint8_t create_filter(struct fir_filter_t *handle,
 	}
 
 	handle->p_fir_filter = fir_alloc( number_of_filter_coefficients,
-							p_coefficients, predefined_data_block_size);
+							p_coefficients, expected_number_of_input_samples);
 	return 0;
 }
 
@@ -122,7 +123,7 @@ static uint8_t fir_filter_ioctl(struct dsp_module_inst_t *adsp,
 	case IOCTL_DSP_INIT :
 		handle->p_fir_filter = NULL;
 		handle->number_of_filter_coefficients = 0;
-		handle->predefined_data_block_size = 0;
+		handle->expected_number_of_input_samples = 0;
 		handle->p_coefficients = NULL;
 		break;
 	case IOCTL_FIR_FILTER_SET_FIR_COEFFICIENTS :

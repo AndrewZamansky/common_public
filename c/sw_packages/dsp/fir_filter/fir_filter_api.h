@@ -47,8 +47,7 @@ struct fir_filter_api_set_params_t {
 	// should be odd for linear delay
 	size_t number_of_filter_coefficients;
 
-	// bigger block size -> smaller overhead
-	size_t predefined_data_block_size;
+	size_t expected_number_of_input_samples;// relevant to ARM CMSIS
 };
 
 

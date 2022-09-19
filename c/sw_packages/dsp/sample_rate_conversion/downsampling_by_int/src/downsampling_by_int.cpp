@@ -82,8 +82,8 @@ static void set_downsampling_params(
 	fir_set_params.coeff_by_params.sample_rate_Hz = input_sample_rate_Hz;
 	fir_set_params.number_of_filter_coefficients =
 					params->number_of_coefficients_in_lowpass_filter;
-	fir_set_params.predefined_data_block_size =
-						params->predefined_data_block_size;
+	fir_set_params.expected_number_of_input_samples =
+						params->expected_number_of_input_samples;
 	downsampling_by_int_create(handle, &fir_set_params);
 }
 

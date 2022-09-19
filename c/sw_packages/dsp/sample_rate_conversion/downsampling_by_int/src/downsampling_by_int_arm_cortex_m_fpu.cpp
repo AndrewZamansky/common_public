@@ -24,6 +24,7 @@ struct downsampling_by_int_t {
 	void *p_filter_instance;
 	float *p_filter_state;
 	real_t *p_coefficients;
+	uint32_t expected_number_of_input_samples;
 };
 
 #if !defined(CONFIG_DSP_REAL_NUMBER_FORMAT_FLOATING_POINT)
@@ -40,6 +41,10 @@ void downsampling_by_int_function(void *p_filter,
 	p_arm_fir_decimate = (arm_fir_decimate_instance_f32*)(
 									downsampling_by_int->p_filter_instance);
 	in_buff_len = in_buff_len / sizeof(float);
+	if (in_buff_len != downsampling_by_int->expected_number_of_input_samples)
+	{
+		CRITICAL_ERROR("input data size does not match init data size");
+	}
 	arm_fir_decimate_f32(p_arm_fir_decimate, in_buf, out_buf, in_buff_len);
 }
 
@@ -65,7 +70,7 @@ void downsampling_by_int_create(
 		struct fir_filter_api_set_params_t *fir_set_params)
 {
 	arm_status	status;
-	size_t predefined_data_block_size;
+	size_t expected_number_of_input_samples;
 	size_t number_of_filter_coefficients;
 	struct downsampling_by_int_t *p_downsampling_by_int;
 	arm_fir_decimate_instance_f32* p_filter_instance;
@@ -83,11 +88,12 @@ void downsampling_by_int_create(
 
 	p_downsampling_by_int->p_filter_instance = p_filter_instance;
 
-	predefined_data_block_size = fir_set_params->predefined_data_block_size;
+	expected_number_of_input_samples =
+				fir_set_params->expected_number_of_input_samples;
 	number_of_filter_coefficients =
 			fir_set_params->number_of_filter_coefficients;
 	p_filter_state = (float*)malloc(sizeof(float) *
-			(number_of_filter_coefficients + predefined_data_block_size - 1));
+		(number_of_filter_coefficients + expected_number_of_input_samples - 1));
 	errors_api_check_if_malloc_succeed(p_filter_state);
 	p_downsampling_by_int->p_filter_state = p_filter_state;
 
@@ -102,15 +108,23 @@ void downsampling_by_int_create(
 			coeff_by_params->dfc, coeff_by_params->sample_rate_Hz,
 			p_coefficients, number_of_filter_coefficients);
 
+	if (0xff < handle->factor)
+	{
+		CRITICAL_ERROR('downsampling factor is to big');
+	}
 	status = arm_fir_decimate_init_f32(p_filter_instance,
 			(uint16_t)number_of_filter_coefficients,
 			(uint8_t)handle->factor,
-			p_coefficients, p_filter_state, predefined_data_block_size);
+			p_coefficients, p_filter_state, expected_number_of_input_samples);
 
 	if (ARM_MATH_SUCCESS != status)
 	{
 		downsampling_by_int_free(p_downsampling_by_int);
 		p_downsampling_by_int = NULL;
 	}
+
+	p_downsampling_by_int->expected_number_of_input_samples =
+								expected_number_of_input_samples;
+
 	handle->p_downsampling_by_int_filter = p_downsampling_by_int;
 }
