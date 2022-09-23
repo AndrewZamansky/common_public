@@ -1176,7 +1176,7 @@ static uint8_t kcs_register_read_ioctl(
 	}
 
 	reg_addr = p_register_read_ioctl->reg_addr;
-	if (0xff >= reg_addr)
+	if ((0xF000 != reg_addr) && (0xF002 != reg_addr))
 	{
 		data_size = 2;
 	}
@@ -1193,7 +1193,7 @@ static uint8_t kcs_register_read_ioctl(
 	}
 
 	data = (read_i2c_data[0] << 8) | read_i2c_data[1];
-	if (0xff < reg_addr)
+	if ((0xF000 == reg_addr) || (0xF002 == reg_addr))
 	{
 		data = data << 16;
 		data |= (read_i2c_data[2] << 8) | read_i2c_data[3];
@@ -1223,8 +1223,12 @@ static uint8_t kcs_register_write_ioctl(
 
 	reg_addr = p_register_read_ioctl->reg_addr;
 	data = p_register_read_ioctl->data;
-	if (0xff >= reg_addr)
+	if ((0xF000 != reg_addr) && (0xF002 != reg_addr))
 	{
+		if (0xffff < data)
+		{
+			return NAU83GXX_RC_I2C_DATA_TOO_BIG;
+		}
 		data_size = 2;
 		write_i2c_data[0] = (data >> 8) & 0xFF;
 		write_i2c_data[1] = data & 0xFF;

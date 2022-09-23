@@ -51,7 +51,8 @@ end:
 	if(NAU83GXX_RC_OK == rc)
 	{
 		data = register_read_ioctl.data;
-		if (0xff >= register_read_ioctl.reg_addr)
+		if ((0xF000 != register_read_ioctl.reg_addr) &&
+						(0xF002 != register_read_ioctl.reg_addr))
 		{
 			SHELL_REPLY_PRINTF("0x%04X\r\n", data);
 		}
