@@ -40,7 +40,6 @@ enum usb_audio_rx_overflow_underflow_state_t {
 	USB_AUDIO_CLASS_RX_BUFF_OVERFLOWED
 };
 
-#define NUM_OF_TX_BUFFERS   5
 
 extern void add_audio_class_device(struct dev_desc_t *adev,
 		struct usb_audio_class_cfg_t *cfg_hndl,
@@ -312,12 +311,14 @@ void new_usb_audio_requested(struct dev_desc_t *adev)
 	size_t   get_tx_buff_size;
 	uint8_t  *tx_buff;
 	uint8_t  *tx_pckt_buff;
+	uint8_t  num_of_tx_buffers;
 
 	cfg_hndl = DEV_GET_CONFIG_DATA_POINTER(usb_audio_class, adev);
 	runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(usb_audio_class, adev);
 
 	get_tx_buff_size = cfg_hndl->get_tx_buff_size;
-	tx_buff_size = get_tx_buff_size * NUM_OF_TX_BUFFERS;
+	num_of_tx_buffers = cfg_hndl->num_of_tx_buffers;
+	tx_buff_size = get_tx_buff_size * num_of_tx_buffers;
 	curr_write_pos_in_tx_buffer = runtime_hndl->curr_write_pos_in_tx_buffer;
 	curr_read_pos_in_tx_buffer = runtime_hndl->curr_read_pos_in_tx_buffer;
 
@@ -352,7 +353,7 @@ void new_usb_audio_requested(struct dev_desc_t *adev)
 #endif
 		}
 		else if (available_data_size >
-					((NUM_OF_TX_BUFFERS - 2) * get_tx_buff_size))
+					((num_of_tx_buffers - 2) * get_tx_buff_size))
 		{// increase speed(clock)
 			data_to_copy += (num_of_bytes_per_sample_all_channels);
 #ifdef  DEBUG
@@ -533,7 +534,7 @@ static uint8_t get_empty_tx_buffer(struct usb_audio_class_cfg_t *cfg_hndl,
 	curr_write_pos_in_tx_buffer = runtime_hndl->curr_write_pos_in_tx_buffer;
 	curr_read_pos_in_tx_buffer = runtime_hndl->curr_read_pos_in_tx_buffer;
 	get_tx_buff_size = cfg_hndl->get_tx_buff_size;
-	tx_buff_size = get_tx_buff_size * NUM_OF_TX_BUFFERS;
+	tx_buff_size = get_tx_buff_size * cfg_hndl->num_of_tx_buffers;
 
 	next_write_pos_in_tx_buffer =
 			curr_write_pos_in_tx_buffer + get_tx_buff_size;
@@ -612,7 +613,7 @@ static uint8_t release_tx_buffer(struct usb_audio_class_cfg_t *cfg_hndl,
 	}
 	runtime_hndl->tx_buffer_was_supplied = 0;
 	get_tx_buff_size = cfg_hndl->get_tx_buff_size;
-	tx_buff_size = get_tx_buff_size * NUM_OF_TX_BUFFERS;
+	tx_buff_size = get_tx_buff_size * cfg_hndl->num_of_tx_buffers;
 	curr_write_pos_in_tx_buffer = runtime_hndl->curr_write_pos_in_tx_buffer;
 	next_write_pos_in_tx_buffer =
 			curr_write_pos_in_tx_buffer + get_tx_buff_size;
@@ -620,8 +621,7 @@ static uint8_t release_tx_buffer(struct usb_audio_class_cfg_t *cfg_hndl,
 	{
 		next_write_pos_in_tx_buffer = 0;
 	}
-	runtime_hndl->curr_write_pos_in_tx_buffer =
-											next_write_pos_in_tx_buffer;
+	runtime_hndl->curr_write_pos_in_tx_buffer = next_write_pos_in_tx_buffer;
 
 	return 0;
 }
@@ -680,12 +680,12 @@ static void init_audio_host_in(struct usb_audio_class_cfg_t *cfg_hndl,
 	errors_api_check_if_malloc_succeed(new_buff);
 	runtime_hndl->tx_pckt_buff = new_buff;
 
-	runtime_hndl->curr_write_pos_in_tx_buffer = 0;
+	runtime_hndl->curr_write_pos_in_tx_buffer = 0;//cfg_hndl->get_tx_buff_size * 2;
 	runtime_hndl->curr_read_pos_in_tx_buffer = 0;
 
 	// init tx_buff last, as it serves for detecting if host_in is initialized
 	new_buff = (uint8_t*)os_safe_malloc(
-					cfg_hndl->get_tx_buff_size * NUM_OF_TX_BUFFERS);
+					cfg_hndl->get_tx_buff_size * cfg_hndl->num_of_tx_buffers);
 	errors_api_check_if_malloc_succeed(new_buff);
 	runtime_hndl->tx_buff = new_buff;
 	runtime_hndl->host_started_recording = 0;
