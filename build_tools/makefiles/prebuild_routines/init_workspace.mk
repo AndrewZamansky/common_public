@@ -68,7 +68,17 @@ endif
 include $(MAKEFILES_INC_FUNC_DIR)/tool_existence_check.mk
 ####### end of tool existence test #####
 
+SUPPORTED_MAKE_VERSIONS := 4.1 4.3
+
 MAKE :="$(MAKE_DIR)/bin/make"
+SHELL_OUT :=$(shell $(MAKE) --version)
+MAKE_VERSION :=$(word 3, $(SHELL_OUT))
+
+ifneq ($(filter $(MAKE_VERSION),$(SUPPORTED_MAKE_VERSIONS)),$(MAKE_VERSION))
+    $(info err: Not supported 'make' utility: $(MAKE_VERSION))
+    $(info ---: Use following 'make' versions: $(SUPPORTED_MAKE_VERSIONS))
+    $(call exit,1)
+endif
 
 ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
 

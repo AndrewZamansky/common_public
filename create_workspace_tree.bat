@@ -1,3 +1,29 @@
+echo OFF
+
+if exist build_tools (
+	if exist .gitmodules (
+		echo ERROR:
+		echo 'build_tools' folder and .gitmodules file found,
+		echo looks that file is run from 'common_public' folder.
+		echo Run this file in new location, not in 'uCWorkspace' or its sub-folder.
+		exit /B
+	)
+)
+
+if exist common_public (
+	echo ERROR:
+	echo 'common_public' folder found, looks that file is run from 'uCProjects' folder.
+	echo Run this file in new location, not in 'uCWorkspace' or its sub-folder.
+	exit /B
+)
+
+if exist uCProjects (
+	echo ERROR:
+	echo 'uCProjects' folder found, looks that file is run from 'uCWorkspace' folder.
+	echo Run this file in new location, not in 'uCWorkspace' or its sub-folder.
+	exit /B
+)
+
 mkdir uCWorkspace
 mkdir uCWorkspace\external_source
 mkdir uCWorkspace\ide_workspaces
