@@ -138,7 +138,8 @@ uint8_t  NAU83GXX_send_register_array(
 	{
 		if(0xDDDD == reg_array[i].u8Reg)
 		{
-			os_delay_ms(reg_array[i].u8Value[1]);
+			os_delay_ms(
+					reg_array[i].u8Value[1] + (reg_array[i].u8Value[0] << 8));
 		}
 		else
 		{
