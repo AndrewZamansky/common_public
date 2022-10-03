@@ -65,6 +65,7 @@ struct usb_audio_class_cfg_t {
 
 	// USB HOST AUDIO IN
 	size_t   get_tx_buff_size;
+	uint8_t  num_of_tx_buffers;
 	uint32_t host_in_sample_rate_hz;
 	uint16_t in_terminal_type;
 	uint8_t  num_of_tx_bytes_per_sample;
