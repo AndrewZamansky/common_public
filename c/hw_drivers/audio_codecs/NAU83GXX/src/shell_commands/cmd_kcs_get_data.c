@@ -79,10 +79,7 @@ end:
 		}
 	}
 
-	if (NULL != kcs_dev)
-	{
-		rc = DEV_IOCTL(kcs_dev, IOCTL_KCS_EXIT_GET_STATE);
-	}
+	rc = DEV_IOCTL(kcs_dev, IOCTL_KCS_EXIT_GET_STATE);
 
 	return 0;
 }

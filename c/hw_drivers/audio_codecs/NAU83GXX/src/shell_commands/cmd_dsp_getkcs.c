@@ -121,8 +121,8 @@ end:
 			}
 			SHELL_REPLY_PRINTF("\n\r");
 		}
-		rc = DEV_IOCTL(kcs_dev, IOCTL_KCS_EXIT_GET_STATE);
 	}
+	rc = DEV_IOCTL(kcs_dev, IOCTL_KCS_EXIT_GET_STATE);
 
 	// needed for Klippel GUI:
 	SHELL_REPLY_PRINTF("%c", 0x04UL);
