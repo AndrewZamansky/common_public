@@ -1,6 +1,9 @@
 
 ifeq ($(sort $(CONFIG_ESP8266)),y)
 
+    # !!IMPORTANT!! : should be used before any 'include' statement in makefile:
+    CURR_COMPONENT_DIR :=$(call get_curr_component_dir)
+
     ifeq ($(sort $(CONFIG_SDK_NONOS)),y)
         ESP8266_SDK_VERSION :=2.1
         SDK_ESP8266_PATH :=$(EXTERNAL_SOURCE_ROOT_DIR)/ESP8266_NONOS_SDK
@@ -43,7 +46,7 @@ ifeq ($(sort $(CONFIG_ESP8266)),y)
     #INCLUDE_THIS_COMPONENT := y
     #INCLUDE_THIS_FOR_H_FILES_PATH :=y
 
-    POST_BUILD_MAKEFILE_DIR :=$(COMPONENT_PATH)
+    # DUMMY :=$(call SET_DIR_WITH_POSTBUILD_MAKEFILE, $(CURR_COMPONENT_DIR))
 endif
 
 include $(COMMON_CC)

@@ -75,3 +75,25 @@ define ADD_TO_GLOBAL_ARCHIVES =
 endef
 #usage :
 #    $(eval $(call ADD_TO_GLOBAL_ARCHIVES, var))
+
+
+# function to set folder that contains Makefile.postbuild.mk postbuild makefile
+# POST_BUILD_MAKEFILE_DIR must contain at most 1 such folder
+
+check_for_same_post_build_folder =$(filter-out $(1),$(POST_BUILD_MAKEFILE_DIR))
+define _SET_POSTBUILD_STEP_1 =
+    $(if $(1),\
+        $(if $(call check_for_same_post_build_folder,$(1)),\
+            $(info err: POST_BUILD_MAKEFILE_DIR may contain only 1 folder)\
+            $(info err: POST_BUILD_MAKEFILE_DIR already contains folder)\
+            $(info err: POST_BUILD_MAKEFILE_DIR=$(POST_BUILD_MAKEFILE_DIR))\
+            $(call exit,1),\
+            $(eval POST_BUILD_MAKEFILE_DIR:=$(1)) ),\
+        do nothing)
+endef
+
+define SET_DIR_WITH_POSTBUILD_MAKEFILE =
+    $(call _SET_POSTBUILD_STEP_1,$(strip $(1)))
+endef
+#usage :
+#    DUMMY := $(call SET_DIR_WITH_POSTBUILD_MAKEFILE, var))
