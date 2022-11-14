@@ -6,33 +6,39 @@
 #include "_project_typedefs.h"
 #include "_project_defines.h"
 
-#include "sys/socket.h"
-#include "sys/types.h"
+#ifdef CONFIG_USE_INTERNAL_SOCKETS_IMPLEMENTATION
+	#include "sys/socket.h"
+	#include "sys/types.h"
+#else
+	#include "alternative_types.h"
+#endif
 
 #ifdef  __cplusplus
 extern "C" {
 #endif
 
-
-typedef int (*closesocket_func_t)(void *sockfd);
-typedef int (*connect_func_t)(
-		void *sockfd, const struct sockaddr *addr, unsigned int addrlen);
-typedef uint8_t (*is_data_available_func_t)(void *sockfd,
-											uint8_t *is_data_available);
-typedef ssize_t (*recv_func_t)(void *sockfd, void *buf, size_t len, int flags);
-typedef int (*setsockopt_func_t)(void *sockfd, int level,
-				int optname, const void *optval, socklen_t optlen);
-typedef int (*bind_func_t)(void *sockfd,
-				const struct sockaddr *addr, socklen_t addrlen);
-typedef int (*getpeername_func_t)(void *sockfd,
-						struct sockaddr *addr, socklen_t *addrlen);
-typedef ssize_t (*send_func_t)(void *sockfd,
-					const void *buffer, size_t length, int flags);
-typedef int (*accept_func_t)(
-		void *sockfd, struct sockaddr *addr, socklen_t *addrlen);
-typedef int (*listen_func_t)(void *sockfd, int backlog);
-typedef int (*getsockname_func_t)(
-		void *sockfd, struct sockaddr *local_addr, socklen_t *addrlen);
+#ifdef CONFIG_USE_INTERNAL_SOCKETS_IMPLEMENTATION
+	typedef int (*closesocket_func_t)(void *sockfd);
+	typedef int (*connect_func_t)(
+			void *sockfd, const struct sockaddr *addr, unsigned int addrlen);
+	typedef ssize_t (*recv_func_t)(
+			void *sockfd, void *buf, size_t len, int flags);
+	typedef int (*setsockopt_func_t)(void *sockfd, int level,
+					int optname, const void *optval, socklen_t optlen);
+	typedef int (*bind_func_t)(void *sockfd,
+					const struct sockaddr *addr, socklen_t addrlen);
+	typedef int (*getpeername_func_t)(void *sockfd,
+							struct sockaddr *addr, socklen_t *addrlen);
+	typedef ssize_t (*send_func_t)(void *sockfd,
+						const void *buffer, size_t length, int flags);
+	typedef int (*accept_func_t)(
+			void *sockfd, struct sockaddr *addr, socklen_t *addrlen);
+	typedef int (*listen_func_t)(void *sockfd, int backlog);
+	typedef int (*getsockname_func_t)(
+			void *sockfd, struct sockaddr *local_addr, socklen_t *addrlen);
+#endif
+	typedef uint8_t (*is_data_available_func_t)(void *fd,
+												uint8_t *is_data_available);
 
 struct file_desc_ops_t {
 #ifdef CONFIG_USE_INTERNAL_SOCKETS_IMPLEMENTATION
@@ -63,21 +69,19 @@ struct file_desc_t {
 
 
 #ifdef CONFIG_USE_INTERNAL_SOCKETS_IMPLEMENTATION
+	struct file_descriptor_manager_ioctl_socket_open_t {
+		struct file_desc_t*  new_socket_descriptor;
+	};
 
-struct file_descriptor_manager_ioctl_socket_open_t {
-	struct file_desc_t*  new_socket_descriptor;
-};
+	struct file_descriptor_manager_ioctl_fill_socket_func_t {
+		struct file_desc_t*  new_socket_descriptor;
+	};
 
-struct file_descriptor_manager_ioctl_fill_socket_func_t {
-	struct file_desc_t*  new_socket_descriptor;
-};
-
-uint8_t file_descriptor_manager_api_init(void);
-uint8_t file_descriptor_manager_api_register_INET_device(
-										struct dev_desc_t * ap_dev);
-uint8_t file_descriptor_manager_api_register_IPC_device(
-										struct dev_desc_t * ap_dev);
-
+	uint8_t file_descriptor_manager_api_init(void);
+	uint8_t file_descriptor_manager_api_register_INET_device(
+											struct dev_desc_t * ap_dev);
+	uint8_t file_descriptor_manager_api_register_IPC_device(
+											struct dev_desc_t * ap_dev);
 #endif
 
 #ifdef  __cplusplus

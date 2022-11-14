@@ -17,12 +17,11 @@
 
 #include "dev_management_api.h"
 #include "file_descriptor_manager_api.h"
+#include "os_wrapper.h"
 #ifdef CONFIG_USE_INTERNAL_SOCKETS_IMPLEMENTATION
 	#include "std_net_functions_api.h"
+	#include "winsock2.h"
 #endif
-
-#include "os_wrapper.h"
-#include "winsock2.h"
 
 //#define DEBUG
 #include "PRINTF_api.h"
