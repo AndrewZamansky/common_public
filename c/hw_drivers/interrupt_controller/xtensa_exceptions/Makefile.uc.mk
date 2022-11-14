@@ -13,8 +13,8 @@ endif
 
 SRC += xtensa_intr.c
 
+SRC += xtensa_intr_asm.S
 ifeq (y,$(CONFIG_FREE_RTOS))
-    SRC += xtensa_intr_asm.S
     SRC += xtensa_vectors.S
 endif
 

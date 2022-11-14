@@ -35,10 +35,14 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "irq_api.h"
 #include "xtensa_ops.h"
 
-#ifdef CONFIG_FREE_RTOS
-/* Handler table is in xtensa_intr_asm.S */
 
-extern xt_exc_handler _xt_exception_table[XCHAL_EXCCAUSE_NUM];
+/*
+  Default handler for unhandled interrupts.
+*/
+void xt_unhandled_interrupt(void * arg)
+{
+    exit(-1);
+}
 
 
 /*
@@ -48,6 +52,12 @@ void xt_unhandled_exception(XtExcFrame *frame)
 {
     exit(-1);
 }
+
+#ifdef CONFIG_FREE_RTOS
+/* Handler table is in xtensa_intr_asm.S */
+
+extern xt_exc_handler _xt_exception_table[XCHAL_EXCCAUSE_NUM];
+
 
 
 /*
@@ -86,13 +96,7 @@ struct xt_handler_table_entry {
 extern struct xt_handler_table_entry _xt_interrupt_table[XCHAL_NUM_INTERRUPTS];
 
 
-/*
-  Default handler for unhandled interrupts.
-*/
-void xt_unhandled_interrupt(void * arg)
-{
-    exit(-1);
-}
+
 
 
 /*

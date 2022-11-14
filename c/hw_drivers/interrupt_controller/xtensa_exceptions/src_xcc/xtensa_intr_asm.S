@@ -32,7 +32,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "xtensa_context.h"
 
-#ifdef CONFIG_FREE_RTOS
+//#ifdef CONFIG_FREE_RTOS
 
 #if XCHAL_HAVE_INTERRUPTS
 
@@ -103,7 +103,7 @@ _xt_exception_table:
 
 #endif
 
-#endif /* CONFIG_FREE_RTOS  */
+//#endif /* CONFIG_FREE_RTOS  */
 /*
 -------------------------------------------------------------------------------
   unsigned int xt_ints_on ( unsigned int mask )

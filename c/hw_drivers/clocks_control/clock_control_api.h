@@ -2,9 +2,7 @@
 #ifndef _CLOCK_CONTROL_API_H_
 #define _CLOCK_CONTROL_API_H_
 
-#include "dev_management_api.h" // for device manager defines and typedefs
-
-/**********  define API  types ************/
+#include "dev_management_api.h"
 
 typedef void (*get_freq_func_t)(uint32_t *freq, uint32_t parent_freq);
 typedef void (*set_freq_func_t)(uint32_t freq, uint32_t parent_freq);
@@ -32,7 +30,5 @@ enum clk_ioctl_t {
 	CLK_IOCTL_GET_ROOT_CLK,
 };
 
-
-/**********  define API  functions  ************/
 
 #endif

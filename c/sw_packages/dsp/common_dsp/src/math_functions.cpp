@@ -12,7 +12,8 @@
 #include <math.h>
 
 #if defined(__GNUC__)
-	#if (4 != __SIZEOF_FLOAT__)
+	//#if (4 != __SIZEOF_FLOAT__)  in old versions of GCC such macro is missing
+	#if (38 != __FLT_MAX_10_EXP__)
 		#error "only floats of 4 byte size are supported"
 	#endif
 	#if ((__BYTE_ORDER__ != __ORDER_LITTLE_ENDIAN__) || \

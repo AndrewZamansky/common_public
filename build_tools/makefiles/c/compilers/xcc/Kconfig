@@ -13,6 +13,9 @@ config XCC_TOOLS_VER_2017_7
 config XCC_TOOLS_VER_RI_2018_0
 	bool "RI-2018.0"
 
+config XCC_TOOLS_VER_RI_2021_6
+	bool "RI-2021.6"
+
 endchoice
 
 

@@ -16,7 +16,7 @@
 #include "clock_control_i96xxx_hifi3.h"
 
 
-#define	MODULE_NAME						clock_control_i96xxx_hifi3
+#define  MODULE_NAME            clock_control_i96xxx_hifi3
 
 
 static void clock_i96xxx_hifi3_dsp_set_freq(uint32_t freq, uint32_t parent_freq)
@@ -68,6 +68,6 @@ static uint8_t clock_control_i96xxx_hifi3_ioctl( struct dev_desc_t *adev,
 	return 0;
 }
 
-#define	MODULE_IOCTL_FUNCTION			clock_control_i96xxx_hifi3_ioctl
+#define MODULE_IOCTL_FUNCTION         clock_control_i96xxx_hifi3_ioctl
 #define MODULE_HAS_NO_RUNTIME_DATA
 #include "add_module.h"

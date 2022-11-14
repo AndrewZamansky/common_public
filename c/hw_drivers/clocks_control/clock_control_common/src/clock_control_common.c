@@ -49,6 +49,7 @@ static void get_rate(struct cfg_clk_t *cfg_clk,
 	{
 		DEV_IOCTL(parent_clk, CLK_IOCTL_GET_FREQ, &parent_rate);
 	}
+
 	if (NULL != cfg_clk->get_freq_func)
 	{
 		cfg_clk->get_freq_func(rate, parent_rate);

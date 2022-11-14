@@ -3,7 +3,7 @@
 #include "dev_management_api.h"
 
 
-/***********************************/
+/*******************************************/
 /********** xtensa_sim_core_clk_dev ********/
 #define DT_DEV_NAME				xtensa_sim_core_clk_dev
 #define DT_DEV_MODULE			clk_cntl

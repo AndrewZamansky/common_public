@@ -57,11 +57,11 @@ extern xt_handler xt_set_interrupt_handler(int n, xt_handler f, void * arg);
     mask     - Bit mask of interrupts to be enabled.
 -------------------------------------------------------------------------------
 */
-#ifdef CONFIG_FREE_RTOS
+//#ifdef CONFIG_FREE_RTOS
 	extern void xt_ints_on(unsigned int mask);
-#else
-	#define xt_ints_on _xtos_ints_on
-#endif
+//#else
+//	#define xt_ints_on _xtos_ints_on
+//#endif
 
 
 /*
@@ -71,11 +71,11 @@ extern xt_handler xt_set_interrupt_handler(int n, xt_handler f, void * arg);
     mask     - Bit mask of interrupts to be disabled.
 -------------------------------------------------------------------------------
 */
-#ifdef CONFIG_FREE_RTOS
+//#ifdef CONFIG_FREE_RTOS
 	extern void xt_ints_off(unsigned int mask);
-#else
-	#define xt_ints_off _xtos_ints_off
-#endif
+//#else
+//	#define xt_ints_off _xtos_ints_off
+//#endif
 
 
 /*

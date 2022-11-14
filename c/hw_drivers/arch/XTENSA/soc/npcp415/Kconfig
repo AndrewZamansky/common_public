@@ -1,0 +1,8 @@
+menu "`---> I96XXX HIFI3 configurations"
+
+config BSP_I96XXX_GIT_COMMIT_HASH
+	string "BSP i96xxx git commit hash"
+	default ""
+
+endmenu
+

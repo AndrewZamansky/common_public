@@ -21,6 +21,10 @@ config I96XXX_HIFI3
 	bool "i96xxx hifi3"
 	select PUBLIC_SOC_SELECTED
 
+config NPCP415
+	bool "npcp415"
+	select PUBLIC_SOC_SELECTED
+
 endchoice
 
 if XTENSA_SIM || XTENSA_FPGA_SIM
@@ -49,6 +53,10 @@ config XTENSA_HIFI3_NTCA
 	bool "hifi3_ntca"
 	depends on XCC_TOOLS_VER_RI_2018_0
 
+config XTENSA_FUSIONF1_P7_G60_NTCA
+	bool "FusionF1_G60"
+	depends on XCC_TOOLS_VER_RI_2021_6
+
 endchoice
 
 endif
@@ -63,6 +71,10 @@ endif
 
 if XTENSA_FPGA_SIM
 source "$KCONFIG_PUBLIC_START_DIR/hw_drivers/arch/XTENSA/soc/fpga_sim/Kconfig"
+endif
+
+if I96XXX_HIFI3
+source "$KCONFIG_PUBLIC_START_DIR/hw_drivers/arch/XTENSA/soc/i96xxx_HiFi3/Kconfig"
 endif
 
 

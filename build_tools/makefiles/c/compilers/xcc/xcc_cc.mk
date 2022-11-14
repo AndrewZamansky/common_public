@@ -27,13 +27,13 @@ run_asm_compiler =  $(call run_compiler,$(1),\
         $(ASM) $(ALL_ASM_FLAGS),$(ALL_ASM_DEFS_AND_INCLUDES),$(2),$(3))
 
 run_c_preprocessor = $(call run_compiler,$(1),\
-        $(CC) -E $(ALL_CFLAGS),$(ALL_DEFS_AND_INCLUDES),$(2),$(3))
+        $(CC) -E -dD $(ALL_CFLAGS),$(ALL_DEFS_AND_INCLUDES),$(2),$(3))
 
 run_c_compiler =  $(call run_compiler,$(1),\
         $(CC) $(ALL_CFLAGS),$(ALL_DEFS_AND_INCLUDES),$(2),$(3))
 
 run_cpp_preprocessor = $(call run_compiler,$(1),\
-        $(CCPP) -E $(ALL_CPPFLAGS),$(ALL_DEFS_AND_INCLUDES),$(2),$(3))
+        $(CCPP) -E -dD $(ALL_CPPFLAGS),$(ALL_DEFS_AND_INCLUDES),$(2),$(3))
 
 run_cpp_compiler = $(call run_compiler,$(1),\
         $(CCPP) $(ALL_CPPFLAGS),$(ALL_DEFS_AND_INCLUDES),$(2),$(3))
