@@ -50,7 +50,6 @@ static void biquad_filter_dsp(struct dsp_module_inst_t *adsp)
 
 	biquads_cascading_filter(handle->pBiquadFilter,
 			apCh1In, apCh1Out, data_len / sizeof(real_t));
-
 }
 
 

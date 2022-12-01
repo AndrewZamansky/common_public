@@ -25,6 +25,16 @@ config FIXMATH_NO_CACHE
 	depends on DSP_REAL_NUMBER_FORMAT_FIXED_POINT
 	default n
 
+config FIXMATH_NO_OVERFLOW
+	bool   "disable overflow detection libfixmath"
+	depends on DSP_REAL_NUMBER_FORMAT_FIXED_POINT
+	default n
+
+config FIXMATH_NO_ROUNDING
+	bool   "disable rounding accuricy in libfixmath"
+	depends on DSP_REAL_NUMBER_FORMAT_FIXED_POINT
+	default n
+
 config INCLUDE_COMMON_DSP
 	bool   "common dsp"
 	default n

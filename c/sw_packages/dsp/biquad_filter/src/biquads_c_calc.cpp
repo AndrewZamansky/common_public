@@ -18,7 +18,14 @@ extern "C" {
 #include "biquad_filter_api.h"
 
 
-#define NUM_OF_STATES_PER_STAGE	2
+#define USE_DIRECT_FORM_I
+
+#if !defined(USE_DIRECT_FORM_I)
+	#define NUM_OF_STATES_PER_STAGE	2
+#else
+	#define NUM_OF_STATES_PER_STAGE	4
+#endif
+
 
 struct biquads_cascading_filter_t
 {
@@ -28,6 +35,101 @@ struct biquads_cascading_filter_t
 	// should be allocated numOfStages * NUM_OF_STATES_PER_STAGE
 	real_t *  pStates;
 };
+
+#if defined(CONFIG_DSP_REAL_NUMBER_FORMAT_FLOATING_POINT)
+
+	static void biquads_filter(real_t *p_states, real_t *p_coeffs,
+			real_t *apIn, real_t *apOut, size_t buff_len)
+	{
+		uint16_t count;
+		real_t state1, state2;
+		real_t A1, A2, B0, B1, B2;
+		real_t curr_x;
+		real_t out_tmp;
+		real_t tmp;
+
+		state1 = p_states[0];
+		state2 = p_states[1];
+
+		B0 = p_coeffs[0];
+		B1 = p_coeffs[1];
+		B2 = p_coeffs[2];
+		A1 = p_coeffs[3];
+		A2 = p_coeffs[4];
+
+		for(count = 0; count < buff_len; count++)
+		{
+			curr_x = *apIn++;
+
+			out_tmp = B0 * curr_x ;
+			out_tmp += state1;
+			state1 = B1 * curr_x;
+			tmp	=  A1 * out_tmp;
+			state1 -= tmp;
+			state1 += state2;
+			state2 = B2 * curr_x;
+			tmp =  A2 * out_tmp;
+			state2 -= tmp;
+
+			*apOut++ = out_tmp;
+		}
+
+		p_states[0] = state1;
+		p_states[1] = state2;
+	}
+
+#else
+
+	static void biquads_filter(real_t *p_states, real_t *p_coeffs,
+			real_t *apIn, real_t *apOut, size_t buff_len)
+	{
+		uint16_t count;
+		fix16_t x1, x2, y1, y2;
+		fix16_t A1, A2, B0, B1, B2;
+		fix16_t curr_x;
+		fix16_t out_tmp;
+		int64_t tmp;
+
+		x1 = p_states[0];
+		x2 = p_states[1];
+		y1 = p_states[2];
+		y2 = p_states[3];
+
+		B0 = p_coeffs[0];
+		B1 = p_coeffs[1];
+		B2 = p_coeffs[2];
+		A1 = p_coeffs[3];
+		A2 = p_coeffs[4];
+
+		for(count = 0; count < buff_len; count++)
+		{
+			curr_x = *apIn++;
+
+			tmp = (int64_t)B0 * curr_x;
+			out_tmp = tmp >> 16;
+			tmp = (int64_t)B1 * x1;
+			out_tmp += tmp >> 16;
+			tmp = (int64_t)B2 * x2;
+			out_tmp += tmp >> 16;
+			tmp = (int64_t)A1 * y1;
+			out_tmp += tmp >> 16;
+			tmp = (int64_t)A2 * y2;
+			out_tmp += tmp >> 16;
+
+			x2 = x1;
+			x1 = curr_x;
+			y2 = y1;
+			y1 = out_tmp;
+			*apOut++ = out_tmp;
+		}
+
+		p_states[0] = x1;
+		p_states[1] = x2;
+		p_states[2] = y1;
+		p_states[3] = y2;
+	}
+
+#endif
 
 
 void biquads_cascading_filter(void *pFilter,
@@ -41,51 +143,18 @@ void biquads_cascading_filter(void *pFilter,
 	real_t *pCoeffs;
 	real_t *currStageCoeffs;
 
-	uint16_t count	;
-	real_t state1, state2;
-	real_t pAi1, pAi2, pBi0, pBi1, pBi2;
-	real_t pOutTmp;
-	real_t curr_x;
-	real_t tmp;
-
-
 	p_biquads_cascading_filter = (struct biquads_cascading_filter_t  *)pFilter;
 	pCoeffs = p_biquads_cascading_filter->pCoeffs;
 	numOfStages = p_biquads_cascading_filter->numOfStages;
 	pStates = p_biquads_cascading_filter->pStates;
-	pOutTmp = (int16_t)0;
-	for(count = 0; count < buff_len; count++)
+
+	for (currStage = 0 ; currStage < numOfStages ; currStage++)
 	{
-		curr_x = *apIn++;
-		for (currStage = 0 ; currStage < numOfStages ; currStage++)
-		{
-			pState = &pStates[currStage * NUM_OF_STATES_PER_STAGE];
-			currStageCoeffs = &pCoeffs[ 5 * currStage ];
+		pState = &pStates[currStage * NUM_OF_STATES_PER_STAGE];
+		currStageCoeffs = &pCoeffs[ 5 * currStage ];
 
-			state1 = pState[0];
-			state2 = pState[1];
-
-			pBi0 = currStageCoeffs[0];
-			pBi1 = currStageCoeffs[1];
-			pBi2 = currStageCoeffs[2];
-			pAi1 = currStageCoeffs[3];
-			pAi2 = currStageCoeffs[4];
-
-			pOutTmp = pBi0 * curr_x ;
-			pOutTmp += state1;
-			state1 = pBi1 * curr_x;
-			tmp	=  pAi1 * pOutTmp;
-			state1 -= tmp;
-			state1 += state2;
-			state2 = pBi2 * curr_x;
-			tmp =  pAi2 * pOutTmp;
-			state2 -= tmp;
-
-			pState[0] = state1;
-			pState[1] = state2;
-			curr_x = pOutTmp;
-		}
-		*apOut++ = pOutTmp;
+		biquads_filter(&pStates[currStage * NUM_OF_STATES_PER_STAGE],
+						&pCoeffs[ 5 * currStage], apIn, apOut, buff_len);
 	}
 }
 
