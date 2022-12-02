@@ -32,13 +32,16 @@ ifneq ($(and $(CONFIG_CORTEX_M4),$(CONFIG_INCLUDE_CORTEX_M_FPU)),)
         SPEED_CRITICAL_FILES += libarm_cortexM4lf_math.a
 	endif
 else
-    SRC += downsampling_by_int_c.cpp
+    SRC += downsampling_by_int_fir_c.cpp
     SRC += downsampling_by_int_fir_chain.c
     ifdef CONFIG_DSP_IS_SPEED_CRITICAL
-        SPEED_CRITICAL_FILES += downsampling_by_int_c.cpp
+        SPEED_CRITICAL_FILES += downsampling_by_int_fir_c.cpp
         SPEED_CRITICAL_FILES += downsampling_by_int_fir_chain.c
 	endif
 endif
+
+SRC += downsampling_by_int_biquad_c.cpp
+SRC += downsampling_by_int_biquad_chain.c
 
 VPATH = src
 

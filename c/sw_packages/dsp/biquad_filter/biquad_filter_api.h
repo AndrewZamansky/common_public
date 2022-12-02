@@ -21,6 +21,7 @@ enum biquads_filter_mode_e {
 
 enum BIQUAD_FILTER_API_ioctl_e {
 	IOCTL_BIQUAD_FILTER_SET_BAND = IOCTL_DSP_LAST_COMMON_IOCTL+1,
+	IOCTL_BIQUAD_FILTER_SET_BAND_RAW_COEFFICIENTS,
 	IOCTL_BIQUAD_FILTER_SET_NUM_OF_BANDS,
 	IOCTL_BIQUAD_FILTER_GET_BAND
 };
@@ -31,8 +32,18 @@ struct biquad_filter_api_band_set_params_t
 	float Fc;
 	float QValue;
 	float Gain_db;
+	float Sample_rate;
 	enum biquads_filter_mode_e filter_mode;
 	uint8_t bypass;
+};
+
+struct biquad_filter_api_band_set_raw_coefficients_t
+{
+	float b0;
+	float b1;
+	float b2;
+	float a1;
+	float a2;
 };
 
 struct biquad_filter_api_band_set_t
@@ -40,6 +51,14 @@ struct biquad_filter_api_band_set_t
 	struct biquad_filter_api_band_set_params_t  band_set_params;
 	uint8_t band_num;
 };
+
+struct biquad_filter_api_band_set_raw_t
+{
+	struct biquad_filter_api_band_set_raw_coefficients_t band_set_coefficients;
+	uint8_t band_num;
+};
+
+
 
 
 #ifdef __cplusplus

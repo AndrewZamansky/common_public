@@ -18,6 +18,7 @@ extern "C" {
 struct band_splitter_butterworth_6db_gain_api_set_params_t
 {
 	float fc;
+	float Sample_rate;
 };
 
 extern char band_splitter_butterworth_6db_gain_module_name[] ;

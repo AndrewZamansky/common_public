@@ -14,6 +14,7 @@
 #include "downsampling_by_int.h"
 #include "auto_init_api.h"
 #include "fir_filter_api.h"
+#include "biquad_filter_api.h"
 
 
 char downsampling_by_int_module_name[] = "downsampling_by_int";
@@ -52,8 +53,16 @@ static void downsampling_by_int_dsp(struct dsp_module_inst_t *adsp)
 	dsp_get_dummy_buffer((uint8_t**)&apCh_tmp, in_data_len);
 	dsp_get_output_buffer_from_pad(adsp, 0, (uint8_t**)&apCh1Out, out_data_len);
 
-	downsampling_by_int_function(p_downsampling_by_int_filter,
-			apCh1In, apCh_tmp, in_data_len, apCh1Out);
+	if (DOWNSAMPLING_FIR_FILTER == handle->filter_type)
+	{
+		downsampling_by_int_fir_function(p_downsampling_by_int_filter,
+				apCh1In, apCh_tmp, in_data_len, apCh1Out);
+	}
+	else
+	{
+		downsampling_by_int_biquad_function(p_downsampling_by_int_filter,
+						apCh1In, apCh_tmp, in_data_len, apCh1Out);
+	}
 }
 
 
@@ -61,12 +70,13 @@ static void set_downsampling_params(
 		struct downsampling_by_int_instance_t *handle,
 		struct downsampling_by_int_api_set_params_t  *params)
 {
-	struct fir_filter_api_set_params_t fir_set_params;
 	uint32_t  input_sample_rate_Hz;
 	uint32_t  output_sample_rate_Hz;
 
 	input_sample_rate_Hz = params->input_sample_rate_Hz;
 	output_sample_rate_Hz = params->output_sample_rate_Hz;
+
+	handle->filter_type = params->filter_type;
 
 	if (0 != (input_sample_rate_Hz % output_sample_rate_Hz))
 	{
@@ -74,17 +84,28 @@ static void set_downsampling_params(
 	}
 	handle->factor = input_sample_rate_Hz / output_sample_rate_Hz;
 
-	fir_set_params.set_coefficients_type = FIR_CALCULATE_COEFFICIENTS_BY_PARAMS;
-	fir_set_params.coeff_by_params.filter_mode = FIR_LOWPASS_MODE;
-	fir_set_params.coeff_by_params.fc = output_sample_rate_Hz / 2;
-	//fir_set_params.coeff_by_params.dfc = 1000;// not relevant for lowpass
-	fir_set_params.coeff_by_params.A_stop = 90;
-	fir_set_params.coeff_by_params.sample_rate_Hz = input_sample_rate_Hz;
-	fir_set_params.number_of_filter_coefficients =
-					params->number_of_coefficients_in_lowpass_filter;
-	fir_set_params.expected_number_of_input_samples =
-						params->expected_number_of_input_samples;
-	downsampling_by_int_create(handle, &fir_set_params);
+	if (DOWNSAMPLING_FIR_FILTER == params->filter_type)
+	{
+		struct fir_filter_api_set_params_t fir_set_params;
+
+		fir_set_params.set_coefficients_type =
+				FIR_CALCULATE_COEFFICIENTS_BY_PARAMS;
+		fir_set_params.coeff_by_params.filter_mode = FIR_LOWPASS_MODE;
+		fir_set_params.coeff_by_params.fc = output_sample_rate_Hz / 2;
+		//fir_set_params.coeff_by_params.dfc = 1000;// not relevant for lowpass
+		fir_set_params.coeff_by_params.A_stop = 30;
+		fir_set_params.coeff_by_params.sample_rate_Hz = input_sample_rate_Hz;
+		fir_set_params.number_of_filter_coefficients =
+						params->number_of_coefficients_in_lowpass_filter;
+		fir_set_params.expected_number_of_input_samples =
+							params->expected_number_of_input_samples;
+		downsampling_by_int_create_fir_filter(handle, &fir_set_params);
+	}
+	else
+	{
+		downsampling_by_int_create_biquad_filter(handle, params->num_of_bands,
+				params->raw_coeffs);
+	}
 }
 
 
@@ -102,7 +123,7 @@ static uint8_t downsampling_by_int_ioctl(struct dsp_module_inst_t *adsp,
 	switch(aIoctl_num)
 	{
 	case IOCTL_DSP_INIT :
-		handle->factor =0;
+		handle->factor = 0;
 		handle->p_downsampling_by_int_filter = NULL;
 		break;
 

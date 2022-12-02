@@ -41,4 +41,7 @@ void biquads_coefficients_calculation(enum biquads_filter_mode_e filter_mode,
 		real_t FreqC, real_t QValue, real_t Gain_dB,
 		real_t SamplingRate, real_t *pCoeffs);
 
+void biquads_coefficients_assign(real_t b0, real_t b1, real_t b2,
+		real_t a1, real_t a2, real_t *pCoeffs);
+
 #endif

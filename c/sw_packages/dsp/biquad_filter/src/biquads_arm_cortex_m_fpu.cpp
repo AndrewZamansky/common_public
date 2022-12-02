@@ -126,3 +126,13 @@ void biquads_coefficients_calculation(enum biquads_filter_mode_e filter_mode,
 	pCoeffs[3] = -pCoeffs[3];
 	pCoeffs[4] = -pCoeffs[4];
 }
+
+void biquads_coefficients_assign(real_t b0, real_t b1, real_t b2,
+		real_t a1, real_t a2, real_t *pCoeffs)
+{
+	pCoeffs[0] = b0;
+	pCoeffs[1] = b1;
+	pCoeffs[2] = b2;
+	pCoeffs[3] = -a1;
+	pCoeffs[4] = -a2;
+}

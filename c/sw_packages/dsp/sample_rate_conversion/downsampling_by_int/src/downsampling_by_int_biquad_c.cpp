@@ -16,39 +16,41 @@
 
 #include "downsampling_by_int.h"
 #include "downsampling_by_int_api.h"
-#include "fir_filter_api.h"
+#include "biquad_filter_api.h"
+
 extern "C" {
 	#include "errors_api.h"
 	#include "os_wrapper.h"
 }
 
 extern "C" {
-	extern chain_handle_t downsampling_by_int_init_fir_chain(
-			struct fir_filter_api_set_params_t *fir_set_params);
+	extern chain_handle_t downsampling_by_int_init_biquad_chain(
+			size_t num_of_bands);
+	extern char biquad_filter[];
 }
 
 struct downsampling_by_int_t {
 	uint32_t factor;
-	chain_handle_t fir_dsp_chain;
+	chain_handle_t dsp_chain;
 };
 
 
-void downsampling_by_int_function(void *p_filter,
+void downsampling_by_int_biquad_function(void *p_filter,
 	real_t *in_buf, real_t *tmp_buf, size_t in_buff_len, real_t *out_buf)
 {
-	chain_handle_t fir_dsp_chain;
+	chain_handle_t dsp_chain;
 	uint32_t factor;
 	size_t samples_in_buffer;
 	size_t i;
 	size_t j;
 
-	fir_dsp_chain = ((struct downsampling_by_int_t*)p_filter)->fir_dsp_chain;
+	dsp_chain = ((struct downsampling_by_int_t*)p_filter)->dsp_chain;
 
-	dsp_management_api_set_chain_input_buffer(fir_dsp_chain,
+	dsp_management_api_set_chain_input_buffer(dsp_chain,
 			IN_PAD(0), (uint8_t *)in_buf, in_buff_len);
-	dsp_management_api_set_chain_output_buffer(fir_dsp_chain,
+	dsp_management_api_set_chain_output_buffer(dsp_chain,
 			OUT_PAD(0), (uint8_t *)tmp_buf, in_buff_len);
-	dsp_management_api_process_chain(fir_dsp_chain);
+	dsp_management_api_process_chain(dsp_chain);
 
 	factor = ((struct downsampling_by_int_t*)p_filter)->factor;
 	samples_in_buffer = in_buff_len / sizeof(real_t);
@@ -61,22 +63,30 @@ void downsampling_by_int_function(void *p_filter,
 }
 
 
-
 /*  func : downsampling_by_int_create()
  */
-void downsampling_by_int_create(
-		struct downsampling_by_int_instance_t *handle,
-		struct fir_filter_api_set_params_t *fir_set_params)
+void downsampling_by_int_create_biquad_filter(
+		struct downsampling_by_int_instance_t *handle, size_t num_of_bands,
+		struct biquad_filter_api_band_set_raw_coefficients_t *raw_coeffs)
 {
+	chain_handle_t dsp_chain;
 	struct downsampling_by_int_t  *p_filter;
-	chain_handle_t fir_dsp_chain;
+	struct biquad_filter_api_band_set_raw_t band_set;
 
 	p_filter = (struct downsampling_by_int_t *)os_safe_malloc(
 								sizeof(struct downsampling_by_int_t));
 	errors_api_check_if_malloc_succeed(p_filter);
 
-	fir_dsp_chain = downsampling_by_int_init_fir_chain(fir_set_params);
-	p_filter->fir_dsp_chain = fir_dsp_chain;
+	dsp_chain = downsampling_by_int_init_biquad_chain(num_of_bands);
+	p_filter->dsp_chain = dsp_chain;
 	p_filter->factor = handle->factor;
 	handle->p_downsampling_by_int_filter = p_filter;
+
+	for (size_t i = 0; i < num_of_bands; i++)
+	{
+		band_set.band_num = i;
+		band_set.band_set_coefficients = raw_coeffs[i];
+		DSP_IOCTL(dsp_chain, biquad_filter,
+				IOCTL_BIQUAD_FILTER_SET_BAND_RAW_COEFFICIENTS, &band_set);
+	}
 }

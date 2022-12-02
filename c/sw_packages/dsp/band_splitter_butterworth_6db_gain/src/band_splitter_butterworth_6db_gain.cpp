@@ -107,7 +107,7 @@ static void band_splitter_butterworth_6db_gain_dsp(
 
 static 	void set_freq(
 		struct band_splitter_butterworth_6db_gain_instance_t *handle,
-		real_t freq)
+		float freq, float sample_rate)
 {
 	struct biquad_filter_api_band_set_t band_set;
 	struct biquad_filter_api_band_set_params_t  *p_band_set_params;
@@ -121,6 +121,7 @@ static 	void set_freq(
 	p_band_set_params = &band_set.band_set_params;
 	p_band_set_params->bypass = 0;
 	p_band_set_params->Fc = freq;
+	p_band_set_params->Sample_rate = sample_rate;
 	p_band_set_params->filter_mode = BIQUADS_ALL_PASS_BUTTERWORTH_1_POLE;
 	band_set.band_num = 0;
 	DSP_IOCTL(filter_1_pole_dsp_chain,
@@ -146,6 +147,7 @@ static uint8_t band_splitter_butterworth_6db_gain_ioctl(
 {
 	struct band_splitter_butterworth_6db_gain_instance_t *handle;
 	struct band_splitter_butterworth_6db_gain_api_set_params_t *set_params;
+	struct band_splitter_butterworth_6db_gain_api_set_params_t *new_params;
 	real_t freq;
 
 	handle =
@@ -161,9 +163,11 @@ static uint8_t band_splitter_butterworth_6db_gain_ioctl(
 		break;
 
 	case IOCTL_BAND_SPLITTER_BUTTERWORTH_6DB_GAIN_SET_FC :
-		freq = *(float*)aIoctl_param1;
-		set_params->fc = freq;
-		set_freq(handle, freq);
+		new_params =
+			(band_splitter_butterworth_6db_gain_api_set_params_t*)aIoctl_param1;
+		memcpy((uint8_t*)set_params, aIoctl_param1,
+			sizeof(struct band_splitter_butterworth_6db_gain_api_set_params_t));
+		set_freq(handle, new_params->fc, new_params->Sample_rate);
 		break;
 
 	case IOCTL_BAND_SPLITTER_BUTTERWORTH_6DB_GAIN_GET_PARAMS :

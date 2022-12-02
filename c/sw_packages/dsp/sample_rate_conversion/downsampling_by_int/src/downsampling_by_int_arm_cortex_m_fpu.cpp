@@ -31,7 +31,7 @@ struct downsampling_by_int_t {
 	#error "support only floating point math"
 #endif
 
-void downsampling_by_int_function(void *p_filter,
+void downsampling_by_int_fir_function(void *p_filter,
 	real_t *in_buf, real_t *tmp_buf, size_t in_buff_len, real_t *out_buf)
 {
 	arm_fir_decimate_instance_f32 *p_arm_fir_decimate;
@@ -65,7 +65,7 @@ void downsampling_by_int_free(void *pFilter)
 
 /*   func : downsampling_by_int_create()
  */
-void downsampling_by_int_create(
+void downsampling_by_int_create_fir_filter(
 		struct downsampling_by_int_instance_t *handle,
 		struct fir_filter_api_set_params_t *fir_set_params)
 {

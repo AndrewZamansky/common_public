@@ -111,9 +111,13 @@ static uint8_t biquad_filter_ioctl(struct dsp_module_inst_t *adsp,
 	size_t num_of_bands;
 	uint8_t band_num;
 	struct biquad_filter_api_band_set_params_t *p_band_set_params;
+	struct biquad_filter_api_band_set_raw_coefficients_t
+													*p_band_set_coefficients;
 	struct biquads_filter_t *handle;
 	struct biquad_filter_api_band_set_t *band_params;
 	enum biquads_filter_mode_e filter_mode;
+	struct biquad_filter_api_band_set_raw_t *band_raw_params;
+
 	real_t *curr_coeffs;
 
 	handle = (struct biquads_filter_t *)adsp->handle;
@@ -125,7 +129,6 @@ static uint8_t biquad_filter_ioctl(struct dsp_module_inst_t *adsp,
 		handle->biquad_bands_coeffs = NULL ;
 		handle->band_set_params = NULL ;
 		handle->pBiquadFilter = NULL ;
-
 		break;
 
 	case IOCTL_BIQUAD_FILTER_SET_NUM_OF_BANDS :
@@ -155,7 +158,30 @@ static uint8_t biquad_filter_ioctl(struct dsp_module_inst_t *adsp,
 		}
 		biquads_coefficients_calculation(filter_mode, p_band_set_params->Fc,
 				p_band_set_params->QValue,	p_band_set_params->Gain_db,
-				(float)48000, curr_coeffs);
+				p_band_set_params->Sample_rate, curr_coeffs);
+		break;
+
+	case IOCTL_BIQUAD_FILTER_SET_BAND_RAW_COEFFICIENTS :
+		band_raw_params =
+				((struct  biquad_filter_api_band_set_raw_t*)aIoctl_param1);
+		num_of_bands = handle->num_of_bands;
+		band_num = band_raw_params->band_num ;
+		p_band_set_coefficients = &(band_raw_params->band_set_coefficients);
+
+		if ((num_of_bands <= band_num ))
+		{
+			CRITICAL_ERROR("bad band number");
+			return 1;
+		}
+
+		curr_coeffs = &handle->biquad_bands_coeffs[5 * band_num];
+		biquads_coefficients_assign(p_band_set_coefficients->b0,
+				p_band_set_coefficients->b1,
+				p_band_set_coefficients->b2,
+				p_band_set_coefficients->a1,
+				p_band_set_coefficients->a2,
+				curr_coeffs);
+
 		break;
 
 	case IOCTL_BIQUAD_FILTER_GET_BAND :
