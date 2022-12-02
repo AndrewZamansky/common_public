@@ -46,16 +46,14 @@ static void channel_copy_16bit(uint8_t *pRxBuf, real_t *outChannel,
 
 
 static void channel_copy_32bit(uint8_t *pRxBuf, real_t *outChannel,
-		size_t num_of_frames, uint8_t frame_size_bytes)
+		size_t num_of_frames, uint8_t frame_size_bytes, real_t normalizer)
 {
-	real_t normalizer;
 	real_t in_real;
 
-	normalizer = (real_t)0x7fffffff;
 	for (size_t i = 0; i < num_of_frames; i++)
 	{
 		in_real = (real_t)(*(int32_t*)pRxBuf);
-		*outChannel++ = in_real / normalizer;
+		*outChannel++ = in_real * normalizer;
 		pRxBuf += frame_size_bytes;
 	}
 }
@@ -121,7 +119,7 @@ static void pcm_splitter_dsp_16and32bit(struct dsp_module_inst_t *adsp)
 		else if (4 == subframe_size_bytes)
 		{
 			channel_copy_32bit(pRxBuf, curr_ChOut,
-					num_of_frames, frame_size_bytes);
+					num_of_frames, frame_size_bytes, normalizer);
 		}
 		pRxBuf += subframe_size_bytes;
 	}
@@ -180,7 +178,7 @@ static void set_params(struct dsp_module_inst_t *adsp,
 	}
 	else
 	{
-		normalizer = 1;
+		normalizer = 1.0f;
 		CRITICAL_ERROR("not supported channel size 2");
 	}
 	handle->normalizer = normalizer;
@@ -208,7 +206,7 @@ static uint8_t pcm_splitter_ioctl(struct dsp_module_inst_t *adsp,
 	switch(aIoctl_num)
 	{
 	case IOCTL_DSP_INIT :
-		memset(handle, 0, sizeof(struct pcm_splitter_instance_t));
+		memset((uint8_t*)handle, 0, sizeof(struct pcm_splitter_instance_t));
 		break;
 	case IOCTL_PCM_SPLITTER_SET_PARAMS :
 		set_params(adsp,

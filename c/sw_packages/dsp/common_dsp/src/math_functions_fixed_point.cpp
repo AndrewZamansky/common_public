@@ -74,7 +74,7 @@ const uint32_t tab32[32] = {
      8, 12, 20, 28, 15, 17, 24,  7,
     19, 27, 23,  6, 26,  5,  4, 31};
 
-static inline fix16_t log2_32(uint32_t value)
+static inline fix16_t log2_32(int32_t value)
 {
 	int32_t ret;
 	int64_t tmp_64;
@@ -178,9 +178,6 @@ Fix16 pow_fix_point(Fix16 a, Fix16 b)
 	int64_t tmp_64;
 	fix16_t a_fix16_t;
 	fix16_t b_fix16_t;
-	fix16_t tmp_fix16;
-
-
 
 	a_fix16_t = a;
 	if (a_fix16_t < one_fix16_t)

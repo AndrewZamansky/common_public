@@ -92,13 +92,13 @@ static void update_coefficients(struct VOICE_3D_Instance_t * handle)
 	side_gain = handle->side_gain;
 	_3D_gain = handle->_3D_gain;
 
-	if ( zero == handle->enable_voice)
+	if ( 0 == handle->enable_voice)
 	{
 		center_gain = one;
 		side_gain = one;
 	}
 
-	if ( zero == handle->enable_3D)
+	if ( 0 == handle->enable_3D)
 	{
 		_3D_gain = zero;
 	}

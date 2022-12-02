@@ -18,11 +18,12 @@
 
 
 #ifndef ABS
-#define ABS(x)  (x > 0 ? x : (zero - x))
+#define ABS(x)  (x > zero ? x : (zero - x))
 #endif
 
 char dpwm_mixer_module_name[] = "dpwm_mixer";
 
+static 	real_t zero = 0.0f;
 
 static void dpwm_mixer_mute(struct dsp_module_inst_t * adsp)
 {
@@ -63,7 +64,6 @@ static void dpwm_mixer_dsp(struct dsp_module_inst_t *adsp)
 	float *pTxBuf;
 	real_t inVal1;
 	real_t inVal2;
-	real_t zero = 0;
 	uint32_t i;
 	uint8_t buff_is_zero_buffer;
 
@@ -81,8 +81,8 @@ static void dpwm_mixer_dsp(struct dsp_module_inst_t *adsp)
 	enable_test_clipping = handle->enable_test_clipping;
 
 
-	inVal1 = 0;
-	inVal2 = 0;
+	inVal1 = zero;
+	inVal2 = zero;
 
 	data_len = data_len / sizeof(real_t);
 	for ( i = 0; i < data_len; i++)

@@ -6,12 +6,6 @@
 #ifndef _VOICE_3D_H
 #define _VOICE_3D_H
 
-
-
-/***************   typedefs    *******************/
-
-
-
 struct VOICE_3D_Instance_t {
 	real_t center_gain;
 	real_t side_gain;
@@ -21,8 +15,5 @@ struct VOICE_3D_Instance_t {
 	uint8_t enable_3D;
 	uint8_t enable_voice;
 };
-
-
-
 
 #endif

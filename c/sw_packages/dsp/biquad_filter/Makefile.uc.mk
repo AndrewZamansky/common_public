@@ -24,10 +24,18 @@ endif
 SRC = biquad_filter.cpp
 SRC += biquad_coefficients.cpp
 
-USE_CORTEX_M_FPU := $(and $(CONFIG_CORTEX_M4),$(CONFIG_INCLUDE_CORTEX_M_FPU))
-USE_CORTEX_M_FPU := $(and $(USE_CORTEX_M_FPU),$(CONFIG_DSP_REAL_NUMBER_FORMAT_FLOATING_POINT))
+ifeq ($(strip $(CONFIG_CORTEX_M4)),y)
+    ifeq ($(strip $(CONFIG_INCLUDE_CORTEX_M_FPU)),y)
+        USE_CORTEX_M_FPU :=y
+    endif
+endif
 
-ifneq ($(USE_CORTEX_M_FPU),)
+ifeq ($(strip $(CONFIG_DSP_REAL_NUMBER_FORMAT_FIXED_POINT)),y)
+    # use libfix math library
+    USE_CORTEX_M_FPU :=
+endif
+
+ifeq ($(USE_CORTEX_M_FPU),y)
     SRC += biquads_arm_cortex_m_fpu.cpp
 #    SRC += biquads.cpp
     ifdef CONFIG_DSP_IS_SPEED_CRITICAL
