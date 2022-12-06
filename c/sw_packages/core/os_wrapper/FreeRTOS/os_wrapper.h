@@ -210,14 +210,13 @@ os_task_t os_create_task_FreeRTOS(
 
 /*********** thread safe  malloc/free **********/
 /** function : [os_safe_malloc()]  **/
-#define os_safe_malloc   pvPortMalloc
+void *os_safe_malloc(size_t xSize);
 
 /** function : [os_safe_malloc()]  **/
-#define os_safe_free   vPortFree
+void os_safe_free(void *pv);
 
 /** function : [os_safe_realloc()]  **/
-void *pvPortRealloc(void *p, size_t xWantedSize );
-#define os_safe_realloc   pvPortRealloc
+void *os_safe_realloc(void *p, size_t xWantedSize);
 
 /********* stack debug ********/
 #ifdef CONFIG_TEST_TASK_STACK

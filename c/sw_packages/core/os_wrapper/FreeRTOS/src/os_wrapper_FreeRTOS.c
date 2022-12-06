@@ -29,22 +29,33 @@ static struct dev_desc_t * l_timer_dev = NULL;
 static struct dev_desc_t * l_heartbeat_dev = NULL;
 
 const uint8_t OS_API_VER_VARIABLE(OS_API_VERSION);
+static uint8_t os_started = 0;
 
-void *pvPortRealloc(void *p, size_t xWantedSize)
+void *os_safe_malloc(size_t xSize)
+{
+	return os_started ? pvPortMalloc(xSize) : malloc(xSize);
+}
+
+void os_safe_free(void *pv)
+{
+	return os_started ? vPortFree(pv) : free(pv);
+}
+
+void *os_safe_realloc(void *p, size_t xWantedSize)
 {
 	void *pvReturn;
 
-	pvReturn = pvPortMalloc(xWantedSize);
+	pvReturn = os_safe_malloc(xWantedSize);
 	errors_api_check_if_malloc_succeed(pvReturn);
 	if (NULL != p)
 	{
 		memcpy(pvReturn, p, xWantedSize);
-		vPortFree(p);
+		os_safe_free(p);
 	}
 
 	#if( configUSE_MALLOC_FAILED_HOOK == 1 )
 	{
-		if( pvReturn == NULL )
+		if ((os_started) && ( pvReturn == NULL ))
 		{
 			extern void vApplicationMallocFailedHook( void );
 			vApplicationMallocFailedHook();
@@ -84,6 +95,8 @@ uint8_t os_queue_send_without_wait(os_queue_t queue, void * pData)
 	uint8_t retVal;
 	BaseType_t xHigherPriorityTaskWoken ;
 
+	if (0 == os_started) CRITICAL_ERROR("os not started yet");
+
 	xHigherPriorityTaskWoken = pdFALSE ;
 	retVal = xQueueSendFromISR(queue, (void*)pData, &xHigherPriorityTaskWoken);
 	if ((pdTRUE == retVal) && (pdTRUE == xHigherPriorityTaskWoken))
@@ -102,6 +115,7 @@ void os_start(void)
 	}
 
 	os_start_arch_related_components();
+	os_started = 1;// on success vTaskStartScheduler() will not return
 	vTaskStartScheduler();
 }
 
