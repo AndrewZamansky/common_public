@@ -62,6 +62,8 @@ struct I2S_i9xxxx_cfg_t {
 
 	// fix for uint8_t/uint16_t access if needed:
 	uint8_t     do_reordering_for_16or8bit_channels;
+
+	uint8_t     dont_enable_pinout;
 };
 
 SET_CONFIG_TYPE(I2S_i9xxxx, struct I2S_i9xxxx_cfg_t);

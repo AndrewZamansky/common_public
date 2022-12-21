@@ -302,7 +302,7 @@ static void i9xxxx_I2S_init(
 	}
 
 	I2S_ENABLE(base_address);
-	configure_pinout(cfg_hndl);
+	if (0 == cfg_hndl->dont_enable_pinout) configure_pinout(cfg_hndl);
 	runtime_handle->init_done = 1;
 }
 
