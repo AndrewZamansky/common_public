@@ -16,6 +16,9 @@ config XCC_TOOLS_VER_RI_2018_0
 config XCC_TOOLS_VER_RI_2021_6
 	bool "RI-2021.6"
 
+config XCC_TOOLS_VER_RI_2022_9
+	bool "RI-2022.9"
+
 endchoice
 
 

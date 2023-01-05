@@ -29,7 +29,7 @@ extern "C" {
 	#define DEVICE_PLACEMENT     __attribute__((section("static_devs_section")))
 	#define DEVICE_DATA_PLACEMENT  __attribute__((section(".static_devs_data")))
 
-#elif defined(CONFIG_XTENSA_XCC)
+#elif (defined(CONFIG_XTENSA_XCC) || defined(CONFIG_XTENSA_CLANG))
 
 	#define MODULES_PLACEMENT   \
 		__attribute__((section(".data.keepsort._A5B6_modules")))

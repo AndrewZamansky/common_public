@@ -96,11 +96,12 @@
 // not in use . os clock configured in application. was : ( ( TickType_t ) 1000)
 #define configTICK_RATE_HZ      1
 
-#if !defined(CONFIG_XTENSA_XCC)
-	#define configMINIMAL_STACK_SIZE  ( ( unsigned short ) 256 )
-#else
+#if defined(CONFIG_XTENSA_XCC)
 	#define configMINIMAL_STACK_SIZE  \
 						(XT_STACK_MIN_SIZE > 4096 ? XT_STACK_MIN_SIZE : 4096)
+	#define configISR_STACK_SIZE    CONFIG_XTENSA_MAIN_STACK_SIZE_BYTES
+#elif defined(CONFIG_XTENSA_CLANG)
+	#define configMINIMAL_STACK_SIZE  ( ( unsigned short ) 4096 )
 	#define configISR_STACK_SIZE    CONFIG_XTENSA_MAIN_STACK_SIZE_BYTES
 #endif
 

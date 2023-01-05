@@ -16,6 +16,11 @@
 	#if (38 != __FLT_MAX_10_EXP__)
 		#error "only floats of 4 byte size are supported"
 	#endif
+
+	#ifndef __FLOAT_WORD_ORDER__
+		#define __FLOAT_WORD_ORDER__   __ORDER_LITTLE_ENDIAN__
+	#endif
+
 	#if ((__BYTE_ORDER__ != __ORDER_LITTLE_ENDIAN__) || \
 			(__FLOAT_WORD_ORDER__ != __ORDER_LITTLE_ENDIAN__))
 		#error "only little endian order supported supported"

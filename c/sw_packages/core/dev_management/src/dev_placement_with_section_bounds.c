@@ -18,7 +18,7 @@
 		defined(CONFIG_USE_DEVICE_NAME_STRINGS)
 
 
-#if defined(CONFIG_XTENSA_XCC)
+#if defined(CONFIG_XTENSA_XCC) || defined(CONFIG_XTENSA_CLANG)
 
 	DEVICE_PLACEMENT_FIRST int *__start_static_devs_section = NULL;
 	DEVICE_PLACEMENT_LAST int * __stop_static_devs_section = NULL;

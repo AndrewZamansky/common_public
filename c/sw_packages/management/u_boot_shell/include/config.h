@@ -211,7 +211,8 @@ struct udevice {
 	#define debug(fmt, args...)			\
 		debug_cond(_DEBUG, fmt, ##args)
 
-	#if (defined(__ARMCC_VERSION) || defined(CONFIG_XTENSA_XCC))
+	#if (defined(__ARMCC_VERSION) || \
+			defined(CONFIG_XTENSA_XCC) || defined(CONFIG_XTENSA_CLANG))
 		typedef unsigned long ulong;
 	#endif
 #else

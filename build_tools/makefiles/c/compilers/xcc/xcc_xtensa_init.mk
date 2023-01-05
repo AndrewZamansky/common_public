@@ -7,6 +7,8 @@ else ifdef CONFIG_XCC_TOOLS_VER_RI_2018_0
     TOOLS_VER :=RI-2018.0
 else ifdef CONFIG_XCC_TOOLS_VER_RI_2021_6
     TOOLS_VER :=RI-2021.6
+else ifdef CONFIG_XCC_TOOLS_VER_RI_2022_9
+    TOOLS_VER :=RI-2022.9
 endif
 
 ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
@@ -135,6 +137,8 @@ else ifdef CONFIG_XTENSA_HIFI3_NTCA
 	XCC_CORE :=HIFI3_NTCA
 else ifdef CONFIG_XTENSA_FUSIONF1_P7_G60_NTCA
 	XCC_CORE :=FusionF1_P7_NAU83G60
+else ifdef XTENSA_FUSIONF1_XRC_ALL_CACHE
+	XCC_CORE :=XRC_FusionF1_All_cache
 else
     $(info err: unknown core)
     $(call exit,1)

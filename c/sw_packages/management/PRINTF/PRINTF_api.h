@@ -72,11 +72,14 @@
 	#undef PRINT_STR_DBG
 	#undef PRINT_DATA_DBG
 	#undef PRINT_DATA_DBG_ISR
+	#undef PRINTF_DBG_ISR
 
-	static void __attribute__((unused)) PRINTF_DBG() {} ;
-	static void __attribute__((unused)) PRINT_DATA_DBG_ISR() {} ;
-	static void __attribute__((unused)) PRINT_STR_DBG() {} ;
-	static void __attribute__((unused)) PRINT_DATA_DBG() {} ;
+	static void __attribute__((unused)) dummy_PRINTF_DBG() {};
+	#define PRINTF_DBG(...)  dummy_PRINTF_DBG()
+	#define PRINTF_DBG_ISR(...)  dummy_PRINTF_DBG()
+	#define PRINT_DATA_DBG_ISR(...)  dummy_PRINTF_DBG()
+	#define PRINT_STR_DBG(...)  dummy_PRINTF_DBG()
+	#define PRINT_DATA_DBG(...)  dummy_PRINTF_DBG()
 
 #endif
 

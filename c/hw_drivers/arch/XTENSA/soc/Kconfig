@@ -57,6 +57,10 @@ config XTENSA_FUSIONF1_P7_G60_NTCA
 	bool "FusionF1_G60"
 	depends on XCC_TOOLS_VER_RI_2021_6
 
+config XTENSA_FUSIONF1_XRC_ALL_CACHE
+	bool "XRC_FusionF1_All_cache"
+	depends on XCC_TOOLS_VER_RI_2022_9
+
 endchoice
 
 endif

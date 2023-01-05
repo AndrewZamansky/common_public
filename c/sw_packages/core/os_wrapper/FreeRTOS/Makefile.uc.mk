@@ -40,6 +40,8 @@ ifeq ($(sort $(CONFIG_FREE_RTOS)),y)
         endif
     else ifdef CONFIG_XTENSA_XCC
         FREE_RTOS_PORT_INCLUDE_PATH :=$(FREE_RTOS_PORT_PATH)/XCC/Xtensa
+    else ifdef CONFIG_XTENSA_CLANG
+        FREE_RTOS_PORT_INCLUDE_PATH :=$(FREE_RTOS_PORT_PATH)/XCC/Xtensa
     endif
     DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(FREE_RTOS_PORT_INCLUDE_PATH))
 
@@ -105,7 +107,7 @@ else ifeq ($(sort $(CONFIG_CORTEX_M4)),y)
             SRC += FreeRTOS/Source/portable/RVDS/ARM_CM3/port.c
         endif
     endif
-else ifeq ($(sort $(CONFIG_XTENSA_XCC)),y)
+else ifeq ($(sort $(CONFIG_XTENSA_XCC) $(CONFIG_XTENSA_CLANG)),y)
 	SRC += FreeRTOS/Source/portable/XCC/Xtensa/portasm.S
 	SRC += FreeRTOS/Source/portable/XCC/Xtensa/xtensa_context.S
 	SRC += FreeRTOS/Source/portable/XCC/Xtensa/portclib.c

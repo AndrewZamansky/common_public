@@ -17,6 +17,8 @@ else ifdef CONFIG_XTENSA_GCC
     include $(COMPILERS_DIR)/gcc/gcc_xtensa_ld.mk
 else ifdef CONFIG_XTENSA_XCC
     include $(COMPILERS_DIR)/xcc/xcc_xtensa_ld.mk
+else ifdef CONFIG_XTENSA_CLANG
+    include $(COMPILERS_DIR)/clang/clang_xtensa_ld.mk
 else ifdef CONFIG_PIC32
     include $(COMPILERS_DIR)/gcc/gcc_pic32_ld.mk
 else ifdef CONFIG_HEXAGON

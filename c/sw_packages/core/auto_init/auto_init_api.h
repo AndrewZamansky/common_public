@@ -23,12 +23,15 @@
 	#if ( defined(CONFIG_HEXAGON_COMPILER) || defined(CONFIG_ANDROID_NDK) || \
 			defined(CONFIG_XTENSA_GCC) ||  \
 			(defined(__GNUC__) && \
-				!defined(__ARMCC_VERSION) && !defined(CONFIG_XTENSA_XCC))\
-		)
+				!defined(__ARMCC_VERSION) && !defined(CONFIG_XTENSA_XCC) && \
+				!defined(CONFIG_XTENSA_CLANG)) )
 		#define USE_GCC_AUTO_INIT_PLACEMENT  1
 	#endif
 	#if defined(CONFIG_XTENSA_XCC)
 		#define USE_XCC_AUTO_INIT_PLACEMENT  1
+	#endif
+	#if defined(CONFIG_XTENSA_CLANG)
+		#define USE_CLANG_AUTO_INIT_PLACEMENT  1
 	#endif
 	#if defined(__ARMCC_VERSION)
 		#define USE_ARMCC_AUTO_INIT_PLACEMENT  1
@@ -48,6 +51,11 @@
 							__attribute__((section("auto_init_section")))
 
 #elif defined(USE_XCC_AUTO_INIT_PLACEMENT)
+
+	#define AUTO_INIT_FUNCTION_PLACEMENT   \
+				const __attribute__((section(".rodata.keepsort._auto_init")))
+
+#elif defined(USE_CLANG_AUTO_INIT_PLACEMENT)
 
 	#define AUTO_INIT_FUNCTION_PLACEMENT   \
 				const __attribute__((section(".rodata.keepsort._auto_init")))

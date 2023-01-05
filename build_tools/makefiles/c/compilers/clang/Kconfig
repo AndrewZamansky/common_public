@@ -1,19 +1,49 @@
 menu "clang options"
 
+##### XTENSA  #########
+if XTENSA
+
+choice
+	prompt "Tools version"
+	default CLANG_TOOLS_VER_2017_7
+
+config CLANG_TOOLS_VER_2017_6
+	bool "RG-2017.6"
+
+config CLANG_TOOLS_VER_2017_7
+	bool "RG-2017.7"
+
+config CLANG_TOOLS_VER_RI_2018_0
+	bool "RI-2018.0"
+
+config CLANG_TOOLS_VER_RI_2021_6
+	bool "RI-2021.6"
+
+config CLANG_TOOLS_VER_RI_2022_9
+	bool "RI-2022.9"
+
+endchoice
+
+
+endif
+
+
+
+
 choice
 	prompt "Optimization Level"
-	default GCC_OPTIMIZE_NONE
+	default CLANG_OPTIMIZE_NONE
 
-config GCC_OPTIMIZE_NONE
+config CLANG_OPTIMIZE_NONE
 	bool "-O0 : No Optimizations"
 
-config GCC_OPTIMIZE_SIZE
+config CLANG_OPTIMIZE_SIZE
     bool "-Os : Optimize for size "
 
-config GCC_OPTIMIZE_SPEED
+config CLANG_OPTIMIZE_SPEED
 	bool "-O2 : Optimize for speed "
 
-config GCC_OPTIMIZE_ULTRA_SPEED
+config CLANG_OPTIMIZE_ULTRA_SPEED
 	bool "-O3 : Optimize for ultra-speed but can increase code-size "
 
 endchoice

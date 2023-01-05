@@ -77,12 +77,13 @@ struct file_desc_t {
 		struct file_desc_t*  new_socket_descriptor;
 	};
 
-	uint8_t file_descriptor_manager_api_init(void);
 	uint8_t file_descriptor_manager_api_register_INET_device(
 											struct dev_desc_t * ap_dev);
 	uint8_t file_descriptor_manager_api_register_IPC_device(
 											struct dev_desc_t * ap_dev);
 #endif
+
+	uint8_t file_descriptor_manager_api_init(void);
 
 #ifdef  __cplusplus
 }

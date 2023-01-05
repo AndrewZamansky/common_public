@@ -1,6 +1,7 @@
 HEXAGON_ROOT_DIR :=
 
-####### test for existence of hexagon compiler and put its directory name in HEXAGON_ROOT_DIR #####
+####### test for existence of hexagon compiler         #####
+####### and put its directory name in HEXAGON_ROOT_DIR #####
 SEARCHED_TOOL:=hexagon-clang
 SEARCHED_DIR_VARIABLE:=HEXAGON_ROOT_DIR
 MANUALLY_DEFINED_DIR_VARIABLE:=REDEFINE_HEXAGON_ROOT_DIR
@@ -19,13 +20,13 @@ endif
 
 
 
-ifdef CONFIG_GCC_OPTIMIZE_NONE
+ifdef CONFIG_CLANG_OPTIMIZE_NONE
     CONFIG_OPTIMIZE_LEVEL := O0
-else ifdef CONFIG_GCC_OPTIMIZE_SIZE
+else ifdef CONFIG_CLANG_OPTIMIZE_SIZE
     CONFIG_OPTIMIZE_LEVEL := Os
-else ifdef CONFIG_GCC_OPTIMIZE_SPEED
+else ifdef CONFIG_CLANG_OPTIMIZE_SPEED
     CONFIG_OPTIMIZE_LEVEL := O2
-else ifdef CONFIG_GCC_OPTIMIZE_ULTRA_SPEED
+else ifdef CONFIG_CLANG_OPTIMIZE_ULTRA_SPEED
     CONFIG_OPTIMIZE_LEVEL := O3
 endif
 
@@ -47,23 +48,23 @@ else
     $(call exit,1)
 endif
 GLOBAL_CFLAGS += -G0
-GLOBAL_CFLAGS += -Wall 
-GLOBAL_CFLAGS += -Werror 
-GLOBAL_CFLAGS += -Wno-cast-align 
-GLOBAL_CFLAGS += -Wpointer-arith 
-GLOBAL_CFLAGS += -Wno-missing-braces 
-GLOBAL_CFLAGS += -Wno-strict-aliasing  
-GLOBAL_CFLAGS += -fno-exceptions 
-GLOBAL_CFLAGS += -fno-strict-aliasing 
-GLOBAL_CFLAGS += -fno-zero-initialized-in-bss 
-GLOBAL_CFLAGS += -fdata-sections 
-GLOBAL_CFLAGS += -mllvm 
-GLOBAL_CFLAGS += -disable-hsdr 
-GLOBAL_CFLAGS += -fpic 
+GLOBAL_CFLAGS += -Wall
+GLOBAL_CFLAGS += -Werror
+GLOBAL_CFLAGS += -Wno-cast-align
+GLOBAL_CFLAGS += -Wpointer-arith
+GLOBAL_CFLAGS += -Wno-missing-braces
+GLOBAL_CFLAGS += -Wno-strict-aliasing
+GLOBAL_CFLAGS += -fno-exceptions
+GLOBAL_CFLAGS += -fno-strict-aliasing
+GLOBAL_CFLAGS += -fno-zero-initialized-in-bss
+GLOBAL_CFLAGS += -fdata-sections
+GLOBAL_CFLAGS += -mllvm
+GLOBAL_CFLAGS += -disable-hsdr
+GLOBAL_CFLAGS += -fpic
 
 
 
-ifdef CONFIG_GCC_OPTIMIZE_SIZE
+ifdef CONFIG_CLANG_OPTIMIZE_SIZE
     GLOBAL_CFLAGS +=  -ffunction-sections
 endif
 
@@ -80,5 +81,5 @@ GLOBAL_ASMFLAGS +=
 #DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH , $(HEXAGON_ROOT_DIR)/.... )
 CLANG_LIB_ROOT_DIR  := $(HEXAGON_ROOT_DIR)/lib
 
-LD   :=	$(HEXAGON_ROOT_DIR)/bin/hexagon-clang.exe
-CC   :=	$(HEXAGON_ROOT_DIR)/bin/hexagon-clang.exe -c
+LD   := $(HEXAGON_ROOT_DIR)/bin/hexagon-clang.exe
+CC   := $(HEXAGON_ROOT_DIR)/bin/hexagon-clang.exe -c

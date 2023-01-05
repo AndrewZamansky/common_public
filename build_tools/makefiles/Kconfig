@@ -81,6 +81,9 @@ config XTENSA_GCC
 config XTENSA_XCC
 	bool "xcc "
 
+config XTENSA_CLANG
+	bool "clang "
+
 endchoice
 
 endif
@@ -179,7 +182,7 @@ source "$KCONFIG_PUBLIC_START_DIR/../build_tools/makefiles/c/compilers/microsoft
 endif
 
 
-if HEXAGON_COMPILER
+if HEXAGON_COMPILER || XTENSA_CLANG
 source "$KCONFIG_PUBLIC_START_DIR/../build_tools/makefiles/c/compilers/clang/Kconfig"
 endif
 
