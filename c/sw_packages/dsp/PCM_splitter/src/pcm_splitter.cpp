@@ -10,7 +10,7 @@
 #include "dsp_management_internal_api.h"
 
 
-#include "pcm_splitter_api.h"
+#include "PCM_splitter_api.h"
 #include "auto_init_api.h"
 
 #include "pcm_splitter.h"

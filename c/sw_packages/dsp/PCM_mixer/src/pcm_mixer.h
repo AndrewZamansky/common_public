@@ -7,7 +7,7 @@
 #ifndef _PCM_MIXER_H
 #define _PCM_MIXER_H
 
-#include "pcm_mixer_api.h"
+#include "PCM_mixer_api.h"
 
 
 struct pcm_mixer_instance_t {

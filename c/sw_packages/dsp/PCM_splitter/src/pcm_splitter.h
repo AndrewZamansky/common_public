@@ -8,7 +8,7 @@
 #define _PCM_SPLITTER_H
 
 
-#include "pcm_splitter_api.h"
+#include "PCM_splitter_api.h"
 
 
 struct pcm_splitter_instance_t {

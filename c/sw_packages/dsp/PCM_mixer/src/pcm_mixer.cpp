@@ -12,7 +12,7 @@
 
 #include "pcm_mixer.h"
 
-#include "pcm_mixer_api.h"
+#include "PCM_mixer_api.h"
 #include "auto_init_api.h"
 #include <string.h>
 
