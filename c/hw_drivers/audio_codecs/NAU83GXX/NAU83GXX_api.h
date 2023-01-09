@@ -10,6 +10,10 @@
 #define NAU83GXX_CHIP_TYPE_G20          0x60
 #define NAU83GXX_CHIP_TYPE_G60          0xF0
 
+#define NAU83GXX_BUS_TYPE_I2S       0
+#define NAU83GXX_BUS_TYPE_PCMA      1
+#define NAU83GXX_BUS_TYPE_PCMB      2
+
 #define NAU83GXX_IN_CHANNEL_I2S_CHANNEL_0      0
 #define NAU83GXX_IN_CHANNEL_TDM_CHANNEL_0      0
 #define NAU83GXX_IN_CHANNEL_I2S_LEFT   NAU83GXX_IN_CHANNEL_I2S_CHANNEL_0
@@ -211,6 +215,7 @@ struct NAU83GXX_config_t {
 	uint8_t i2c_addr_arr_size;
 	uint8_t *i2c_addr_arr;
 	uint8_t chip_type;
+	uint8_t I2S_bus_type;
 	uint8_t I2S_in_channel;
 	uint8_t I2S_word_length;
 	uint8_t I2S_out_left_ch_data_type;

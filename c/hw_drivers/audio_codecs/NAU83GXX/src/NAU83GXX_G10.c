@@ -224,7 +224,19 @@ static uint8_t G10_G20_set_pcm_ctl(struct NAU83GXX_config_t *config_handle,
 	rc = nau83gxx_write_wordU16(i2c_dev, dev_addr, 0x0C, reg_0xC_data);
 	if (rc) return rc;
 
-	reg_0xD_data = 0x2; // default - standard I2S
+	switch (config_handle->I2S_bus_type)
+	{
+	case NAU83GXX_BUS_TYPE_PCMA:
+		reg_0xD_data = 0x3;
+		break;
+	case NAU83GXX_BUS_TYPE_PCMB:
+		reg_0xD_data = (0x40 | 0x3);
+		break;
+	default:
+	case NAU83GXX_BUS_TYPE_I2S:
+		reg_0xD_data = 0x2; // default - standard I2S
+		break;
+	}
 	switch (config_handle->I2S_word_length)
 	{
 	case 4:
