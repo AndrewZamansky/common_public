@@ -21,6 +21,13 @@ else
   GNU_COMPILATION_PREFIX :=arm-$(VENDOR_NAME)$(OS_PREFIX)$(ABI_PREFIX)
 endif
 
+
+GCC_VERSION :=$(patsubst "%",%,$(CONFIG_GCC_VERSION))
+# if vesrion not define then ignore it
+ifneq ($(GCC_VERSION),)
+    $(info ---- looking for gcc version: $(GCC_VERSION))
+endif
+
 GCC_ROOT_DIR :=
 
 ####### test for existence of arm gcc compiler and  #####
@@ -40,7 +47,7 @@ endif
 include $(MAKEFILES_ROOT_DIR)/_include_functions/tool_existence_check.mk
 ####### end of tool existence test #####
 
-GCC_VERSION :=$(patsubst "%",%,$(CONFIG_GCC_VERSION))
+
 # if vesrion not define then ignore it
 ifneq ($(GCC_VERSION),)
     SHELL_OUT :=$(shell \
