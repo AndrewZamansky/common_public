@@ -1,3 +1,5 @@
+include $(MAKEFILES_ROOT_DIR)/common.mk
+
 MSG :=---- Build of $(APP_ROOT_DIR) finished
 
 ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
