@@ -25,6 +25,11 @@ config FIXMATH_NO_CACHE
 	depends on DSP_REAL_NUMBER_FORMAT_FIXED_POINT
 	default n
 
+config LIBFIXMATH_GIT_COMMIT_HASH
+	string "libfixmath git commit hash"
+	depends on DSP_REAL_NUMBER_FORMAT_FIXED_POINT
+	default ""
+
 config FIXMATH_NO_OVERFLOW
 	bool   "disable overflow detection libfixmath"
 	depends on DSP_REAL_NUMBER_FORMAT_FIXED_POINT
