@@ -60,7 +60,8 @@ enum main_msg_e {
 	MSG_SEND_BYPASS_BIQUADS,
 	MSG_CONTINUE_RECOVERY,
 	MSG_POWER_DOWN,
-	MSG_SEND_ALC_DATA
+	MSG_SEND_ALC_DATA,
+	MSG_GET_CUR_VOLTAGE_mV
 };
 
 
@@ -113,6 +114,11 @@ struct send_bypass_msg_t {
 };
 
 
+struct send_get_mVoltage_msg_t {
+	uint32_t   *p_cur_voltage_mV;
+};
+
+
 struct set_alc_data_msg_t {
 	float max_battery_level;
 	float min_battery_level_V;
@@ -140,6 +146,7 @@ struct task_message_t
 		struct send_setup_data_msg_t send_setup_data_msg;
 		struct send_bypass_msg_t  send_bypass_msg;
 		struct set_alc_data_msg_t set_alc_data_msg;
+		struct send_get_mVoltage_msg_t send_get_mVoltage_msg;
 	};
 };
 
@@ -655,6 +662,42 @@ static uint8_t process_send_alc_data_msg(
 }
 
 
+static uint8_t process_get_cur_voltage_mV_msg (
+		struct NAU83GXX_config_t *config_handle,
+		struct NAU83GXX_runtime_t *runtime_handle,
+		struct send_get_mVoltage_msg_t *p_send_get_mVoltage_msg)
+{
+	struct dev_desc_t * i2c_dev;
+	uint8_t dev_addr;
+	uint16_t reg_0x20_data;
+	uint32_t vBat;
+	uint32_t vBat_value;
+	uint8_t rc;
+
+	if (STATE_IDLE != runtime_handle->state)
+	{
+		return NAU83GXX_RC_DRIVER_BUSY | runtime_handle->state;
+	}
+
+	dev_addr = runtime_handle->dev_addr;
+	i2c_dev = config_handle->i2c_dev;
+
+	rc = nau83gxx_read_wordU16(i2c_dev, dev_addr, 0x20, &reg_0x20_data);
+	vBat_value = reg_0x20_data & 0xff;
+
+	if (rc != 0)
+	{
+		*p_send_get_mVoltage_msg->p_cur_voltage_mV = 1;
+		return rc;
+	}
+
+	vBat = (vBat_value * 62) + 587;
+	*p_send_get_mVoltage_msg->p_cur_voltage_mV = vBat;
+
+	return NAU83GXX_RC_OK;
+}
+
+
 /**
  * nau83gxx_task()
  *
@@ -758,6 +801,10 @@ static void nau83gxx_task (void * adev)
 		case MSG_SEND_ALC_DATA:
 			rc = process_send_alc_data_msg(config_handle,
 					runtime_handle, &msg.set_alc_data_msg);
+			break;
+		case MSG_GET_CUR_VOLTAGE_mV:
+			rc = process_get_cur_voltage_mV_msg(config_handle,
+					runtime_handle, &msg.send_get_mVoltage_msg);
 			break;
 		default:
 			CRITICAL_ERROR("no such case");
@@ -1253,6 +1300,23 @@ static uint8_t kcs_register_write_ioctl(
 }
 
 
+static uint8_t send_get_current_voltage(
+		struct NAU83GXX_runtime_t *runtime_handle,
+		struct nau83gxx_get_current_voltage_t *p_nau83gxx_get_current_voltage)
+{
+	//p_nau83gxx_get_current_voltage->cur_voltage_mV = 1 * 1000;
+	struct task_message_t msg;
+	struct send_get_mVoltage_msg_t *p_send_get_mVoltage_msg;
+
+	msg.msg_type = MSG_GET_CUR_VOLTAGE_mV;
+	p_send_get_mVoltage_msg = &msg.send_get_mVoltage_msg;
+	p_send_get_mVoltage_msg->p_cur_voltage_mV =
+			&p_nau83gxx_get_current_voltage->cur_voltage_mV;
+
+	return send_msg_and_wait(runtime_handle, &msg);
+}
+
+
 /**
  * NAU83GXX_ioctl()
  *
@@ -1308,6 +1372,8 @@ static uint8_t NAU83GXX_ioctl(struct dev_desc_t *adev,
 		return send_bypass_kcs(runtime_handle, aIoctl_param1);
 	case IOCTL_NAU83GXX_BYPASS_BIQUADS:
 		return send_bypass_biquads(runtime_handle, aIoctl_param1);
+	case IOCTL_NAU83GXX_GET_CURRENT_VOLTAGE_mV:
+		return send_get_current_voltage(runtime_handle, aIoctl_param1);
 	default :
 		return NAU83GXX_RC_NOT_SUPPORTED_IOCTL;
 	}

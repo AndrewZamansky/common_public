@@ -13,6 +13,8 @@
 #include <math.h>
 #include "CoreModules/KCS_RemoteInterface.h"
 
+#include <math.h>
+
 int do_kcs_get_info(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 	struct dev_desc_t *kcs_dev;
