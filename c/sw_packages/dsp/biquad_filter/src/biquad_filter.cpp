@@ -158,7 +158,7 @@ static uint8_t set_raw_coefficients(
 		return 1;
 	}
 
-	if (BIQUAD_FILTER_RAW_COEF_TYPE_FIX_POINT ==
+	if (BIQUAD_FILTER_RAW_COEF_TYPE_FLOATING_POINT ==
 						band_raw_params->raw_coeff_type)
 	{
 		struct biquad_filter_api_raw_coeff_floating_point_t *p_raw_coeff_float;
@@ -171,7 +171,6 @@ static uint8_t set_raw_coefficients(
 				p_raw_coeff_float->a2,
 				handle->biquad_bands_coeffs, band_num);
 	}
-#if !defined(CONFIG_DSP_REAL_NUMBER_FORMAT_FLOATING_POINT)
 	else
 	{
 		struct biquad_filter_api_raw_coeff_fix_point_t *p_raw_coeff_fixed_point;
@@ -185,7 +184,6 @@ static uint8_t set_raw_coefficients(
 				p_raw_coeff_fixed_point->a2,
 				handle->biquad_bands_coeffs, band_num);
 	}
-#endif
 	return 0;
 }
 

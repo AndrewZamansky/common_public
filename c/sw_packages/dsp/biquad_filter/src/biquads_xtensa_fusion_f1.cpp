@@ -223,7 +223,7 @@ void biquads_coefficients_assign_custom_fix_point(
 	/* on FusionF1 shift on signed int exptend sign bit */
 	if (num_of_fraction_bits >= 16)
 	{
-		size_of_shift = size_of_shift - 16;
+		size_of_shift = num_of_fraction_bits - 16;
 		curr_coeffs[0] = b0 >> size_of_shift;
 		curr_coeffs[1] = b1 >> size_of_shift;
 		curr_coeffs[2] = b2 >> size_of_shift;
@@ -232,7 +232,7 @@ void biquads_coefficients_assign_custom_fix_point(
 	}
 	else
 	{
-		size_of_shift = 16 - size_of_shift;
+		size_of_shift = 16 - num_of_fraction_bits;
 		curr_coeffs[0] = b0 << size_of_shift;
 		curr_coeffs[1] = b1 << size_of_shift;
 		curr_coeffs[2] = b2 << size_of_shift;
@@ -251,7 +251,7 @@ void biquads_coefficients_assign_custom_fix_point(
 	/* on FusionF1 shift on signed int extend sign bit */
 	if (num_of_fraction_bits >= 30)
 	{
-		size_of_shift = size_of_shift - 30;
+		size_of_shift = num_of_fraction_bits - 30;
 		curr_coef_sos[0] = b0 >> size_of_shift;
 		curr_coef_sos[1] = b1 >> size_of_shift;
 		curr_coef_sos[2] = b2 >> size_of_shift;
@@ -260,7 +260,7 @@ void biquads_coefficients_assign_custom_fix_point(
 	}
 	else
 	{
-		size_of_shift = 30 - size_of_shift;
+		size_of_shift = 30 - num_of_fraction_bits;
 		curr_coef_sos[0] = b0 << size_of_shift;
 		curr_coef_sos[1] = b1 << size_of_shift;
 		curr_coef_sos[2] = b2 << size_of_shift;
@@ -270,7 +270,7 @@ void biquads_coefficients_assign_custom_fix_point(
 
 	for (i = 0; i < num_of_stages; i++)
 	{
-		coef_g[i] = 1;
+		coef_g[i] = 0x7fff; // coef_g is Q0.15 so 0x7fff is almost 1
 	}
 	bqriir32x32_df1_init_nuvoton(p_biquads_cascading_filter->p_filter_mem,
 			num_of_stages, coef_sos, coef_g, 1, 0);
