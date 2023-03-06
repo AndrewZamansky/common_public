@@ -59,7 +59,7 @@ config XTENSA_FUSIONF1_P7_G60_NTCA
 
 config XTENSA_FUSIONF1_XRC_ALL_CACHE
 	bool "XRC_FusionF1_All_cache"
-	depends on XCC_TOOLS_VER_RI_2022_9
+	depends on CLANG_TOOLS_VER_RI_2022_9
 
 endchoice
 

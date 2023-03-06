@@ -32,7 +32,7 @@ struct downsampling_by_int_api_set_params_t {
 	 *    The coefficients are stored in the array in the following order:
 	 *    {b10, b11, b12, a11, a12, b20, b21, b22, a21, a22, ...}
 	 */
-	struct biquad_filter_api_band_set_raw_coefficients_t *raw_coeffs;
+	struct biquad_filter_api_band_raw_coeff_float_t *raw_coeffs;
     /****** end of IIR filter section******/
 
 	/******* For FIR low pass filter:  ******/

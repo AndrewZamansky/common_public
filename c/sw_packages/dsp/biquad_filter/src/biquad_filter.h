@@ -13,7 +13,7 @@
 struct biquads_filter_t {
 	void *pBiquadFilter   ;
 	size_t num_of_bands ;
-	real_t *biquad_bands_coeffs; /* b0,b1,b2,a1,a2*/
+	real_t *biquad_bands_coeffs; /* b0,b1,b2,a1,a2 ; b0,b1,b2,a1,a2 ....*/
 	struct biquad_filter_api_band_set_params_t *band_set_params;
 };
 
@@ -37,11 +37,14 @@ void biquads_coefficients_calculation_common(
 		real_t FreqC, real_t QValue, real_t Gain_dB,
 		real_t SamplingRate, real_t *pCoeffs);
 
-void biquads_coefficients_calculation(enum biquads_filter_mode_e filter_mode,
-		real_t FreqC, real_t QValue, real_t Gain_dB,
-		real_t SamplingRate, real_t *pCoeffs);
 
-void biquads_coefficients_assign(real_t b0, real_t b1, real_t b2,
-		real_t a1, real_t a2, real_t *pCoeffs);
+void biquads_coefficients_assign(void *pFilter,
+		real_t b0, real_t b1, real_t b2, real_t a1, real_t a2,
+		real_t *biquad_bands_coeffs, uint8_t band_num);
+
+void biquads_coefficients_assign_custom_fix_point(
+		void *pFilter, int16_t num_of_fraction_bits,
+		int32_t b0, int32_t b1, int32_t b2, int32_t a1, int32_t a2,
+		real_t *biquad_bands_coeffs, uint8_t band_num);
 
 #endif

@@ -37,13 +37,30 @@ struct biquad_filter_api_band_set_params_t
 	uint8_t bypass;
 };
 
-struct biquad_filter_api_band_set_raw_coefficients_t
+
+
+enum biquad_filter_api_raw_coeff_type_e {
+	BIQUAD_FILTER_RAW_COEF_TYPE_FLOATING_POINT,
+	BIQUAD_FILTER_RAW_COEF_TYPE_FIX_POINT,
+};
+
+struct biquad_filter_api_raw_coeff_floating_point_t
 {
 	float b0;
 	float b1;
 	float b2;
 	float a1;
 	float a2;
+};
+
+struct biquad_filter_api_raw_coeff_fix_point_t
+{
+	int16_t num_of_fraction_bits;
+	int32_t b0;
+	int32_t b1;
+	int32_t b2;
+	int32_t a1;
+	int32_t a2;
 };
 
 struct biquad_filter_api_band_set_t
@@ -54,8 +71,12 @@ struct biquad_filter_api_band_set_t
 
 struct biquad_filter_api_band_set_raw_t
 {
-	struct biquad_filter_api_band_set_raw_coefficients_t band_set_coefficients;
 	uint8_t band_num;
+	enum biquad_filter_api_raw_coeff_type_e raw_coeff_type;
+	union {
+		struct biquad_filter_api_raw_coeff_floating_point_t raw_coeff_float;
+		struct biquad_filter_api_raw_coeff_fix_point_t   raw_coeff_fixed_point;
+	};
 };
 
 

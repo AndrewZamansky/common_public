@@ -56,14 +56,14 @@ ifeq ($(USE_CORTEX_M_FPU),y)
     #    SPEED_CRITICAL_FILES += arm_biquad_cascade_df2T_init_f32.c
     #    SPEED_CRITICAL_FILES += arm_abs_f32.c
     #endif
-else ifeq ($(CONFIG_XTENSA_FUSIONF1_P7_G60_NTCA),y)
-	SRC += bqriir32x32_df1_fusion.c
+else ifeq ($(sort $(CONFIG_USE_NATURE_DSP)),y)
+	SRC += bqriir32x32_df1_fusion_nuvoton.c
 	VPATH += $(NATURE_DSP_PATH)/iir
 
     SRC += biquads_xtensa_fusion_f1.cpp
 #    SRC += biquads.cpp
     ifdef CONFIG_DSP_IS_SPEED_CRITICAL
-        SPEED_CRITICAL_FILES += bqriir32x32_df1_fusion.cpp
+        SPEED_CRITICAL_FILES += bqriir32x32_df1_fusion_nuvoton.cpp
         SPEED_CRITICAL_FILES += biquads_xtensa_fusion_f1.cpp
     endif
 

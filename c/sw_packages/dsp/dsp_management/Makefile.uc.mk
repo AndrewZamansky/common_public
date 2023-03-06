@@ -56,11 +56,29 @@ ifdef CONFIG_DSP_REAL_NUMBER_FORMAT_FIXED_POINT
     VPATH += | $(LIBFIXMATH_PATH)
 endif
 
-ifeq ($(CONFIG_XTENSA_FUSIONF1_P7_G60_NTCA),y)
+
+
+ifeq ($(CONFIG_USE_NATURE_DSP),y)
     NATURE_DSP_PATH :=$(EXTERNAL_SOURCE_ROOT_DIR)/NatureDSP_FusionF1
     DUMMY := $(call ADD_TO_GLOBAL_INCLUDE_PATH, $(NATURE_DSP_PATH)/include)
     DUMMY := $(call \
                 ADD_TO_GLOBAL_INCLUDE_PATH, $(NATURE_DSP_PATH)/include_private)
+
+    ifeq ("$(wildcard $(NATURE_DSP_PATH))","")
+        $(info  )
+        $(info !--- libfixmath path $(NATURE_DSP_PATH) does not exists)
+        $(info !--- download/clone NatureDSP repository to)
+        $(info !--- $(NATURE_DSP_PATH) and make sure that .git directory is)
+        $(info !--- located in $($(NATURE_DSP_PATH))/  after unpacking)
+        $(info  )
+        $(error )
+    endif
+
+    # test if current commit and branch of uboot git is the same
+    # as required by application
+    CURR_GIT_REPO_DIR :=$(NATURE_DSP_PATH)
+    CURR_GIT_COMMIT_HASH_VARIABLE :=CONFIG_NATURE_DSP_GIT_COMMIT_HASH
+    include $(MAKEFILES_ROOT_DIR)/_include_functions/git_prebuild_repo_check.mk                
 endif
 
 ifdef CONFIG_DSP_IS_SPEED_CRITICAL

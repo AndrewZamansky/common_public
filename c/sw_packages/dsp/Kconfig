@@ -20,15 +20,18 @@ config DSP_REAL_NUMBER_FORMAT_FIXED_POINT
 
 endchoice
 
-config FIXMATH_NO_CACHE
-	bool   "disable cache in libfixmath"
-	depends on DSP_REAL_NUMBER_FORMAT_FIXED_POINT
-	default n
+###################  LIBFIXMATH  ####################
+
 
 config LIBFIXMATH_GIT_COMMIT_HASH
 	string "libfixmath git commit hash"
 	depends on DSP_REAL_NUMBER_FORMAT_FIXED_POINT
 	default ""
+
+config FIXMATH_NO_CACHE
+	bool   "disable cache in libfixmath"
+	depends on DSP_REAL_NUMBER_FORMAT_FIXED_POINT
+	default n
 
 config FIXMATH_NO_OVERFLOW
 	bool   "disable overflow detection libfixmath"
@@ -39,6 +42,26 @@ config FIXMATH_NO_ROUNDING
 	bool   "disable rounding accuricy in libfixmath"
 	depends on DSP_REAL_NUMBER_FORMAT_FIXED_POINT
 	default n
+
+######################################################
+
+###################  NATURE_DSP (xtensa)  ####################
+
+config USE_NATURE_DSP
+	bool   "use IntegIT NatureDSP"
+	depends on DSP_REAL_NUMBER_FORMAT_FIXED_POINT && \
+				(XTENSA_FUSIONF1_XRC_ALL_CACHE || XTENSA_FUSIONF1_P7_G60_NTCA)
+				
+	default n
+
+#	depends on DSP_REAL_NUMBER_FORMAT_FIXED_POINT && (XTENSA_FUSIONF1_XRC_ALL_CACHE || XTENSA_FUSIONF1_P7_G60_NTCA)    
+
+config NATURE_DSP_GIT_COMMIT_HASH
+	string "NatureDSP git commit hash"
+	depends on USE_NATURE_DSP
+	default ""
+
+######################################################
 
 config INCLUDE_COMMON_DSP
 	bool   "common dsp"

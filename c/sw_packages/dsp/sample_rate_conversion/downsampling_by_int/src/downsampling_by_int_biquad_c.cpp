@@ -67,11 +67,17 @@ void downsampling_by_int_biquad_function(void *p_filter,
  */
 void downsampling_by_int_create_biquad_filter(
 		struct downsampling_by_int_instance_t *handle, size_t num_of_bands,
-		struct biquad_filter_api_band_set_raw_coefficients_t *raw_coeffs)
+		struct biquad_filter_api_band_raw_coeff_float_t *raw_coeffs)
 {
 	chain_handle_t dsp_chain;
 	struct downsampling_by_int_t  *p_filter;
 	struct biquad_filter_api_band_set_raw_t band_set;
+
+	if (BIQUAD_FILTER_RAW_COEF_TYPE_FIX_POINT == raw_coeffs->raw_coeff_type)
+	{
+		CRITICAL_ERROR("raw coeff in fix point not implemented yet");
+		return 1;
+	}
 
 	p_filter = (struct downsampling_by_int_t *)os_safe_malloc(
 								sizeof(struct downsampling_by_int_t));

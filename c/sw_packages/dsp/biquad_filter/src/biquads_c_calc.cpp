@@ -33,9 +33,17 @@ struct biquads_cascading_filter_t
 	real_t *  pCoeffs;
 
 	// should be allocated numOfStages * NUM_OF_STATES_PER_STAGE
-	real_t *  pStates;
+	real_t *  p_states;
 };
 
+
+/*   func : biquads_filter()
+ *    The coefficients are stored in the array pCoeffs in the following order:
+ *
+ *     y[n] = b0 * x[n] + b1 * x[n-1] + b2 * x[n-2] + a1 * y[n-1] + a2 * y[n-2]
+ *
+ *    {b10, b11, b12, a11, a12, b20, b21, b22, a21, a22, ...}
+ */
 #if defined(CONFIG_DSP_REAL_NUMBER_FORMAT_FLOATING_POINT)
 
 	static void biquads_filter(real_t *p_states, real_t *p_coeffs,
@@ -136,7 +144,7 @@ void biquads_cascading_filter(void *pFilter,
 		real_t *apIn, real_t *apOut, size_t buff_len)
 {
 	struct biquads_cascading_filter_t  *p_biquads_cascading_filter;
-	real_t *pStates;
+	real_t *p_states;
 	uint8_t currStage;
 	uint8_t numOfStages ;
 	real_t *pCoeffs;
@@ -144,11 +152,11 @@ void biquads_cascading_filter(void *pFilter,
 	p_biquads_cascading_filter = (struct biquads_cascading_filter_t  *)pFilter;
 	pCoeffs = p_biquads_cascading_filter->pCoeffs;
 	numOfStages = p_biquads_cascading_filter->numOfStages;
-	pStates = p_biquads_cascading_filter->pStates;
+	p_states = p_biquads_cascading_filter->p_states;
 
 	for (currStage = 0 ; currStage < numOfStages ; currStage++)
 	{
-		biquads_filter(&pStates[currStage * NUM_OF_STATES_PER_STAGE],
+		biquads_filter(&p_states[currStage * NUM_OF_STATES_PER_STAGE],
 						&pCoeffs[ 5 * currStage], apIn, apOut, buff_len);
 	}
 }
@@ -161,10 +169,10 @@ void biquads_cascading_filter(void *pFilter,
  *
  *    {b10, b11, b12, a11, a12, b20, b21, b22, a21, a22, ...}
  */
-void *biquads_alloc(uint8_t num_of_stages, real_t *pCoeffs )
+void *biquads_alloc(uint8_t num_of_stages, real_t *biquad_bands_coeffs )
 {
 	struct biquads_cascading_filter_t *p_biquads_cascading_filter;
-	real_t *pStates;
+	real_t *p_states;
 	size_t size_of_states;
 
 	p_biquads_cascading_filter =
@@ -173,13 +181,13 @@ void *biquads_alloc(uint8_t num_of_stages, real_t *pCoeffs )
 	errors_api_check_if_malloc_succeed(p_biquads_cascading_filter);
 
 	size_of_states = NUM_OF_STATES_PER_STAGE * num_of_stages * sizeof(real_t);
-	pStates = (real_t *)malloc(size_of_states);
-	errors_api_check_if_malloc_succeed(pStates);
-	memset((uint8_t*)pStates, 0, size_of_states);
+	p_states = (real_t *)malloc(size_of_states);
+	errors_api_check_if_malloc_succeed(p_states);
+	memset((uint8_t*)p_states, 0, size_of_states);
 
-	p_biquads_cascading_filter->pStates = pStates;
+	p_biquads_cascading_filter->p_states = p_states;
 	p_biquads_cascading_filter->numOfStages = num_of_stages;
-	p_biquads_cascading_filter->pCoeffs = pCoeffs;
+	p_biquads_cascading_filter->pCoeffs = biquad_bands_coeffs;
 
 	return p_biquads_cascading_filter;
 }
@@ -194,32 +202,38 @@ void biquads_free(void *pFilter)
 	if (NULL == pFilter) return;
 
 	p_biquads_cascading_filter = (struct biquads_cascading_filter_t  *)pFilter;
-	os_safe_free( p_biquads_cascading_filter->pStates);
+	os_safe_free( p_biquads_cascading_filter->p_states);
 	os_safe_free(p_biquads_cascading_filter);
 }
 
 
-/*   func : biquads_calculation()
+/*   func : biquads_coefficients_assign()
  *    The coefficients are stored in the array pCoeffs in the following order:
  *
  *     y[n] = b0 * x[n] + b1 * x[n-1] + b2 * x[n-2] + a1 * y[n-1] + a2 * y[n-2]
  *
  *    {b10, b11, b12, a11, a12, b20, b21, b22, a21, a22, ...}
  */
-void biquads_coefficients_calculation(enum biquads_filter_mode_e filter_mode,
-		real_t FreqC, real_t QValue, real_t Gain_dB,
-		real_t SamplingRate, real_t *pCoeffs )
+void biquads_coefficients_assign(void *pFilter,
+		real_t b0, real_t b1, real_t b2, real_t a1, real_t a2,
+		real_t *biquad_bands_coeffs, uint8_t band_num)
 {
-	biquads_coefficients_calculation_common(filter_mode,
-			 FreqC, QValue, Gain_dB, SamplingRate,  pCoeffs);
+	real_t *curr_coeffs;
+
+	curr_coeffs = &biquad_bands_coeffs[5 * band_num];
+
+	curr_coeffs[0] = b0;
+	curr_coeffs[1] = b1;
+	curr_coeffs[2] = b2;
+	curr_coeffs[3] = a1;
+	curr_coeffs[4] = a2;
 }
 
-void biquads_coefficients_assign(real_t b0, real_t b1, real_t b2,
-		real_t a1, real_t a2, real_t *pCoeffs)
+
+void biquads_coefficients_assign_custom_fix_point(
+		void *pFilter, int16_t num_of_fraction_bits,
+		int32_t b0, int32_t b1, int32_t b2, int32_t a1, int32_t a2,
+		real_t *biquad_bands_coeffs, uint8_t band_num)
 {
-	pCoeffs[0] = b0;
-	pCoeffs[1] = b1;
-	pCoeffs[2] = b2;
-	pCoeffs[3] = a1;
-	pCoeffs[4] = a2;
+	CRITICAL_ERROR("custom fix point coeff not implemented yet");
 }
