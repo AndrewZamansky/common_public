@@ -64,7 +64,7 @@ void biquads_cascading_filter(void *pFilter,
 	bqriir32x32_df1_handle = filter->bqriir32x32_df1_handle;
 
 	bqriir32x32_df1_nuvoton(bqriir32x32_df1_handle,
-			filter->scratch_memory_area, in, out, buff_len);
+			filter->scratch_memory_area, out, in, buff_len);
 
 	/* convert back to Q15.16 */
 	/* on FusionF1 shift on signed int extend sign bit */
