@@ -101,7 +101,7 @@ static bqriir32x32_df1_handle_t set_filter(
 	}
 	return bqriir32x32_df1_init_nuvoton(
 			p_biquads_cascading_filter->p_filter_mem,
-			num_of_stages, coef_sos, coef_g, 1, do_init_states);
+			num_of_stages, coef_sos, coef_g, 0, do_init_states);
 }
 
 
@@ -273,5 +273,5 @@ void biquads_coefficients_assign_custom_fix_point(
 		coef_g[i] = 0x7fff; // coef_g is Q0.15 so 0x7fff is almost 1
 	}
 	bqriir32x32_df1_init_nuvoton(p_biquads_cascading_filter->p_filter_mem,
-			num_of_stages, coef_sos, coef_g, 1, 0);
+			num_of_stages, coef_sos, coef_g, 0, 0);
 }
