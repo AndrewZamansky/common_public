@@ -24,5 +24,13 @@ ifdef CONFIG_DSP_IS_SPEED_CRITICAL
     SPEED_CRITICAL_FILES += math_functions_fixed_point.cpp
 endif
 
+ifeq ($(sort $(CONFIG_USE_NATURE_DSP)),y)
+    SRC += scl_log2_32x32_fusion.c
+    SRC += scl_antilog2_32x32_fusion.c
+    VPATH += $(NATURE_DSP_PATH)/math
+    SRC += vec_log_table.c
+    SRC += vec_alog_table.c
+    VPATH += $(NATURE_DSP_PATH)/tables
+endif
 
 include $(COMMON_CC)
