@@ -9,6 +9,11 @@ else ifdef CONFIG_CLANG_TOOLS_VER_RI_2021_6
     TOOLS_VER :=RI-2021.6
 else ifdef CONFIG_CLANG_TOOLS_VER_RI_2022_9
     TOOLS_VER :=RI-2022.9
+else ifdef CONFIG_CLANG_TOOLS_VER_RI_2022_10
+    TOOLS_VER :=RI-2022.10
+else
+    $(info err: clang tool version not supported)
+    $(call exit,1)
 endif
 
 ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
@@ -88,6 +93,8 @@ else ifdef CONFIG_XTENSA_HIFI3_NTCA
 	CLANG_CORE :=HIFI3_NTCA
 else ifdef CONFIG_XTENSA_FUSIONF1_P7_G60_NTCA
 	CLANG_CORE :=FusionF1_P7_NAU83G60
+else ifdef CONFIG_XTENSA_FUSIONF1_I256K_D192K_NTCA
+	CLANG_CORE :=FusionF1_i256K_d192K_64B
 else ifdef CONFIG_XTENSA_FUSIONF1_XRC_ALL_CACHE
 	CLANG_CORE :=XRC_FusionF1_All_cache
 else
@@ -95,7 +102,8 @@ else
     $(call exit,1)
 endif
 
-CORE_CONFIG_DIR :=$(REDEFINE_XTENSA_CONFIGS_DIR)/$(TOOLS_VER)/$(CLANG_CORE)/config
+CORE_CONFIG_DIR :=\
+          $(REDEFINE_XTENSA_CONFIGS_DIR)/$(TOOLS_VER)/$(CLANG_CORE)/config
 CORE_CONFIG_DIR :=$(call fix_path_if_in_windows,$(CORE_CONFIG_DIR))
 
 ifeq ("$(wildcard $(CORE_CONFIG_DIR))","")
