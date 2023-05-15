@@ -27,7 +27,7 @@ void downsampling_by_int_create_fir_filter(
 
 void downsampling_by_int_create_biquad_filter(
 		struct downsampling_by_int_instance_t *handle, size_t num_of_bands,
-		struct biquad_filter_api_band_raw_coeff_float_t *raw_coeffs);
+		struct biquad_filter_api_band_set_raw_t *raw_coeffs);
 
 void downsampling_by_int_fir_function(void *p_filter,
 	real_t *in_buf, real_t *tmp_buf, size_t in_buff_len, real_t *out_buf);

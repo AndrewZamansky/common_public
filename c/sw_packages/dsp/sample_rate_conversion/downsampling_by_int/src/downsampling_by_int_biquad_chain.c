@@ -32,7 +32,7 @@ chain_handle_t downsampling_by_int_init_biquad_chain(size_t num_of_bands)
 	chain_handle_t biquad_dsp_chain;
 	biquad_dsp_chain = DSP_MANAGEMENT_API_CREATE_STATIC_CHAIN(biquad_chain);
 	DSP_IOCTL(biquad_dsp_chain, biquad_filter,
-				IOCTL_BIQUAD_FILTER_SET_NUM_OF_BANDS, num_of_bands);
+				IOCTL_BIQUAD_FILTER_SET_NUM_OF_BANDS, (void*)num_of_bands);
 
 	return biquad_dsp_chain;
 }
