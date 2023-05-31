@@ -1,4 +1,4 @@
-ifeq ($(sort $(CONFIG_INCLUDE_SHELL)),y)
+ifeq ($(sort $(CONFIG_INCLUDE_SHELL) $(CONFIG_INCLUDE_UBOOT_SHELL)),y)
     INCLUDE_THIS_COMPONENT := y
 endif
 
@@ -15,8 +15,14 @@ ifeq ($(MAKECMDGOALS),all)
     endif
 
     #####  generate file for uboot commands  #######
-    ALL_CMD_EXT_FILES = $(strip $(call rwildcard,$(OBJ_DIR)/,*.cmd.ext))
-    ALL_CMD_FILES = $(strip $(call rwildcard,$(OBJ_DIR)/,*.cmd))
+    ALL_CMD_EXT_FILES := $(strip $(call rwildcard,$(OBJ_DIR)/,*.cmd.ext))
+    ALL_CMD_FILES := $(strip $(call rwildcard,$(OBJ_DIR)/,*.cmd))
+
+    # remove auto generated files
+    ALL_CMD_EXT_FILES := $(patsubst \
+         %auto_generated_command_list.c.preproc.cmd.ext,,$(ALL_CMD_EXT_FILES))
+    ALL_CMD_FILES := $(patsubst \
+         %auto_generated_command_list.c.preproc.cmd,,$(ALL_CMD_FILES))
 
     ALL_CMD_EXT_FILE := $(AUTO_GENERATED_FILES_DIR)/all_cmd_ext.c
     ALL_CMD_EXT_FILE := $(call fix_path_if_in_windows,$(ALL_CMD_EXT_FILE))

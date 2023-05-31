@@ -13,40 +13,26 @@ else
 endif
 
 
-# following functions will extract _UBOOT_CMD_PREFIX_YYY word and replace it
-# with: extern int  YYY(struct cmd_tbl_s *, int, int, char * const []);
+# following functions will extract  cmd_tbl_t _u_boot_list_2_cmd_2_XXX
+# the extracted line will have following structure :
+# cmd_tbl_t _u_boot_list_2_cmd_2_XXX = { "XXX", a, b, YYY, c, };
+# and will add 'extern' word at the beginning and ';' at the end
 EXT_CMD_PREFIX :=extern int #last space is importent
 EXT_CMD_SUFIX :=(struct cmd_tbl_s *, int, int, char * const []);
-get_cmd_functions_1 = $(filter _UBOOT_CMD_PREFIX_%, $(1))
-get_cmd_functions = $(patsubst \
-    _UBOOT_CMD_PREFIX_%,$(EXT_CMD_PREFIX)%$(EXT_CMD_SUFIX),\
-    $(call get_cmd_functions_1, $(1)))
+declare_extern_cmd_1 = $(wordlist 1, 2,$(1))
+declare_extern_cmd = $(if $(1),extern $(call declare_extern_cmd_1, $(1));,)
 
-# some compilers (like armcc) doesn't replace ";;" by ";"
-CLEAN_CMD_REM_TEXT4 :=};;
-CLEAN_CMD_NEW_TEXT4 :=};
-clean_cmd_4 =$(subst $(CLEAN_CMD_REM_TEXT4),$(CLEAN_CMD_NEW_TEXT4),$(1))
+
+# following functions will extract  _u_boot_list_2_cmd_2_XXX
 # the extracted line will have following structure :
-# extern int _UBOOT_CMD_PREFIX_YYY ; static cmd_tbl_t _u_boot_list_2_cmd_2_XXX \
-#__attribute__((unused)) = { "XXX", a, b, YYY, c, };
-clean_cmd_3 =$(patsubst _UBOOT_CMD_PREFIX_%,,$(call clean_cmd_4,$(1)))
-# after clean_cmd_3 the line will have following structure :
-# extern int ; static cmd_tbl_t _u_boot_list_2_cmd_2_XXX \
-#__attribute__((unused)) = { "XXX", a, b, YYY, c, };
-clean_cmd_2 =$(patsubst _u_boot_list_2_cmd_2_%,,$(call clean_cmd_3,$(1)))
-# after clean_cmd_2 the line will have following structure :
-# extern int ; static \
-# cmd_tbl_t __attribute__((unused)) = { "XXX", a, b, YYY, c, };
-CLEAN_CMD_REM_TEXT1 := extern int ; static cmd_tbl_t __attribute__((unused)) =
-clean_cmd_1 =$(subst $(CLEAN_CMD_REM_TEXT1),,$(call clean_cmd_2,$(1)))
-# after clean_cmd_1 the line will have following structure :
-#  { "XXX", a, b, YYY, c, };
-CLEAN_CMD_REM_TEXT0 :=, };
-CLEAN_CMD_NEW_TEXT0 :=, },
-clean_cmd =$(subst \
-      $(CLEAN_CMD_REM_TEXT0),$(CLEAN_CMD_NEW_TEXT0),$(call clean_cmd_1,$(1)))
-# after clean_cmd the line will have following structure :
-# { "XXX", a, b, YYY, c, },
+# cmd_tbl_t _u_boot_list_2_cmd_2_XXX = { "XXX", a, b, YYY, c, };
+# and will add '&' word at the beginning and ',' at the end
+prepare_cmd_for_array_1 = &$(word 2, $(1)),
+ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
+    prepare_cmd_for_array = $(if $(1),^$(call prepare_cmd_for_array_1,$(1)),)
+else
+    prepare_cmd_for_array = $(if $(1),$(call prepare_cmd_for_array_1,$(1)),)
+endif
 
 create_cmd_file = $(if $(strip $(2)), \
           $(call mkdir_if_not_exists, $(dir $1)) \
@@ -167,8 +153,8 @@ create_shell_binary_commands_file =$(if $1,\
 $(CURR_OBJ_DIR)/%.analyzer: $(CURR_OBJ_DIR)/%.preproc %
 	$(info .    ------- analyzing $<)
 	$(eval CMDS:=$(call get_cmd,$<))
-	$(eval EXT_CMDS:=$(call get_cmd_functions,$(CMDS)))
-	$(eval CMDS:=$(call clean_cmd,$(CMDS)))
+	$(eval EXT_CMDS:=$(call declare_extern_cmd,$(CMDS)))
+	$(eval CMDS:=$(call prepare_cmd_for_array,$(CMDS)))
 	$(call create_cmd_file,$<.cmd,$(CMDS),$(EXT_CMDS))
 	$(eval AUTO_INITS:=$(call get_auto_init,$<))
 	$(eval EXT_AUTO_INITS:=$(call get_auto_init_functions,$(AUTO_INITS)))
