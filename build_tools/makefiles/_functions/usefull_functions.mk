@@ -241,3 +241,24 @@ _fwrite =$(if $(1),\
 
 fwrite =$(if $(1),$(call _fwrite,1,$(1),$(2),$(3)),do nothing)
 #DUMMY := $(call fwrite,/home/andrew/Work/tmp/a.txt,a b c a b c a b c a b c)
+
+
+
+# function: touch_no_create
+# $1: file name
+# will update change date of file. if file doesn't exist, it will not be created
+# this function is usefull if you want to force 'make' utility to see some file
+# as updated.
+cd_func =$(if $(1), cd /D $(subst /,\,$(dir $1)), do nothing)
+touch_no_create_windows =$(if $(1),\
+    $(shell $(call cd_func,$1) & copy /b /y $(notdir $(1))+,,)),\
+    do nothing)
+
+touch_no_create_linux =$(if $(1), $(shell touch --no-create $1), do nothing)
+
+touch_no_create =$(if $(1),\
+      $(if $(findstring WINDOWS,$(COMPILER_HOST_OS)),\
+        $(call touch_no_create_windows,$(realpath $1)),\
+        $(call touch_no_create_linux,$(realpath $1))),\
+       do nothing)
+####################################################################

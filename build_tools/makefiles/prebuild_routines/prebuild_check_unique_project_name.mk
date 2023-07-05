@@ -18,7 +18,13 @@ CONFIG_NAME_SUFFIX_IN_BUNDLE :=$(strip $(CONFIG_NAME_SUFFIX_IN_BUNDLE))
 UNWANTED_FILES = %zOUT %zOBJ  %zIDE %zOUT_history %z_auto_generated_files
 UNWANTED_FILES += %project_config_includes %.config %.config.old
 UNWANTED_FILES += %.gitignore %Makefile %.git %app
-UNWANTED_FILES :=$(UNWANTED_FILES)
+UNWANTED_FILES += %/XtensaInfo %/include %/libs %/src %/doc %/docs
+UNWANTED_FILES += %/log %/logs %/Docs %/Builds %/MD4
+UNWANTED_FILES += %.c %.h %.hpp %.cpp %.mm %.ld %.lds %.obj %.pdb %.res %.txt
+UNWANTED_FILES += %.log %.tlog %.exe %.ilk %.vcxproj %.sln %.a %.inf
+UNWANTED_FILES += %.inf %.uml %.docx %.bak %.lib %.pdf %.md %.dat %.json
+UNWANTED_FILES += %.key %.pem %.cer %.crt %.dll %.py %.ods %.xlsx %.o %.d
+UNWANTED_FILES := $(UNWANTED_FILES)
 
 ls=$(filter-out $(UNWANTED_FILES),$(wildcard $1*))
 

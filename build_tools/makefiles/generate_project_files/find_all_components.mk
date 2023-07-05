@@ -11,9 +11,11 @@ endif
 # following list of files will stop the recursivity of rwildcard function
 # and files from this list will not be
 # tested for "$(filename)/Makefile.uc.mk" pattern
-UNWANTED_FILES = %zOUT %zOBJ %zOUT_history %z_auto_generated_files
+UNWANTED_FILES = %/zOUT %/zOBJ %/zOUT_history %/z_auto_generated_files
 UNWANTED_FILES += %project_config_includes %.config %.config.old
-UNWANTED_FILES += %.gitignore %Makefile %.git %.c %.h %Makefile.uc.mk
+UNWANTED_FILES += %.gitignore %Makefile %.git %.c %.h %.mk %.bat
+UNWANTED_FILES += %.a %.pdf %.txt %.inf %.cpp %.cc %.s %.dt %.md %.S %Kconfig
+UNWANTED_FILES += %/doc %/docs %/XtensaInfo %/log %/logs %/Docs %/Builds %/MD4
 UNWANTED_FILES :=$(UNWANTED_FILES)
 
 ls=$(filter-out $(UNWANTED_FILES),$(wildcard $1/*))
