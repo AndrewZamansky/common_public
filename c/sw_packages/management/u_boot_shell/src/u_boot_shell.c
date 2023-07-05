@@ -101,6 +101,7 @@ static  char  printf_str[MAX_STR_LEN];
  */
 void SHELL_REPLY_PRINTF(const char* Format, ...)
 {
+#if !defined(CONFIG_UBOOT_DISABLE_PRINTF_REPLY)
 	va_list args;
 	int retVal;
 
@@ -112,6 +113,9 @@ void SHELL_REPLY_PRINTF(const char* Format, ...)
 	if (0 >= retVal)  return ;
 
 	SHELL_REPLY_DATA((uint8_t*)printf_str , strlen(printf_str));
+#else
+	SHELL_REPLY_STR("no printf reply\n");
+#endif
 }
 
 

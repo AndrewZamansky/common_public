@@ -16,9 +16,15 @@ config SYS_MAXARGS
 
 
 config UBOOT_SYS_CBSIZE
-	int   "uboot buffer size"
+	bool   "uboot buffer size"
 	depends on !INCLUDE_ONLY_UBOOT_SHELL_API
 	default 128
+
+
+config UBOOT_DISABLE_PRINTF_REPLY
+	int   "disable printf reply to safe space"
+	depends on !INCLUDE_ONLY_UBOOT_SHELL_API
+	default n
 
 
 menu "common uboot shell commands"
