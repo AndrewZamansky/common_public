@@ -23,11 +23,12 @@ static int do_echo(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 	uint8_t i;
 
-	for (i = 1; i < argc; i++)
+	for (i = 1; i < (argc - 1); i++)
 	{
 		SHELL_REPLY_STR(argv[i]);
 		SHELL_REPLY_STR(" ");
 	}
+	if (1 < argc) SHELL_REPLY_STR(argv[argc - 1]);
 
 	return 0;
 }

@@ -60,6 +60,8 @@ extern const int bin_cmd_table_size;
 
 static uint8_t task_is_running = 0;
 static size_t  remain_bin_reply_size;
+static size_t  use_stamp_in_bin_msg;
+static size_t  reply_bin_msg_size;
 static uint8_t suppress_bin_reply_header;
 
 static const char erase_seq[] = "\b \b";   /* erase sequence */
@@ -148,13 +150,22 @@ static void send_bin_reply_head(uint16_t msg_size, uint8_t reply_status)
 
 void shell_frontend_set_reply_bin_msg_data_size(uint16_t msg_size)
 {
-	send_bin_reply_head(msg_size, BIN_CMD_REPLY_STATUS_NO_ERROR);
+	if (use_stamp_in_bin_msg)
+	{
+		reply_bin_msg_size = msg_size + 4;
+	}
+	else
+	{
+		reply_bin_msg_size = msg_size;
+	}
+	send_bin_reply_head(reply_bin_msg_size, BIN_CMD_REPLY_STATUS_NO_ERROR);
 	remain_bin_reply_size = msg_size;
 }
 
 
 void shell_frontend_reply_bin_msg_data(const uint8_t *data, size_t len)
 {
+	uint8_t reply_data[4];
 	if (0 == suppress_bin_reply_header)
 	{
 		if (len > remain_bin_reply_size)
@@ -164,6 +175,11 @@ void shell_frontend_reply_bin_msg_data(const uint8_t *data, size_t len)
 		remain_bin_reply_size -= len;
 	}
 	shell_frontend_reply_data(data, len);
+	if (use_stamp_in_bin_msg)
+	{
+		reply_data[0] = (uint8_t)(reply_bin_msg_size & 0xff);
+		reply_data[1] = (uint8_t)((reply_bin_msg_size >> 8) & 0xff);
+	}
 }
 
 
@@ -432,7 +448,7 @@ static uint8_t parse_bin_header(uint8_t *buff, size_t msg_length,
 		size_t *msg_envelope_length, uint16_t *cmd_id)
 {
 	uint8_t cmd_flags;
-	uint8_t stamp;
+	uint32_t stamp;
 	size_t i;
 
 	*msg_envelope_length = 0;
@@ -460,17 +476,23 @@ static uint8_t parse_bin_header(uint8_t *buff, size_t msg_length,
 
 	if (0 != (cmd_flags & BIN_FLAGS_INTEGRITY_STAMP_ADDED))
 	{
-		stamp = 0x1a;
+		stamp = 0;
 		for (i = (msg_length - 4) ; i < msg_length; i++)
 		{
-			if (buff[i] != stamp)
-			{
-				send_bin_reply_head(0, BIN_CMD_REPLY_BAD_INTEGRITY_STAMP);
-				return 1;
-			}
-			stamp += 0x10;
+			stamp += buff[i];
+			stamp = stamp << 8;
+		}
+		if ((msg_length << 16) != stamp)
+		{
+			send_bin_reply_head(0, BIN_CMD_REPLY_BAD_INTEGRITY_STAMP);
+			return 1;
 		}
 		*msg_envelope_length += 4;
+		use_stamp_in_bin_msg = 1;
+	}
+	else
+	{
+		use_stamp_in_bin_msg = 0;
 	}
 	return 0;
 }
