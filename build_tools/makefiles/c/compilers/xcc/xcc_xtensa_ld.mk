@@ -139,11 +139,28 @@ include $(MAKEFILES_INC_FUNC_DIR)/add_item_list_to_file.mk
 
 #}}}}}}}}  END OF CREATING OBJECT LIST  }}}}}}}}
 
-
-
-ifdef XCC_LINKER_SUPPORT_PACKAGE_DIR
-    LDFLAGS += -mlsp=$(XCC_LINKER_SUPPORT_PACKAGE_DIR)
+ifeq ($(sort $(CONFIG_XTENSA_SIM)),y)
+    LINKER_SUPPORT_PACKAGE :=sim
+else
+    LINKER_SUPPORT_PACKAGE :=gdbio
 endif
+
+ifneq ($(XTENSA_CURR_ACTIVE_CONFIG),$(CLANG_CORE))
+    XTENSA_INFO_DIR :=$(APP_ROOT_DIR)/XtensaInfo
+
+    ifeq ("$(wildcard $(XTENSA_INFO_DIR))","")
+        $(info err: $(XTENSA_INFO_DIR) does not exists)
+        $(call exit,1)
+    endif
+
+    XTENSA_MODELS_DIR :=$(XTENSA_INFO_DIR)/Models
+    XTENSA_CONFIG_DIR :=\
+         $(XTENSA_MODELS_DIR)/$(XTENSA_CURR_ACTIVE_CONFIG)_memmap
+    LINKER_SUPPORT_PACKAGE:=$(XTENSA_CONFIG_DIR)/$(LINKER_SUPPORT_PACKAGE)
+endif
+
+LDFLAGS += -mlsp=$(LINKER_SUPPORT_PACKAGE)
+
 
 ifeq ($(findstring y,$(CONFIG_USED_FOR_SEMIHOSTING_UPLOADING)),y)
     CONFIG_CALCULATE_CRC32=y

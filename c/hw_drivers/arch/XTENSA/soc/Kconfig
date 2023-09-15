@@ -20,10 +20,12 @@ config XTENSA_FPGA_SIM
 config I96XXX_HIFI3
 	bool "i96xxx hifi3"
 	select PUBLIC_SOC_SELECTED
+	select XTENSA_HIFI3_NTCA
 
 config NPCP415
 	bool "npcp415"
 	select PUBLIC_SOC_SELECTED
+	select XTENSA_FUSIONF1_P7_G60_NTCA
 
 endchoice
 
@@ -41,31 +43,26 @@ config XTENSA_LX7_
 	bool "lx7"
 	select XTENSA_LX7
 
-config XTENSA_HIFI3_BD5_
-	bool "hifi3_bd5"
-	select XTENSA_HIFI3_BD5
-
-config XTENSA_FUSIONF1_FPGA_2
-	bool "FusionF1_FPGA_2"
-	depends on XCC_TOOLS_VER_2017_7
-
-config XTENSA_HIFI3_NTCA
-	bool "hifi3_ntca"
-	depends on XCC_TOOLS_VER_RI_2018_0
-
-config XTENSA_FUSIONF1_P7_G60_NTCA
-	bool "FusionF1_G60"
-	depends on XCC_TOOLS_VER_RI_2021_6
-
-config XTENSA_FUSIONF1_I256K_D192K_NTCA
-	bool "FusionF1_i256K_d192K"
-	depends on CLANG_TOOLS_VER_RI_2022_10
-
 config XTENSA_FUSIONF1_XRC_ALL_CACHE
 	bool "XRC_FusionF1_All_cache"
-	depends on CLANG_TOOLS_VER_RI_2022_9
 
 endchoice
+
+endif
+
+config XTENSA_APP_DEPENDENT_CONFIG
+	bool "use application dependant xtensa config"
+	default n
+
+if XTENSA_APP_DEPENDENT_CONFIG
+
+config XTENSA_CORE_CONFIG
+    string "core configuration name"
+    default ""
+
+config XTENSA_MEMMAP_CONFIG
+    string "memmap configuration name. leave empty if none"
+    default ""
 
 endif
 
@@ -83,6 +80,10 @@ endif
 
 if I96XXX_HIFI3
 source "$KCONFIG_PUBLIC_START_DIR/hw_drivers/arch/XTENSA/soc/i96xxx_HiFi3/Kconfig"
+endif
+
+if NPCP415
+source "$KCONFIG_PUBLIC_START_DIR/hw_drivers/arch/XTENSA/soc/npcp415/Kconfig"
 endif
 
 

@@ -1,5 +1,9 @@
 menu "`---> I96XXX HIFI3 configurations"
 
+config XTENSA_HIFI3_NTCA
+	bool
+	depends on XCC_TOOLS_VER_RI_2018_0
+
 config BSP_I96XXX_GIT_COMMIT_HASH
 	string "BSP i96xxx git commit hash"
 	default ""

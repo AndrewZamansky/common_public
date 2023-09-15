@@ -129,16 +129,31 @@ ifeq (y,$(CONFIG_XCC_OPT_CREATE_SEPARATE_FUNCTION_SECTIONS))
     GLOBAL_CFLAGS +=  -ffunction-sections
 endif
 
-ifdef CONFIG_XTENSA_HIFI3_BD5
-	XCC_CORE :=hifi3_bd5
-else ifdef CONFIG_XTENSA_FUSIONF1_FPGA_2
-	XCC_CORE :=FusionF1_FPGA_2
-else ifdef CONFIG_XTENSA_HIFI3_NTCA
+ifdef HIFI3_NTCA
 	XCC_CORE :=HIFI3_NTCA
+	XTENSA_CURR_ACTIVE_CONFIG :=$(XCC_CORE)
 else ifdef CONFIG_XTENSA_FUSIONF1_P7_G60_NTCA
 	XCC_CORE :=FusionF1_P7_NAU83G60
+	XTENSA_CURR_ACTIVE_CONFIG :=$(XCC_CORE)
 else ifdef XTENSA_FUSIONF1_XRC_ALL_CACHE
 	XCC_CORE :=XRC_FusionF1_All_cache
+	XTENSA_CURR_ACTIVE_CONFIG :=$(XCC_CORE)
+else ifdef CONFIG_XTENSA_APP_DEPENDENT_CONFIG
+    ifndef CONFIG_XTENSA_CORE_CONFIG
+        $(info err: project defined to use application dependent xtensa config)
+        $(info err: so CONFIG_XTENSA_CORE_CONFIG needs do be defined)
+        $(call exit,1)
+    endif
+    XCC_CORE :=$(patsubst "%",%,$(CONFIG_XTENSA_CORE_CONFIG))
+	XTENSA_CURR_ACTIVE_CONFIG :=$(XCC_CORE)
+	
+    MEMMAP_CONFIG :=$(patsubst "%",%,$(CONFIG_XTENSA_MEMMAP_CONFIG))
+    ifneq ($(MEMMAP_CONFIG),)
+        XTENSA_CURR_ACTIVE_CONFIG :=$(MEMMAP_CONFIG)
+    else
+        $(info info: using $(XTENSA_CURR_ACTIVE_CONFIG) as active config,)
+        $(info info: you can select other config by CONFIG_XTENSA_MEMMAP_CONFIG)
+    endif
 else
     $(info err: unknown core)
     $(call exit,1)
@@ -169,8 +184,8 @@ endif
 GLOBAL_CFLAGS += --xtensa-core=$(XCC_CORE)
 GLOBAL_CFLAGS += --xtensa-system=$(CORE_CONFIG_DIR)
 
-$(eval $(call ADD_TO_GLOBAL_DEFINES , PROC_$(XCC_CORE)))
-$(eval $(call ADD_TO_GLOBAL_DEFINES , CONFIG_$(XCC_CORE)))
+$(eval $(call ADD_TO_GLOBAL_DEFINES , PROC_$(XTENSA_CURR_ACTIVE_CONFIG)))
+$(eval $(call ADD_TO_GLOBAL_DEFINES , CONFIG_$(XTENSA_CURR_ACTIVE_CONFIG)))
 
 #stop GLOBAL_CFLAGS and GLOBAL_CPPFLAGS calculation each time it used :
 GLOBAL_CPPFLAGS := $(GLOBAL_CFLAGS)
