@@ -170,3 +170,15 @@ void irq_enable_interrupt(uint16_t int_num)
 		xt_ints_on( 1 << int_num );
 	}
 }
+
+void irq_disable_interrupt(uint16_t int_num)
+{
+	if (all_interrupts_blocked)
+	{
+		last_intenable_val &= ~(1 << int_num);
+	}
+	else
+	{
+		xt_ints_off( 1 << int_num );
+	}
+}

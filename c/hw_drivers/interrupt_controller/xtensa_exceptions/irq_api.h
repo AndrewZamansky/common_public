@@ -110,4 +110,6 @@ void	irq_block_all(void);
 
 void irq_enable_interrupt(uint16_t int_num);
 
+void irq_disable_interrupt(uint16_t int_num);
+
 #endif
