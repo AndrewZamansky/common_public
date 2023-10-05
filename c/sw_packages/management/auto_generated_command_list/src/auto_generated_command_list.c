@@ -1,9 +1,9 @@
 #include "_project.h"
-#include "u-boot/include/command.h"
 
 #if defined(CONFIG_OUTPUT_IS_LIBRARY_FOR_EXPORT)
 	#if defined(CONFIG_INCLUDE_UBOOT_SHELL)
 
+		#include "u-boot/include/command.h"
 		#include "all_cmd_ext.c"
 
 		const cmd_tbl_t *u_boot_cmd_table[] =

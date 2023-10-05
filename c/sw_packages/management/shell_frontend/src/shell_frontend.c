@@ -460,7 +460,9 @@ static uint8_t parse_bin_header(uint8_t *buff, size_t msg_length,
 	}
 	else
 	{
-		curr_runtime_hndl->mode = SHELL_FRONTEND_MODE_ASCII;
+		#ifdef CONFIG_INCLUDE_UBOOT_SHELL
+			curr_runtime_hndl->mode = SHELL_FRONTEND_MODE_ASCII;
+		#endif
 		return 1;
 	}
 
@@ -515,7 +517,9 @@ static size_t process_data_binary(struct shell_frontend_cfg_t *config_handle,
 	if (CONFIG_SHELL_FRONTEND_MAX_BINARY_MESSAGE_LEN < msg_length)
 	{
 		send_bin_reply_head(0, BIN_CMD_REPLY_MSG_TOO_LONG);
-		curr_runtime_hndl->mode = SHELL_FRONTEND_MODE_ASCII;
+		#ifdef CONFIG_INCLUDE_UBOOT_SHELL
+			curr_runtime_hndl->mode = SHELL_FRONTEND_MODE_ASCII;
+		#endif
 		return 1; // dismiss just 1 char
 	}
 
@@ -523,7 +527,9 @@ static size_t process_data_binary(struct shell_frontend_cfg_t *config_handle,
 
 	if (0 != parse_bin_header(buff, msg_length, &msg_envelope_length, &cmd_id))
 	{
-		curr_runtime_hndl->mode = SHELL_FRONTEND_MODE_ASCII;
+		#ifdef CONFIG_INCLUDE_UBOOT_SHELL
+			curr_runtime_hndl->mode = SHELL_FRONTEND_MODE_ASCII;
+		#endif
 		return msg_length;
 	}
 
@@ -552,7 +558,10 @@ static size_t process_data_binary(struct shell_frontend_cfg_t *config_handle,
 			CRITICAL_ERROR("still data needed for reply");
 		}
 	}
+
+#ifdef CONFIG_INCLUDE_UBOOT_SHELL
 	curr_runtime_hndl->mode = SHELL_FRONTEND_MODE_ASCII;
+#endif
 
 	return msg_length;
 }
@@ -777,7 +786,11 @@ static uint8_t shell_frontend_ioctl( struct dev_desc_t *adev,
 		DEV_IOCTL(server_dev, IOCTL_DEVICE_START);
 		server_dev = config_handle->server_rx_dev;
 		DEV_IOCTL(server_dev, IOCTL_DEVICE_START);
-		runtime_handle->mode = SHELL_FRONTEND_MODE_ASCII;
+		#ifdef CONFIG_INCLUDE_UBOOT_SHELL
+				runtime_handle->mode = SHELL_FRONTEND_MODE_ASCII;
+		#else
+				runtime_handle->mode = SHELL_FRONTEND_MODE_BINARY;
+		#endif
 		break;
 	case IOCTL_SHELL_FRONTEND_LOAD_PRESET:
 		return send_load_preset(adev, aIoctl_param1);
