@@ -59,7 +59,7 @@ SET_CONFIG_TYPE(shell_frontend, struct shell_frontend_cfg_t);
 void shell_frontend_set_mode(uint8_t mode);
 
 void shell_frontend_reply_bin_msg_data(const uint8_t *data, size_t len);
-void shell_frontend_set_reply_bin_msg_data_size(uint16_t msg_size);
+void shell_frontend_set_reply_bin_msg_data_size(size_t msg_size);
 void shell_frontend_load_preset_from_shell_cmd(
 		struct shell_frontend_load_preset_t *preset_params);
 

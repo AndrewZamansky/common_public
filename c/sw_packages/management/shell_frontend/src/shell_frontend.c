@@ -60,8 +60,9 @@ extern const int bin_cmd_table_size;
 
 static uint8_t task_is_running = 0;
 static size_t  remain_bin_reply_size;
-static size_t  use_stamp_in_bin_msg;
-static size_t  reply_bin_msg_size;
+static uint8_t  use_stamp_in_bin_msg;
+static size_t  reply_bin_msg_data_size;
+static size_t  reply_bin_msg_full_size;
 static uint8_t suppress_bin_reply_header;
 
 static const char erase_seq[] = "\b \b";   /* erase sequence */
@@ -77,6 +78,8 @@ static char EOF_MARKER_STR[] = "\r\n~2@5\r\n";
 #define BIN_CMD_REPLY_STATUS_CMD_NOT_FOUND   1
 #define BIN_CMD_REPLY_BAD_INTEGRITY_STAMP    2
 #define BIN_CMD_REPLY_MSG_TOO_LONG           3
+#define BIN_CMD_REPLY_MSG_TOO_SHORT          4
+#define BIN_CMD_REPLY_NOT_SUPPORTED_FLAG     5
 
 enum Header_positions_t {
 	HEADER_SUPPRESS_ECHO_POS, // must be on first position
@@ -133,33 +136,36 @@ void shell_frontend_set_mode(uint8_t mode)
 }
 
 
-static void send_bin_reply_head(uint16_t msg_size, uint8_t reply_status)
+static void send_bin_reply_head(size_t msg_data_size, uint8_t reply_status)
 {
 	uint8_t reply_header[4];
 
-	reply_header[0] = (msg_size + 4) & 0xff;
-	reply_header[1] = (msg_size + 4) >> 8;
-	reply_header[2] = 0;
+	if (0 != suppress_bin_reply_header) return;
+
+	if (use_stamp_in_bin_msg && (0 != msg_data_size))
+	{
+		reply_header[2] = 4;
+		reply_bin_msg_full_size = msg_data_size + 8; // add header and tail
+	}
+	else
+	{
+		reply_header[2] = 0;
+		reply_bin_msg_full_size = msg_data_size + 4; // add only header
+	}
+	reply_header[0] = reply_bin_msg_full_size & 0xff;
+	reply_header[1] = reply_bin_msg_full_size >> 8;
 	reply_header[3] = reply_status;
 
-	if (0 == suppress_bin_reply_header)
 	{
 		shell_frontend_reply_data(reply_header, 4);
 	}
 }
 
-void shell_frontend_set_reply_bin_msg_data_size(uint16_t msg_size)
+void shell_frontend_set_reply_bin_msg_data_size(size_t msg_data_size)
 {
-	if (use_stamp_in_bin_msg)
-	{
-		reply_bin_msg_size = msg_size + 4;
-	}
-	else
-	{
-		reply_bin_msg_size = msg_size;
-	}
-	send_bin_reply_head(reply_bin_msg_size, BIN_CMD_REPLY_STATUS_NO_ERROR);
-	remain_bin_reply_size = msg_size;
+	reply_bin_msg_data_size = msg_data_size;
+	send_bin_reply_head(msg_data_size, BIN_CMD_REPLY_STATUS_NO_ERROR);
+	remain_bin_reply_size = msg_data_size;
 }
 
 
@@ -177,8 +183,11 @@ void shell_frontend_reply_bin_msg_data(const uint8_t *data, size_t len)
 	shell_frontend_reply_data(data, len);
 	if (use_stamp_in_bin_msg)
 	{
-		reply_data[0] = (uint8_t)(reply_bin_msg_size & 0xff);
-		reply_data[1] = (uint8_t)((reply_bin_msg_size >> 8) & 0xff);
+		reply_data[0] = (uint8_t)(reply_bin_msg_full_size & 0xff);
+		reply_data[1] = (uint8_t)((reply_bin_msg_full_size >> 8) & 0xff);
+		reply_data[2] = 0;
+		reply_data[3] = 0;
+		shell_frontend_reply_data(reply_data, 4);
 	}
 }
 
@@ -445,24 +454,24 @@ static size_t process_data_ASCII(struct shell_frontend_cfg_t *config_handle,
 
 
 static uint8_t parse_bin_header(uint8_t *buff, size_t msg_length,
-		size_t *msg_envelope_length, uint16_t *cmd_id)
+		size_t *p_msg_envelope_length, uint16_t *cmd_id)
 {
 	uint8_t cmd_flags;
-	uint32_t stamp;
-	size_t i;
+	size_t msg_envelope_length;
 
-	*msg_envelope_length = 0;
+	msg_envelope_length = 0;
 	cmd_flags = buff[2];
 	if (0 == (cmd_flags & BIN_FLAGS_EXTENDED_CMD))
 	{
 		*cmd_id = buff[3];
-		*msg_envelope_length += 4;
+		msg_envelope_length += 4;
 	}
 	else
 	{
 		#ifdef CONFIG_INCLUDE_UBOOT_SHELL
 			curr_runtime_hndl->mode = SHELL_FRONTEND_MODE_ASCII;
 		#endif
+		send_bin_reply_head(0, BIN_CMD_REPLY_NOT_SUPPORTED_FLAG);
 		return 1;
 	}
 
@@ -478,24 +487,35 @@ static uint8_t parse_bin_header(uint8_t *buff, size_t msg_length,
 
 	if (0 != (cmd_flags & BIN_FLAGS_INTEGRITY_STAMP_ADDED))
 	{
-		stamp = 0;
-		for (i = (msg_length - 4) ; i < msg_length; i++)
+		size_t  i;
+		uint32_t stamp;
+
+		msg_envelope_length += 4;
+		if (msg_envelope_length > msg_length)
 		{
-			stamp += buff[i];
-			stamp = stamp << 8;
+			send_bin_reply_head(0, BIN_CMD_REPLY_MSG_TOO_SHORT);
+			return 1;
 		}
-		if ((msg_length << 16) != stamp)
+
+//		stamp = msg_length;
+		stamp = 0;
+		for (i = (msg_length - 1) ; i >= (msg_length - 4); i--)
+		{
+			stamp = stamp << 8;
+			stamp += buff[i];
+		}
+		if (msg_length != stamp)
 		{
 			send_bin_reply_head(0, BIN_CMD_REPLY_BAD_INTEGRITY_STAMP);
 			return 1;
 		}
-		*msg_envelope_length += 4;
 		use_stamp_in_bin_msg = 1;
 	}
 	else
 	{
 		use_stamp_in_bin_msg = 0;
 	}
+	*p_msg_envelope_length = msg_envelope_length;
 	return 0;
 }
 

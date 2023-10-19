@@ -144,6 +144,7 @@ ifeq ($(sort $(CONFIG_XTENSA_SIM)),y)
     LINKER_SUPPORT_PACKAGE :=sim
 else
     LINKER_SUPPORT_PACKAGE :=gdbio
+#    LINKER_SUPPORT_PACKAGE :=sim
 endif
 
 ifneq ($(XTENSA_CURR_ACTIVE_CONFIG),$(CLANG_CORE))
