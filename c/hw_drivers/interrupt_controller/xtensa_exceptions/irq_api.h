@@ -2,6 +2,7 @@
 #ifndef _irq_api_H_
 #define _irq_api_H_
 
+#include "cpu_config.h"
 
 #include <xtensa/hal.h>
 

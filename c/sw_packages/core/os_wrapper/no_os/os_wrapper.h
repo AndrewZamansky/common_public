@@ -18,6 +18,7 @@
 
 #define OS_MUTEX_TAKE_SUCCESS    0
 #define OS_QUEUE_SEND_SUCCESS    0
+#define OS_QUEUE_SEND_FAILED     1
 #define OS_QUEUE_RECEIVE_SUCCESS 0
 #define OS_QUEUE_RECEIVE_FAILED  1
 
@@ -35,7 +36,7 @@ typedef uint32_t *os_mutex_t;
 /**	*********  queue type definition *****    **/
 /** os_create_queue should return os_queue_t  **/
 /**	type :	[os_queue_t]  **/
-typedef uint32_t *os_queue_t;
+typedef void *os_queue_t;
 
 
 /**	*********  init os ********        **/
@@ -84,8 +85,10 @@ typedef uint32_t *os_queue_t;
 /** os_create_queue should return os_queue_t  **/
 
 /**	function :	[os_create_queue()]  **/
-#define os_create_queue(num_of_elements , size_of_elements)   NULL
-
+extern void *no_os_create_queque(
+		size_t num_of_elements, size_t size_of_element);
+#define os_create_queue(num_of_elements, size_of_element) \
+		no_os_create_queque(num_of_elements, size_of_element)
 
 /***********  queue insertion **********/
 /** on success will return OS_QUEUE_SEND_SUCCESS  **/
@@ -95,9 +98,8 @@ typedef uint32_t *os_queue_t;
 													OS_QUEUE_SEND_SUCCESS
 
 // without wait
-/**	function :	[os_queue_send_without_wait()]  **/
-#define os_queue_send_without_wait(queue , pData  )  \
-													OS_QUEUE_SEND_SUCCESS
+/** function : [os_queue_send_without_wait()]  **/
+uint8_t os_queue_send_without_wait(os_queue_t queue,  void * pData);
 
 
 //infinite wait
@@ -109,9 +111,9 @@ typedef uint32_t *os_queue_t;
 /***********  queue retrieval **********/
 /** on success will return OS_QUEUE_RECEIVE_SUCCESS  **/
 
-/**	function :	[os_queue_receive_with_timeout()]  **/
-#define os_queue_receive_with_timeout(queue , pData , timeout)  \
-													OS_QUEUE_RECEIVE_SUCCESS
+/** function : [os_queue_receive_with_timeout()]  **/
+extern uint8_t os_queue_receive_with_timeout(
+		os_queue_t queue, void *pData, uint32_t timeout);
 
 //infinite wait
 /**	function :	[os_queue_receive_with_timeout()]  **/

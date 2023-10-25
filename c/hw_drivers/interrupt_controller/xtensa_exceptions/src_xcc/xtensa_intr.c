@@ -53,7 +53,7 @@ void xt_unhandled_exception(XtExcFrame *frame)
     exit(-1);
 }
 
-#ifdef CONFIG_FREE_RTOS
+#if defined(CONFIG_FREE_RTOS)
 /* Handler table is in xtensa_intr_asm.S */
 
 extern xt_exc_handler _xt_exception_table[XCHAL_EXCCAUSE_NUM];
@@ -132,9 +132,16 @@ xt_handler xt_set_interrupt_handler(int n, xt_handler f, void * arg)
 
 #else
 
+/* Include file for HAL */
+#include <xtensa/config/core.h>
+/* Include file for XTOS */
+#include <xtensa/xtruntime.h>
+#include <xtensa/tie/xt_interrupt.h>
+
 xt_handler xt_set_interrupt_handler(int n, xt_handler f, void * arg)
 {
 	_xtos_set_interrupt_handler_arg(n, f, arg);
+	return NULL;
 }
 
 

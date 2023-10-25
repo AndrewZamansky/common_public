@@ -11,6 +11,7 @@ INCLUDE_THIS_COMPONENT := $(CONFIG_NO_OS)
 
 #ASMFLAGS =  
 
+SRC += no_os.c
 
 VPATH = src
 

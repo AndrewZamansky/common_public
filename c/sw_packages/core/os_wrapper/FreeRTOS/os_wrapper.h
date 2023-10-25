@@ -147,8 +147,8 @@ void  os_start(void);
 /** os_create_queue should return os_queue_t  **/
 
 /** function : [os_create_queue()]  **/
-#define os_create_queue(num_of_elements, size_of_elements) \
-		xQueueCreate(num_of_elements, size_of_elements)
+#define os_create_queue(num_of_elements, size_of_element) \
+		xQueueCreate(num_of_elements, size_of_element)
 
 
 

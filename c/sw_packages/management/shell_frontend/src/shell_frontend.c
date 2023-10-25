@@ -646,6 +646,60 @@ static void process_msg_from_rx_device(
 }
 
 
+static void in_task_init(void)
+{
+	xQueue = os_create_queue(
+			CONFIG_SHELL_FRONTEND_MAX_QUEUE_LEN, sizeof(struct queue_msg_t) );
+
+	if ( NULL == xQueue  )
+	{
+		CRITICAL_ERROR("cannot create shell frontend queue");
+	}
+}
+
+
+static void main_task_function(uint8_t wait_for_queue_event)
+{
+	struct queue_msg_t msg;
+	struct shell_frontend_cfg_t *config_handle;
+	struct dev_desc_t *pdev;
+	uint8_t queue_ret_val;
+
+	if (wait_for_queue_event)
+	{
+		queue_ret_val = os_queue_receive_infinite_wait( xQueue, &msg);
+	}
+	else
+	{
+		queue_ret_val = os_queue_receive_with_timeout( xQueue, &msg, 0);
+	}
+	if (OS_QUEUE_RECEIVE_SUCCESS != queue_ret_val) return;
+
+	pdev = msg.shell_frontend_target_pdev;
+	config_handle = DEV_GET_CONFIG_DATA_POINTER(shell_frontend, pdev);
+	curr_runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(shell_frontend, pdev);
+
+	curr_tx_dev = NULL;
+	switch (msg.msg_type)
+	{
+	case MSG_TYPE_FROM_RX_DEVICE:
+		process_msg_from_rx_device(config_handle);
+		break;
+	case MSG_TYPE_LOAD_PRESET:
+		load_preset(config_handle, &msg.msg_load_preset);
+		break;
+	case MSG_TYPE_EXECUTE_BATCH:
+		execute_batch(config_handle,
+			msg.msg_batch.batch_buffer, msg.msg_batch.batch_buffer_size);
+		break;
+	default:
+		break;
+	}
+	curr_runtime_hndl = NULL;
+	os_stack_test();
+}
+
+
 /**
  * shell_frontend_Task()
  *
@@ -653,47 +707,10 @@ static void process_msg_from_rx_device(
  */
 static void shell_frontend_Task( void *pvParameters )
 {
-	struct queue_msg_t msg;
-	struct shell_frontend_cfg_t *config_handle;
-
-	xQueue = os_create_queue(
-			CONFIG_SHELL_FRONTEND_MAX_QUEUE_LEN, sizeof(struct queue_msg_t) );
-
-	if ( 0 == xQueue  )
-	{
-		CRITICAL_ERROR("cannot create shell frontend queue");
-	}
-
+	in_task_init();
 	while (1)
 	{
-		if ( OS_QUEUE_RECEIVE_SUCCESS !=
-				os_queue_receive_infinite_wait( xQueue, &( msg )) )
-		{
-			continue;
-		}
-		config_handle = DEV_GET_CONFIG_DATA_POINTER(
-							shell_frontend, msg.shell_frontend_target_pdev);
-		curr_runtime_hndl = DEV_GET_RUNTIME_DATA_POINTER(
-						shell_frontend, msg.shell_frontend_target_pdev);
-
-		curr_tx_dev = NULL;
-		switch (msg.msg_type)
-		{
-		case MSG_TYPE_FROM_RX_DEVICE:
-			process_msg_from_rx_device(config_handle);
-			break;
-		case MSG_TYPE_LOAD_PRESET:
-			load_preset(config_handle, &msg.msg_load_preset);
-			break;
-		case MSG_TYPE_EXECUTE_BATCH:
-			execute_batch(config_handle,
-				msg.msg_batch.batch_buffer, msg.msg_batch.batch_buffer_size);
-			break;
-		default:
-			break;
-		}
-		curr_runtime_hndl = NULL;
-		os_stack_test();
+		main_task_function(1);
 	}
 }
 
@@ -801,6 +818,10 @@ static uint8_t shell_frontend_ioctl( struct dev_desc_t *adev,
 			task_is_running = 1;
 			os_create_task("shell_frontend_task", shell_frontend_Task, NULL,
 				SHELL_FRONTEND_TASK_STACK_SIZE, SHELL_FRONTEND_TASK_PRIORITY);
+
+			#ifdef CONFIG_NO_OS
+				in_task_init();
+			#endif
 		}
 		server_dev = config_handle->server_tx_dev;
 		DEV_IOCTL(server_dev, IOCTL_DEVICE_START);
@@ -817,6 +838,9 @@ static uint8_t shell_frontend_ioctl( struct dev_desc_t *adev,
 		break;
 	case IOCTL_SHELL_FRONTEND_RUN_BATCH:
 		return send_batch(adev, aIoctl_param1);
+		break;
+	case IOCTL_CALL_MAIN_THREAD_FUNCTION_OF_DEVICE:
+		main_task_function(0);
 		break;
 	default :
 		return 1;
