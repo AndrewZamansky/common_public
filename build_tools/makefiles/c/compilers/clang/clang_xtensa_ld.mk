@@ -140,11 +140,15 @@ include $(MAKEFILES_INC_FUNC_DIR)/add_item_list_to_file.mk
 #}}}}}}}}  END OF CREATING OBJECT LIST  }}}}}}}}
 
 
-ifeq ($(sort $(CONFIG_XTENSA_SIM)),y)
+ifeq ($(sort $(CONFIG_XTENSA_LSP_SIM)),y)
     LINKER_SUPPORT_PACKAGE :=sim
-else
+else ifeq ($(sort $(CONFIG_XTENSA_LSP_GDBIO)),y)
     LINKER_SUPPORT_PACKAGE :=gdbio
-#    LINKER_SUPPORT_PACKAGE :=sim
+else ifeq ($(sort $(CONFIG_XTENSA_LSP_GDBIO_ROM)),y)
+    LINKER_SUPPORT_PACKAGE :=gdbio-rom
+else
+    $(info err: linker support package (LSP) should be defined )
+    $(call exit,1)
 endif
 
 ifneq ($(XTENSA_CURR_ACTIVE_CONFIG),$(CLANG_CORE))

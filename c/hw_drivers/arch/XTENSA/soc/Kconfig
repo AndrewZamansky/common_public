@@ -66,6 +66,27 @@ config XTENSA_MEMMAP_CONFIG
 
 endif
 
+choice
+	prompt "Linker package support (LSP)"
+	default XTENSA_SIM
+
+config XTENSA_LSP_SIM
+	bool "sim"
+	help
+		used for running simulation on PC
+
+config XTENSA_LSP_GDBIO
+	bool "gdbio"
+	help
+		used for on-chip debugging
+
+config XTENSA_LSP_GDBIO_ROM
+	bool "gdbio-rom"
+	help
+		used for on-chip debugging with putting all relocatable data on ROM
+
+endchoice
+
 if ESP8266
 source "$KCONFIG_PUBLIC_START_DIR/hw_drivers/arch/XTENSA/soc/esp8266/Kconfig"
 endif
