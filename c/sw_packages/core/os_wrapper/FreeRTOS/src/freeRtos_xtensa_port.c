@@ -5,6 +5,7 @@
  */
 
 //#include "irq_api.h"
+#include <xtensa/tie/xt_interrupt.h>
 
 
 /*
@@ -20,4 +21,5 @@ void os_start_arch_related_components()
 
 void os_sleep_arch_related_components()
 {
+	XT_WAITI(0);
 }
