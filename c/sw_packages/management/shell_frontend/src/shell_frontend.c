@@ -172,6 +172,9 @@ void shell_frontend_set_reply_bin_msg_data_size(size_t msg_data_size)
 void shell_frontend_reply_bin_msg_data(const uint8_t *data, size_t len)
 {
 	uint8_t reply_data[4];
+
+	if (0 == remain_bin_reply_size) return;
+
 	if (0 == suppress_bin_reply_header)
 	{
 		if (len > remain_bin_reply_size)
@@ -181,6 +184,9 @@ void shell_frontend_reply_bin_msg_data(const uint8_t *data, size_t len)
 		remain_bin_reply_size -= len;
 	}
 	shell_frontend_reply_data(data, len);
+
+	if (0 != remain_bin_reply_size) return;
+
 	if (use_stamp_in_bin_msg)
 	{
 		reply_data[0] = (uint8_t)(reply_bin_msg_full_size & 0xff);
