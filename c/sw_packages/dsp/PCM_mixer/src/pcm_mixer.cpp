@@ -89,7 +89,7 @@ static void channel_copy_32bit(real_t *pRxBuf, uint8_t *outChannel,
 
 }
 
-#define MAX_NUM_OF_OUTPUT_PADS  4
+#define MAX_NUM_OF_INPUT_PADS  8
 /**
  * pcm_mixer_dsp_16and32bit()
  *
@@ -97,7 +97,7 @@ static void channel_copy_32bit(real_t *pRxBuf, uint8_t *outChannel,
  */
 static void pcm_mixer_dsp_func(struct dsp_module_inst_t *adsp)
 {
-	real_t *apChIn[MAX_NUM_OF_OUTPUT_PADS];
+	real_t *apChIn[MAX_NUM_OF_INPUT_PADS];
 	size_t data_len;
 	struct pcm_mixer_instance_t *handle;
 	uint8_t enable_test_clipping;
@@ -114,7 +114,7 @@ static void pcm_mixer_dsp_func(struct dsp_module_inst_t *adsp)
 	set_params = &handle->set_params;
 	num_of_channels = handle->num_of_channels;
 
-	if ((0 == num_of_channels) || (num_of_channels > MAX_NUM_OF_OUTPUT_PADS ))
+	if ((0 == num_of_channels) || (num_of_channels > MAX_NUM_OF_INPUT_PADS ))
 	{
 		CRITICAL_ERROR("unsupported number of channels");
 	}
