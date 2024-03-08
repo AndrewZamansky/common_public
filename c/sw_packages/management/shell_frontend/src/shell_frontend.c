@@ -65,6 +65,9 @@ static size_t  reply_bin_msg_data_size;
 static size_t  reply_bin_msg_full_size;
 static uint8_t suppress_bin_reply_header;
 
+#define PREAMBLE_SIZE                 4
+uint8_t bin_preamble_patern[PREAMBLE_SIZE] = {'b', 'i', 'n', '\n'};
+
 static const char erase_seq[] = "\b \b";   /* erase sequence */
 static char EOF_MARKER_STR[] = "\r\n~2@5\r\n";
 
@@ -172,6 +175,9 @@ void shell_frontend_set_reply_bin_msg_data_size(size_t msg_data_size)
 void shell_frontend_reply_bin_msg_data(const uint8_t *data, size_t len)
 {
 	uint8_t reply_data[4];
+
+	if (0 == remain_bin_reply_size) return;
+
 	if (0 == suppress_bin_reply_header)
 	{
 		if (len > remain_bin_reply_size)
@@ -181,6 +187,9 @@ void shell_frontend_reply_bin_msg_data(const uint8_t *data, size_t len)
 		remain_bin_reply_size -= len;
 	}
 	shell_frontend_reply_data(data, len);
+
+	if (0 != remain_bin_reply_size) return;
+
 	if (use_stamp_in_bin_msg)
 	{
 		reply_data[0] = (uint8_t)(reply_bin_msg_full_size & 0xff);
@@ -191,6 +200,20 @@ void shell_frontend_reply_bin_msg_data(const uint8_t *data, size_t len)
 	}
 }
 
+
+static void pad_remaining_data()
+{
+	size_t i;
+	uint8_t data = 0xB0;
+
+	if (suppress_bin_reply_header) return;
+
+	i = remain_bin_reply_size;
+	while (i--)
+	{
+		shell_frontend_reply_bin_msg_data(&data, 1);
+	}
+}
 
 static struct msg_load_preset_t  curr_msg_load_preset;
 
@@ -520,38 +543,13 @@ static uint8_t parse_bin_header(uint8_t *buff, size_t msg_length,
 }
 
 
-static size_t process_data_binary(struct shell_frontend_cfg_t *config_handle,
-		uint8_t *buff, size_t total_length)
+static void find_and_run_bin_cmd(struct shell_frontend_cfg_t *config_handle,
+		uint16_t cmd_id, uint8_t *buff, size_t msg_length,
+		size_t msg_envelope_length)
 {
-	size_t msg_envelope_length;
-	size_t msg_length;
-	size_t cmd_length;
-	uint16_t cmd_id;
 	size_t i;
+	size_t cmd_length;
 	struct shell_bin_cmd_struct_t *bin_cmd;
-
-	if (total_length < BIN_NON_EXTENDED_HEADER_SIZE) return 0;
-
-	msg_length = buff[0] + (buff[1] << 8);
-
-	if (CONFIG_SHELL_FRONTEND_MAX_BINARY_MESSAGE_LEN < msg_length)
-	{
-		send_bin_reply_head(0, BIN_CMD_REPLY_MSG_TOO_LONG);
-		#ifdef CONFIG_INCLUDE_UBOOT_SHELL
-			curr_runtime_hndl->mode = SHELL_FRONTEND_MODE_ASCII;
-		#endif
-		return 1; // dismiss just 1 char
-	}
-
-	if (total_length < msg_length) return 0;// still not enough data
-
-	if (0 != parse_bin_header(buff, msg_length, &msg_envelope_length, &cmd_id))
-	{
-		#ifdef CONFIG_INCLUDE_UBOOT_SHELL
-			curr_runtime_hndl->mode = SHELL_FRONTEND_MODE_ASCII;
-		#endif
-		return msg_length;
-	}
 
 	remain_bin_reply_size = 0;
 	for (i = 0; i < bin_cmd_table_size; i++)
@@ -565,25 +563,64 @@ static size_t process_data_binary(struct shell_frontend_cfg_t *config_handle,
 			break;
 		}
 	}
-
 	if (bin_cmd_table_size == i)
 	{
 		send_bin_reply_head(0, BIN_CMD_REPLY_STATUS_CMD_NOT_FOUND);
 	}
+}
 
-	if (0 == suppress_bin_reply_header)
+
+static size_t process_data_binary(struct shell_frontend_cfg_t *config_handle,
+		uint8_t *buff, size_t total_length)
+{
+	size_t msg_envelope_length;
+	size_t msg_length;
+	uint16_t cmd_id;
+	size_t preamble_size = 0;
+	size_t consumed_num_of_bytes;
+
+	if (total_length < PREAMBLE_SIZE) return 0;
+
+#if 0//#ifndef CONFIG_INCLUDE_UBOOT_SHELL // will be enabled later
+	if (0 != memcmp(buff, preamble_patern, PREAMBLE_SIZE))
 	{
-		if (remain_bin_reply_size)
-		{
-			CRITICAL_ERROR("still data needed for reply");
-		}
+		return 1; // dismiss just 1 char, preamble not found
+	}
+	buff += PREAMBLE_SIZE;
+	total_length -= PREAMBLE_SIZE;
+	preamble_size = PREAMBLE_SIZE;
+#endif
+
+	if (total_length < BIN_NON_EXTENDED_HEADER_SIZE) return 0;
+
+	msg_length = buff[0] + (buff[1] << 8);
+
+	if (CONFIG_SHELL_FRONTEND_MAX_BINARY_MESSAGE_LEN < msg_length)
+	{
+		consumed_num_of_bytes = 1; // dismiss just 1 char
+		goto end_binary_msg_process;
 	}
 
+	if (total_length < msg_length) return 0;// still not enough data
+
+	if (0 != parse_bin_header(buff, msg_length, &msg_envelope_length, &cmd_id))
+	{
+		consumed_num_of_bytes = msg_length;
+		goto end_binary_msg_process;
+	}
+
+	find_and_run_bin_cmd(
+			config_handle, cmd_id, buff, msg_length, msg_envelope_length);
+	consumed_num_of_bytes = msg_length;
+
+	pad_remaining_data();
+
+	end_binary_msg_process:
 #ifdef CONFIG_INCLUDE_UBOOT_SHELL
 	curr_runtime_hndl->mode = SHELL_FRONTEND_MODE_ASCII;
 #endif
-
-	return msg_length;
+	consumed_num_of_bytes += preamble_size;
+	return consumed_num_of_bytes;
 }
 
 
