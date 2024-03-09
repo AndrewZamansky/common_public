@@ -14,7 +14,7 @@ ifeq ($(findstring WINDOWS,$(COMPILER_HOST_OS)),WINDOWS)
 else ifeq ($(findstring LINUX,$(COMPILER_HOST_OS)),LINUX) 
     $(shell echo "#ifndef  project_config_h"> $(PROJECT_CONFIG_H_FILE))
     $(shell echo "#define  project_config_h">> $(PROJECT_CONFIG_H_FILE))
-    $(shell echo /*$(COMMENT)\*/  >> $(PROJECT_CONFIG_H_FILE))
+    $(shell echo /\*$(COMMENT)\*/  >> $(PROJECT_CONFIG_H_FILE))
     CONFIG_CONTENT := $(shell cat .config | grep '^CONFIG')
     CONFIG_CONTENT := $(subst ",\",$(CONFIG_CONTENT))
     NEW_PATTERN := "\#define=%"

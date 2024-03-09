@@ -28,8 +28,7 @@ else
                 include $(COMPILERS_DIR)/microsoft_compiler/msvc_cc.mk
             endif
         else
-            $(info err: unknown compiler)
-            $(call exit,1)
+            include $(COMPILERS_DIR)/gcc/gcc_cc.mk
         endif
     else
         $(info err: unknown compiler)
