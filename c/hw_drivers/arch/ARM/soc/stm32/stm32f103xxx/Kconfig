@@ -43,7 +43,7 @@ config stm32f103xF
 endchoice
 
 
-=======
+#=======
 
 config STM32F103XXX_ADDITIONAL_OPTIONS
 	def_bool n

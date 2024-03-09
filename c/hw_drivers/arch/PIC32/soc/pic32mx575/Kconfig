@@ -17,7 +17,7 @@ endif
 
 endmenu
 
-=======
+#=======
 config PIC32MX575_BOARD
 	def_bool y
 	select INTERNAL_SRAM 

@@ -33,7 +33,7 @@ config I94130
 endchoice
 
 
-=======
+#=======
 config I9413X_128K_FLASH
 	def_bool n
 
