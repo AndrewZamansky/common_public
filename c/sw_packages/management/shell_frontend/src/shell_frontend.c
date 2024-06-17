@@ -83,6 +83,7 @@ static char EOF_MARKER_STR[] = "\r\n~2@5\r\n";
 #define BIN_CMD_REPLY_MSG_TOO_LONG           3
 #define BIN_CMD_REPLY_MSG_TOO_SHORT          4
 #define BIN_CMD_REPLY_NOT_SUPPORTED_FLAG     5
+#define BIN_CMD_REPLY_MSG_SIZE_IS_NOT_EVEN   6
 
 enum Header_positions_t {
 	HEADER_SUPPRESS_ECHO_POS, // must be on first position
@@ -159,9 +160,8 @@ static void send_bin_reply_head(size_t msg_data_size, uint8_t reply_status)
 	reply_header[1] = reply_bin_msg_full_size >> 8;
 	reply_header[3] = reply_status;
 
-	{
-		shell_frontend_reply_data(reply_header, 4);
-	}
+	shell_frontend_reply_data(bin_preamble_patern, PREAMBLE_SIZE);
+	shell_frontend_reply_data(reply_header, 4);
 }
 
 void shell_frontend_set_reply_bin_msg_data_size(size_t msg_data_size)
@@ -476,7 +476,61 @@ static size_t process_data_ASCII(struct shell_frontend_cfg_t *config_handle,
 }
 
 
-static uint8_t parse_bin_header(uint8_t *buff, size_t msg_length,
+
+static uint32_t fletcher32(const uint16_t* data, size_t len)
+{
+    uint32_t sum1 = 0xffff, sum2 = 0xffff;
+    size_t tlen;
+
+    while (len) {
+            tlen = len > 359 ? 359 : len;
+
+            len -= tlen;
+
+            do {
+              sum1 += *data++;
+              sum2 += sum1;
+            } while (--tlen);
+
+            sum1 = (sum1 & 0xffff) + (sum1 >> 16);
+            sum2 = (sum2 & 0xffff) + (sum2 >> 16);
+    }
+    /* Second reduction step to reduce sums to 16 bits */
+    sum1 = (sum1 & 0xffff) + (sum1 >> 16);
+    sum2 = (sum2 & 0xffff) + (sum2 >> 16);
+    return sum2 << 16 | sum1;
+}
+
+
+static uint8_t check_message_integrity(uint8_t *buff, size_t msg_length)
+{
+	size_t  i;
+	uint32_t calc_checksum;
+	uint32_t received_checksum = 0;
+
+
+	if (msg_length % 2)
+	{
+		send_bin_reply_head(0, BIN_CMD_REPLY_MSG_SIZE_IS_NOT_EVEN);
+		return 1;
+	}
+
+	for (i = (msg_length - 1) ; i >= (msg_length - 4); i--)
+	{
+		received_checksum = received_checksum << 8;
+		received_checksum += buff[i];
+	}
+	calc_checksum = fletcher32((uint16_t *)buff, (msg_length - 4) / 2);
+	if (calc_checksum != received_checksum)
+	{
+		send_bin_reply_head(0, BIN_CMD_REPLY_BAD_INTEGRITY_STAMP);
+		return 1;
+	}
+	return 0;
+}
+
+
+static uint8_t parse_bin_header_and_tail(uint8_t *buff, size_t msg_length,
 		size_t *p_msg_envelope_length, uint16_t *cmd_id)
 {
 	uint8_t cmd_flags;
@@ -510,28 +564,13 @@ static uint8_t parse_bin_header(uint8_t *buff, size_t msg_length,
 
 	if (0 != (cmd_flags & BIN_FLAGS_INTEGRITY_STAMP_ADDED))
 	{
-		size_t  i;
-		uint32_t stamp;
-
 		msg_envelope_length += 4;
 		if (msg_envelope_length > msg_length)
 		{
 			send_bin_reply_head(0, BIN_CMD_REPLY_MSG_TOO_SHORT);
 			return 1;
 		}
-
-//		stamp = msg_length;
-		stamp = 0;
-		for (i = (msg_length - 1) ; i >= (msg_length - 4); i--)
-		{
-			stamp = stamp << 8;
-			stamp += buff[i];
-		}
-		if (msg_length != stamp)
-		{
-			send_bin_reply_head(0, BIN_CMD_REPLY_BAD_INTEGRITY_STAMP);
-			return 1;
-		}
+		if (0 != check_message_integrity(buff, msg_length)) return 1;
 		use_stamp_in_bin_msg = 1;
 	}
 	else
@@ -581,8 +620,8 @@ static size_t process_data_binary(struct shell_frontend_cfg_t *config_handle,
 
 	if (total_length < PREAMBLE_SIZE) return 0;
 
-#if 0//#ifndef CONFIG_INCLUDE_UBOOT_SHELL // will be enabled later
-	if (0 != memcmp(buff, preamble_patern, PREAMBLE_SIZE))
+#ifndef CONFIG_INCLUDE_UBOOT_SHELL
+	if (0 != memcmp(buff, bin_preamble_patern, PREAMBLE_SIZE))
 	{
 		return 1; // dismiss just 1 char, preamble not found
 	}
@@ -595,7 +634,8 @@ static size_t process_data_binary(struct shell_frontend_cfg_t *config_handle,
 
 	msg_length = buff[0] + (buff[1] << 8);
 
-	if (CONFIG_SHELL_FRONTEND_MAX_BINARY_MESSAGE_LEN < msg_length)
+	if ((4 > msg_length) ||
+			(CONFIG_SHELL_FRONTEND_MAX_BINARY_MESSAGE_LEN < msg_length))
 	{
 		consumed_num_of_bytes = 1; // dismiss just 1 char
 		goto end_binary_msg_process;
@@ -603,7 +643,8 @@ static size_t process_data_binary(struct shell_frontend_cfg_t *config_handle,
 
 	if (total_length < msg_length) return 0;// still not enough data
 
-	if (0 != parse_bin_header(buff, msg_length, &msg_envelope_length, &cmd_id))
+	if (0 != parse_bin_header_and_tail(
+					buff, msg_length, &msg_envelope_length, &cmd_id))
 	{
 		consumed_num_of_bytes = msg_length;
 		goto end_binary_msg_process;
