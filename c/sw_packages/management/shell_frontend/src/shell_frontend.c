@@ -64,9 +64,12 @@ static uint8_t  use_stamp_in_bin_msg;
 static size_t  reply_bin_msg_data_size;
 static size_t  reply_bin_msg_full_size;
 static uint8_t suppress_bin_reply_header;
+static size_t bin_msg_body_start;
 
 #define PREAMBLE_SIZE                 4
 uint8_t bin_preamble_patern[PREAMBLE_SIZE] = {'b', 'i', 'n', '\n'};
+
+#define BIN_TAIL_SIZE  4
 
 static const char erase_seq[] = "\b \b";   /* erase sequence */
 static char EOF_MARKER_STR[] = "\r\n~2@5\r\n";
@@ -83,7 +86,6 @@ static char EOF_MARKER_STR[] = "\r\n~2@5\r\n";
 #define BIN_CMD_REPLY_MSG_TOO_LONG           3
 #define BIN_CMD_REPLY_MSG_TOO_SHORT          4
 #define BIN_CMD_REPLY_NOT_SUPPORTED_FLAG     5
-#define BIN_CMD_REPLY_MSG_SIZE_IS_NOT_EVEN   6
 
 enum Header_positions_t {
 	HEADER_SUPPRESS_ECHO_POS, // must be on first position
@@ -140,6 +142,59 @@ void shell_frontend_set_mode(uint8_t mode)
 }
 
 
+static uint32_t fletcher32_sum1 = 0xffff;
+static uint32_t fletcher32_sum2 = 0xffff;
+static size_t fletcher32_frame_count = 0;
+static size_t fletcher32_len_left = 0;
+static uint8_t fletcher32_curr_shift = 0;
+static uint8_t fletcher32_curr_sum2_mult = 0;
+
+static void fletcher32_init(size_t msg_len)
+{
+	fletcher32_sum1 = 0xffff;
+	fletcher32_sum2 = 0xffff;
+	fletcher32_frame_count = 0;
+	fletcher32_len_left = msg_len;
+	fletcher32_curr_shift = 0;
+	fletcher32_curr_sum2_mult = 0;
+}
+
+static void  fletcher32_add(const uint8_t* data, size_t len)
+{
+	if (0 == fletcher32_len_left) return;
+	while (len--)
+	{
+		fletcher32_sum1 += (*data++) << fletcher32_curr_shift;
+		fletcher32_curr_shift = 8 - fletcher32_curr_shift;
+		fletcher32_sum2 += fletcher32_sum1 * fletcher32_curr_sum2_mult;
+		fletcher32_curr_sum2_mult = 1 - fletcher32_curr_sum2_mult;
+		fletcher32_frame_count += 1;
+		fletcher32_len_left -= 1;
+
+		if (((359 * 2) == fletcher32_frame_count) || (0 == fletcher32_len_left))
+		{
+			// in case we have odd length:
+			if (fletcher32_curr_sum2_mult) fletcher32_sum2 += fletcher32_sum1;
+
+			fletcher32_frame_count = 0;
+			fletcher32_sum1 =
+					(fletcher32_sum1 & 0xffff) + (fletcher32_sum1 >> 16);
+			fletcher32_sum2 =
+					(fletcher32_sum2 & 0xffff) + (fletcher32_sum2 >> 16);
+			if (0 == fletcher32_len_left) return;
+		}
+	}
+}
+
+static uint32_t fletcher32_finish()
+{
+	/* Second reduction step to reduce sums to 16 bits */
+	fletcher32_sum1 = (fletcher32_sum1 & 0xffff) + (fletcher32_sum1 >> 16);
+	fletcher32_sum2 = (fletcher32_sum2 & 0xffff) + (fletcher32_sum2 >> 16);
+	return fletcher32_sum2 << 16 | fletcher32_sum1;
+}
+
+
 static void send_bin_reply_head(size_t msg_data_size, uint8_t reply_status)
 {
 	uint8_t reply_header[4];
@@ -148,20 +203,23 @@ static void send_bin_reply_head(size_t msg_data_size, uint8_t reply_status)
 
 	if (use_stamp_in_bin_msg && (0 != msg_data_size))
 	{
-		reply_header[2] = 4;
-		reply_bin_msg_full_size = msg_data_size + 8; // add header and tail
+		reply_header[2] = BIN_FLAGS_INTEGRITY_STAMP_ADDED;
+		reply_bin_msg_full_size =
+				msg_data_size + BIN_NON_EXTENDED_HEADER_SIZE + BIN_TAIL_SIZE;
 	}
 	else
 	{
 		reply_header[2] = 0;
-		reply_bin_msg_full_size = msg_data_size + 4; // add only header
+		reply_bin_msg_full_size = msg_data_size +BIN_NON_EXTENDED_HEADER_SIZE;
 	}
 	reply_header[0] = reply_bin_msg_full_size & 0xff;
 	reply_header[1] = reply_bin_msg_full_size >> 8;
 	reply_header[3] = reply_status;
 
 	shell_frontend_reply_data(bin_preamble_patern, PREAMBLE_SIZE);
-	shell_frontend_reply_data(reply_header, 4);
+	fletcher32_init(reply_bin_msg_full_size - BIN_TAIL_SIZE);
+	fletcher32_add(reply_header, BIN_NON_EXTENDED_HEADER_SIZE);
+	shell_frontend_reply_data(reply_header, BIN_NON_EXTENDED_HEADER_SIZE);
 }
 
 void shell_frontend_set_reply_bin_msg_data_size(size_t msg_data_size)
@@ -174,8 +232,6 @@ void shell_frontend_set_reply_bin_msg_data_size(size_t msg_data_size)
 
 void shell_frontend_reply_bin_msg_data(const uint8_t *data, size_t len)
 {
-	uint8_t reply_data[4];
-
 	if (0 == remain_bin_reply_size) return;
 
 	if (0 == suppress_bin_reply_header)
@@ -186,17 +242,21 @@ void shell_frontend_reply_bin_msg_data(const uint8_t *data, size_t len)
 		}
 		remain_bin_reply_size -= len;
 	}
+	fletcher32_add(data, len);
 	shell_frontend_reply_data(data, len);
 
 	if (0 != remain_bin_reply_size) return;
 
 	if (use_stamp_in_bin_msg)
 	{
-		reply_data[0] = (uint8_t)(reply_bin_msg_full_size & 0xff);
-		reply_data[1] = (uint8_t)((reply_bin_msg_full_size >> 8) & 0xff);
-		reply_data[2] = 0;
-		reply_data[3] = 0;
-		shell_frontend_reply_data(reply_data, 4);
+		uint8_t reply_data[BIN_TAIL_SIZE];
+		uint32_t calc_checksum = fletcher32_finish();
+
+		reply_data[0] = (uint8_t)(calc_checksum & 0xff);
+		reply_data[1] = (uint8_t)((calc_checksum >> 8) & 0xff);
+		reply_data[2] = (uint8_t)((calc_checksum >> 16) & 0xff);
+		reply_data[3] = (uint8_t)((calc_checksum >> 24) & 0xff);
+		shell_frontend_reply_data(reply_data, BIN_TAIL_SIZE);
 	}
 }
 
@@ -477,29 +537,6 @@ static size_t process_data_ASCII(struct shell_frontend_cfg_t *config_handle,
 
 
 
-static uint32_t fletcher32(const uint16_t* data, size_t len)
-{
-    uint32_t sum1 = 0xffff, sum2 = 0xffff;
-    size_t tlen;
-
-    while (len) {
-            tlen = len > 359 ? 359 : len;
-
-            len -= tlen;
-
-            do {
-              sum1 += *data++;
-              sum2 += sum1;
-            } while (--tlen);
-
-            sum1 = (sum1 & 0xffff) + (sum1 >> 16);
-            sum2 = (sum2 & 0xffff) + (sum2 >> 16);
-    }
-    /* Second reduction step to reduce sums to 16 bits */
-    sum1 = (sum1 & 0xffff) + (sum1 >> 16);
-    sum2 = (sum2 & 0xffff) + (sum2 >> 16);
-    return sum2 << 16 | sum1;
-}
 
 
 static uint8_t check_message_integrity(uint8_t *buff, size_t msg_length)
@@ -507,20 +544,17 @@ static uint8_t check_message_integrity(uint8_t *buff, size_t msg_length)
 	size_t  i;
 	uint32_t calc_checksum;
 	uint32_t received_checksum = 0;
+	size_t msg_size_without_tail;
 
-
-	if (msg_length % 2)
-	{
-		send_bin_reply_head(0, BIN_CMD_REPLY_MSG_SIZE_IS_NOT_EVEN);
-		return 1;
-	}
-
-	for (i = (msg_length - 1) ; i >= (msg_length - 4); i--)
+	msg_size_without_tail = msg_length - BIN_TAIL_SIZE;
+	for (i = (msg_length - 1) ; i >= msg_size_without_tail; i--)
 	{
 		received_checksum = received_checksum << 8;
 		received_checksum += buff[i];
 	}
-	calc_checksum = fletcher32((uint16_t *)buff, (msg_length - 4) / 2);
+	fletcher32_init(msg_size_without_tail);
+	fletcher32_add(buff, msg_size_without_tail);
+	calc_checksum = fletcher32_finish();
 	if (calc_checksum != received_checksum)
 	{
 		send_bin_reply_head(0, BIN_CMD_REPLY_BAD_INTEGRITY_STAMP);
@@ -541,7 +575,8 @@ static uint8_t parse_bin_header_and_tail(uint8_t *buff, size_t msg_length,
 	if (0 == (cmd_flags & BIN_FLAGS_EXTENDED_CMD))
 	{
 		*cmd_id = buff[3];
-		msg_envelope_length += 4;
+		msg_envelope_length += BIN_NON_EXTENDED_HEADER_SIZE;
+		bin_msg_body_start = BIN_NON_EXTENDED_HEADER_SIZE; //just after header
 	}
 	else
 	{
@@ -564,7 +599,7 @@ static uint8_t parse_bin_header_and_tail(uint8_t *buff, size_t msg_length,
 
 	if (0 != (cmd_flags & BIN_FLAGS_INTEGRITY_STAMP_ADDED))
 	{
-		msg_envelope_length += 4;
+		msg_envelope_length += BIN_TAIL_SIZE;
 		if (msg_envelope_length > msg_length)
 		{
 			send_bin_reply_head(0, BIN_CMD_REPLY_MSG_TOO_SHORT);
@@ -597,7 +632,7 @@ static void find_and_run_bin_cmd(struct shell_frontend_cfg_t *config_handle,
 		if (bin_cmd->cmd_id == cmd_id)
 		{
 			cmd_length = msg_length - msg_envelope_length;
-			bin_cmd->bin_cmd_func(&buff[4], cmd_length);
+			bin_cmd->bin_cmd_func(&buff[bin_msg_body_start], cmd_length);
 			save_to_preset_if_needed(config_handle, buff, msg_length);
 			break;
 		}
@@ -620,7 +655,7 @@ static size_t process_data_binary(struct shell_frontend_cfg_t *config_handle,
 
 	if (total_length < PREAMBLE_SIZE) return 0;
 
-#ifndef CONFIG_INCLUDE_UBOOT_SHELL
+#if !defined(CONFIG_INCLUDE_UBOOT_SHELL)
 	if (0 != memcmp(buff, bin_preamble_patern, PREAMBLE_SIZE))
 	{
 		return 1; // dismiss just 1 char, preamble not found
