@@ -163,7 +163,7 @@ static void configure_pinout(struct I2S_i9xxxx_cfg_t *cfg_hndl)
 	pin_control_api_set_pin_function(cfg_hndl->LRCLK_pin);
 	pin_control_api_set_pin_function(cfg_hndl->DI_pin);
 	pin_control_api_set_pin_function(cfg_hndl->DO_pin);
-	if (0xffffffff != cfg_hndl->MCLK_pin)
+	if (I2S_I9XXXX_API_NO_MCLK_PIN != cfg_hndl->MCLK_pin)
 	{
 		pin_control_api_set_pin_function(cfg_hndl->MCLK_pin);
 	}
@@ -215,7 +215,7 @@ static void set_Mclk(struct I2S_i9xxxx_cfg_t *cfg_hndl,
 	uint32_t  res;
 	uint16_t  Mclock_factor_based_on_FSclock;
 
-	if (I2S_I9XXXX_API_MASTER_MODE != cfg_hndl->clock_mode) return;
+	if (I2S_I9XXXX_API_NO_MCLK_PIN == cfg_hndl->MCLK_pin) return;
 
 	DEV_IOCTL(
 		runtime_handle->i9xxxx_i2s_clk_dev, CLK_IOCTL_GET_FREQ, &src_clk_freq);

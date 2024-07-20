@@ -32,6 +32,7 @@ typedef void (*i2s_interrupt_handler_t)(
 #define I2S_I9XXXX_API_DATA_TRANSFER_TYPE_INTERRUPT_HANDLER     0
 #define I2S_I9XXXX_API_DATA_TRANSFER_TYPE_DMA                   1
 
+#define I2S_I9XXXX_API_NO_MCLK_PIN   0xffffffff
 
 enum I2S_I9XXXX_API_ioctl_e {
 	I2S_I9XXXX_ENABLE_OUTPUT_IOCTL = IOCTL_LAST_COMMON_IOCTL + 1,

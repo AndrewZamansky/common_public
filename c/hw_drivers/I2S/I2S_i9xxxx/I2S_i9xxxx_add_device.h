@@ -83,7 +83,7 @@
 #endif
 
 #ifndef I2S_I9XXXX_DT_MCLK_PIN
-	#define I2S_I9XXXX_DT_MCLK_PIN    0xffffffff
+	#define I2S_I9XXXX_DT_MCLK_PIN    I2S_I9XXXX_API_NO_MCLK_PIN
 #endif
 
 #ifndef I2S_I9XXXX_DT_SRC_CLOCK_PDEV
