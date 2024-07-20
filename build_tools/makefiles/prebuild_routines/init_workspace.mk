@@ -68,7 +68,7 @@ endif
 include $(MAKEFILES_INC_FUNC_DIR)/tool_existence_check.mk
 ####### end of tool existence test #####
 
-SUPPORTED_MAKE_VERSIONS := 4.1 4.3
+SUPPORTED_MAKE_VERSIONS := 4.1 4.3 4.2.1
 
 MAKE :="$(MAKE_DIR)/bin/make"
 SHELL_OUT :=$(shell $(MAKE) --version)

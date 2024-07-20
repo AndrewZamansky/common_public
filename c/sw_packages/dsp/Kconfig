@@ -51,7 +51,6 @@ config USE_NATURE_DSP
 	bool   "use IntegIT NatureDSP"
 	depends on DSP_REAL_NUMBER_FORMAT_FIXED_POINT && \
 				(XTENSA_FUSIONF1_XRC_ALL_CACHE || XTENSA_FUSIONF1_P7_G60_NTCA)
-				
 	default n
 
 #	depends on DSP_REAL_NUMBER_FORMAT_FIXED_POINT && (XTENSA_FUSIONF1_XRC_ALL_CACHE || XTENSA_FUSIONF1_P7_G60_NTCA)    
@@ -74,7 +73,7 @@ config DSP_IS_SPEED_CRITICAL
 config INCLUDE_BIQUAD_FILTER
 	bool   "biquad_filter"
 	default n
-	
+
 config INCLUDE_FIR_FILTER
 	bool   "fir_filter"
 	default n

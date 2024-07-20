@@ -12,7 +12,7 @@ config ARBEL_DEFAULT
 endchoice
 
 
-=======
+#=======
 config ARBEL_ADDITIONAL_OPTIONS
 	def_bool n
 	select CORTEX_A35 

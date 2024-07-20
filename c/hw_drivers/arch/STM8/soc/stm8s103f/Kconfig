@@ -17,7 +17,7 @@ endif
 
 endmenu
 
-=======
+#=======
 config STM8S103F_BOARD
 	def_bool y
 	select INTERNAL_SRAM 
