@@ -7,24 +7,10 @@
 	@description :
 ***************************************** */
 
-/***************   includes    *******************/
 #include "project_config.h"
 #include "_project.h"
-#include "auto_init_api.h"
-
-/***************   defines    *******************/
-
-
-
-
-/***************   typedefs    *******************/
-
-
-
-/**********   external variables    **************/
 
 int smihosting_is_active = 0 ;
-/***********   loacal variables    **************/
 
 
 void __attribute__((weak)) OS_SWI_Handler(void)

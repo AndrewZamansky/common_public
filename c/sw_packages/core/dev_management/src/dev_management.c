@@ -15,7 +15,6 @@
 #include "dev_management_api.h"
 #include "dev_management.h"
 
-#include "auto_init_api.h"
 #include "os_wrapper.h"
 #include "string.h"
 

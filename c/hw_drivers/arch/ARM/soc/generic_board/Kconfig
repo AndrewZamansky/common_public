@@ -16,6 +16,10 @@ config GENERIC_CORTEX_A9
     bool "cortex-A9"
 	select CORTEX_A9
 
+config GENERIC_CORTEX_A35
+    bool "cortex-A35"
+	select CORTEX_A35
+
 config GENERIC_ARM_926EJ_S
 	bool "arm926ej-s"
 	select ARM_926EJ_S
@@ -27,7 +31,7 @@ endchoice
 
 config INCLUDE_FPU_IN_GENERIC_ARM_SOC
 	bool "include FPU in generic ARM SOC"
-	depends on GENERIC_CORTEX_M4 || GENERIC_CORTEX_A9
+	depends on GENERIC_CORTEX_M4 || GENERIC_CORTEX_A9 || GENERIC_CORTEX_A35
 	default n
 
 endmenu

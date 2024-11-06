@@ -8,7 +8,9 @@
 ***************************************** */
 
 #include "_project.h"
-#include "auto_init_api.h"
+#ifdef CONFIG_INCLUDE_AUTO_INIT
+	#include "auto_init_api.h"
+#endif
 
 extern uint32_t __bss_start__;
 extern uint32_t __bss_end__;
@@ -63,6 +65,8 @@ EXTERN_C_FUNCTION void init_after_startup(uint32_t curr_stack)
 	}
 
 	board_init_before_main_function();
+#ifdef CONFIG_INCLUDE_AUTO_INIT
 	auto_init_api();
+#endif
 //	DEV_API_auto_start_devices();
 }

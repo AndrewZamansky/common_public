@@ -7,22 +7,11 @@
 	@description :
 ***************************************** */
 
-/***************   includes    *******************/
 #include "_project.h"
 #include "cpu_config.h"
 
 
-/***************   defines    *******************/
-
-/***************   typedefs    *******************/
-
-
-
-/**********   external variables    **************/
-
-/**********   exported variables    **************/
-
-/***********   loacal variables    **************/
+int running_on_palladium = 0 ;
 
 uint32_t board_init_before_main_function()
 {

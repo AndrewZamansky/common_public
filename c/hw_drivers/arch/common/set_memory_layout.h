@@ -83,7 +83,7 @@
 #endif
 
 
-
+// following macros needed for linker script
 #define MEM_BASE_ADDR(mem)  mem ## _BASE_ADDR
 #define MEM_SIZE(mem)       mem ## _SIZE
 
@@ -92,4 +92,4 @@
 #undef  external_flash
 #undef  external_ddr
 
-#endif /* */
+#endif /* set_memory_layout_h */

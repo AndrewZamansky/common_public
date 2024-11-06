@@ -1,12 +1,22 @@
+
+ARCH :=
+ifdef CONFIG_CORTEX_A35
+  ARCH :=aarch64-
+else
+  ARCH :=arm-
+endif
+
 VENDOR_NAME :=
 ifneq ($(CONFIG_GCC_VENDOR_NAME),"")
    VENDOR_NAME :=$(patsubst "%",%,$(CONFIG_GCC_VENDOR_NAME))
    VENDOR_NAME :=$(VENDOR_NAME)-
 endif
-OS_PREFIX :=none-
+
+OS_PREFIX :=
 ifdef CONFIG_GCC_TARGET_OS_LINUX
     OS_PREFIX:=linux-
 endif
+
 ABI_PREFIX :=
 ifdef CONFIG_EABI
     ABI_PREFIX:=eabi
@@ -14,12 +24,11 @@ endif
 ifdef CONFIG_GNUEABI
     ABI_PREFIX:=gnueabi
 endif
-
 ifdef CONFIG_CORTEX_A35
-  GNU_COMPILATION_PREFIX :=aarch64-elf
-else
-  GNU_COMPILATION_PREFIX :=arm-$(VENDOR_NAME)$(OS_PREFIX)$(ABI_PREFIX)
+	ABI_PREFIX:=elf
 endif
+
+GNU_COMPILATION_PREFIX :=$(ARCH)$(VENDOR_NAME)$(OS_PREFIX)$(ABI_PREFIX)
 
 
 GCC_VERSION :=$(patsubst "%",%,$(CONFIG_GCC_VERSION))

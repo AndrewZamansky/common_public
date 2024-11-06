@@ -142,7 +142,7 @@ void core_init(uint32_t curr_stack)
 __attribute__((noreturn)) void main_core0(void)
 {
 	while(1) {
-       asm("wfi");
+       __asm__("wfi");
 	}
 }
 
@@ -154,7 +154,7 @@ __attribute__((noreturn)) void main_core0(void)
 __attribute__((noreturn)) void main_core1(void)
 {
 	while(1) {
-       asm("wfi");
+       __asm__("wfi");
 	}
 }
 
@@ -166,7 +166,7 @@ __attribute__((noreturn)) void main_core1(void)
 __attribute__((noreturn)) void main_core2(void)
 {
 	while(1){
-       asm("wfi");
+       __asm__("wfi");
     }
 }
 
@@ -178,7 +178,7 @@ __attribute__((noreturn)) void main_core2(void)
 __attribute__((noreturn)) void main_core3(void)
 {
 	while(1) {
-       asm("wfi");
+       __asm__("wfi");
     }
 }
 
