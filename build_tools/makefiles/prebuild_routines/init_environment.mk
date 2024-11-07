@@ -7,7 +7,7 @@
 ###########  checking host os #############
 $(info detecting host OS ... )
 $(info trying Windows ... )
-DUMMY :=$(shell echo . )#delay execution to output all prints in buffer
+DUMMY :=$(info ----------- )#delay execution to output all prints in buffer
 SHELL := cmd
 OS_TEST := $(shell ver)
 ifeq ($(findstring Windows,$(OS_TEST)),Windows)

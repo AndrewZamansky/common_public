@@ -134,17 +134,6 @@ void core_init(uint32_t curr_stack)
 #endif
 }
 
-/*
- * void main(void)
- *    the application start point for the primary CPU
- *    It brings up the secondary CPUs and enters WFI mode
- */
-__attribute__((noreturn)) void main_core0(void)
-{
-	while(1) {
-       __asm__("wfi");
-	}
-}
 
 /*
  * void main_core1(void)

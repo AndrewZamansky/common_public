@@ -57,6 +57,7 @@ SECTIONS
 	.vector_table __tables_relocation_section_start_on_ROM__ :
 	{
 		KEEP(*(._arm_vector_table))
+		KEEP(*(._arm_vector_table.startup_code))
 		KEEP(*(._arm_vector_table.*))
 	} > CODE_LOCATION
 

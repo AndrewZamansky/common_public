@@ -31,14 +31,80 @@ _startup_semihosting_palladium:
     bl start64_semihosting_palladium
 
 
-    .global el1_vectors
-    .global el2_vectors
-    .global el3_vectors
-    .global c0sync1
+
     .global GIC_Isr
     .global fiqHandler
-    .global irqFirstLevelHandler
-    .global fiqFirstLevelHandler
+
+    .type irqFirstLevelHandler, "function"
+irqFirstLevelHandler:
+  STP      x29, x30, [sp, #-16]!
+  STP      x18, x19, [sp, #-16]!
+  STP      x16, x17, [sp, #-16]!
+  STP      x14, x15, [sp, #-16]!
+  STP      x12, x13, [sp, #-16]!
+  STP      x10, x11, [sp, #-16]!
+  STP      x8, x9, [sp, #-16]!
+  STP      x6, x7, [sp, #-16]!
+  STP      x4, x5, [sp, #-16]!
+  STP      x2, x3, [sp, #-16]!
+  STP      x0, x1, [sp, #-16]!
+
+#if defined(CONFIG_INCLUDE_GIC)
+  BL       GIC_Isr
+#else
+  B .  // trap - we have irq while it's not enabled
+#endif
+
+  LDP      x0, x1, [sp], #16
+  LDP      x2, x3, [sp], #16
+  LDP      x4, x5, [sp], #16
+  LDP      x6, x7, [sp], #16
+  LDP      x8, x9, [sp], #16
+  LDP      x10, x11, [sp], #16
+  LDP      x12, x13, [sp], #16
+  LDP      x14, x15, [sp], #16
+  LDP      x16, x17, [sp], #16
+  LDP      x18, x19, [sp], #16
+  LDP      x29, x30, [sp], #16
+  ERET
+
+    .type fiqFirstLevelHandler, "function"
+fiqFirstLevelHandler:
+  STP      x29, x30, [sp, #-16]!
+  STP      x18, x19, [sp, #-16]!
+  STP      x16, x17, [sp, #-16]!
+  STP      x14, x15, [sp, #-16]!
+  STP      x12, x13, [sp, #-16]!
+  STP      x10, x11, [sp, #-16]!
+  STP      x8, x9, [sp, #-16]!
+  STP      x6, x7, [sp, #-16]!
+  STP      x4, x5, [sp, #-16]!
+  STP      x2, x3, [sp, #-16]!
+  STP      x0, x1, [sp, #-16]!
+
+  BL       fiqHandler
+
+  LDP      x0, x1, [sp], #16
+  LDP      x2, x3, [sp], #16
+  LDP      x4, x5, [sp], #16
+  LDP      x6, x7, [sp], #16
+  LDP      x8, x9, [sp], #16
+  LDP      x10, x11, [sp], #16
+  LDP      x12, x13, [sp], #16
+  LDP      x14, x15, [sp], #16
+  LDP      x16, x17, [sp], #16
+  LDP      x18, x19, [sp], #16
+  LDP      x29, x30, [sp], #16
+  ERET
+
+
+
+
+
+#if 0  // we are not using EL1 and EL2 in FW
+
+    .global el1_vectors
+    .global el2_vectors
 
     .section  ._arm_vector_table.EL1VECTORS, "ax"
     .align 11
@@ -168,7 +234,10 @@ l32fiq2: B fiqFirstLevelHandler
     .balign 0x80
 l32serr2: B l32serr2
 
+#endif // for #if 0
+
 //----------------------------------------------------------------
+    .global el3_vectors
 
     .section  ._arm_vector_table.EL3VECTORS, "ax"
     .align 11
@@ -232,66 +301,3 @@ l32fiq3: B fiqFirstLevelHandler
 
     .balign 0x80
 l32serr3: B l32serr3
-
-
-    .section .text.InterruptHandlers, "ax"
-    .balign 4
-
-    .type irqFirstLevelHandler, "function"
-irqFirstLevelHandler:
-  STP      x29, x30, [sp, #-16]!
-  STP      x18, x19, [sp, #-16]!
-  STP      x16, x17, [sp, #-16]!
-  STP      x14, x15, [sp, #-16]!
-  STP      x12, x13, [sp, #-16]!
-  STP      x10, x11, [sp, #-16]!
-  STP      x8, x9, [sp, #-16]!
-  STP      x6, x7, [sp, #-16]!
-  STP      x4, x5, [sp, #-16]!
-  STP      x2, x3, [sp, #-16]!
-  STP      x0, x1, [sp, #-16]!
-
-  BL       GIC_Isr
-
-  LDP      x0, x1, [sp], #16
-  LDP      x2, x3, [sp], #16
-  LDP      x4, x5, [sp], #16
-  LDP      x6, x7, [sp], #16
-  LDP      x8, x9, [sp], #16
-  LDP      x10, x11, [sp], #16
-  LDP      x12, x13, [sp], #16
-  LDP      x14, x15, [sp], #16
-  LDP      x16, x17, [sp], #16
-  LDP      x18, x19, [sp], #16
-  LDP      x29, x30, [sp], #16
-  ERET
-
-    .type fiqFirstLevelHandler, "function"
-fiqFirstLevelHandler:
-  STP      x29, x30, [sp, #-16]!
-  STP      x18, x19, [sp, #-16]!
-  STP      x16, x17, [sp, #-16]!
-  STP      x14, x15, [sp, #-16]!
-  STP      x12, x13, [sp, #-16]!
-  STP      x10, x11, [sp, #-16]!
-  STP      x8, x9, [sp, #-16]!
-  STP      x6, x7, [sp, #-16]!
-  STP      x4, x5, [sp, #-16]!
-  STP      x2, x3, [sp, #-16]!
-  STP      x0, x1, [sp, #-16]!
-
-  BL       fiqHandler
-
-  LDP      x0, x1, [sp], #16
-  LDP      x2, x3, [sp], #16
-  LDP      x4, x5, [sp], #16
-  LDP      x6, x7, [sp], #16
-  LDP      x8, x9, [sp], #16
-  LDP      x10, x11, [sp], #16
-  LDP      x12, x13, [sp], #16
-  LDP      x14, x15, [sp], #16
-  LDP      x16, x17, [sp], #16
-  LDP      x18, x19, [sp], #16
-  LDP      x29, x30, [sp], #16
-  ERET
-

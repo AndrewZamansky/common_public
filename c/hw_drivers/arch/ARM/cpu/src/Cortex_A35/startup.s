@@ -11,11 +11,12 @@
 // and your compliance with all applicable terms and conditions of such licence agreement.
 // ------------------------------------------------------------
 
+#include "cpu_config.h"
 #include "v8_mmu.h"
 #include "v8_system.h"
 
 
-    .section .text.StartUp, "ax"
+    .section ._arm_vector_table.startup_code, "ax"
     .balign 4
 
 
@@ -55,7 +56,7 @@
     .type start64, "function"
 start64:
 	bl start_common
-    bl main
+    bl main_core0
     b .
 
     .global start64_semihosting
@@ -65,7 +66,7 @@ start64_semihosting:
  	ldr	  x0, =smihosting_is_active
  	mov   w1,#0x01
  	str   w1,[x0]
-    bl main
+    bl main_core0
     b .
 
     .global start64_semihosting_palladium
@@ -78,8 +79,14 @@ start64_semihosting_palladium:
  	ldr	  x0, =running_on_palladium
  	mov   w1,#0x01
  	str   w1,[x0]
-    bl main
+    bl main_core0
     b .
+
+
+
+
+    .type init_s, "function"
+start_common:
 
     .type start_common, "function"
 start_common:
@@ -87,11 +94,13 @@ start_common:
     //
     // program the VBARs
     //
+    // in FW we will work only in EL3, so to save memory we will
+    // same vector table for all EL (we don't expect to be in other than EL3)
 
-    ldr x1, =el1_vectors
+    ldr x1, =el3_vectors
     msr VBAR_EL1, x1
 
-    ldr x1, =el2_vectors
+    ldr x1, =el3_vectors
     msr VBAR_EL2, x1
 
     ldr x1, =el3_vectors
@@ -253,15 +262,26 @@ start_common:
     //
     ldr x1, =0x2520
     msr TCR_EL3, x1
+
+        //
+    // Enable the MMU
+    //
+    mrs x1, SCTLR_EL3
+    orr x1, x1, #SCTLR_ELx_M
+    bic x1, x1, #SCTLR_ELx_A // Disable alignment fault checking.  To enable, change bic to orr
+    orr x1, x1, #SCTLR_ELx_C
+    orr x1, x1, #SCTLR_ELx_I
+    msr SCTLR_EL3, x1
+
     isb
 
+#endif
 
     //
     // x19 already contains the CPU number, so branch to secondary
     // code if we're not on CPU0
     //
     cbnz x19, el3_secondary
-#endif
     //
     // Fall through to primary code
     //
@@ -280,20 +300,6 @@ start_common:
     .type el3_primary, "function"
 el3_primary:
 
-#if 0 // not using MMU yet
-
-    //
-    // Enable the MMU
-    //
-    mrs x1, SCTLR_EL3
-    orr x1, x1, #SCTLR_ELx_M
-    bic x1, x1, #SCTLR_ELx_A // Disable alignment fault checking.  To enable, change bic to orr
-    orr x1, x1, #SCTLR_ELx_C
-    orr x1, x1, #SCTLR_ELx_I
-    msr SCTLR_EL3, x1
-    isb
-#endif
-
 	// Branch to core0 main funtion
     bl init_after_startup
 
@@ -309,6 +315,9 @@ el3_primary:
     .global el3_secondary
     .type el3_secondary, "function"
 el3_secondary:
+
+	cmp x19, #CORTEX_A_NUMBER_OF_CORES
+	bge hold_unused_cpu
 
 #ifdef WAKE_ON_SGI
     //
@@ -367,16 +376,7 @@ loop_wfi:
     mov w1, #0        // IRQ was raised by the primary CPU
     bl  ClearSGI
 #endif
-    //
-    // Enable the MMU and caches
-    //
-    mrs x1, SCTLR_EL3
-    orr x1, x1, #SCTLR_ELx_M
-    orr x1, x1, #SCTLR_ELx_C
-    orr x1, x1, #SCTLR_ELx_I
-    bic x1, x1, #SCTLR_ELx_A // Disable alignment fault checking.  To enable, change bic to orr
-    msr SCTLR_EL3, x1
-    isb
+
 
     //
     // Call secondary CPU main app
@@ -390,3 +390,8 @@ loop_wfi:
 
 	// Only core 3 ahould get here so no additional verification is required
     b 	main_core3
+
+hold_unused_cpu:
+	wfi
+	b hold_unused_cpu
+

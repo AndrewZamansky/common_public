@@ -1,9 +1,14 @@
-#include "dt_interrupts_num.h"
+// A35 has 3 exeption layers but in FW we will work only in EL3
+#define NUM_OF_EL  1// number of exception levels
 
-#define NUM_OF_EL  3 // number of exception levels
+// we have fixed archetecture of vector tabe:
+// 4 original EL : 2 if exception originated in current EL + 2 if
+// exeption originated in lower EL
+#define NUM_OF_ORIGINAL_EL 4
+// 4 exception types for each original EL: Serror, FIQ, IRQ, Synchronous
+#define NUM_OF_EXCEPTION_TYPES 4
 
-// 4 level types * 4 exeption types
-#define NUM_OF_ENTRIES  (NUMBER_OF_GIC_EXTERNAL_INTERRUPTS * 4 * 4)
+#define NUM_OF_ENTRIES  (NUM_OF_ORIGINAL_EL * NUM_OF_EXCEPTION_TYPES)
 
 #define ENTRY_SIZE  0x80 // 32 instructions * 4 bytes
 
