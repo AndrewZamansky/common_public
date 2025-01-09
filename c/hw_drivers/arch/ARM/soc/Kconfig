@@ -23,6 +23,13 @@ config ARBEL
 	select INTERNAL_SRAM_EXISTS
 	select DDR_EXISTS
 
+config TAVOR
+	bool "tavor"
+	select PUBLIC_SOC_SELECTED
+	select TAVOR_ADDITIONAL_OPTIONS
+	select INTERNAL_SRAM_EXISTS
+	select DDR_EXISTS
+
 config STM32F103XXX
 	bool "stm32f103xxx"
 	select PUBLIC_SOC_SELECTED
@@ -108,6 +115,10 @@ endif
 
 if ARBEL
 source "$KCONFIG_PUBLIC_START_DIR/hw_drivers/arch/ARM/soc/arbel/Kconfig"
+endif
+
+if TAVOR
+source "$KCONFIG_PUBLIC_START_DIR/hw_drivers/arch/ARM/soc/tavor/Kconfig"
 endif
 
 if GENERIC_ARM_SOC
