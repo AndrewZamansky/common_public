@@ -33,6 +33,7 @@
     .debug_typenames 0 : { *(.debug_typenames) }
     .debug_varnames  0 : { *(.debug_varnames) }
     .debug_macro  0 : { *(.debug_macro) }
-    .debug_macro  0 : { *(.debug_macro) }
     .debug_line_str  0 : { *(.debug_line_str) }
+    .debug_rnglists  0 : { *(.debug_rnglists) }
+    .debug_loclists  0 : { *(.debug_loclists) }
 	
