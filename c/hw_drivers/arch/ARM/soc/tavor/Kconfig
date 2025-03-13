@@ -7,22 +7,37 @@ choice
 
 config TAVOR_DEFAULT
 	bool "tavor default"
-	select TAVOR_256K_SRAM
 	select TAVOR_32MB_DDR
 
 config TAVOR_VELOCE
 	bool "tavor veloce"
-	select TAVOR_256K_SRAM
 	select TAVOR_2MB_DDR
 
 endchoice
 
+
+choice
+	prompt "Tavor SRAM base address"
+	default TAVOR_DEFAULT_SRAM_BASE
+
+config TAVOR_DEFAULT_SRAM_BASE
+	bool "tavor default at 0x1000000"
+	select TAVOR_256K_SRAM
+
+config TAVOR_SRAM_BASE_0x0
+	bool "tavor sram at 0x0"
+	select TAVOR_64K_SRAM
+
+endchoice
 
 #=======
 config TAVOR_ADDITIONAL_OPTIONS
 	def_bool n
 	select CORTEX_A35 
 	
+config TAVOR_64K_SRAM
+	def_bool n
+
 config TAVOR_256K_SRAM
 	def_bool n
 
